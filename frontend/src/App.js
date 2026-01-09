@@ -4439,6 +4439,13 @@ const ExtensionPage = () => {
 // Pricing Page
 const PricingPage = () => {
   const { user } = useAuth();
+  const [testimonials, setTestimonials] = useState([]);
+  const [expandedFaq, setExpandedFaq] = useState(null);
+
+  useEffect(() => {
+    // Fetch testimonials
+    api.get('/testimonials').then(res => setTestimonials(res.data.testimonials || [])).catch(() => {});
+  }, []);
 
   const openBillingPortal = async () => {
     try {
@@ -4449,26 +4456,320 @@ const PricingPage = () => {
     }
   };
 
+  // FAQ data
+  const faqs = [
+    { q: 'Can I switch plans anytime?', a: 'Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately and we prorate the billing.' },
+    { q: 'What happens if I exceed my response limit?', a: 'You\'ll receive a notification when you reach 80% of your limit. After reaching your limit, you can upgrade or wait for the next billing cycle.' },
+    { q: 'Is there a free trial?', a: 'Yes! The Free plan gives you 5 responses per month forever - no credit card required. Try it out and upgrade when ready.' },
+    { q: 'What payment methods do you accept?', a: 'We accept all major credit cards (Visa, Mastercard, Amex) via our secure Stripe payment processor.' },
+    { q: 'Can I cancel anytime?', a: 'Absolutely! No contracts, no hidden fees. Cancel with one click from your dashboard. Plus, we offer a 30-day money-back guarantee.' },
+    { q: 'Do you offer refunds?', a: 'Yes! We have a 30-day money-back guarantee. If you\'re not satisfied, contact us for a full refund.' }
+  ];
+
+  // Feature comparison data
+  const features = [
+    { name: 'Monthly Responses', free: '5', starter: '100', pro: '300', unlimited: 'Unlimited' },
+    { name: 'AI Tone Options', free: true, starter: true, pro: true, unlimited: true },
+    { name: '50+ Languages', free: true, starter: true, pro: true, unlimited: true },
+    { name: 'Response History', free: false, starter: true, pro: true, unlimited: true },
+    { name: 'Response Templates', free: false, starter: true, pro: true, unlimited: true },
+    { name: 'Bulk Generation (20 at once)', free: false, starter: false, pro: true, unlimited: true },
+    { name: 'Analytics Dashboard', free: false, starter: false, pro: true, unlimited: true },
+    { name: 'CSV/PDF Export', free: false, starter: false, pro: true, unlimited: true },
+    { name: 'API Access', free: false, starter: false, pro: false, unlimited: true },
+    { name: 'Team Members (up to 5)', free: false, starter: false, pro: false, unlimited: true },
+    { name: 'Priority Support', free: false, starter: false, pro: true, unlimited: true }
+  ];
+
   return (
-    <div className="pricing-section">
-      <div className="container">
-        <div className="pricing-header">
-          <h1 className="pricing-title">Choose Your Plan</h1>
-          <p style={{ color: 'var(--gray-600)' }}>
-            Scale your review response workflow with the right plan for your business
-          </p>
-        </div>
-
-        <PricingCards />
-
-        {user && user.plan !== 'free' && (
-          <div className="text-center mt-4">
-            <button onClick={openBillingPortal} className="btn btn-secondary">
-              Manage Subscription
-            </button>
+    <div style={{ paddingBottom: '100px' }}>
+      {/* Hero Section */}
+      <div className="pricing-section">
+        <div className="container">
+          <div className="pricing-header">
+            <div style={{
+              display: 'inline-block',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              color: 'white',
+              padding: '6px 16px',
+              borderRadius: '20px',
+              fontSize: '14px',
+              fontWeight: '600',
+              marginBottom: '16px'
+            }}>
+              🎉 Launch Special: 50% OFF with code EARLY50
+            </div>
+            <h1 className="pricing-title">Simple, Transparent Pricing</h1>
+            <p style={{ color: 'var(--gray-600)', maxWidth: '600px', margin: '0 auto' }}>
+              No hidden fees. No surprises. Choose the plan that fits your business.
+            </p>
           </div>
-        )}
+
+          <PricingCards />
+
+          {user && user.plan !== 'free' && (
+            <div style={{ textAlign: 'center', marginTop: '24px' }}>
+              <button onClick={openBillingPortal} className="btn btn-secondary">
+                Manage Subscription
+              </button>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Trust Badges */}
+      <div className="container" style={{ marginTop: '40px', marginBottom: '60px' }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          flexWrap: 'wrap',
+          gap: '32px',
+          alignItems: 'center',
+          padding: '24px',
+          background: 'var(--gray-50)',
+          borderRadius: '12px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)' }}>
+            <Shield size={20} style={{ color: 'var(--success)' }} />
+            <span style={{ fontSize: '14px', fontWeight: '500' }}>SSL Secured</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)' }}>
+            <CreditCard size={20} style={{ color: 'var(--primary-600)' }} />
+            <span style={{ fontSize: '14px', fontWeight: '500' }}>Powered by Stripe</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)' }}>
+            <RefreshCw size={20} style={{ color: 'var(--warning)' }} />
+            <span style={{ fontSize: '14px', fontWeight: '500' }}>30-Day Money Back</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)' }}>
+            <Check size={20} style={{ color: 'var(--success)' }} />
+            <span style={{ fontSize: '14px', fontWeight: '500' }}>Cancel Anytime</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Feature Comparison Table */}
+      <div className="container" style={{ marginBottom: '60px' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '28px', fontWeight: '700', marginBottom: '32px' }}>
+          Compare All Features
+        </h2>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
+                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600' }}>Feature</th>
+                <th style={{ padding: '16px', textAlign: 'center', fontWeight: '600' }}>Free</th>
+                <th style={{ padding: '16px', textAlign: 'center', fontWeight: '600' }}>Starter</th>
+                <th style={{ padding: '16px', textAlign: 'center', fontWeight: '600', background: 'var(--primary-50)', position: 'relative' }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: '-12px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: 'var(--primary-600)',
+                    color: 'white',
+                    padding: '4px 12px',
+                    borderRadius: '12px',
+                    fontSize: '11px',
+                    fontWeight: '600'
+                  }}>
+                    MOST POPULAR
+                  </div>
+                  Professional
+                </th>
+                <th style={{ padding: '16px', textAlign: 'center', fontWeight: '600' }}>Unlimited</th>
+              </tr>
+            </thead>
+            <tbody>
+              {features.map((feature, idx) => (
+                <tr key={idx} style={{ borderBottom: '1px solid var(--gray-100)' }}>
+                  <td style={{ padding: '14px 16px', color: 'var(--gray-700)' }}>{feature.name}</td>
+                  <td style={{ padding: '14px 16px', textAlign: 'center' }}>
+                    {typeof feature.free === 'boolean' ? (
+                      feature.free ? <Check size={18} style={{ color: 'var(--success)' }} /> : <X size={18} style={{ color: 'var(--gray-300)' }} />
+                    ) : <span style={{ fontWeight: '500' }}>{feature.free}</span>}
+                  </td>
+                  <td style={{ padding: '14px 16px', textAlign: 'center' }}>
+                    {typeof feature.starter === 'boolean' ? (
+                      feature.starter ? <Check size={18} style={{ color: 'var(--success)' }} /> : <X size={18} style={{ color: 'var(--gray-300)' }} />
+                    ) : <span style={{ fontWeight: '500' }}>{feature.starter}</span>}
+                  </td>
+                  <td style={{ padding: '14px 16px', textAlign: 'center', background: 'var(--primary-50)' }}>
+                    {typeof feature.pro === 'boolean' ? (
+                      feature.pro ? <Check size={18} style={{ color: 'var(--success)' }} /> : <X size={18} style={{ color: 'var(--gray-300)' }} />
+                    ) : <span style={{ fontWeight: '500' }}>{feature.pro}</span>}
+                  </td>
+                  <td style={{ padding: '14px 16px', textAlign: 'center' }}>
+                    {typeof feature.unlimited === 'boolean' ? (
+                      feature.unlimited ? <Check size={18} style={{ color: 'var(--success)' }} /> : <X size={18} style={{ color: 'var(--gray-300)' }} />
+                    ) : <span style={{ fontWeight: '500' }}>{feature.unlimited}</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Testimonials Section */}
+      {testimonials.length > 0 && (
+        <div className="container" style={{ marginBottom: '60px' }}>
+          <h2 style={{ textAlign: 'center', fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
+            Loved by Businesses
+          </h2>
+          <p style={{ textAlign: 'center', color: 'var(--gray-600)', marginBottom: '32px' }}>
+            See what our customers have to say
+          </p>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '24px',
+            maxWidth: '900px',
+            margin: '0 auto'
+          }}>
+            {testimonials.slice(0, 3).map((t, idx) => (
+              <div key={idx} className="card" style={{ padding: '24px' }}>
+                <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
+                  {[1,2,3,4,5].map(s => (
+                    <Star key={s} size={16} fill={s <= t.rating ? '#f59e0b' : 'none'} color={s <= t.rating ? '#f59e0b' : '#d1d5db'} />
+                  ))}
+                </div>
+                {t.comment && <p style={{ color: 'var(--gray-700)', fontStyle: 'italic', marginBottom: '16px', lineHeight: '1.6' }}>"{t.comment}"</p>}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    background: 'var(--primary-100)',
+                    color: 'var(--primary-600)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '14px',
+                    fontWeight: '600'
+                  }}>
+                    {(t.user_name || 'U').charAt(0).toUpperCase()}
+                  </div>
+                  <span style={{ fontWeight: '500', fontSize: '14px' }}>{t.user_name || 'Verified User'}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* FAQ Section */}
+      <div className="container" style={{ marginBottom: '60px' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
+          Frequently Asked Questions
+        </h2>
+        <p style={{ textAlign: 'center', color: 'var(--gray-600)', marginBottom: '32px' }}>
+          Got questions? We've got answers.
+        </p>
+        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+          {faqs.map((faq, idx) => (
+            <div
+              key={idx}
+              className="card"
+              style={{
+                marginBottom: '12px',
+                padding: '0',
+                overflow: 'hidden',
+                cursor: 'pointer'
+              }}
+              onClick={() => setExpandedFaq(expandedFaq === idx ? null : idx)}
+            >
+              <div style={{
+                padding: '18px 20px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontWeight: '500'
+              }}>
+                <span>{faq.q}</span>
+                <ChevronRight
+                  size={20}
+                  style={{
+                    color: 'var(--gray-400)',
+                    transform: expandedFaq === idx ? 'rotate(90deg)' : 'none',
+                    transition: 'transform 0.2s'
+                  }}
+                />
+              </div>
+              {expandedFaq === idx && (
+                <div style={{
+                  padding: '0 20px 18px',
+                  color: 'var(--gray-600)',
+                  lineHeight: '1.6',
+                  borderTop: '1px solid var(--gray-100)',
+                  paddingTop: '16px'
+                }}>
+                  {faq.a}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Final CTA */}
+      <div className="container">
+        <div className="card" style={{
+          background: 'linear-gradient(135deg, var(--primary-600), var(--primary-700))',
+          textAlign: 'center',
+          padding: '48px 24px'
+        }}>
+          <h2 style={{ color: 'white', fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
+            Ready to Save Hours on Review Responses?
+          </h2>
+          <p style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '24px', maxWidth: '500px', margin: '0 auto 24px' }}>
+            Join businesses who respond to reviews in seconds, not hours.
+          </p>
+          <Link to="/register" className="btn" style={{
+            background: 'white',
+            color: 'var(--primary-600)',
+            fontWeight: '600',
+            padding: '14px 32px',
+            fontSize: '16px'
+          }}>
+            Start Free Trial →
+          </Link>
+        </div>
+      </div>
+
+      {/* Sticky Mobile CTA */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        background: 'white',
+        borderTop: '1px solid var(--gray-200)',
+        padding: '12px 16px',
+        display: 'none',
+        zIndex: 1000,
+        boxShadow: '0 -4px 12px rgba(0,0,0,0.1)'
+      }} className="mobile-sticky-cta">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+          <div>
+            <div style={{ fontWeight: '600', fontSize: '14px' }}>Start Free</div>
+            <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>5 responses/month</div>
+          </div>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '10px 24px', fontSize: '14px' }}>
+            Get Started
+          </Link>
+        </div>
+      </div>
+
+      <style>
+        {`
+          @media (max-width: 768px) {
+            .mobile-sticky-cta {
+              display: block !important;
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };
