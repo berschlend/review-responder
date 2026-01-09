@@ -303,6 +303,12 @@ git push
 - MEMORY.md optimiert für Claude Sessions
 - OG Image für Social Sharing erstellt (1200x630px)
 - **Product Hunt Launch Vorbereitung** - PRODUCT_HUNT.md erstellt
+- **Response Templates Feature** implementiert:
+  - Neue `response_templates` Tabelle in PostgreSQL
+  - CRUD API Endpoints (GET, POST, PUT, DELETE /api/templates)
+  - "Save as Template" Button im Dashboard
+  - Template-Dropdown mit "Use as starting point" Option
+  - Max 20 Templates pro User
 
 ---
 
