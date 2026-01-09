@@ -72,7 +72,8 @@ async function generateResponse(panel) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${stored.token}`
       },
-      body: JSON.stringify({ reviewText, tone })
+      // Explicitly set outputLanguage to 'auto' to match review language
+      body: JSON.stringify({ reviewText, tone, outputLanguage: 'auto' })
     });
 
     const data = await response.json();
@@ -111,6 +112,36 @@ async function copyResponse(panel) {
   }
 }
 
+// Clean review text - remove UI elements that might confuse language detection
+function cleanReviewText(text) {
+  // Remove common German UI patterns from Google Maps
+  const germanUIPatterns = [
+    /vor \d+ (Sekunden?|Minuten?|Stunden?|Tagen?|Wochen?|Monaten?|Jahren?)/gi,
+    /Antwort vom Inhaber/gi,
+    /Mehr anzeigen/gi,
+    /Weniger anzeigen/gi,
+    /Hilfreich/gi,
+    /\d+ (Person|Personen) fanden? diese Rezension hilfreich/gi,
+  ];
+
+  // Remove common English UI patterns
+  const englishUIPatterns = [
+    /\d+ (second|minute|hour|day|week|month|year)s? ago/gi,
+    /Owner response/gi,
+    /See more/gi,
+    /See less/gi,
+    /Helpful/gi,
+    /\d+ (person|people) found this helpful/gi,
+  ];
+
+  let cleaned = text;
+  [...germanUIPatterns, ...englishUIPatterns].forEach(pattern => {
+    cleaned = cleaned.replace(pattern, '');
+  });
+
+  return cleaned.trim();
+}
+
 // Add buttons to reviews
 function addButtonsToReviews() {
   // Google Maps reviews selector
@@ -126,11 +157,12 @@ function addButtonsToReviews() {
       // Skip if already has button
       if (review.querySelector('.rr-btn')) return;
 
-      // Find review text
+      // Find review text - be more specific to get only the actual review content
       const textEl = review.querySelector('.wiI7pd, .MyEned, .Jtu6Td');
       if (!textEl) return;
 
-      const reviewText = textEl.textContent.trim();
+      // Clean the text to remove UI elements
+      const reviewText = cleanReviewText(textEl.textContent);
       if (!reviewText || reviewText.length < 10) return;
 
       // Create button
