@@ -80,7 +80,12 @@ async function generateResponse(panel) {
     console.log('[RR] Token retrieved:', stored.token ? 'Yes' : 'No');
   } catch (storageError) {
     console.error('[RR] Storage error:', storageError);
-    messageEl.textContent = 'Error accessing storage';
+    // Handle "Extension context invalidated" error
+    if (storageError.message && storageError.message.includes('Extension context invalidated')) {
+      messageEl.textContent = 'Extension was updated. Please refresh this page (F5).';
+    } else {
+      messageEl.textContent = 'Error accessing storage. Please refresh the page.';
+    }
     messageEl.className = 'rr-message rr-error';
     return;
   }
