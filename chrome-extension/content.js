@@ -38,8 +38,14 @@ function createResponsePanel() {
     panel.classList.remove('rr-visible');
   });
 
-  panel.querySelector('.rr-generate-btn').addEventListener('click', () => generateResponse(panel));
-  panel.querySelector('.rr-regenerate-btn').addEventListener('click', () => generateResponse(panel));
+  panel.querySelector('.rr-generate-btn').addEventListener('click', () => {
+    console.log('[RR] Generate button clicked');
+    generateResponse(panel);
+  });
+  panel.querySelector('.rr-regenerate-btn').addEventListener('click', () => {
+    console.log('[RR] Regenerate button clicked');
+    generateResponse(panel);
+  });
   panel.querySelector('.rr-copy-btn').addEventListener('click', () => copyResponse(panel));
 
   return panel;
@@ -47,14 +53,28 @@ function createResponsePanel() {
 
 // Generate response
 async function generateResponse(panel) {
+  console.log('[RR] generateResponse called');
   const reviewText = panel.dataset.reviewText;
   const tone = panel.querySelector('.rr-tone-select').value;
   const generateBtn = panel.querySelector('.rr-generate-btn');
   const messageEl = panel.querySelector('.rr-message');
   const responseArea = panel.querySelector('.rr-response-area');
 
+  console.log('[RR] Review text:', reviewText?.substring(0, 50) + '...');
+  console.log('[RR] Tone:', tone);
+
   // Get token from storage
-  const stored = await chrome.storage.local.get(['token']);
+  let stored;
+  try {
+    stored = await chrome.storage.local.get(['token']);
+    console.log('[RR] Token retrieved:', stored.token ? 'Yes' : 'No');
+  } catch (storageError) {
+    console.error('[RR] Storage error:', storageError);
+    messageEl.textContent = 'Error accessing storage';
+    messageEl.className = 'rr-message rr-error';
+    return;
+  }
+
   if (!stored.token) {
     messageEl.textContent = 'Please login in the extension popup first';
     messageEl.className = 'rr-message rr-error';
@@ -66,17 +86,19 @@ async function generateResponse(panel) {
   messageEl.textContent = '';
 
   try {
+    console.log('[RR] Making API request to:', `${API_URL}/generate`);
     const response = await fetch(`${API_URL}/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${stored.token}`
       },
-      // Explicitly set outputLanguage to 'auto' to match review language
       body: JSON.stringify({ reviewText, tone, outputLanguage: 'auto' })
     });
 
+    console.log('[RR] Response status:', response.status);
     const data = await response.json();
+    console.log('[RR] Response data received');
 
     if (!response.ok) {
       throw new Error(data.error || 'Generation failed');
@@ -85,7 +107,9 @@ async function generateResponse(panel) {
     panel.querySelector('.rr-response-text').textContent = data.response;
     responseArea.classList.remove('hidden');
     messageEl.textContent = '';
+    console.log('[RR] Response generated successfully');
   } catch (error) {
+    console.error('[RR] Error:', error);
     messageEl.textContent = error.message;
     messageEl.className = 'rr-message rr-error';
   } finally {

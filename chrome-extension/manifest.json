@@ -11,6 +11,7 @@
   "host_permissions": [
     "https://www.google.com/*",
     "https://google.com/*",
+    "https://maps.google.com/*",
     "https://business.google.com/*",
     "https://review-responder.onrender.com/*"
   ],
@@ -27,6 +28,7 @@
       "matches": [
         "https://www.google.com/maps/*",
         "https://google.com/maps/*",
+        "https://maps.google.com/*",
         "https://business.google.com/*"
       ],
       "js": ["content.js"],
