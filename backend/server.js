@@ -301,7 +301,8 @@ app.post('/api/auth/login', async (req, res) => {
         plan: user.subscription_plan,
         responsesUsed: user.responses_used,
         responsesLimit: user.responses_limit,
-        subscriptionStatus: user.subscription_status
+        subscriptionStatus: user.subscription_status,
+        onboardingCompleted: user.onboarding_completed
       }
     });
   } catch (error) {
@@ -328,12 +329,25 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
         plan: user.subscription_plan,
         responsesUsed: user.responses_used,
         responsesLimit: user.responses_limit,
-        subscriptionStatus: user.subscription_status
+        subscriptionStatus: user.subscription_status,
+        onboardingCompleted: user.onboarding_completed
       }
     });
   } catch (error) {
     console.error('Get user error:', error);
     res.status(500).json({ error: 'Failed to get user' });
+  }
+});
+
+// Complete onboarding
+app.put('/api/auth/complete-onboarding', authenticateToken, async (req, res) => {
+  try {
+    await dbQuery('UPDATE users SET onboarding_completed = TRUE WHERE id = $1', [req.user.id]);
+    
+    res.json({ success: true, message: 'Onboarding completed' });
+  } catch (error) {
+    console.error('Complete onboarding error:', error);
+    res.status(500).json({ error: 'Failed to complete onboarding' });
   }
 });
 

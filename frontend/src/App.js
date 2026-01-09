@@ -1124,7 +1124,7 @@ const PricingCards = ({ showFree = true }) => {
       monthlyPrice: 29,
       yearlyPrice: 23.20, // 20% off
       responses: 100,
-      features: ['100 responses per month', 'All tone options', '50+ languages', 'Priority generation', 'Email support'],
+      features: ['100 responses per month', 'All tone options', '50+ languages', 'Response history', 'Email support'],
       buttonText: 'Subscribe',
       plan: 'starter'
     },
@@ -1133,7 +1133,7 @@ const PricingCards = ({ showFree = true }) => {
       monthlyPrice: 49,
       yearlyPrice: 39.20, // 20% off
       responses: 300,
-      features: ['300 responses per month', 'All tone options', '50+ languages', 'Priority generation', 'Priority support'],
+      features: ['300 responses per month', 'All tone options', '50+ languages', 'Response history', 'Priority support'],
       buttonText: 'Subscribe',
       plan: 'professional',
       popular: true
@@ -1583,6 +1583,7 @@ const DashboardPage = () => {
   const [rating, setRating] = useState(0);
   const [platform, setPlatform] = useState('google');
   const [tone, setTone] = useState('professional');
+  const [outputLanguage, setOutputLanguage] = useState('auto');
   const [generating, setGenerating] = useState(false);
   const [response, setResponse] = useState('');
   const [copied, setCopied] = useState(false);
@@ -1597,6 +1598,7 @@ const DashboardPage = () => {
   const [bulkInput, setBulkInput] = useState('');
   const [bulkPlatform, setBulkPlatform] = useState('google');
   const [bulkTone, setBulkTone] = useState('professional');
+  const [bulkOutputLanguage, setBulkOutputLanguage] = useState('auto');
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [bulkResults, setBulkResults] = useState(null);
   const [copiedIndex, setCopiedIndex] = useState(null);
@@ -1712,6 +1714,7 @@ const DashboardPage = () => {
         reviewRating: rating || null,
         platform,
         tone: useTone,
+        outputLanguage,
         businessName: user.businessName
       });
 
@@ -3425,8 +3428,9 @@ const AnalyticsPage = () => {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <Toaster position="top-right" />
+      <ThemeProvider>
+        <AuthProvider>
+          <Toaster position="top-right" />
         <Navbar />
         <Routes>
           <Route path="/" element={<LandingPage />} />
@@ -3463,8 +3467,9 @@ function App() {
               </ProtectedRoute>
             }
           />
-        </Routes>
-      </AuthProvider>
+          </Routes>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }
