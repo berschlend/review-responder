@@ -2309,6 +2309,9 @@ const DashboardPage = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isFirstResponse, setIsFirstResponse] = useState(false);
 
+  // Keyboard shortcuts help modal
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+
   // Dashboard error state
   const [dashboardError, setDashboardError] = useState(null);
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
