@@ -157,6 +157,14 @@ ReviewResponder/
 | PUT | `/api/keys/:id` | API Key umbenennen oder de/aktivieren |
 | DELETE | `/api/keys/:id` | API Key löschen |
 | POST | `/api/v1/generate` | Public API Endpoint (mit X-API-Key Header) |
+| GET | `/api/team` | Team-Mitglieder abrufen (Pro/Unlimited) |
+| POST | `/api/team/invite` | Team-Mitglied einladen |
+| GET | `/api/team/invite/:token` | Einladungs-Token validieren (public) |
+| POST | `/api/team/accept` | Einladung annehmen |
+| PUT | `/api/team/:memberId/role` | Rolle ändern (Admin/Member/Viewer) |
+| DELETE | `/api/team/:memberId` | Mitglied entfernen |
+| GET | `/api/team/my-team` | Eigene Team-Info abrufen |
+| POST | `/api/team/leave` | Team verlassen |
 
 ---
 
@@ -179,6 +187,7 @@ ReviewResponder/
 - ✅ Email Notifications (Weekly Summary, 80% Usage Alert, Plan Renewal)
 - ✅ SEO Blog Generator (Pro/Unlimited) - AI-generierte SEO-Artikel für Marketing
 - ✅ API Key System (Unlimited only) - REST API mit 5 Keys, 100 req/Tag, Dokumentation
+- ✅ Team/Multi-User Accounts (Pro: 3, Unlimited: 10) - Rollen: Admin, Member, Viewer, Shared Usage
 
 ---
 
@@ -249,7 +258,7 @@ git push
 ### Phase 3: Features
 - [x] Bulk Response Generation ✅
 - [x] Review Analytics Dashboard ✅
-- [ ] Team/Multi-User Accounts
+- [x] Team/Multi-User Accounts ✅
 - [x] Response Templates ✅
 
 ### Phase 4: Marketing
@@ -261,7 +270,7 @@ git push
 ### Phase 5: Skalierung
 - [ ] Custom Domain
 - [ ] Chrome Web Store
-- [ ] Referral-System
+- [x] Referral-System ✅
 
 ---
 
@@ -434,6 +443,20 @@ Alle Endpoints erfolgreich getestet nach dem letzten Deploy
   - Artikel-History mit Pagination
   - Nur für Pro/Unlimited Pläne
   - Upgrade-Prompt für Free/Starter User
+- **Team/Multi-User Accounts** implementiert:
+  - Bestehende `team_members` Tabelle erweitert
+  - Pro Plan: 3 Team-Mitglieder, Unlimited: 10 Mitglieder
+  - Rollen: Admin (generate + history + settings), Member (generate + own history), Viewer (read-only)
+  - Email-Einladungen via Resend.com mit Token-System
+  - Shared Usage: Team-Mitglieder nutzen Owner's Kontingent
+  - TeamPage: Mitglieder einladen, Rollen ändern, entfernen
+  - JoinTeamPage: Einladungen annehmen via /join-team?token=...
+  - Team-Button im Dashboard Header (Pro Badge für Free/Starter)
+  - Team-Mitglieder nutzen Business Context des Owners
+
+### 10.01.2026
+- **API Key System für Entwickler** implementiert
+- **Team Management UI** - Frontend für Team-Verwaltung
 
 ---
 
