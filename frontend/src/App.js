@@ -341,6 +341,7 @@ const LandingPage = () => {
 const PricingCards = ({ showFree = true }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [billingCycle, setBillingCycle] = useState('monthly');
 
   const handleSubscribe = async (plan) => {
     if (!user) {
@@ -349,7 +350,7 @@ const PricingCards = ({ showFree = true }) => {
     }
 
     try {
-      const res = await api.post('/billing/create-checkout', { plan });
+      const res = await api.post('/billing/create-checkout', { plan, billing: billingCycle });
       window.location.href = res.data.url;
     } catch (error) {
       toast.error('Failed to start checkout');
@@ -359,7 +360,8 @@ const PricingCards = ({ showFree = true }) => {
   const plans = [
     {
       name: 'Free',
-      price: 0,
+      monthlyPrice: 0,
+      yearlyPrice: 0,
       responses: 5,
       features: ['5 responses per month', 'All tone options', '50+ languages', 'Copy to clipboard'],
       buttonText: 'Get Started',
@@ -367,7 +369,8 @@ const PricingCards = ({ showFree = true }) => {
     },
     {
       name: 'Starter',
-      price: 29,
+      monthlyPrice: 29,
+      yearlyPrice: 23.20, // 20% off
       responses: 100,
       features: ['100 responses per month', 'All tone options', '50+ languages', 'Priority generation', 'Email support'],
       buttonText: 'Subscribe',
@@ -375,7 +378,8 @@ const PricingCards = ({ showFree = true }) => {
     },
     {
       name: 'Professional',
-      price: 49,
+      monthlyPrice: 49,
+      yearlyPrice: 39.20, // 20% off
       responses: 300,
       features: ['300 responses per month', 'All tone options', '50+ languages', 'Priority generation', 'Priority support'],
       buttonText: 'Subscribe',
@@ -384,7 +388,8 @@ const PricingCards = ({ showFree = true }) => {
     },
     {
       name: 'Unlimited',
-      price: 99,
+      monthlyPrice: 99,
+      yearlyPrice: 79.20, // 20% off
       responses: 'Unlimited',
       features: ['Unlimited responses', 'All tone options', '50+ languages', 'Fastest generation', 'Dedicated support'],
       buttonText: 'Subscribe',
@@ -393,42 +398,106 @@ const PricingCards = ({ showFree = true }) => {
   ];
 
   const displayPlans = showFree ? plans : plans.filter(p => p.plan !== 'free');
+  const isYearly = billingCycle === 'yearly';
 
   return (
-    <div className="pricing-grid">
-      {displayPlans.map((plan) => (
-        <div key={plan.name} className={`pricing-card ${plan.popular ? 'popular' : ''}`}>
-          {plan.popular && <span className="pricing-badge">Most Popular</span>}
-          <h3 className="pricing-plan">{plan.name}</h3>
-          <div className="pricing-price">
-            €{plan.price}<span>/mo</span>
-          </div>
-          <p style={{ color: 'var(--gray-500)', marginTop: '8px' }}>
-            {typeof plan.responses === 'number' ? `${plan.responses} responses` : plan.responses}
-          </p>
-          <ul className="pricing-features">
-            {plan.features.map((feature, i) => (
-              <li key={i}>
-                <Check size={16} />
-                {feature}
-              </li>
-            ))}
-          </ul>
-          {plan.plan === 'free' ? (
-            <Link to="/register" className="btn btn-secondary" style={{ width: '100%' }}>
-              {plan.buttonText}
-            </Link>
-          ) : (
-            <button
-              onClick={() => handleSubscribe(plan.plan)}
-              className={`btn ${plan.popular ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ width: '100%' }}
-            >
-              {plan.buttonText}
-            </button>
-          )}
-        </div>
-      ))}
+    <div>
+      {/* Billing Toggle */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px', gap: '8px', alignItems: 'center' }}>
+        <span style={{ fontWeight: billingCycle === 'monthly' ? '600' : '400', color: billingCycle === 'monthly' ? 'var(--gray-900)' : 'var(--gray-500)' }}>
+          Monthly
+        </span>
+        <button
+          onClick={() => setBillingCycle(prev => prev === 'monthly' ? 'yearly' : 'monthly')}
+          style={{
+            width: '56px',
+            height: '28px',
+            borderRadius: '14px',
+            background: isYearly ? 'var(--primary-600)' : 'var(--gray-300)',
+            border: 'none',
+            cursor: 'pointer',
+            position: 'relative',
+            transition: 'background 0.2s'
+          }}
+        >
+          <span style={{
+            position: 'absolute',
+            top: '2px',
+            left: isYearly ? '30px' : '2px',
+            width: '24px',
+            height: '24px',
+            borderRadius: '50%',
+            background: 'white',
+            transition: 'left 0.2s',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+          }} />
+        </button>
+        <span style={{ fontWeight: billingCycle === 'yearly' ? '600' : '400', color: billingCycle === 'yearly' ? 'var(--gray-900)' : 'var(--gray-500)' }}>
+          Yearly
+        </span>
+        <span style={{
+          background: 'var(--success)',
+          color: 'white',
+          padding: '4px 10px',
+          borderRadius: '12px',
+          fontSize: '12px',
+          fontWeight: '600',
+          marginLeft: '8px'
+        }}>
+          Save 20%
+        </span>
+      </div>
+
+      <div className="pricing-grid">
+        {displayPlans.map((plan) => {
+          const displayPrice = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
+          const savings = plan.monthlyPrice > 0 ? Math.round((plan.monthlyPrice - plan.yearlyPrice) * 12) : 0;
+
+          return (
+            <div key={plan.name} className={`pricing-card ${plan.popular ? 'popular' : ''}`}>
+              {plan.popular && <span className="pricing-badge">Most Popular</span>}
+              <h3 className="pricing-plan">{plan.name}</h3>
+              <div className="pricing-price">
+                ${displayPrice.toFixed(2).replace('.00', '')}<span>/mo</span>
+              </div>
+              {isYearly && plan.monthlyPrice > 0 && (
+                <p style={{ color: 'var(--success)', fontSize: '13px', fontWeight: '600', marginTop: '4px' }}>
+                  Save ${savings}/year
+                </p>
+              )}
+              {isYearly && plan.monthlyPrice > 0 && (
+                <p style={{ color: 'var(--gray-400)', fontSize: '12px', textDecoration: 'line-through', marginTop: '2px' }}>
+                  ${plan.monthlyPrice}/mo
+                </p>
+              )}
+              <p style={{ color: 'var(--gray-500)', marginTop: '8px' }}>
+                {typeof plan.responses === 'number' ? `${plan.responses} responses` : plan.responses}
+              </p>
+              <ul className="pricing-features">
+                {plan.features.map((feature, i) => (
+                  <li key={i}>
+                    <Check size={16} />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              {plan.plan === 'free' ? (
+                <Link to="/register" className="btn btn-secondary" style={{ width: '100%' }}>
+                  {plan.buttonText}
+                </Link>
+              ) : (
+                <button
+                  onClick={() => handleSubscribe(plan.plan)}
+                  className={`btn ${plan.popular ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{ width: '100%' }}
+                >
+                  {plan.buttonText}
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };

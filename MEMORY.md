@@ -15,9 +15,30 @@ Eine vollständige SaaS-App die KI-generierte Antworten auf Google/Yelp Reviews 
 - **AI**: OpenAI GPT-4o-mini
 
 ## Stripe Live Konfiguration
+
+### Monatliche Pläne
 - **Starter Plan**: $29/Monat - Price ID: `price_1Sni0hQfYocZQHxZ7oxDbiVo`
 - **Professional Plan**: $49/Monat - Price ID: `price_1Sni18QfYocZQHxZuboFA6Wc`
 - **Unlimited Plan**: $99/Monat - Price ID: `price_1Sni1NQfYocZQHxZTq8KNLv8`
+
+### Jährliche Pläne (20% Rabatt) - NOCH ERSTELLEN!
+- **Starter Yearly**: $278.40/Jahr ($23.20/Monat) - Price ID: `[NOCH ERSTELLEN]`
+- **Professional Yearly**: $470.40/Jahr ($39.20/Monat) - Price ID: `[NOCH ERSTELLEN]`
+- **Unlimited Yearly**: $950.40/Jahr ($79.20/Monat) - Price ID: `[NOCH ERSTELLEN]`
+
+### Jährliche Stripe Prices erstellen:
+1. Gehe zu https://dashboard.stripe.com/products
+2. Öffne jedes Produkt (Starter, Professional, Unlimited)
+3. Klicke "Add another price"
+4. Wähle "Recurring" → "Yearly"
+5. Setze den Preis (siehe oben)
+6. Kopiere die Price ID und trage sie in Render ein
+
+### Neue Environment Variables für Render (Backend):
+- `STRIPE_STARTER_YEARLY_PRICE_ID` = [deine yearly price id]
+- `STRIPE_PRO_YEARLY_PRICE_ID` = [deine yearly price id]
+- `STRIPE_UNLIMITED_YEARLY_PRICE_ID` = [deine yearly price id]
+
 - Webhook eingerichtet für automatische Abo-Aktivierung
 
 ## Render Environment Variables (Backend)
@@ -47,8 +68,9 @@ Diese sind bereits eingetragen:
 ## Features
 - ✅ User Registration & Login
 - ✅ **Password Reset Flow** (NEU - 09.01.2026)
+- ✅ **Jahres-Abos mit 20% Rabatt** (NEU - 09.01.2026)
 - ✅ AI Review Response Generation (4 Tone-Optionen)
-- ✅ Stripe Subscription Payments
+- ✅ Stripe Subscription Payments (Monthly & Yearly)
 - ✅ Automatische Abo-Aktivierung via Webhook
 - ✅ Usage Tracking & Limits (Free: 5, Starter: 100, Pro: 300, Unlimited: ∞)
 - ✅ Response History
@@ -220,27 +242,32 @@ Ja, du kannst mehrere Claude Code Sessions parallel laufen lassen:
 
 ### Aktuelle Prioritäten (Update bei jeder Session):
 **Stand: 09.01.2026**
-1. ✅ Password Reset Flow implementiert
-2. Email-Versand für Password Reset einrichten (Resend.com empfohlen)
-3. Chrome Extension testen
-4. Ersten echten User-Test durchführen
-5. Bugs dokumentieren und fixen
+1. ✅ Password Reset Flow implementiert (mit Resend.com Email-Integration)
+2. ✅ Jahres-Abos mit 20% Rabatt implementiert
+3. Stripe Yearly Prices erstellen (siehe Anleitung oben)
+4. Chrome Extension testen
+5. Ersten echten User-Test durchführen
 
 ### Bekannte offene Todos:
 - [x] Password Reset Flow implementieren
-- [ ] Email-Versand einrichten (Resend.com API Key in Render eintragen)
-- [ ] Testen: Password Reset mit echten Emails
+- [x] Resend.com Email-Integration hinzufügen
+- [x] Jahres-Abos mit 20% Rabatt (Frontend + Backend)
+- [ ] Stripe: Yearly Prices erstellen und Environment Variables eintragen
 - [ ] Testen: Chrome Extension mit Live-Backend
-- [ ] Nächstes Feature: Jahres-Abos mit 20% Rabatt
+- [ ] Nächstes Feature: Regenerate Button für andere Tones
 
-### Password Reset Flow (NEU)
+### Password Reset Flow
 - `/forgot-password` - Email-Eingabe für Reset-Link
 - `/reset-password?token=xxx` - Neues Passwort setzen
 - Token gültig für 1 Stunde
-- **Wichtig für Production**: Email-Versand einrichten!
-  - Option 1: Resend.com (100 Emails/Tag gratis)
-  - Option 2: SendGrid
-  - Aktuell: Reset-URL wird im Backend-Log ausgegeben
+- Resend.com Integration fertig - nur noch API Key in Render eintragen!
+  - Environment Variable: `RESEND_API_KEY`
+
+### Jahres-Abos (20% Rabatt)
+- Frontend: Toggle zwischen Monthly/Yearly auf Pricing-Seite
+- Ersparnis wird pro Plan angezeigt (z.B. "Save $70/year")
+- Durchgestrichener Originalpreis bei Yearly
+- **TODO**: Stripe Yearly Prices erstellen (siehe Anleitung oben)
 
 ---
 

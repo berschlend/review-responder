@@ -10,6 +10,7 @@ const Stripe = require('stripe');
 const OpenAI = require('openai');
 const validator = require('validator');
 const crypto = require('crypto');
+const { Resend } = require('resend');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -23,6 +24,7 @@ const pool = new Pool({
 // Initialize services
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // Middleware
 app.use(helmet());
@@ -350,13 +352,36 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
 
-    // TODO: Send email via Resend/SendGrid in production
-    // For now, log the URL (remove in production!)
-    console.log(`📧 Password reset requested for ${email}`);
-    console.log(`🔗 Reset URL: ${resetUrl}`);
-
-    // In production, you would send an email here:
-    // await sendPasswordResetEmail(user.email, resetUrl);
+    // Send email if Resend is configured
+    if (resend && process.env.NODE_ENV === 'production') {
+      try {
+        await resend.emails.send({
+          from: 'ReviewResponder <noreply@reviewresponder.app>',
+          to: user.email,
+          subject: 'Reset Your Password - ReviewResponder',
+          html: `
+            <h2>Reset Your Password</h2>
+            <p>Hi there,</p>
+            <p>You requested a password reset for your ReviewResponder account. Click the link below to set a new password:</p>
+            <p><a href="${resetUrl}" style="background: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Reset Password</a></p>
+            <p>Or copy this link: ${resetUrl}</p>
+            <p>This link will expire in 1 hour. If you didn't request this, you can safely ignore this email.</p>
+            <p>Best regards,<br>ReviewResponder Team</p>
+          `
+        });
+        console.log(`✅ Password reset email sent to ${email}`);
+      } catch (emailError) {
+        console.error('Email send error:', emailError);
+        // Continue anyway - don't reveal email sending failed
+      }
+    } else {
+      // Development mode or Resend not configured
+      console.log(`📧 Password reset requested for ${email}`);
+      console.log(`🔗 Reset URL: ${resetUrl}`);
+      if (!resend) {
+        console.log('⚠️  Resend not configured - add RESEND_API_KEY to environment variables');
+      }
+    }
 
     res.json({ success: true, message: 'If an account exists, a reset link will be sent.' });
   } catch (error) {
@@ -541,10 +566,18 @@ app.get('/api/responses/history', authenticateToken, async (req, res) => {
 
 app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => {
   try {
-    const { plan } = req.body;
+    const { plan, billing = 'monthly' } = req.body;
 
     if (!PLAN_LIMITS[plan] || plan === 'free') {
       return res.status(400).json({ error: 'Invalid plan' });
+    }
+
+    const planConfig = PLAN_LIMITS[plan];
+    const isYearly = billing === 'yearly';
+    const priceId = isYearly ? planConfig.yearlyPriceId : planConfig.priceId;
+
+    if (!priceId) {
+      return res.status(400).json({ error: `${billing} billing not available for this plan` });
     }
 
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
@@ -553,7 +586,7 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
       customer: user.stripe_customer_id,
       payment_method_types: ['card'],
       line_items: [{
-        price: PLAN_LIMITS[plan].priceId,
+        price: priceId,
         quantity: 1
       }],
       mode: 'subscription',
@@ -561,7 +594,8 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
       cancel_url: `${process.env.FRONTEND_URL}/pricing?canceled=true`,
       metadata: {
         userId: user.id.toString(),
-        plan
+        plan,
+        billing
       }
     });
 
