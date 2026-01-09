@@ -284,6 +284,7 @@ git push
 - Exit-Intent Popup mit Email Capture
 - MEMORY.md optimiert für Claude Sessions
 - OG Image für Social Sharing erstellt (1200x630px)
+- **Product Hunt Launch Vorbereitung** - PRODUCT_HUNT.md erstellt
 
 ---
 
