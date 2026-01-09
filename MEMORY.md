@@ -41,12 +41,14 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 09.01.2026 - 23:00 Uhr**
+**Stand: 09.01.2026 - 23:30 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
 - [ ] Stripe Yearly Prices erstellen + Price IDs in Render eintragen
 - [ ] Demo-Video aufnehmen (2 Min Walkthrough) und YouTube/Loom Link einfügen
+- [ ] Chrome Web Store: Screenshots erstellen (1280x800) - siehe CHROME_STORE.md
+- [ ] Chrome Web Store: Extension hochladen ($5 Developer Fee)
 
 ### 🟡 NÄCHSTE CLAUDE TASKS (Wähle einen):
 
@@ -84,6 +86,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **User Onboarding** - 3-Step Modal für neue User (Backend Support)
 - [x] **Public API Access (Backend)** - API Keys, Rate Limiting (100/Tag), POST /api/v1/generate (Unlimited only)
 - [x] **Dark Mode** - Toggle in Navbar, System Preference Detection, localStorage Persistence
+- [x] **Chrome Web Store Vorbereitung** - CHROME_STORE.md, Store Listing, Privacy Policy Extension
 
 ---
 
@@ -429,6 +432,14 @@ Folgende neue Endpoints geben 404 auf Production:
   - [data-theme="dark"] CSS Overrides
   - Smooth 0.3s Transitions zwischen Light/Dark
   - Alle UI Komponenten unterstützen Dark Mode
+- **Chrome Web Store Vorbereitung**:
+  - CHROME_STORE.md mit kompletter Submission-Anleitung
+  - Store Listing Text (Name, Description, Features)
+  - Privacy Policy um Extension-Sektion erweitert
+  - Screenshots Ordner mit README (Placeholder)
+  - Manifest.json bereits auf v1.0.0
+  - Icons vorhanden (16, 48, 128px)
+  - User muss: Screenshots erstellen & hochladen
 
 ---
 
