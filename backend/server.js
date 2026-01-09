@@ -269,6 +269,22 @@ async function initDatabase() {
       )
     `);
 
+    // Blog articles table for SEO content generation
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS blog_articles (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        meta_description TEXT,
+        keywords TEXT,
+        topic TEXT,
+        tone TEXT DEFAULT 'informative',
+        word_count INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     console.log('📊 Database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -348,27 +364,30 @@ const authenticateApiKey = async (req, res, next) => {
 
 // Plan limits (monthly and yearly pricing)
 const PLAN_LIMITS = {
-  free: { responses: 5, price: 0 },
+  free: { responses: 5, price: 0, teamMembers: 0 },
   starter: {
     responses: 100,
     price: 2900,
     yearlyPrice: 27840, // 20% off: $29 * 12 * 0.8 = $278.40
     priceId: process.env.STRIPE_STARTER_PRICE_ID,
-    yearlyPriceId: process.env.STRIPE_STARTER_YEARLY_PRICE_ID
+    yearlyPriceId: process.env.STRIPE_STARTER_YEARLY_PRICE_ID,
+    teamMembers: 0
   },
   professional: {
     responses: 300,
     price: 4900,
     yearlyPrice: 47040, // 20% off: $49 * 12 * 0.8 = $470.40
     priceId: process.env.STRIPE_PRO_PRICE_ID,
-    yearlyPriceId: process.env.STRIPE_PRO_YEARLY_PRICE_ID
+    yearlyPriceId: process.env.STRIPE_PRO_YEARLY_PRICE_ID,
+    teamMembers: 3
   },
   unlimited: {
     responses: 999999,
     price: 9900,
     yearlyPrice: 95040, // 20% off: $99 * 12 * 0.8 = $950.40
     priceId: process.env.STRIPE_UNLIMITED_PRICE_ID,
-    yearlyPriceId: process.env.STRIPE_UNLIMITED_YEARLY_PRICE_ID
+    yearlyPriceId: process.env.STRIPE_UNLIMITED_YEARLY_PRICE_ID,
+    teamMembers: 10
   }
 };
 
@@ -1673,6 +1692,61 @@ app.post('/api/keys', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Create API key error:', error);
     res.status(500).json({ error: 'Failed to create API key' });
+  }
+});
+
+// Update API key (rename or toggle active status)
+app.put('/api/keys/:id', authenticateToken, async (req, res) => {
+  try {
+    const { name, isActive } = req.body;
+    const keyId = req.params.id;
+
+    // Check if key exists and belongs to user
+    const existingKey = await dbGet(
+      'SELECT id FROM api_keys WHERE id = $1 AND user_id = $2',
+      [keyId, req.user.id]
+    );
+
+    if (!existingKey) {
+      return res.status(404).json({ error: 'API key not found' });
+    }
+
+    // Build update query dynamically
+    const updates = [];
+    const values = [];
+    let paramIndex = 1;
+
+    if (name !== undefined) {
+      updates.push(`name = $${paramIndex++}`);
+      values.push(name);
+    }
+
+    if (isActive !== undefined) {
+      updates.push(`is_active = $${paramIndex++}`);
+      values.push(isActive);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ error: 'No fields to update' });
+    }
+
+    values.push(keyId, req.user.id);
+    const result = await dbQuery(
+      `UPDATE api_keys SET ${updates.join(', ')} WHERE id = $${paramIndex++} AND user_id = $${paramIndex} RETURNING id, name, is_active`,
+      values
+    );
+
+    res.json({
+      success: true,
+      key: {
+        id: result.rows[0].id,
+        name: result.rows[0].name,
+        isActive: result.rows[0].is_active
+      }
+    });
+  } catch (error) {
+    console.error('Update API key error:', error);
+    res.status(500).json({ error: 'Failed to update API key' });
   }
 });
 

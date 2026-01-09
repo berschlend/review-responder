@@ -60,6 +60,14 @@ async function generateResponse(panel) {
   const messageEl = panel.querySelector('.rr-message');
   const responseArea = panel.querySelector('.rr-response-area');
 
+  // Defensive check: ensure reviewText exists
+  if (!reviewText || reviewText.trim().length === 0) {
+    console.error('[RR] Error: No review text found in panel.dataset');
+    messageEl.textContent = 'Error: No review text found. Please close and try again.';
+    messageEl.className = 'rr-message rr-error';
+    return;
+  }
+
   console.log('[RR] Review text:', reviewText?.substring(0, 50) + '...');
   console.log('[RR] Tone:', tone);
 
@@ -93,7 +101,7 @@ async function generateResponse(panel) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${stored.token}`
       },
-      body: JSON.stringify({ reviewText, tone, outputLanguage: 'match' })
+      body: JSON.stringify({ reviewText, tone, outputLanguage: 'auto' })
     });
 
     console.log('[RR] Response status:', response.status);
