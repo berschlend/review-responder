@@ -566,7 +566,7 @@ app.get('/api/responses/history', authenticateToken, async (req, res) => {
 
 app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => {
   try {
-    const { plan, billing = 'monthly' } = req.body;
+    const { plan, billing = 'monthly', discountCode } = req.body;
 
     if (!PLAN_LIMITS[plan] || plan === 'free') {
       return res.status(400).json({ error: 'Invalid plan' });
@@ -582,7 +582,30 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
 
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
 
-    const session = await stripe.checkout.sessions.create({
+    // Check for discount code
+    let discounts = [];
+    if (discountCode && discountCode.toUpperCase() === 'EARLY50') {
+      // Create a 50% off coupon for early adopters
+      try {
+        const coupon = await stripe.coupons.create({
+          percent_off: 50,
+          duration: 'forever',
+          id: `EARLY50_${Date.now()}_${user.id}`,
+          metadata: {
+            campaign: 'early_adopter',
+            user_id: user.id.toString()
+          }
+        });
+        discounts = [{
+          coupon: coupon.id
+        }];
+      } catch (err) {
+        console.log('Coupon creation error:', err);
+        // Continue without discount if coupon fails
+      }
+    }
+
+    const sessionConfig = {
       customer: user.stripe_customer_id,
       payment_method_types: ['card'],
       line_items: [{
@@ -597,7 +620,14 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
         plan,
         billing
       }
-    });
+    };
+
+    // Add discounts if available
+    if (discounts.length > 0) {
+      sessionConfig.discounts = discounts;
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     res.json({ url: session.url });
   } catch (error) {

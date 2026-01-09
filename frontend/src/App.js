@@ -590,7 +590,11 @@ const PricingCards = ({ showFree = true }) => {
     }
 
     try {
-      const res = await api.post('/billing/create-checkout', { plan, billing: billingCycle });
+      const res = await api.post('/billing/create-checkout', { 
+        plan, 
+        billing: billingCycle,
+        discountCode: 'EARLY50' // Automatically apply launch discount
+      });
       window.location.href = res.data.url;
     } catch (error) {
       toast.error('Failed to start checkout');
