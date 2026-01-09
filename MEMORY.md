@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 10.01.2026 - 01:00 Uhr**
+**Stand: 10.01.2026 - 01:30 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
@@ -90,6 +90,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **Response Export** - CSV und PDF Export mit Datum-Filter (jspdf, papaparse)
 - [x] **App.js Fix** - Beschädigte App.js aus vorherigem Commit repariert
 - [x] **Output Language Selector** - Response Language Dropdown (18 Sprachen), Auto-detect oder spezifische Sprache wählen
+- [x] **User Feedback & Testimonials** - Echtes Feedback sammeln (Popup nach 10 Responses), Testimonials auf Landing Page anzeigen
 
 ### 📋 GEPLANT FÜR SPÄTER:
 - [ ] **Performance: Code Splitting** - Requires Refactoring von App.js in separate Module (api.js, AuthContext.js, etc.)
@@ -165,6 +166,9 @@ ReviewResponder/
 | GET | `/api/settings/notifications` | Email Notification Settings |
 | PUT | `/api/settings/notifications` | Settings aktualisieren |
 | POST | `/api/cron/weekly-summary` | Wöchentliche Summary Emails (Cron) |
+| POST | `/api/feedback` | User Feedback absenden (Rating + Kommentar) |
+| GET | `/api/feedback/status` | Prüft ob Feedback-Popup angezeigt werden soll |
+| GET | `/api/testimonials` | Freigegebene Testimonials (public) |
 
 ---
 
@@ -189,6 +193,7 @@ ReviewResponder/
 - ✅ Dark Mode (Toggle, System Preference, localStorage)
 - ✅ Team/Multi-User Accounts (Unlimited only, up to 5 members, shared quota)
 - ✅ Public API Access (100 req/day, /api-docs page, API Key Management in Settings)
+- ✅ User Feedback & Testimonials (echte Bewertungen sammeln, auf Landing Page anzeigen)
 
 ---
 
