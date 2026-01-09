@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 09.01.2026 - 19:45 Uhr**
+**Stand: 09.01.2026 - 20:15 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
@@ -64,8 +64,11 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] Regenerate Button für andere Tones
 - [x] Chrome Extension Fixes + Google Maps Preview
 - [x] API Tests (alle bestanden)
-- [x] Social Proof + Trust Badges auf Landing Page
-- [x] Testimonials Section (3 Testimonials)
+- [x] **Ehrliches Marketing** - Fake Social Proof entfernt
+- [x] "Just Launched" Badge + Early Adopter Messaging
+- [x] Demo Examples statt fake Testimonials
+- [x] 50% Launch Discount implementiert (Code: EARLY50)
+- [x] 30-Day Money Back Guarantee
 - [x] SEO Meta Tags + Open Graph + Twitter Cards + Schema.org
 
 ---
@@ -235,6 +238,22 @@ git push
 
 ---
 
+## MARKETING CHANGES (NEU!)
+
+### Ehrliches Marketing statt Fake Social Proof:
+- **Entfernt**: "500+ Businesses", "15,000+ Responses", Fake Testimonials
+- **Hinzugefügt**: 
+  - "Just Launched" Badge
+  - Early Adopter Counter (7/50 spots)
+  - Live Demo Examples mit echten AI Responses
+  - 50% Launch Discount (Code: EARLY50)
+  - 30-Day Money Back Guarantee
+
+### Launch Discount Implementation:
+- Backend: Stripe Coupon Creation in `/api/billing/create-checkout`
+- Frontend: Automatisch EARLY50 Code angewendet
+- Discount: 50% OFF forever für erste 50 Kunden
+
 ## CHANGELOG
 
 ### 09.01.2026
@@ -243,6 +262,8 @@ git push
 - Jahres-Abos (20% Rabatt)
 - Regenerate Button
 - Chrome Extension Fixes
+- Ehrliches Marketing implementiert
+- Launch Discount System
 - MEMORY.md optimiert für Claude Sessions
 
 ---
