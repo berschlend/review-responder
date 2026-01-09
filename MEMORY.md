@@ -133,6 +133,7 @@ ReviewResponder/
 | POST | `/api/templates` | Neues Template speichern |
 | PUT | `/api/templates/:id` | Template aktualisieren |
 | DELETE | `/api/templates/:id` | Template löschen |
+| GET | `/api/analytics` | Analytics Dashboard Daten (Pro/Unlimited) |
 
 ---
 
@@ -150,6 +151,7 @@ ReviewResponder/
 - ✅ Regenerate mit anderem Tone
 - ✅ Response Templates (speichern & als Startpunkt nutzen)
 - ✅ Bulk Response Generation (bis zu 20 Reviews auf einmal)
+- ✅ Analytics Dashboard mit Charts (Pro/Unlimited)
 
 ---
 
@@ -219,7 +221,7 @@ git push
 
 ### Phase 3: Features
 - [x] Bulk Response Generation ✅
-- [ ] Review Analytics Dashboard
+- [x] Review Analytics Dashboard ✅
 - [ ] Team/Multi-User Accounts
 - [x] Response Templates ✅
 
@@ -353,6 +355,14 @@ Folgende neue Endpoints geben 404 auf Production:
   - Verfügbar für Pro/Unlimited Pläne
   - Tab-basierte UI im Dashboard (Single/Bulk/History)
   - Fortschrittsanzeige und Fehlermeldungen
+- **Review Analytics Dashboard** implementiert:
+  - GET /api/analytics Endpoint (nur Pro/Unlimited)
+  - Line Chart: Responses over time (letzte 30 Tage)
+  - Pie Chart: Verteilung nach Tone
+  - Bar Charts: Platform & Rating Breakdown
+  - Quick Stats: Total, This Week, Avg/Day, Most Used Tone
+  - Schöne Upgrade-Seite für Free/Starter User
+  - recharts Library für Charts
 
 ---
 
