@@ -54,7 +54,9 @@ function createResponsePanel() {
 // Generate response
 async function generateResponse(panel) {
   console.log('[RR] generateResponse called');
-  const reviewText = panel.dataset.reviewText;
+
+  // Safely get reviewText with optional chaining
+  const reviewText = panel?.dataset?.reviewText || '';
   const tone = panel.querySelector('.rr-tone-select').value;
   const generateBtn = panel.querySelector('.rr-generate-btn');
   const messageEl = panel.querySelector('.rr-message');
