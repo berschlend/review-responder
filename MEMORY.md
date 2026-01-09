@@ -174,6 +174,7 @@ ReviewResponder/
 | GET | `/api/feedback/status` | Prüft ob Feedback-Popup angezeigt werden soll |
 | GET | `/api/testimonials` | Freigegebene Testimonials (public) |
 | POST | `/api/cron/send-drip-emails` | Drip Campaign Emails senden (Cron) |
+| POST | `/api/admin/upgrade-user` | User zu Unlimited upgraden (ADMIN_SECRET) |
 
 ---
 
