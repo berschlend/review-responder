@@ -83,6 +83,7 @@ async function initDatabase() {
         responses_limit INTEGER DEFAULT 5,
         current_period_start TIMESTAMP,
         current_period_end TIMESTAMP,
+        onboarding_completed BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
@@ -160,6 +161,15 @@ async function initDatabase() {
         UNIQUE(team_owner_id, member_email)
       )
     `);
+
+    // Add onboarding_completed column if it doesn't exist
+    try {
+      await dbQuery(`
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN DEFAULT FALSE
+      `);
+    } catch (error) {
+      // Column might already exist, that's okay
+    }
 
     console.log('📊 Database initialized');
   } catch (error) {
@@ -256,7 +266,8 @@ app.post('/api/auth/register', async (req, res) => {
         businessName,
         plan: 'free',
         responsesUsed: 0,
-        responsesLimit: PLAN_LIMITS.free.responses
+        responsesLimit: PLAN_LIMITS.free.responses,
+        onboardingCompleted: false
       }
     });
   } catch (error) {
@@ -1114,13 +1125,77 @@ app.delete('/api/templates/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// ============ TEAM MANAGEMENT (Unlimited Plan Only) ============
+
+app.get('/api/team', authenticateToken, async (req, res) => {
+  try {
+    const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    if (user.subscription_plan !== 'unlimited') return res.status(403).json({ error: 'Team features are only available for Unlimited plan', upgrade: true, requiredPlan: 'unlimited' });
+    const members = await dbAll(`SELECT tm.*, u.email as user_email, u.business_name FROM team_members tm LEFT JOIN users u ON tm.member_user_id = u.id WHERE tm.team_owner_id = $1 ORDER BY tm.invited_at DESC`, [req.user.id]);
+    res.json({ isTeamOwner: true, members: members.map(m => ({ id: m.id, email: m.member_email, role: m.role, status: m.accepted_at ? 'active' : 'pending', invitedAt: m.invited_at, acceptedAt: m.accepted_at, businessName: m.business_name })), maxMembers: 5 });
+  } catch (error) { res.status(500).json({ error: 'Failed to get team members' }); }
+});
+
+app.post('/api/team/invite', authenticateToken, async (req, res) => {
+  try {
+    const { email, role = 'member' } = req.body;
+    const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    if (user.subscription_plan !== 'unlimited') return res.status(403).json({ error: 'Team features are only available for Unlimited plan', upgrade: true });
+    if (!email || !validator.isEmail(email)) return res.status(400).json({ error: 'Valid email is required' });
+    if (email.toLowerCase() === user.email.toLowerCase()) return res.status(400).json({ error: 'You cannot invite yourself' });
+    const memberCount = await dbGet('SELECT COUNT(*) as count FROM team_members WHERE team_owner_id = $1', [req.user.id]);
+    if (parseInt(memberCount.count) >= 5) return res.status(400).json({ error: 'Maximum 5 team members allowed' });
+    const existing = await dbGet('SELECT * FROM team_members WHERE team_owner_id = $1 AND member_email = $2', [req.user.id, email.toLowerCase()]);
+    if (existing) return res.status(400).json({ error: 'This email has already been invited' });
+    const inviteToken = crypto.randomBytes(32).toString('hex');
+    const existingUser = await dbGet('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
+    await dbQuery(`INSERT INTO team_members (team_owner_id, member_email, member_user_id, role, invite_token) VALUES ($1, $2, $3, $4, $5)`, [req.user.id, email.toLowerCase(), existingUser?.id || null, role, inviteToken]);
+    if (resend) { try { await resend.emails.send({ from: 'ReviewResponder <noreply@reviewresponder.app>', to: email, subject: `${user.business_name || user.email} invited you to their team`, html: `<h2>You've been invited!</h2><p>${user.business_name || user.email} invited you to their ReviewResponder team.</p><p><a href="${process.env.FRONTEND_URL}/join-team?token=${inviteToken}" style="background:#4F46E5;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;">Accept</a></p>` }); } catch (e) {} }
+    res.status(201).json({ success: true, message: `Invitation sent to ${email}`, inviteToken: resend ? null : inviteToken });
+  } catch (error) { res.status(500).json({ error: 'Failed to invite team member' }); }
+});
+
+app.post('/api/team/accept', authenticateToken, async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ error: 'Invite token is required' });
+    const invitation = await dbGet(`SELECT tm.*, u.email as owner_email, u.business_name as owner_business FROM team_members tm JOIN users u ON tm.team_owner_id = u.id WHERE tm.invite_token = $1 AND tm.accepted_at IS NULL`, [token]);
+    if (!invitation) return res.status(404).json({ error: 'Invalid or expired invitation' });
+    const currentUser = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    if (currentUser.email.toLowerCase() !== invitation.member_email.toLowerCase()) return res.status(403).json({ error: 'This invitation was sent to a different email address' });
+    await dbQuery(`UPDATE team_members SET accepted_at = CURRENT_TIMESTAMP, member_user_id = $1, invite_token = NULL WHERE id = $2`, [req.user.id, invitation.id]);
+    res.json({ success: true, message: `You've joined ${invitation.owner_business || invitation.owner_email}'s team!` });
+  } catch (error) { res.status(500).json({ error: 'Failed to accept invitation' }); }
+});
+
+app.delete('/api/team/:memberId', authenticateToken, async (req, res) => {
+  try {
+    const { memberId } = req.params;
+    const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    if (user.subscription_plan !== 'unlimited') return res.status(403).json({ error: 'Team features are only available for Unlimited plan' });
+    const member = await dbGet('SELECT * FROM team_members WHERE id = $1 AND team_owner_id = $2', [memberId, req.user.id]);
+    if (!member) return res.status(404).json({ error: 'Team member not found' });
+    await dbQuery('DELETE FROM team_members WHERE id = $1', [memberId]);
+    res.json({ success: true, message: 'Team member removed' });
+  } catch (error) { res.status(500).json({ error: 'Failed to remove team member' }); }
+});
+
+app.get('/api/team/my-team', authenticateToken, async (req, res) => {
+  try {
+    const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    const tm = await dbGet(`SELECT tm.*, u.email as owner_email, u.business_name as owner_business, u.responses_used, u.responses_limit FROM team_members tm JOIN users u ON tm.team_owner_id = u.id WHERE tm.member_user_id = $1 AND tm.accepted_at IS NOT NULL`, [req.user.id]);
+    if (tm) res.json({ isTeamMember: true, teamOwner: { email: tm.owner_email, businessName: tm.owner_business }, role: tm.role, teamUsage: { used: tm.responses_used, limit: tm.responses_limit } });
+    else { const c = await dbGet('SELECT COUNT(*) as count FROM team_members WHERE team_owner_id = $1', [req.user.id]); res.json({ isTeamMember: false, isTeamOwner: user.subscription_plan === 'unlimited' && parseInt(c.count) > 0, teamMemberCount: parseInt(c.count) }); }
+  } catch (error) { res.status(500).json({ error: 'Failed to get team info' }); }
+});
+
 // ============ EMAIL CAPTURE ============
 
 // Capture email from exit-intent popup
 app.post('/api/capture-email', async (req, res) => {
   try {
     const { email, discountCode = 'SAVE20', source = 'exit_intent' } = req.body;
-    
+
     // Validate email
     if (!email || !validator.isEmail(email)) {
       return res.status(400).json({ error: 'Valid email is required' });

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart } from 'lucide-react';
+import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon } from 'lucide-react';
 import axios from 'axios';
 import { PieChart as RechartsPieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 
@@ -46,8 +46,12 @@ const AuthProvider = ({ children }) => {
   };
 
   const register = async (email, password, businessName) => {
-    const res = await api.post('/auth/register', { email, password, businessName });
+    // Check for referral code in localStorage
+    const referralCode = localStorage.getItem('referralCode');
+    const res = await api.post('/auth/register', { email, password, businessName, referralCode });
     localStorage.setItem('token', res.data.token);
+    // Clear referral code after successful registration
+    if (referralCode) localStorage.removeItem('referralCode');
     setUser(res.data.user);
     return res.data;
   };
@@ -65,6 +69,56 @@ const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{ user, login, register, logout, loading, updateUser }}>
       {children}
     </AuthContext.Provider>
+  );
+};
+
+// Theme Context
+const ThemeContext = createContext(null);
+
+const useTheme = () => useContext(ThemeContext);
+
+const ThemeProvider = ({ children }) => {
+  const [theme, setTheme] = useState(() => {
+    // Check localStorage first
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) return savedTheme;
+
+    // Check system preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    // Apply theme to document
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    // Listen for system preference changes
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e) => {
+      // Only auto-switch if user hasn't manually set a preference
+      const savedTheme = localStorage.getItem('theme');
+      if (!savedTheme) {
+        setTheme(e.matches ? 'dark' : 'light');
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
   );
 };
 
@@ -86,6 +140,7 @@ const ProtectedRoute = ({ children }) => {
 // Navbar Component
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -108,6 +163,13 @@ const Navbar = () => {
             <>
               <Link to="/dashboard" className="navbar-link">Dashboard</Link>
               <Link to="/pricing" className="navbar-link">Upgrade</Link>
+              <button
+                onClick={toggleTheme}
+                className="theme-toggle"
+                title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+              >
+                {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+              </button>
               <button onClick={handleLogout} className="btn btn-secondary" style={{ padding: '8px 16px' }}>
                 <LogOut size={16} />
                 Logout
@@ -118,6 +180,13 @@ const Navbar = () => {
               <Link to="/pricing" className="navbar-link">Pricing</Link>
               <Link to="/support" className="navbar-link">Support</Link>
               <Link to="/login" className="navbar-link">Login</Link>
+              <button
+                onClick={toggleTheme}
+                className="theme-toggle"
+                title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+              >
+                {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+              </button>
               <Link to="/register" className="btn btn-primary" style={{ padding: '8px 16px' }}>
                 Get Started
               </Link>
@@ -398,15 +467,15 @@ const LandingPage = () => {
 
       {/* Launch Announcement */}
       <section style={{ background: 'linear-gradient(135deg, var(--primary-50), var(--gray-50))', padding: '40px 0', marginTop: '-40px', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ 
-          position: 'absolute', 
-          top: '10px', 
-          right: '20px', 
-          background: '#10b981', 
-          color: 'white', 
-          padding: '6px 16px', 
-          borderRadius: '20px', 
-          fontSize: '12px', 
+        <div style={{
+          position: 'absolute',
+          top: '10px',
+          right: '20px',
+          background: '#10b981',
+          color: 'white',
+          padding: '6px 16px',
+          borderRadius: '20px',
+          fontSize: '12px',
           fontWeight: '600',
           boxShadow: '0 2px 8px rgba(16,185,129,0.3)',
           display: 'flex',
@@ -416,37 +485,37 @@ const LandingPage = () => {
           <Sparkles size={14} />
           JUST LAUNCHED
         </div>
-        
+
         <div className="container" style={{ textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px', color: 'var(--gray-900)' }}>
-            🎉 Limited Time Launch Offer
+            🎉 Launch Special: 50% OFF
           </h2>
           <p style={{ fontSize: '16px', color: 'var(--gray-600)', marginBottom: '20px' }}>
-            Be one of the first 50 businesses to join and get <strong style={{ color: 'var(--primary-600)' }}>50% OFF</strong> for life!
+            We just launched! Use code <strong style={{ color: 'var(--primary-600)' }}>EARLY50</strong> at checkout for 50% off your subscription.
           </p>
-          
-          <div style={{ 
-            display: 'inline-flex', 
-            alignItems: 'center', 
-            gap: '24px', 
-            padding: '16px 32px', 
-            background: 'white', 
-            borderRadius: '12px', 
-            boxShadow: '0 4px 12px rgba(0,0,0,0.08)' 
+
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '24px',
+            padding: '16px 32px',
+            background: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
           }}>
             <div>
-              <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Early Adopters</div>
-              <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--primary-600)' }}>7 / 50</div>
+              <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Launch Discount</div>
+              <div style={{ fontSize: '28px', fontWeight: '700', color: '#10b981' }}>50% OFF</div>
             </div>
             <div style={{ width: '1px', height: '40px', background: 'var(--gray-200)' }} />
             <div>
-              <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Your Discount</div>
-              <div style={{ fontSize: '24px', fontWeight: '700', color: '#10b981' }}>50% OFF</div>
+              <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Code</div>
+              <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--primary-600)', fontFamily: 'monospace' }}>EARLY50</div>
             </div>
             <div style={{ width: '1px', height: '40px', background: 'var(--gray-200)' }} />
             <div>
-              <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Time Left</div>
-              <div style={{ fontSize: '20px', fontWeight: '600', color: 'var(--gray-900)' }}>43 spots</div>
+              <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Risk-Free</div>
+              <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--gray-900)' }}>30-Day Refund</div>
             </div>
           </div>
         </div>
@@ -1758,6 +1827,14 @@ const DashboardPage = () => {
           <p style={{ color: 'var(--gray-500)' }}>Generate professional review responses</p>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <button
+            onClick={() => setShowKeyboardHelp(true)}
+            className="btn btn-secondary"
+            style={{ padding: '8px 12px' }}
+            title="Keyboard Shortcuts (Ctrl+/)"
+          >
+            <Keyboard size={16} />
+          </button>
           <Link to="/analytics" className="btn btn-secondary" style={{ padding: '8px 16px' }}>
             <BarChart2 size={16} />
             Analytics
@@ -2406,6 +2483,120 @@ Food was amazing, will definitely come back!`}
                 {savingTemplate ? 'Saving...' : 'Save Template'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Keyboard Shortcuts Help Modal */}
+      {showKeyboardHelp && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }} onClick={() => setShowKeyboardHelp(false)}>
+          <div
+            className="card"
+            style={{
+              maxWidth: '480px',
+              width: '100%',
+              padding: '24px'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Keyboard size={20} />
+                Keyboard Shortcuts
+              </h2>
+              <button
+                onClick={() => setShowKeyboardHelp(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  color: 'var(--gray-400)'
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--gray-100)' }}>
+                <span style={{ color: 'var(--gray-700)' }}>Generate Response</span>
+                <kbd style={{ background: 'var(--gray-100)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace' }}>
+                  {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} + Enter
+                </kbd>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--gray-100)' }}>
+                <span style={{ color: 'var(--gray-700)' }}>Copy Response</span>
+                <kbd style={{ background: 'var(--gray-100)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace' }}>
+                  {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} + Shift + C
+                </kbd>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--gray-100)' }}>
+                <span style={{ color: 'var(--gray-700)' }}>New Response (Clear)</span>
+                <kbd style={{ background: 'var(--gray-100)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace' }}>
+                  {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} + N
+                </kbd>
+              </div>
+
+              <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--gray-200)' }}>
+                <p style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '8px' }}>Change Tone:</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: 'var(--gray-600)', fontSize: '13px' }}>Professional</span>
+                    <kbd style={{ background: 'var(--gray-100)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontFamily: 'monospace' }}>
+                      {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} + 1
+                    </kbd>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: 'var(--gray-600)', fontSize: '13px' }}>Friendly</span>
+                    <kbd style={{ background: 'var(--gray-100)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontFamily: 'monospace' }}>
+                      {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} + 2
+                    </kbd>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: 'var(--gray-600)', fontSize: '13px' }}>Formal</span>
+                    <kbd style={{ background: 'var(--gray-100)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontFamily: 'monospace' }}>
+                      {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} + 3
+                    </kbd>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: 'var(--gray-600)', fontSize: '13px' }}>Apologetic</span>
+                    <kbd style={{ background: 'var(--gray-100)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontFamily: 'monospace' }}>
+                      {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} + 4
+                    </kbd>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', marginTop: '8px', borderTop: '1px solid var(--gray-200)' }}>
+                <span style={{ color: 'var(--gray-700)' }}>Show This Help</span>
+                <kbd style={{ background: 'var(--gray-100)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace' }}>
+                  {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} + /
+                </kbd>
+              </div>
+            </div>
+
+            <button
+              className="btn btn-primary"
+              onClick={() => setShowKeyboardHelp(false)}
+              style={{ width: '100%', marginTop: '20px' }}
+            >
+              Got it!
+            </button>
           </div>
         </div>
       )}

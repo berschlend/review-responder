@@ -53,7 +53,8 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 | # | Task | Schwierigkeit | Dateien |
 |---|------|---------------|---------|
 | 1 | Team/Multi-User Accounts | Schwer | `backend/server.js`, `frontend/src/App.js` |
-| 2 | Referral System (Invite Friends, Get Rewards) | Mittel | `backend/server.js`, `frontend/src/App.js` |
+| 2 | SEO Blog Artikel Generator | Mittel | `backend/server.js`, `frontend/src/App.js` |
+| 3 | API Key System für Entwickler | Mittel | `backend/server.js`, `frontend/src/App.js` |
 
 ### ✅ HEUTE ERLEDIGT:
 - [x] PostgreSQL Migration (Daten persistent)
@@ -77,6 +78,8 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **QA-Test** - Live-App getestet, API-Dokumentation korrigiert, BUGS-Sektion erstellt
 - [x] **Bulk Response Generation** - Bis zu 20 Reviews auf einmal (Starter/Pro/Unlimited)
 - [x] **Review Analytics Dashboard** - Charts & Statistiken (Pro/Unlimited only)
+- [x] **Referral System** - Invite Friends, Get 1 Month Free
+- [x] **Email Notifications** - Weekly Summary, 80% Usage Alert, Plan Renewal Emails
 
 ---
 
@@ -134,6 +137,8 @@ ReviewResponder/
 | PUT | `/api/templates/:id` | Template aktualisieren |
 | DELETE | `/api/templates/:id` | Template löschen |
 | GET | `/api/analytics` | Analytics Dashboard Daten (Pro/Unlimited) |
+| GET | `/api/referrals` | User's Referral Stats & Code |
+| GET | `/api/referrals/validate/:code` | Referral Code validieren (public) |
 
 ---
 
@@ -152,6 +157,7 @@ ReviewResponder/
 - ✅ Response Templates (speichern & als Startpunkt nutzen)
 - ✅ Bulk Response Generation (bis zu 20 Reviews auf einmal)
 - ✅ Analytics Dashboard mit Charts (Pro/Unlimited)
+- ✅ Referral System (Invite Friends, Get 1 Month Free)
 
 ---
 
@@ -363,6 +369,16 @@ Folgende neue Endpoints geben 404 auf Production:
   - Quick Stats: Total, This Week, Avg/Day, Most Used Tone
   - Schöne Upgrade-Seite für Free/Starter User
   - recharts Library für Charts
+- **Referral System** implementiert:
+  - Neue `referrals` Tabelle in PostgreSQL
+  - Unique Referral Code für jeden User (REF-XXXXXXXX)
+  - GET /api/referrals - Stats & Referral Link
+  - GET /api/referrals/validate/:code - Code validieren (public)
+  - Dashboard Widget mit Stats (Invited, Converted, Credits)
+  - Referral Link kopieren mit einem Klick
+  - Referral Banner auf Landing Page bei ?ref=CODE
+  - Automatische Reward-Vergabe bei Stripe Checkout
+  - 1 Month Free Credit für Referrer wenn Referred User zahlt
 
 ---
 
