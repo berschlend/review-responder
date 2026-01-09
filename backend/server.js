@@ -1752,10 +1752,10 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
     const user = await dbGet('SELECT email, business_name FROM users WHERE id = $1', [req.user.id]);
     const userName = displayName || user.business_name || user.email.split('@')[0];
 
-    // Insert feedback
+    // Insert feedback - auto-approved for transparency
     await dbQuery(
-      `INSERT INTO user_feedback (user_id, rating, comment, user_name)
-       VALUES ($1, $2, $3, $4)`,
+      `INSERT INTO user_feedback (user_id, rating, comment, user_name, approved)
+       VALUES ($1, $2, $3, $4, TRUE)`,
       [req.user.id, rating, comment || null, userName]
     );
 
