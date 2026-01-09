@@ -267,36 +267,41 @@ git push
 
 ---
 
-## BUGS (QA-Test 09.01.2026 - 20:00 Uhr)
+## BUGS (QA-Test 09.01.2026 - 23:10 Uhr)
 
 ### Getestete Flows:
 | Flow | Status | Anmerkungen |
 |------|--------|-------------|
-| User Registration | OK | Stripe Customer wird automatisch erstellt |
-| Login | OK | JWT Token funktioniert |
-| Response Generation | OK | AI antwortet korrekt, Spracherkennung funktioniert |
-| History | OK | Responses werden gespeichert und angezeigt |
-| Stats | OK | Usage wird korrekt getrackt |
-| Password Reset | OK | Endpoint erreichbar (Resend noch nicht konfiguriert) |
-| Email Capture | PRUEFEN | Endpoint im Code vorhanden, Production-Test fehlgeschlagen |
+| User Registration | ✅ OK | Stripe Customer wird automatisch erstellt |
+| Login | ✅ OK | JWT Token funktioniert |
+| Response Generation | ✅ OK | AI antwortet korrekt, Spracherkennung funktioniert |
+| History | ✅ OK | Responses werden gespeichert und angezeigt |
+| Stats | ✅ OK | Usage wird korrekt getrackt |
+| Password Reset | ✅ OK | Endpoint erreichbar (Resend noch nicht konfiguriert) |
+| Email Capture | ✅ OK | Funktioniert, gibt SAVE20 Code zurück |
+| Templates | ✅ OK | CRUD funktioniert |
+| Bulk Generation | ✅ OK | Gibt Upgrade-Meldung für Free Plan |
+| Analytics | ✅ OK | Gibt Upgrade-Meldung für Free Plan |
+| Referrals | ✅ OK | Generiert Code, Stats funktionieren |
+| API Keys | ✅ OK | Gibt Upgrade-Meldung für Free Plan |
+| Blog Generator | ✅ OK | Gibt Upgrade-Meldung für Free Plan |
+| Testimonials | ✅ OK | Public Endpoint funktioniert |
 
 ### Offene Bugs:
 | # | Bug | Schweregrad | Status |
 |---|-----|-------------|--------|
-| 1 | Backend nicht vollständig deployed | 🔴 HOCH | User muss Render Redeploy machen |
+| - | Keine offenen Bugs | - | - |
 
 ### Behobene Bugs:
 | # | Bug | Lösung | Datum |
 |---|-----|--------|-------|
+| 1 | Backend nicht vollständig deployed | Git commit & push für fehlende Features | 09.01.2026 23:08 |
 | 2 | Dashboard bleibt leer (weißer Bildschirm) | Fehlender `showKeyboardHelp` useState hinzugefügt | 09.01.2026 |
+| 3 | Dashboard white screen (ReferenceError) | Fehlender `Keyboard` Icon Import in lucide-react | 09.01.2026 |
+| 3 | Neue Endpoints 404 (capture-email, templates, bulk, referrals) | Code war lokal aber nicht committed | 09.01.2026 23:08 |
 
-**Details (QA 09.01.2026 20:10):**
-Folgende neue Endpoints geben 404 auf Production:
-- `/api/capture-email` - Exit-Intent Email Capture
-- `/api/templates` - Response Templates
-- `/api/generate-bulk` - Bulk Response Generation
-
-**Lösung:** Render Dashboard -> Backend Service -> "Manual Deploy" klicken
+**QA-Test 09.01.2026 23:10:**
+Alle Endpoints erfolgreich getestet nach dem letzten Deploy
 
 ### Dokumentationsfehler (behoben):
 - `/api/user/stats` wurde zu `/api/stats` korrigiert
