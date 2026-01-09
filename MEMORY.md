@@ -272,7 +272,18 @@ Ja, du kannst mehrere Claude Code Sessions parallel laufen lassen:
 4. **WICHTIG:** Beide sollten diese MEMORY.md lesen UND updaten wenn sie fertig sind
 
 ### Aktuelle Prioritäten (Update bei jeder Session):
-**Stand: 09.01.2026 - 17:00 Uhr**
+**Stand: 09.01.2026 - 19:10 Uhr**
+
+#### ✅ API-TESTS DURCHGEFÜHRT (alle bestanden):
+| Feature | Status | Details |
+|---------|--------|---------|
+| Health Check | ✅ | Backend online |
+| Registration | ✅ | Neue User können sich registrieren, Stripe Customer wird erstellt |
+| Login | ✅ | Token wird korrekt ausgegeben |
+| Forgot Password | ✅ | Token wird generiert, Email-Versand bereit (RESEND_API_KEY benötigt) |
+| AI Response | ✅ | OpenAI generiert professionelle Antworten |
+| Stripe Checkout (Monthly) | ✅ | Checkout-URL wird generiert |
+| Stripe Checkout (Yearly) | ⚠️ | Gibt erwarteten Fehler - Yearly Prices noch nicht erstellt |
 
 #### ✅ HEUTE ERLEDIGT:
 1. **Password Reset Flow** - Komplett implementiert mit Resend.com Email-Integration
