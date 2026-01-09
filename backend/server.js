@@ -240,6 +240,17 @@ async function initDatabase() {
       // Column might already exist
     }
 
+    // Drip email tracking table
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS drip_emails (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        email_day INTEGER NOT NULL,
+        sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, email_day)
+      )
+    `);
+
     console.log('📊 Database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -1809,6 +1820,374 @@ app.get('/api/testimonials', async (req, res) => {
   } catch (error) {
     console.error('Testimonials fetch error:', error);
     res.status(500).json({ error: 'Failed to get testimonials' });
+  }
+});
+
+// Drip Email Campaign - Send scheduled emails based on user signup date
+// Call this endpoint via cron job (e.g., daily at 9am)
+app.post('/api/cron/send-drip-emails', async (req, res) => {
+  // Optional: Add a secret key check for security
+  const cronSecret = req.headers['x-cron-secret'];
+  if (process.env.CRON_SECRET && cronSecret !== process.env.CRON_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'Email service not configured' });
+  }
+
+  const DRIP_SCHEDULE = [0, 2, 5, 10, 20]; // Days after signup
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'https://review-responder-frontend.onrender.com';
+
+  // Email templates for each day
+  const getDripEmail = (day, user) => {
+    const templates = {
+      0: {
+        subject: 'Welcome to ReviewResponder! Let\'s get started 🚀',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background: white; padding: 40px; border: 1px solid #E5E7EB; border-radius: 0 0 8px 8px; }
+              .cta-button { display: inline-block; background: #4F46E5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; }
+              .step { display: flex; gap: 12px; margin: 16px 0; }
+              .step-num { background: #4F46E5; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+              .footer { text-align: center; padding: 20px; color: #6B7280; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>Welcome to ReviewResponder! 🎉</h1>
+                <p>You're about to save hours on review management</p>
+              </div>
+              <div class="content">
+                <p>Hi${user.business_name ? ' ' + user.business_name : ''}!</p>
+
+                <p>Thanks for signing up! You've made a great choice. Here's how to get started in 3 simple steps:</p>
+
+                <div class="step">
+                  <div class="step-num">1</div>
+                  <div><strong>Copy a customer review</strong> from Google, Yelp, or any platform</div>
+                </div>
+
+                <div class="step">
+                  <div class="step-num">2</div>
+                  <div><strong>Paste it into ReviewResponder</strong> and select your preferred tone</div>
+                </div>
+
+                <div class="step">
+                  <div class="step-num">3</div>
+                  <div><strong>Click Generate</strong> and get a professional response in seconds!</div>
+                </div>
+
+                <p style="margin-top: 30px;">You have <strong>5 free responses</strong> to try it out. No credit card required.</p>
+
+                <center style="margin: 30px 0;">
+                  <a href="${FRONTEND_URL}/dashboard" class="cta-button">Generate Your First Response →</a>
+                </center>
+
+                <p>Questions? Just reply to this email!</p>
+
+                <p>Best,<br>The ReviewResponder Team</p>
+              </div>
+              <div class="footer">
+                <p>ReviewResponder - AI-Powered Review Responses</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `
+      },
+      2: {
+        subject: 'Quick tip: Get better responses with business context 💡',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background: white; padding: 40px; border: 1px solid #E5E7EB; border-radius: 0 0 8px 8px; }
+              .tip-box { background: #F0FDF4; border: 1px solid #10B981; padding: 20px; border-radius: 8px; margin: 20px 0; }
+              .cta-button { display: inline-block; background: #10B981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; }
+              .footer { text-align: center; padding: 20px; color: #6B7280; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>Pro Tip: Personalize Your Responses 💡</h1>
+              </div>
+              <div class="content">
+                <p>Hi${user.business_name ? ' ' + user.business_name : ''}!</p>
+
+                <p>Here's a quick tip to get even better AI responses:</p>
+
+                <div class="tip-box">
+                  <h3 style="margin-top: 0;">Add Your Business Context</h3>
+                  <p>Go to <strong>Settings</strong> and add details about your business. The AI will use this to create more personalized, relevant responses!</p>
+                  <p style="margin-bottom: 0;"><em>Example: "Family-owned Italian restaurant since 1985, known for homemade pasta"</em></p>
+                </div>
+
+                <p>This helps the AI understand your brand voice and mention specific things that make your business special.</p>
+
+                <center style="margin: 30px 0;">
+                  <a href="${FRONTEND_URL}/settings" class="cta-button">Add Business Context →</a>
+                </center>
+
+                <p>Happy responding!</p>
+                <p>The ReviewResponder Team</p>
+              </div>
+              <div class="footer">
+                <p>ReviewResponder - AI-Powered Review Responses</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `
+      },
+      5: {
+        subject: 'How\'s it going? Here\'s 50% off to upgrade 🎁',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background: white; padding: 40px; border: 1px solid #E5E7EB; border-radius: 0 0 8px 8px; }
+              .discount-box { background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); padding: 24px; border-radius: 8px; text-align: center; margin: 20px 0; }
+              .discount-code { font-size: 28px; font-weight: bold; color: #D97706; font-family: monospace; }
+              .cta-button { display: inline-block; background: #F59E0B; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; }
+              .footer { text-align: center; padding: 20px; color: #6B7280; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>Exclusive Offer Just For You! 🎁</h1>
+              </div>
+              <div class="content">
+                <p>Hi${user.business_name ? ' ' + user.business_name : ''}!</p>
+
+                <p>It's been 5 days since you joined ReviewResponder. How are you liking it so far?</p>
+
+                <p>We're still in our early launch phase, and as a thank you for being an early adopter, here's an exclusive discount:</p>
+
+                <div class="discount-box">
+                  <p style="margin: 0 0 8px 0;">Use code</p>
+                  <div class="discount-code">EARLY50</div>
+                  <p style="margin: 8px 0 0 0;"><strong>50% OFF</strong> any paid plan - forever!</p>
+                </div>
+
+                <p>This means you can get:</p>
+                <ul>
+                  <li><strong>Starter Plan:</strong> $14.50/mo instead of $29/mo (100 responses)</li>
+                  <li><strong>Pro Plan:</strong> $24.50/mo instead of $49/mo (300 responses + analytics)</li>
+                  <li><strong>Unlimited:</strong> $49.50/mo instead of $99/mo (unlimited everything!)</li>
+                </ul>
+
+                <center style="margin: 30px 0;">
+                  <a href="${FRONTEND_URL}/pricing" class="cta-button">Claim 50% Off →</a>
+                </center>
+
+                <p style="font-size: 14px; color: #6B7280;">This offer won't last forever - lock in this price while you can!</p>
+
+                <p>Cheers,<br>The ReviewResponder Team</p>
+              </div>
+              <div class="footer">
+                <p>ReviewResponder - AI-Powered Review Responses</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `
+      },
+      10: {
+        subject: 'Did you know? You can respond in 50+ languages 🌍',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background: white; padding: 40px; border: 1px solid #E5E7EB; border-radius: 0 0 8px 8px; }
+              .feature-box { background: #EFF6FF; border-left: 4px solid #3B82F6; padding: 16px 20px; margin: 16px 0; }
+              .cta-button { display: inline-block; background: #3B82F6; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; }
+              .footer { text-align: center; padding: 20px; color: #6B7280; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>Feature Spotlight: Multi-Language Support 🌍</h1>
+              </div>
+              <div class="content">
+                <p>Hi${user.business_name ? ' ' + user.business_name : ''}!</p>
+
+                <p>Did you know ReviewResponder can handle reviews in <strong>50+ languages</strong>?</p>
+
+                <div class="feature-box">
+                  <strong>Auto-Detection:</strong> Paste a review in German, French, Spanish, Chinese - any language! The AI automatically detects it and responds in the same language.
+                </div>
+
+                <div class="feature-box">
+                  <strong>Language Override:</strong> Want to respond in a specific language? Use the Language Selector dropdown to choose your preferred response language.
+                </div>
+
+                <p>This is perfect for:</p>
+                <ul>
+                  <li>🏨 Hotels with international guests</li>
+                  <li>🍽️ Restaurants in tourist areas</li>
+                  <li>🏪 Online businesses with global customers</li>
+                </ul>
+
+                <center style="margin: 30px 0;">
+                  <a href="${FRONTEND_URL}/dashboard" class="cta-button">Try Multi-Language Responses →</a>
+                </center>
+
+                <p>Best,<br>The ReviewResponder Team</p>
+              </div>
+              <div class="footer">
+                <p>ReviewResponder - AI-Powered Review Responses</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `
+      },
+      20: {
+        subject: 'We\'d love your feedback! (Quick 30-second survey) 📝',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background: white; padding: 40px; border: 1px solid #E5E7EB; border-radius: 0 0 8px 8px; }
+              .cta-button { display: inline-block; background: #8B5CF6; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; }
+              .question-box { background: #F5F3FF; border: 1px solid #8B5CF6; padding: 20px; border-radius: 8px; margin: 20px 0; }
+              .footer { text-align: center; padding: 20px; color: #6B7280; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>How Are We Doing? 📝</h1>
+                <p>Your feedback helps us improve!</p>
+              </div>
+              <div class="content">
+                <p>Hi${user.business_name ? ' ' + user.business_name : ''}!</p>
+
+                <p>You've been using ReviewResponder for about 3 weeks now, and we'd love to hear from you!</p>
+
+                <div class="question-box">
+                  <p style="margin: 0;"><strong>Quick question:</strong> How likely are you to recommend ReviewResponder to a fellow business owner?</p>
+                </div>
+
+                <p>Your honest feedback helps us:</p>
+                <ul>
+                  <li>Build features you actually need</li>
+                  <li>Fix any pain points</li>
+                  <li>Make ReviewResponder even better</li>
+                </ul>
+
+                <p>Just reply to this email with your thoughts - it takes less than 30 seconds!</p>
+
+                <p>Or if you're loving it, we'd be thrilled if you could leave a rating in the app. Happy customers make our day! 🌟</p>
+
+                <center style="margin: 30px 0;">
+                  <a href="${FRONTEND_URL}/dashboard" class="cta-button">Leave Feedback in App →</a>
+                </center>
+
+                <p>Thanks for being part of our journey!</p>
+                <p>The ReviewResponder Team</p>
+              </div>
+              <div class="footer">
+                <p>ReviewResponder - AI-Powered Review Responses</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `
+      }
+    };
+    return templates[day] || null;
+  };
+
+  try {
+    let sentCount = 0;
+    let errorCount = 0;
+
+    // Get all users who signed up and haven't received all drip emails
+    for (const day of DRIP_SCHEDULE) {
+      // Find users who:
+      // 1. Signed up exactly 'day' days ago (or more, for catch-up)
+      // 2. Haven't received this drip email yet
+      // 3. Have a valid email
+      const eligibleUsers = await dbQuery(`
+        SELECT u.id, u.email, u.business_name, u.created_at
+        FROM users u
+        WHERE u.created_at <= NOW() - INTERVAL '${day} days'
+          AND u.email IS NOT NULL
+          AND u.email != ''
+          AND NOT EXISTS (
+            SELECT 1 FROM drip_emails d
+            WHERE d.user_id = u.id AND d.email_day = $1
+          )
+        ORDER BY u.created_at DESC
+        LIMIT 100
+      `, [day]);
+
+      for (const user of eligibleUsers) {
+        const emailContent = getDripEmail(day, user);
+        if (!emailContent) continue;
+
+        try {
+          if (process.env.NODE_ENV === 'production') {
+            await resend.emails.send({
+              from: 'ReviewResponder <onboarding@resend.dev>',
+              to: user.email,
+              subject: emailContent.subject,
+              html: emailContent.html
+            });
+          }
+
+          // Record that we sent this email
+          await dbQuery(
+            'INSERT INTO drip_emails (user_id, email_day) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [user.id, day]
+          );
+
+          sentCount++;
+          console.log(`📧 Drip email day ${day} sent to ${user.email}`);
+        } catch (emailError) {
+          console.error(`Failed to send drip email to ${user.email}:`, emailError.message);
+          errorCount++;
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Drip campaign processed`,
+      sent: sentCount,
+      errors: errorCount
+    });
+  } catch (error) {
+    console.error('Drip email error:', error);
+    res.status(500).json({ error: 'Failed to process drip emails' });
   }
 });
 
