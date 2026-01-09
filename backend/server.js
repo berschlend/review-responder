@@ -16,9 +16,27 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // PostgreSQL connection
+if (!process.env.DATABASE_URL) {
+  console.error('ERROR: DATABASE_URL environment variable is not set!');
+  console.error('Please set DATABASE_URL in your environment variables.');
+}
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
+
+// Track database connection status
+let dbConnected = false;
+
+pool.on('error', (err) => {
+  console.error('Unexpected PostgreSQL pool error:', err);
+  dbConnected = false;
+});
+
+pool.on('connect', () => {
+  console.log('PostgreSQL pool: client connected');
+  dbConnected = true;
 });
 
 // Initialize services

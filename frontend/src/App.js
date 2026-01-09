@@ -2309,11 +2309,24 @@ const DashboardPage = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isFirstResponse, setIsFirstResponse] = useState(false);
 
+  // Dashboard error state
+  const [dashboardError, setDashboardError] = useState(null);
+  const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
+
   useEffect(() => {
-    fetchStats();
-    fetchHistory();
-    fetchTemplates();
-    fetchAllHistory();
+    const loadDashboard = async () => {
+      setIsLoadingDashboard(true);
+      setDashboardError(null);
+      try {
+        await Promise.all([fetchStats(), fetchHistory(), fetchTemplates(), fetchAllHistory()]);
+      } catch (error) {
+        console.error('Dashboard load error:', error);
+        setDashboardError('Failed to load dashboard data. Please check your connection and try again.');
+      } finally {
+        setIsLoadingDashboard(false);
+      }
+    };
+    loadDashboard();
 
     // Check if user needs onboarding
     if (user && !user.onboardingCompleted) {
@@ -2345,29 +2358,40 @@ const DashboardPage = () => {
       const res = await api.get('/stats');
       setStats(res.data);
     } catch (error) {
-      console.error('Failed to fetch stats');
+      console.error('Failed to fetch stats:', error);
+      throw error;
     }
   };
 
   const fetchHistory = async () => {
     try {
       const res = await api.get('/responses/history?limit=10');
-      setHistory(res.data.responses);
+      setHistory(res.data.responses || []);
     } catch (error) {
-      console.error('Failed to fetch history');
+      console.error('Failed to fetch history:', error);
+      throw error;
     }
   };
 
   const fetchTemplates = async () => {
     try {
       const res = await api.get('/templates');
-      setTemplates(res.data.templates);
+      setTemplates(res.data.templates || []);
     } catch (error) {
-      console.error('Failed to fetch templates');
+      console.error('Failed to fetch templates:', error);
+      // Templates are optional, don't throw
     }
   };
 
-  const fetchAllHistory = async () => { try { const res = await api.get('/responses/history?limit=1000'); setAllHistory(res.data.responses); } catch (e) { console.error('Failed to fetch all history'); } };
+  const fetchAllHistory = async () => {
+    try {
+      const res = await api.get('/responses/history?limit=1000');
+      setAllHistory(res.data.responses || []);
+    } catch (error) {
+      console.error('Failed to fetch all history:', error);
+      // All history is for export, don't throw
+    }
+  };
 
   // Check if user should see feedback popup (after 10 responses)
   const checkFeedbackStatus = async () => {
@@ -2615,7 +2639,52 @@ const DashboardPage = () => {
         onSkip={handleOnboardingSkip}
       />
 
-      <div className="dashboard-header">
+      {/* Dashboard Error Banner */}
+      {dashboardError && (
+        <div style={{
+          background: 'linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%)',
+          border: '1px solid #F87171',
+          borderRadius: '12px',
+          padding: '16px 20px',
+          marginBottom: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '16px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '20px' }}>⚠️</span>
+            <div>
+              <p style={{ margin: 0, fontWeight: '600', color: '#B91C1C' }}>Connection Error</p>
+              <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#DC2626' }}>{dashboardError}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="btn btn-primary"
+            style={{ padding: '8px 16px', background: '#DC2626', border: 'none' }}
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {isLoadingDashboard && !dashboardError && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '60px 0',
+          flexDirection: 'column',
+          gap: '16px'
+        }}>
+          <div className="spinner" style={{ width: '40px', height: '40px', border: '4px solid #E5E7EB', borderTop: '4px solid #4F46E5', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+          <p style={{ color: 'var(--gray-500)' }}>Loading dashboard...</p>
+        </div>
+      )}
+
+      <div className="dashboard-header" style={{ display: isLoadingDashboard && !dashboardError ? 'none' : undefined }}>
         <div>
           <h1 className="dashboard-title">Welcome, {user?.businessName || 'there'}!</h1>
           <p style={{ color: 'var(--gray-500)' }}>Generate professional review responses</p>

@@ -93,7 +93,7 @@ async function generateResponse(panel) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${stored.token}`
       },
-      body: JSON.stringify({ reviewText, tone, outputLanguage: 'auto' })
+      body: JSON.stringify({ reviewText, tone, outputLanguage: 'match' })
     });
 
     console.log('[RR] Response status:', response.status);
