@@ -61,11 +61,45 @@
       </button>
 
       <div id="response-section" class="hidden">
-        <label>Generated Response:</label>
-        <div id="response-text" class="response-box"></div>
+        <div class="preview-toggle">
+          <button id="preview-tab" class="tab-btn active">Preview</button>
+          <button id="text-tab" class="tab-btn">Plain Text</button>
+        </div>
+
+        <!-- Google Maps Style Preview -->
+        <div id="preview-view" class="google-preview">
+          <div class="gm-response-header">
+            <span class="gm-label">Response from the owner</span>
+            <span class="gm-time">Just now</span>
+          </div>
+          <div class="gm-response-body">
+            <div class="gm-avatar" id="business-avatar">B</div>
+            <div class="gm-content">
+              <div class="gm-business-name" id="preview-business-name">Your Business</div>
+              <div class="gm-response-text" id="preview-text"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Plain Text View -->
+        <div id="text-view" class="hidden">
+          <div id="response-text" class="response-box"></div>
+        </div>
+
         <div class="button-row">
-          <button id="copy-btn" class="btn btn-success">Copy to Clipboard</button>
+          <button id="copy-btn" class="btn btn-success">Copy</button>
           <button id="regenerate-btn" class="btn btn-secondary">Regenerate</button>
+        </div>
+
+        <!-- Quick Tone Switch -->
+        <div class="tone-switch">
+          <span class="tone-label">Try different tone:</span>
+          <div class="tone-buttons">
+            <button class="tone-btn" data-tone="professional">Pro</button>
+            <button class="tone-btn" data-tone="friendly">Friendly</button>
+            <button class="tone-btn" data-tone="formal">Formal</button>
+            <button class="tone-btn" data-tone="apologetic">Sorry</button>
+          </div>
         </div>
       </div>
 

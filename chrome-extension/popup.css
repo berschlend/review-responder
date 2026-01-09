@@ -282,3 +282,154 @@ footer a:hover {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* Preview Toggle Tabs */
+.preview-toggle {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  background: #f3f4f6;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  background: white;
+  color: #374151;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.tab-btn:hover:not(.active) {
+  color: #374151;
+}
+
+/* Google Maps Style Preview */
+.google-preview {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.gm-response-header {
+  background: #f8f9fa;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.gm-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #1a73e8;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.gm-time {
+  font-size: 11px;
+  color: #70757a;
+}
+
+.gm-response-body {
+  padding: 12px;
+  display: flex;
+  gap: 10px;
+}
+
+.gm-avatar {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.gm-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.gm-business-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #202124;
+  margin-bottom: 4px;
+}
+
+.gm-response-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #3c4043;
+  word-wrap: break-word;
+}
+
+/* Tone Switch Buttons */
+.tone-switch {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.tone-label {
+  font-size: 11px;
+  color: #6b7280;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.tone-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.tone-btn {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tone-btn:hover {
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.tone-btn.active {
+  background: #667eea;
+  border-color: #667eea;
+  color: white;
+}
+
+.tone-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

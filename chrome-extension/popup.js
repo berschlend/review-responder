@@ -20,9 +20,20 @@ const responseText = document.getElementById('response-text');
 const copyBtn = document.getElementById('copy-btn');
 const regenerateBtn = document.getElementById('regenerate-btn');
 
+// Preview elements
+const previewTab = document.getElementById('preview-tab');
+const textTab = document.getElementById('text-tab');
+const previewView = document.getElementById('preview-view');
+const textView = document.getElementById('text-view');
+const previewText = document.getElementById('preview-text');
+const businessAvatar = document.getElementById('business-avatar');
+const previewBusinessName = document.getElementById('preview-business-name');
+const toneButtons = document.querySelectorAll('.tone-btn');
+
 // State
 let token = null;
 let user = null;
+let currentResponse = '';
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
@@ -79,22 +90,30 @@ logoutBtn.addEventListener('click', async () => {
 });
 
 // Generate Response
-generateBtn.addEventListener('click', generateResponse);
-regenerateBtn.addEventListener('click', generateResponse);
+generateBtn.addEventListener('click', () => generateResponse());
+regenerateBtn.addEventListener('click', () => generateResponse());
 
-async function generateResponse() {
+async function generateResponse(overrideTone = null) {
   const review = reviewText.value.trim();
-  const tone = toneSelect.value;
+  const tone = overrideTone || toneSelect.value;
 
   if (!review) {
     mainError.textContent = 'Please enter a review';
     return;
   }
 
+  // Update tone select if overridden
+  if (overrideTone) {
+    toneSelect.value = overrideTone;
+  }
+
   mainError.textContent = '';
   successMsg.textContent = '';
   generateBtn.disabled = true;
   generateBtn.innerHTML = '<span class="loading"></span>Generating...';
+
+  // Disable tone buttons during generation
+  toneButtons.forEach(btn => btn.disabled = true);
 
   try {
     const response = await fetch(`${API_URL}/generate`, {
@@ -112,8 +131,13 @@ async function generateResponse() {
       throw new Error(data.error || 'Generation failed');
     }
 
+    currentResponse = data.response;
     responseText.textContent = data.response;
+    previewText.textContent = data.response;
     responseSection.classList.remove('hidden');
+
+    // Update tone button states
+    updateToneButtons(tone);
 
     // Update usage
     fetchUsage();
@@ -122,16 +146,53 @@ async function generateResponse() {
   } finally {
     generateBtn.disabled = false;
     generateBtn.innerHTML = 'Generate Response';
+    toneButtons.forEach(btn => btn.disabled = false);
   }
+}
+
+// Tab switching
+previewTab.addEventListener('click', () => {
+  previewTab.classList.add('active');
+  textTab.classList.remove('active');
+  previewView.classList.remove('hidden');
+  textView.classList.add('hidden');
+});
+
+textTab.addEventListener('click', () => {
+  textTab.classList.add('active');
+  previewTab.classList.remove('active');
+  textView.classList.remove('hidden');
+  previewView.classList.add('hidden');
+});
+
+// Tone buttons
+toneButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tone = btn.dataset.tone;
+    generateResponse(tone);
+  });
+});
+
+function updateToneButtons(activeTone) {
+  toneButtons.forEach(btn => {
+    if (btn.dataset.tone === activeTone) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
 }
 
 // Copy to clipboard
 copyBtn.addEventListener('click', async () => {
   try {
-    await navigator.clipboard.writeText(responseText.textContent);
-    successMsg.textContent = 'Copied to clipboard!';
+    await navigator.clipboard.writeText(currentResponse);
+    const originalText = copyBtn.innerHTML;
+    copyBtn.innerHTML = '✓ Copied!';
+    copyBtn.style.background = '#059669';
     setTimeout(() => {
-      successMsg.textContent = '';
+      copyBtn.innerHTML = 'Copy';
+      copyBtn.style.background = '';
     }, 2000);
   } catch (error) {
     mainError.textContent = 'Failed to copy';
@@ -148,7 +209,9 @@ async function fetchUsage() {
     if (response.ok) {
       const data = await response.json();
       user = data.user;
+      await chrome.storage.local.set({ user });
       updateUsageDisplay();
+      updatePreviewBusinessName();
     }
   } catch (error) {
     console.error('Failed to fetch usage:', error);
@@ -157,25 +220,27 @@ async function fetchUsage() {
 
 // Update usage display
 function updateUsageDisplay() {
-  const limits = {
-    'free': 5,
-    'starter': 100,
-    'professional': 300,
-    'unlimited': Infinity
-  };
-
-  const limit = limits[user.plan] || 5;
   const used = user.responsesUsed || 0;
+  const limit = user.responsesLimit || 5;
 
   usageCount.textContent = used;
-  usageLimit.textContent = user.responsesLimit === 999999 ? '∞' : user.responsesLimit;
+  usageLimit.textContent = limit === 999999 ? '∞' : limit;
 
-  const percentage = user.responsesLimit === 999999 ? 0 : (used / user.responsesLimit) * 100;
+  const percentage = limit === 999999 ? 0 : (used / limit) * 100;
   progress.style.width = `${Math.min(percentage, 100)}%`;
 
-  if (percentage >= 90 && limit !== Infinity) {
+  if (percentage >= 90 && limit !== 999999) {
     progress.style.background = '#ef4444';
+  } else {
+    progress.style.background = '';
   }
+}
+
+// Update preview business name
+function updatePreviewBusinessName() {
+  const name = user.businessName || 'Your Business';
+  previewBusinessName.textContent = name;
+  businessAvatar.textContent = name.charAt(0).toUpperCase();
 }
 
 // Show/hide sections
@@ -193,4 +258,5 @@ function showMainSection() {
   mainSection.classList.remove('hidden');
   userEmail.textContent = user.email;
   updateUsageDisplay();
+  updatePreviewBusinessName();
 }

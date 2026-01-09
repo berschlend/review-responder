@@ -115,6 +115,9 @@ Die Extension liegt in `/chrome-extension/` und ermöglicht:
 - 1-Klick Antwort-Generierung direkt auf Google Maps
 - "Generate Response" Button bei jeder Bewertung
 - Popup für manuelle Eingabe
+- **Google Maps Style Preview** - zeigt wie die Antwort auf Google aussehen wird
+- **Quick Tone Buttons** - schnell zwischen Tones wechseln (Pro, Friendly, Formal, Sorry)
+- Tab-Toggle zwischen Preview und Plain Text
 
 Installation: Siehe `/chrome-extension/INSTALL.md`
 
