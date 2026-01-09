@@ -567,6 +567,13 @@ const LandingPage = () => {
                 <li><a href="mailto:berend.mainz@web.de">Contact</a></li>
               </ul>
             </div>
+            <div>
+              <div className="footer-title">Legal</div>
+              <ul className="footer-links">
+                <li><Link to="/privacy">Privacy Policy</Link></li>
+                <li><Link to="/terms">Terms of Service</Link></li>
+              </ul>
+            </div>
           </div>
           <div className="footer-bottom">
             &copy; {new Date().getFullYear()} ReviewResponder. All rights reserved.
@@ -576,6 +583,120 @@ const LandingPage = () => {
     </div>
   );
 };
+
+// Privacy Policy Page
+const PrivacyPage = () => (
+  <div className="container" style={{ maxWidth: '800px', padding: '60px 20px' }}>
+    <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '24px' }}>Privacy Policy</h1>
+    <p style={{ color: 'var(--gray-500)', marginBottom: '32px' }}>Last updated: January 9, 2026</p>
+
+    <div style={{ lineHeight: '1.8', color: 'var(--gray-700)' }}>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>1. Information We Collect</h2>
+      <p>When you use ReviewResponder, we collect:</p>
+      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+        <li><strong>Account Information:</strong> Email address, business name, and password (encrypted)</li>
+        <li><strong>Usage Data:</strong> Review texts you submit and generated responses</li>
+        <li><strong>Payment Information:</strong> Processed securely by Stripe - we never store your card details</li>
+      </ul>
+
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>2. How We Use Your Data</h2>
+      <p>We use your information to:</p>
+      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+        <li>Provide and improve our AI response generation service</li>
+        <li>Process payments and manage your subscription</li>
+        <li>Send important service updates (no marketing spam)</li>
+        <li>Respond to support requests</li>
+      </ul>
+
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>3. Data Storage & Security</h2>
+      <p>Your data is stored securely on servers in the EU/US (Render.com). We use:</p>
+      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+        <li>HTTPS encryption for all data transfers</li>
+        <li>Encrypted password storage (bcrypt)</li>
+        <li>Secure PostgreSQL database</li>
+      </ul>
+
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>4. Third-Party Services</h2>
+      <p>We use the following services:</p>
+      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+        <li><strong>OpenAI:</strong> To generate review responses (your review text is sent to their API)</li>
+        <li><strong>Stripe:</strong> For payment processing</li>
+        <li><strong>Resend:</strong> For transactional emails</li>
+      </ul>
+
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>5. Your Rights (GDPR)</h2>
+      <p>You have the right to:</p>
+      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+        <li><strong>Access:</strong> Request a copy of your data</li>
+        <li><strong>Rectification:</strong> Correct inaccurate data</li>
+        <li><strong>Erasure:</strong> Request deletion of your account and data</li>
+        <li><strong>Portability:</strong> Export your data</li>
+      </ul>
+      <p style={{ marginTop: '12px' }}>To exercise these rights, email us at <a href="mailto:berend.mainz@web.de" style={{ color: 'var(--primary-600)' }}>berend.mainz@web.de</a></p>
+
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>6. Data Retention</h2>
+      <p>We retain your data for as long as your account is active. Upon account deletion, we remove your personal data within 30 days.</p>
+
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>7. Contact</h2>
+      <p>Questions about this policy? Contact us at <a href="mailto:berend.mainz@web.de" style={{ color: 'var(--primary-600)' }}>berend.mainz@web.de</a></p>
+    </div>
+  </div>
+);
+
+// Terms of Service Page
+const TermsPage = () => (
+  <div className="container" style={{ maxWidth: '800px', padding: '60px 20px' }}>
+    <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '24px' }}>Terms of Service</h1>
+    <p style={{ color: 'var(--gray-500)', marginBottom: '32px' }}>Last updated: January 9, 2026</p>
+
+    <div style={{ lineHeight: '1.8', color: 'var(--gray-700)' }}>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>1. Service Description</h2>
+      <p>ReviewResponder provides AI-powered review response generation for businesses. We use artificial intelligence to help you craft professional responses to customer reviews.</p>
+
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>2. Account Terms</h2>
+      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+        <li>You must be 18 years or older to use this service</li>
+        <li>You are responsible for maintaining the security of your account</li>
+        <li>You may not use the service for illegal purposes</li>
+        <li>One person or business per account</li>
+      </ul>
+
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>3. Acceptable Use</h2>
+      <p>You agree NOT to use ReviewResponder to:</p>
+      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+        <li>Generate fake reviews or misleading content</li>
+        <li>Harass, abuse, or harm others</li>
+        <li>Violate any laws or regulations</li>
+        <li>Infringe on intellectual property rights</li>
+      </ul>
+
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>4. Payment & Refunds</h2>
+      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+        <li>Free tier: 5 responses per month, no payment required</li>
+        <li>Paid plans: Billed monthly or yearly via Stripe</li>
+        <li><strong>30-Day Money Back Guarantee:</strong> If you're not satisfied within 30 days, contact us for a full refund</li>
+        <li>Cancel anytime - no long-term contracts</li>
+      </ul>
+
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>5. AI-Generated Content</h2>
+      <p>Responses generated by our AI are suggestions only. You are responsible for:</p>
+      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+        <li>Reviewing and editing responses before posting</li>
+        <li>Ensuring accuracy of any claims made</li>
+        <li>The final content you publish</li>
+      </ul>
+
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>6. Limitation of Liability</h2>
+      <p>ReviewResponder is provided "as is" without warranties. We are not liable for any damages arising from your use of the service or AI-generated content.</p>
+
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>7. Changes to Terms</h2>
+      <p>We may update these terms. Continued use after changes constitutes acceptance.</p>
+
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>8. Contact</h2>
+      <p>Questions? Email us at <a href="mailto:berend.mainz@web.de" style={{ color: 'var(--primary-600)' }}>berend.mainz@web.de</a></p>
+    </div>
+  </div>
+);
 
 // Pricing Cards Component
 const PricingCards = ({ showFree = true }) => {
@@ -1863,6 +1984,8 @@ function App() {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/support" element={<SupportPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
           <Route path="/extension" element={<ExtensionPage />} />
           <Route
             path="/dashboard"
