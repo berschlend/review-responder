@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper, Utensils, CheckCircle } from 'lucide-react';
+import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper, Utensils, CheckCircle, Keyboard } from 'lucide-react';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
 import { jsPDF } from 'jspdf';
@@ -2341,6 +2341,11 @@ const DashboardPage = () => {
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [copiedBlog, setCopiedBlog] = useState(false);
 
+  // Referral state
+  const [referralData, setReferralData] = useState(null);
+  const [loadingReferral, setLoadingReferral] = useState(false);
+  const [copiedReferralLink, setCopiedReferralLink] = useState(false);
+
   useEffect(() => {
     const loadDashboard = async () => {
       setIsLoadingDashboard(true);
@@ -2415,6 +2420,19 @@ const DashboardPage = () => {
     } catch (error) {
       console.error('Failed to fetch templates:', error);
       // Templates are optional, don't throw
+    }
+  };
+
+  const fetchReferral = async () => {
+    setLoadingReferral(true);
+    try {
+      const res = await api.get('/referrals');
+      setReferralData(res.data);
+    } catch (error) {
+      console.error('Failed to fetch referral data:', error);
+      // Referrals are optional, don't throw
+    } finally {
+      setLoadingReferral(false);
     }
   };
 
@@ -2990,6 +3008,55 @@ const DashboardPage = () => {
           <div className="stat-value">{stats?.stats?.totalResponses || 0}</div>
         </div>
       </div>
+
+      {/* Referral Widget */}
+      {referralData && (
+        <div style={{ background: 'linear-gradient(135deg, var(--primary-50) 0%, #EDE9FE 100%)', borderRadius: '12px', padding: '20px', marginBottom: '24px', border: '1px solid var(--primary-200)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+            <div>
+              <h3 style={{ margin: '0 0 8px 0', color: 'var(--primary-700)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Users size={20} />
+                Invite Friends, Get 1 Month Free
+              </h3>
+              <p style={{ margin: '0 0 12px 0', color: 'var(--gray-600)', fontSize: '14px' }}>
+                Share your referral link. When friends subscribe, you both get rewarded!
+              </p>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <code style={{ background: 'white', padding: '8px 12px', borderRadius: '6px', fontSize: '13px', color: 'var(--primary-600)', border: '1px solid var(--primary-200)' }}>
+                  {referralData.referralLink}
+                </code>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(referralData.referralLink);
+                    setCopiedReferralLink(true);
+                    setTimeout(() => setCopiedReferralLink(false), 2000);
+                    toast.success('Referral link copied!');
+                  }}
+                  className="btn btn-primary"
+                  style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  {copiedReferralLink ? <Check size={16} /> : <Copy size={16} />}
+                  {copiedReferralLink ? 'Copied!' : 'Copy Link'}
+                </button>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '24px', textAlign: 'center' }}>
+              <div>
+                <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--primary-600)' }}>{referralData.stats?.totalInvited || 0}</div>
+                <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Invited</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--green-600)' }}>{referralData.stats?.converted || 0}</div>
+                <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Converted</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--purple-600)' }}>{referralData.stats?.creditsEarned || 0}</div>
+                <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Credits</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tab Navigation */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', borderBottom: '1px solid var(--gray-200)', paddingBottom: '0' }}>
