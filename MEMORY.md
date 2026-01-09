@@ -472,6 +472,16 @@ Folgende neue Endpoints geben 404 auf Production:
   - Spezifische Sprache: Generiert Antwort in gewählter Sprache (unabhängig vom Review)
   - Backend: outputLanguage Parameter in /api/responses/generate und /api/generate-bulk
   - languageNames Mapping für AI-Prompt
+- **User Feedback & Testimonials** implementiert:
+  - Neue `user_feedback` Tabelle in PostgreSQL (rating, comment, user_name, approved, featured)
+  - `feedback_submitted` Flag in users Tabelle
+  - POST /api/feedback - Feedback absenden (1-5 Sterne + optionaler Kommentar)
+  - GET /api/feedback/status - Prüft ob Popup angezeigt werden soll (>= 10 Responses, noch kein Feedback)
+  - GET /api/testimonials - Freigegebene Testimonials (public, für Landing Page)
+  - FeedbackPopup Komponente mit Star-Rating, Kommentar, Display Name
+  - Popup wird nach 10+ generierten Responses getriggert
+  - Testimonials Section auf Landing Page (nur echtes User-Feedback, keine fake Testimonials)
+  - Admin kann später Testimonials freigeben (approved = true)
 
 ---
 
