@@ -825,7 +825,7 @@ async function generateResponseHandler(req, res) {
 
     // Build language instruction based on outputLanguage selection
     const languageInstruction = (!outputLanguage || outputLanguage === 'auto')
-      ? 'IMPORTANT: Respond in the same language as the review. If the review is in German, respond in German. If in Spanish, respond in Spanish.'
+      ? 'CRITICAL: You MUST detect the language of the REVIEW TEXT below and respond in THAT EXACT LANGUAGE. Ignore the language of business name, context, or any other field - ONLY the review text language matters. English review = English response. German review = German response. Spanish review = Spanish response.'
       : `IMPORTANT: You MUST write the response in ${languageNames[outputLanguage] || 'English'}, regardless of what language the review is written in.`;
 
     // Build business context section (use team owner's context if team member)
@@ -849,8 +849,9 @@ ${ratingContext}
 ${businessContextSection}
 ${responseStyleSection}
 
-Review to respond to:
+===== REVIEW TEXT (detect language from THIS text only) =====
 "${reviewText}"
+===== END REVIEW =====
 
 Instructions:
 - ${toneInstructions[tone] || toneInstructions.professional}
@@ -863,7 +864,7 @@ Instructions:
 - If business context is provided, reference specific details about the business (e.g., mention specific menu items, services, team members)
 ${customInstructions ? `- Additional instructions: ${customInstructions}` : ''}
 
-Remember: Write your response in the SAME LANGUAGE as the review above!
+FINAL REMINDER: Your response language MUST match the REVIEW TEXT language above, NOT the business name or context language!
 
 Generate ONLY the response text, nothing else:`;
 
@@ -993,7 +994,7 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
 
     // Build language instruction based on outputLanguage selection
     const languageInstruction = (!outputLanguage || outputLanguage === 'auto')
-      ? 'IMPORTANT: Respond in the same language as the review.'
+      ? 'CRITICAL: Detect the language of the REVIEW TEXT and respond in THAT EXACT LANGUAGE. Ignore business name/context language - ONLY review text language matters.'
       : `IMPORTANT: You MUST write the response in ${languageNames[outputLanguage] || 'English'}, regardless of what language the review is written in.`;
 
     // Build business context (use team owner's context if team member)
@@ -1012,13 +1013,16 @@ ${contextUser.business_context}
       try {
         const prompt = `You are a professional customer service expert helping a small business respond to online reviews.
 
+**CRITICAL LANGUAGE RULE**: ${languageInstruction}
+
 Business Name: ${contextUser.business_name || 'Our business'}
 ${contextUser.business_type ? `Business Type: ${contextUser.business_type}` : ''}
 Platform: ${platform || 'Google Reviews'}
 ${businessContextSection}
 
-Review to respond to:
+===== REVIEW TEXT (detect language from THIS text only) =====
 "${reviewText}"
+===== END REVIEW =====
 
 Instructions:
 - ${toneInstructions[tone] || toneInstructions.professional}
@@ -1029,7 +1033,8 @@ Instructions:
 - Don't be overly formal or use canned phrases
 - Make it feel personal and authentic
 - If business context is provided, reference specific details about the business
-- ${languageInstruction}
+
+FINAL REMINDER: Response language MUST match REVIEW TEXT language, NOT business name/context language!
 
 Generate ONLY the response text, nothing else:`;
 
