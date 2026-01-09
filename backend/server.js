@@ -419,7 +419,7 @@ const PLAN_LIMITS = {
 
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { email, password, businessName } = req.body;
+    const { email, password, businessName, referralCode } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password required' });
@@ -438,21 +438,56 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
+    // Check for valid referral code
+    let referrerId = null;
+    if (referralCode) {
+      const referrer = await dbGet('SELECT id FROM users WHERE referral_code = $1', [referralCode.toUpperCase()]);
+      if (referrer) {
+        referrerId = referrer.id;
+      }
+    }
+
     const hashedPassword = await bcrypt.hash(password, 12);
+
+    // Generate unique referral code for new user
+    let newUserReferralCode;
+    let attempts = 0;
+    do {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      newUserReferralCode = 'REF-';
+      for (let i = 0; i < 8; i++) {
+        newUserReferralCode += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      const existing = await dbGet('SELECT id FROM users WHERE referral_code = $1', [newUserReferralCode]);
+      if (!existing) break;
+      attempts++;
+    } while (attempts < 10);
 
     // Create Stripe customer
     const customer = await stripe.customers.create({
       email,
-      metadata: { business_name: businessName || '' }
+      metadata: { business_name: businessName || '', referred_by: referrerId || '' }
     });
 
     const result = await dbQuery(
-      `INSERT INTO users (email, password, business_name, stripe_customer_id, responses_limit)
-       VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-      [email, hashedPassword, businessName || '', customer.id, PLAN_LIMITS.free.responses]
+      `INSERT INTO users (email, password, business_name, stripe_customer_id, responses_limit, referral_code, referred_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+      [email, hashedPassword, businessName || '', customer.id, PLAN_LIMITS.free.responses, newUserReferralCode, referrerId]
     );
 
     const userId = result.rows[0].id;
+
+    // Create referral record if user was referred
+    if (referrerId) {
+      await dbQuery(
+        `INSERT INTO referrals (referrer_id, referred_email, referred_user_id, status)
+         VALUES ($1, $2, $3, 'registered')
+         ON CONFLICT (referrer_id, referred_email) DO UPDATE SET referred_user_id = $3, status = 'registered'`,
+        [referrerId, email, userId]
+      );
+      console.log(`✅ User ${email} registered via referral from user ${referrerId}`);
+    }
+
     const token = jwt.sign({ id: userId, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
     res.status(201).json({
@@ -464,7 +499,8 @@ app.post('/api/auth/register', async (req, res) => {
         plan: 'free',
         responsesUsed: 0,
         responsesLimit: PLAN_LIMITS.free.responses,
-        onboardingCompleted: false
+        onboardingCompleted: false,
+        referralCode: newUserReferralCode
       }
     });
   } catch (error) {
@@ -527,7 +563,9 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
         responsesUsed: user.responses_used,
         responsesLimit: user.responses_limit,
         subscriptionStatus: user.subscription_status,
-        onboardingCompleted: user.onboarding_completed
+        onboardingCompleted: user.onboarding_completed,
+        referralCode: user.referral_code,
+        referralCredits: user.referral_credits || 0
       }
     });
   } catch (error) {
@@ -706,14 +744,49 @@ async function generateResponseHandler(req, res) {
       return res.status(400).json({ error: 'Review text is required' });
     }
 
-    // Check usage limits
+    // Check usage limits (with team support)
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
 
-    if (user.responses_used >= user.responses_limit) {
+    // Check if user is a team member
+    const teamMembership = await dbGet(
+      `SELECT tm.*, u.id as owner_id, u.responses_used as owner_used, u.responses_limit as owner_limit, u.business_name as owner_business, u.business_type as owner_business_type, u.business_context as owner_context, u.response_style as owner_style
+       FROM team_members tm
+       JOIN users u ON tm.team_owner_id = u.id
+       WHERE tm.member_user_id = $1 AND tm.accepted_at IS NOT NULL`,
+      [req.user.id]
+    );
+
+    let usageOwner = user; // Who's usage we check/update
+    let isTeamMember = false;
+
+    if (teamMembership) {
+      isTeamMember = true;
+      // Check role permissions - viewers cannot generate
+      if (teamMembership.role === 'viewer') {
+        return res.status(403).json({
+          error: 'View-only access',
+          message: 'Your team role does not allow generating responses. Contact your team owner to upgrade your role.'
+        });
+      }
+      // Use team owner's usage limits
+      usageOwner = {
+        id: teamMembership.owner_id,
+        responses_used: teamMembership.owner_used,
+        responses_limit: teamMembership.owner_limit,
+        business_name: teamMembership.owner_business,
+        business_type: teamMembership.owner_business_type,
+        business_context: teamMembership.owner_context,
+        response_style: teamMembership.owner_style
+      };
+    }
+
+    if (usageOwner.responses_used >= usageOwner.responses_limit) {
       return res.status(403).json({
         error: 'Response limit reached',
-        upgrade: true,
-        message: 'You have reached your monthly response limit. Please upgrade your plan to continue.'
+        upgrade: !isTeamMember,
+        message: isTeamMember
+          ? 'Your team has reached the monthly response limit. Contact your team owner.'
+          : 'You have reached your monthly response limit. Please upgrade your plan to continue.'
       });
     }
 
@@ -755,20 +828,21 @@ async function generateResponseHandler(req, res) {
       ? 'IMPORTANT: Respond in the same language as the review. If the review is in German, respond in German. If in Spanish, respond in Spanish.'
       : `IMPORTANT: You MUST write the response in ${languageNames[outputLanguage] || 'English'}, regardless of what language the review is written in.`;
 
-    // Build business context section
-    const businessContextSection = user.business_context ? `
+    // Build business context section (use team owner's context if team member)
+    const contextUser = isTeamMember ? usageOwner : user;
+    const businessContextSection = contextUser.business_context ? `
 Business Context (use this to personalize your response):
-${user.business_context}
+${contextUser.business_context}
 ` : '';
 
-    const businessTypeSection = user.business_type ? `Business Type: ${user.business_type}` : '';
-    const responseStyleSection = user.response_style ? `Preferred Response Style: ${user.response_style}` : '';
+    const businessTypeSection = contextUser.business_type ? `Business Type: ${contextUser.business_type}` : '';
+    const responseStyleSection = contextUser.response_style ? `Preferred Response Style: ${contextUser.response_style}` : '';
 
     const prompt = `You are a professional customer service expert helping a small business respond to online reviews.
 
 **CRITICAL LANGUAGE RULE**: ${languageInstruction}
 
-Business Name: ${businessName || user.business_name || 'Our business'}
+Business Name: ${businessName || contextUser.business_name || 'Our business'}
 ${businessTypeSection}
 Platform: ${platform || 'Google Reviews'}
 ${ratingContext}
@@ -809,23 +883,25 @@ Generate ONLY the response text, nothing else:`;
       [req.user.id, reviewText, reviewRating || null, platform || 'google', generatedResponse, tone || 'professional']
     );
 
-    await dbQuery('UPDATE users SET responses_used = responses_used + 1 WHERE id = $1', [req.user.id]);
+    // Update usage for the account owner (team owner if team member, otherwise self)
+    const usageOwnerId = isTeamMember ? usageOwner.id : req.user.id;
+    await dbQuery('UPDATE users SET responses_used = responses_used + 1 WHERE id = $1', [usageOwnerId]);
 
-    const updatedUser = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    const updatedOwner = await dbGet('SELECT * FROM users WHERE id = $1', [usageOwnerId]);
 
     // Check if user just crossed 80% usage and send alert email
-    const usagePercent = Math.round((updatedUser.responses_used / updatedUser.responses_limit) * 100);
-    const previousPercent = Math.round(((updatedUser.responses_used - 1) / updatedUser.responses_limit) * 100);
+    const usagePercent = Math.round((updatedOwner.responses_used / updatedOwner.responses_limit) * 100);
+    const previousPercent = Math.round(((updatedOwner.responses_used - 1) / updatedOwner.responses_limit) * 100);
 
-    // Send alert if just crossed 80% threshold
-    if (usagePercent >= 80 && previousPercent < 80 && updatedUser.subscription_plan !== 'unlimited') {
-      const canSendAlert = !updatedUser.last_usage_alert_sent ||
-        new Date(updatedUser.last_usage_alert_sent) < new Date(Date.now() - 24 * 60 * 60 * 1000);
+    // Send alert if just crossed 80% threshold (send to owner)
+    if (usagePercent >= 80 && previousPercent < 80 && updatedOwner.subscription_plan !== 'unlimited') {
+      const canSendAlert = !updatedOwner.last_usage_alert_sent ||
+        new Date(updatedOwner.last_usage_alert_sent) < new Date(Date.now() - 24 * 60 * 60 * 1000);
 
       if (canSendAlert && process.env.NODE_ENV === 'production') {
-        sendUsageAlertEmail(updatedUser).then(sent => {
+        sendUsageAlertEmail(updatedOwner).then(sent => {
           if (sent) {
-            dbQuery('UPDATE users SET last_usage_alert_sent = NOW() WHERE id = $1', [req.user.id]);
+            dbQuery('UPDATE users SET last_usage_alert_sent = NOW() WHERE id = $1', [usageOwnerId]);
           }
         });
       }
@@ -833,8 +909,9 @@ Generate ONLY the response text, nothing else:`;
 
     res.json({
       response: generatedResponse,
-      responsesUsed: updatedUser.responses_used,
-      responsesLimit: updatedUser.responses_limit
+      responsesUsed: updatedOwner.responses_used,
+      responsesLimit: updatedOwner.responses_limit,
+      isTeamUsage: isTeamMember
     });
   } catch (error) {
     console.error('Generation error:', error);
@@ -856,23 +933,45 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Maximum 20 reviews per batch' });
     }
 
-    // Check user plan (Paid plans only: Starter/Pro/Unlimited)
+    // Check user plan (Paid plans only: Starter/Pro/Unlimited) with team support
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
 
-    if (!['starter', 'professional', 'unlimited'].includes(user.subscription_plan)) {
+    // Check if user is a team member
+    const teamMembership = await dbGet(
+      `SELECT tm.*, u.id as owner_id, u.responses_used as owner_used, u.responses_limit as owner_limit, u.subscription_plan as owner_plan, u.business_name as owner_business, u.business_type as owner_business_type, u.business_context as owner_context
+       FROM team_members tm
+       JOIN users u ON tm.team_owner_id = u.id
+       WHERE tm.member_user_id = $1 AND tm.accepted_at IS NOT NULL`,
+      [req.user.id]
+    );
+
+    let usageOwner = user;
+    let isTeamMember = false;
+    let effectivePlan = user.subscription_plan;
+
+    if (teamMembership) {
+      isTeamMember = true;
+      if (teamMembership.role === 'viewer') {
+        return res.status(403).json({ error: 'View-only access', message: 'Your team role does not allow generating responses.' });
+      }
+      usageOwner = { id: teamMembership.owner_id, responses_used: teamMembership.owner_used, responses_limit: teamMembership.owner_limit, business_name: teamMembership.owner_business, business_type: teamMembership.owner_business_type, business_context: teamMembership.owner_context };
+      effectivePlan = teamMembership.owner_plan;
+    }
+
+    if (!['starter', 'professional', 'unlimited'].includes(effectivePlan)) {
       return res.status(403).json({
         error: 'Bulk generation is only available for paid plans (Starter, Pro, Unlimited)',
-        upgrade: true,
+        upgrade: !isTeamMember,
         requiredPlan: 'starter'
       });
     }
 
     // Check usage limits
     const reviewCount = reviews.filter(r => r.trim()).length;
-    if (user.responses_used + reviewCount > user.responses_limit) {
+    if (usageOwner.responses_used + reviewCount > usageOwner.responses_limit) {
       return res.status(403).json({
-        error: `Not enough responses remaining. You need ${reviewCount} but only have ${user.responses_limit - user.responses_used} left.`,
-        upgrade: true
+        error: `Not enough responses remaining. You need ${reviewCount} but only have ${usageOwner.responses_limit - usageOwner.responses_used} left.`,
+        upgrade: !isTeamMember
       });
     }
 
@@ -897,10 +996,11 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
       ? 'IMPORTANT: Respond in the same language as the review.'
       : `IMPORTANT: You MUST write the response in ${languageNames[outputLanguage] || 'English'}, regardless of what language the review is written in.`;
 
-    // Build business context
-    const businessContextSection = user.business_context ? `
+    // Build business context (use team owner's context if team member)
+    const contextUser = isTeamMember ? usageOwner : user;
+    const businessContextSection = contextUser.business_context ? `
 Business Context (use this to personalize your response):
-${user.business_context}
+${contextUser.business_context}
 ` : '';
 
     // Process all reviews in parallel
@@ -912,8 +1012,8 @@ ${user.business_context}
       try {
         const prompt = `You are a professional customer service expert helping a small business respond to online reviews.
 
-Business Name: ${user.business_name || 'Our business'}
-${user.business_type ? `Business Type: ${user.business_type}` : ''}
+Business Name: ${contextUser.business_name || 'Our business'}
+${contextUser.business_type ? `Business Type: ${contextUser.business_type}` : ''}
 Platform: ${platform || 'Google Reviews'}
 ${businessContextSection}
 
@@ -974,23 +1074,25 @@ Generate ONLY the response text, nothing else:`;
     // Count successful generations
     const successCount = results.filter(r => r.success).length;
 
-    // Update usage count
+    // Update usage count for the account owner (team owner if team member)
+    const usageOwnerId = isTeamMember ? usageOwner.id : req.user.id;
     await dbQuery(
       'UPDATE users SET responses_used = responses_used + $1 WHERE id = $2',
-      [successCount, req.user.id]
+      [successCount, usageOwnerId]
     );
 
-    const updatedUser = await dbGet('SELECT responses_used, responses_limit FROM users WHERE id = $1', [req.user.id]);
+    const updatedOwner = await dbGet('SELECT responses_used, responses_limit FROM users WHERE id = $1', [usageOwnerId]);
 
     res.json({
+      isTeamUsage: isTeamMember,
       results: results.sort((a, b) => a.index - b.index),
       summary: {
         total: reviews.length,
         successful: successCount,
         failed: reviews.length - successCount
       },
-      responsesUsed: updatedUser.responses_used,
-      responsesLimit: updatedUser.responses_limit
+      responsesUsed: updatedOwner.responses_used,
+      responsesLimit: updatedOwner.responses_limit
     });
   } catch (error) {
     console.error('Bulk generation error:', error);
@@ -1139,6 +1241,27 @@ async function handleStripeWebhook(req, res) {
           `UPDATE users SET subscription_status = 'active', subscription_plan = $1, responses_limit = $2, responses_used = 0 WHERE id = $3`,
           [plan, PLAN_LIMITS[plan].responses, userId]
         );
+
+        // Process referral reward if user was referred
+        const paidUser = await dbGet('SELECT referred_by FROM users WHERE id = $1', [userId]);
+        if (paidUser && paidUser.referred_by) {
+          const referral = await dbGet(
+            'SELECT * FROM referrals WHERE referrer_id = $1 AND referred_user_id = $2 AND reward_given = FALSE',
+            [paidUser.referred_by, userId]
+          );
+
+          if (referral) {
+            await dbQuery(
+              `UPDATE referrals SET status = 'converted', converted_at = NOW(), reward_given = TRUE WHERE id = $1`,
+              [referral.id]
+            );
+            await dbQuery(
+              `UPDATE users SET referral_credits = referral_credits + 1 WHERE id = $1`,
+              [paidUser.referred_by]
+            );
+            console.log(`🎉 Referral reward! User ${paidUser.referred_by} earned 1 credit for referring user ${userId}`);
+          }
+        }
         break;
       }
 
@@ -1489,13 +1612,28 @@ app.delete('/api/team/:memberId', authenticateToken, async (req, res) => {
   } catch (error) { console.error('Remove member error:', error); res.status(500).json({ error: 'Failed to remove team member' }); }
 });
 
+// GET /api/team/my-team - Get team info for current user (as member or owner)
 app.get('/api/team/my-team', authenticateToken, async (req, res) => {
   try {
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
-    const tm = await dbGet(`SELECT tm.*, u.email as owner_email, u.business_name as owner_business, u.responses_used, u.responses_limit FROM team_members tm JOIN users u ON tm.team_owner_id = u.id WHERE tm.member_user_id = $1 AND tm.accepted_at IS NOT NULL`, [req.user.id]);
-    if (tm) res.json({ isTeamMember: true, teamOwner: { email: tm.owner_email, businessName: tm.owner_business }, role: tm.role, teamUsage: { used: tm.responses_used, limit: tm.responses_limit } });
-    else { const c = await dbGet('SELECT COUNT(*) as count FROM team_members WHERE team_owner_id = $1', [req.user.id]); res.json({ isTeamMember: false, isTeamOwner: user.subscription_plan === 'unlimited' && parseInt(c.count) > 0, teamMemberCount: parseInt(c.count) }); }
-  } catch (error) { res.status(500).json({ error: 'Failed to get team info' }); }
+    // Check if user is a team member (belongs to someone else's team)
+    const tm = await dbGet(`SELECT tm.*, u.email as owner_email, u.business_name as owner_business, u.responses_used, u.responses_limit, u.subscription_plan as owner_plan FROM team_members tm JOIN users u ON tm.team_owner_id = u.id WHERE tm.member_user_id = $1 AND tm.accepted_at IS NOT NULL`, [req.user.id]);
+    if (tm) {
+      return res.json({ isTeamMember: true, teamOwner: { email: tm.owner_email, businessName: tm.owner_business }, role: tm.role, teamUsage: { used: tm.responses_used, limit: tm.responses_limit } });
+    }
+    const c = await dbGet('SELECT COUNT(*) as count FROM team_members WHERE team_owner_id = $1', [req.user.id]);
+    res.json({ isTeamMember: false, isTeamOwner: hasTeamAccess(user.subscription_plan), canHaveTeam: hasTeamAccess(user.subscription_plan), teamMemberCount: parseInt(c.count), maxTeamMembers: getMaxTeamMembers(user.subscription_plan), plan: user.subscription_plan });
+  } catch (error) { console.error('Get my-team error:', error); res.status(500).json({ error: 'Failed to get team info' }); }
+});
+
+// POST /api/team/leave - Leave a team (for team members)
+app.post('/api/team/leave', authenticateToken, async (req, res) => {
+  try {
+    const membership = await dbGet('SELECT * FROM team_members WHERE member_user_id = $1 AND accepted_at IS NOT NULL', [req.user.id]);
+    if (!membership) return res.status(404).json({ error: 'You are not a member of any team' });
+    await dbQuery('DELETE FROM team_members WHERE id = $1', [membership.id]);
+    res.json({ success: true, message: 'You have left the team' });
+  } catch (error) { console.error('Leave team error:', error); res.status(500).json({ error: 'Failed to leave team' }); }
 });
 
 // ============ EMAIL CAPTURE ============

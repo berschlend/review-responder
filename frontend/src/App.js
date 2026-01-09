@@ -3644,6 +3644,297 @@ Food was amazing, will definitely come back!`}
         </div>
       )}
 
+      {/* Blog Generator Tab */}
+      {activeTab === 'blog' && (
+        <div>
+          {!canUseBlog ? (
+            <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, var(--primary-100), var(--primary-50))',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 24px'
+              }}>
+                <BookOpen size={40} style={{ color: 'var(--primary-600)' }} />
+              </div>
+              <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>SEO Blog Generator</h2>
+              <p style={{ color: 'var(--gray-600)', marginBottom: '24px', maxWidth: '500px', margin: '0 auto 24px' }}>
+                Generate SEO-optimized blog articles about review management to drive organic traffic to your business.
+                Available for Professional and Unlimited plans.
+              </p>
+              <div style={{ background: 'var(--gray-50)', borderRadius: '12px', padding: '24px', marginBottom: '24px', maxWidth: '400px', margin: '0 auto 24px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>What you get:</h3>
+                <ul style={{ textAlign: 'left', listStyle: 'none', padding: 0, margin: 0 }}>
+                  <li style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <Check size={16} style={{ color: 'var(--success)' }} /> AI-generated SEO articles
+                  </li>
+                  <li style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <Check size={16} style={{ color: 'var(--success)' }} /> 12+ pre-defined topics
+                  </li>
+                  <li style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <Check size={16} style={{ color: 'var(--success)' }} /> Custom keyword targeting
+                  </li>
+                  <li style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <Check size={16} style={{ color: 'var(--success)' }} /> Meta descriptions included
+                  </li>
+                  <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Check size={16} style={{ color: 'var(--success)' }} /> Export as Markdown or Text
+                  </li>
+                </ul>
+              </div>
+              <Link to="/pricing" className="btn btn-primary" style={{ padding: '12px 32px' }}>
+                Upgrade to Pro
+              </Link>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+              {/* Left Column - Generator Form */}
+              <div className="card">
+                <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <BookOpen size={20} />
+                  Generate Blog Article
+                </h2>
+
+                <div className="form-group">
+                  <label className="form-label">Select Topic</label>
+                  <select
+                    className="form-select"
+                    value={blogTopic}
+                    onChange={(e) => {
+                      setBlogTopic(e.target.value);
+                      if (e.target.value) {
+                        const topic = blogTopics.find(t => t.id === e.target.value);
+                        if (topic) {
+                          setBlogKeywords(topic.keywords.join(', '));
+                          setBlogCustomTopic('');
+                        }
+                      }
+                    }}
+                  >
+                    <option value="">-- Select a topic --</option>
+                    {blogTopics.map(topic => (
+                      <option key={topic.id} value={topic.id}>{topic.title}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Or Enter Custom Topic</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g., How to Respond to Restaurant Reviews"
+                    value={blogCustomTopic}
+                    onChange={(e) => {
+                      setBlogCustomTopic(e.target.value);
+                      if (e.target.value) setBlogTopic('');
+                    }}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Target Keywords (comma-separated)</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="review management, customer feedback, online reputation"
+                    value={blogKeywords}
+                    onChange={(e) => setBlogKeywords(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Article Length: {blogLength} words</label>
+                  <input
+                    type="range"
+                    min="500"
+                    max="2000"
+                    step="100"
+                    value={blogLength}
+                    onChange={(e) => setBlogLength(parseInt(e.target.value))}
+                    style={{ width: '100%' }}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--gray-500)' }}>
+                    <span>500 (Short)</span>
+                    <span>1000 (Medium)</span>
+                    <span>2000 (Long)</span>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Tone</label>
+                  <select
+                    className="form-select"
+                    value={blogTone}
+                    onChange={(e) => setBlogTone(e.target.value)}
+                  >
+                    <option value="informative">Informative (Educational)</option>
+                    <option value="persuasive">Persuasive (Marketing)</option>
+                    <option value="casual">Casual (Friendly)</option>
+                  </select>
+                </div>
+
+                <button
+                  className="btn btn-primary"
+                  onClick={generateBlogArticle}
+                  disabled={generatingBlog || (!blogTopic && !blogCustomTopic.trim())}
+                  style={{ width: '100%', marginTop: '8px' }}
+                >
+                  {generatingBlog ? (
+                    <>
+                      <div className="spinner" style={{ width: '16px', height: '16px', marginRight: '8px' }}></div>
+                      Generating Article...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={16} />
+                      Generate Article
+                    </>
+                  )}
+                </button>
+
+                {/* Article History */}
+                {blogHistory.length > 0 && (
+                  <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--gray-200)' }}>
+                    <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: 'var(--gray-700)' }}>
+                      Recent Articles
+                    </h3>
+                    <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                      {blogHistory.map(article => (
+                        <div
+                          key={article.id}
+                          style={{
+                            padding: '12px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--gray-200)',
+                            marginBottom: '8px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            background: generatedArticle?.id === article.id ? 'var(--primary-50)' : 'transparent'
+                          }}
+                          onClick={() => loadArticle(article.id)}
+                        >
+                          <div style={{ fontSize: '14px', fontWeight: '500', marginBottom: '4px', color: 'var(--gray-900)' }}>
+                            {article.title.substring(0, 50)}{article.title.length > 50 ? '...' : ''}
+                          </div>
+                          <div style={{ display: 'flex', gap: '12px', fontSize: '12px', color: 'var(--gray-500)' }}>
+                            <span>{article.wordCount} words</span>
+                            <span>{new Date(article.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Right Column - Article Preview */}
+              <div className="card" style={{ height: 'fit-content' }}>
+                <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <FileText size={20} />
+                  Article Preview
+                </h2>
+
+                {generatedArticle ? (
+                  <>
+                    {/* Article Actions */}
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+                      <button className="btn btn-secondary" onClick={copyBlogContent} style={{ padding: '8px 12px', fontSize: '13px' }}>
+                        {copiedBlog ? <Check size={14} /> : <Copy size={14} />}
+                        {copiedBlog ? 'Copied!' : 'Copy'}
+                      </button>
+                      <button className="btn btn-secondary" onClick={downloadBlogAsMarkdown} style={{ padding: '8px 12px', fontSize: '13px' }}>
+                        <Download size={14} /> .md
+                      </button>
+                      <button className="btn btn-secondary" onClick={downloadBlogAsText} style={{ padding: '8px 12px', fontSize: '13px' }}>
+                        <Download size={14} /> .txt
+                      </button>
+                      <button className="btn btn-danger" onClick={() => deleteBlogArticle(generatedArticle.id)} style={{ padding: '8px 12px', fontSize: '13px', marginLeft: 'auto' }}>
+                        <Trash2 size={14} /> Delete
+                      </button>
+                    </div>
+
+                    {/* Meta Description */}
+                    {generatedArticle.metaDescription && (
+                      <div style={{ background: 'var(--gray-50)', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
+                        <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--gray-600)', marginBottom: '4px' }}>
+                          META DESCRIPTION
+                        </div>
+                        <div style={{ fontSize: '14px', color: 'var(--gray-700)' }}>
+                          {generatedArticle.metaDescription}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Article Stats */}
+                    <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', fontSize: '13px', color: 'var(--gray-500)' }}>
+                      <span><strong>{generatedArticle.wordCount}</strong> words</span>
+                      <span>Tone: <strong>{generatedArticle.tone}</strong></span>
+                      {generatedArticle.keywords && <span>Keywords: {generatedArticle.keywords.split(',').slice(0, 3).join(', ')}</span>}
+                    </div>
+
+                    {/* Article Content */}
+                    <div style={{ borderTop: '1px solid var(--gray-200)', paddingTop: '16px' }}>
+                      <h1 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px', color: 'var(--gray-900)' }}>
+                        {generatedArticle.title}
+                      </h1>
+                      <div
+                        style={{
+                          fontSize: '15px',
+                          lineHeight: '1.7',
+                          color: 'var(--gray-700)',
+                          maxHeight: '500px',
+                          overflowY: 'auto'
+                        }}
+                        className="blog-content"
+                      >
+                        {generatedArticle.content.split('\n').map((line, i) => {
+                          if (line.startsWith('## ')) {
+                            return <h2 key={i} style={{ fontSize: '20px', fontWeight: '600', marginTop: '24px', marginBottom: '12px', color: 'var(--gray-900)' }}>{line.replace('## ', '')}</h2>;
+                          } else if (line.startsWith('### ')) {
+                            return <h3 key={i} style={{ fontSize: '16px', fontWeight: '600', marginTop: '20px', marginBottom: '8px', color: 'var(--gray-800)' }}>{line.replace('### ', '')}</h3>;
+                          } else if (line.startsWith('- ')) {
+                            return <li key={i} style={{ marginLeft: '20px', marginBottom: '4px' }}>{line.replace('- ', '')}</li>;
+                          } else if (line.startsWith('* ')) {
+                            return <li key={i} style={{ marginLeft: '20px', marginBottom: '4px' }}>{line.replace('* ', '')}</li>;
+                          } else if (line.match(/^\d+\. /)) {
+                            return <li key={i} style={{ marginLeft: '20px', marginBottom: '4px', listStyleType: 'decimal' }}>{line.replace(/^\d+\. /, '')}</li>;
+                          } else if (line.trim() === '') {
+                            return <br key={i} />;
+                          } else {
+                            // Handle bold text
+                            const parts = line.split(/(\*\*[^*]+\*\*)/g);
+                            return (
+                              <p key={i} style={{ marginBottom: '12px' }}>
+                                {parts.map((part, j) => {
+                                  if (part.startsWith('**') && part.endsWith('**')) {
+                                    return <strong key={j}>{part.slice(2, -2)}</strong>;
+                                  }
+                                  return part;
+                                })}
+                              </p>
+                            );
+                          }
+                        })}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--gray-500)' }}>
+                    <FileText size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+                    <p>Select a topic and generate an article to see the preview here.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Save Template Modal */}
       {showSaveTemplateModal && (
         <div style={{
