@@ -139,6 +139,9 @@ ReviewResponder/
 | GET | `/api/analytics` | Analytics Dashboard Daten (Pro/Unlimited) |
 | GET | `/api/referrals` | User's Referral Stats & Code |
 | GET | `/api/referrals/validate/:code` | Referral Code validieren (public) |
+| GET | `/api/settings/notifications` | Email Notification Settings |
+| PUT | `/api/settings/notifications` | Settings aktualisieren |
+| POST | `/api/cron/weekly-summary` | Wöchentliche Summary Emails (Cron) |
 
 ---
 
@@ -158,6 +161,7 @@ ReviewResponder/
 - ✅ Bulk Response Generation (bis zu 20 Reviews auf einmal)
 - ✅ Analytics Dashboard mit Charts (Pro/Unlimited)
 - ✅ Referral System (Invite Friends, Get 1 Month Free)
+- ✅ Email Notifications (Weekly Summary, 80% Usage Alert, Plan Renewal)
 
 ---
 
@@ -379,6 +383,15 @@ Folgende neue Endpoints geben 404 auf Production:
   - Referral Banner auf Landing Page bei ?ref=CODE
   - Automatische Reward-Vergabe bei Stripe Checkout
   - 1 Month Free Credit für Referrer wenn Referred User zahlt
+- **Email Notifications** implementiert:
+  - Neue DB Spalten: email_weekly_summary, email_usage_alerts, email_billing_updates
+  - GET/PUT /api/settings/notifications - Settings API
+  - Wöchentlicher Summary Email (Responses, Usage %)
+  - 80% Usage Alert Email (automatisch bei Response Generation)
+  - Plan Renewal Email (automatisch bei Stripe invoice.paid)
+  - POST /api/cron/weekly-summary - Cron Endpoint für wöchentliche Emails
+  - Schöne HTML Email Templates mit Branding
+  - User kann jede Email-Art an/ausschalten
 
 ---
 
