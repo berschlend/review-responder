@@ -2308,9 +2308,25 @@ app.post('/api/admin/upgrade-user', async (req, res) => {
   }
 });
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// Health check with database status
+app.get('/api/health', async (req, res) => {
+  let dbStatus = 'unknown';
+  try {
+    await pool.query('SELECT 1');
+    dbStatus = 'connected';
+    dbConnected = true;
+  } catch (error) {
+    console.error('Health check DB error:', error.message);
+    dbStatus = 'disconnected';
+    dbConnected = false;
+  }
+
+  res.json({
+    status: dbStatus === 'connected' ? 'ok' : 'degraded',
+    database: dbStatus,
+    databaseUrl: process.env.DATABASE_URL ? 'configured' : 'MISSING',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Start server
