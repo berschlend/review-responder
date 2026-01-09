@@ -70,6 +70,8 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] 50% Launch Discount implementiert (Code: EARLY50)
 - [x] 30-Day Money Back Guarantee
 - [x] SEO Meta Tags + Open Graph + Twitter Cards + Schema.org
+- [x] Privacy Policy & Terms of Service Seiten
+- [x] Demo-Video Section mit Placeholder (Video noch aufnehmen!)
 
 ---
 
@@ -196,9 +198,9 @@ git push
 - [x] Chrome Extension
 
 ### Phase 2: Conversion (AKTUELL)
-- [ ] Social Proof (Testimonials, User Count)
-- [ ] Trust Badges
-- [ ] Demo-Video
+- [x] Social Proof (Live Demo Examples)
+- [x] Trust Badges (SSL, Stripe, GDPR)
+- [x] Demo-Video Section (Placeholder - Video aufnehmen!)
 - [ ] Exit-Intent Popup
 
 ### Phase 3: Features
