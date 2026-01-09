@@ -1672,6 +1672,14 @@ const DashboardPage = () => {
     }
   };
 
+  const fetchAllHistory = async () => { try { const res = await api.get('/responses/history?limit=1000'); setAllHistory(res.data.responses); } catch (e) { console.error('Failed to fetch all history'); } };
+
+  const getFilteredHistory = () => { let f = allHistory; if (exportDateFrom) f = f.filter(i => new Date(i.created_at) >= new Date(exportDateFrom)); if (exportDateTo) { const e = new Date(exportDateTo); e.setHours(23,59,59,999); f = f.filter(i => new Date(i.created_at) <= e); } return f; };
+
+  const exportToCSV = () => { setExporting(true); try { const f = getFilteredHistory(); if (f.length === 0) { toast.error('No responses'); setExporting(false); return; } const d = f.map(i => ({ Date: new Date(i.created_at).toLocaleDateString(), Platform: i.review_platform||'N/A', Rating: i.review_rating||'N/A', Tone: i.tone||'professional', Review: i.review_text, Response: i.generated_response })); const csv = Papa.unparse(d); const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `responses-${new Date().toISOString().split('T')[0]}.csv`; link.click(); toast.success(`Exported ${f.length} to CSV`); } catch (e) { toast.error('Export failed'); } finally { setExporting(false); } };
+
+  const exportToPDF = () => { setExporting(true); try { const f = getFilteredHistory(); if (f.length === 0) { toast.error('No responses'); setExporting(false); return; } const doc = new jsPDF(); doc.setFontSize(18); doc.text('Response History', 14, 20); doc.setFontSize(10); doc.text(`${new Date().toLocaleDateString()} | ${f.length} responses`, 14, 28); const t = f.map(i => [new Date(i.created_at).toLocaleDateString(), i.review_platform||'-', i.review_rating||'-', i.review_text.substring(0,40)+'...', i.generated_response.substring(0,50)+'...']); doc.autoTable({ startY: 35, head: [['Date','Platform','Rating','Review','Response']], body: t, styles: { fontSize: 7 }, headStyles: { fillColor: [79,70,229] } }); doc.save(`responses-${new Date().toISOString().split('T')[0]}.pdf`); toast.success(`Exported ${f.length} to PDF`); } catch (e) { toast.error('Export failed'); } finally { setExporting(false); } };
+
   const saveAsTemplate = async () => {
     if (!templateName.trim()) {
       toast.error('Please enter a template name');
@@ -2043,7 +2051,7 @@ const DashboardPage = () => {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
             <div className="form-group">
               <label className="form-label">Platform</label>
               <select
@@ -2275,7 +2283,7 @@ Food was amazing, will definitely come back!`}
                   </p>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
                   <div className="form-group">
                     <label className="form-label">Platform</label>
                     <select
@@ -2646,10 +2654,20 @@ const SettingsPage = () => {
   const [businessContext, setBusinessContext] = useState(user?.businessContext || '');
   const [responseStyle, setResponseStyle] = useState(user?.responseStyle || '');
   const [saving, setSaving] = useState(false);
+  const [apiKeys, setApiKeys] = useState([]);
+  const [loadingKeys, setLoadingKeys] = useState(false);
+  const [newKeyName, setNewKeyName] = useState('');
+  const [generatedKey, setGeneratedKey] = useState(null);
+  const [creatingKey, setCreatingKey] = useState(false);
+  const loadApiKeys = async () => { setLoadingKeys(true); try { const res = await api.get('/keys'); setApiKeys(res.data.keys || []); } catch (e) {} finally { setLoadingKeys(false); } };
+  const createApiKey = async () => { setCreatingKey(true); try { const res = await api.post('/keys', { name: newKeyName || 'API Key' }); setGeneratedKey(res.data.key); setNewKeyName(''); loadApiKeys(); toast.success('API key created!'); } catch (e) { toast.error(e.response?.data?.error || 'Failed'); } finally { setCreatingKey(false); } };
+  const deleteApiKey = async (keyId) => { if (!window.confirm('Delete?')) return; try { await api.delete(`/keys/${keyId}`); setApiKeys(apiKeys.filter(k => k.id !== keyId)); toast.success('Deleted'); } catch (e) { toast.error('Failed'); } };
+  const copyToClipboard = (text) => { navigator.clipboard.writeText(text); toast.success('Copied!'); };
 
   useEffect(() => {
     if (user) {
       setBusinessName(user.businessName || '');
+      if (user.subscriptionPlan === 'unlimited' && user.subscriptionStatus === 'active') loadApiKeys();
       setBusinessType(user.businessType || '');
       setBusinessContext(user.businessContext || '');
       setResponseStyle(user.responseStyle || '');
@@ -2798,14 +2816,55 @@ const SettingsPage = () => {
         </div>
 
         <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={saving}>
-          {saving ? 'Saving...' : (
-            <>
-              <Save size={18} />
-              Save Settings
-            </>
-          )}
+          {saving ? 'Saving...' : (<><Save size={18} /> Save Settings</>)}
         </button>
       </form>
+
+      {/* API Key Management - Only for Unlimited Plan */}
+      {user?.subscriptionPlan === 'unlimited' && user?.subscriptionStatus === 'active' && (
+        <div className="card" style={{ marginTop: '24px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Key size={20} />
+            API Access
+          </h2>
+          <p style={{ fontSize: '14px', color: 'var(--gray-500)', marginBottom: '16px' }}>
+            Generate API keys to integrate ReviewResponder with your applications. <Link to="/api-docs" style={{ color: 'var(--primary-600)' }}>View API Documentation</Link>
+          </p>
+
+          {generatedKey && (
+            <div style={{ background: 'var(--success-50)', border: '1px solid var(--success-200)', borderRadius: '8px', padding: '16px', marginBottom: '16px' }}>
+              <p style={{ fontWeight: '600', color: 'var(--success-700)', marginBottom: '8px' }}>New API Key Created!</p>
+              <p style={{ fontSize: '12px', color: 'var(--success-600)', marginBottom: '8px' }}>Copy this key now. It won't be shown again.</p>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <code style={{ flex: 1, background: 'white', padding: '8px 12px', borderRadius: '4px', fontSize: '12px', wordBreak: 'break-all' }}>{generatedKey}</code>
+                <button onClick={() => copyToClipboard(generatedKey)} className="btn btn-sm" style={{ whiteSpace: 'nowrap' }}><Copy size={14} /> Copy</button>
+              </div>
+              <button onClick={() => setGeneratedKey(null)} style={{ marginTop: '8px', fontSize: '12px', color: 'var(--success-600)', background: 'none', border: 'none', cursor: 'pointer' }}>Dismiss</button>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+            <input type="text" className="form-input" placeholder="Key name (optional)" value={newKeyName} onChange={(e) => setNewKeyName(e.target.value)} style={{ flex: 1 }} />
+            <button onClick={createApiKey} className="btn btn-primary" disabled={creatingKey}>{creatingKey ? 'Creating...' : 'Generate Key'}</button>
+          </div>
+
+          {loadingKeys ? <p>Loading keys...</p> : apiKeys.length === 0 ? (
+            <p style={{ color: 'var(--gray-500)', fontSize: '14px' }}>No API keys yet. Generate one to get started.</p>
+          ) : (
+            <div style={{ border: '1px solid var(--gray-200)', borderRadius: '8px', overflow: 'hidden' }}>
+              {apiKeys.map((key, idx) => (
+                <div key={key.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: idx < apiKeys.length - 1 ? '1px solid var(--gray-200)' : 'none' }}>
+                  <div>
+                    <div style={{ fontWeight: '500' }}>{key.name}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{key.key_prefix}... | {key.requests_today}/100 today | {key.requests_total} total</div>
+                  </div>
+                  <button onClick={() => deleteApiKey(key.id)} className="btn btn-sm" style={{ color: 'var(--error-600)' }}><Trash2 size={14} /></button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
