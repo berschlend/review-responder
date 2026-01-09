@@ -2405,13 +2405,6 @@ const DashboardPage = () => {
     }
   }, [user]);
 
-  // Fetch API keys when switching to API tab (for unlimited users)
-  useEffect(() => {
-    if (activeTab === 'api' && user?.plan === 'unlimited' && user?.subscriptionStatus === 'active') {
-      fetchApiKeys();
-    }
-  }, [activeTab, user?.plan, user?.subscriptionStatus]);
-
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
     updateUser({ onboardingCompleted: true });
@@ -2689,66 +2682,6 @@ const DashboardPage = () => {
       setPlatform(template.platform || 'google');
       toast.success('Template applied as starting point');
     }
-  };
-
-  // API Key management functions
-  const fetchApiKeys = async () => {
-    if (user?.plan !== 'unlimited' || user?.subscriptionStatus !== 'active') return;
-    setLoadingApiKeys(true);
-    try {
-      const res = await api.get('/keys');
-      setApiKeys(res.data.keys || []);
-    } catch (error) {
-      console.error('Failed to fetch API keys:', error);
-    } finally {
-      setLoadingApiKeys(false);
-    }
-  };
-
-  const createApiKey = async () => {
-    if (!newKeyName.trim()) {
-      toast.error('Please enter a name for your API key');
-      return;
-    }
-    setCreatingKey(true);
-    try {
-      const res = await api.post('/keys', { name: newKeyName.trim() });
-      setNewlyCreatedKey(res.data.key);
-      toast.success('API key created! Save it now - it won\'t be shown again.');
-      setNewKeyName('');
-      fetchApiKeys();
-    } catch (error) {
-      toast.error(error.response?.data?.error || 'Failed to create API key');
-    } finally {
-      setCreatingKey(false);
-    }
-  };
-
-  const updateApiKey = async (keyId, updates) => {
-    try {
-      await api.put(`/keys/${keyId}`, updates);
-      toast.success('API key updated');
-      fetchApiKeys();
-      setEditingKeyId(null);
-    } catch (error) {
-      toast.error(error.response?.data?.error || 'Failed to update API key');
-    }
-  };
-
-  const deleteApiKey = async (keyId) => {
-    if (!window.confirm('Are you sure you want to delete this API key? This action cannot be undone.')) return;
-    try {
-      await api.delete(`/keys/${keyId}`);
-      toast.success('API key deleted');
-      fetchApiKeys();
-    } catch (error) {
-      toast.error(error.response?.data?.error || 'Failed to delete API key');
-    }
-  };
-
-  const copyApiKey = (key) => {
-    navigator.clipboard.writeText(key);
-    toast.success('API key copied to clipboard');
   };
 
   const generateResponse = async (overrideTone = null) => {

@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 10.01.2026 - 00:30 Uhr**
+**Stand: 10.01.2026 - 01:30 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
@@ -52,9 +52,9 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 | # | Task | Schwierigkeit | Dateien |
 |---|------|---------------|---------|
-| 1 | Team/Multi-User Accounts | Schwer | `backend/server.js`, `frontend/src/App.js` |
-| 2 | Chrome Extension Improvement | Mittel | `chrome-extension/` |
-| 3 | Landing Page A/B Testing | Mittel | `frontend/src/App.js` |
+| 1 | Chrome Extension Improvement | Mittel | `chrome-extension/` |
+| 2 | Landing Page A/B Testing | Mittel | `frontend/src/App.js` |
+| 3 | Custom Domain Setup | Leicht | Dokumentation |
 
 ### ✅ HEUTE ERLEDIGT:
 - [x] PostgreSQL Migration (Daten persistent)
@@ -83,6 +83,8 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **Keyboard Shortcuts** - Cmd/Ctrl + Enter, N, 1-4, /, Shift+C
 - [x] **Chrome Extension Sprach-Bug Fix** - `outputLanguage: 'match'` zu `'auto'` geändert, defensive checks hinzugefügt
 - [x] **SEO Blog Artikel Generator** - AI-generierte SEO-Artikel für Review-Management (Pro/Unlimited only)
+- [x] **Team/Multi-User Accounts** - Team-Mitglieder einladen (Pro: 3, Unlimited: 10), Rollen (Admin/Member/Viewer), Shared Usage
+- [x] **API Key System für Entwickler** - REST API für Unlimited-Plan User (5 Keys, 100 req/Tag, Dokumentation mit Code-Beispielen)
 
 ---
 
@@ -150,6 +152,11 @@ ReviewResponder/
 | GET | `/api/blog/history` | Generierte Artikel abrufen |
 | GET | `/api/blog/:id` | Einzelnen Artikel abrufen |
 | DELETE | `/api/blog/:id` | Artikel löschen |
+| GET | `/api/keys` | API Keys des Users abrufen (Unlimited only) |
+| POST | `/api/keys` | Neuen API Key erstellen (max 5) |
+| PUT | `/api/keys/:id` | API Key umbenennen oder de/aktivieren |
+| DELETE | `/api/keys/:id` | API Key löschen |
+| POST | `/api/v1/generate` | Public API Endpoint (mit X-API-Key Header) |
 
 ---
 
@@ -171,6 +178,7 @@ ReviewResponder/
 - ✅ Referral System (Invite Friends, Get 1 Month Free)
 - ✅ Email Notifications (Weekly Summary, 80% Usage Alert, Plan Renewal)
 - ✅ SEO Blog Generator (Pro/Unlimited) - AI-generierte SEO-Artikel für Marketing
+- ✅ API Key System (Unlimited only) - REST API mit 5 Keys, 100 req/Tag, Dokumentation
 
 ---
 
