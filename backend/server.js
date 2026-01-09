@@ -694,6 +694,8 @@ ${user.business_context}
 
     const prompt = `You are a professional customer service expert helping a small business respond to online reviews.
 
+**CRITICAL LANGUAGE RULE**: ${languageInstruction}
+
 Business Name: ${businessName || user.business_name || 'Our business'}
 ${businessTypeSection}
 Platform: ${platform || 'Google Reviews'}
@@ -713,8 +715,9 @@ Instructions:
 - Don't be overly formal or use canned phrases
 - Make it feel personal and authentic
 - If business context is provided, reference specific details about the business (e.g., mention specific menu items, services, team members)
-- ${languageInstruction}
 ${customInstructions ? `- Additional instructions: ${customInstructions}` : ''}
+
+Remember: Write your response in the SAME LANGUAGE as the review above!
 
 Generate ONLY the response text, nothing else:`;
 
