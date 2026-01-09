@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 09.01.2026 - 21:15 Uhr**
+**Stand: 09.01.2026 - 20:10 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
@@ -75,6 +75,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **OG Image** für Social Sharing (1200x630px, professionelles Design)
 - [x] **Product Hunt Launch Vorbereitung** - PRODUCT_HUNT.md mit Tagline, Description, Features, Maker Comment
 - [x] **Response Templates** - Templates speichern & als Startpunkt nutzen
+- [x] **QA-Test** - Live-App getestet, API-Dokumentation korrigiert, BUGS-Sektion erstellt
 
 ---
 
@@ -120,9 +121,10 @@ ReviewResponder/
 | POST | `/api/auth/forgot-password` | Password Reset Email |
 | POST | `/api/auth/reset-password` | Neues Password setzen |
 | POST | `/api/generate` | AI Response generieren |
-| GET | `/api/user/stats` | Usage Stats |
-| GET | `/api/user/history` | Response History |
-| POST | `/api/create-checkout-session` | Stripe Checkout |
+| GET | `/api/stats` | Usage Stats |
+| GET | `/api/responses/history` | Response History |
+| POST | `/api/billing/create-checkout` | Stripe Checkout |
+| POST | `/api/billing/portal` | Stripe Customer Portal |
 | POST | `/api/webhooks/stripe` | Stripe Webhook |
 | POST | `/api/capture-email` | Email Capture (Exit-Intent) |
 | GET | `/api/templates` | User's Response Templates |
@@ -238,6 +240,31 @@ git push
 | better-sqlite3 auf Windows | Gewechselt zu sql.js, dann PostgreSQL |
 | Daten bei Deploy gelöscht | PostgreSQL auf Render |
 | react-scripts Permission | CI=false im build command |
+
+---
+
+## BUGS (QA-Test 09.01.2026 - 20:00 Uhr)
+
+### Getestete Flows:
+| Flow | Status | Anmerkungen |
+|------|--------|-------------|
+| User Registration | OK | Stripe Customer wird automatisch erstellt |
+| Login | OK | JWT Token funktioniert |
+| Response Generation | OK | AI antwortet korrekt, Spracherkennung funktioniert |
+| History | OK | Responses werden gespeichert und angezeigt |
+| Stats | OK | Usage wird korrekt getrackt |
+| Password Reset | OK | Endpoint erreichbar (Resend noch nicht konfiguriert) |
+| Email Capture | PRUEFEN | Endpoint im Code vorhanden, Production-Test fehlgeschlagen |
+
+### Offene Bugs:
+| # | Bug | Schweregrad | Status |
+|---|-----|-------------|--------|
+| 1 | `/api/capture-email` gibt 404 auf Production | Mittel | PRUEFEN - Code ist auf GitHub, evtl. Render Cache/Deployment |
+
+### Dokumentationsfehler (behoben):
+- `/api/user/stats` wurde zu `/api/stats` korrigiert
+- `/api/user/history` wurde zu `/api/responses/history` korrigiert
+- `/api/create-checkout-session` wurde zu `/api/billing/create-checkout` korrigiert
 
 ---
 
