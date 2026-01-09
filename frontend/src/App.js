@@ -128,12 +128,219 @@ const Navbar = () => {
   );
 };
 
+// Exit Intent Popup Component
+const ExitIntentPopup = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    // Check if popup was already shown in this session
+    const popupShown = sessionStorage.getItem('exitIntentShown');
+    if (popupShown) return;
+
+    const handleMouseLeave = (e) => {
+      // Detect when mouse moves to top of viewport (likely going to tabs/address bar)
+      if (e.clientY <= 0) {
+        setIsVisible(true);
+        sessionStorage.setItem('exitIntentShown', 'true');
+      }
+    };
+
+    // Add event listener after a delay (don't show immediately)
+    const timer = setTimeout(() => {
+      document.addEventListener('mouseleave', handleMouseLeave);
+    }, 5000); // Wait 5 seconds before activating
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    // Simulate email submission
+    setTimeout(() => {
+      setSubmitted(true);
+      setLoading(false);
+      // In real implementation, send email to backend
+      console.log('Email captured:', email);
+    }, 1000);
+  };
+
+  if (!isVisible) return null;
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0, 0, 0, 0.6)',
+      zIndex: 9999,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px'
+    }} onClick={() => setIsVisible(false)}>
+      <div 
+        className="card" 
+        style={{
+          maxWidth: '480px',
+          width: '100%',
+          padding: '0',
+          overflow: 'hidden',
+          position: 'relative',
+          animation: 'slideIn 0.3s ease-out'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={() => setIsVisible(false)}
+          style={{
+            position: 'absolute',
+            top: '16px',
+            right: '16px',
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '4px',
+            color: 'var(--gray-400)',
+            zIndex: 1
+          }}
+        >
+          <X size={20} />
+        </button>
+
+        {/* Header with gradient */}
+        <div style={{
+          background: 'linear-gradient(135deg, var(--primary-600), var(--primary-700))',
+          padding: '32px',
+          textAlign: 'center',
+          color: 'white'
+        }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '64px',
+            height: '64px',
+            background: 'rgba(255,255,255,0.2)',
+            borderRadius: '50%',
+            marginBottom: '16px'
+          }}>
+            <Sparkles size={32} />
+          </div>
+          <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
+            Wait! Don't Leave Empty-Handed
+          </h2>
+          <p style={{ fontSize: '16px', opacity: 0.95 }}>
+            Get 20% off your first month of ReviewResponder
+          </p>
+        </div>
+
+        {/* Content */}
+        <div style={{ padding: '32px' }}>
+          {!submitted ? (
+            <>
+              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <div style={{
+                  display: 'inline-block',
+                  padding: '8px 20px',
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  color: 'white',
+                  borderRadius: '20px',
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  marginBottom: '12px'
+                }}>
+                  🎁 Exclusive Offer: Save 20%
+                </div>
+                <p style={{ color: 'var(--gray-600)', fontSize: '14px' }}>
+                  Enter your email to unlock this limited-time discount
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                  <input
+                    type="email"
+                    className="form-input"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    style={{ fontSize: '16px', padding: '12px 16px' }}
+                  />
+                </div>
+                
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{ width: '100%', fontSize: '16px', padding: '12px' }}
+                  disabled={loading}
+                >
+                  {loading ? 'Processing...' : 'Get My 20% Discount'}
+                </button>
+              </form>
+
+              <p style={{
+                textAlign: 'center',
+                fontSize: '12px',
+                color: 'var(--gray-500)',
+                marginTop: '16px'
+              }}>
+                No spam, unsubscribe anytime. Discount valid for 7 days.
+              </p>
+            </>
+          ) : (
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '64px',
+                height: '64px',
+                background: 'var(--success-light)',
+                borderRadius: '50%',
+                marginBottom: '16px'
+              }}>
+                <Check size={32} style={{ color: 'var(--success)' }} />
+              </div>
+              <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>
+                Discount Code Sent!
+              </h3>
+              <p style={{ color: 'var(--gray-600)', marginBottom: '20px' }}>
+                Check your email for your exclusive 20% off code: <strong>SAVE20</strong>
+              </p>
+              <Link
+                to="/register"
+                className="btn btn-primary"
+                onClick={() => setIsVisible(false)}
+              >
+                Sign Up Now →
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Landing Page
 const LandingPage = () => {
   const { user } = useAuth();
 
   return (
     <div>
+      <ExitIntentPopup />
       <section className="hero">
         <div className="container">
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: 'white', padding: '6px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '600', marginBottom: '16px' }}>
@@ -232,6 +439,103 @@ const LandingPage = () => {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Demo Video Section */}
+      <section className="container" style={{ marginTop: '60px', marginBottom: '60px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
+            See ReviewResponder in Action
+          </h2>
+          <p style={{ color: 'var(--gray-600)', maxWidth: '600px', margin: '0 auto' }}>
+            Watch how easy it is to generate professional review responses in seconds
+          </p>
+        </div>
+
+        {/* Video Placeholder - Replace with actual video later */}
+        <div style={{
+          maxWidth: '800px',
+          margin: '0 auto',
+          borderRadius: '16px',
+          overflow: 'hidden',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+          position: 'relative',
+          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+          aspectRatio: '16/9'
+        }}>
+          {/* Placeholder Content */}
+          <div style={{
+            position: 'absolute',
+            inset: '0',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white'
+          }}>
+            {/* Play Button */}
+            <div style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              background: 'var(--primary-600)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              boxShadow: '0 8px 32px rgba(79, 70, 229, 0.4)',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              marginBottom: '20px'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'scale(1.1)';
+              e.currentTarget.style.boxShadow = '0 12px 40px rgba(79, 70, 229, 0.5)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(79, 70, 229, 0.4)';
+            }}
+            >
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            </div>
+            <p style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Demo Video Coming Soon
+            </p>
+            <p style={{ fontSize: '14px', opacity: '0.7' }}>
+              2 minute walkthrough of all features
+            </p>
+          </div>
+
+          {/* Decorative Elements */}
+          <div style={{
+            position: 'absolute',
+            top: '20px',
+            left: '20px',
+            display: 'flex',
+            gap: '8px'
+          }}>
+            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ff5f56' }} />
+            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ffbd2e' }} />
+            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#27ca40' }} />
+          </div>
+        </div>
+
+        {/* TODO: Replace placeholder with actual video embed */}
+        {/*
+        <div style={{ maxWidth: '800px', margin: '0 auto', borderRadius: '16px', overflow: 'hidden' }}>
+          <iframe
+            width="100%"
+            style={{ aspectRatio: '16/9' }}
+            src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
+            title="ReviewResponder Demo"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+        */}
       </section>
 
       <section className="container" style={{ marginTop: '60px' }}>
