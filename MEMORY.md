@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 09.01.2026 - 22:30 Uhr**
+**Stand: 09.01.2026 - 23:00 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
@@ -52,9 +52,9 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 | # | Task | Schwierigkeit | Dateien |
 |---|------|---------------|---------|
-| 1 | Team/Multi-User Accounts | Schwer | `backend/server.js`, `frontend/src/App.js` |
-| 2 | SEO Blog Artikel Generator | Mittel | `backend/server.js`, `frontend/src/App.js` |
-| 3 | API Key System für Entwickler | Mittel | `backend/server.js`, `frontend/src/App.js` |
+| 1 | **Public API Access (Frontend)** - Settings Page + /api-docs | Einfach | `frontend/src/App.js` |
+| 2 | Team/Multi-User Accounts | Schwer | `backend/server.js`, `frontend/src/App.js` |
+| 3 | SEO Blog Artikel Generator | Mittel | `backend/server.js`, `frontend/src/App.js` |
 
 ### ✅ HEUTE ERLEDIGT:
 - [x] PostgreSQL Migration (Daten persistent)
@@ -82,6 +82,8 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **Email Notifications** - Weekly Summary, 80% Usage Alert, Plan Renewal Emails
 - [x] **Keyboard Shortcuts** - Cmd/Ctrl + Enter, N, 1-4, /, Shift+C
 - [x] **User Onboarding** - 3-Step Modal für neue User (Backend Support)
+- [x] **Public API Access (Backend)** - API Keys, Rate Limiting (100/Tag), POST /api/v1/generate (Unlimited only)
+- [x] **Dark Mode** - Toggle in Navbar, System Preference Detection, localStorage Persistence
 
 ---
 
@@ -141,6 +143,10 @@ ReviewResponder/
 | GET | `/api/analytics` | Analytics Dashboard Daten (Pro/Unlimited) |
 | GET | `/api/referrals` | User's Referral Stats & Code |
 | GET | `/api/referrals/validate/:code` | Referral Code validieren (public) |
+| GET | `/api/keys` | User's API Keys (Unlimited only) |
+| POST | `/api/keys` | API Key generieren (Unlimited only) |
+| DELETE | `/api/keys/:id` | API Key löschen |
+| POST | `/api/v1/generate` | Public API - Response generieren (API Key Auth) |
 | GET | `/api/settings/notifications` | Email Notification Settings |
 | PUT | `/api/settings/notifications` | Settings aktualisieren |
 | POST | `/api/cron/weekly-summary` | Wöchentliche Summary Emails (Cron) |
@@ -165,6 +171,7 @@ ReviewResponder/
 - ✅ Referral System (Invite Friends, Get 1 Month Free)
 - ✅ Email Notifications (Weekly Summary, 80% Usage Alert, Plan Renewal)
 - ✅ Keyboard Shortcuts (Cmd/Ctrl + Enter, N, 1-4, /, Shift+C)
+- ✅ Dark Mode (Toggle, System Preference, localStorage)
 
 ---
 
@@ -403,6 +410,25 @@ Folgende neue Endpoints geben 404 auf Production:
   - Cmd/Ctrl + /: Shortcuts Help Modal anzeigen
   - Keyboard-Icon Button im Dashboard Header
   - Platform-aware (⌘ auf Mac, Ctrl auf Windows)
+- **Public API Access (Backend)** implementiert:
+  - Neue `api_keys` Tabelle in PostgreSQL
+  - API Key Generation (rr_xxx... Format)
+  - Key Hash gespeichert (nicht der echte Key)
+  - Rate Limiting: 100 requests/day pro Key
+  - Tägliches Reset um Mitternacht UTC
+  - authenticateApiKey Middleware
+  - POST /api/v1/generate - Public API Endpoint
+  - Nur für Unlimited Plan verfügbar
+  - Frontend (Settings, /api-docs) noch TODO
+- **Dark Mode** implementiert:
+  - ThemeContext & ThemeProvider in React
+  - Toggle Button in Navbar (Sun/Moon Icons)
+  - System Preference Detection (prefers-color-scheme)
+  - localStorage Persistence für User Choice
+  - CSS Variables für semantische Farben (--bg-primary, --text-primary, etc.)
+  - [data-theme="dark"] CSS Overrides
+  - Smooth 0.3s Transitions zwischen Light/Dark
+  - Alle UI Komponenten unterstützen Dark Mode
 
 ---
 
