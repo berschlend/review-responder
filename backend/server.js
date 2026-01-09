@@ -2191,6 +2191,105 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
   }
 });
 
+// ============ ADMIN ENDPOINTS ============
+
+// Rate limiter for admin endpoints (5 attempts per 15 minutes per IP)
+const adminRateLimiter = new Map();
+const ADMIN_RATE_LIMIT = 5;
+const ADMIN_RATE_WINDOW = 15 * 60 * 1000; // 15 minutes
+
+const checkAdminRateLimit = (ip) => {
+  const now = Date.now();
+  const record = adminRateLimiter.get(ip);
+
+  if (!record || now - record.windowStart > ADMIN_RATE_WINDOW) {
+    adminRateLimiter.set(ip, { windowStart: now, attempts: 1 });
+    return true;
+  }
+
+  if (record.attempts >= ADMIN_RATE_LIMIT) {
+    return false;
+  }
+
+  record.attempts++;
+  return true;
+};
+
+// Timing-safe key comparison
+const safeCompare = (a, b) => {
+  if (!a || !b) return false;
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) {
+    // Still do comparison to prevent timing attacks on length
+    crypto.timingSafeEqual(bufA, Buffer.alloc(bufA.length));
+    return false;
+  }
+  return crypto.timingSafeEqual(bufA, bufB);
+};
+
+// POST /api/admin/upgrade-user - Upgrade a user to Unlimited plan
+app.post('/api/admin/upgrade-user', async (req, res) => {
+  const ip = req.ip || req.connection.remoteAddress;
+
+  // Rate limiting
+  if (!checkAdminRateLimit(ip)) {
+    console.log(`⚠️ Admin rate limit exceeded for IP: ${ip}`);
+    return res.status(429).json({ error: 'Too many attempts. Try again in 15 minutes.' });
+  }
+
+  const { email, key } = req.query;
+  const adminSecret = process.env.ADMIN_SECRET;
+
+  // Check if ADMIN_SECRET is configured
+  if (!adminSecret) {
+    console.error('❌ ADMIN_SECRET environment variable not configured');
+    return res.status(500).json({ error: 'Admin endpoint not configured' });
+  }
+
+  // Validate key with timing-safe comparison
+  if (!safeCompare(key, adminSecret)) {
+    console.log(`⚠️ Invalid admin key attempt for email: ${email} from IP: ${ip}`);
+    return res.status(401).json({ error: 'Invalid admin key' });
+  }
+
+  // Validate email
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ error: 'Valid email required' });
+  }
+
+  try {
+    // Find user
+    const user = await dbGet('SELECT id, email, subscription_plan FROM users WHERE LOWER(email) = LOWER($1)', [email]);
+
+    if (!user) {
+      return res.status(404).json({ error: `User not found: ${email}` });
+    }
+
+    // Upgrade user
+    await dbQuery(
+      `UPDATE users SET
+        subscription_plan = 'unlimited',
+        subscription_status = 'active',
+        responses_limit = 999999
+       WHERE id = $1`,
+      [user.id]
+    );
+
+    console.log(`✅ Admin upgraded user ${email} to Unlimited (was: ${user.subscription_plan})`);
+
+    res.json({
+      success: true,
+      message: `User ${email} upgraded to Unlimited plan`,
+      previous_plan: user.subscription_plan,
+      new_plan: 'unlimited'
+    });
+  } catch (error) {
+    console.error('Admin upgrade error:', error);
+    res.status(500).json({ error: 'Failed to upgrade user' });
+  }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
