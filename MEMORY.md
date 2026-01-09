@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 09.01.2026 - 20:45 Uhr**
+**Stand: 09.01.2026 - 21:00 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
@@ -54,7 +54,6 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 |---|------|---------------|---------|
 | 1 | Bulk Response Generation (mehrere Reviews auf einmal) | Schwer | `backend/server.js`, `frontend/src/App.js` |
 | 2 | Response Templates speichern & wiederverwenden | Mittel | `backend/server.js`, `frontend/src/App.js` |
-| 3 | Exit-Intent Popup mit Rabatt | Mittel | `frontend/src/App.js` |
 | 4 | OG Image erstellen (für Social Sharing) | Einfach | `frontend/public/og-image.png` |
 
 ### ✅ HEUTE ERLEDIGT:
@@ -72,6 +71,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] SEO Meta Tags + Open Graph + Twitter Cards + Schema.org
 - [x] Privacy Policy & Terms of Service Seiten
 - [x] Demo-Video Section mit Placeholder (Video noch aufnehmen!)
+- [x] **Exit-Intent Popup** mit 20% Rabatt (Email-Capture, einmal pro Session)
 
 ---
 
@@ -201,7 +201,7 @@ git push
 - [x] Social Proof (Live Demo Examples)
 - [x] Trust Badges (SSL, Stripe, GDPR)
 - [x] Demo-Video Section (Placeholder - Video aufnehmen!)
-- [ ] Exit-Intent Popup
+- [x] Exit-Intent Popup ✅
 
 ### Phase 3: Features
 - [ ] Bulk Response Generation
@@ -256,6 +256,20 @@ git push
 - Frontend: Automatisch EARLY50 Code angewendet
 - Discount: 50% OFF forever für erste 50 Kunden
 
+## EXIT-INTENT POPUP DETAILS
+
+### Implementation:
+- **Trigger**: Mouse leaves viewport (geht zum Browser Tab/Close Button)
+- **Delay**: 5 Sekunden nach Seitenaufruf (nicht sofort nerven)
+- **Frequency**: Nur einmal pro Session (sessionStorage)
+- **Offer**: 20% Rabatt auf ersten Monat (Code: SAVE20)
+- **Features**:
+  - Email-Capture Form
+  - Schönes Design mit Gradient Header
+  - Smooth slideIn Animation
+  - Success State nach Email-Eingabe
+  - Click outside oder X Button zum Schließen
+
 ## CHANGELOG
 
 ### 09.01.2026
@@ -266,6 +280,7 @@ git push
 - Chrome Extension Fixes
 - Ehrliches Marketing implementiert
 - Launch Discount System
+- Exit-Intent Popup mit Email Capture
 - MEMORY.md optimiert für Claude Sessions
 
 ---
