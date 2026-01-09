@@ -1695,6 +1695,91 @@ Keep the response concise, professional, and helpful.`;
   }
 });
 
+// ============ USER FEEDBACK / TESTIMONIALS ============
+
+// Submit feedback (after 10 responses)
+app.post('/api/feedback', authenticateToken, async (req, res) => {
+  try {
+    const { rating, comment, displayName } = req.body;
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+    }
+
+    // Check if user already submitted feedback
+    const existing = await dbGet(
+      'SELECT id FROM user_feedback WHERE user_id = $1',
+      [req.user.id]
+    );
+
+    if (existing) {
+      return res.status(400).json({ error: 'You have already submitted feedback' });
+    }
+
+    // Get user info for display name
+    const user = await dbGet('SELECT email, business_name FROM users WHERE id = $1', [req.user.id]);
+    const userName = displayName || user.business_name || user.email.split('@')[0];
+
+    // Insert feedback
+    await dbQuery(
+      `INSERT INTO user_feedback (user_id, rating, comment, user_name)
+       VALUES ($1, $2, $3, $4)`,
+      [req.user.id, rating, comment || null, userName]
+    );
+
+    // Mark user as having submitted feedback
+    await dbQuery(
+      'UPDATE users SET feedback_submitted = TRUE WHERE id = $1',
+      [req.user.id]
+    );
+
+    res.json({ success: true, message: 'Thank you for your feedback!' });
+  } catch (error) {
+    console.error('Feedback submission error:', error);
+    res.status(500).json({ error: 'Failed to submit feedback' });
+  }
+});
+
+// Check if user should see feedback popup
+app.get('/api/feedback/status', authenticateToken, async (req, res) => {
+  try {
+    const user = await dbGet(
+      'SELECT responses_used, feedback_submitted FROM users WHERE id = $1',
+      [req.user.id]
+    );
+
+    // Show popup after 10 responses, if not already submitted
+    const shouldShowPopup = user.responses_used >= 10 && !user.feedback_submitted;
+
+    res.json({
+      shouldShowPopup,
+      responsesUsed: user.responses_used,
+      feedbackSubmitted: user.feedback_submitted
+    });
+  } catch (error) {
+    console.error('Feedback status error:', error);
+    res.status(500).json({ error: 'Failed to get feedback status' });
+  }
+});
+
+// Get approved testimonials (public - no auth required)
+app.get('/api/testimonials', async (req, res) => {
+  try {
+    const testimonials = await dbAll(
+      `SELECT rating, comment, user_name, created_at
+       FROM user_feedback
+       WHERE approved = TRUE AND comment IS NOT NULL AND comment != ''
+       ORDER BY featured DESC, rating DESC, created_at DESC
+       LIMIT 10`
+    );
+
+    res.json({ testimonials });
+  } catch (error) {
+    console.error('Testimonials fetch error:', error);
+    res.status(500).json({ error: 'Failed to get testimonials' });
+  }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
