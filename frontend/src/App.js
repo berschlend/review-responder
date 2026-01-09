@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper } from 'lucide-react';
+import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper, Utensils, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
 import { jsPDF } from 'jspdf';
@@ -3885,6 +3885,488 @@ const SupportPage = () => {
   );
 };
 
+// SEO Landing Page Component - Google Review Response Generator
+const GoogleReviewPage = () => {
+  useEffect(() => {
+    document.title = 'Google Review Response Generator | AI-Powered Replies | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Google review responses in seconds with AI. Reply to Google Maps reviews instantly with our free tool. Try now!');
+
+    // Add Schema.org structured data
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "ReviewResponder - Google Review Response Generator",
+      "description": "AI-powered tool to generate professional responses to Google reviews",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "description": "Free trial with 5 responses"
+      }
+    });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, []);
+
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #4285f4 0%, #34a853 100%)', padding: '80px 0', color: 'white' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '800px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '20px', marginBottom: '24px' }}>
+            <Star size={16} fill="white" />
+            <span style={{ fontSize: '14px', fontWeight: '600' }}>Google Maps Integration</span>
+          </div>
+          <h1 style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}>
+            Google Review Response Generator
+          </h1>
+          <p style={{ fontSize: '20px', opacity: 0.95, marginBottom: '32px', lineHeight: '1.6' }}>
+            Respond to Google reviews in seconds with AI. Generate professional, personalized replies
+            that improve your business reputation and show customers you care.
+          </p>
+          <Link to="/register" className="btn btn-lg" style={{ background: 'white', color: '#4285f4', fontWeight: '600', padding: '16px 32px' }}>
+            <Sparkles size={20} />
+            Generate Free Responses
+          </Link>
+          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>5 free responses • No credit card required</p>
+        </div>
+      </section>
+
+      <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
+        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>
+          Why Use an AI Google Review Response Generator?
+        </h2>
+
+        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+          <div className="card" style={{ padding: '24px' }}>
+            <Clock size={32} style={{ color: 'var(--primary-600)', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Save Hours Weekly</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Stop spending 10-15 minutes per review. Generate thoughtful Google review responses in under 30 seconds.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Shield size={32} style={{ color: '#34a853', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Protect Your Reputation</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Respond to negative Google reviews quickly and professionally to show potential customers you care.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#4285f4', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Boost Local SEO</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Active review responses signal to Google that your business is engaged, improving local search rankings.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>How to Respond to Google Reviews with AI</h2>
+          <ol style={{ lineHeight: '2', color: 'var(--gray-700)' }}>
+            <li><strong>Copy the review</strong> from your Google Business Profile</li>
+            <li><strong>Paste it</strong> into ReviewResponder</li>
+            <li><strong>Select your tone</strong> (Professional, Friendly, Formal, or Apologetic)</li>
+            <li><strong>Click Generate</strong> and get your personalized response instantly</li>
+            <li><strong>Copy & paste</strong> the response back to Google</li>
+          </ol>
+        </div>
+
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Start Responding to Google Reviews Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join thousands of businesses using AI to manage their Google reputation.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Card Required
+          </Link>
+        </div>
+
+        <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}>
+          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
+            <Link to="/" style={{ color: 'var(--primary-600)' }}>ReviewResponder</Link> •
+            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Yelp Reviews</Link> •
+            <Link to="/restaurant-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Restaurant Reviews</Link> •
+            <Link to="/hotel-review-management" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Hotel Reviews</Link>
+          </p>
+        </div>
+      </section>
+    </div>
+  );
+};
+
+// SEO Landing Page Component - Yelp Review Reply Tool
+const YelpReviewPage = () => {
+  useEffect(() => {
+    document.title = 'Yelp Review Reply Tool | AI Response Generator | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Yelp review responses instantly. AI-powered tool to reply to Yelp reviews quickly and professionally. Free trial available.');
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "ReviewResponder - Yelp Review Reply Tool",
+      "description": "AI-powered tool to generate professional responses to Yelp reviews",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, []);
+
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #d32323 0%, #ff5a5f 100%)', padding: '80px 0', color: 'white' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '800px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '20px', marginBottom: '24px' }}>
+            <Star size={16} fill="white" />
+            <span style={{ fontSize: '14px', fontWeight: '600' }}>Yelp Business Owners</span>
+          </div>
+          <h1 style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}>
+            Yelp Review Reply Tool
+          </h1>
+          <p style={{ fontSize: '20px', opacity: 0.95, marginBottom: '32px', lineHeight: '1.6' }}>
+            Never let a Yelp review go unanswered. Generate professional, thoughtful responses
+            to all your Yelp reviews with AI - from 5-star praise to 1-star complaints.
+          </p>
+          <Link to="/register" className="btn btn-lg" style={{ background: 'white', color: '#d32323', fontWeight: '600', padding: '16px 32px' }}>
+            <Sparkles size={20} />
+            Reply to Yelp Reviews Free
+          </Link>
+          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>5 free responses • Works with any Yelp review</p>
+        </div>
+      </section>
+
+      <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
+        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>
+          Why Responding to Yelp Reviews Matters
+        </h2>
+
+        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+          <div className="card" style={{ padding: '24px' }}>
+            <Users size={32} style={{ color: '#d32323', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>97% Read Responses</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Studies show 97% of consumers who read reviews also read business responses. Make yours count.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <MessageSquare size={32} style={{ color: '#d32323', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Turn Negatives Positive</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              A thoughtful response to a negative Yelp review can convert critics into loyal customers.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Clock size={32} style={{ color: '#d32323', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Respond in 30 Seconds</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Stop agonizing over the perfect response. Our AI crafts professional Yelp replies instantly.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>Perfect Responses for Every Yelp Review Type</h2>
+          <div style={{ display: 'grid', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
+              <div>
+                <strong>5-Star Reviews:</strong> Thank customers and encourage return visits
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
+              <div>
+                <strong>3-4 Star Reviews:</strong> Acknowledge feedback and show commitment to improvement
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
+              <div>
+                <strong>1-2 Star Reviews:</strong> Apologize professionally and offer to make things right
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Start Managing Your Yelp Reputation Today
+          </h2>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - 5 Responses Included
+          </Link>
+        </div>
+
+        <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}>
+          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
+            <Link to="/" style={{ color: 'var(--primary-600)' }}>ReviewResponder</Link> •
+            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Google Reviews</Link> •
+            <Link to="/restaurant-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Restaurant Reviews</Link> •
+            <Link to="/hotel-review-management" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Hotel Reviews</Link>
+          </p>
+        </div>
+      </section>
+    </div>
+  );
+};
+
+// SEO Landing Page Component - Restaurant Review Responses
+const RestaurantReviewPage = () => {
+  useEffect(() => {
+    document.title = 'Restaurant Review Response Generator | AI Reply Tool | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'AI-powered review response generator for restaurants. Reply to Google, Yelp, TripAdvisor reviews professionally. Save time and boost your restaurant reputation.');
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "ReviewResponder - Restaurant Review Response Generator",
+      "description": "AI tool for restaurants to respond to customer reviews professionally",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, []);
+
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)', padding: '80px 0', color: 'white' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '800px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '20px', marginBottom: '24px' }}>
+            <Utensils size={16} />
+            <span style={{ fontSize: '14px', fontWeight: '600' }}>For Restaurant Owners</span>
+          </div>
+          <h1 style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}>
+            Restaurant Review Response Generator
+          </h1>
+          <p style={{ fontSize: '20px', opacity: 0.95, marginBottom: '32px', lineHeight: '1.6' }}>
+            Running a restaurant is hard enough. Let AI handle your review responses so you can
+            focus on what matters - great food and happy customers.
+          </p>
+          <Link to="/register" className="btn btn-lg" style={{ background: 'white', color: '#ef4444', fontWeight: '600', padding: '16px 32px' }}>
+            <Sparkles size={20} />
+            Try Free for Restaurants
+          </Link>
+          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>Perfect for Google, Yelp, TripAdvisor & more</p>
+        </div>
+      </section>
+
+      <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
+        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>
+          Why Restaurants Need AI Review Responses
+        </h2>
+
+        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+          <div className="card" style={{ padding: '24px' }}>
+            <Clock size={32} style={{ color: '#f59e0b', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>You're Too Busy</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Between managing staff, inventory, and customers, who has time to write thoughtful review responses?
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Star size={32} style={{ color: '#f59e0b', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Reviews Make or Break You</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              94% of diners choose restaurants based on online reviews. Your responses show you care.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <MessageSquare size={32} style={{ color: '#f59e0b', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Every Platform Covered</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Google, Yelp, TripAdvisor, OpenTable, Uber Eats - respond to reviews from any platform.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>Common Restaurant Review Scenarios We Handle</h2>
+          <div style={{ display: 'grid', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
+              <div><strong>"The food was amazing!"</strong> - Thank them and invite them back</div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
+              <div><strong>"Service was slow"</strong> - Apologize and explain how you'll improve</div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
+              <div><strong>"Food was cold"</strong> - Show genuine concern and offer to make it right</div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
+              <div><strong>"Loved the atmosphere"</strong> - Highlight what makes your restaurant special</div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Focus on Cooking, Not Typing
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join hundreds of restaurants saving hours weekly with AI-powered review responses.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Start Free - 5 Responses Included
+          </Link>
+        </div>
+
+        <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}>
+          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
+            <Link to="/" style={{ color: 'var(--primary-600)' }}>ReviewResponder</Link> •
+            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Google Reviews</Link> •
+            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Yelp Reviews</Link> •
+            <Link to="/hotel-review-management" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Hotel Reviews</Link>
+          </p>
+        </div>
+      </section>
+    </div>
+  );
+};
+
+// SEO Landing Page Component - Hotel Review Management
+const HotelReviewPage = () => {
+  useEffect(() => {
+    document.title = 'Hotel Review Management Tool | AI Response Generator | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'AI-powered hotel review response tool. Manage reviews on Booking.com, TripAdvisor, Google, and more. Professional responses in seconds for hotels and B&Bs.');
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "ReviewResponder - Hotel Review Management Tool",
+      "description": "AI tool for hotels to respond to guest reviews professionally",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, []);
+
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)', padding: '80px 0', color: 'white' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '800px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '20px', marginBottom: '24px' }}>
+            <Building size={16} />
+            <span style={{ fontSize: '14px', fontWeight: '600' }}>For Hotels & B&Bs</span>
+          </div>
+          <h1 style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}>
+            Hotel Review Management Tool
+          </h1>
+          <p style={{ fontSize: '20px', opacity: 0.95, marginBottom: '32px', lineHeight: '1.6' }}>
+            Manage guest reviews across all platforms with AI. From Booking.com to TripAdvisor,
+            respond professionally to every review and boost your hotel's reputation.
+          </p>
+          <Link to="/register" className="btn btn-lg" style={{ background: 'white', color: '#6366f1', fontWeight: '600', padding: '16px 32px' }}>
+            <Sparkles size={20} />
+            Try Free for Hotels
+          </Link>
+          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>Works with Booking.com, TripAdvisor, Expedia, Google & more</p>
+        </div>
+      </section>
+
+      <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
+        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>
+          Why Hotels Choose AI for Review Management
+        </h2>
+
+        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+          <div className="card" style={{ padding: '24px' }}>
+            <Globe size={32} style={{ color: '#0ea5e9', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Multi-Language Support</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Respond to international guests in their language. Our AI auto-detects and replies in 50+ languages.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Clock size={32} style={{ color: '#0ea5e9', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>24/7 Response Ready</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Late-night review? Generate a response anytime. Never let a guest review wait.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#0ea5e9', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Improve OTA Rankings</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Active review responses improve your ranking on Booking.com and other OTAs.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>Hospitality-Specific Response Styles</h2>
+          <div style={{ display: 'grid', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
+              <div><strong>Warm & Welcoming:</strong> Perfect for positive reviews - thank guests and invite them back</div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
+              <div><strong>Professional & Apologetic:</strong> Address complaints about rooms, service, or amenities</div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
+              <div><strong>Constructive:</strong> Acknowledge mixed reviews and highlight improvements</div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
+              <div><strong>Multi-language:</strong> Respond to German, French, Spanish, Chinese guests in their language</div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Elevate Your Guest Experience
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Show every guest their feedback matters with thoughtful, timely responses.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Start Free - Hotels Welcome
+          </Link>
+        </div>
+
+        <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}>
+          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
+            <Link to="/" style={{ color: 'var(--primary-600)' }}>ReviewResponder</Link> •
+            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Google Reviews</Link> •
+            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Yelp Reviews</Link> •
+            <Link to="/restaurant-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Restaurant Reviews</Link>
+          </p>
+        </div>
+      </section>
+    </div>
+  );
+};
+
 // Extension Page
 const ExtensionPage = () => {
   return (
@@ -4364,6 +4846,10 @@ function App() {
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/extension" element={<ExtensionPage />} />
+          <Route path="/google-review-response-generator" element={<GoogleReviewPage />} />
+          <Route path="/yelp-review-reply-tool" element={<YelpReviewPage />} />
+          <Route path="/restaurant-review-responses" element={<RestaurantReviewPage />} />
+          <Route path="/hotel-review-management" element={<HotelReviewPage />} />
           <Route
             path="/dashboard"
             element={
