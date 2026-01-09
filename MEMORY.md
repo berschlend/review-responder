@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 10.01.2026 - 02:30 Uhr**
+**Stand: 10.01.2026 - 03:30 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
@@ -94,6 +94,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **First-Time User Experience** - Onboarding Modal (3 Steps), Confetti auf erste Response, Feature Tooltips
 - [x] **SEO Landing Pages** - 4 keyword-optimierte Seiten: /google-review-response-generator, /yelp-review-reply-tool, /restaurant-review-responses, /hotel-review-management
 - [x] **Email Drip Campaign** - Automatische Emails an Tag 0,2,5,10,20 nach Signup (POST /api/cron/send-drip-emails)
+- [x] **Bug Fixes** - Chrome Extension Sprach-Fix, Dashboard Error Handling, Backend DB Logging
 
 ### 📋 GEPLANT FÜR SPÄTER:
 - [ ] **Performance: Code Splitting** - Requires Refactoring von App.js in separate Module (api.js, AuthContext.js, etc.)
@@ -295,7 +296,7 @@ git push
 
 ---
 
-## BUGS (QA-Test 09.01.2026 - 20:00 Uhr)
+## BUGS (QA-Test 10.01.2026 - 03:30 Uhr)
 
 ### Getestete Flows:
 | Flow | Status | Anmerkungen |
@@ -306,20 +307,24 @@ git push
 | History | OK | Responses werden gespeichert und angezeigt |
 | Stats | OK | Usage wird korrekt getrackt |
 | Password Reset | OK | Endpoint erreichbar (Resend noch nicht konfiguriert) |
-| Email Capture | PRUEFEN | Endpoint im Code vorhanden, Production-Test fehlgeschlagen |
+| Dashboard Loading | OK | Error States + Loading Spinner implementiert |
+| Chrome Extension | OK | Sprache der Review wird jetzt beibehalten |
+
+### Behobene Bugs (10.01.2026):
+| # | Bug | Status | Fix |
+|---|-----|--------|-----|
+| 1 | Chrome Extension Popup - Sprache nicht beibehalten | ✅ FIXED | `outputLanguage: 'auto'` → `'match'` in content.js |
+| 2 | Dashboard zeigt keine Fehler | ✅ FIXED | Error State + Error Banner + Retry Button |
+| 3 | Backend DB-Fehler nicht sichtbar | ✅ FIXED | Health-Endpoint zeigt DB-Status, besseres Logging |
 
 ### Offene Bugs:
 | # | Bug | Schweregrad | Status |
 |---|-----|-------------|--------|
-| 1 | Backend nicht vollständig deployed | 🔴 HOCH | User muss Render Redeploy machen |
+| - | Keine bekannten Bugs | - | - |
 
-**Details (QA 09.01.2026 20:10):**
-Folgende neue Endpoints geben 404 auf Production:
-- `/api/capture-email` - Exit-Intent Email Capture
-- `/api/templates` - Response Templates
-- `/api/generate-bulk` - Bulk Response Generation
-
-**Lösung:** Render Dashboard -> Backend Service -> "Manual Deploy" klicken
+**Wichtig für User:**
+- Nach Code-Push: Render macht automatisch Redeploy
+- Prüfe /api/health für DB-Status: `databaseUrl: 'configured'` sollte angezeigt werden
 
 ### Dokumentationsfehler (behoben):
 - `/api/user/stats` wurde zu `/api/stats` korrigiert
@@ -375,6 +380,19 @@ Folgende neue Endpoints geben 404 auf Production:
 - **Frontend**: Connected via axios im ExitIntentPopup Component
 
 ## CHANGELOG
+
+### 10.01.2026 (Bug Fixes)
+- **Chrome Extension Fix**: content.js `outputLanguage: 'auto'` → `'match'` - Antwort behält jetzt die Review-Sprache bei
+- **Dashboard Error Handling**:
+  - Neuer `dashboardError` + `isLoadingDashboard` State
+  - Error Banner mit Retry-Button bei Verbindungsfehlern
+  - Loading Spinner während Daten geladen werden
+  - Besseres Error Propagation in fetchStats/fetchHistory
+- **Backend DB Logging**:
+  - DATABASE_URL Check beim Startup mit klarer Fehlermeldung
+  - PostgreSQL Pool Event Logging (connect/error)
+  - `/api/health` zeigt jetzt DB-Status: `database: 'connected'/'disconnected'`, `databaseUrl: 'configured'/'MISSING'`
+  - Status 'degraded' wenn DB nicht erreichbar
 
 ### 09.01.2026
 - PostgreSQL Migration
