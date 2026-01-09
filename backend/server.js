@@ -147,6 +147,20 @@ async function initDatabase() {
       )
     `);
 
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS team_members (
+        id SERIAL PRIMARY KEY,
+        team_owner_id INTEGER NOT NULL REFERENCES users(id),
+        member_email TEXT NOT NULL,
+        member_user_id INTEGER REFERENCES users(id),
+        role TEXT DEFAULT 'member',
+        invite_token TEXT,
+        invited_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        accepted_at TIMESTAMP,
+        UNIQUE(team_owner_id, member_email)
+      )
+    `);
+
     console.log('📊 Database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -545,7 +559,25 @@ Generate ONLY the response text, nothing else:`;
 
     await dbQuery('UPDATE users SET responses_used = responses_used + 1 WHERE id = $1', [req.user.id]);
 
-    const updatedUser = await dbGet('SELECT responses_used, responses_limit FROM users WHERE id = $1', [req.user.id]);
+    const updatedUser = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+
+    // Check if user just crossed 80% usage and send alert email
+    const usagePercent = Math.round((updatedUser.responses_used / updatedUser.responses_limit) * 100);
+    const previousPercent = Math.round(((updatedUser.responses_used - 1) / updatedUser.responses_limit) * 100);
+
+    // Send alert if just crossed 80% threshold
+    if (usagePercent >= 80 && previousPercent < 80 && updatedUser.subscription_plan !== 'unlimited') {
+      const canSendAlert = !updatedUser.last_usage_alert_sent ||
+        new Date(updatedUser.last_usage_alert_sent) < new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+      if (canSendAlert && process.env.NODE_ENV === 'production') {
+        sendUsageAlertEmail(updatedUser).then(sent => {
+          if (sent) {
+            dbQuery('UPDATE users SET last_usage_alert_sent = NOW() WHERE id = $1', [req.user.id]);
+          }
+        });
+      }
+    }
 
     res.json({
       response: generatedResponse,
@@ -878,10 +910,16 @@ async function handleStripeWebhook(req, res) {
 
       case 'invoice.paid': {
         const invoice = event.data.object;
-        const user = await dbGet('SELECT id, subscription_plan FROM users WHERE stripe_customer_id = $1', [invoice.customer]);
+        const user = await dbGet('SELECT * FROM users WHERE stripe_customer_id = $1', [invoice.customer]);
 
         if (user && user.subscription_plan !== 'free') {
           await dbQuery('UPDATE users SET responses_used = 0 WHERE id = $1', [user.id]);
+
+          // Send plan renewal email
+          if (process.env.NODE_ENV === 'production') {
+            sendPlanRenewalEmail(user);
+          }
+          console.log(`📧 Plan renewed for user ${user.id} (${user.subscription_plan})`);
         }
         break;
       }
