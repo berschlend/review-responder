@@ -148,10 +148,92 @@ In Stripe Dashboard den Webhook auf die neue URL ändern:
 
 ---
 
-## Nächste Schritte für €1000/Monat
-1. Marketing-Content generieren (AUTO_MARKETING.bat)
-2. Content auf Medium, LinkedIn, Twitter posten
-3. ~25-35 zahlende Kunden gewinnen
+---
+
+## ENTWICKLUNGSPLAN - Roadmap zu $1000/Monat
+
+### Ziel: ~25-35 zahlende Kunden (bei durchschnittlich $35/Kunde)
+
+---
+
+### PHASE 1: Produkt-Stabilität (Aktueller Stand)
+- [x] Core Features fertig (AI-Responses, Multi-Language, Tones)
+- [x] Stripe Payments funktionieren (Live-Modus)
+- [x] Chrome Extension erstellt
+- [x] PostgreSQL für persistente Daten
+- [ ] **Erste echte User-Tests durchführen**
+- [ ] **Bugs aus User-Feedback fixen**
+
+### PHASE 2: Conversion-Optimierung
+- [ ] Landing Page A/B Testing (Headline, CTA)
+- [ ] Social Proof hinzufügen (Testimonials, User Count)
+- [ ] Demo-Video auf Landing Page
+- [ ] Trust Badges (SSL, Secure Payment)
+- [ ] Exit-Intent Popup mit Discount
+- [ ] Email-Capture für nicht-konvertierende Besucher
+
+### PHASE 3: Feature-Erweiterungen (Value Adds)
+- [ ] **Bulk Response Generation** (mehrere Reviews auf einmal)
+- [ ] **Review Analytics Dashboard** (Sentiment-Analyse)
+- [ ] **Email Notifications** bei neuen Reviews
+- [ ] **Team/Multi-User Accounts**
+- [ ] **API Access** für Enterprise-Kunden
+- [ ] **Yelp/TripAdvisor Integration** (nicht nur Google)
+- [ ] **Response Templates** speichern & wiederverwenden
+- [ ] **Brand Voice Training** (AI lernt den eigenen Stil)
+
+### PHASE 4: Marketing & Growth
+- [ ] SEO-optimierte Blog-Artikel
+- [ ] LinkedIn Outreach zu Restaurant/Hotel-Ownern
+- [ ] Google Ads Kampagne ($50-100 Test-Budget)
+- [ ] Product Hunt Launch
+- [ ] AppSumo Lifetime Deal (für schnelle Einnahmen)
+- [ ] Affiliate-Programm starten
+- [ ] Cold Email Kampagne an lokale Businesses
+
+### PHASE 5: Skalierung
+- [ ] Custom Domain (reviewresponder.app o.ä.)
+- [ ] Chrome Web Store Veröffentlichung
+- [ ] Referral-System (Kunden werben Kunden)
+- [ ] Enterprise-Tier mit Custom Pricing
+
+---
+
+## Für neue Claude Code Sessions
+
+**WICHTIG:** Bei jedem neuen Kontext-Fenster diese Datei zuerst lesen lassen!
+
+### Quick-Start Prompt für neue Sessions:
+```
+Lies bitte C:\Users\Berend Mainz\Documents\Start-up\ReviewResponder\MEMORY.md
+und fahre mit der Entwicklung fort. Aktueller Stand und nächste Aufgaben
+sind dort dokumentiert.
+```
+
+### Parallel Sessions in Claude Desktop:
+Ja, du kannst mehrere Claude Code Sessions parallel laufen lassen:
+1. Öffne mehrere Terminal-Fenster
+2. Starte in jedem `claude` mit dem Quick-Start Prompt
+3. Jede Session sollte an einem anderen Task arbeiten (z.B. eine macht Frontend, eine Backend)
+4. **WICHTIG:** Beide sollten diese MEMORY.md lesen UND updaten wenn sie fertig sind
+
+### Aktuelle Prioritäten (Update bei jeder Session):
+**Stand: 09.01.2026**
+1. PostgreSQL Datenbank wurde gerade eingerichtet - TESTEN ob alles funktioniert
+2. Chrome Extension testen
+3. Ersten echten User-Test durchführen
+4. Bugs dokumentieren und fixen
+
+### Bekannte offene Todos:
+- [ ] Testen: Registrierung mit neuer PostgreSQL DB
+- [ ] Testen: Login funktioniert
+- [ ] Testen: Response-Generierung funktioniert
+- [ ] Testen: Stripe Payment Flow
+- [ ] Testen: Chrome Extension mit Live-Backend
+
+---
+
+## Alte Sektion (für Referenz)
 
 ## Kontakt User
 - Name: Berend Mainz
