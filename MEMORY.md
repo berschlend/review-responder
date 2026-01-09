@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 09.01.2026 - 19:30 Uhr**
+**Stand: 09.01.2026 - 19:45 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
@@ -51,20 +51,21 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 | # | Task | Schwierigkeit | Dateien |
 |---|------|---------------|---------|
-| 1 | Social Proof auf Landing Page (User Count, Testimonials) | Einfach | `frontend/src/App.js` |
-| 2 | Trust Badges hinzufügen (SSL, Secure Payment Icons) | Einfach | `frontend/src/App.js`, `App.css` |
-| 3 | Demo-Video Section auf Landing Page | Mittel | `frontend/src/App.js` |
-| 4 | Bulk Response Generation (mehrere Reviews auf einmal) | Schwer | `backend/server.js`, `frontend/src/App.js` |
-| 5 | Response Templates speichern & wiederverwenden | Mittel | `backend/server.js`, `frontend/src/App.js` |
-| 6 | SEO Meta Tags & Open Graph optimieren | Einfach | `frontend/public/index.html` |
+| 1 | Demo-Video Section auf Landing Page | Mittel | `frontend/src/App.js` |
+| 2 | Bulk Response Generation (mehrere Reviews auf einmal) | Schwer | `backend/server.js`, `frontend/src/App.js` |
+| 3 | Response Templates speichern & wiederverwenden | Mittel | `backend/server.js`, `frontend/src/App.js` |
+| 4 | SEO Meta Tags & Open Graph optimieren | Einfach | `frontend/public/index.html` |
+| 5 | Exit-Intent Popup mit Rabatt | Mittel | `frontend/src/App.js` |
 
 ### ✅ HEUTE ERLEDIGT:
 - [x] PostgreSQL Migration (Daten persistent)
 - [x] Password Reset Flow mit Resend.com
 - [x] Jahres-Abos mit 20% Rabatt
 - [x] Regenerate Button für andere Tones
-- [x] Chrome Extension Fixes
+- [x] Chrome Extension Fixes + Google Maps Preview
 - [x] API Tests (alle bestanden)
+- [x] Social Proof + Trust Badges auf Landing Page
+- [x] Testimonials Section (3 Testimonials)
 
 ---
 
