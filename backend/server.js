@@ -1843,7 +1843,8 @@ app.get('/api/testimonials', async (req, res) => {
 
 // Drip Email Campaign - Send scheduled emails based on user signup date
 // Call this endpoint via cron job (e.g., daily at 9am)
-app.post('/api/cron/send-drip-emails', async (req, res) => {
+// Supports both GET and POST for easier testing
+const sendDripEmails = async (req, res) => {
   // Optional: Add a secret key check for security
   const cronSecret = req.headers['x-cron-secret'];
   if (process.env.CRON_SECRET && cronSecret !== process.env.CRON_SECRET) {
@@ -2207,7 +2208,11 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
     console.error('Drip email error:', error);
     res.status(500).json({ error: 'Failed to process drip emails' });
   }
-});
+};
+
+// Register both GET and POST for drip-emails endpoint
+app.get('/api/cron/send-drip-emails', sendDripEmails);
+app.post('/api/cron/send-drip-emails', sendDripEmails);
 
 // ============ ADMIN ENDPOINTS ============
 
