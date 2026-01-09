@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 10.01.2026 - 00:30 Uhr**
+**Stand: 10.01.2026 - 01:00 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
@@ -54,8 +54,8 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 | # | Task | Schwierigkeit | Dateien |
 |---|------|---------------|---------|
-| 1 | **Public API Access (Frontend)** - Settings Page + /api-docs | Einfach | `frontend/src/App.js` |
-| 2 | SEO Blog Artikel Generator | Mittel | `backend/server.js`, `frontend/src/App.js` |
+| 1 | SEO Blog Artikel Generator | Mittel | `backend/server.js`, `frontend/src/App.js` |
+| 2 | A/B Testing für Landing Page | Mittel | `frontend/src/App.js` |
 
 ### ✅ HEUTE ERLEDIGT:
 - [x] PostgreSQL Migration (Daten persistent)
@@ -83,7 +83,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **Email Notifications** - Weekly Summary, 80% Usage Alert, Plan Renewal Emails
 - [x] **Keyboard Shortcuts** - Cmd/Ctrl + Enter, N, 1-4, /, Shift+C
 - [x] **User Onboarding** - 3-Step Modal für neue User (Backend Support)
-- [x] **Public API Access (Backend)** - API Keys, Rate Limiting (100/Tag), POST /api/v1/generate (Unlimited only)
+- [x] **Public API Access (Vollständig)** - API Keys, Rate Limiting (100/Tag), POST /api/v1/generate, Settings UI, /api-docs Seite (Unlimited only)
 - [x] **Dark Mode** - Toggle in Navbar, System Preference Detection, localStorage Persistence
 - [x] **Chrome Web Store Vorbereitung** - CHROME_STORE.md, Store Listing, Privacy Policy Extension
 - [x] **Team/Multi-User Accounts** - Team Management in Settings (Unlimited only), Invite up to 5 members, Share quota
@@ -188,6 +188,7 @@ ReviewResponder/
 - ✅ Keyboard Shortcuts (Cmd/Ctrl + Enter, N, 1-4, /, Shift+C)
 - ✅ Dark Mode (Toggle, System Preference, localStorage)
 - ✅ Team/Multi-User Accounts (Unlimited only, up to 5 members, shared quota)
+- ✅ Public API Access (100 req/day, /api-docs page, API Key Management in Settings)
 
 ---
 
@@ -426,7 +427,7 @@ Folgende neue Endpoints geben 404 auf Production:
   - Cmd/Ctrl + /: Shortcuts Help Modal anzeigen
   - Keyboard-Icon Button im Dashboard Header
   - Platform-aware (⌘ auf Mac, Ctrl auf Windows)
-- **Public API Access (Backend)** implementiert:
+- **Public API Access (Vollständig)** implementiert:
   - Neue `api_keys` Tabelle in PostgreSQL
   - API Key Generation (rr_xxx... Format)
   - Key Hash gespeichert (nicht der echte Key)
@@ -435,7 +436,13 @@ Folgende neue Endpoints geben 404 auf Production:
   - authenticateApiKey Middleware
   - POST /api/v1/generate - Public API Endpoint
   - Nur für Unlimited Plan verfügbar
-  - Frontend (Settings, /api-docs) noch TODO
+  - **Frontend (NEU):**
+    - API Key Management in Settings Page
+    - Create/Delete API Keys
+    - Usage Statistics (requests today/100)
+    - /api-docs Seite mit vollständiger Dokumentation
+    - Quick Start Guide, Code Examples (cURL, Python, JavaScript)
+    - Error Codes & Rate Limits Dokumentation
 - **Dark Mode** implementiert:
   - ThemeContext & ThemeProvider in React
   - Toggle Button in Navbar (Sun/Moon Icons)
