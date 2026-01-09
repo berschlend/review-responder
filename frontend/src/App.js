@@ -136,6 +136,10 @@ const LandingPage = () => {
     <div>
       <section className="hero">
         <div className="container">
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: 'white', padding: '6px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '600', marginBottom: '16px' }}>
+            <Zap size={14} />
+            NEW: 50% OFF for Early Adopters
+          </div>
           <h1 className="hero-title">
             Respond to Reviews<br />in Seconds, Not Hours
           </h1>
@@ -174,25 +178,57 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Social Proof Stats */}
-      <section style={{ background: 'var(--gray-50)', padding: '40px 0', marginTop: '-40px' }}>
-        <div className="container">
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '60px', flexWrap: 'wrap' }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '36px', fontWeight: '700', color: 'var(--primary-600)' }}>500+</div>
-              <div style={{ fontSize: '14px', color: 'var(--gray-600)' }}>Businesses Trust Us</div>
+      {/* Launch Announcement */}
+      <section style={{ background: 'linear-gradient(135deg, var(--primary-50), var(--gray-50))', padding: '40px 0', marginTop: '-40px', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ 
+          position: 'absolute', 
+          top: '10px', 
+          right: '20px', 
+          background: '#10b981', 
+          color: 'white', 
+          padding: '6px 16px', 
+          borderRadius: '20px', 
+          fontSize: '12px', 
+          fontWeight: '600',
+          boxShadow: '0 2px 8px rgba(16,185,129,0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px'
+        }}>
+          <Sparkles size={14} />
+          JUST LAUNCHED
+        </div>
+        
+        <div className="container" style={{ textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px', color: 'var(--gray-900)' }}>
+            🎉 Limited Time Launch Offer
+          </h2>
+          <p style={{ fontSize: '16px', color: 'var(--gray-600)', marginBottom: '20px' }}>
+            Be one of the first 50 businesses to join and get <strong style={{ color: 'var(--primary-600)' }}>50% OFF</strong> for life!
+          </p>
+          
+          <div style={{ 
+            display: 'inline-flex', 
+            alignItems: 'center', 
+            gap: '24px', 
+            padding: '16px 32px', 
+            background: 'white', 
+            borderRadius: '12px', 
+            boxShadow: '0 4px 12px rgba(0,0,0,0.08)' 
+          }}>
+            <div>
+              <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Early Adopters</div>
+              <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--primary-600)' }}>7 / 50</div>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '36px', fontWeight: '700', color: 'var(--primary-600)' }}>15,000+</div>
-              <div style={{ fontSize: '14px', color: 'var(--gray-600)' }}>Responses Generated</div>
+            <div style={{ width: '1px', height: '40px', background: 'var(--gray-200)' }} />
+            <div>
+              <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Your Discount</div>
+              <div style={{ fontSize: '24px', fontWeight: '700', color: '#10b981' }}>50% OFF</div>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '36px', fontWeight: '700', color: 'var(--primary-600)' }}>4.9/5</div>
-              <div style={{ fontSize: '14px', color: 'var(--gray-600)' }}>Average Rating</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '36px', fontWeight: '700', color: 'var(--primary-600)' }}>&lt;10s</div>
-              <div style={{ fontSize: '14px', color: 'var(--gray-600)' }}>Response Time</div>
+            <div style={{ width: '1px', height: '40px', background: 'var(--gray-200)' }} />
+            <div>
+              <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Time Left</div>
+              <div style={{ fontSize: '20px', fontWeight: '600', color: 'var(--gray-900)' }}>43 spots</div>
             </div>
           </div>
         </div>
@@ -333,68 +369,109 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Live Demo Examples */}
       <section className="container" style={{ marginBottom: '60px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
-            Loved by Business Owners
+            See It In Action
           </h2>
           <p style={{ color: 'var(--gray-600)' }}>
-            See what our customers have to say
+            Real examples of AI-generated responses for different scenarios
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
-          {/* Testimonial 1 */}
-          <div className="card" style={{ padding: '24px' }}>
-            <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
-              {[1,2,3,4,5].map(i => <Star key={i} size={16} fill="#f59e0b" color="#f59e0b" />)}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '24px' }}>
+          {/* Example 1: 5-Star Review */}
+          <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
+            <div style={{ background: 'var(--gray-50)', padding: '16px 20px', borderBottom: '1px solid var(--gray-200)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--gray-600)' }}>POSITIVE REVIEW</span>
+                <div style={{ display: 'flex', gap: '2px' }}>
+                  {[1,2,3,4,5].map(i => <Star key={i} size={14} fill="#f59e0b" color="#f59e0b" />)}
+                </div>
+              </div>
+              <p style={{ fontSize: '14px', color: 'var(--gray-700)', lineHeight: '1.5' }}>
+                "Amazing pizza! The crust was perfectly crispy and the toppings were fresh. Service was quick and friendly. Will definitely come back!"
+              </p>
             </div>
-            <p style={{ color: 'var(--gray-700)', lineHeight: '1.6', marginBottom: '16px' }}>
-              "This tool has saved me hours every week. I used to spend 30 minutes crafting each response - now it takes seconds. The AI understands context perfectly."
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #667eea, #764ba2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '600' }}>M</div>
-              <div>
-                <div style={{ fontWeight: '600', color: 'var(--gray-900)' }}>Marco R.</div>
-                <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Restaurant Owner, Berlin</div>
+            <div style={{ padding: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--primary-600)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '600' }}>AI</div>
+                <span style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Generated in 3 seconds</span>
+              </div>
+              <p style={{ fontSize: '15px', color: 'var(--gray-800)', lineHeight: '1.6' }}>
+                "Thank you so much for the wonderful review! We're thrilled you enjoyed our pizza and experienced our team's dedication to great service. Your kind words mean the world to us, and we can't wait to welcome you back soon! 🍕✨"
+              </p>
+              <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                <span style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--primary-50)', color: 'var(--primary-700)', borderRadius: '12px' }}>Friendly Tone</span>
               </div>
             </div>
           </div>
 
-          {/* Testimonial 2 */}
-          <div className="card" style={{ padding: '24px' }}>
-            <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
-              {[1,2,3,4,5].map(i => <Star key={i} size={16} fill="#f59e0b" color="#f59e0b" />)}
+          {/* Example 2: Negative Review */}
+          <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
+            <div style={{ background: 'var(--gray-50)', padding: '16px 20px', borderBottom: '1px solid var(--gray-200)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--gray-600)' }}>NEGATIVE REVIEW</span>
+                <div style={{ display: 'flex', gap: '2px' }}>
+                  {[1,2,3,4,5].map(i => <Star key={i} size={14} fill={i <= 2 ? "#f59e0b" : "none"} color="#f59e0b" />)}
+                </div>
+              </div>
+              <p style={{ fontSize: '14px', color: 'var(--gray-700)', lineHeight: '1.5' }}>
+                "Waited 45 minutes for our food. When it finally arrived, it was cold. Very disappointed with the service."
+              </p>
             </div>
-            <p style={{ color: 'var(--gray-700)', lineHeight: '1.6', marginBottom: '16px' }}>
-              "The multi-language support is incredible. We get reviews in German, English, and Spanish - ReviewResponder handles them all flawlessly."
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '600' }}>S</div>
-              <div>
-                <div style={{ fontWeight: '600', color: 'var(--gray-900)' }}>Sarah K.</div>
-                <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Hotel Manager, Munich</div>
+            <div style={{ padding: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--primary-600)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '600' }}>AI</div>
+                <span style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Generated in 2 seconds</span>
+              </div>
+              <p style={{ fontSize: '15px', color: 'var(--gray-800)', lineHeight: '1.6' }}>
+                "We sincerely apologize for the unacceptable wait time and cold food. This is not the standard we aim for, and we understand your disappointment. Please contact us directly at (555) 123-4567 so we can make this right and ensure a much better experience next time."
+              </p>
+              <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                <span style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--error-light)', color: 'var(--error)', borderRadius: '12px' }}>Apologetic Tone</span>
               </div>
             </div>
           </div>
 
-          {/* Testimonial 3 */}
-          <div className="card" style={{ padding: '24px' }}>
-            <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
-              {[1,2,3,4,5].map(i => <Star key={i} size={16} fill="#f59e0b" color="#f59e0b" />)}
+          {/* Example 3: Multi-language */}
+          <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
+            <div style={{ background: 'var(--gray-50)', padding: '16px 20px', borderBottom: '1px solid var(--gray-200)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--gray-600)' }}>GERMAN REVIEW</span>
+                <div style={{ display: 'flex', gap: '2px' }}>
+                  {[1,2,3,4,5].map(i => <Star key={i} size={14} fill={i <= 4 ? "#f59e0b" : "none"} color="#f59e0b" />)}
+                </div>
+              </div>
+              <p style={{ fontSize: '14px', color: 'var(--gray-700)', lineHeight: '1.5' }}>
+                "Sehr gutes Essen und freundliche Bedienung. Die Portionen könnten etwas größer sein, aber insgesamt empfehlenswert!"
+              </p>
             </div>
-            <p style={{ color: 'var(--gray-700)', lineHeight: '1.6', marginBottom: '16px' }}>
-              "The Chrome extension is a game-changer. I respond to reviews directly on Google Maps without switching tabs. Worth every penny!"
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #f59e0b, #d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '600' }}>T</div>
-              <div>
-                <div style={{ fontWeight: '600', color: 'var(--gray-900)' }}>Thomas B.</div>
-                <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Cafe Owner, Vienna</div>
+            <div style={{ padding: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--primary-600)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '600' }}>AI</div>
+                <span style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Auto-detected: German</span>
+              </div>
+              <p style={{ fontSize: '15px', color: 'var(--gray-800)', lineHeight: '1.6' }}>
+                "Vielen Dank für Ihre positive Bewertung! Es freut uns sehr, dass Ihnen unser Essen und der Service gefallen haben. Ihr Feedback zu den Portionsgrößen nehmen wir gerne auf. Wir freuen uns auf Ihren nächsten Besuch!"
+              </p>
+              <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                <span style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--primary-50)', color: 'var(--primary-700)', borderRadius: '12px' }}>Professional Tone</span>
+                <span style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--gray-100)', color: 'var(--gray-700)', borderRadius: '12px' }}>🇩🇪 German</span>
               </div>
             </div>
           </div>
+        </div>
+
+        <div style={{ textAlign: 'center', marginTop: '32px' }}>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try It Free Now
+          </Link>
+          <p style={{ marginTop: '12px', fontSize: '13px', color: 'var(--gray-500)' }}>
+            Generate 5 responses free • No credit card required
+          </p>
         </div>
       </section>
 
