@@ -10,7 +10,7 @@ Eine vollständige SaaS-App die KI-generierte Antworten auf Google/Yelp Reviews 
 ## Tech Stack
 - **Frontend**: React, hosted auf Render (Static Site)
 - **Backend**: Node.js/Express, hosted auf Render (Web Service)
-- **Datenbank**: SQLite (sql.js)
+- **Datenbank**: PostgreSQL (gehostet auf Render)
 - **Zahlungen**: Stripe (Live-Modus aktiv)
 - **AI**: OpenAI GPT-4o-mini
 
@@ -22,6 +22,7 @@ Eine vollständige SaaS-App die KI-generierte Antworten auf Google/Yelp Reviews 
 
 ## Render Environment Variables (Backend)
 Diese sind bereits eingetragen:
+- `DATABASE_URL` - PostgreSQL Connection String (von Render PostgreSQL)
 - `OPENAI_API_KEY` - OpenAI API Key
 - `STRIPE_SECRET_KEY` - Live Stripe Secret Key (sk_live_...)
 - `STRIPE_WEBHOOK_SECRET` - Live Webhook Secret (whsec_...)
@@ -67,6 +68,33 @@ Installation: Siehe `/chrome-extension/INSTALL.md`
 1. better-sqlite3 funktionierte nicht auf Windows → gewechselt zu sql.js
 2. OpenAI Key wurde geleakt → neuer Key erstellt, .gitignore hinzugefügt
 3. react-scripts Permission denied → CI=false zum build command hinzugefügt
+4. SQLite Daten wurden bei jedem Deploy gelöscht → gewechselt zu PostgreSQL
+
+## PostgreSQL Datenbank Setup (Render)
+
+Die Datenbank muss einmalig auf Render erstellt werden:
+
+### 1. PostgreSQL auf Render erstellen
+1. Gehe zu https://dashboard.render.com
+2. Klicke "New" → "PostgreSQL"
+3. Wähle einen Namen (z.B. "review-responder-db")
+4. Region: Frankfurt (EU Central)
+5. Plan: Free (oder Starter für bessere Performance)
+6. Klicke "Create Database"
+
+### 2. DATABASE_URL zum Backend hinzufügen
+1. Warte bis die Datenbank erstellt ist (~1-2 Minuten)
+2. Kopiere die "Internal Database URL" (beginnt mit postgres://...)
+3. Gehe zu review-responder Backend → Environment
+4. Füge neue Variable hinzu:
+   - Key: `DATABASE_URL`
+   - Value: [Die kopierte Internal URL]
+5. Klicke "Save Changes"
+
+### 3. Backend neu deployen
+- Das Backend wird automatisch neu deployen
+- Beim Start werden alle Tabellen automatisch erstellt
+- Bestehende User müssen sich neu registrieren (einmalig)
 
 ## Custom Domain einrichten
 

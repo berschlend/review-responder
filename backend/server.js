@@ -5,21 +5,19 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const initSqlJs = require('sql.js');
+const { Pool } = require('pg');
 const Stripe = require('stripe');
 const OpenAI = require('openai');
 const validator = require('validator');
-const path = require('path');
-const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Database file path
-const DB_PATH = path.join(__dirname, 'database.sqlite');
-
-// Global database instance
-let db;
+// PostgreSQL connection
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
 
 // Initialize services
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -42,119 +40,80 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-// Helper functions for sql.js
-function dbRun(sql, params = []) {
-  db.run(sql, params);
-  saveDatabase();
-}
-
-function dbGet(sql, params = []) {
-  const stmt = db.prepare(sql);
-  stmt.bind(params);
-  if (stmt.step()) {
-    const row = stmt.getAsObject();
-    stmt.free();
-    return row;
+// Database helper functions
+async function dbQuery(sql, params = []) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(sql, params);
+    return result;
+  } finally {
+    client.release();
   }
-  stmt.free();
-  return null;
 }
 
-function dbAll(sql, params = []) {
-  const stmt = db.prepare(sql);
-  stmt.bind(params);
-  const results = [];
-  while (stmt.step()) {
-    results.push(stmt.getAsObject());
-  }
-  stmt.free();
-  return results;
+async function dbGet(sql, params = []) {
+  const result = await dbQuery(sql, params);
+  return result.rows[0] || null;
 }
 
-function dbInsert(sql, params = []) {
-  db.run(sql, params);
-  const lastId = db.exec("SELECT last_insert_rowid()")[0].values[0][0];
-  saveDatabase();
-  return { lastInsertRowid: lastId };
+async function dbAll(sql, params = []) {
+  const result = await dbQuery(sql, params);
+  return result.rows;
 }
 
-function saveDatabase() {
-  const data = db.export();
-  const buffer = Buffer.from(data);
-  fs.writeFileSync(DB_PATH, buffer);
-}
-
-// Initialize database
+// Initialize database tables
 async function initDatabase() {
-  const SQL = await initSqlJs();
+  try {
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        business_name TEXT,
+        business_type TEXT,
+        business_context TEXT,
+        response_style TEXT,
+        stripe_customer_id TEXT,
+        subscription_status TEXT DEFAULT 'inactive',
+        subscription_plan TEXT DEFAULT 'free',
+        responses_used INTEGER DEFAULT 0,
+        responses_limit INTEGER DEFAULT 5,
+        current_period_start TIMESTAMP,
+        current_period_end TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
-  // Load existing database or create new one
-  if (fs.existsSync(DB_PATH)) {
-    const fileBuffer = fs.readFileSync(DB_PATH);
-    db = new SQL.Database(fileBuffer);
-  } else {
-    db = new SQL.Database();
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS responses (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        review_text TEXT NOT NULL,
+        review_rating INTEGER,
+        review_platform TEXT,
+        generated_response TEXT NOT NULL,
+        tone TEXT DEFAULT 'professional',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS support_requests (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        subject TEXT NOT NULL,
+        message TEXT NOT NULL,
+        status TEXT DEFAULT 'new',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    console.log('📊 Database initialized');
+  } catch (error) {
+    console.error('Database initialization error:', error);
+    throw error;
   }
-
-  // Create tables
-  db.run(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      email TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
-      business_name TEXT,
-      business_type TEXT,
-      business_context TEXT,
-      response_style TEXT,
-      stripe_customer_id TEXT,
-      subscription_status TEXT DEFAULT 'inactive',
-      subscription_plan TEXT DEFAULT 'free',
-      responses_used INTEGER DEFAULT 0,
-      responses_limit INTEGER DEFAULT 5,
-      current_period_start TEXT,
-      current_period_end TEXT,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  // Add columns if they don't exist (for existing databases)
-  try {
-    db.run(`ALTER TABLE users ADD COLUMN business_type TEXT`);
-  } catch (e) {}
-  try {
-    db.run(`ALTER TABLE users ADD COLUMN business_context TEXT`);
-  } catch (e) {}
-  try {
-    db.run(`ALTER TABLE users ADD COLUMN response_style TEXT`);
-  } catch (e) {}
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS responses (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      review_text TEXT NOT NULL,
-      review_rating INTEGER,
-      review_platform TEXT,
-      generated_response TEXT NOT NULL,
-      tone TEXT DEFAULT 'professional',
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id)
-    )
-  `);
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS templates (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      name TEXT NOT NULL,
-      content TEXT NOT NULL,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id)
-    )
-  `);
-
-  saveDatabase();
-  console.log('📊 Database initialized');
 }
 
 // JWT middleware
@@ -197,7 +156,7 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ error: 'Password must be at least 8 characters' });
     }
 
-    const existingUser = dbGet('SELECT id FROM users WHERE email = ?', [email]);
+    const existingUser = await dbGet('SELECT id FROM users WHERE email = $1', [email]);
     if (existingUser) {
       return res.status(400).json({ error: 'Email already registered' });
     }
@@ -210,18 +169,19 @@ app.post('/api/auth/register', async (req, res) => {
       metadata: { business_name: businessName || '' }
     });
 
-    const result = dbInsert(
+    const result = await dbQuery(
       `INSERT INTO users (email, password, business_name, stripe_customer_id, responses_limit)
-       VALUES (?, ?, ?, ?, ?)`,
+       VALUES ($1, $2, $3, $4, $5) RETURNING id`,
       [email, hashedPassword, businessName || '', customer.id, PLAN_LIMITS.free.responses]
     );
 
-    const token = jwt.sign({ id: result.lastInsertRowid, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const userId = result.rows[0].id;
+    const token = jwt.sign({ id: userId, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
     res.status(201).json({
       token,
       user: {
-        id: result.lastInsertRowid,
+        id: userId,
         email,
         businessName,
         plan: 'free',
@@ -239,7 +199,7 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = dbGet('SELECT * FROM users WHERE email = ?', [email]);
+    const user = await dbGet('SELECT * FROM users WHERE email = $1', [email]);
     if (!user) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
@@ -269,26 +229,31 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-app.get('/api/auth/me', authenticateToken, (req, res) => {
-  const user = dbGet('SELECT * FROM users WHERE id = ?', [req.user.id]);
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
-  }
-
-  res.json({
-    user: {
-      id: user.id,
-      email: user.email,
-      businessName: user.business_name,
-      businessType: user.business_type,
-      businessContext: user.business_context,
-      responseStyle: user.response_style,
-      plan: user.subscription_plan,
-      responsesUsed: user.responses_used,
-      responsesLimit: user.responses_limit,
-      subscriptionStatus: user.subscription_status
+app.get('/api/auth/me', authenticateToken, async (req, res) => {
+  try {
+    const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
     }
-  });
+
+    res.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        businessName: user.business_name,
+        businessType: user.business_type,
+        businessContext: user.business_context,
+        responseStyle: user.response_style,
+        plan: user.subscription_plan,
+        responsesUsed: user.responses_used,
+        responsesLimit: user.responses_limit,
+        subscriptionStatus: user.subscription_status
+      }
+    });
+  } catch (error) {
+    console.error('Get user error:', error);
+    res.status(500).json({ error: 'Failed to get user' });
+  }
 });
 
 // Update business profile
@@ -296,12 +261,12 @@ app.put('/api/auth/profile', authenticateToken, async (req, res) => {
   try {
     const { businessName, businessType, businessContext, responseStyle } = req.body;
 
-    dbRun(
-      `UPDATE users SET business_name = ?, business_type = ?, business_context = ?, response_style = ? WHERE id = ?`,
+    await dbQuery(
+      `UPDATE users SET business_name = $1, business_type = $2, business_context = $3, response_style = $4 WHERE id = $5`,
       [businessName || '', businessType || '', businessContext || '', responseStyle || '', req.user.id]
     );
 
-    const user = dbGet('SELECT * FROM users WHERE id = ?', [req.user.id]);
+    const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
 
     res.json({
       success: true,
@@ -340,7 +305,7 @@ async function generateResponseHandler(req, res) {
     }
 
     // Check usage limits
-    const user = dbGet('SELECT * FROM users WHERE id = ?', [req.user.id]);
+    const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
 
     if (user.responses_used >= user.responses_limit) {
       return res.status(403).json({
@@ -391,6 +356,7 @@ Instructions:
 - Don't be overly formal or use canned phrases
 - Make it feel personal and authentic
 - If business context is provided, reference specific details about the business (e.g., mention specific menu items, services, team members)
+- IMPORTANT: Respond in the same language as the review. If the review is in German, respond in German. If in Spanish, respond in Spanish.
 ${customInstructions ? `- Additional instructions: ${customInstructions}` : ''}
 
 Generate ONLY the response text, nothing else:`;
@@ -405,15 +371,15 @@ Generate ONLY the response text, nothing else:`;
     const generatedResponse = completion.choices[0].message.content.trim();
 
     // Save response and update usage
-    dbInsert(
+    await dbQuery(
       `INSERT INTO responses (user_id, review_text, review_rating, review_platform, generated_response, tone)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+       VALUES ($1, $2, $3, $4, $5, $6)`,
       [req.user.id, reviewText, reviewRating || null, platform || 'google', generatedResponse, tone || 'professional']
     );
 
-    dbRun('UPDATE users SET responses_used = responses_used + 1 WHERE id = ?', [req.user.id]);
+    await dbQuery('UPDATE users SET responses_used = responses_used + 1 WHERE id = $1', [req.user.id]);
 
-    const updatedUser = dbGet('SELECT responses_used, responses_limit FROM users WHERE id = ?', [req.user.id]);
+    const updatedUser = await dbGet('SELECT responses_used, responses_limit FROM users WHERE id = $1', [req.user.id]);
 
     res.json({
       response: generatedResponse,
@@ -426,27 +392,32 @@ Generate ONLY the response text, nothing else:`;
   }
 }
 
-app.get('/api/responses/history', authenticateToken, (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 20;
-  const offset = (page - 1) * limit;
+app.get('/api/responses/history', authenticateToken, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const offset = (page - 1) * limit;
 
-  const responses = dbAll(
-    `SELECT * FROM responses WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-    [req.user.id, limit, offset]
-  );
+    const responses = await dbAll(
+      `SELECT * FROM responses WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
+      [req.user.id, limit, offset]
+    );
 
-  const total = dbGet('SELECT COUNT(*) as count FROM responses WHERE user_id = ?', [req.user.id]);
+    const total = await dbGet('SELECT COUNT(*) as count FROM responses WHERE user_id = $1', [req.user.id]);
 
-  res.json({
-    responses,
-    pagination: {
-      page,
-      limit,
-      total: total.count,
-      pages: Math.ceil(total.count / limit)
-    }
-  });
+    res.json({
+      responses,
+      pagination: {
+        page,
+        limit,
+        total: parseInt(total.count),
+        pages: Math.ceil(parseInt(total.count) / limit)
+      }
+    });
+  } catch (error) {
+    console.error('History error:', error);
+    res.status(500).json({ error: 'Failed to get history' });
+  }
 });
 
 // ============ STRIPE BILLING ============
@@ -459,7 +430,7 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
       return res.status(400).json({ error: 'Invalid plan' });
     }
 
-    const user = dbGet('SELECT * FROM users WHERE id = ?', [req.user.id]);
+    const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
 
     const session = await stripe.checkout.sessions.create({
       customer: user.stripe_customer_id,
@@ -486,7 +457,7 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
 
 app.post('/api/billing/portal', authenticateToken, async (req, res) => {
   try {
-    const user = dbGet('SELECT stripe_customer_id FROM users WHERE id = ?', [req.user.id]);
+    const user = await dbGet('SELECT stripe_customer_id FROM users WHERE id = $1', [req.user.id]);
 
     const session = await stripe.billingPortal.sessions.create({
       customer: user.stripe_customer_id,
@@ -512,60 +483,64 @@ async function handleStripeWebhook(req, res) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  switch (event.type) {
-    case 'checkout.session.completed': {
-      const session = event.data.object;
-      const userId = session.metadata.userId;
-      const plan = session.metadata.plan;
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        const userId = session.metadata.userId;
+        const plan = session.metadata.plan;
 
-      dbRun(
-        `UPDATE users SET subscription_status = 'active', subscription_plan = ?, responses_limit = ?, responses_used = 0 WHERE id = ?`,
-        [plan, PLAN_LIMITS[plan].responses, userId]
-      );
-      break;
-    }
-
-    case 'customer.subscription.updated': {
-      const subscription = event.data.object;
-      const user = dbGet('SELECT id FROM users WHERE stripe_customer_id = ?', [subscription.customer]);
-
-      if (user) {
-        const status = subscription.status === 'active' ? 'active' : 'inactive';
-        dbRun(
-          `UPDATE users SET subscription_status = ?, current_period_start = ?, current_period_end = ? WHERE id = ?`,
-          [
-            status,
-            new Date(subscription.current_period_start * 1000).toISOString(),
-            new Date(subscription.current_period_end * 1000).toISOString(),
-            user.id
-          ]
+        await dbQuery(
+          `UPDATE users SET subscription_status = 'active', subscription_plan = $1, responses_limit = $2, responses_used = 0 WHERE id = $3`,
+          [plan, PLAN_LIMITS[plan].responses, userId]
         );
+        break;
       }
-      break;
-    }
 
-    case 'customer.subscription.deleted': {
-      const subscription = event.data.object;
-      const user = dbGet('SELECT id FROM users WHERE stripe_customer_id = ?', [subscription.customer]);
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object;
+        const user = await dbGet('SELECT id FROM users WHERE stripe_customer_id = $1', [subscription.customer]);
 
-      if (user) {
-        dbRun(
-          `UPDATE users SET subscription_status = 'inactive', subscription_plan = 'free', responses_limit = ? WHERE id = ?`,
-          [PLAN_LIMITS.free.responses, user.id]
-        );
+        if (user) {
+          const status = subscription.status === 'active' ? 'active' : 'inactive';
+          await dbQuery(
+            `UPDATE users SET subscription_status = $1, current_period_start = $2, current_period_end = $3 WHERE id = $4`,
+            [
+              status,
+              new Date(subscription.current_period_start * 1000),
+              new Date(subscription.current_period_end * 1000),
+              user.id
+            ]
+          );
+        }
+        break;
       }
-      break;
-    }
 
-    case 'invoice.paid': {
-      const invoice = event.data.object;
-      const user = dbGet('SELECT id, subscription_plan FROM users WHERE stripe_customer_id = ?', [invoice.customer]);
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object;
+        const user = await dbGet('SELECT id FROM users WHERE stripe_customer_id = $1', [subscription.customer]);
 
-      if (user && user.subscription_plan !== 'free') {
-        dbRun('UPDATE users SET responses_used = 0 WHERE id = ?', [user.id]);
+        if (user) {
+          await dbQuery(
+            `UPDATE users SET subscription_status = 'inactive', subscription_plan = 'free', responses_limit = $1 WHERE id = $2`,
+            [PLAN_LIMITS.free.responses, user.id]
+          );
+        }
+        break;
       }
-      break;
+
+      case 'invoice.paid': {
+        const invoice = event.data.object;
+        const user = await dbGet('SELECT id, subscription_plan FROM users WHERE stripe_customer_id = $1', [invoice.customer]);
+
+        if (user && user.subscription_plan !== 'free') {
+          await dbQuery('UPDATE users SET responses_used = 0 WHERE id = $1', [user.id]);
+        }
+        break;
+      }
     }
+  } catch (error) {
+    console.error('Webhook processing error:', error);
   }
 
   res.json({ received: true });
@@ -585,22 +560,8 @@ app.post('/api/support/contact', async (req, res) => {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
-    // Store support request in database
-    db.run(`
-      CREATE TABLE IF NOT EXISTS support_requests (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        email TEXT NOT NULL,
-        subject TEXT NOT NULL,
-        message TEXT NOT NULL,
-        status TEXT DEFAULT 'new',
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    saveDatabase();
-
-    dbInsert(
-      `INSERT INTO support_requests (name, email, subject, message) VALUES (?, ?, ?, ?)`,
+    await dbQuery(
+      `INSERT INTO support_requests (name, email, subject, message) VALUES ($1, $2, $3, $4)`,
       [name, email, subject, message]
     );
 
@@ -615,52 +576,54 @@ app.post('/api/support/contact', async (req, res) => {
 
 // ============ USAGE STATS ============
 
-app.get('/api/stats', authenticateToken, (req, res) => {
-  const user = dbGet('SELECT * FROM users WHERE id = ?', [req.user.id]);
+app.get('/api/stats', authenticateToken, async (req, res) => {
+  try {
+    const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
 
-  const totalResponses = dbGet('SELECT COUNT(*) as count FROM responses WHERE user_id = ?', [req.user.id]);
+    const totalResponses = await dbGet('SELECT COUNT(*) as count FROM responses WHERE user_id = $1', [req.user.id]);
 
-  const thisMonth = dbGet(
-    `SELECT COUNT(*) as count FROM responses WHERE user_id = ? AND created_at >= date('now', 'start of month')`,
-    [req.user.id]
-  );
+    const thisMonth = await dbGet(
+      `SELECT COUNT(*) as count FROM responses WHERE user_id = $1 AND created_at >= date_trunc('month', CURRENT_DATE)`,
+      [req.user.id]
+    );
 
-  const byPlatform = dbAll(
-    `SELECT review_platform, COUNT(*) as count FROM responses WHERE user_id = ? GROUP BY review_platform`,
-    [req.user.id]
-  );
+    const byPlatform = await dbAll(
+      `SELECT review_platform, COUNT(*) as count FROM responses WHERE user_id = $1 GROUP BY review_platform`,
+      [req.user.id]
+    );
 
-  const byRating = dbAll(
-    `SELECT review_rating, COUNT(*) as count FROM responses WHERE user_id = ? AND review_rating IS NOT NULL GROUP BY review_rating`,
-    [req.user.id]
-  );
+    const byRating = await dbAll(
+      `SELECT review_rating, COUNT(*) as count FROM responses WHERE user_id = $1 AND review_rating IS NOT NULL GROUP BY review_rating`,
+      [req.user.id]
+    );
 
-  res.json({
-    usage: {
-      used: user.responses_used,
-      limit: user.responses_limit,
-      remaining: user.responses_limit - user.responses_used
-    },
-    stats: {
-      totalResponses: totalResponses.count,
-      thisMonth: thisMonth.count,
-      byPlatform,
-      byRating
-    },
-    subscription: {
-      plan: user.subscription_plan,
-      status: user.subscription_status
-    }
-  });
+    res.json({
+      usage: {
+        used: user.responses_used,
+        limit: user.responses_limit,
+        remaining: user.responses_limit - user.responses_used
+      },
+      stats: {
+        totalResponses: parseInt(totalResponses.count),
+        thisMonth: parseInt(thisMonth.count),
+        byPlatform,
+        byRating
+      },
+      subscription: {
+        plan: user.subscription_plan,
+        status: user.subscription_status
+      }
+    });
+  } catch (error) {
+    console.error('Stats error:', error);
+    res.status(500).json({ error: 'Failed to get stats' });
+  }
 });
 
-// Serve static files in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../frontend/build')));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
-  });
-}
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
 // Start server
 initDatabase().then(() => {
