@@ -1237,17 +1237,17 @@ const ExtensionPage = () => {
           Install Chrome Extension
         </h1>
         <p style={{ color: 'var(--gray-600)' }}>
-          Follow these steps to install the ReviewResponder extension
+          3 simple steps - takes less than 1 minute
         </p>
       </div>
 
       <div className="card" style={{ marginBottom: '24px' }}>
         <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span style={{ background: 'var(--primary-600)', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>1</span>
-          Download Extension Files
+          Download & Unzip
         </h2>
         <p style={{ color: 'var(--gray-600)', marginBottom: '16px' }}>
-          Click the button below to download the extension folder as a ZIP file.
+          Download the ZIP file and extract it to any folder (e.g. Desktop).
         </p>
         <a
           href="/extension-download.zip"
@@ -1256,50 +1256,33 @@ const ExtensionPage = () => {
           style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
         >
           <Download size={18} />
-          Download Extension (ZIP)
+          Download Extension
         </a>
       </div>
 
       <div className="card" style={{ marginBottom: '24px' }}>
         <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span style={{ background: 'var(--primary-600)', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>2</span>
-          Unzip the Download
+          Add to Chrome
         </h2>
-        <p style={{ color: 'var(--gray-600)' }}>
-          Extract the ZIP file to a folder on your computer. Remember where you save it!
-        </p>
-      </div>
-
-      <div className="card" style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ background: 'var(--primary-600)', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>3</span>
-          Create Icons
-        </h2>
-        <p style={{ color: 'var(--gray-600)', marginBottom: '16px' }}>
-          Open the <code style={{ background: 'var(--gray-100)', padding: '2px 6px', borderRadius: '4px' }}>create-icons.html</code> file in Chrome and download all 3 icons. Save them in the same folder.
-        </p>
-      </div>
-
-      <div className="card" style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ background: 'var(--primary-600)', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>4</span>
-          Load in Chrome
-        </h2>
-        <ol style={{ color: 'var(--gray-600)', paddingLeft: '20px', lineHeight: '2' }}>
-          <li>Open Chrome and go to <code style={{ background: 'var(--gray-100)', padding: '2px 6px', borderRadius: '4px' }}>chrome://extensions/</code></li>
-          <li>Enable <strong>Developer mode</strong> (toggle in top-right corner)</li>
+        <ol style={{ color: 'var(--gray-600)', paddingLeft: '20px', lineHeight: '2.2', marginBottom: '16px' }}>
+          <li>Type <code style={{ background: 'var(--gray-100)', padding: '4px 10px', borderRadius: '4px', fontWeight: '600' }}>chrome://extensions</code> in your address bar</li>
+          <li>Turn on <strong>Developer mode</strong> (top-right toggle)</li>
           <li>Click <strong>Load unpacked</strong></li>
-          <li>Select the folder where you extracted the extension</li>
+          <li>Select the extracted folder</li>
         </ol>
+        <div style={{ background: 'var(--gray-50)', padding: '12px', borderRadius: '8px', fontSize: '13px', color: 'var(--gray-600)' }}>
+          <strong>Tip:</strong> The extension icon will appear in your Chrome toolbar (puzzle piece icon)
+        </div>
       </div>
 
       <div className="card" style={{ marginBottom: '24px', background: 'linear-gradient(135deg, var(--primary-50), var(--gray-50))', border: '1px solid var(--primary-200)' }}>
         <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ background: '#10b981', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Check size={16} /></span>
-          Done! Start Using
+          <span style={{ background: '#10b981', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>3</span>
+          Login & Go!
         </h2>
         <p style={{ color: 'var(--gray-600)', marginBottom: '16px' }}>
-          Click the ReviewResponder icon in your Chrome toolbar, login with your account, and start generating responses!
+          Click the ReviewResponder icon, login with your account, and start generating responses!
         </p>
         <Link to="/register" className="btn btn-primary">
           Create Free Account
