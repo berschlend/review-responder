@@ -41,21 +41,21 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 09.01.2026 - 20:15 Uhr**
+**Stand: 09.01.2026 - 20:45 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
 - [ ] Stripe Yearly Prices erstellen + Price IDs in Render eintragen
+- [ ] Demo-Video aufnehmen (2 Min Walkthrough) und YouTube/Loom Link einfügen
 
 ### 🟡 NÄCHSTE CLAUDE TASKS (Wähle einen):
 
 | # | Task | Schwierigkeit | Dateien |
 |---|------|---------------|---------|
-| 1 | Demo-Video Section auf Landing Page | Mittel | `frontend/src/App.js` |
-| 2 | Bulk Response Generation (mehrere Reviews auf einmal) | Schwer | `backend/server.js`, `frontend/src/App.js` |
-| 3 | Response Templates speichern & wiederverwenden | Mittel | `backend/server.js`, `frontend/src/App.js` |
-| 4 | Exit-Intent Popup mit Rabatt | Mittel | `frontend/src/App.js` |
-| 5 | OG Image erstellen (für Social Sharing) | Einfach | `frontend/public/og-image.png` |
+| 1 | Bulk Response Generation (mehrere Reviews auf einmal) | Schwer | `backend/server.js`, `frontend/src/App.js` |
+| 2 | Response Templates speichern & wiederverwenden | Mittel | `backend/server.js`, `frontend/src/App.js` |
+| 3 | Exit-Intent Popup mit Rabatt | Mittel | `frontend/src/App.js` |
+| 4 | OG Image erstellen (für Social Sharing) | Einfach | `frontend/public/og-image.png` |
 
 ### ✅ HEUTE ERLEDIGT:
 - [x] PostgreSQL Migration (Daten persistent)
