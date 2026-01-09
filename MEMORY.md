@@ -211,7 +211,7 @@ git push
 - [ ] Response Templates
 
 ### Phase 4: Marketing
-- [ ] Product Hunt Launch
+- [x] Product Hunt Launch Vorbereitung (PRODUCT_HUNT.md)
 - [ ] LinkedIn Outreach
 - [ ] Google Ads ($50-100 Test)
 - [ ] SEO Blog-Artikel
