@@ -2747,22 +2747,32 @@ const DashboardPage = () => {
   // Parse bulk input (supports multiple formats)
   const parseBulkInput = (input) => {
     if (!input) return [];
-    // Try to detect CSV format (quoted strings with commas)
-    if (input.includes('","') || input.startsWith('"')) {
+
+    // Try separator format first: ---
+    if (input.includes('---')) {
+      return input.split('---').map(r => r.trim()).filter(r => r.length > 10);
+    }
+
+    // Try to detect quoted reviews (lines starting and ending with ")
+    const quotedMatches = input.match(/"[^"]{10,}"/g);
+    if (quotedMatches && quotedMatches.length >= 2) {
+      return quotedMatches.map(m => m.slice(1, -1).trim()).filter(r => r.length > 10);
+    }
+
+    // Try CSV format ("review1","review2")
+    if (input.includes('","')) {
       const matches = input.match(/"([^"]+)"/g);
       if (matches) {
-        return matches.map(m => m.slice(1, -1).trim()).filter(r => r.length > 0);
+        return matches.map(m => m.slice(1, -1).trim()).filter(r => r.length > 10);
       }
     }
-    // Try line-separated format (each line is a review)
-    const lines = input.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+
+    // Try line-separated format - only lines that look like actual reviews (min 20 chars)
+    const lines = input.split('\n').map(line => line.trim()).filter(line => line.length > 20);
     if (lines.length > 1) {
       return lines;
     }
-    // Try separator format: ---
-    if (input.includes('---')) {
-      return input.split('---').map(r => r.trim()).filter(r => r.length > 0);
-    }
+
     // Single review
     return [input.trim()].filter(r => r.length > 0);
   };
@@ -3527,22 +3537,39 @@ Food was amazing, will definitely come back!`}
                   </div>
                 </div>
 
+                {parseBulkInput(bulkInput).length > 20 && (
+                  <div style={{
+                    padding: '12px 16px',
+                    backgroundColor: '#fef2f2',
+                    border: '1px solid #fecaca',
+                    borderRadius: '8px',
+                    color: '#dc2626',
+                    fontSize: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <AlertCircle size={18} />
+                    Too many reviews ({parseBulkInput(bulkInput).length}). Maximum 20 per batch. Please remove {parseBulkInput(bulkInput).length - 20} reviews.
+                  </div>
+                )}
+
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                   <button
                     className="btn btn-primary"
                     onClick={generateBulkResponses}
-                    disabled={bulkGenerating || !bulkInput.trim()}
+                    disabled={bulkGenerating || !bulkInput.trim() || parseBulkInput(bulkInput).length > 20}
                     style={{ flex: 1 }}
                   >
                     {bulkGenerating ? (
                       <>
                         <RefreshCw size={18} style={{ animation: 'spin 1s linear infinite' }} />
-                        Generating {parseBulkInput(bulkInput).length} responses...
+                        Generating {Math.min(parseBulkInput(bulkInput).length, 20)} responses...
                       </>
                     ) : (
                       <>
                         <Sparkles size={18} />
-                        Generate All Responses ({parseBulkInput(bulkInput).length || 0})
+                        Generate All Responses ({Math.min(parseBulkInput(bulkInput).length, 20) || 0})
                       </>
                     )}
                   </button>
