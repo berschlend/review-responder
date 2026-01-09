@@ -249,9 +249,7 @@ const LandingPage = () => {
               </p>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 <a
-                  href="https://github.com/berschlend/review-responder/tree/main/chrome-extension"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="https://github.com/berschlend/review-responder/archive/refs/heads/main.zip"
                   className="btn"
                   style={{ background: 'white', color: '#1a1a2e', display: 'flex', alignItems: 'center', gap: '8px' }}
                 >
@@ -262,6 +260,9 @@ const LandingPage = () => {
                   Create Free Account First
                 </Link>
               </div>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', marginTop: '16px' }}>
+                After download: Unzip, open chrome://extensions, enable Developer Mode, click "Load unpacked", select the chrome-extension folder
+              </p>
             </div>
             <div style={{ flex: '0 0 auto' }}>
               <div style={{
