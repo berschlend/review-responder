@@ -162,6 +162,23 @@ async function initDatabase() {
       )
     `);
 
+    // API Keys table for public API access
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS api_keys (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        key_hash TEXT NOT NULL UNIQUE,
+        key_prefix TEXT NOT NULL,
+        name TEXT DEFAULT 'Default API Key',
+        requests_today INTEGER DEFAULT 0,
+        requests_total INTEGER DEFAULT 0,
+        last_request_at TIMESTAMP,
+        last_reset_date DATE DEFAULT CURRENT_DATE,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // Add onboarding_completed column if it doesn't exist
     try {
       await dbQuery(`
@@ -190,6 +207,62 @@ const authenticateToken = (req, res, next) => {
     req.user = user;
     next();
   });
+};
+
+// API Key authentication middleware (for public API)
+const authenticateApiKey = async (req, res, next) => {
+  const apiKey = req.headers['x-api-key'];
+  if (!apiKey) {
+    return res.status(401).json({ error: 'API key required. Include X-API-Key header.' });
+  }
+
+  try {
+    const keyHash = crypto.createHash('sha256').update(apiKey).digest('hex');
+    const keyRecord = await dbGet(
+      `SELECT ak.*, u.email, u.subscription_plan, u.subscription_status, u.business_name, u.business_type, u.business_context, u.response_style
+       FROM api_keys ak
+       JOIN users u ON ak.user_id = u.id
+       WHERE ak.key_hash = $1 AND ak.is_active = TRUE`,
+      [keyHash]
+    );
+
+    if (!keyRecord) {
+      return res.status(401).json({ error: 'Invalid API key' });
+    }
+
+    if (keyRecord.subscription_plan !== 'unlimited' || keyRecord.subscription_status !== 'active') {
+      return res.status(403).json({ error: 'API access requires an active Unlimited plan' });
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    let requestsToday = keyRecord.requests_today;
+
+    if (keyRecord.last_reset_date !== today) {
+      await dbQuery(`UPDATE api_keys SET requests_today = 0, last_reset_date = $1 WHERE id = $2`, [today, keyRecord.id]);
+      requestsToday = 0;
+    }
+
+    if (requestsToday >= 100) {
+      return res.status(429).json({ error: 'Rate limit exceeded. Maximum 100 requests per day.', reset_at: 'midnight UTC' });
+    }
+
+    await dbQuery(`UPDATE api_keys SET requests_today = requests_today + 1, requests_total = requests_total + 1, last_request_at = NOW() WHERE id = $1`, [keyRecord.id]);
+
+    req.apiKeyUser = {
+      id: keyRecord.user_id,
+      email: keyRecord.email,
+      subscription_plan: keyRecord.subscription_plan,
+      business_name: keyRecord.business_name,
+      business_type: keyRecord.business_type,
+      business_context: keyRecord.business_context,
+      response_style: keyRecord.response_style
+    };
+
+    next();
+  } catch (error) {
+    console.error('API key auth error:', error);
+    res.status(500).json({ error: 'Authentication failed' });
+  }
 };
 
 // Plan limits (monthly and yearly pricing)
@@ -503,7 +576,7 @@ app.post('/api/responses/generate', authenticateToken, (req, res) => generateRes
 
 async function generateResponseHandler(req, res) {
   try {
-    const { reviewText, reviewRating, platform, tone, businessName, customInstructions } = req.body;
+    const { reviewText, reviewRating, platform, tone, outputLanguage, businessName, customInstructions } = req.body;
 
     if (!reviewText || reviewText.trim().length === 0) {
       return res.status(400).json({ error: 'Review text is required' });
@@ -530,6 +603,33 @@ async function generateResponseHandler(req, res) {
       formal: 'Use a formal, business-appropriate tone.',
       apologetic: 'Use an apologetic and empathetic tone, focusing on resolution.'
     };
+
+    // Language mapping for output language selection
+    const languageNames = {
+      en: 'English',
+      de: 'German',
+      es: 'Spanish',
+      fr: 'French',
+      it: 'Italian',
+      pt: 'Portuguese',
+      nl: 'Dutch',
+      pl: 'Polish',
+      ru: 'Russian',
+      zh: 'Chinese',
+      ja: 'Japanese',
+      ko: 'Korean',
+      ar: 'Arabic',
+      tr: 'Turkish',
+      sv: 'Swedish',
+      da: 'Danish',
+      no: 'Norwegian',
+      fi: 'Finnish'
+    };
+
+    // Build language instruction based on outputLanguage selection
+    const languageInstruction = (!outputLanguage || outputLanguage === 'auto')
+      ? 'IMPORTANT: Respond in the same language as the review. If the review is in German, respond in German. If in Spanish, respond in Spanish.'
+      : `IMPORTANT: You MUST write the response in ${languageNames[outputLanguage] || 'English'}, regardless of what language the review is written in.`;
 
     // Build business context section
     const businessContextSection = user.business_context ? `
@@ -561,7 +661,7 @@ Instructions:
 - Don't be overly formal or use canned phrases
 - Make it feel personal and authentic
 - If business context is provided, reference specific details about the business (e.g., mention specific menu items, services, team members)
-- IMPORTANT: Respond in the same language as the review. If the review is in German, respond in German. If in Spanish, respond in Spanish.
+- ${languageInstruction}
 ${customInstructions ? `- Additional instructions: ${customInstructions}` : ''}
 
 Generate ONLY the response text, nothing else:`;
@@ -618,7 +718,7 @@ Generate ONLY the response text, nothing else:`;
 // Bulk Response Generation (Paid plans only: Starter/Pro/Unlimited)
 app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
   try {
-    const { reviews, tone, platform } = req.body;
+    const { reviews, tone, platform, outputLanguage } = req.body;
 
     // Validate input
     if (!reviews || !Array.isArray(reviews) || reviews.length === 0) {
@@ -656,6 +756,20 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
       apologetic: 'Use an apologetic and empathetic tone, focusing on resolution.'
     };
 
+    // Language mapping for output language selection
+    const languageNames = {
+      en: 'English', de: 'German', es: 'Spanish', fr: 'French',
+      it: 'Italian', pt: 'Portuguese', nl: 'Dutch', pl: 'Polish',
+      ru: 'Russian', zh: 'Chinese', ja: 'Japanese', ko: 'Korean',
+      ar: 'Arabic', tr: 'Turkish', sv: 'Swedish', da: 'Danish',
+      no: 'Norwegian', fi: 'Finnish'
+    };
+
+    // Build language instruction based on outputLanguage selection
+    const languageInstruction = (!outputLanguage || outputLanguage === 'auto')
+      ? 'IMPORTANT: Respond in the same language as the review.'
+      : `IMPORTANT: You MUST write the response in ${languageNames[outputLanguage] || 'English'}, regardless of what language the review is written in.`;
+
     // Build business context
     const businessContextSection = user.business_context ? `
 Business Context (use this to personalize your response):
@@ -688,7 +802,7 @@ Instructions:
 - Don't be overly formal or use canned phrases
 - Make it feel personal and authentic
 - If business context is provided, reference specific details about the business
-- IMPORTANT: Respond in the same language as the review.
+- ${languageInstruction}
 
 Generate ONLY the response text, nothing else:`;
 
@@ -1410,6 +1524,151 @@ app.get('/api/analytics', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Analytics error:', error);
     res.status(500).json({ error: 'Failed to get analytics' });
+  }
+});
+
+// ============== API Key Management Endpoints ==============
+
+// Get user's API keys
+app.get('/api/keys', authenticateToken, async (req, res) => {
+  try {
+    const user = await dbGet('SELECT subscription_plan, subscription_status FROM users WHERE id = $1', [req.user.id]);
+
+    if (user.subscription_plan !== 'unlimited' || user.subscription_status !== 'active') {
+      return res.status(403).json({ error: 'API keys are only available for Unlimited plan subscribers' });
+    }
+
+    const keys = await dbAll(
+      `SELECT id, key_prefix, name, requests_today, requests_total, last_request_at, is_active, created_at
+       FROM api_keys WHERE user_id = $1 ORDER BY created_at DESC`,
+      [req.user.id]
+    );
+
+    res.json({ keys });
+  } catch (error) {
+    console.error('Get API keys error:', error);
+    res.status(500).json({ error: 'Failed to get API keys' });
+  }
+});
+
+// Generate new API key
+app.post('/api/keys', authenticateToken, async (req, res) => {
+  try {
+    const user = await dbGet('SELECT subscription_plan, subscription_status FROM users WHERE id = $1', [req.user.id]);
+
+    if (user.subscription_plan !== 'unlimited' || user.subscription_status !== 'active') {
+      return res.status(403).json({ error: 'API keys are only available for Unlimited plan subscribers' });
+    }
+
+    // Check if user already has 5 keys
+    const keyCount = await dbGet('SELECT COUNT(*) as count FROM api_keys WHERE user_id = $1', [req.user.id]);
+    if (parseInt(keyCount.count) >= 5) {
+      return res.status(400).json({ error: 'Maximum 5 API keys allowed. Please delete an existing key first.' });
+    }
+
+    const { name } = req.body;
+    const keyName = name || 'API Key';
+
+    // Generate a secure API key
+    const rawKey = 'rr_' + crypto.randomBytes(32).toString('hex');
+    const keyHash = crypto.createHash('sha256').update(rawKey).digest('hex');
+    const keyPrefix = rawKey.substring(0, 10);
+
+    await dbQuery(
+      `INSERT INTO api_keys (user_id, key_hash, key_prefix, name) VALUES ($1, $2, $3, $4)`,
+      [req.user.id, keyHash, keyPrefix, keyName]
+    );
+
+    // Return the full key only once - it won't be retrievable later
+    res.json({
+      key: rawKey,
+      prefix: keyPrefix,
+      name: keyName,
+      message: 'Save this API key - it will not be shown again!'
+    });
+  } catch (error) {
+    console.error('Create API key error:', error);
+    res.status(500).json({ error: 'Failed to create API key' });
+  }
+});
+
+// Delete API key
+app.delete('/api/keys/:id', authenticateToken, async (req, res) => {
+  try {
+    const result = await dbQuery(
+      'DELETE FROM api_keys WHERE id = $1 AND user_id = $2 RETURNING id',
+      [req.params.id, req.user.id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'API key not found' });
+    }
+
+    res.json({ success: true, message: 'API key deleted' });
+  } catch (error) {
+    console.error('Delete API key error:', error);
+    res.status(500).json({ error: 'Failed to delete API key' });
+  }
+});
+
+// ============== Public API Endpoint ==============
+
+// POST /api/v1/generate - Public API for generating responses
+app.post('/api/v1/generate', authenticateApiKey, async (req, res) => {
+  try {
+    const { review_text, review_rating, tone, language, platform } = req.body;
+
+    if (!review_text) {
+      return res.status(400).json({ error: 'review_text is required' });
+    }
+
+    const user = req.apiKeyUser;
+    const selectedTone = tone || 'professional';
+    const selectedLanguage = language || 'en';
+    const selectedPlatform = platform || 'google';
+
+    const systemPrompt = `You are an expert at writing professional responses to customer reviews.
+Business: ${user.business_name || 'A business'}
+Business Type: ${user.business_type || 'General'}
+${user.business_context ? `Context: ${user.business_context}` : ''}
+${user.response_style ? `Style: ${user.response_style}` : ''}
+
+Write a ${selectedTone} response to the following review.
+${review_rating ? `The review has a rating of ${review_rating} out of 5 stars.` : ''}
+Language: Write the response in ${selectedLanguage}.
+Keep the response concise, professional, and helpful.`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: review_text }
+      ],
+      max_tokens: 500,
+      temperature: 0.7
+    });
+
+    const generatedResponse = completion.choices[0].message.content;
+
+    // Save to responses table
+    await dbQuery(
+      `INSERT INTO responses (user_id, review_text, review_rating, review_platform, generated_response, tone) VALUES ($1, $2, $3, $4, $5, $6)`,
+      [user.id, review_text, review_rating || null, selectedPlatform, generatedResponse, selectedTone]
+    );
+
+    // Update user's response count
+    await dbQuery('UPDATE users SET responses_used = responses_used + 1 WHERE id = $1', [user.id]);
+
+    res.json({
+      success: true,
+      response: generatedResponse,
+      tone: selectedTone,
+      language: selectedLanguage,
+      platform: selectedPlatform
+    });
+  } catch (error) {
+    console.error('API generate error:', error);
+    res.status(500).json({ error: 'Failed to generate response' });
   }
 });
 

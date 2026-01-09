@@ -1624,10 +1624,17 @@ const DashboardPage = () => {
   const [bulkResults, setBulkResults] = useState(null);
   const [copiedIndex, setCopiedIndex] = useState(null);
 
+  // Export state
+  const [allHistory, setAllHistory] = useState([]);
+  const [exportDateFrom, setExportDateFrom] = useState('');
+  const [exportDateTo, setExportDateTo] = useState('');
+  const [exporting, setExporting] = useState(false);
+
   useEffect(() => {
     fetchStats();
     fetchHistory();
     fetchTemplates();
+    fetchAllHistory();
 
     // Check for success param from Stripe
     const params = new URLSearchParams(location.search);
