@@ -87,6 +87,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **Dark Mode** - Toggle in Navbar, System Preference Detection, localStorage Persistence
 - [x] **Chrome Web Store Vorbereitung** - CHROME_STORE.md, Store Listing, Privacy Policy Extension
 - [x] **Team/Multi-User Accounts** - Team Management in Settings (Unlimited only), Invite up to 5 members, Share quota
+- [x] **Response Export** - CSV und PDF Export mit Datum-Filter (jspdf, papaparse)
 - [x] **App.js Fix** - Beschädigte App.js aus vorherigem Commit repariert
 
 ### 📋 GEPLANT FÜR SPÄTER:

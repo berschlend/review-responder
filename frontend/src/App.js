@@ -429,6 +429,231 @@ const ExitIntentPopup = () => {
   );
 };
 
+// Feedback Popup Component (shown after 10 responses)
+const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
+  const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (rating === 0) {
+      toast.error('Please select a rating');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await api.post('/feedback', {
+        rating,
+        comment: comment.trim() || null,
+        displayName: displayName.trim() || null
+      });
+      setSubmitted(true);
+      toast.success('Thank you for your feedback!');
+      setTimeout(() => {
+        onClose();
+        if (onSubmit) onSubmit();
+      }, 2000);
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to submit feedback');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isVisible) return null;
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0, 0, 0, 0.6)',
+      zIndex: 9999,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px'
+    }} onClick={onClose}>
+      <div
+        className="card"
+        style={{
+          maxWidth: '480px',
+          width: '100%',
+          padding: '0',
+          overflow: 'hidden',
+          position: 'relative',
+          animation: 'slideIn 0.3s ease-out'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: '16px',
+            right: '16px',
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '4px',
+            color: 'var(--gray-400)',
+            zIndex: 1
+          }}
+        >
+          <X size={20} />
+        </button>
+
+        {/* Header */}
+        <div style={{
+          background: 'linear-gradient(135deg, var(--primary-600), var(--primary-700))',
+          padding: '32px 24px',
+          textAlign: 'center',
+          color: 'white'
+        }}>
+          <MessageSquare size={40} style={{ marginBottom: '12px' }} />
+          <h2 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '8px' }}>
+            {submitted ? 'Thank You!' : 'How do you like ReviewResponder?'}
+          </h2>
+          <p style={{ opacity: 0.9, fontSize: '14px' }}>
+            {submitted
+              ? 'Your feedback helps us improve!'
+              : 'You\'ve generated 10+ responses! We\'d love to hear your thoughts.'}
+          </p>
+        </div>
+
+        {/* Content */}
+        <div style={{ padding: '24px' }}>
+          {submitted ? (
+            <div style={{ textAlign: 'center', padding: '20px 0' }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: 'var(--success)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px'
+              }}>
+                <Check size={32} color="white" />
+              </div>
+              <p style={{ color: 'var(--gray-600)' }}>Your feedback has been submitted!</p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit}>
+              {/* Star Rating */}
+              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <p style={{ fontSize: '14px', color: 'var(--gray-600)', marginBottom: '12px' }}>
+                  Rate your experience
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setRating(star)}
+                      onMouseEnter={() => setHoverRating(star)}
+                      onMouseLeave={() => setHoverRating(0)}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: '4px',
+                        transition: 'transform 0.1s'
+                      }}
+                    >
+                      <Star
+                        size={32}
+                        fill={(hoverRating || rating) >= star ? '#f59e0b' : 'none'}
+                        color={(hoverRating || rating) >= star ? '#f59e0b' : '#d1d5db'}
+                        style={{ transition: 'all 0.1s' }}
+                      />
+                    </button>
+                  ))}
+                </div>
+                {rating > 0 && (
+                  <p style={{ fontSize: '13px', color: 'var(--primary-600)', marginTop: '8px', fontWeight: '500' }}>
+                    {rating === 5 ? 'Excellent!' : rating === 4 ? 'Great!' : rating === 3 ? 'Good' : rating === 2 ? 'Fair' : 'Poor'}
+                  </p>
+                )}
+              </div>
+
+              {/* Comment (optional) */}
+              <div className="form-group">
+                <label className="form-label">
+                  Tell us more (optional)
+                </label>
+                <textarea
+                  className="form-input"
+                  placeholder="What do you like? What could be better?"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  rows={3}
+                  maxLength={500}
+                  style={{ resize: 'vertical' }}
+                />
+              </div>
+
+              {/* Display Name (optional) */}
+              <div className="form-group">
+                <label className="form-label">
+                  Your name (optional, for testimonial)
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g., John from ABC Restaurant"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  maxLength={100}
+                />
+                <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
+                  If approved, your feedback may appear on our website
+                </p>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={loading || rating === 0}
+                style={{ width: '100%', marginTop: '16px' }}
+              >
+                {loading ? 'Submitting...' : 'Submit Feedback'}
+              </button>
+
+              {/* Skip */}
+              <button
+                type="button"
+                onClick={onClose}
+                style={{
+                  width: '100%',
+                  marginTop: '12px',
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--gray-500)',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Maybe later
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Landing Page
 const LandingPage = () => {
   const { user } = useAuth();
@@ -2489,10 +2714,17 @@ Food was amazing, will definitely come back!`}
       {/* History Tab */}
       {activeTab === 'history' && (
         <div className="card">
-          <h2 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600' }}>
-            <Clock size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-            Response History
-          </h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}><Clock size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} />Response History</h2>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <input type="date" value={exportDateFrom} onChange={(e) => setExportDateFrom(e.target.value)} style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--gray-300)', fontSize: '13px' }} />
+              <span style={{ color: 'var(--gray-400)' }}>to</span>
+              <input type="date" value={exportDateTo} onChange={(e) => setExportDateTo(e.target.value)} style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--gray-300)', fontSize: '13px' }} />
+              <button onClick={exportToCSV} disabled={exporting || allHistory.length === 0} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '13px' }}><Download size={14} /> CSV</button>
+              <button onClick={exportToPDF} disabled={exporting || allHistory.length === 0} className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '13px' }}><Download size={14} /> PDF</button>
+            </div>
+          </div>
+          {allHistory.length > 0 && <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginBottom: '16px' }}>{allHistory.length} responses available for export</p>}
 
           {history.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--gray-500)' }}>
