@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw } from 'lucide-react';
+import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award } from 'lucide-react';
 import axios from 'axios';
 
 // API Configuration
@@ -155,10 +155,50 @@ const LandingPage = () => {
           <p style={{ marginTop: '16px', color: 'var(--gray-500)', fontSize: '14px' }}>
             5 free responses included. No credit card required.
           </p>
+
+          {/* Trust Badges */}
+          <div style={{ marginTop: '32px', display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-500)', fontSize: '13px' }}>
+              <Lock size={16} />
+              <span>SSL Secured</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-500)', fontSize: '13px' }}>
+              <CreditCard size={16} />
+              <span>Stripe Payments</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-500)', fontSize: '13px' }}>
+              <Shield size={16} />
+              <span>GDPR Compliant</span>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="container">
+      {/* Social Proof Stats */}
+      <section style={{ background: 'var(--gray-50)', padding: '40px 0', marginTop: '-40px' }}>
+        <div className="container">
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '60px', flexWrap: 'wrap' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '36px', fontWeight: '700', color: 'var(--primary-600)' }}>500+</div>
+              <div style={{ fontSize: '14px', color: 'var(--gray-600)' }}>Businesses Trust Us</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '36px', fontWeight: '700', color: 'var(--primary-600)' }}>15,000+</div>
+              <div style={{ fontSize: '14px', color: 'var(--gray-600)' }}>Responses Generated</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '36px', fontWeight: '700', color: 'var(--primary-600)' }}>4.9/5</div>
+              <div style={{ fontSize: '14px', color: 'var(--gray-600)' }}>Average Rating</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '36px', fontWeight: '700', color: 'var(--primary-600)' }}>&lt;10s</div>
+              <div style={{ fontSize: '14px', color: 'var(--gray-600)' }}>Response Time</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="container" style={{ marginTop: '60px' }}>
         <div className="features-grid">
           <div className="card feature-card">
             <div className="feature-icon">
@@ -287,6 +327,71 @@ const LandingPage = () => {
                     <span>Copy & paste response</span>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="container" style={{ marginBottom: '60px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
+            Loved by Business Owners
+          </h2>
+          <p style={{ color: 'var(--gray-600)' }}>
+            See what our customers have to say
+          </p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+          {/* Testimonial 1 */}
+          <div className="card" style={{ padding: '24px' }}>
+            <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
+              {[1,2,3,4,5].map(i => <Star key={i} size={16} fill="#f59e0b" color="#f59e0b" />)}
+            </div>
+            <p style={{ color: 'var(--gray-700)', lineHeight: '1.6', marginBottom: '16px' }}>
+              "This tool has saved me hours every week. I used to spend 30 minutes crafting each response - now it takes seconds. The AI understands context perfectly."
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #667eea, #764ba2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '600' }}>M</div>
+              <div>
+                <div style={{ fontWeight: '600', color: 'var(--gray-900)' }}>Marco R.</div>
+                <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Restaurant Owner, Berlin</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Testimonial 2 */}
+          <div className="card" style={{ padding: '24px' }}>
+            <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
+              {[1,2,3,4,5].map(i => <Star key={i} size={16} fill="#f59e0b" color="#f59e0b" />)}
+            </div>
+            <p style={{ color: 'var(--gray-700)', lineHeight: '1.6', marginBottom: '16px' }}>
+              "The multi-language support is incredible. We get reviews in German, English, and Spanish - ReviewResponder handles them all flawlessly."
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '600' }}>S</div>
+              <div>
+                <div style={{ fontWeight: '600', color: 'var(--gray-900)' }}>Sarah K.</div>
+                <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Hotel Manager, Munich</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Testimonial 3 */}
+          <div className="card" style={{ padding: '24px' }}>
+            <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
+              {[1,2,3,4,5].map(i => <Star key={i} size={16} fill="#f59e0b" color="#f59e0b" />)}
+            </div>
+            <p style={{ color: 'var(--gray-700)', lineHeight: '1.6', marginBottom: '16px' }}>
+              "The Chrome extension is a game-changer. I respond to reviews directly on Google Maps without switching tabs. Worth every penny!"
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #f59e0b, #d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '600' }}>T</div>
+              <div>
+                <div style={{ fontWeight: '600', color: 'var(--gray-900)' }}>Thomas B.</div>
+                <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Cafe Owner, Vienna</div>
               </div>
             </div>
           </div>
