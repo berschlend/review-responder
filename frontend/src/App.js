@@ -1818,7 +1818,8 @@ const DashboardPage = () => {
       const res = await api.post('/generate-bulk', {
         reviews,
         platform: bulkPlatform,
-        tone: bulkTone
+        tone: bulkTone,
+        outputLanguage: bulkOutputLanguage
       });
       setBulkResults(res.data);
       updateUser({
@@ -2080,6 +2081,35 @@ const DashboardPage = () => {
                 <option value="apologetic">Apologetic</option>
               </select>
             </div>
+
+            <div className="form-group">
+              <label className="form-label">Response Language</label>
+              <select
+                className="form-select"
+                value={outputLanguage}
+                onChange={(e) => setOutputLanguage(e.target.value)}
+              >
+                <option value="auto">Auto-detect (match review)</option>
+                <option value="en">English</option>
+                <option value="de">German (Deutsch)</option>
+                <option value="es">Spanish (Español)</option>
+                <option value="fr">French (Français)</option>
+                <option value="it">Italian (Italiano)</option>
+                <option value="pt">Portuguese (Português)</option>
+                <option value="nl">Dutch (Nederlands)</option>
+                <option value="pl">Polish (Polski)</option>
+                <option value="ru">Russian (Русский)</option>
+                <option value="zh">Chinese (中文)</option>
+                <option value="ja">Japanese (日本語)</option>
+                <option value="ko">Korean (한국어)</option>
+                <option value="ar">Arabic (العربية)</option>
+                <option value="tr">Turkish (Türkçe)</option>
+                <option value="sv">Swedish (Svenska)</option>
+                <option value="da">Danish (Dansk)</option>
+                <option value="no">Norwegian (Norsk)</option>
+                <option value="fi">Finnish (Suomi)</option>
+              </select>
+            </div>
           </div>
 
           {templates.length > 0 && (
@@ -2310,6 +2340,35 @@ Food was amazing, will definitely come back!`}
                       <option value="friendly">Friendly</option>
                       <option value="formal">Formal</option>
                       <option value="apologetic">Apologetic</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Response Language</label>
+                    <select
+                      className="form-select"
+                      value={bulkOutputLanguage}
+                      onChange={(e) => setBulkOutputLanguage(e.target.value)}
+                    >
+                      <option value="auto">Auto-detect (match review)</option>
+                      <option value="en">English</option>
+                      <option value="de">German (Deutsch)</option>
+                      <option value="es">Spanish (Español)</option>
+                      <option value="fr">French (Français)</option>
+                      <option value="it">Italian (Italiano)</option>
+                      <option value="pt">Portuguese (Português)</option>
+                      <option value="nl">Dutch (Nederlands)</option>
+                      <option value="pl">Polish (Polski)</option>
+                      <option value="ru">Russian (Русский)</option>
+                      <option value="zh">Chinese (中文)</option>
+                      <option value="ja">Japanese (日本語)</option>
+                      <option value="ko">Korean (한국어)</option>
+                      <option value="ar">Arabic (العربية)</option>
+                      <option value="tr">Turkish (Türkçe)</option>
+                      <option value="sv">Swedish (Svenska)</option>
+                      <option value="da">Danish (Dansk)</option>
+                      <option value="no">Norwegian (Norsk)</option>
+                      <option value="fi">Finnish (Suomi)</option>
                     </select>
                   </div>
                 </div>
