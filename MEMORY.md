@@ -26,18 +26,48 @@ Eine vollständige SaaS-App die KI-generierte Antworten auf Google/Yelp Reviews 
 - **Professional Yearly**: $470.40/Jahr ($39.20/Monat) - Price ID: `[NOCH ERSTELLEN]`
 - **Unlimited Yearly**: $950.40/Jahr ($79.20/Monat) - Price ID: `[NOCH ERSTELLEN]`
 
-### Jährliche Stripe Prices erstellen:
-1. Gehe zu https://dashboard.stripe.com/products
-2. Öffne jedes Produkt (Starter, Professional, Unlimited)
-3. Klicke "Add another price"
-4. Wähle "Recurring" → "Yearly"
-5. Setze den Preis (siehe oben)
-6. Kopiere die Price ID und trage sie in Render ein
+### Jährliche Stripe Prices erstellen (STEP-BY-STEP):
 
-### Neue Environment Variables für Render (Backend):
-- `STRIPE_STARTER_YEARLY_PRICE_ID` = [deine yearly price id]
-- `STRIPE_PRO_YEARLY_PRICE_ID` = [deine yearly price id]
-- `STRIPE_UNLIMITED_YEARLY_PRICE_ID` = [deine yearly price id]
+#### 1. Starter Plan Yearly Price:
+1. Gehe zu https://dashboard.stripe.com/products
+2. Klicke auf "ReviewResponder Starter"
+3. Klicke "Add another price"
+4. Wähle:
+   - Pricing model: Standard pricing
+   - Price: $278.40
+   - Billing period: Yearly
+5. Klicke "Add price"
+6. Kopiere die neue Price ID (beginnt mit `price_`)
+
+#### 2. Professional Plan Yearly Price:
+1. Klicke auf "ReviewResponder Professional"
+2. Klicke "Add another price"
+3. Wähle:
+   - Pricing model: Standard pricing
+   - Price: $470.40
+   - Billing period: Yearly
+4. Klicke "Add price"
+5. Kopiere die neue Price ID
+
+#### 3. Unlimited Plan Yearly Price:
+1. Klicke auf "ReviewResponder Unlimited"
+2. Klicke "Add another price"
+3. Wähle:
+   - Pricing model: Standard pricing
+   - Price: $950.40
+   - Billing period: Yearly
+4. Klicke "Add price"
+5. Kopiere die neue Price ID
+
+#### 4. In Render eintragen:
+1. Gehe zu https://dashboard.render.com
+2. Öffne review-responder (Backend)
+3. Gehe zu Environment
+4. Füge diese 3 neuen Variables hinzu:
+   - `STRIPE_STARTER_YEARLY_PRICE_ID` = [deine starter yearly price id]
+   - `STRIPE_PRO_YEARLY_PRICE_ID` = [deine pro yearly price id]
+   - `STRIPE_UNLIMITED_YEARLY_PRICE_ID` = [deine unlimited yearly price id]
+5. Klicke "Save Changes"
 
 - Webhook eingerichtet für automatische Abo-Aktivierung
 
@@ -260,8 +290,26 @@ Ja, du kannst mehrere Claude Code Sessions parallel laufen lassen:
 - `/forgot-password` - Email-Eingabe für Reset-Link
 - `/reset-password?token=xxx` - Neues Passwort setzen
 - Token gültig für 1 Stunde
-- Resend.com Integration fertig - nur noch API Key in Render eintragen!
-  - Environment Variable: `RESEND_API_KEY`
+- ✅ Resend.com Integration implementiert
+
+#### Resend.com Setup (für Email-Versand):
+1. **Account erstellen**: https://resend.com/signup
+2. **Domain verifizieren** (Optional aber empfohlen):
+   - Dashboard → Domains → Add Domain
+   - Füge deine Domain hinzu (z.B. reviewresponder.app)
+   - Folge den DNS-Anweisungen
+3. **API Key erstellen**:
+   - Dashboard → API Keys → Create API Key
+   - Name: "ReviewResponder Production"
+   - Full Access wählen
+4. **In Render eintragen**:
+   - review-responder Backend → Environment
+   - Neue Variable: `RESEND_API_KEY` = `re_xxxxxxxxxxxxx`
+5. **Testen**:
+   - Forgot Password auf der Live-Seite testen
+   - Email sollte ankommen mit Reset-Link
+
+**Wichtig**: Ohne verifizierten Domain können Emails nur an deine eigene Email-Adresse gesendet werden (Resend Sandbox Mode)
 
 ### Jahres-Abos (20% Rabatt)
 - Frontend: Toggle zwischen Monthly/Yearly auf Pricing-Seite
