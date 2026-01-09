@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 10.01.2026 - 01:30 Uhr**
+**Stand: 09.01.2026 - 23:00 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
@@ -91,6 +91,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **App.js Fix** - Beschädigte App.js aus vorherigem Commit repariert
 - [x] **Output Language Selector** - Response Language Dropdown (18 Sprachen), Auto-detect oder spezifische Sprache wählen
 - [x] **User Feedback & Testimonials** - Echtes Feedback sammeln (Popup nach 10 Responses), Testimonials auf Landing Page anzeigen
+- [x] **First-Time User Experience** - Onboarding Modal (3 Steps), Confetti auf erste Response, Feature Tooltips
 
 ### 📋 GEPLANT FÜR SPÄTER:
 - [ ] **Performance: Code Splitting** - Requires Refactoring von App.js in separate Module (api.js, AuthContext.js, etc.)
@@ -194,6 +195,7 @@ ReviewResponder/
 - ✅ Team/Multi-User Accounts (Unlimited only, up to 5 members, shared quota)
 - ✅ Public API Access (100 req/day, /api-docs page, API Key Management in Settings)
 - ✅ User Feedback & Testimonials (echte Bewertungen sammeln, auf Landing Page anzeigen)
+- ✅ First-Time User Experience (Onboarding Modal, Confetti, Tooltips)
 
 ---
 
@@ -482,6 +484,20 @@ Folgende neue Endpoints geben 404 auf Production:
   - Popup wird nach 10+ generierten Responses getriggert
   - Testimonials Section auf Landing Page (nur echtes User-Feedback, keine fake Testimonials)
   - Admin kann später Testimonials freigeben (approved = true)
+- **First-Time User Experience** implementiert:
+  - OnboardingModal Komponente mit 3-Step Wizard
+  - Step 1: Welcome + Business Name
+  - Step 2: Business Type Selection (Restaurant, Retail, Hotel, etc.)
+  - Step 3: Business Context (Freitext für AI-Personalisierung)
+  - Progress Indicator (Step 1/2/3)
+  - Skip Option für User die später onboarden wollen
+  - canvas-confetti Library für Celebration Animation
+  - Confetti wird bei erster generierter Response gefeuert
+  - "Congratulations on your first response!" Toast
+  - FeatureTooltip Komponente für Feature-Hints
+  - Tooltips bei Response Tone und Response Language
+  - localStorage Persistence für onboardingCompleted Status
+  - Automatische Profil-Speicherung beim Abschluss
 
 ---
 
