@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award } from 'lucide-react';
+import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2 } from 'lucide-react';
 import axios from 'axios';
 
 // API Configuration
@@ -163,13 +163,23 @@ const ExitIntentPopup = () => {
     e.preventDefault();
     setLoading(true);
     
-    // Simulate email submission
-    setTimeout(() => {
-      setSubmitted(true);
+    try {
+      const response = await api.post('/capture-email', {
+        email,
+        discountCode: 'SAVE20',
+        source: 'exit_intent'
+      });
+      
+      if (response.data.success) {
+        setSubmitted(true);
+        console.log('✅ Email captured:', email);
+      }
+    } catch (error) {
+      console.error('Failed to capture email:', error);
+      toast.error('Something went wrong. Please try again.');
+    } finally {
       setLoading(false);
-      // In real implementation, send email to backend
-      console.log('Email captured:', email);
-    }, 1000);
+    }
   };
 
   if (!isVisible) return null;
@@ -1494,6 +1504,7 @@ const ResetPasswordPage = () => {
 const DashboardPage = () => {
   const { user, updateUser } = useAuth();
   const location = useLocation();
+  const [activeTab, setActiveTab] = useState('single');
   const [stats, setStats] = useState(null);
   const [reviewText, setReviewText] = useState('');
   const [rating, setRating] = useState(0);
@@ -1503,10 +1514,24 @@ const DashboardPage = () => {
   const [response, setResponse] = useState('');
   const [copied, setCopied] = useState(false);
   const [history, setHistory] = useState([]);
+  const [templates, setTemplates] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
+  const [templateName, setTemplateName] = useState('');
+  const [savingTemplate, setSavingTemplate] = useState(false);
+
+  // Bulk generation state
+  const [bulkInput, setBulkInput] = useState('');
+  const [bulkPlatform, setBulkPlatform] = useState('google');
+  const [bulkTone, setBulkTone] = useState('professional');
+  const [bulkGenerating, setBulkGenerating] = useState(false);
+  const [bulkResults, setBulkResults] = useState(null);
+  const [copiedIndex, setCopiedIndex] = useState(null);
 
   useEffect(() => {
     fetchStats();
     fetchHistory();
+    fetchTemplates();
 
     // Check for success param from Stripe
     const params = new URLSearchParams(location.search);
@@ -1532,6 +1557,65 @@ const DashboardPage = () => {
       setHistory(res.data.responses);
     } catch (error) {
       console.error('Failed to fetch history');
+    }
+  };
+
+  const fetchTemplates = async () => {
+    try {
+      const res = await api.get('/templates');
+      setTemplates(res.data.templates);
+    } catch (error) {
+      console.error('Failed to fetch templates');
+    }
+  };
+
+  const saveAsTemplate = async () => {
+    if (!templateName.trim()) {
+      toast.error('Please enter a template name');
+      return;
+    }
+
+    setSavingTemplate(true);
+    try {
+      await api.post('/templates', {
+        name: templateName.trim(),
+        content: response,
+        tone,
+        platform
+      });
+      toast.success('Template saved!');
+      setShowSaveTemplateModal(false);
+      setTemplateName('');
+      fetchTemplates();
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to save template');
+    } finally {
+      setSavingTemplate(false);
+    }
+  };
+
+  const deleteTemplate = async (templateId) => {
+    if (!window.confirm('Delete this template?')) return;
+
+    try {
+      await api.delete(`/templates/${templateId}`);
+      toast.success('Template deleted');
+      fetchTemplates();
+      if (selectedTemplate === templateId.toString()) {
+        setSelectedTemplate('');
+      }
+    } catch (error) {
+      toast.error('Failed to delete template');
+    }
+  };
+
+  const applyTemplate = (templateId) => {
+    const template = templates.find(t => t.id.toString() === templateId);
+    if (template) {
+      setResponse(template.content);
+      setTone(template.tone || 'professional');
+      setPlatform(template.platform || 'google');
+      toast.success('Template applied as starting point');
     }
   };
 
@@ -1582,6 +1666,86 @@ const DashboardPage = () => {
     toast.success('Copied to clipboard!');
     setTimeout(() => setCopied(false), 2000);
   };
+
+  // Parse bulk input (supports multiple formats)
+  const parseBulkInput = (input) => {
+    if (!input) return [];
+    // Try to detect CSV format (quoted strings with commas)
+    if (input.includes('","') || input.startsWith('"')) {
+      const matches = input.match(/"([^"]+)"/g);
+      if (matches) {
+        return matches.map(m => m.slice(1, -1).trim()).filter(r => r.length > 0);
+      }
+    }
+    // Try line-separated format (each line is a review)
+    const lines = input.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    if (lines.length > 1) {
+      return lines;
+    }
+    // Try separator format: ---
+    if (input.includes('---')) {
+      return input.split('---').map(r => r.trim()).filter(r => r.length > 0);
+    }
+    // Single review
+    return [input.trim()].filter(r => r.length > 0);
+  };
+
+  const generateBulkResponses = async () => {
+    const reviews = parseBulkInput(bulkInput);
+    if (reviews.length === 0) {
+      toast.error('Please enter at least one review');
+      return;
+    }
+    if (reviews.length > 20) {
+      toast.error('Maximum 20 reviews per batch');
+      return;
+    }
+    setBulkGenerating(true);
+    setBulkResults(null);
+    try {
+      const res = await api.post('/generate-bulk', {
+        reviews,
+        platform: bulkPlatform,
+        tone: bulkTone
+      });
+      setBulkResults(res.data);
+      updateUser({
+        responsesUsed: res.data.responsesUsed,
+        responsesLimit: res.data.responsesLimit
+      });
+      fetchHistory();
+      toast.success(`Generated ${res.data.summary.successful} responses!`);
+    } catch (error) {
+      if (error.response?.data?.upgrade) {
+        toast.error(error.response.data.error);
+      } else if (error.response?.data?.requiredPlan) {
+        toast.error('Bulk generation requires Pro or Unlimited plan');
+      } else {
+        toast.error(error.response?.data?.error || 'Failed to generate responses');
+      }
+    } finally {
+      setBulkGenerating(false);
+    }
+  };
+
+  const copyBulkResponse = (responseText, index) => {
+    navigator.clipboard.writeText(responseText);
+    setCopiedIndex(index);
+    toast.success('Copied to clipboard!');
+    setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  const copyAllResponses = () => {
+    if (!bulkResults) return;
+    const allResponses = bulkResults.results
+      .filter(r => r.success)
+      .map((r, i) => `Review ${i + 1}:\n${r.review}\n\nResponse:\n${r.response}`)
+      .join('\n\n---\n\n');
+    navigator.clipboard.writeText(allResponses);
+    toast.success('All responses copied!');
+  };
+
+  const canUseBulk = ['professional', 'unlimited'].includes(user?.plan);
 
   const usagePercent = user ? (user.responsesUsed / user.responsesLimit) * 100 : 0;
 
@@ -1651,6 +1815,82 @@ const DashboardPage = () => {
         </div>
       </div>
 
+      {/* Tab Navigation */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', borderBottom: '1px solid var(--gray-200)', paddingBottom: '0' }}>
+        <button
+          onClick={() => setActiveTab('single')}
+          style={{
+            padding: '12px 20px',
+            background: activeTab === 'single' ? 'var(--primary-50)' : 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'single' ? '2px solid var(--primary-600)' : '2px solid transparent',
+            color: activeTab === 'single' ? 'var(--primary-600)' : 'var(--gray-600)',
+            fontWeight: activeTab === 'single' ? '600' : '500',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '14px',
+            marginBottom: '-1px'
+          }}
+        >
+          <FileText size={18} />
+          Single Response
+        </button>
+        <button
+          onClick={() => setActiveTab('bulk')}
+          style={{
+            padding: '12px 20px',
+            background: activeTab === 'bulk' ? 'var(--primary-50)' : 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'bulk' ? '2px solid var(--primary-600)' : '2px solid transparent',
+            color: activeTab === 'bulk' ? 'var(--primary-600)' : 'var(--gray-600)',
+            fontWeight: activeTab === 'bulk' ? '600' : '500',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '14px',
+            marginBottom: '-1px'
+          }}
+        >
+          <Layers size={18} />
+          Bulk Generate
+          {!canUseBulk && (
+            <span style={{
+              background: 'var(--primary-600)',
+              color: 'white',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              fontSize: '10px',
+              fontWeight: '600'
+            }}>PRO</span>
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab('history')}
+          style={{
+            padding: '12px 20px',
+            background: activeTab === 'history' ? 'var(--primary-50)' : 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'history' ? '2px solid var(--primary-600)' : '2px solid transparent',
+            color: activeTab === 'history' ? 'var(--primary-600)' : 'var(--gray-600)',
+            fontWeight: activeTab === 'history' ? '600' : '500',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '14px',
+            marginBottom: '-1px'
+          }}
+        >
+          <Clock size={18} />
+          History
+        </button>
+      </div>
+
+      {/* Single Response Tab */}
+      {activeTab === 'single' && (
       <div className="generator-section">
         <div className="card">
           <h2 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600' }}>
@@ -1715,11 +1955,56 @@ const DashboardPage = () => {
             </div>
           </div>
 
+          {templates.length > 0 && (
+            <div className="form-group" style={{ marginTop: '16px' }}>
+              <label className="form-label">
+                <BookOpen size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+                Use Template as Starting Point (optional)
+              </label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <select
+                  className="form-select"
+                  value={selectedTemplate}
+                  onChange={(e) => setSelectedTemplate(e.target.value)}
+                  style={{ flex: 1 }}
+                >
+                  <option value="">-- Select a template --</option>
+                  {templates.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+                {selectedTemplate && (
+                  <>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => applyTemplate(selectedTemplate)}
+                      style={{ padding: '8px 12px' }}
+                      title="Use this template"
+                    >
+                      <Check size={16} />
+                    </button>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => deleteTemplate(parseInt(selectedTemplate))}
+                      style={{ padding: '8px 12px', color: 'var(--error)' }}
+                      title="Delete template"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </>
+                )}
+              </div>
+              <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
+                Select a saved template to use as a starting point, then generate to customize it
+              </p>
+            </div>
+          )}
+
           <button
             className="btn btn-primary"
             onClick={() => generateResponse()}
             disabled={generating || !reviewText.trim()}
-            style={{ width: '100%' }}
+            style={{ width: '100%', marginTop: '8px' }}
           >
             {generating ? (
               <>Generating...</>
@@ -1747,6 +2032,14 @@ const DashboardPage = () => {
                 <button className="btn btn-success" onClick={copyToClipboard}>
                   {copied ? <Check size={16} /> : <Copy size={16} />}
                   {copied ? 'Copied!' : 'Copy Response'}
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setShowSaveTemplateModal(true)}
+                  title="Save as template for future use"
+                >
+                  <BookOpen size={16} />
+                  Save as Template
                 </button>
                 <button
                   className="btn btn-secondary"
@@ -1784,29 +2077,328 @@ const DashboardPage = () => {
           )}
         </div>
       </div>
+      )}
 
-      {history.length > 0 && (
-        <div className="card mt-4">
-          <h2 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600' }}>
-            Recent Responses
-          </h2>
-
-          {history.map((item) => (
-            <div key={item.id} className="history-item">
-              <div className="history-review">
-                <strong>Review:</strong> {item.review_text.substring(0, 150)}
-                {item.review_text.length > 150 && '...'}
+      {/* Bulk Generate Tab */}
+      {activeTab === 'bulk' && (
+        <div>
+          {!canUseBulk ? (
+            <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                background: 'var(--primary-50)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 24px'
+              }}>
+                <Layers size={40} style={{ color: 'var(--primary-600)' }} />
               </div>
-              <div className="history-response">
-                <strong>Response:</strong> {item.generated_response}
+              <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>
+                Bulk Generation is a Pro Feature
+              </h2>
+              <p style={{ color: 'var(--gray-600)', marginBottom: '24px', maxWidth: '500px', margin: '0 auto 24px' }}>
+                Generate responses for up to 20 reviews at once with our Pro or Unlimited plans.
+                Perfect for businesses with high review volume.
+              </p>
+              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+                <Link to="/pricing" className="btn btn-primary" style={{ padding: '12px 24px' }}>
+                  <Zap size={18} />
+                  Upgrade to Pro
+                </Link>
               </div>
-              <div className="history-meta">
-                {item.review_rating && <span>{item.review_rating} stars</span>}
-                <span>{item.review_platform}</span>
-                <span>{new Date(item.created_at).toLocaleDateString()}</span>
+              <div style={{ marginTop: '32px', display: 'flex', gap: '32px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--primary-600)' }}>20</div>
+                  <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Reviews per batch</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--primary-600)' }}>Parallel</div>
+                  <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Processing</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--primary-600)' }}>CSV</div>
+                  <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Import support</div>
+                </div>
               </div>
             </div>
-          ))}
+          ) : (
+            <>
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h2 style={{ marginBottom: '8px', fontSize: '18px', fontWeight: '600' }}>
+                  <Layers size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                  Bulk Generate Responses
+                </h2>
+                <p style={{ color: 'var(--gray-500)', fontSize: '14px', marginBottom: '20px' }}>
+                  Enter multiple reviews to generate responses for all of them at once. Maximum 20 per batch.
+                </p>
+
+                <div className="form-group">
+                  <label className="form-label">Customer Reviews</label>
+                  <textarea
+                    className="form-textarea"
+                    value={bulkInput}
+                    onChange={(e) => setBulkInput(e.target.value)}
+                    placeholder={`Enter multiple reviews, one per line. Example:
+
+Great service! The staff was very helpful and friendly.
+
+Terrible experience. Waited 30 minutes and nobody helped me.
+
+Food was amazing, will definitely come back!`}
+                    rows={10}
+                    style={{ fontFamily: 'inherit' }}
+                  />
+                  <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '8px' }}>
+                    Supported formats: One review per line, CSV format ("review1","review2"), or separated by ---
+                  </p>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div className="form-group">
+                    <label className="form-label">Platform</label>
+                    <select
+                      className="form-select"
+                      value={bulkPlatform}
+                      onChange={(e) => setBulkPlatform(e.target.value)}
+                    >
+                      <option value="google">Google Reviews</option>
+                      <option value="yelp">Yelp</option>
+                      <option value="facebook">Facebook</option>
+                      <option value="tripadvisor">TripAdvisor</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Response Tone</label>
+                    <select
+                      className="form-select"
+                      value={bulkTone}
+                      onChange={(e) => setBulkTone(e.target.value)}
+                    >
+                      <option value="professional">Professional</option>
+                      <option value="friendly">Friendly</option>
+                      <option value="formal">Formal</option>
+                      <option value="apologetic">Apologetic</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <button
+                    className="btn btn-primary"
+                    onClick={generateBulkResponses}
+                    disabled={bulkGenerating || !bulkInput.trim()}
+                    style={{ flex: 1 }}
+                  >
+                    {bulkGenerating ? (
+                      <>
+                        <RefreshCw size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                        Generating {parseBulkInput(bulkInput).length} responses...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles size={18} />
+                        Generate All Responses ({parseBulkInput(bulkInput).length || 0})
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Bulk Results */}
+              {bulkResults && (
+                <div className="card">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <div>
+                      <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '4px' }}>
+                        Generated Responses
+                      </h2>
+                      <p style={{ fontSize: '14px', color: 'var(--gray-500)' }}>
+                        {bulkResults.summary.successful} of {bulkResults.summary.total} responses generated
+                      </p>
+                    </div>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={copyAllResponses}
+                      style={{ padding: '8px 16px' }}
+                    >
+                      <Copy size={16} />
+                      Copy All
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {bulkResults.results.map((result, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          padding: '16px',
+                          background: result.success ? 'var(--gray-50)' : 'var(--danger-light)',
+                          borderRadius: '8px',
+                          border: result.success ? '1px solid var(--gray-200)' : '1px solid var(--danger)'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                          <span style={{
+                            background: result.success ? 'var(--primary-100)' : 'var(--danger)',
+                            color: result.success ? 'var(--primary-700)' : 'white',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            fontWeight: '600'
+                          }}>
+                            Review #{index + 1}
+                          </span>
+                          {result.success && (
+                            <button
+                              className="btn btn-secondary"
+                              onClick={() => copyBulkResponse(result.response, index)}
+                              style={{ padding: '4px 8px', fontSize: '12px' }}
+                            >
+                              {copiedIndex === index ? <Check size={14} /> : <Copy size={14} />}
+                              {copiedIndex === index ? 'Copied!' : 'Copy'}
+                            </button>
+                          )}
+                        </div>
+
+                        <div style={{ marginBottom: '12px' }}>
+                          <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--gray-500)', marginBottom: '4px' }}>
+                            REVIEW:
+                          </div>
+                          <div style={{ fontSize: '14px', color: 'var(--gray-700)' }}>
+                            {result.review?.substring(0, 200)}{result.review?.length > 200 ? '...' : ''}
+                          </div>
+                        </div>
+
+                        {result.success ? (
+                          <div>
+                            <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--gray-500)', marginBottom: '4px' }}>
+                              RESPONSE:
+                            </div>
+                            <div style={{ fontSize: '14px', color: 'var(--gray-900)', background: 'white', padding: '12px', borderRadius: '6px', border: '1px solid var(--gray-200)' }}>
+                              {result.response}
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--danger)' }}>
+                            <AlertCircle size={16} />
+                            <span style={{ fontSize: '14px' }}>{result.error}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* History Tab */}
+      {activeTab === 'history' && (
+        <div className="card">
+          <h2 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600' }}>
+            <Clock size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+            Response History
+          </h2>
+
+          {history.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--gray-500)' }}>
+              <FileText size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+              <p>No responses generated yet. Start by generating your first response!</p>
+            </div>
+          ) : (
+            history.map((item) => (
+              <div key={item.id} className="history-item">
+                <div className="history-review">
+                  <strong>Review:</strong> {item.review_text.substring(0, 150)}
+                  {item.review_text.length > 150 && '...'}
+                </div>
+                <div className="history-response">
+                  <strong>Response:</strong> {item.generated_response}
+                </div>
+                <div className="history-meta">
+                  {item.review_rating && <span>{item.review_rating} stars</span>}
+                  <span>{item.review_platform}</span>
+                  <span>{new Date(item.created_at).toLocaleDateString()}</span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Save Template Modal */}
+      {showSaveTemplateModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }} onClick={() => setShowSaveTemplateModal(false)}>
+          <div
+            className="card"
+            style={{
+              maxWidth: '400px',
+              width: '100%',
+              padding: '24px'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <BookOpen size={20} />
+              Save as Template
+            </h2>
+            <p style={{ fontSize: '14px', color: 'var(--gray-600)', marginBottom: '16px' }}>
+              Save this response as a template to quickly use it as a starting point for future reviews.
+            </p>
+
+            <div className="form-group">
+              <label className="form-label">Template Name</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="e.g., Positive 5-star response"
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+                maxLength={100}
+                autoFocus
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  setShowSaveTemplateModal(false);
+                  setTemplateName('');
+                }}
+                style={{ flex: 1 }}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={saveAsTemplate}
+                disabled={savingTemplate || !templateName.trim()}
+                style={{ flex: 1 }}
+              >
+                {savingTemplate ? 'Saving...' : 'Save Template'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

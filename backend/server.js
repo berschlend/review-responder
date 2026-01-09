@@ -123,6 +123,30 @@ async function initDatabase() {
       )
     `);
 
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS response_templates (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        name TEXT NOT NULL,
+        content TEXT NOT NULL,
+        tone TEXT DEFAULT 'professional',
+        platform TEXT DEFAULT 'google',
+        category TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS email_captures (
+        id SERIAL PRIMARY KEY,
+        email TEXT NOT NULL,
+        discount_code TEXT DEFAULT 'SAVE20',
+        source TEXT DEFAULT 'exit_intent',
+        converted BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     console.log('📊 Database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -534,6 +558,148 @@ Generate ONLY the response text, nothing else:`;
   }
 }
 
+// Bulk Response Generation (Pro/Unlimited only)
+app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
+  try {
+    const { reviews, tone, platform } = req.body;
+
+    // Validate input
+    if (!reviews || !Array.isArray(reviews) || reviews.length === 0) {
+      return res.status(400).json({ error: 'Reviews array is required' });
+    }
+
+    if (reviews.length > 20) {
+      return res.status(400).json({ error: 'Maximum 20 reviews per batch' });
+    }
+
+    // Check user plan (Pro or Unlimited only)
+    const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+
+    if (!['professional', 'unlimited'].includes(user.subscription_plan)) {
+      return res.status(403).json({
+        error: 'Bulk generation is only available for Pro and Unlimited plans',
+        upgrade: true,
+        requiredPlan: 'professional'
+      });
+    }
+
+    // Check usage limits
+    const reviewCount = reviews.filter(r => r.trim()).length;
+    if (user.responses_used + reviewCount > user.responses_limit) {
+      return res.status(403).json({
+        error: `Not enough responses remaining. You need ${reviewCount} but only have ${user.responses_limit - user.responses_used} left.`,
+        upgrade: true
+      });
+    }
+
+    const toneInstructions = {
+      professional: 'Use a professional, courteous tone.',
+      friendly: 'Use a warm, friendly, and personable tone.',
+      formal: 'Use a formal, business-appropriate tone.',
+      apologetic: 'Use an apologetic and empathetic tone, focusing on resolution.'
+    };
+
+    // Build business context
+    const businessContextSection = user.business_context ? `
+Business Context (use this to personalize your response):
+${user.business_context}
+` : '';
+
+    // Process all reviews in parallel
+    const generateSingleResponse = async (reviewText, index) => {
+      if (!reviewText.trim()) {
+        return { index, success: false, error: 'Empty review' };
+      }
+
+      try {
+        const prompt = `You are a professional customer service expert helping a small business respond to online reviews.
+
+Business Name: ${user.business_name || 'Our business'}
+${user.business_type ? `Business Type: ${user.business_type}` : ''}
+Platform: ${platform || 'Google Reviews'}
+${businessContextSection}
+
+Review to respond to:
+"${reviewText}"
+
+Instructions:
+- ${toneInstructions[tone] || toneInstructions.professional}
+- Keep the response concise (2-4 sentences for positive reviews, 3-5 for negative)
+- Thank them for their feedback
+- For negative reviews: acknowledge their concerns, apologize if appropriate, offer to make it right
+- For positive reviews: express genuine gratitude and invite them back
+- Don't be overly formal or use canned phrases
+- Make it feel personal and authentic
+- If business context is provided, reference specific details about the business
+- IMPORTANT: Respond in the same language as the review.
+
+Generate ONLY the response text, nothing else:`;
+
+        const completion = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 300,
+          temperature: 0.7
+        });
+
+        const generatedResponse = completion.choices[0].message.content.trim();
+
+        // Save to database
+        await dbQuery(
+          `INSERT INTO responses (user_id, review_text, review_platform, generated_response, tone)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [req.user.id, reviewText, platform || 'google', generatedResponse, tone || 'professional']
+        );
+
+        return {
+          index,
+          success: true,
+          review: reviewText,
+          response: generatedResponse
+        };
+      } catch (error) {
+        console.error(`Error generating response for review ${index}:`, error);
+        return {
+          index,
+          success: false,
+          review: reviewText,
+          error: 'Failed to generate response'
+        };
+      }
+    };
+
+    // Process all reviews in parallel
+    const results = await Promise.all(
+      reviews.map((review, index) => generateSingleResponse(review, index))
+    );
+
+    // Count successful generations
+    const successCount = results.filter(r => r.success).length;
+
+    // Update usage count
+    await dbQuery(
+      'UPDATE users SET responses_used = responses_used + $1 WHERE id = $2',
+      [successCount, req.user.id]
+    );
+
+    const updatedUser = await dbGet('SELECT responses_used, responses_limit FROM users WHERE id = $1', [req.user.id]);
+
+    res.json({
+      results: results.sort((a, b) => a.index - b.index),
+      summary: {
+        total: reviews.length,
+        successful: successCount,
+        failed: reviews.length - successCount
+      },
+      responsesUsed: updatedUser.responses_used,
+      responsesLimit: updatedUser.responses_limit
+    });
+  } catch (error) {
+    console.error('Bulk generation error:', error);
+    res.status(500).json({ error: 'Failed to generate bulk responses' });
+  }
+});
+
 app.get('/api/responses/history', authenticateToken, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -798,6 +964,230 @@ app.get('/api/stats', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Stats error:', error);
     res.status(500).json({ error: 'Failed to get stats' });
+  }
+});
+
+// ============ RESPONSE TEMPLATES ============
+
+// Get all templates for user
+app.get('/api/templates', authenticateToken, async (req, res) => {
+  try {
+    const templates = await dbAll(
+      'SELECT * FROM response_templates WHERE user_id = $1 ORDER BY created_at DESC',
+      [req.user.id]
+    );
+    res.json({ templates });
+  } catch (error) {
+    console.error('Get templates error:', error);
+    res.status(500).json({ error: 'Failed to get templates' });
+  }
+});
+
+// Create new template
+app.post('/api/templates', authenticateToken, async (req, res) => {
+  try {
+    const { name, content, tone, platform, category } = req.body;
+
+    if (!name || !content) {
+      return res.status(400).json({ error: 'Name and content are required' });
+    }
+
+    if (name.length > 100) {
+      return res.status(400).json({ error: 'Template name must be 100 characters or less' });
+    }
+
+    // Check template limit (max 20 per user)
+    const count = await dbGet(
+      'SELECT COUNT(*) as count FROM response_templates WHERE user_id = $1',
+      [req.user.id]
+    );
+
+    if (parseInt(count.count) >= 20) {
+      return res.status(400).json({ error: 'Maximum of 20 templates allowed. Delete some templates to add new ones.' });
+    }
+
+    const result = await dbQuery(
+      `INSERT INTO response_templates (user_id, name, content, tone, platform, category)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [req.user.id, name.trim(), content, tone || 'professional', platform || 'google', category || null]
+    );
+
+    res.status(201).json({ template: result.rows[0] });
+  } catch (error) {
+    console.error('Create template error:', error);
+    res.status(500).json({ error: 'Failed to create template' });
+  }
+});
+
+// Update template
+app.put('/api/templates/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, content, tone, platform, category } = req.body;
+
+    // Verify ownership
+    const existing = await dbGet(
+      'SELECT * FROM response_templates WHERE id = $1 AND user_id = $2',
+      [id, req.user.id]
+    );
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+
+    if (!name || !content) {
+      return res.status(400).json({ error: 'Name and content are required' });
+    }
+
+    const result = await dbQuery(
+      `UPDATE response_templates SET name = $1, content = $2, tone = $3, platform = $4, category = $5
+       WHERE id = $6 AND user_id = $7 RETURNING *`,
+      [name.trim(), content, tone || 'professional', platform || 'google', category || null, id, req.user.id]
+    );
+
+    res.json({ template: result.rows[0] });
+  } catch (error) {
+    console.error('Update template error:', error);
+    res.status(500).json({ error: 'Failed to update template' });
+  }
+});
+
+// Delete template
+app.delete('/api/templates/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Verify ownership
+    const existing = await dbGet(
+      'SELECT * FROM response_templates WHERE id = $1 AND user_id = $2',
+      [id, req.user.id]
+    );
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+
+    await dbQuery('DELETE FROM response_templates WHERE id = $1 AND user_id = $2', [id, req.user.id]);
+
+    res.json({ success: true, message: 'Template deleted' });
+  } catch (error) {
+    console.error('Delete template error:', error);
+    res.status(500).json({ error: 'Failed to delete template' });
+  }
+});
+
+// ============ EMAIL CAPTURE ============
+
+// Capture email from exit-intent popup
+app.post('/api/capture-email', async (req, res) => {
+  try {
+    const { email, discountCode = 'SAVE20', source = 'exit_intent' } = req.body;
+    
+    // Validate email
+    if (!email || !validator.isEmail(email)) {
+      return res.status(400).json({ error: 'Valid email is required' });
+    }
+    
+    // Check if email already exists
+    const existing = await dbGet(
+      'SELECT * FROM email_captures WHERE email = $1',
+      [email.toLowerCase()]
+    );
+    
+    if (existing) {
+      console.log(`📧 Email already captured: ${email}`);
+      return res.json({ 
+        success: true, 
+        message: 'Thanks! Check your email for the discount code.',
+        discountCode: existing.discount_code 
+      });
+    }
+    
+    // Insert new email
+    await dbQuery(
+      `INSERT INTO email_captures (email, discount_code, source) 
+       VALUES ($1, $2, $3)`,
+      [email.toLowerCase(), discountCode, source]
+    );
+    
+    console.log(`✅ Email captured: ${email} (source: ${source})`);
+    
+    // Send welcome email if Resend is configured
+    if (resend && process.env.NODE_ENV === 'production') {
+      try {
+        await resend.emails.send({
+          from: 'ReviewResponder <hello@reviewresponder.app>',
+          to: email,
+          subject: 'Welcome! Here\'s your 20% discount 🎉',
+          html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0; }
+                .content { background: white; padding: 40px; border: 1px solid #E5E7EB; border-radius: 0 0 8px 8px; }
+                .discount-box { background: #F3F4F6; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0; }
+                .discount-code { font-size: 24px; font-weight: bold; color: #4F46E5; }
+                .cta-button { display: inline-block; background: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-top: 20px; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>Welcome to ReviewResponder! 🎉</h1>
+                </div>
+                <div class="content">
+                  <p>Hi there!</p>
+                  
+                  <p>Thanks for your interest in ReviewResponder! As one of our early supporters, here's your exclusive discount:</p>
+                  
+                  <div class="discount-box">
+                    <p>Use code</p>
+                    <div class="discount-code">${discountCode}</div>
+                    <p>for <strong>20% OFF</strong> your first month!</p>
+                  </div>
+                  
+                  <h3>Why ReviewResponder?</h3>
+                  <ul>
+                    <li>🤖 AI-powered responses that sound human</li>
+                    <li>🌍 50+ languages supported automatically</li>
+                    <li>⚡ Generate responses in seconds, not minutes</li>
+                    <li>💰 Save hours every week on review management</li>
+                  </ul>
+                  
+                  <p>Ready to transform how you handle customer reviews?</p>
+                  
+                  <center>
+                    <a href="${process.env.FRONTEND_URL}/pricing" class="cta-button">Claim Your Discount</a>
+                  </center>
+                  
+                  <p style="margin-top: 30px;">Have questions? Just reply to this email - we're here to help!</p>
+                  
+                  <p>Best regards,<br>The ReviewResponder Team</p>
+                </div>
+              </div>
+            </body>
+            </html>
+          `
+        });
+        console.log(`📨 Welcome email sent to ${email}`);
+      } catch (emailError) {
+        console.error('Failed to send welcome email:', emailError);
+        // Don't fail the request if email fails
+      }
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Thanks! Check your email for the discount code.',
+      discountCode 
+    });
+    
+  } catch (error) {
+    console.error('Email capture error:', error);
+    res.status(500).json({ error: 'Failed to save email' });
   }
 });
 

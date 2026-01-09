@@ -11,6 +11,7 @@
     "setup": "node setup.js"
   },
   "dependencies": {
+    "canvas": "^3.2.0",
     "concurrently": "^8.2.2"
   }
 }

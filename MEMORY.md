@@ -72,6 +72,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] Demo-Video Section mit Placeholder (Video noch aufnehmen!)
 - [x] **Exit-Intent Popup** mit 20% Rabatt (Email-Capture, einmal pro Session)
 - [x] **OG Image** für Social Sharing (1200x630px, professionelles Design)
+- [x] **Product Hunt Launch Vorbereitung** - PRODUCT_HUNT.md mit Tagline, Description, Features, Maker Comment
 
 ---
 
