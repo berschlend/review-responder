@@ -1203,9 +1203,96 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Testimonials Section - Real User Feedback */}
+      {testimonials.length > 0 && (
+        <section className="container" style={{ marginBottom: '60px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
+              What Our Users Say
+            </h2>
+            <p style={{ color: 'var(--gray-600)', maxWidth: '600px', margin: '0 auto' }}>
+              Real feedback from businesses using ReviewResponder
+            </p>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '24px',
+            maxWidth: '900px',
+            margin: '0 auto'
+          }}>
+            {testimonials.map((testimonial) => (
+              <div
+                key={testimonial.id}
+                className="card"
+                style={{
+                  padding: '24px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px'
+                }}
+              >
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      size={18}
+                      fill={star <= testimonial.rating ? '#f59e0b' : 'none'}
+                      color={star <= testimonial.rating ? '#f59e0b' : '#d1d5db'}
+                    />
+                  ))}
+                </div>
+                {testimonial.comment && (
+                  <p style={{
+                    fontSize: '15px',
+                    color: 'var(--gray-700)',
+                    lineHeight: '1.6',
+                    fontStyle: 'italic'
+                  }}>
+                    "{testimonial.comment}"
+                  </p>
+                )}
+                <div style={{
+                  marginTop: 'auto',
+                  paddingTop: '12px',
+                  borderTop: '1px solid var(--gray-100)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px'
+                }}>
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    background: 'var(--primary-100)',
+                    color: 'var(--primary-600)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '14px',
+                    fontWeight: '600'
+                  }}>
+                    {testimonial.user_name ? testimonial.user_name.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: '600', fontSize: '14px', color: 'var(--gray-900)' }}>
+                      {testimonial.user_name || 'ReviewResponder User'}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
+                      Verified User
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Money Back Guarantee */}
       <section className="container" style={{ marginBottom: '60px' }}>
-        <div className="card" style={{ 
+        <div className="card" style={{
           background: 'linear-gradient(135deg, #10b981, #059669)', 
           color: 'white', 
           padding: '40px',
@@ -2146,7 +2233,15 @@ const DashboardPage = () => {
         responsesLimit: res.data.responsesLimit
       });
       fetchHistory();
-      toast.success('Response generated!');
+
+      // Fire confetti on first response!
+      if (isFirstResponse) {
+        fireConfetti();
+        toast.success('Congratulations on your first response!', { icon: '🎉', duration: 4000 });
+        setIsFirstResponse(false);
+      } else {
+        toast.success('Response generated!');
+      }
       // Check if user should see feedback popup
       checkFeedbackStatus();
     } catch (error) {
@@ -2158,6 +2253,29 @@ const DashboardPage = () => {
     } finally {
       setGenerating(false);
     }
+  };
+
+  // Onboarding handlers
+  const handleOnboardingComplete = async (data) => {
+    try {
+      await api.put('/auth/profile', {
+        businessName: data.businessName,
+        businessType: data.businessType,
+        businessContext: data.businessContext
+      });
+      updateUser({ businessName: data.businessName, businessType: data.businessType, businessContext: data.businessContext });
+      localStorage.setItem('onboardingCompleted', 'true');
+      setShowOnboarding(false);
+      toast.success('Setup complete! Start generating responses.');
+      fireConfetti();
+    } catch (error) {
+      toast.error('Failed to save profile');
+    }
+  };
+
+  const handleOnboardingSkip = () => {
+    localStorage.setItem('onboardingCompleted', 'true');
+    setShowOnboarding(false);
   };
 
   const copyToClipboard = () => {
@@ -2252,6 +2370,15 @@ const DashboardPage = () => {
 
   return (
     <div className="dashboard container">
+      {/* Onboarding Modal */}
+      {showOnboarding && (
+        <OnboardingModal
+          user={user}
+          onComplete={handleOnboardingComplete}
+          onSkip={handleOnboardingSkip}
+        />
+      )}
+
       <div className="dashboard-header">
         <div>
           <h1 className="dashboard-title">Welcome, {user?.businessName || 'there'}!</h1>
