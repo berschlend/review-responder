@@ -28,7 +28,36 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 
 // Middleware
 app.use(helmet());
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000', credentials: true }));
+
+// CORS configuration - allow frontend and Chrome extension
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'http://localhost:3000',
+  'https://www.google.com',
+  'https://google.com',
+  'https://maps.google.com',
+  'https://business.google.com',
+  'chrome-extension://*'
+];
+
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (Chrome extensions, mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+
+    // Check if origin is in allowed list or is a chrome extension
+    if (allowedOrigins.includes(origin) || origin.startsWith('chrome-extension://')) {
+      return callback(null, true);
+    }
+
+    // Also allow the frontend URL variations
+    if (origin.includes('review-responder')) {
+      return callback(null, true);
+    }
+
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
+}));
 
 // Stripe webhook needs raw body - must be before express.json()
 app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), handleStripeWebhook);
