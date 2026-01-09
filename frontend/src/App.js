@@ -8,6 +8,17 @@ import 'jspdf-autotable';
 import Papa from 'papaparse';
 import { PieChart as RechartsPieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 
+// Lazy loaded components for code splitting
+const LazyApiDocsPage = lazy(() => import('./pages/ApiDocsPage'));
+
+// Loading Spinner for Suspense fallback
+const LoadingSpinner = () => (
+  <div className="loading">
+    <div className="spinner"></div>
+    <p style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>Loading...</p>
+  </div>
+);
+
 // API Configuration
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 const api = axios.create({ baseURL: API_URL });
@@ -1021,10 +1032,20 @@ const PrivacyPage = () => (
       </ul>
       <p style={{ marginTop: '12px' }}>To exercise these rights, email us at <a href="mailto:berend.mainz@web.de" style={{ color: 'var(--primary-600)' }}>berend.mainz@web.de</a></p>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>6. Data Retention</h2>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>6. Chrome Extension</h2>
+      <p>Our Chrome Extension requires specific permissions to function:</p>
+      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+        <li><strong>activeTab:</strong> To detect reviews on Google Maps pages you visit</li>
+        <li><strong>storage:</strong> To save your login session locally</li>
+        <li><strong>clipboardWrite:</strong> To copy generated responses to your clipboard</li>
+        <li><strong>host_permissions:</strong> To communicate with Google Maps and our API</li>
+      </ul>
+      <p style={{ marginTop: '12px' }}>The extension does NOT collect browsing history, personal data from other sites, or any data when you're not actively using it.</p>
+
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>7. Data Retention</h2>
       <p>We retain your data for as long as your account is active. Upon account deletion, we remove your personal data within 30 days.</p>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>7. Contact</h2>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>8. Contact</h2>
       <p>Questions about this policy? Contact us at <a href="mailto:berend.mainz@web.de" style={{ color: 'var(--primary-600)' }}>berend.mainz@web.de</a></p>
     </div>
   </div>
@@ -3464,6 +3485,16 @@ function App() {
             element={
               <ProtectedRoute>
                 <AnalyticsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/api-docs"
+            element={
+              <ProtectedRoute>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <LazyApiDocsPage />
+                </Suspense>
               </ProtectedRoute>
             }
           />
