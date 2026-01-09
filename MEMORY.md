@@ -54,8 +54,8 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 | 1 | Demo-Video Section auf Landing Page | Mittel | `frontend/src/App.js` |
 | 2 | Bulk Response Generation (mehrere Reviews auf einmal) | Schwer | `backend/server.js`, `frontend/src/App.js` |
 | 3 | Response Templates speichern & wiederverwenden | Mittel | `backend/server.js`, `frontend/src/App.js` |
-| 4 | SEO Meta Tags & Open Graph optimieren | Einfach | `frontend/public/index.html` |
-| 5 | Exit-Intent Popup mit Rabatt | Mittel | `frontend/src/App.js` |
+| 4 | Exit-Intent Popup mit Rabatt | Mittel | `frontend/src/App.js` |
+| 5 | OG Image erstellen (für Social Sharing) | Einfach | `frontend/public/og-image.png` |
 
 ### ✅ HEUTE ERLEDIGT:
 - [x] PostgreSQL Migration (Daten persistent)
@@ -66,6 +66,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] API Tests (alle bestanden)
 - [x] Social Proof + Trust Badges auf Landing Page
 - [x] Testimonials Section (3 Testimonials)
+- [x] SEO Meta Tags + Open Graph + Twitter Cards + Schema.org
 
 ---
 
