@@ -89,6 +89,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **Team/Multi-User Accounts** - Team Management in Settings (Unlimited only), Invite up to 5 members, Share quota
 - [x] **Response Export** - CSV und PDF Export mit Datum-Filter (jspdf, papaparse)
 - [x] **App.js Fix** - Beschädigte App.js aus vorherigem Commit repariert
+- [x] **Output Language Selector** - Response Language Dropdown (18 Sprachen), Auto-detect oder spezifische Sprache wählen
 
 ### 📋 GEPLANT FÜR SPÄTER:
 - [ ] **Performance: Code Splitting** - Requires Refactoring von App.js in separate Module (api.js, AuthContext.js, etc.)
@@ -172,7 +173,7 @@ ReviewResponder/
 - ✅ User Registration & Login
 - ✅ Password Reset Flow (Resend.com)
 - ✅ AI Response Generation (4 Tones: Professional, Friendly, Formal, Apologetic)
-- ✅ 50+ Sprachen (automatische Erkennung)
+- ✅ 50+ Sprachen (Auto-detect oder Output Language Selector mit 18 Sprachen)
 - ✅ Stripe Payments (Monthly & Yearly mit 20% Rabatt)
 - ✅ Usage Tracking (Free: 5, Starter: 100, Pro: 300, Unlimited: ∞)
 - ✅ Response History
@@ -452,6 +453,13 @@ Folgende neue Endpoints geben 404 auf Production:
   - Manifest.json bereits auf v1.0.0
   - Icons vorhanden (16, 48, 128px)
   - User muss: Screenshots erstellen & hochladen
+- **Output Language Selector** implementiert:
+  - Response Language Dropdown in Dashboard (Single & Bulk Tab)
+  - 18 Sprachen: English, German, Spanish, French, Italian, Portuguese, Dutch, Polish, Russian, Chinese, Japanese, Korean, Arabic, Turkish, Swedish, Danish, Norwegian, Finnish
+  - Auto-detect Option (Standard): Antwortet in der Sprache des Reviews
+  - Spezifische Sprache: Generiert Antwort in gewählter Sprache (unabhängig vom Review)
+  - Backend: outputLanguage Parameter in /api/responses/generate und /api/generate-bulk
+  - languageNames Mapping für AI-Prompt
 
 ---
 
