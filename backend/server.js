@@ -575,11 +575,11 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
     // Check user plan (Pro or Unlimited only)
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
 
-    if (!['professional', 'unlimited'].includes(user.subscription_plan)) {
+    if (!['starter', 'professional', 'unlimited'].includes(user.subscription_plan)) {
       return res.status(403).json({
-        error: 'Bulk generation is only available for Pro and Unlimited plans',
+        error: 'Bulk generation is only available for paid plans (Starter, Pro, Unlimited)',
         upgrade: true,
-        requiredPlan: 'professional'
+        requiredPlan: 'starter'
       });
     }
 

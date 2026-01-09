@@ -1719,7 +1719,7 @@ const DashboardPage = () => {
       if (error.response?.data?.upgrade) {
         toast.error(error.response.data.error);
       } else if (error.response?.data?.requiredPlan) {
-        toast.error('Bulk generation requires Pro or Unlimited plan');
+        toast.error('Bulk generation requires a paid plan (Starter, Pro, or Unlimited)');
       } else {
         toast.error(error.response?.data?.error || 'Failed to generate responses');
       }
@@ -1745,7 +1745,7 @@ const DashboardPage = () => {
     toast.success('All responses copied!');
   };
 
-  const canUseBulk = ['professional', 'unlimited'].includes(user?.plan);
+  const canUseBulk = ['starter', 'professional', 'unlimited'].includes(user?.plan);
 
   const usagePercent = user ? (user.responsesUsed / user.responsesLimit) * 100 : 0;
 
@@ -1864,7 +1864,7 @@ const DashboardPage = () => {
               borderRadius: '4px',
               fontSize: '10px',
               fontWeight: '600'
-            }}>PRO</span>
+            }}>PAID</span>
           )}
         </button>
         <button
