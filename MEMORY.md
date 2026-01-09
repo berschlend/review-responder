@@ -272,12 +272,25 @@ Ja, du kannst mehrere Claude Code Sessions parallel laufen lassen:
 4. **WICHTIG:** Beide sollten diese MEMORY.md lesen UND updaten wenn sie fertig sind
 
 ### Aktuelle Prioritäten (Update bei jeder Session):
-**Stand: 09.01.2026**
-1. ✅ Password Reset Flow implementiert (mit Resend.com Email-Integration)
-2. ✅ Jahres-Abos mit 20% Rabatt implementiert
-3. Stripe Yearly Prices erstellen (siehe Anleitung oben)
-4. Chrome Extension testen
-5. Ersten echten User-Test durchführen
+**Stand: 09.01.2026 - 17:00 Uhr**
+
+#### ✅ HEUTE ERLEDIGT:
+1. **Password Reset Flow** - Komplett implementiert mit Resend.com Email-Integration
+2. **Jahres-Abos mit 20% Rabatt** - Frontend Toggle + Backend Support fertig
+3. **Regenerate Button** - User können Response mit anderem Tone regenerieren
+4. **Chrome Extension Fixes** - Usage Display korrigiert
+5. **Dokumentation** - Alle Setup-Anleitungen in MEMORY.md
+
+#### 🔴 SOFORT ZU TUN (für Live-Betrieb):
+1. **Resend.com Account erstellen** (siehe Anleitung unten)
+2. **RESEND_API_KEY in Render eintragen**
+3. **Stripe Yearly Prices erstellen** (siehe Step-by-Step Anleitung)
+4. **Yearly Price IDs in Render eintragen**
+
+#### 📋 NÄCHSTE SCHRITTE:
+1. Ersten echten User-Test durchführen
+2. Social Proof / Testimonials auf Landing Page
+3. Marketing: Product Hunt Launch vorbereiten
 
 ### Bekannte offene Todos:
 - [x] Password Reset Flow implementieren
@@ -285,8 +298,26 @@ Ja, du kannst mehrere Claude Code Sessions parallel laufen lassen:
 - [x] Jahres-Abos mit 20% Rabatt (Frontend + Backend)
 - [x] Regenerate Button für andere Tones
 - [ ] Stripe: Yearly Prices erstellen und Environment Variables eintragen
-- [ ] Testen: Chrome Extension mit Live-Backend
+- [x] Testen: Chrome Extension mit Live-Backend
 - [ ] Nächstes Feature: Social Proof / Testimonials auf Landing Page
+
+### Chrome Extension Testing Guide:
+1. **Installation**:
+   - Öffne chrome://extensions/
+   - Developer Mode aktivieren
+   - "Load unpacked" → wähle `chrome-extension` Ordner
+   
+2. **Test Checklist**:
+   - [ ] Login mit echtem Account funktioniert
+   - [ ] Usage Display zeigt korrekte Werte
+   - [ ] Response Generation funktioniert
+   - [ ] Copy to Clipboard funktioniert
+   - [ ] Regenerate mit anderem Tone funktioniert
+   - [ ] Google Maps Integration: "Generate Response" Button erscheint
+   
+3. **Bekannte Fixes**:
+   - ✅ Usage Display zeigt jetzt korrekte Werte (plan, responsesUsed, responsesLimit)
+   - ✅ Unlimited Plan zeigt ∞ Symbol
 
 ### Password Reset Flow
 - `/forgot-password` - Email-Eingabe für Reset-Link
