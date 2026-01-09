@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 09.01.2026 - 23:45 Uhr**
+**Stand: 10.01.2026 - 00:30 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
@@ -53,8 +53,8 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 | # | Task | Schwierigkeit | Dateien |
 |---|------|---------------|---------|
 | 1 | Team/Multi-User Accounts | Schwer | `backend/server.js`, `frontend/src/App.js` |
-| 2 | SEO Blog Artikel Generator | Mittel | `backend/server.js`, `frontend/src/App.js` |
-| 3 | API Key System für Entwickler | Mittel | `backend/server.js`, `frontend/src/App.js` |
+| 2 | Chrome Extension Improvement | Mittel | `chrome-extension/` |
+| 3 | Landing Page A/B Testing | Mittel | `frontend/src/App.js` |
 
 ### ✅ HEUTE ERLEDIGT:
 - [x] PostgreSQL Migration (Daten persistent)
@@ -82,6 +82,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **Email Notifications** - Weekly Summary, 80% Usage Alert, Plan Renewal Emails
 - [x] **Keyboard Shortcuts** - Cmd/Ctrl + Enter, N, 1-4, /, Shift+C
 - [x] **Chrome Extension Sprach-Bug Fix** - `outputLanguage: 'match'` zu `'auto'` geändert, defensive checks hinzugefügt
+- [x] **SEO Blog Artikel Generator** - AI-generierte SEO-Artikel für Review-Management (Pro/Unlimited only)
 
 ---
 
@@ -144,6 +145,11 @@ ReviewResponder/
 | GET | `/api/settings/notifications` | Email Notification Settings |
 | PUT | `/api/settings/notifications` | Settings aktualisieren |
 | POST | `/api/cron/weekly-summary` | Wöchentliche Summary Emails (Cron) |
+| GET | `/api/blog/topics` | Vorgefertigte SEO Topic-Vorschläge |
+| POST | `/api/blog/generate` | SEO Blog-Artikel generieren (Pro/Unlimited) |
+| GET | `/api/blog/history` | Generierte Artikel abrufen |
+| GET | `/api/blog/:id` | Einzelnen Artikel abrufen |
+| DELETE | `/api/blog/:id` | Artikel löschen |
 
 ---
 
@@ -164,6 +170,7 @@ ReviewResponder/
 - ✅ Analytics Dashboard mit Charts (Pro/Unlimited)
 - ✅ Referral System (Invite Friends, Get 1 Month Free)
 - ✅ Email Notifications (Weekly Summary, 80% Usage Alert, Plan Renewal)
+- ✅ SEO Blog Generator (Pro/Unlimited) - AI-generierte SEO-Artikel für Marketing
 
 ---
 
@@ -400,6 +407,20 @@ Folgende neue Endpoints geben 404 auf Production:
   - POST /api/cron/weekly-summary - Cron Endpoint für wöchentliche Emails
   - Schöne HTML Email Templates mit Branding
   - User kann jede Email-Art an/ausschalten
+- **SEO Blog Artikel Generator** implementiert:
+  - Neue `blog_articles` Tabelle in PostgreSQL
+  - 12 vorgefertigte SEO-optimierte Topics
+  - Benutzerdefinierte Topics möglich
+  - Keyword-Targeting für SEO
+  - Längenauswahl (500-2000 Wörter)
+  - 3 Tones: Informativ, Überzeugend, Casual
+  - Meta-Description automatisch generiert
+  - Markdown-Rendering im Preview
+  - Download als .md oder .txt
+  - Copy-to-Clipboard Funktion
+  - Artikel-History mit Pagination
+  - Nur für Pro/Unlimited Pläne
+  - Upgrade-Prompt für Free/Starter User
 
 ---
 
