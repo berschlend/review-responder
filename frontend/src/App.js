@@ -1,5 +1,5 @@
 import React, { useState, useEffect, createContext, useContext, Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
 import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper, Utensils, CheckCircle, Keyboard } from 'lucide-react';
 import axios from 'axios';
@@ -11,6 +11,7 @@ import { PieChart as RechartsPieChart, Pie, Cell, LineChart, Line, XAxis, YAxis,
 
 // Lazy loaded components for code splitting
 const LazyApiDocsPage = lazy(() => import('./pages/ApiDocsPage'));
+import ApiTab from './components/ApiTab';
 
 // Loading Spinner for Suspense fallback
 const LoadingSpinner = () => (
@@ -2355,17 +2356,6 @@ const DashboardPage = () => {
   const [dashboardError, setDashboardError] = useState(null);
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
 
-  // API Key management state
-  const [apiKeys, setApiKeys] = useState([]);
-  const [loadingApiKeys, setLoadingApiKeys] = useState(false);
-  const [showCreateKeyModal, setShowCreateKeyModal] = useState(false);
-  const [newKeyName, setNewKeyName] = useState('');
-  const [creatingKey, setCreatingKey] = useState(false);
-  const [newlyCreatedKey, setNewlyCreatedKey] = useState(null);
-  const [editingKeyId, setEditingKeyId] = useState(null);
-  const [editingKeyName, setEditingKeyName] = useState('');
-  const [apiDocSection, setApiDocSection] = useState('quickstart');
-
   // Blog Generator state
   const [blogTopics, setBlogTopics] = useState([]);
   const [blogTopic, setBlogTopic] = useState('');
@@ -2986,6 +2976,13 @@ const DashboardPage = () => {
           <Link to="/analytics" className="btn btn-secondary" style={{ padding: '8px 16px' }}>
             <BarChart2 size={16} />
             Analytics
+            {!['professional', 'unlimited'].includes(user?.plan) && (
+              <span style={{ background: 'var(--primary-600)', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: '600', marginLeft: '4px' }}>PRO</span>
+            )}
+          </Link>
+          <Link to="/team" className="btn btn-secondary" style={{ padding: '8px 16px' }}>
+            <Users size={16} />
+            Team
             {!['professional', 'unlimited'].includes(user?.plan) && (
               <span style={{ background: 'var(--primary-600)', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: '600', marginLeft: '4px' }}>PRO</span>
             )}
@@ -4041,6 +4038,9 @@ Food was amazing, will definitely come back!`}
         </div>
       )}
 
+      {/* API Tab */}
+      {activeTab === 'api' && <ApiTab user={user} api={api} />}
+
       {/* Save Template Modal */}
       {showSaveTemplateModal && (
         <div style={{
@@ -4453,6 +4453,329 @@ const SettingsPage = () => {
           )}
         </div>
       )}
+    </div>
+  );
+};
+
+// Team Management Page (Pro & Unlimited)
+const TeamPage = () => {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [teamData, setTeamData] = useState(null);
+  const [myTeam, setMyTeam] = useState(null);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState('member');
+  const [inviting, setInviting] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+
+  const loadTeamData = async () => {
+    setLoading(true);
+    try {
+      const [teamRes, myTeamRes] = await Promise.all([
+        api.get('/team').catch(() => null),
+        api.get('/team/my-team')
+      ]);
+      setTeamData(teamRes?.data || null);
+      setMyTeam(myTeamRes.data);
+    } catch (e) {
+      console.error('Load team error:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadTeamData(); }, []);
+
+  const handleInvite = async (e) => {
+    e.preventDefault();
+    if (!inviteEmail) return;
+    setInviting(true);
+    try {
+      await api.post('/team/invite', { email: inviteEmail, role: inviteRole });
+      toast.success(`Invitation sent to ${inviteEmail}`);
+      setInviteEmail('');
+      loadTeamData();
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'Failed to invite');
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const handleRemove = async (memberId) => {
+    if (!window.confirm('Remove this team member?')) return;
+    try {
+      await api.delete(`/team/${memberId}`);
+      toast.success('Member removed');
+      loadTeamData();
+    } catch (e) {
+      toast.error('Failed to remove');
+    }
+  };
+
+  const handleRoleChange = async (memberId, newRole) => {
+    try {
+      await api.put(`/team/${memberId}/role`, { role: newRole });
+      toast.success('Role updated');
+      loadTeamData();
+    } catch (e) {
+      toast.error('Failed to update role');
+    }
+  };
+
+  const handleLeave = async () => {
+    if (!window.confirm('Leave this team? You will lose access to the shared subscription.')) return;
+    setLeaving(true);
+    try {
+      await api.post('/team/leave');
+      toast.success('You have left the team');
+      loadTeamData();
+    } catch (e) {
+      toast.error('Failed to leave team');
+    } finally {
+      setLeaving(false);
+    }
+  };
+
+  const canManageTeam = ['professional', 'unlimited'].includes(user?.plan);
+  const maxMembers = user?.plan === 'unlimited' ? 10 : (user?.plan === 'professional' ? 3 : 0);
+
+  if (loading) {
+    return (
+      <div className="container" style={{ paddingTop: '40px', textAlign: 'center' }}>
+        <div className="spinner" />
+        <p style={{ color: 'var(--gray-500)', marginTop: '16px' }}>Loading team...</p>
+      </div>
+    );
+  }
+
+  // User is a team member (belongs to someone else's team)
+  if (myTeam?.isTeamMember) {
+    return (
+      <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}>
+        <Link to="/dashboard" style={{ color: 'var(--primary-600)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '16px', fontSize: '14px' }}>
+          ← Back to Dashboard
+        </Link>
+        <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
+          <Users size={28} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+          Team Membership
+        </h1>
+        <div className="card" style={{ marginTop: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--primary-100)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Users size={28} style={{ color: 'var(--primary-600)' }} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '18px', fontWeight: '600' }}>{myTeam.teamOwner.businessName || myTeam.teamOwner.email}</h3>
+              <p style={{ color: 'var(--gray-500)', fontSize: '14px' }}>Your team owner</p>
+            </div>
+          </div>
+          <div style={{ padding: '16px', background: 'var(--gray-50)', borderRadius: '8px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <span style={{ color: 'var(--gray-600)' }}>Your Role</span>
+              <span style={{ fontWeight: '500', textTransform: 'capitalize' }}>{myTeam.role}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: 'var(--gray-600)' }}>Team Usage</span>
+              <span style={{ fontWeight: '500' }}>{myTeam.teamUsage?.used || 0} / {myTeam.teamUsage?.limit || 0}</span>
+            </div>
+          </div>
+          <button onClick={handleLeave} disabled={leaving} className="btn btn-secondary" style={{ color: 'var(--error-600)' }}>
+            {leaving ? 'Leaving...' : 'Leave Team'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // User is not on a Pro/Unlimited plan - show upgrade prompt
+  if (!canManageTeam) {
+    return (
+      <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}>
+        <Link to="/dashboard" style={{ color: 'var(--primary-600)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '16px', fontSize: '14px' }}>
+          ← Back to Dashboard
+        </Link>
+        <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
+          <Users size={48} style={{ color: 'var(--gray-400)', marginBottom: '16px' }} />
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>Team Features</h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px', maxWidth: '400px', margin: '0 auto 24px' }}>
+            Invite team members to share your subscription. Pro plan allows 3 members, Unlimited allows 10.
+          </p>
+          <Link to="/pricing" className="btn btn-primary">Upgrade to Pro</Link>
+        </div>
+      </div>
+    );
+  }
+
+  // User can manage team (Pro or Unlimited)
+  return (
+    <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}>
+      <Link to="/dashboard" style={{ color: 'var(--primary-600)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '16px', fontSize: '14px' }}>
+        ← Back to Dashboard
+      </Link>
+      <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
+        <Users size={28} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+        Team Management
+      </h1>
+      <p style={{ color: 'var(--gray-600)', marginBottom: '32px' }}>
+        Invite team members to generate responses using your subscription
+      </p>
+
+      {/* Invite Form */}
+      <div className="card" style={{ marginBottom: '24px' }}>
+        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Invite Team Member</h3>
+        <form onSubmit={handleInvite} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <input type="email" placeholder="Email address" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="form-input" style={{ flex: '1', minWidth: '200px' }} required />
+          <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)} className="form-input" style={{ width: '140px' }}>
+            <option value="admin">Admin</option>
+            <option value="member">Member</option>
+            <option value="viewer">Viewer</option>
+          </select>
+          <button type="submit" className="btn btn-primary" disabled={inviting || (teamData?.members?.length >= maxMembers)}>
+            {inviting ? 'Inviting...' : 'Invite'}
+          </button>
+        </form>
+        <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '12px' }}>
+          {teamData?.members?.length || 0} / {maxMembers} team members used
+          {user?.plan === 'professional' && <span> · <Link to="/pricing" style={{ color: 'var(--primary-600)' }}>Upgrade for more</Link></span>}
+        </p>
+      </div>
+
+      {/* Role Descriptions */}
+      <div className="card" style={{ marginBottom: '24px', background: 'var(--gray-50)' }}>
+        <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Role Permissions</h4>
+        <div style={{ display: 'grid', gap: '8px', fontSize: '13px' }}>
+          <div><strong>Admin:</strong> Generate responses, view history, edit settings</div>
+          <div><strong>Member:</strong> Generate responses, view own history</div>
+          <div><strong>Viewer:</strong> View history only (no generation)</div>
+        </div>
+      </div>
+
+      {/* Team Members List */}
+      <div className="card">
+        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Team Members</h3>
+        {!teamData?.members?.length ? (
+          <p style={{ color: 'var(--gray-500)', fontSize: '14px' }}>No team members yet. Invite someone to get started!</p>
+        ) : (
+          <div style={{ border: '1px solid var(--gray-200)', borderRadius: '8px', overflow: 'hidden' }}>
+            {teamData.members.map((member, idx) => (
+              <div key={member.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderBottom: idx < teamData.members.length - 1 ? '1px solid var(--gray-200)' : 'none', background: member.status === 'pending' ? 'var(--gray-50)' : 'white' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: member.status === 'active' ? 'var(--primary-100)' : 'var(--gray-200)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Users size={18} style={{ color: member.status === 'active' ? 'var(--primary-600)' : 'var(--gray-400)' }} />
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: '500' }}>{member.email}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
+                      {member.status === 'pending' ? 'Invitation pending...' : `Joined ${new Date(member.acceptedAt).toLocaleDateString()}`}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <select value={member.role} onChange={(e) => handleRoleChange(member.id, e.target.value)} className="form-input" style={{ width: '110px', padding: '6px 10px', fontSize: '13px' }}>
+                    <option value="admin">Admin</option>
+                    <option value="member">Member</option>
+                    <option value="viewer">Viewer</option>
+                  </select>
+                  <button onClick={() => handleRemove(member.id)} className="btn btn-sm" style={{ color: 'var(--error-600)', padding: '6px' }} title="Remove member">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Join Team Page (for accepting invitations)
+const JoinTeamPage = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
+  const [loading, setLoading] = useState(true);
+  const [invitation, setInvitation] = useState(null);
+  const [error, setError] = useState(null);
+  const [accepting, setAccepting] = useState(false);
+
+  useEffect(() => {
+    const validateToken = async () => {
+      if (!token) { setError('No invitation token provided'); setLoading(false); return; }
+      try {
+        const res = await api.get(`/team/invite/${token}`);
+        setInvitation(res.data);
+      } catch (e) {
+        setError(e.response?.data?.error || 'Invalid or expired invitation');
+      } finally {
+        setLoading(false);
+      }
+    };
+    validateToken();
+  }, [token]);
+
+  const handleAccept = async () => {
+    if (!user) {
+      sessionStorage.setItem('pendingTeamInvite', token);
+      toast.info('Please log in or create an account to join the team');
+      navigate('/login');
+      return;
+    }
+    setAccepting(true);
+    try {
+      const res = await api.post('/team/accept', { token });
+      toast.success(res.data.message);
+      navigate('/team');
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'Failed to accept invitation');
+    } finally {
+      setAccepting(false);
+    }
+  };
+
+  useEffect(() => {
+    const pendingToken = sessionStorage.getItem('pendingTeamInvite');
+    if (user && pendingToken) {
+      sessionStorage.removeItem('pendingTeamInvite');
+      api.post('/team/accept', { token: pendingToken })
+        .then(res => { toast.success(res.data.message); navigate('/team'); })
+        .catch(e => toast.error(e.response?.data?.error || 'Failed to accept invitation'));
+    }
+  }, [user, navigate]);
+
+  if (loading) return <div className="auth-container"><div className="card auth-card" style={{ textAlign: 'center' }}><div className="spinner" style={{ margin: '0 auto 16px' }} /><p>Validating invitation...</p></div></div>;
+  if (error) return <div className="auth-container"><div className="card auth-card" style={{ textAlign: 'center' }}><AlertCircle size={48} style={{ color: 'var(--error-600)', marginBottom: '16px' }} /><h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>Invalid Invitation</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>{error}</p><Link to="/" className="btn btn-primary">Go Home</Link></div></div>;
+
+  return (
+    <div className="auth-container">
+      <div className="card auth-card" style={{ textAlign: 'center' }}>
+        <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--primary-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+          <Users size={32} style={{ color: 'var(--primary-600)' }} />
+        </div>
+        <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '8px' }}>Team Invitation</h2>
+        <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+          <strong>{invitation?.invitedBy}</strong> invited you to join their ReviewResponder team as a <strong style={{ textTransform: 'capitalize' }}>{invitation?.role}</strong>.
+        </p>
+        {user ? (
+          user.email.toLowerCase() === invitation?.invitedEmail?.toLowerCase() ? (
+            <button onClick={handleAccept} disabled={accepting} className="btn btn-primary" style={{ width: '100%' }}>
+              {accepting ? 'Accepting...' : 'Accept Invitation'}
+            </button>
+          ) : (
+            <div>
+              <p style={{ color: 'var(--error-600)', marginBottom: '16px' }}>This invitation was sent to {invitation?.invitedEmail}. You are logged in as {user.email}.</p>
+              <button onClick={() => { localStorage.removeItem('token'); window.location.reload(); }} className="btn btn-secondary" style={{ width: '100%' }}>Log out and try again</button>
+            </div>
+          )
+        ) : (
+          <div>
+            <p style={{ fontSize: '14px', color: 'var(--gray-500)', marginBottom: '16px' }}>Log in with <strong>{invitation?.invitedEmail}</strong> to accept</p>
+            <button onClick={handleAccept} className="btn btn-primary" style={{ width: '100%' }}>Log In to Accept</button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -5929,6 +6252,15 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/team"
+            element={
+              <ProtectedRoute>
+                <TeamPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/join-team" element={<JoinTeamPage />} />
           <Route
             path="/api-docs"
             element={
