@@ -529,6 +529,19 @@ Folgende neue Endpoints geben 404 auf Production:
     - CTA Buttons zu /register
     - Internal Links zwischen allen SEO-Seiten
   - Neue Icons importiert: Utensils, CheckCircle
+- **Email Drip Campaign** implementiert:
+  - Neue `drip_emails` Tabelle für Tracking (user_id, email_day, sent_at)
+  - POST /api/cron/send-drip-emails - Cron Endpoint
+  - 5 HTML Email Templates:
+    - Tag 0: Welcome + Getting Started (3-Step Guide)
+    - Tag 2: Pro Tip - Business Context hinzufügen
+    - Tag 5: 50% OFF Upgrade Angebot (EARLY50 Code)
+    - Tag 10: Feature Spotlight - Multi-Language Support
+    - Tag 20: Feedback Request
+  - Duplicate Prevention mit UNIQUE(user_id, email_day) Constraint
+  - Optional: CRON_SECRET Header für Sicherheit
+  - Batch Processing (100 Users pro Tag pro Run)
+  - Personalisierung mit Business Name
 
 ---
 
