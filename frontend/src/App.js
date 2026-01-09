@@ -530,17 +530,6 @@ const RegisterPage = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Business Name</label>
-            <input
-              type="text"
-              className="form-input"
-              value={businessName}
-              onChange={(e) => setBusinessName(e.target.value)}
-              placeholder="Your Business Name"
-            />
-          </div>
-
-          <div className="form-group">
             <label className="form-label">Email</label>
             <input
               type="email"
