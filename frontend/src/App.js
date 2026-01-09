@@ -252,11 +252,16 @@ const ExitIntentPopup = () => {
     const popupShown = sessionStorage.getItem('exitIntentShown');
     if (popupShown) return;
 
+    let listenerRemoved = false;
+
     const handleMouseLeave = (e) => {
       // Detect when mouse moves to top of viewport (likely going to tabs/address bar)
-      if (e.clientY <= 0) {
+      if (e.clientY <= 0 && !listenerRemoved) {
         setIsVisible(true);
         sessionStorage.setItem('exitIntentShown', 'true');
+        // Remove listener immediately after showing popup once
+        document.removeEventListener('mouseleave', handleMouseLeave);
+        listenerRemoved = true;
       }
     };
 
@@ -267,7 +272,9 @@ const ExitIntentPopup = () => {
 
     return () => {
       clearTimeout(timer);
-      document.removeEventListener('mouseleave', handleMouseLeave);
+      if (!listenerRemoved) {
+        document.removeEventListener('mouseleave', handleMouseLeave);
+      }
     };
   }, []);
 
