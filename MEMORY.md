@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 09.01.2026 - 21:00 Uhr**
+**Stand: 09.01.2026 - 19:00 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
@@ -54,7 +54,6 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 |---|------|---------------|---------|
 | 1 | Bulk Response Generation (mehrere Reviews auf einmal) | Schwer | `backend/server.js`, `frontend/src/App.js` |
 | 2 | Response Templates speichern & wiederverwenden | Mittel | `backend/server.js`, `frontend/src/App.js` |
-| 4 | OG Image erstellen (für Social Sharing) | Einfach | `frontend/public/og-image.png` |
 
 ### ✅ HEUTE ERLEDIGT:
 - [x] PostgreSQL Migration (Daten persistent)
@@ -72,6 +71,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] Privacy Policy & Terms of Service Seiten
 - [x] Demo-Video Section mit Placeholder (Video noch aufnehmen!)
 - [x] **Exit-Intent Popup** mit 20% Rabatt (Email-Capture, einmal pro Session)
+- [x] **OG Image** für Social Sharing (1200x630px, professionelles Design)
 
 ---
 
@@ -282,6 +282,7 @@ git push
 - Launch Discount System
 - Exit-Intent Popup mit Email Capture
 - MEMORY.md optimiert für Claude Sessions
+- OG Image für Social Sharing erstellt (1200x630px)
 
 ---
 
