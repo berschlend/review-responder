@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 09.01.2026 - 23:00 Uhr**
+**Stand: 10.01.2026 - 02:00 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
@@ -82,7 +82,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **Referral System** - Invite Friends, Get 1 Month Free
 - [x] **Email Notifications** - Weekly Summary, 80% Usage Alert, Plan Renewal Emails
 - [x] **Keyboard Shortcuts** - Cmd/Ctrl + Enter, N, 1-4, /, Shift+C
-- [x] **User Onboarding** - 3-Step Modal für neue User (Backend Support)
+- [x] **User Onboarding (Vollständig)** - 3-Step Modal für neue User (Backend + Frontend komplett)
 - [x] **Public API Access (Vollständig)** - API Keys, Rate Limiting (100/Tag), POST /api/v1/generate, Settings UI, /api-docs Seite (Unlimited only)
 - [x] **Dark Mode** - Toggle in Navbar, System Preference Detection, localStorage Persistence
 - [x] **Chrome Web Store Vorbereitung** - CHROME_STORE.md, Store Listing, Privacy Policy Extension
@@ -498,6 +498,18 @@ Folgende neue Endpoints geben 404 auf Production:
   - Tooltips bei Response Tone und Response Language
   - localStorage Persistence für onboardingCompleted Status
   - Automatische Profil-Speicherung beim Abschluss
+- **User Onboarding (Frontend Integration - 10.01.2026)**:
+  - OnboardingModal Komponente vollständig in App.js integriert
+  - 3-Step Onboarding Flow komplett implementiert:
+    1. Business Name Eingabe mit automatischer API-Speicherung
+    2. Sample Response Generation (echte AI-Demo mit Live-API)
+    3. Chrome Extension Promotion mit Link zu /extension
+  - Backend Integration: Nutzt user.onboardingCompleted Flag
+  - Conditional Display: Nur für neue User (onboardingCompleted = false)
+  - API Calls: /auth/profile für Business Name, /generate für Sample Response, /auth/complete-onboarding
+  - Duplicate Code entfernt: Alte OnboardingModal Definitionen gelöscht
+  - Build tested: npm run build erfolgreich ohne Fehler
+  - Frontend onboarding flow vollständig funktional
 
 ---
 
