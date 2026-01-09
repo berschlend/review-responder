@@ -41,11 +41,11 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 10.01.2026 - 01:30 Uhr**
+**Stand: 10.01.2026 - 02:15 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
-- [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
-- [ ] Stripe Yearly Prices erstellen + Price IDs in Render eintragen
+- [x] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen ✅
+- [x] Stripe Yearly Prices erstellen + Price IDs in Render eintragen ✅
 - [ ] Demo-Video aufnehmen (2 Min Walkthrough) und YouTube/Loom Link einfügen
 
 ### 🟡 NÄCHSTE CLAUDE TASKS (Wähle einen):
@@ -200,12 +200,12 @@ ReviewResponder/
 | Professional | $49/mo | `price_1Sni18QfYocZQHxZuboFA6Wc` |
 | Unlimited | $99/mo | `price_1Sni1NQfYocZQHxZTq8KNLv8` |
 
-### Jährliche Pläne (User muss erstellen)
+### Jährliche Pläne (Live)
 | Plan | Preis | Price ID |
 |------|-------|----------|
-| Starter Yearly | $278.40/yr | `[NOCH ERSTELLEN]` |
-| Professional Yearly | $470.40/yr | `[NOCH ERSTELLEN]` |
-| Unlimited Yearly | $950.40/yr | `[NOCH ERSTELLEN]` |
+| Starter Yearly | $278.40/yr | `price_1SnkL2QfYocZQHxZPvaX6mru` |
+| Professional Yearly | $470.40/yr | `prod_TlEUSJsa7ULdZj` |
+| Unlimited Yearly | $950.40/yr | `price_1SnkObQfYocZQHxZ5zNYTN3f` |
 
 ---
 
