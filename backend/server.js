@@ -825,7 +825,7 @@ async function generateResponseHandler(req, res) {
 
     // Build language instruction based on outputLanguage selection
     const languageInstruction = (!outputLanguage || outputLanguage === 'auto')
-      ? 'IMPORTANT: Respond in the same language as the review. If the review is in German, respond in German. If in Spanish, respond in Spanish.'
+      ? `CRITICAL LANGUAGE DETECTION: First, analyze ONLY the actual review text (the customer's words) to detect its language. Ignore any UI elements, timestamps, or metadata - focus ONLY on the customer's written review. Then respond in EXACTLY that language. Example: If the review says "This was absolutely superb" - that's English, so respond in English. If it says "Das Essen war fantastisch" - that's German, so respond in German.`
       : `IMPORTANT: You MUST write the response in ${languageNames[outputLanguage] || 'English'}, regardless of what language the review is written in.`;
 
     // Build business context section (use team owner's context if team member)
@@ -863,7 +863,7 @@ Instructions:
 - If business context is provided, reference specific details about the business (e.g., mention specific menu items, services, team members)
 ${customInstructions ? `- Additional instructions: ${customInstructions}` : ''}
 
-Remember: Write your response in the SAME LANGUAGE as the review above!
+CRITICAL: Detect the language of the review text above (ignore any German/other language UI artifacts like "vor X Tagen", "Hilfreich", etc.) and respond ONLY in that detected language!
 
 Generate ONLY the response text, nothing else:`;
 
@@ -993,7 +993,7 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
 
     // Build language instruction based on outputLanguage selection
     const languageInstruction = (!outputLanguage || outputLanguage === 'auto')
-      ? 'IMPORTANT: Respond in the same language as the review.'
+      ? `CRITICAL: Analyze ONLY the actual review text to detect its language (ignore any UI elements like timestamps). Then respond in EXACTLY that language.`
       : `IMPORTANT: You MUST write the response in ${languageNames[outputLanguage] || 'English'}, regardless of what language the review is written in.`;
 
     // Build business context (use team owner's context if team member)

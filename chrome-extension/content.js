@@ -161,6 +161,21 @@ function cleanReviewText(text) {
     /Weniger anzeigen/gi,
     /Hilfreich/gi,
     /\d+ (Person|Personen) fanden? diese Rezension hilfreich/gi,
+    /Rezension melden/gi,
+    /Teilen/gi,
+    /Fotos? hinzufügen/gi,
+    /Alle \d+ Rezensionen/gi,
+    /Google-Rezensionen/gi,
+    /Local Guide/gi,
+    /Übersetzt von Google/gi,
+    /Original anzeigen/gi,
+    /Bearbeiten/gi,
+    /Löschen/gi,
+    /Sortieren/gi,
+    /Neueste/gi,
+    /Relevanteste/gi,
+    /Höchste Bewertung/gi,
+    /Niedrigste Bewertung/gi,
   ];
 
   // Remove common English UI patterns
@@ -171,12 +186,47 @@ function cleanReviewText(text) {
     /See less/gi,
     /Helpful/gi,
     /\d+ (person|people) found this helpful/gi,
+    /Report review/gi,
+    /Share/gi,
+    /Add photos?/gi,
+    /All \d+ reviews/gi,
+    /Google reviews/gi,
+    /Translated by Google/gi,
+    /Show original/gi,
+    /Edit/gi,
+    /Delete/gi,
+    /Sort/gi,
+    /Newest/gi,
+    /Most relevant/gi,
+    /Highest rating/gi,
+    /Lowest rating/gi,
+  ];
+
+  // Remove common French UI patterns
+  const frenchUIPatterns = [
+    /il y a \d+ (secondes?|minutes?|heures?|jours?|semaines?|mois|ans?)/gi,
+    /Réponse du propriétaire/gi,
+    /Afficher plus/gi,
+    /Afficher moins/gi,
+    /Utile/gi,
+  ];
+
+  // Remove common Spanish UI patterns
+  const spanishUIPatterns = [
+    /hace \d+ (segundos?|minutos?|horas?|días?|semanas?|meses?|años?)/gi,
+    /Respuesta del propietario/gi,
+    /Ver más/gi,
+    /Ver menos/gi,
+    /Útil/gi,
   ];
 
   let cleaned = text;
-  [...germanUIPatterns, ...englishUIPatterns].forEach(pattern => {
+  [...germanUIPatterns, ...englishUIPatterns, ...frenchUIPatterns, ...spanishUIPatterns].forEach(pattern => {
     cleaned = cleaned.replace(pattern, '');
   });
+
+  // Remove extra whitespace
+  cleaned = cleaned.replace(/\s+/g, ' ');
 
   return cleaned.trim();
 }
