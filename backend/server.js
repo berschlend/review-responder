@@ -380,7 +380,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     if (resend && process.env.NODE_ENV === 'production') {
       try {
         await resend.emails.send({
-          from: 'ReviewResponder <noreply@reviewresponder.app>',
+          from: 'ReviewResponder <onboarding@resend.dev>',
           to: user.email,
           subject: 'Reset Your Password - ReviewResponder',
           html: `
@@ -1116,7 +1116,7 @@ app.post('/api/capture-email', async (req, res) => {
     if (resend && process.env.NODE_ENV === 'production') {
       try {
         await resend.emails.send({
-          from: 'ReviewResponder <hello@reviewresponder.app>',
+          from: 'ReviewResponder <onboarding@resend.dev>',
           to: email,
           subject: 'Welcome! Here\'s your 20% discount 🎉',
           html: `
