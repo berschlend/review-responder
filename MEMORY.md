@@ -80,6 +80,8 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **Review Analytics Dashboard** - Charts & Statistiken (Pro/Unlimited only)
 - [x] **Referral System** - Invite Friends, Get 1 Month Free
 - [x] **Email Notifications** - Weekly Summary, 80% Usage Alert, Plan Renewal Emails
+- [x] **Keyboard Shortcuts** - Cmd/Ctrl + Enter, N, 1-4, /, Shift+C
+- [x] **User Onboarding** - 3-Step Modal für neue User (Backend Support)
 
 ---
 
@@ -162,6 +164,7 @@ ReviewResponder/
 - ✅ Analytics Dashboard mit Charts (Pro/Unlimited)
 - ✅ Referral System (Invite Friends, Get 1 Month Free)
 - ✅ Email Notifications (Weekly Summary, 80% Usage Alert, Plan Renewal)
+- ✅ Keyboard Shortcuts (Cmd/Ctrl + Enter, N, 1-4, /, Shift+C)
 
 ---
 
@@ -392,6 +395,14 @@ Folgende neue Endpoints geben 404 auf Production:
   - POST /api/cron/weekly-summary - Cron Endpoint für wöchentliche Emails
   - Schöne HTML Email Templates mit Branding
   - User kann jede Email-Art an/ausschalten
+- **Keyboard Shortcuts** implementiert:
+  - Cmd/Ctrl + Enter: Response generieren
+  - Cmd/Ctrl + Shift + C: Response kopieren
+  - Cmd/Ctrl + N: Formular leeren (neue Response)
+  - Cmd/Ctrl + 1/2/3/4: Schneller Tone-Wechsel
+  - Cmd/Ctrl + /: Shortcuts Help Modal anzeigen
+  - Keyboard-Icon Button im Dashboard Header
+  - Platform-aware (⌘ auf Mac, Ctrl auf Windows)
 
 ---
 
