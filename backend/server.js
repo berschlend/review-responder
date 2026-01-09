@@ -558,7 +558,7 @@ Generate ONLY the response text, nothing else:`;
   }
 }
 
-// Bulk Response Generation (Pro/Unlimited only)
+// Bulk Response Generation (Paid plans only: Starter/Pro/Unlimited)
 app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
   try {
     const { reviews, tone, platform } = req.body;
@@ -572,7 +572,7 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Maximum 20 reviews per batch' });
     }
 
-    // Check user plan (Pro or Unlimited only)
+    // Check user plan (Paid plans only: Starter/Pro/Unlimited)
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
 
     if (!['starter', 'professional', 'unlimited'].includes(user.subscription_plan)) {

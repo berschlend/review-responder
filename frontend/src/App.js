@@ -2097,16 +2097,16 @@ const DashboardPage = () => {
                 <Layers size={40} style={{ color: 'var(--primary-600)' }} />
               </div>
               <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>
-                Bulk Generation is a Pro Feature
+                Bulk Generation is a Paid Feature
               </h2>
               <p style={{ color: 'var(--gray-600)', marginBottom: '24px', maxWidth: '500px', margin: '0 auto 24px' }}>
-                Generate responses for up to 20 reviews at once with our Pro or Unlimited plans.
+                Generate responses for up to 20 reviews at once with any paid plan.
                 Perfect for businesses with high review volume.
               </p>
               <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
                 <Link to="/pricing" className="btn btn-primary" style={{ padding: '12px 24px' }}>
                   <Zap size={18} />
-                  Upgrade to Pro
+                  View Plans
                 </Link>
               </div>
               <div style={{ marginTop: '32px', display: 'flex', gap: '32px', justifyContent: 'center', flexWrap: 'wrap' }}>

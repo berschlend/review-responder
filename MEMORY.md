@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 09.01.2026 - 19:00 Uhr**
+**Stand: 09.01.2026 - 21:15 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
@@ -53,7 +53,8 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 | # | Task | Schwierigkeit | Dateien |
 |---|------|---------------|---------|
 | 1 | Bulk Response Generation (mehrere Reviews auf einmal) | Schwer | `backend/server.js`, `frontend/src/App.js` |
-| 2 | Response Templates speichern & wiederverwenden | Mittel | `backend/server.js`, `frontend/src/App.js` |
+| 2 | Review Analytics Dashboard | Mittel | `backend/server.js`, `frontend/src/App.js` |
+| 3 | Team/Multi-User Accounts | Schwer | `backend/server.js`, `frontend/src/App.js` |
 
 ### ✅ HEUTE ERLEDIGT:
 - [x] PostgreSQL Migration (Daten persistent)
@@ -73,6 +74,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **Exit-Intent Popup** mit 20% Rabatt (Email-Capture, einmal pro Session)
 - [x] **OG Image** für Social Sharing (1200x630px, professionelles Design)
 - [x] **Product Hunt Launch Vorbereitung** - PRODUCT_HUNT.md mit Tagline, Description, Features, Maker Comment
+- [x] **Response Templates** - Templates speichern & als Startpunkt nutzen
 
 ---
 
@@ -123,6 +125,10 @@ ReviewResponder/
 | POST | `/api/create-checkout-session` | Stripe Checkout |
 | POST | `/api/webhooks/stripe` | Stripe Webhook |
 | POST | `/api/capture-email` | Email Capture (Exit-Intent) |
+| GET | `/api/templates` | User's Response Templates |
+| POST | `/api/templates` | Neues Template speichern |
+| PUT | `/api/templates/:id` | Template aktualisieren |
+| DELETE | `/api/templates/:id` | Template löschen |
 
 ---
 
@@ -138,6 +144,7 @@ ReviewResponder/
 - ✅ Business Context Personalization
 - ✅ Chrome Extension
 - ✅ Regenerate mit anderem Tone
+- ✅ Response Templates (speichern & als Startpunkt nutzen)
 
 ---
 
@@ -209,7 +216,7 @@ git push
 - [ ] Bulk Response Generation
 - [ ] Review Analytics Dashboard
 - [ ] Team/Multi-User Accounts
-- [ ] Response Templates
+- [x] Response Templates ✅
 
 ### Phase 4: Marketing
 - [x] Product Hunt Launch Vorbereitung (PRODUCT_HUNT.md)
