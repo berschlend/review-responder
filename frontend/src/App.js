@@ -2584,7 +2584,12 @@ const DashboardPage = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Response Tone</label>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                Response Tone
+                <FeatureTooltip text="Professional: Business-appropriate. Friendly: Warm and personal. Formal: Corporate style. Apologetic: For negative reviews.">
+                  <Info size={14} style={{ color: 'var(--gray-400)', cursor: 'help' }} />
+                </FeatureTooltip>
+              </label>
               <select
                 className="form-select"
                 value={tone}
@@ -2598,7 +2603,12 @@ const DashboardPage = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Response Language</label>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                Response Language
+                <FeatureTooltip text="Auto-detect matches the customer's language automatically. Great for multilingual businesses!">
+                  <Info size={14} style={{ color: 'var(--gray-400)', cursor: 'help' }} />
+                </FeatureTooltip>
+              </label>
               <select
                 className="form-select"
                 value={outputLanguage}
