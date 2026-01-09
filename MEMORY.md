@@ -122,6 +122,7 @@ ReviewResponder/
 | GET | `/api/user/history` | Response History |
 | POST | `/api/create-checkout-session` | Stripe Checkout |
 | POST | `/api/webhooks/stripe` | Stripe Webhook |
+| POST | `/api/capture-email` | Email Capture (Exit-Intent) |
 
 ---
 
@@ -271,6 +272,14 @@ git push
   - Success State nach Email-Eingabe
   - Click outside oder X Button zum Schließen
 
+### Backend Integration (NEU!):
+- **Endpoint**: POST `/api/capture-email`
+- **Database**: `email_captures` Tabelle (email, discount_code, source, converted, created_at)
+- **Email Validation**: Nutzt validator.js
+- **Duplicate Check**: Verhindert mehrfache Einträge für gleiche Email
+- **Welcome Email**: Automatisch via Resend mit Discount Code (wenn konfiguriert)
+- **Frontend**: Connected via axios im ExitIntentPopup Component
+
 ## CHANGELOG
 
 ### 09.01.2026
@@ -282,6 +291,8 @@ git push
 - Ehrliches Marketing implementiert
 - Launch Discount System
 - Exit-Intent Popup mit Email Capture
+- Backend Integration für Email Capture (POST /api/capture-email)
+- Welcome Email via Resend mit Discount Code
 - MEMORY.md optimiert für Claude Sessions
 - OG Image für Social Sharing erstellt (1200x630px)
 - **Product Hunt Launch Vorbereitung** - PRODUCT_HUNT.md erstellt
