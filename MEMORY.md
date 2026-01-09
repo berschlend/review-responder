@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 10.01.2026 - 02:00 Uhr**
+**Stand: 10.01.2026 - 02:30 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
@@ -93,6 +93,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **User Feedback & Testimonials** - Echtes Feedback sammeln (Popup nach 10 Responses), Testimonials auf Landing Page anzeigen
 - [x] **First-Time User Experience** - Onboarding Modal (3 Steps), Confetti auf erste Response, Feature Tooltips
 - [x] **SEO Landing Pages** - 4 keyword-optimierte Seiten: /google-review-response-generator, /yelp-review-reply-tool, /restaurant-review-responses, /hotel-review-management
+- [x] **Email Drip Campaign** - Automatische Emails an Tag 0,2,5,10,20 nach Signup (POST /api/cron/send-drip-emails)
 
 ### 📋 GEPLANT FÜR SPÄTER:
 - [ ] **Performance: Code Splitting** - Requires Refactoring von App.js in separate Module (api.js, AuthContext.js, etc.)
@@ -171,6 +172,7 @@ ReviewResponder/
 | POST | `/api/feedback` | User Feedback absenden (Rating + Kommentar) |
 | GET | `/api/feedback/status` | Prüft ob Feedback-Popup angezeigt werden soll |
 | GET | `/api/testimonials` | Freigegebene Testimonials (public) |
+| POST | `/api/cron/send-drip-emails` | Drip Campaign Emails senden (Cron) |
 
 ---
 
