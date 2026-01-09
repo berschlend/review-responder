@@ -285,6 +285,30 @@ async function initDatabase() {
       )
     `);
 
+    // Referrals table for referral system
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS referrals (
+        id SERIAL PRIMARY KEY,
+        referrer_id INTEGER NOT NULL REFERENCES users(id),
+        referred_email TEXT NOT NULL,
+        referred_user_id INTEGER REFERENCES users(id),
+        status TEXT DEFAULT 'pending',
+        reward_given BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        converted_at TIMESTAMP,
+        UNIQUE(referrer_id, referred_email)
+      )
+    `);
+
+    // Add referral columns to users table
+    try {
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code TEXT UNIQUE`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by INTEGER REFERENCES users(id)`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_credits INTEGER DEFAULT 0`);
+    } catch (error) {
+      // Columns might already exist
+    }
+
     console.log('📊 Database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -1356,36 +1380,73 @@ app.delete('/api/templates/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// ============ TEAM MANAGEMENT (Unlimited Plan Only) ============
+// ============ TEAM MANAGEMENT (Professional & Unlimited Plans) ============
 
+// Helper: Check if plan has team access (Pro: 3 members, Unlimited: 10 members)
+function hasTeamAccess(plan) {
+  return ['professional', 'unlimited'].includes(plan);
+}
+
+function getMaxTeamMembers(plan) {
+  return PLAN_LIMITS[plan]?.teamMembers || 0;
+}
+
+// GET /api/team - Get all team members
 app.get('/api/team', authenticateToken, async (req, res) => {
   try {
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
-    if (user.subscription_plan !== 'unlimited') return res.status(403).json({ error: 'Team features are only available for Unlimited plan', upgrade: true, requiredPlan: 'unlimited' });
+    if (!hasTeamAccess(user.subscription_plan)) {
+      return res.status(403).json({ error: 'Team features are available for Professional and Unlimited plans', upgrade: true, requiredPlan: 'professional' });
+    }
     const members = await dbAll(`SELECT tm.*, u.email as user_email, u.business_name FROM team_members tm LEFT JOIN users u ON tm.member_user_id = u.id WHERE tm.team_owner_id = $1 ORDER BY tm.invited_at DESC`, [req.user.id]);
-    res.json({ isTeamOwner: true, members: members.map(m => ({ id: m.id, email: m.member_email, role: m.role, status: m.accepted_at ? 'active' : 'pending', invitedAt: m.invited_at, acceptedAt: m.accepted_at, businessName: m.business_name })), maxMembers: 5 });
-  } catch (error) { res.status(500).json({ error: 'Failed to get team members' }); }
+    const maxMembers = getMaxTeamMembers(user.subscription_plan);
+    res.json({ isTeamOwner: true, members: members.map(m => ({ id: m.id, email: m.member_email, role: m.role, status: m.accepted_at ? 'active' : 'pending', invitedAt: m.invited_at, acceptedAt: m.accepted_at, businessName: m.business_name })), maxMembers, plan: user.subscription_plan });
+  } catch (error) { console.error('Get team error:', error); res.status(500).json({ error: 'Failed to get team members' }); }
 });
 
+// POST /api/team/invite - Invite a new team member
 app.post('/api/team/invite', authenticateToken, async (req, res) => {
   try {
     const { email, role = 'member' } = req.body;
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
-    if (user.subscription_plan !== 'unlimited') return res.status(403).json({ error: 'Team features are only available for Unlimited plan', upgrade: true });
+    if (!hasTeamAccess(user.subscription_plan)) {
+      return res.status(403).json({ error: 'Team features are available for Professional and Unlimited plans', upgrade: true });
+    }
     if (!email || !validator.isEmail(email)) return res.status(400).json({ error: 'Valid email is required' });
     if (email.toLowerCase() === user.email.toLowerCase()) return res.status(400).json({ error: 'You cannot invite yourself' });
+    const validRoles = ['admin', 'member', 'viewer'];
+    if (!validRoles.includes(role)) return res.status(400).json({ error: 'Invalid role. Must be admin, member, or viewer' });
     const memberCount = await dbGet('SELECT COUNT(*) as count FROM team_members WHERE team_owner_id = $1', [req.user.id]);
-    if (parseInt(memberCount.count) >= 5) return res.status(400).json({ error: 'Maximum 5 team members allowed' });
+    const maxMembers = getMaxTeamMembers(user.subscription_plan);
+    if (parseInt(memberCount.count) >= maxMembers) {
+      return res.status(400).json({ error: `Maximum ${maxMembers} team members allowed on your plan`, upgrade: user.subscription_plan === 'professional' });
+    }
     const existing = await dbGet('SELECT * FROM team_members WHERE team_owner_id = $1 AND member_email = $2', [req.user.id, email.toLowerCase()]);
     if (existing) return res.status(400).json({ error: 'This email has already been invited' });
     const inviteToken = crypto.randomBytes(32).toString('hex');
     const existingUser = await dbGet('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
     await dbQuery(`INSERT INTO team_members (team_owner_id, member_email, member_user_id, role, invite_token) VALUES ($1, $2, $3, $4, $5)`, [req.user.id, email.toLowerCase(), existingUser?.id || null, role, inviteToken]);
-    if (resend) { try { await resend.emails.send({ from: 'ReviewResponder <noreply@reviewresponder.app>', to: email, subject: `${user.business_name || user.email} invited you to their team`, html: `<h2>You've been invited!</h2><p>${user.business_name || user.email} invited you to their ReviewResponder team.</p><p><a href="${process.env.FRONTEND_URL}/join-team?token=${inviteToken}" style="background:#4F46E5;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;">Accept</a></p>` }); } catch (e) {} }
+    if (resend) {
+      try {
+        const inviteHtml = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;"><div style="background:linear-gradient(135deg,#4F46E5 0%,#7C3AED 100%);padding:30px;text-align:center;"><h1 style="color:white;margin:0;">You're Invited!</h1></div><div style="padding:30px;background:#f9fafb;"><p style="font-size:16px;color:#374151;"><strong>${user.business_name || user.email}</strong> has invited you to join their ReviewResponder team as a <strong>${role}</strong>.</p><p style="font-size:14px;color:#6b7280;">As a team member, you'll be able to generate AI-powered review responses using their subscription.</p><div style="text-align:center;margin:30px 0;"><a href="${process.env.FRONTEND_URL}/join-team?token=${inviteToken}" style="background:#4F46E5;color:white;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:bold;display:inline-block;">Accept Invitation</a></div></div></div>`;
+        await resend.emails.send({ from: 'ReviewResponder <noreply@reviewresponder.app>', to: email, subject: `${user.business_name || user.email} invited you to their team`, html: inviteHtml });
+      } catch (e) { console.error('Failed to send team invite email:', e); }
+    }
     res.status(201).json({ success: true, message: `Invitation sent to ${email}`, inviteToken: resend ? null : inviteToken });
-  } catch (error) { res.status(500).json({ error: 'Failed to invite team member' }); }
+  } catch (error) { console.error('Invite error:', error); res.status(500).json({ error: 'Failed to invite team member' }); }
 });
 
+// GET /api/team/invite/:token - Validate invite token (public endpoint)
+app.get('/api/team/invite/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    const invitation = await dbGet(`SELECT tm.*, u.email as owner_email, u.business_name as owner_business FROM team_members tm JOIN users u ON tm.team_owner_id = u.id WHERE tm.invite_token = $1 AND tm.accepted_at IS NULL`, [token]);
+    if (!invitation) return res.status(404).json({ error: 'Invalid or expired invitation' });
+    res.json({ valid: true, invitedEmail: invitation.member_email, invitedBy: invitation.owner_business || invitation.owner_email, role: invitation.role });
+  } catch (error) { console.error('Validate invite error:', error); res.status(500).json({ error: 'Failed to validate invitation' }); }
+});
+
+// POST /api/team/accept - Accept team invitation
 app.post('/api/team/accept', authenticateToken, async (req, res) => {
   try {
     const { token } = req.body;
@@ -1395,20 +1456,37 @@ app.post('/api/team/accept', authenticateToken, async (req, res) => {
     const currentUser = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
     if (currentUser.email.toLowerCase() !== invitation.member_email.toLowerCase()) return res.status(403).json({ error: 'This invitation was sent to a different email address' });
     await dbQuery(`UPDATE team_members SET accepted_at = CURRENT_TIMESTAMP, member_user_id = $1, invite_token = NULL WHERE id = $2`, [req.user.id, invitation.id]);
-    res.json({ success: true, message: `You've joined ${invitation.owner_business || invitation.owner_email}'s team!` });
-  } catch (error) { res.status(500).json({ error: 'Failed to accept invitation' }); }
+    res.json({ success: true, message: `You've joined ${invitation.owner_business || invitation.owner_email}'s team!`, teamOwner: { email: invitation.owner_email, businessName: invitation.owner_business }, role: invitation.role });
+  } catch (error) { console.error('Accept error:', error); res.status(500).json({ error: 'Failed to accept invitation' }); }
 });
 
+// PUT /api/team/:memberId/role - Update team member role
+app.put('/api/team/:memberId/role', authenticateToken, async (req, res) => {
+  try {
+    const { memberId } = req.params;
+    const { role } = req.body;
+    const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    if (!hasTeamAccess(user.subscription_plan)) return res.status(403).json({ error: 'Team features are available for Professional and Unlimited plans' });
+    const validRoles = ['admin', 'member', 'viewer'];
+    if (!validRoles.includes(role)) return res.status(400).json({ error: 'Invalid role. Must be admin, member, or viewer' });
+    const member = await dbGet('SELECT * FROM team_members WHERE id = $1 AND team_owner_id = $2', [memberId, req.user.id]);
+    if (!member) return res.status(404).json({ error: 'Team member not found' });
+    await dbQuery('UPDATE team_members SET role = $1 WHERE id = $2', [role, memberId]);
+    res.json({ success: true, message: 'Role updated', newRole: role });
+  } catch (error) { console.error('Update role error:', error); res.status(500).json({ error: 'Failed to update role' }); }
+});
+
+// DELETE /api/team/:memberId - Remove team member
 app.delete('/api/team/:memberId', authenticateToken, async (req, res) => {
   try {
     const { memberId } = req.params;
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
-    if (user.subscription_plan !== 'unlimited') return res.status(403).json({ error: 'Team features are only available for Unlimited plan' });
+    if (!hasTeamAccess(user.subscription_plan)) return res.status(403).json({ error: 'Team features are available for Professional and Unlimited plans' });
     const member = await dbGet('SELECT * FROM team_members WHERE id = $1 AND team_owner_id = $2', [memberId, req.user.id]);
     if (!member) return res.status(404).json({ error: 'Team member not found' });
     await dbQuery('DELETE FROM team_members WHERE id = $1', [memberId]);
     res.json({ success: true, message: 'Team member removed' });
-  } catch (error) { res.status(500).json({ error: 'Failed to remove team member' }); }
+  } catch (error) { console.error('Remove member error:', error); res.status(500).json({ error: 'Failed to remove team member' }); }
 });
 
 app.get('/api/team/my-team', authenticateToken, async (req, res) => {
@@ -1627,6 +1705,335 @@ app.get('/api/analytics', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Analytics error:', error);
     res.status(500).json({ error: 'Failed to get analytics' });
+  }
+});
+
+// ============== SEO BLOG ARTICLE GENERATOR (Pro/Unlimited Only) ==============
+
+// Pre-defined SEO topics for review management
+const BLOG_TOPICS = [
+  { id: 'respond-negative', title: 'How to Respond to Negative Reviews', keywords: ['negative reviews', 'customer complaints', 'reputation management'] },
+  { id: 'review-management-basics', title: 'Review Management Best Practices for Small Businesses', keywords: ['review management', 'small business', 'online reputation'] },
+  { id: 'increase-reviews', title: 'How to Get More Customer Reviews', keywords: ['get more reviews', 'customer feedback', 'review generation'] },
+  { id: 'respond-positive', title: 'Why Responding to Positive Reviews Matters', keywords: ['positive reviews', 'customer appreciation', 'brand loyalty'] },
+  { id: 'google-reviews', title: 'The Complete Guide to Google Reviews', keywords: ['Google reviews', 'Google My Business', 'local SEO'] },
+  { id: 'yelp-reviews', title: 'Mastering Yelp Reviews for Your Business', keywords: ['Yelp reviews', 'Yelp business', 'restaurant reviews'] },
+  { id: 'fake-reviews', title: 'How to Handle Fake or Unfair Reviews', keywords: ['fake reviews', 'review removal', 'unfair reviews'] },
+  { id: 'review-response-templates', title: 'Review Response Templates That Actually Work', keywords: ['review templates', 'response examples', 'copy paste reviews'] },
+  { id: 'review-seo', title: 'How Reviews Impact Your Local SEO Rankings', keywords: ['reviews SEO', 'local search', 'Google ranking'] },
+  { id: 'ai-review-responses', title: 'Using AI to Write Professional Review Responses', keywords: ['AI reviews', 'automated responses', 'review automation'] },
+  { id: 'crisis-management', title: 'Review Crisis Management: What to Do When Things Go Wrong', keywords: ['crisis management', 'bad reviews', 'reputation repair'] },
+  { id: 'review-monitoring', title: 'How to Monitor Your Online Reviews Effectively', keywords: ['review monitoring', 'reputation tracking', 'alerts'] }
+];
+
+// GET /api/blog/topics - Get available topic suggestions
+app.get('/api/blog/topics', authenticateToken, async (req, res) => {
+  try {
+    res.json({ topics: BLOG_TOPICS });
+  } catch (error) {
+    console.error('Get blog topics error:', error);
+    res.status(500).json({ error: 'Failed to get topics' });
+  }
+});
+
+// POST /api/blog/generate - Generate SEO blog article
+app.post('/api/blog/generate', authenticateToken, async (req, res) => {
+  try {
+    const { topic, customTopic, keywords, length, tone } = req.body;
+
+    // Check if user has Pro or Unlimited plan
+    const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+
+    if (!['professional', 'unlimited'].includes(user.subscription_plan)) {
+      return res.status(403).json({
+        error: 'Blog Generator is only available for Professional and Unlimited plans',
+        upgrade: true,
+        requiredPlan: 'professional'
+      });
+    }
+
+    // Validate input
+    const articleTopic = customTopic?.trim() || BLOG_TOPICS.find(t => t.id === topic)?.title;
+    if (!articleTopic) {
+      return res.status(400).json({ error: 'Please select or enter a topic' });
+    }
+
+    const articleKeywords = keywords?.trim() || BLOG_TOPICS.find(t => t.id === topic)?.keywords?.join(', ') || '';
+    const wordCount = Math.min(Math.max(parseInt(length) || 800, 500), 2000);
+
+    const toneInstructions = {
+      informative: 'Write in an informative, educational tone. Be helpful and provide actionable advice.',
+      persuasive: 'Write in a persuasive tone. Convince the reader of the value and benefits of proper review management.',
+      casual: 'Write in a casual, friendly tone. Be conversational and approachable while still being professional.'
+    };
+
+    const prompt = `You are an expert SEO content writer specializing in business reputation management and customer review strategies.
+
+Write a comprehensive, SEO-optimized blog article about: "${articleTopic}"
+
+Requirements:
+- Length: Approximately ${wordCount} words
+- Tone: ${toneInstructions[tone] || toneInstructions.informative}
+- Include relevant keywords naturally: ${articleKeywords || 'review management, customer feedback, online reputation'}
+- Structure the article with:
+  - An engaging introduction with a hook
+  - Clear headings (use ## for main sections, ### for subsections)
+  - Bullet points or numbered lists where appropriate
+  - Practical, actionable tips
+  - A conclusion with a call-to-action
+- Make it valuable for small business owners
+- Include statistics or data points where relevant (you can use general industry knowledge)
+- Avoid fluff and filler content
+
+Output Format:
+First line: The article title (without any prefix like "Title:")
+Second line: A compelling meta description (150-160 characters) for SEO
+Third line: Empty
+Then: The full article content in Markdown format
+
+Generate the article:`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 3000,
+      temperature: 0.7
+    });
+
+    const fullResponse = completion.choices[0].message.content.trim();
+
+    // Parse the response
+    const lines = fullResponse.split('\n');
+    const title = lines[0].replace(/^#\s*/, '').replace(/^\*\*/, '').replace(/\*\*$/, '').trim();
+    const metaDescription = lines[1].replace(/^Meta Description:\s*/i, '').trim();
+    const content = lines.slice(3).join('\n').trim();
+
+    // Count words in content
+    const actualWordCount = content.split(/\s+/).filter(w => w.length > 0).length;
+
+    // Save to database
+    const result = await dbQuery(
+      `INSERT INTO blog_articles (user_id, title, content, meta_description, keywords, topic, tone, word_count)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [req.user.id, title, content, metaDescription, articleKeywords, articleTopic, tone || 'informative', actualWordCount]
+    );
+
+    const article = result.rows[0];
+
+    res.json({
+      article: {
+        id: article.id,
+        title: article.title,
+        content: article.content,
+        metaDescription: article.meta_description,
+        keywords: article.keywords,
+        topic: article.topic,
+        tone: article.tone,
+        wordCount: article.word_count,
+        createdAt: article.created_at
+      }
+    });
+  } catch (error) {
+    console.error('Blog generation error:', error);
+    res.status(500).json({ error: 'Failed to generate blog article' });
+  }
+});
+
+// GET /api/blog/history - Get user's blog articles
+app.get('/api/blog/history', authenticateToken, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const user = await dbGet('SELECT subscription_plan FROM users WHERE id = $1', [req.user.id]);
+
+    if (!['professional', 'unlimited'].includes(user.subscription_plan)) {
+      return res.status(403).json({
+        error: 'Blog history is only available for Professional and Unlimited plans',
+        upgrade: true,
+        requiredPlan: 'professional'
+      });
+    }
+
+    const articles = await dbAll(
+      `SELECT id, title, meta_description, keywords, topic, tone, word_count, created_at
+       FROM blog_articles WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
+      [req.user.id, limit, offset]
+    );
+
+    const total = await dbGet('SELECT COUNT(*) as count FROM blog_articles WHERE user_id = $1', [req.user.id]);
+
+    res.json({
+      articles: articles.map(a => ({
+        id: a.id,
+        title: a.title,
+        metaDescription: a.meta_description,
+        keywords: a.keywords,
+        topic: a.topic,
+        tone: a.tone,
+        wordCount: a.word_count,
+        createdAt: a.created_at
+      })),
+      pagination: {
+        page,
+        limit,
+        total: parseInt(total.count),
+        pages: Math.ceil(parseInt(total.count) / limit)
+      }
+    });
+  } catch (error) {
+    console.error('Get blog history error:', error);
+    res.status(500).json({ error: 'Failed to get blog history' });
+  }
+});
+
+// GET /api/blog/:id - Get single article
+app.get('/api/blog/:id', authenticateToken, async (req, res) => {
+  try {
+    const article = await dbGet(
+      `SELECT * FROM blog_articles WHERE id = $1 AND user_id = $2`,
+      [req.params.id, req.user.id]
+    );
+
+    if (!article) {
+      return res.status(404).json({ error: 'Article not found' });
+    }
+
+    res.json({
+      article: {
+        id: article.id,
+        title: article.title,
+        content: article.content,
+        metaDescription: article.meta_description,
+        keywords: article.keywords,
+        topic: article.topic,
+        tone: article.tone,
+        wordCount: article.word_count,
+        createdAt: article.created_at
+      }
+    });
+  } catch (error) {
+    console.error('Get blog article error:', error);
+    res.status(500).json({ error: 'Failed to get article' });
+  }
+});
+
+// DELETE /api/blog/:id - Delete article
+app.delete('/api/blog/:id', authenticateToken, async (req, res) => {
+  try {
+    const result = await dbQuery(
+      'DELETE FROM blog_articles WHERE id = $1 AND user_id = $2 RETURNING id',
+      [req.params.id, req.user.id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Article not found' });
+    }
+
+    res.json({ success: true, message: 'Article deleted' });
+  } catch (error) {
+    console.error('Delete blog article error:', error);
+    res.status(500).json({ error: 'Failed to delete article' });
+  }
+});
+
+// ============== REFERRAL SYSTEM ==============
+
+// Helper function to generate unique referral code
+function generateReferralCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = 'REF-';
+  for (let i = 0; i < 8; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+// Get user's referral stats and code
+app.get('/api/referrals', authenticateToken, async (req, res) => {
+  try {
+    let user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+
+    // Generate referral code if user doesn't have one
+    if (!user.referral_code) {
+      let code;
+      let attempts = 0;
+      do {
+        code = generateReferralCode();
+        const existing = await dbGet('SELECT id FROM users WHERE referral_code = $1', [code]);
+        if (!existing) break;
+        attempts++;
+      } while (attempts < 10);
+
+      await dbQuery('UPDATE users SET referral_code = $1 WHERE id = $2', [code, req.user.id]);
+      user.referral_code = code;
+    }
+
+    // Get referral stats
+    const referrals = await dbAll(
+      `SELECT r.*, u.email as referred_email, u.subscription_plan
+       FROM referrals r
+       LEFT JOIN users u ON r.referred_user_id = u.id
+       WHERE r.referrer_id = $1
+       ORDER BY r.created_at DESC`,
+      [req.user.id]
+    );
+
+    const stats = {
+      totalInvited: referrals.length,
+      converted: referrals.filter(r => r.status === 'converted').length,
+      pending: referrals.filter(r => r.status === 'pending').length,
+      creditsEarned: user.referral_credits || 0
+    };
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+    res.json({
+      referralCode: user.referral_code,
+      referralLink: `${frontendUrl}?ref=${user.referral_code}`,
+      stats,
+      referrals: referrals.map(r => ({
+        id: r.id,
+        email: r.referred_email ? r.referred_email.replace(/(.{2}).*(@.*)/, '$1***$2') : 'Pending',
+        status: r.status,
+        plan: r.subscription_plan || 'free',
+        createdAt: r.created_at,
+        convertedAt: r.converted_at
+      }))
+    });
+  } catch (error) {
+    console.error('Get referrals error:', error);
+    res.status(500).json({ error: 'Failed to get referral data' });
+  }
+});
+
+// Validate referral code (public endpoint)
+app.get('/api/referrals/validate/:code', async (req, res) => {
+  try {
+    const { code } = req.params;
+
+    if (!code || code.length < 4) {
+      return res.status(400).json({ valid: false, error: 'Invalid code format' });
+    }
+
+    const referrer = await dbGet(
+      'SELECT id, business_name, email FROM users WHERE referral_code = $1',
+      [code.toUpperCase()]
+    );
+
+    if (!referrer) {
+      return res.json({ valid: false });
+    }
+
+    res.json({
+      valid: true,
+      referrerName: referrer.business_name || referrer.email.split('@')[0],
+      bonus: '1 month free after first paid subscription'
+    });
+  } catch (error) {
+    console.error('Validate referral error:', error);
+    res.status(500).json({ valid: false, error: 'Validation failed' });
   }
 });
 

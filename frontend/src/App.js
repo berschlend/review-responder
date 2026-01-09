@@ -2316,6 +2316,31 @@ const DashboardPage = () => {
   const [dashboardError, setDashboardError] = useState(null);
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
 
+  // API Key management state
+  const [apiKeys, setApiKeys] = useState([]);
+  const [loadingApiKeys, setLoadingApiKeys] = useState(false);
+  const [showCreateKeyModal, setShowCreateKeyModal] = useState(false);
+  const [newKeyName, setNewKeyName] = useState('');
+  const [creatingKey, setCreatingKey] = useState(false);
+  const [newlyCreatedKey, setNewlyCreatedKey] = useState(null);
+  const [editingKeyId, setEditingKeyId] = useState(null);
+  const [editingKeyName, setEditingKeyName] = useState('');
+  const [apiDocSection, setApiDocSection] = useState('quickstart');
+
+  // Blog Generator state
+  const [blogTopics, setBlogTopics] = useState([]);
+  const [blogTopic, setBlogTopic] = useState('');
+  const [blogCustomTopic, setBlogCustomTopic] = useState('');
+  const [blogKeywords, setBlogKeywords] = useState('');
+  const [blogLength, setBlogLength] = useState(800);
+  const [blogTone, setBlogTone] = useState('informative');
+  const [generatingBlog, setGeneratingBlog] = useState(false);
+  const [generatedArticle, setGeneratedArticle] = useState(null);
+  const [blogHistory, setBlogHistory] = useState([]);
+  const [loadingBlogHistory, setLoadingBlogHistory] = useState(false);
+  const [selectedArticle, setSelectedArticle] = useState(null);
+  const [copiedBlog, setCopiedBlog] = useState(false);
+
   useEffect(() => {
     const loadDashboard = async () => {
       setIsLoadingDashboard(true);
@@ -2345,6 +2370,13 @@ const DashboardPage = () => {
       api.get('/auth/me').then(res => updateUser(res.data.user));
     }
   }, [user]);
+
+  // Fetch API keys when switching to API tab (for unlimited users)
+  useEffect(() => {
+    if (activeTab === 'api' && user?.plan === 'unlimited' && user?.subscriptionStatus === 'active') {
+      fetchApiKeys();
+    }
+  }, [activeTab, user?.plan, user?.subscriptionStatus]);
 
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
@@ -2394,6 +2426,128 @@ const DashboardPage = () => {
       console.error('Failed to fetch all history:', error);
       // All history is for export, don't throw
     }
+  };
+
+  // Blog Generator functions
+  const fetchBlogTopics = async () => {
+    try {
+      const res = await api.get('/blog/topics');
+      setBlogTopics(res.data.topics || []);
+    } catch (error) {
+      console.error('Failed to fetch blog topics:', error);
+    }
+  };
+
+  const fetchBlogHistory = async () => {
+    setLoadingBlogHistory(true);
+    try {
+      const res = await api.get('/blog/history');
+      setBlogHistory(res.data.articles || []);
+    } catch (error) {
+      if (error.response?.status !== 403) {
+        console.error('Failed to fetch blog history:', error);
+      }
+    } finally {
+      setLoadingBlogHistory(false);
+    }
+  };
+
+  const generateBlogArticle = async () => {
+    const topic = blogTopic || '';
+    const customTopic = blogCustomTopic.trim();
+
+    if (!topic && !customTopic) {
+      toast.error('Please select a topic or enter a custom topic');
+      return;
+    }
+
+    setGeneratingBlog(true);
+    setGeneratedArticle(null);
+
+    try {
+      const res = await api.post('/blog/generate', {
+        topic,
+        customTopic,
+        keywords: blogKeywords,
+        length: blogLength,
+        tone: blogTone
+      });
+
+      setGeneratedArticle(res.data.article);
+      fetchBlogHistory();
+      toast.success('Blog article generated!');
+    } catch (error) {
+      if (error.response?.data?.upgrade) {
+        toast.error('Blog Generator requires a Pro or Unlimited plan');
+      } else {
+        toast.error(error.response?.data?.error || 'Failed to generate article');
+      }
+    } finally {
+      setGeneratingBlog(false);
+    }
+  };
+
+  const loadArticle = async (articleId) => {
+    try {
+      const res = await api.get(`/blog/${articleId}`);
+      setSelectedArticle(res.data.article);
+      setGeneratedArticle(res.data.article);
+    } catch (error) {
+      toast.error('Failed to load article');
+    }
+  };
+
+  const deleteBlogArticle = async (articleId) => {
+    if (!window.confirm('Delete this article?')) return;
+
+    try {
+      await api.delete(`/blog/${articleId}`);
+      toast.success('Article deleted');
+      fetchBlogHistory();
+      if (generatedArticle?.id === articleId) {
+        setGeneratedArticle(null);
+      }
+    } catch (error) {
+      toast.error('Failed to delete article');
+    }
+  };
+
+  const copyBlogContent = () => {
+    if (!generatedArticle) return;
+    const fullContent = `# ${generatedArticle.title}\n\n${generatedArticle.content}`;
+    navigator.clipboard.writeText(fullContent);
+    setCopiedBlog(true);
+    toast.success('Article copied to clipboard!');
+    setTimeout(() => setCopiedBlog(false), 2000);
+  };
+
+  const downloadBlogAsMarkdown = () => {
+    if (!generatedArticle) return;
+    const fullContent = `# ${generatedArticle.title}\n\n${generatedArticle.content}`;
+    const blob = new Blob([fullContent], { type: 'text/markdown' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${generatedArticle.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.md`;
+    link.click();
+    toast.success('Downloaded as Markdown!');
+  };
+
+  const downloadBlogAsText = () => {
+    if (!generatedArticle) return;
+    // Remove markdown formatting for plain text
+    const plainContent = generatedArticle.content
+      .replace(/^##\s+/gm, '')
+      .replace(/^###\s+/gm, '')
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
+      .replace(/`/g, '');
+    const fullContent = `${generatedArticle.title}\n\n${plainContent}`;
+    const blob = new Blob([fullContent], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${generatedArticle.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.txt`;
+    link.click();
+    toast.success('Downloaded as Text!');
   };
 
   // Check if user should see feedback popup (after 10 responses)
@@ -2488,6 +2642,66 @@ const DashboardPage = () => {
       setPlatform(template.platform || 'google');
       toast.success('Template applied as starting point');
     }
+  };
+
+  // API Key management functions
+  const fetchApiKeys = async () => {
+    if (user?.plan !== 'unlimited' || user?.subscriptionStatus !== 'active') return;
+    setLoadingApiKeys(true);
+    try {
+      const res = await api.get('/keys');
+      setApiKeys(res.data.keys || []);
+    } catch (error) {
+      console.error('Failed to fetch API keys:', error);
+    } finally {
+      setLoadingApiKeys(false);
+    }
+  };
+
+  const createApiKey = async () => {
+    if (!newKeyName.trim()) {
+      toast.error('Please enter a name for your API key');
+      return;
+    }
+    setCreatingKey(true);
+    try {
+      const res = await api.post('/keys', { name: newKeyName.trim() });
+      setNewlyCreatedKey(res.data.key);
+      toast.success('API key created! Save it now - it won\'t be shown again.');
+      setNewKeyName('');
+      fetchApiKeys();
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to create API key');
+    } finally {
+      setCreatingKey(false);
+    }
+  };
+
+  const updateApiKey = async (keyId, updates) => {
+    try {
+      await api.put(`/keys/${keyId}`, updates);
+      toast.success('API key updated');
+      fetchApiKeys();
+      setEditingKeyId(null);
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to update API key');
+    }
+  };
+
+  const deleteApiKey = async (keyId) => {
+    if (!window.confirm('Are you sure you want to delete this API key? This action cannot be undone.')) return;
+    try {
+      await api.delete(`/keys/${keyId}`);
+      toast.success('API key deleted');
+      fetchApiKeys();
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to delete API key');
+    }
+  };
+
+  const copyApiKey = (key) => {
+    navigator.clipboard.writeText(key);
+    toast.success('API key copied to clipboard');
   };
 
   const generateResponse = async (overrideTone = null) => {
@@ -2630,6 +2844,17 @@ const DashboardPage = () => {
   };
 
   const canUseBulk = ['starter', 'professional', 'unlimited'].includes(user?.plan);
+  const canUseBlog = ['professional', 'unlimited'].includes(user?.plan);
+
+  // Load blog data when switching to blog tab
+  useEffect(() => {
+    if (activeTab === 'blog') {
+      fetchBlogTopics();
+      if (canUseBlog) {
+        fetchBlogHistory();
+      }
+    }
+  }, [activeTab, canUseBlog]);
 
   const usagePercent = user ? (user.responsesUsed / user.responsesLimit) * 100 : 0;
 
@@ -2837,6 +3062,66 @@ const DashboardPage = () => {
         >
           <Clock size={18} />
           History
+        </button>
+        <button
+          onClick={() => setActiveTab('blog')}
+          style={{
+            padding: '12px 20px',
+            background: activeTab === 'blog' ? 'var(--primary-50)' : 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'blog' ? '2px solid var(--primary-600)' : '2px solid transparent',
+            color: activeTab === 'blog' ? 'var(--primary-600)' : 'var(--gray-600)',
+            fontWeight: activeTab === 'blog' ? '600' : '500',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '14px',
+            marginBottom: '-1px'
+          }}
+        >
+          <BookOpen size={18} />
+          Blog Generator
+          {!canUseBlog && (
+            <span style={{
+              background: 'var(--primary-600)',
+              color: 'white',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              fontSize: '10px',
+              fontWeight: '600'
+            }}>PRO</span>
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab('api')}
+          style={{
+            padding: '12px 20px',
+            background: activeTab === 'api' ? 'var(--primary-50)' : 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'api' ? '2px solid var(--primary-600)' : '2px solid transparent',
+            color: activeTab === 'api' ? 'var(--primary-600)' : 'var(--gray-600)',
+            fontWeight: activeTab === 'api' ? '600' : '500',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '14px',
+            marginBottom: '-1px'
+          }}
+        >
+          <Code size={18} />
+          API
+          {user?.plan !== 'unlimited' && (
+            <span style={{
+              background: 'var(--primary-600)',
+              color: 'white',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              fontSize: '10px',
+              fontWeight: '600'
+            }}>UNLIMITED</span>
+          )}
         </button>
       </div>
 
