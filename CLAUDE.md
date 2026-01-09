@@ -277,6 +277,11 @@ git push
 |---|-----|-------------|--------|
 | 1 | Backend nicht vollständig deployed | 🔴 HOCH | User muss Render Redeploy machen |
 
+### Behobene Bugs:
+| # | Bug | Lösung | Datum |
+|---|-----|--------|-------|
+| 2 | Dashboard bleibt leer (weißer Bildschirm) | Fehlender `showKeyboardHelp` useState hinzugefügt | 09.01.2026 |
+
 **Details (QA 09.01.2026 20:10):**
 Folgende neue Endpoints geben 404 auf Production:
 - `/api/capture-email` - Exit-Intent Email Capture
@@ -341,6 +346,7 @@ Folgende neue Endpoints geben 404 auf Production:
 ## CHANGELOG
 
 ### 09.01.2026
+- **BUGFIX: Dashboard bleibt leer** - Fehlender `showKeyboardHelp` useState in DashboardPage hinzugefügt (Zeile 2313)
 - PostgreSQL Migration
 - Password Reset mit Resend.com
 - Jahres-Abos (20% Rabatt)
