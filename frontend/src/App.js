@@ -491,6 +491,12 @@ const LoginPage = () => {
           </button>
         </form>
 
+        <p style={{ textAlign: 'center', marginTop: '16px' }}>
+          <Link to="/forgot-password" style={{ color: 'var(--primary-600)', fontSize: '14px' }}>
+            Forgot your password?
+          </Link>
+        </p>
+
         <p className="auth-footer">
           Don't have an account? <Link to="/register">Sign up</Link>
         </p>
@@ -562,6 +568,185 @@ const RegisterPage = () => {
         <p className="auth-footer">
           Already have an account? <Link to="/login">Sign in</Link>
         </p>
+      </div>
+    </div>
+  );
+};
+
+// Forgot Password Page
+const ForgotPasswordPage = () => {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await api.post('/auth/forgot-password', { email });
+      setSent(true);
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to send reset link');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (sent) {
+    return (
+      <div className="auth-container">
+        <div className="card auth-card" style={{ textAlign: 'center' }}>
+          <Mail size={48} style={{ color: 'var(--primary-600)', marginBottom: '16px' }} />
+          <h1 className="auth-title">Check Your Email</h1>
+          <p className="auth-subtitle">
+            If an account exists for {email}, you will receive a password reset link shortly.
+          </p>
+          <p style={{ fontSize: '14px', color: 'var(--gray-500)', marginTop: '16px' }}>
+            Didn't receive the email? Check your spam folder or try again.
+          </p>
+          <Link to="/login" className="btn btn-primary" style={{ marginTop: '20px' }}>
+            Back to Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="auth-container">
+      <div className="card auth-card">
+        <h1 className="auth-title">Forgot Password?</h1>
+        <p className="auth-subtitle">Enter your email and we'll send you a reset link</p>
+
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label">Email</label>
+            <input
+              type="email"
+              className="form-input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+            />
+          </div>
+
+          <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
+            {loading ? 'Sending...' : 'Send Reset Link'}
+          </button>
+        </form>
+
+        <p className="auth-footer">
+          Remember your password? <Link to="/login">Sign in</Link>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// Reset Password Page
+const ResetPasswordPage = () => {
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const token = new URLSearchParams(location.search).get('token');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    if (password.length < 8) {
+      toast.error('Password must be at least 8 characters');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await api.post('/auth/reset-password', { token, password });
+      setSuccess(true);
+      toast.success('Password reset successfully!');
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to reset password');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!token) {
+    return (
+      <div className="auth-container">
+        <div className="card auth-card" style={{ textAlign: 'center' }}>
+          <X size={48} style={{ color: 'var(--error)', marginBottom: '16px' }} />
+          <h1 className="auth-title">Invalid Link</h1>
+          <p className="auth-subtitle">This password reset link is invalid or has expired.</p>
+          <Link to="/forgot-password" className="btn btn-primary" style={{ marginTop: '20px' }}>
+            Request New Link
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (success) {
+    return (
+      <div className="auth-container">
+        <div className="card auth-card" style={{ textAlign: 'center' }}>
+          <Check size={48} style={{ color: 'var(--success)', marginBottom: '16px' }} />
+          <h1 className="auth-title">Password Reset!</h1>
+          <p className="auth-subtitle">Your password has been reset successfully.</p>
+          <Link to="/login" className="btn btn-primary" style={{ marginTop: '20px' }}>
+            Sign In Now
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="auth-container">
+      <div className="card auth-card">
+        <h1 className="auth-title">Reset Password</h1>
+        <p className="auth-subtitle">Enter your new password</p>
+
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label">New Password</label>
+            <input
+              type="password"
+              className="form-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="At least 8 characters"
+              minLength={8}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Confirm Password</label>
+            <input
+              type="password"
+              className="form-input"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Confirm your password"
+              minLength={8}
+              required
+            />
+          </div>
+
+          <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
+            {loading ? 'Resetting...' : 'Reset Password'}
+          </button>
+        </form>
       </div>
     </div>
   );
@@ -1333,6 +1518,8 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/support" element={<SupportPage />} />
           <Route path="/extension" element={<ExtensionPage />} />

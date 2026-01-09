@@ -9,6 +9,7 @@ const { Pool } = require('pg');
 const Stripe = require('stripe');
 const OpenAI = require('openai');
 const validator = require('validator');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -109,6 +110,17 @@ async function initDatabase() {
       )
     `);
 
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        token TEXT NOT NULL UNIQUE,
+        expires_at TIMESTAMP NOT NULL,
+        used BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     console.log('📊 Database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -130,12 +142,30 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// Plan limits
+// Plan limits (monthly and yearly pricing)
 const PLAN_LIMITS = {
   free: { responses: 5, price: 0 },
-  starter: { responses: 100, price: 2900, priceId: process.env.STRIPE_STARTER_PRICE_ID },
-  professional: { responses: 300, price: 4900, priceId: process.env.STRIPE_PRO_PRICE_ID },
-  unlimited: { responses: 999999, price: 9900, priceId: process.env.STRIPE_UNLIMITED_PRICE_ID }
+  starter: {
+    responses: 100,
+    price: 2900,
+    yearlyPrice: 27840, // 20% off: $29 * 12 * 0.8 = $278.40
+    priceId: process.env.STRIPE_STARTER_PRICE_ID,
+    yearlyPriceId: process.env.STRIPE_STARTER_YEARLY_PRICE_ID
+  },
+  professional: {
+    responses: 300,
+    price: 4900,
+    yearlyPrice: 47040, // 20% off: $49 * 12 * 0.8 = $470.40
+    priceId: process.env.STRIPE_PRO_PRICE_ID,
+    yearlyPriceId: process.env.STRIPE_PRO_YEARLY_PRICE_ID
+  },
+  unlimited: {
+    responses: 999999,
+    price: 9900,
+    yearlyPrice: 95040, // 20% off: $99 * 12 * 0.8 = $950.40
+    priceId: process.env.STRIPE_UNLIMITED_PRICE_ID,
+    yearlyPriceId: process.env.STRIPE_UNLIMITED_YEARLY_PRICE_ID
+  }
 };
 
 // ============ AUTH ROUTES ============
@@ -285,6 +315,93 @@ app.put('/api/auth/profile', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Profile update error:', error);
     res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+// Password Reset - Request
+app.post('/api/auth/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email || !validator.isEmail(email)) {
+      return res.status(400).json({ error: 'Valid email is required' });
+    }
+
+    const user = await dbGet('SELECT id, email FROM users WHERE email = $1', [email]);
+
+    // Always return success to prevent email enumeration
+    if (!user) {
+      return res.json({ success: true, message: 'If an account exists, a reset link will be sent.' });
+    }
+
+    // Delete any existing tokens for this user
+    await dbQuery('DELETE FROM password_reset_tokens WHERE user_id = $1', [user.id]);
+
+    // Generate secure token
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    await dbQuery(
+      'INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)',
+      [user.id, token, expiresAt]
+    );
+
+    // Build reset URL
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
+
+    // TODO: Send email via Resend/SendGrid in production
+    // For now, log the URL (remove in production!)
+    console.log(`📧 Password reset requested for ${email}`);
+    console.log(`🔗 Reset URL: ${resetUrl}`);
+
+    // In production, you would send an email here:
+    // await sendPasswordResetEmail(user.email, resetUrl);
+
+    res.json({ success: true, message: 'If an account exists, a reset link will be sent.' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Failed to process request' });
+  }
+});
+
+// Password Reset - Reset with Token
+app.post('/api/auth/reset-password', async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({ error: 'Token and password are required' });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    }
+
+    // Find valid token
+    const resetToken = await dbGet(
+      `SELECT * FROM password_reset_tokens
+       WHERE token = $1 AND used = FALSE AND expires_at > NOW()`,
+      [token]
+    );
+
+    if (!resetToken) {
+      return res.status(400).json({ error: 'Invalid or expired reset link. Please request a new one.' });
+    }
+
+    // Hash new password and update user
+    const hashedPassword = await bcrypt.hash(password, 12);
+    await dbQuery('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, resetToken.user_id]);
+
+    // Mark token as used
+    await dbQuery('UPDATE password_reset_tokens SET used = TRUE WHERE id = $1', [resetToken.id]);
+
+    console.log(`✅ Password reset successful for user ID ${resetToken.user_id}`);
+
+    res.json({ success: true, message: 'Password has been reset successfully. You can now log in.' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ error: 'Failed to reset password' });
   }
 });
 

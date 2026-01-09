@@ -46,6 +46,7 @@ Diese sind bereits eingetragen:
 
 ## Features
 - ✅ User Registration & Login
+- ✅ **Password Reset Flow** (NEU - 09.01.2026)
 - ✅ AI Review Response Generation (4 Tone-Optionen)
 - ✅ Stripe Subscription Payments
 - ✅ Automatische Abo-Aktivierung via Webhook
@@ -219,17 +220,27 @@ Ja, du kannst mehrere Claude Code Sessions parallel laufen lassen:
 
 ### Aktuelle Prioritäten (Update bei jeder Session):
 **Stand: 09.01.2026**
-1. PostgreSQL Datenbank wurde gerade eingerichtet - TESTEN ob alles funktioniert
-2. Chrome Extension testen
-3. Ersten echten User-Test durchführen
-4. Bugs dokumentieren und fixen
+1. ✅ Password Reset Flow implementiert
+2. Email-Versand für Password Reset einrichten (Resend.com empfohlen)
+3. Chrome Extension testen
+4. Ersten echten User-Test durchführen
+5. Bugs dokumentieren und fixen
 
 ### Bekannte offene Todos:
-- [ ] Testen: Registrierung mit neuer PostgreSQL DB
-- [ ] Testen: Login funktioniert
-- [ ] Testen: Response-Generierung funktioniert
-- [ ] Testen: Stripe Payment Flow
+- [x] Password Reset Flow implementieren
+- [ ] Email-Versand einrichten (Resend.com API Key in Render eintragen)
+- [ ] Testen: Password Reset mit echten Emails
 - [ ] Testen: Chrome Extension mit Live-Backend
+- [ ] Nächstes Feature: Jahres-Abos mit 20% Rabatt
+
+### Password Reset Flow (NEU)
+- `/forgot-password` - Email-Eingabe für Reset-Link
+- `/reset-password?token=xxx` - Neues Passwort setzen
+- Token gültig für 1 Stunde
+- **Wichtig für Production**: Email-Versand einrichten!
+  - Option 1: Resend.com (100 Emails/Tag gratis)
+  - Option 2: SendGrid
+  - Aktuell: Reset-URL wird im Backend-Log ausgegeben
 
 ---
 
