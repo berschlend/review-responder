@@ -263,7 +263,7 @@ const LandingPage = () => {
               <div className="footer-title">Support</div>
               <ul className="footer-links">
                 <li><Link to="/support">Help Center</Link></li>
-                <li><a href="mailto:support@reviewresponder.app">Contact</a></li>
+                <li><a href="mailto:berend.mainz@web.de">Contact</a></li>
               </ul>
             </div>
           </div>
@@ -961,8 +961,8 @@ const SupportPage = () => {
             <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--gray-200)', textAlign: 'center' }}>
               <p style={{ fontSize: '14px', color: 'var(--gray-500)' }}>
                 Or email us directly at<br />
-                <a href="mailto:support@reviewresponder.app" style={{ color: 'var(--primary-600)', fontWeight: '500' }}>
-                  support@reviewresponder.app
+                <a href="mailto:berend.mainz@web.de" style={{ color: 'var(--primary-600)', fontWeight: '500' }}>
+                  berend.mainz@web.de
                 </a>
               </p>
             </div>
