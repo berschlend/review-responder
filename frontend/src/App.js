@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle } from 'lucide-react';
+import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save } from 'lucide-react';
 import axios from 'axios';
 
 // API Configuration
@@ -615,6 +615,10 @@ const DashboardPage = () => {
           <p style={{ color: 'var(--gray-500)' }}>Generate professional review responses</p>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <Link to="/settings" className="btn btn-secondary" style={{ padding: '8px 16px' }}>
+            <Settings size={16} />
+            Settings
+          </Link>
           <span className={`badge ${user?.plan === 'free' ? 'badge-warning' : 'badge-success'}`}>
             {user?.plan?.toUpperCase()} Plan
           </span>
@@ -625,6 +629,23 @@ const DashboardPage = () => {
           )}
         </div>
       </div>
+
+      {!user?.businessContext && (
+        <div className="card" style={{ marginBottom: '24px', background: 'linear-gradient(135deg, var(--primary-50), var(--gray-50))', border: '1px solid var(--primary-200)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Building size={24} style={{ color: 'var(--primary-600)' }} />
+            <div style={{ flex: 1 }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Improve Your Responses</h3>
+              <p style={{ fontSize: '14px', color: 'var(--gray-600)' }}>
+                Add information about your business to get more personalized AI responses.
+              </p>
+            </div>
+            <Link to="/settings" className="btn btn-primary" style={{ padding: '8px 16px' }}>
+              Set Up Now
+            </Link>
+          </div>
+        </div>
+      )}
 
       <div className="stats-grid">
         <div className="stat-card">
@@ -787,6 +808,178 @@ const DashboardPage = () => {
           ))}
         </div>
       )}
+    </div>
+  );
+};
+
+// Settings Page
+const SettingsPage = () => {
+  const { user, updateUser } = useAuth();
+  const [businessName, setBusinessName] = useState(user?.businessName || '');
+  const [businessType, setBusinessType] = useState(user?.businessType || '');
+  const [businessContext, setBusinessContext] = useState(user?.businessContext || '');
+  const [responseStyle, setResponseStyle] = useState(user?.responseStyle || '');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setBusinessName(user.businessName || '');
+      setBusinessType(user.businessType || '');
+      setBusinessContext(user.businessContext || '');
+      setResponseStyle(user.responseStyle || '');
+    }
+  }, [user]);
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+
+    try {
+      const res = await api.put('/auth/profile', {
+        businessName,
+        businessType,
+        businessContext,
+        responseStyle
+      });
+      updateUser(res.data.user);
+      toast.success('Settings saved! Your responses will now be more personalized.');
+    } catch (error) {
+      toast.error('Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const businessTypes = [
+    'Restaurant',
+    'Cafe / Coffee Shop',
+    'Hotel / Accommodation',
+    'Bar / Nightclub',
+    'Spa / Wellness',
+    'Hair Salon / Barbershop',
+    'Dental Practice',
+    'Medical Practice',
+    'Auto Repair / Service',
+    'Gym / Fitness Studio',
+    'Retail Store',
+    'E-commerce',
+    'Professional Services',
+    'Real Estate',
+    'Home Services',
+    'Other'
+  ];
+
+  return (
+    <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}>
+      <div style={{ marginBottom: '32px' }}>
+        <Link to="/dashboard" style={{ color: 'var(--primary-600)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '16px', fontSize: '14px' }}>
+          ← Back to Dashboard
+        </Link>
+        <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
+          <Settings size={28} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+          Business Settings
+        </h1>
+        <p style={{ color: 'var(--gray-600)' }}>
+          Add details about your business to get more personalized AI responses
+        </p>
+      </div>
+
+      <form onSubmit={handleSave}>
+        <div className="card" style={{ marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Building size={20} />
+            Basic Information
+          </h2>
+
+          <div className="form-group">
+            <label className="form-label">Business Name</label>
+            <input
+              type="text"
+              className="form-input"
+              value={businessName}
+              onChange={(e) => setBusinessName(e.target.value)}
+              placeholder="e.g., Mario's Italian Restaurant"
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Business Type</label>
+            <select
+              className="form-select"
+              value={businessType}
+              onChange={(e) => setBusinessType(e.target.value)}
+            >
+              <option value="">Select your business type</option>
+              {businessTypes.map(type => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="card" style={{ marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+            Business Context
+          </h2>
+          <p style={{ fontSize: '14px', color: 'var(--gray-500)', marginBottom: '16px' }}>
+            Tell us about your business so AI can mention specific details in responses
+          </p>
+
+          <div className="form-group">
+            <label className="form-label">About Your Business</label>
+            <textarea
+              className="form-textarea"
+              value={businessContext}
+              onChange={(e) => setBusinessContext(e.target.value)}
+              placeholder={`Examples:
+• We're a family-owned Italian restaurant since 1985
+• Our signature dishes are homemade pasta and wood-fired pizza
+• Our chef Marco trained in Naples
+• We have a cozy outdoor terrace
+• We're known for our Sunday brunch specials
+• Our manager Sarah handles customer service`}
+              rows={8}
+            />
+            <p style={{ fontSize: '12px', color: 'var(--gray-400)', marginTop: '8px' }}>
+              The more details you provide, the more personalized your responses will be
+            </p>
+          </div>
+        </div>
+
+        <div className="card" style={{ marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+            Response Style Preferences
+          </h2>
+          <p style={{ fontSize: '14px', color: 'var(--gray-500)', marginBottom: '16px' }}>
+            Any specific instructions for how you want responses written
+          </p>
+
+          <div className="form-group">
+            <label className="form-label">Style Instructions (optional)</label>
+            <textarea
+              className="form-textarea"
+              value={responseStyle}
+              onChange={(e) => setResponseStyle(e.target.value)}
+              placeholder={`Examples:
+• Always sign off with "The [Business Name] Team"
+• Use casual language, we're a beach bar
+• Never offer discounts or compensation
+• Always invite them to contact us directly at (555) 123-4567
+• Keep responses short, max 3 sentences`}
+              rows={5}
+            />
+          </div>
+        </div>
+
+        <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={saving}>
+          {saving ? 'Saving...' : (
+            <>
+              <Save size={18} />
+              Save Settings
+            </>
+          )}
+        </button>
+      </form>
     </div>
   );
 };
@@ -1028,6 +1221,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
               </ProtectedRoute>
             }
           />

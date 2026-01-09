@@ -103,6 +103,9 @@ async function initDatabase() {
       email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
       business_name TEXT,
+      business_type TEXT,
+      business_context TEXT,
+      response_style TEXT,
       stripe_customer_id TEXT,
       subscription_status TEXT DEFAULT 'inactive',
       subscription_plan TEXT DEFAULT 'free',
@@ -113,6 +116,17 @@ async function initDatabase() {
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  // Add columns if they don't exist (for existing databases)
+  try {
+    db.run(`ALTER TABLE users ADD COLUMN business_type TEXT`);
+  } catch (e) {}
+  try {
+    db.run(`ALTER TABLE users ADD COLUMN business_context TEXT`);
+  } catch (e) {}
+  try {
+    db.run(`ALTER TABLE users ADD COLUMN response_style TEXT`);
+  } catch (e) {}
 
   db.run(`
     CREATE TABLE IF NOT EXISTS responses (
@@ -266,12 +280,47 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
       id: user.id,
       email: user.email,
       businessName: user.business_name,
+      businessType: user.business_type,
+      businessContext: user.business_context,
+      responseStyle: user.response_style,
       plan: user.subscription_plan,
       responsesUsed: user.responses_used,
       responsesLimit: user.responses_limit,
       subscriptionStatus: user.subscription_status
     }
   });
+});
+
+// Update business profile
+app.put('/api/auth/profile', authenticateToken, async (req, res) => {
+  try {
+    const { businessName, businessType, businessContext, responseStyle } = req.body;
+
+    dbRun(
+      `UPDATE users SET business_name = ?, business_type = ?, business_context = ?, response_style = ? WHERE id = ?`,
+      [businessName || '', businessType || '', businessContext || '', responseStyle || '', req.user.id]
+    );
+
+    const user = dbGet('SELECT * FROM users WHERE id = ?', [req.user.id]);
+
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        businessName: user.business_name,
+        businessType: user.business_type,
+        businessContext: user.business_context,
+        responseStyle: user.response_style,
+        plan: user.subscription_plan,
+        responsesUsed: user.responses_used,
+        responsesLimit: user.responses_limit
+      }
+    });
+  } catch (error) {
+    console.error('Profile update error:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
 });
 
 // ============ RESPONSE GENERATION ============
@@ -306,11 +355,23 @@ app.post('/api/responses/generate', authenticateToken, async (req, res) => {
       apologetic: 'Use an apologetic and empathetic tone, focusing on resolution.'
     };
 
+    // Build business context section
+    const businessContextSection = user.business_context ? `
+Business Context (use this to personalize your response):
+${user.business_context}
+` : '';
+
+    const businessTypeSection = user.business_type ? `Business Type: ${user.business_type}` : '';
+    const responseStyleSection = user.response_style ? `Preferred Response Style: ${user.response_style}` : '';
+
     const prompt = `You are a professional customer service expert helping a small business respond to online reviews.
 
 Business Name: ${businessName || user.business_name || 'Our business'}
+${businessTypeSection}
 Platform: ${platform || 'Google Reviews'}
 ${ratingContext}
+${businessContextSection}
+${responseStyleSection}
 
 Review to respond to:
 "${reviewText}"
@@ -323,6 +384,7 @@ Instructions:
 - For positive reviews: express genuine gratitude and invite them back
 - Don't be overly formal or use canned phrases
 - Make it feel personal and authentic
+- If business context is provided, reference specific details about the business (e.g., mention specific menu items, services, team members)
 ${customInstructions ? `- Additional instructions: ${customInstructions}` : ''}
 
 Generate ONLY the response text, nothing else:`;
