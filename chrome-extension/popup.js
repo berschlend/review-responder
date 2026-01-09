@@ -164,13 +164,13 @@ function updateUsageDisplay() {
     'unlimited': Infinity
   };
 
-  const limit = limits[user.subscription_type] || 5;
-  const used = user.responses_used || 0;
+  const limit = limits[user.plan] || 5;
+  const used = user.responsesUsed || 0;
 
   usageCount.textContent = used;
-  usageLimit.textContent = limit === Infinity ? '∞' : limit;
+  usageLimit.textContent = user.responsesLimit === 999999 ? '∞' : user.responsesLimit;
 
-  const percentage = limit === Infinity ? 0 : (used / limit) * 100;
+  const percentage = user.responsesLimit === 999999 ? 0 : (used / user.responsesLimit) * 100;
   progress.style.width = `${Math.min(percentage, 100)}%`;
 
   if (percentage >= 90 && limit !== Infinity) {

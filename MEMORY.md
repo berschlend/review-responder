@@ -99,6 +99,7 @@ Diese sind bereits eingetragen:
 - ✅ User Registration & Login
 - ✅ **Password Reset Flow** (NEU - 09.01.2026)
 - ✅ **Jahres-Abos mit 20% Rabatt** (NEU - 09.01.2026)
+- ✅ **Regenerate mit anderem Tone** (NEU - 09.01.2026)
 - ✅ AI Review Response Generation (4 Tone-Optionen)
 - ✅ Stripe Subscription Payments (Monthly & Yearly)
 - ✅ Automatische Abo-Aktivierung via Webhook
@@ -282,9 +283,10 @@ Ja, du kannst mehrere Claude Code Sessions parallel laufen lassen:
 - [x] Password Reset Flow implementieren
 - [x] Resend.com Email-Integration hinzufügen
 - [x] Jahres-Abos mit 20% Rabatt (Frontend + Backend)
+- [x] Regenerate Button für andere Tones
 - [ ] Stripe: Yearly Prices erstellen und Environment Variables eintragen
 - [ ] Testen: Chrome Extension mit Live-Backend
-- [ ] Nächstes Feature: Regenerate Button für andere Tones
+- [ ] Nächstes Feature: Social Proof / Testimonials auf Landing Page
 
 ### Password Reset Flow
 - `/forgot-password` - Email-Eingabe für Reset-Link

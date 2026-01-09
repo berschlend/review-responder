@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download } from 'lucide-react';
+import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 
 // API Configuration
@@ -866,10 +866,15 @@ const DashboardPage = () => {
     }
   };
 
-  const generateResponse = async () => {
+  const generateResponse = async (overrideTone = null) => {
     if (!reviewText.trim()) {
       toast.error('Please enter a review to respond to');
       return;
+    }
+
+    const useTone = overrideTone || tone;
+    if (overrideTone) {
+      setTone(overrideTone);
     }
 
     setGenerating(true);
@@ -880,7 +885,7 @@ const DashboardPage = () => {
         reviewText,
         reviewRating: rating || null,
         platform,
-        tone,
+        tone: useTone,
         businessName: user.businessName
       });
 
@@ -1043,7 +1048,7 @@ const DashboardPage = () => {
 
           <button
             className="btn btn-primary"
-            onClick={generateResponse}
+            onClick={() => generateResponse()}
             disabled={generating || !reviewText.trim()}
             style={{ width: '100%' }}
           >
@@ -1068,22 +1073,45 @@ const DashboardPage = () => {
           </div>
 
           {response && (
-            <div className="response-actions">
-              <button className="btn btn-success" onClick={copyToClipboard}>
-                {copied ? <Check size={16} /> : <Copy size={16} />}
-                {copied ? 'Copied!' : 'Copy Response'}
-              </button>
-              <button
-                className="btn btn-secondary"
-                onClick={() => {
-                  setResponse('');
-                  setReviewText('');
-                  setRating(0);
-                }}
-              >
-                Clear
-              </button>
-            </div>
+            <>
+              <div className="response-actions">
+                <button className="btn btn-success" onClick={copyToClipboard}>
+                  {copied ? <Check size={16} /> : <Copy size={16} />}
+                  {copied ? 'Copied!' : 'Copy Response'}
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setResponse('');
+                    setReviewText('');
+                    setRating(0);
+                  }}
+                >
+                  Clear
+                </button>
+              </div>
+
+              {/* Regenerate with different tone */}
+              <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--gray-200)' }}>
+                <p style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '8px' }}>
+                  <RefreshCw size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+                  Try a different tone:
+                </p>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {['professional', 'friendly', 'formal', 'apologetic'].filter(t => t !== tone).map((newTone) => (
+                    <button
+                      key={newTone}
+                      className="btn btn-secondary"
+                      style={{ padding: '6px 12px', fontSize: '13px' }}
+                      onClick={() => generateResponse(newTone)}
+                      disabled={generating}
+                    >
+                      {newTone.charAt(0).toUpperCase() + newTone.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
         </div>
       </div>
