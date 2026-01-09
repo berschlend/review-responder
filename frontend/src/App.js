@@ -684,7 +684,9 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
 // Landing Page
 const LandingPage = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const [testimonials, setTestimonials] = useState([]);
+  const [referralBanner, setReferralBanner] = useState(null);
 
   useEffect(() => {
     const fetchTestimonials = async () => {
@@ -698,9 +700,46 @@ const LandingPage = () => {
     fetchTestimonials();
   }, []);
 
+  // Check for referral code in URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const refCode = params.get('ref');
+    if (refCode) {
+      // Validate referral code
+      api.get(`/referrals/validate/${refCode}`)
+        .then(res => {
+          if (res.data.valid) {
+            setReferralBanner({
+              referrerName: res.data.referrerName,
+              bonus: res.data.bonus
+            });
+            // Store referral code for registration
+            localStorage.setItem('referralCode', refCode.toUpperCase());
+          }
+        })
+        .catch(() => {
+          // Invalid code, ignore
+        });
+    }
+  }, [location.search]);
+
   return (
     <div>
       <ExitIntentPopup />
+
+      {/* Referral Banner */}
+      {referralBanner && (
+        <div style={{
+          background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+          color: 'white',
+          padding: '12px 20px',
+          textAlign: 'center',
+          fontSize: '15px'
+        }}>
+          <span style={{ fontWeight: '600' }}>{referralBanner.referrerName}</span> invited you!
+          Sign up now and get <span style={{ fontWeight: '600' }}>{referralBanner.bonus}</span>
+        </div>
+      )}
       <section className="hero">
         <div className="container">
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: 'white', padding: '6px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '600', marginBottom: '16px' }}>
