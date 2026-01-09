@@ -7,6 +7,7 @@ import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import Papa from 'papaparse';
 import { PieChart as RechartsPieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import ApiKeyManagement from './components/ApiKeyManagement';
 
 // Lazy loaded components for code splitting
 const LazyApiDocsPage = lazy(() => import('./pages/ApiDocsPage'));

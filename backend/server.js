@@ -188,6 +188,29 @@ async function initDatabase() {
       // Column might already exist, that's okay
     }
 
+    // User Feedback / Testimonials table
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS user_feedback (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+        comment TEXT,
+        user_name TEXT,
+        approved BOOLEAN DEFAULT FALSE,
+        featured BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Add feedback_submitted column to users table
+    try {
+      await dbQuery(`
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS feedback_submitted BOOLEAN DEFAULT FALSE
+      `);
+    } catch (error) {
+      // Column might already exist
+    }
+
     console.log('📊 Database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
