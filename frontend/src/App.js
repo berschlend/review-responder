@@ -2405,6 +2405,71 @@ const DashboardPage = () => {
     }
   }, [user]);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const modifier = isMac ? e.metaKey : e.ctrlKey;
+
+      // Skip if user is typing in an input/textarea (except for Ctrl+Enter in review textarea)
+      const isTyping = ['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName);
+
+      // Ctrl/Cmd + Enter: Generate Response (works even when typing in textarea)
+      if (modifier && e.key === 'Enter') {
+        e.preventDefault();
+        if (reviewText.trim() && !isGenerating) {
+          generateResponse();
+        }
+        return;
+      }
+
+      // Skip other shortcuts if typing in input/textarea
+      if (isTyping) return;
+
+      // Ctrl/Cmd + Shift + C: Copy Response
+      if (modifier && e.shiftKey && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        if (response) {
+          copyToClipboard();
+        }
+        return;
+      }
+
+      // Ctrl/Cmd + N: New Response (Clear)
+      if (modifier && e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        setReviewText('');
+        setResponse('');
+        setRating(5);
+        setPlatform('google');
+        // Focus on review textarea
+        const textarea = document.querySelector('textarea[placeholder*="review"]');
+        if (textarea) textarea.focus();
+        return;
+      }
+
+      // Ctrl/Cmd + /: Show Keyboard Help
+      if (modifier && e.key === '/') {
+        e.preventDefault();
+        setShowKeyboardHelp(prev => !prev);
+        return;
+      }
+
+      // Ctrl/Cmd + 1-4: Change Tone
+      if (modifier && ['1', '2', '3', '4'].includes(e.key)) {
+        e.preventDefault();
+        const tones = ['professional', 'friendly', 'formal', 'apologetic'];
+        const newTone = tones[parseInt(e.key) - 1];
+        setTone(newTone);
+        toast.success(`Tone changed to ${newTone}`);
+        return;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [reviewText, response, isGenerating]);
+
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
     updateUser({ onboardingCompleted: true });
