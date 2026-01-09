@@ -475,11 +475,69 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Money Back Guarantee */}
+      <section className="container" style={{ marginBottom: '60px' }}>
+        <div className="card" style={{ 
+          background: 'linear-gradient(135deg, #10b981, #059669)', 
+          color: 'white', 
+          padding: '40px',
+          textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            position: 'absolute',
+            top: '-50px',
+            right: '-50px',
+            width: '150px',
+            height: '150px',
+            background: 'rgba(255,255,255,0.1)',
+            borderRadius: '50%'
+          }} />
+          
+          <Shield size={48} style={{ marginBottom: '16px' }} />
+          <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
+            30-Day Money-Back Guarantee
+          </h2>
+          <p style={{ fontSize: '16px', lineHeight: '1.6', maxWidth: '600px', margin: '0 auto', opacity: 0.95 }}>
+            Try ReviewResponder risk-free. If you're not completely satisfied within 30 days, 
+            we'll refund 100% of your money. No questions asked. We're that confident you'll love it.
+          </p>
+          
+          <div style={{ display: 'flex', gap: '40px', justifyContent: 'center', marginTop: '32px' }}>
+            <div>
+              <div style={{ fontSize: '24px', fontWeight: '700' }}>100%</div>
+              <div style={{ fontSize: '13px', opacity: 0.9 }}>Refund</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '24px', fontWeight: '700' }}>30</div>
+              <div style={{ fontSize: '13px', opacity: 0.9 }}>Days</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '24px', fontWeight: '700' }}>0</div>
+              <div style={{ fontSize: '13px', opacity: 0.9 }}>Risk</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="pricing-section" id="pricing">
         <div className="container">
           <div className="pricing-header">
             <h2 className="pricing-title">Simple, Transparent Pricing</h2>
             <p style={{ color: 'var(--gray-600)' }}>Start free, upgrade when you need more</p>
+            <div style={{ 
+              display: 'inline-block', 
+              marginTop: '16px',
+              padding: '8px 20px',
+              background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+              color: 'white',
+              borderRadius: '20px',
+              fontSize: '14px',
+              fontWeight: '600'
+            }}>
+              🎉 Launch Special: Use code EARLY50 for 50% off any plan!
+            </div>
           </div>
           <PricingCards />
         </div>
