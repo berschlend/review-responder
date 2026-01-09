@@ -13,15 +13,23 @@ const ApiTab = ({ user, api }) => {
   const [editingKeyId, setEditingKeyId] = useState(null);
   const [editingKeyName, setEditingKeyName] = useState('');
   const [apiDocSection, setApiDocSection] = useState('quickstart');
+  const [fetchError, setFetchError] = useState(null);
 
   const fetchApiKeys = async () => {
+    if (!api) {
+      console.error('ApiTab: api prop is undefined');
+      setFetchError('API client not available');
+      return;
+    }
     if (user?.plan !== 'unlimited' || user?.subscriptionStatus !== 'active') return;
     setLoadingApiKeys(true);
+    setFetchError(null);
     try {
       const res = await api.get('/keys');
       setApiKeys(res.data.keys || []);
     } catch (error) {
       console.error('Failed to fetch API keys:', error);
+      setFetchError(error.response?.data?.error || 'Failed to load API keys');
     } finally {
       setLoadingApiKeys(false);
     }
@@ -31,6 +39,7 @@ const ApiTab = ({ user, api }) => {
     if (user?.plan === 'unlimited' && user?.subscriptionStatus === 'active') {
       fetchApiKeys();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.plan, user?.subscriptionStatus]);
 
   const createApiKey = async () => {
@@ -79,8 +88,21 @@ const ApiTab = ({ user, api }) => {
     toast.success('API key copied to clipboard');
   };
 
+  // Show loading state if user data not yet available
+  if (!user) {
+    return (
+      <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
+        <div className="spinner" style={{ margin: '0 auto 16px' }}></div>
+        <p style={{ color: 'var(--gray-500)' }}>Loading user data...</p>
+      </div>
+    );
+  }
+
+  // Check if user has API access (unlimited plan with active subscription)
+  const hasApiAccess = user.plan === 'unlimited' && user.subscriptionStatus === 'active';
+
   // Show upgrade prompt for non-unlimited users
-  if (user?.plan !== 'unlimited' || user?.subscriptionStatus !== 'active') {
+  if (!hasApiAccess) {
     return (
       <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
         <div style={{ width: '80px', height: '80px', background: 'linear-gradient(135deg, var(--primary-100), var(--primary-200))', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
@@ -131,6 +153,12 @@ const ApiTab = ({ user, api }) => {
         {loadingApiKeys ? (
           <div style={{ textAlign: 'center', padding: '32px' }}>
             <div className="spinner" style={{ margin: '0 auto' }}></div>
+          </div>
+        ) : fetchError ? (
+          <div style={{ textAlign: 'center', padding: '32px', background: 'var(--error-50)', borderRadius: '8px', border: '1px solid var(--error-200)' }}>
+            <AlertCircle size={32} style={{ color: 'var(--error-500)', marginBottom: '12px' }} />
+            <p style={{ color: 'var(--error-600)', marginBottom: '12px' }}>{fetchError}</p>
+            <button className="btn btn-secondary" onClick={fetchApiKeys} style={{ fontSize: '14px' }}>Try Again</button>
           </div>
         ) : apiKeys.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '32px', background: 'var(--gray-50)', borderRadius: '8px' }}>
