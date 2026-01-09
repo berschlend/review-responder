@@ -248,21 +248,18 @@ const LandingPage = () => {
                 button directly to each review. One click generates a professional response.
               </p>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                <a
-                  href="https://github.com/berschlend/review-responder/archive/refs/heads/main.zip"
+                <Link
+                  to="/extension"
                   className="btn"
                   style={{ background: 'white', color: '#1a1a2e', display: 'flex', alignItems: 'center', gap: '8px' }}
                 >
                   <Download size={18} />
-                  Download Extension
-                </a>
+                  Get Extension
+                </Link>
                 <Link to="/register" className="btn" style={{ background: 'transparent', border: '2px solid white', color: 'white' }}>
                   Create Free Account First
                 </Link>
               </div>
-              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', marginTop: '16px' }}>
-                After download: Unzip, open chrome://extensions, enable Developer Mode, click "Load unpacked", select the chrome-extension folder
-              </p>
             </div>
             <div style={{ flex: '0 0 auto' }}>
               <div style={{
@@ -1230,6 +1227,92 @@ const SupportPage = () => {
   );
 };
 
+// Extension Page
+const ExtensionPage = () => {
+  return (
+    <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+        <Chrome size={48} style={{ color: 'var(--primary-600)', marginBottom: '16px' }} />
+        <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '12px' }}>
+          Install Chrome Extension
+        </h1>
+        <p style={{ color: 'var(--gray-600)' }}>
+          Follow these steps to install the ReviewResponder extension
+        </p>
+      </div>
+
+      <div className="card" style={{ marginBottom: '24px' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ background: 'var(--primary-600)', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>1</span>
+          Download Extension Files
+        </h2>
+        <p style={{ color: 'var(--gray-600)', marginBottom: '16px' }}>
+          Click the button below to download the extension folder as a ZIP file.
+        </p>
+        <a
+          href="/extension-download.zip"
+          download="ReviewResponder-Extension.zip"
+          className="btn btn-primary"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+        >
+          <Download size={18} />
+          Download Extension (ZIP)
+        </a>
+      </div>
+
+      <div className="card" style={{ marginBottom: '24px' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ background: 'var(--primary-600)', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>2</span>
+          Unzip the Download
+        </h2>
+        <p style={{ color: 'var(--gray-600)' }}>
+          Extract the ZIP file to a folder on your computer. Remember where you save it!
+        </p>
+      </div>
+
+      <div className="card" style={{ marginBottom: '24px' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ background: 'var(--primary-600)', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>3</span>
+          Create Icons
+        </h2>
+        <p style={{ color: 'var(--gray-600)', marginBottom: '16px' }}>
+          Open the <code style={{ background: 'var(--gray-100)', padding: '2px 6px', borderRadius: '4px' }}>create-icons.html</code> file in Chrome and download all 3 icons. Save them in the same folder.
+        </p>
+      </div>
+
+      <div className="card" style={{ marginBottom: '24px' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ background: 'var(--primary-600)', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>4</span>
+          Load in Chrome
+        </h2>
+        <ol style={{ color: 'var(--gray-600)', paddingLeft: '20px', lineHeight: '2' }}>
+          <li>Open Chrome and go to <code style={{ background: 'var(--gray-100)', padding: '2px 6px', borderRadius: '4px' }}>chrome://extensions/</code></li>
+          <li>Enable <strong>Developer mode</strong> (toggle in top-right corner)</li>
+          <li>Click <strong>Load unpacked</strong></li>
+          <li>Select the folder where you extracted the extension</li>
+        </ol>
+      </div>
+
+      <div className="card" style={{ marginBottom: '24px', background: 'linear-gradient(135deg, var(--primary-50), var(--gray-50))', border: '1px solid var(--primary-200)' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ background: '#10b981', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Check size={16} /></span>
+          Done! Start Using
+        </h2>
+        <p style={{ color: 'var(--gray-600)', marginBottom: '16px' }}>
+          Click the ReviewResponder icon in your Chrome toolbar, login with your account, and start generating responses!
+        </p>
+        <Link to="/register" className="btn btn-primary">
+          Create Free Account
+        </Link>
+      </div>
+
+      <div style={{ textAlign: 'center', color: 'var(--gray-500)', fontSize: '14px' }}>
+        Need help? <a href="mailto:berend.mainz@web.de" style={{ color: 'var(--primary-600)' }}>Contact support</a>
+      </div>
+    </div>
+  );
+};
+
 // Pricing Page
 const PricingPage = () => {
   const { user } = useAuth();
@@ -1280,6 +1363,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/support" element={<SupportPage />} />
+          <Route path="/extension" element={<ExtensionPage />} />
           <Route
             path="/dashboard"
             element={

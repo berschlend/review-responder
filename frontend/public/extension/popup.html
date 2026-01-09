@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReviewResponder</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>ReviewResponder</h1>
+      <p class="tagline">AI-Powered Review Responses</p>
+    </header>
+
+    <!-- Login Section -->
+    <div id="login-section" class="section">
+      <h2>Login</h2>
+      <form id="login-form">
+        <input type="email" id="login-email" placeholder="Email" required>
+        <input type="password" id="login-password" placeholder="Password" required>
+        <button type="submit" class="btn btn-primary">Login</button>
+      </form>
+      <p class="link-text">
+        No account? <a href="https://review-responder-frontend.onrender.com" target="_blank">Sign up free</a>
+      </p>
+      <p id="login-error" class="error"></p>
+    </div>
+
+    <!-- Main Section (after login) -->
+    <div id="main-section" class="section hidden">
+      <div class="user-info">
+        <span id="user-email"></span>
+        <button id="logout-btn" class="btn btn-small">Logout</button>
+      </div>
+
+      <div class="usage-info">
+        <span id="usage-count">0</span> / <span id="usage-limit">5</span> responses used
+        <div class="progress-bar">
+          <div id="progress" class="progress"></div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="review-text">Paste Review:</label>
+        <textarea id="review-text" rows="4" placeholder="Paste the customer review here..."></textarea>
+      </div>
+
+      <div class="input-group">
+        <label for="tone-select">Response Tone:</label>
+        <select id="tone-select">
+          <option value="professional">Professional</option>
+          <option value="friendly">Friendly</option>
+          <option value="formal">Formal</option>
+          <option value="apologetic">Apologetic</option>
+        </select>
+      </div>
+
+      <button id="generate-btn" class="btn btn-primary btn-full">
+        Generate Response
+      </button>
+
+      <div id="response-section" class="hidden">
+        <label>Generated Response:</label>
+        <div id="response-text" class="response-box"></div>
+        <div class="button-row">
+          <button id="copy-btn" class="btn btn-success">Copy to Clipboard</button>
+          <button id="regenerate-btn" class="btn btn-secondary">Regenerate</button>
+        </div>
+      </div>
+
+      <p id="main-error" class="error"></p>
+      <p id="success-msg" class="success"></p>
+    </div>
+
+    <footer>
+      <a href="https://review-responder-frontend.onrender.com" target="_blank">Open Dashboard</a>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
