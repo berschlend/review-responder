@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles } from 'lucide-react';
+import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle } from 'lucide-react';
 import axios from 'axios';
 
 // API Configuration
@@ -115,6 +115,7 @@ const Navbar = () => {
           ) : (
             <>
               <Link to="/pricing" className="navbar-link">Pricing</Link>
+              <Link to="/support" className="navbar-link">Support</Link>
               <Link to="/login" className="navbar-link">Login</Link>
               <Link to="/register" className="btn btn-primary" style={{ padding: '8px 16px' }}>
                 Get Started
@@ -191,6 +192,43 @@ const LandingPage = () => {
               Turn unhappy customers into loyal fans.
             </p>
           </div>
+
+          <div className="card feature-card">
+            <div className="feature-icon">
+              <Globe size={28} />
+            </div>
+            <h3 className="feature-title">50+ Languages</h3>
+            <p className="feature-description">
+              Respond to reviews in any language. German, Spanish, French, Chinese, Arabic -
+              our AI detects and responds in the customer's language automatically.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="container" style={{ marginTop: '60px', marginBottom: '60px' }}>
+        <div className="card" style={{ textAlign: 'center', padding: '40px', background: 'linear-gradient(135deg, var(--primary-50), var(--gray-50))' }}>
+          <Globe size={48} style={{ color: 'var(--primary-600)', marginBottom: '16px' }} />
+          <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>
+            Works in Any Language
+          </h2>
+          <p style={{ color: 'var(--gray-600)', maxWidth: '600px', margin: '0 auto 24px' }}>
+            Got a review in German? Spanish? Japanese? Our AI automatically detects the language
+            and generates a native-quality response. No translation needed.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center' }}>
+            {['Deutsch', 'Español', 'Français', '中文', '日本語', 'Italiano', 'Português', 'Nederlands', 'العربية', 'Polski'].map(lang => (
+              <span key={lang} style={{
+                background: 'white',
+                padding: '8px 16px',
+                borderRadius: '20px',
+                fontSize: '14px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+              }}>
+                {lang}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -224,7 +262,8 @@ const LandingPage = () => {
             <div>
               <div className="footer-title">Support</div>
               <ul className="footer-links">
-                <li><a href="mailto:support@reviewresponder.com">Contact</a></li>
+                <li><Link to="/support">Help Center</Link></li>
+                <li><a href="mailto:support@reviewresponder.app">Contact</a></li>
               </ul>
             </div>
           </div>
@@ -261,7 +300,7 @@ const PricingCards = ({ showFree = true }) => {
       name: 'Free',
       price: 0,
       responses: 5,
-      features: ['5 responses per month', 'All tone options', 'Copy to clipboard', 'Response history'],
+      features: ['5 responses per month', 'All tone options', '50+ languages', 'Copy to clipboard'],
       buttonText: 'Get Started',
       plan: 'free'
     },
@@ -269,7 +308,7 @@ const PricingCards = ({ showFree = true }) => {
       name: 'Starter',
       price: 29,
       responses: 100,
-      features: ['100 responses per month', 'All tone options', 'Priority generation', 'Response history', 'Email support'],
+      features: ['100 responses per month', 'All tone options', '50+ languages', 'Priority generation', 'Email support'],
       buttonText: 'Subscribe',
       plan: 'starter'
     },
@@ -277,7 +316,7 @@ const PricingCards = ({ showFree = true }) => {
       name: 'Professional',
       price: 49,
       responses: 300,
-      features: ['300 responses per month', 'All tone options', 'Priority generation', 'Response history', 'Priority support'],
+      features: ['300 responses per month', 'All tone options', '50+ languages', 'Priority generation', 'Priority support'],
       buttonText: 'Subscribe',
       plan: 'professional',
       popular: true
@@ -286,7 +325,7 @@ const PricingCards = ({ showFree = true }) => {
       name: 'Unlimited',
       price: 99,
       responses: 'Unlimited',
-      features: ['Unlimited responses', 'All tone options', 'Fastest generation', 'Full history', 'Dedicated support'],
+      features: ['Unlimited responses', 'All tone options', '50+ languages', 'Fastest generation', 'Dedicated support'],
       buttonText: 'Subscribe',
       plan: 'unlimited'
     }
@@ -301,7 +340,7 @@ const PricingCards = ({ showFree = true }) => {
           {plan.popular && <span className="pricing-badge">Most Popular</span>}
           <h3 className="pricing-plan">{plan.name}</h3>
           <div className="pricing-price">
-            ${plan.price}<span>/mo</span>
+            €{plan.price}<span>/mo</span>
           </div>
           <p style={{ color: 'var(--gray-500)', marginTop: '8px' }}>
             {typeof plan.responses === 'number' ? `${plan.responses} responses` : plan.responses}
@@ -752,6 +791,188 @@ const DashboardPage = () => {
   );
 };
 
+// Support Page
+const SupportPage = () => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSending(true);
+
+    try {
+      await api.post('/support/contact', { name, email, subject, message });
+      setSent(true);
+      toast.success('Message sent! We\'ll get back to you soon.');
+    } catch (error) {
+      toast.error('Failed to send message. Please email us directly.');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const faqs = [
+    {
+      q: 'How many languages are supported?',
+      a: 'Our AI supports over 50 languages including German, Spanish, French, Chinese, Japanese, Arabic, and many more. It automatically detects the review language and responds accordingly.'
+    },
+    {
+      q: 'How does the free trial work?',
+      a: 'You get 5 free response generations when you sign up. No credit card required. Use them to test the quality of our AI responses.'
+    },
+    {
+      q: 'Can I cancel my subscription anytime?',
+      a: 'Yes! You can cancel your subscription at any time from your dashboard. No questions asked, no hidden fees.'
+    },
+    {
+      q: 'How fast are the responses generated?',
+      a: 'Most responses are generated in under 10 seconds. Professional and Unlimited plans get priority processing for even faster results.'
+    },
+    {
+      q: 'Do you store my review data?',
+      a: 'We store your response history so you can access it later. We never share your data with third parties and you can delete your data anytime.'
+    },
+    {
+      q: 'Which platforms are supported?',
+      a: 'Our responses work for Google Reviews, Yelp, TripAdvisor, Facebook, and any other review platform. Just paste the review and we generate the perfect response.'
+    }
+  ];
+
+  if (sent) {
+    return (
+      <div className="auth-container">
+        <div className="card auth-card" style={{ textAlign: 'center' }}>
+          <Check size={48} style={{ color: 'var(--success)', marginBottom: '16px' }} />
+          <h1 className="auth-title">Message Sent!</h1>
+          <p className="auth-subtitle">We'll get back to you within 24 hours.</p>
+          <Link to="/" className="btn btn-primary" style={{ marginTop: '20px' }}>
+            Back to Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+        <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '12px' }}>
+          How can we help?
+        </h1>
+        <p style={{ color: 'var(--gray-600)' }}>
+          Check our FAQ or send us a message
+        </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', maxWidth: '1000px', margin: '0 auto' }}>
+        <div>
+          <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <HelpCircle size={20} />
+            Frequently Asked Questions
+          </h2>
+
+          {faqs.map((faq, i) => (
+            <div key={i} className="card" style={{ marginBottom: '12px', padding: '16px' }}>
+              <h3 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '8px', color: 'var(--gray-800)' }}>
+                {faq.q}
+              </h3>
+              <p style={{ fontSize: '14px', color: 'var(--gray-600)', lineHeight: '1.6' }}>
+                {faq.a}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div>
+          <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Mail size={20} />
+            Contact Us
+          </h2>
+
+          <div className="card">
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label className="form-label">Name</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your name"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Email</label>
+                <input
+                  type="email"
+                  className="form-input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Subject</label>
+                <select
+                  className="form-select"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  required
+                >
+                  <option value="">Select a topic</option>
+                  <option value="general">General Question</option>
+                  <option value="billing">Billing & Subscription</option>
+                  <option value="technical">Technical Issue</option>
+                  <option value="feedback">Feedback & Suggestions</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Message</label>
+                <textarea
+                  className="form-textarea"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="How can we help you?"
+                  rows={5}
+                  required
+                />
+              </div>
+
+              <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={sending}>
+                {sending ? 'Sending...' : (
+                  <>
+                    <Send size={16} />
+                    Send Message
+                  </>
+                )}
+              </button>
+            </form>
+
+            <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--gray-200)', textAlign: 'center' }}>
+              <p style={{ fontSize: '14px', color: 'var(--gray-500)' }}>
+                Or email us directly at<br />
+                <a href="mailto:support@reviewresponder.app" style={{ color: 'var(--primary-600)', fontWeight: '500' }}>
+                  support@reviewresponder.app
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Pricing Page
 const PricingPage = () => {
   const { user } = useAuth();
@@ -801,6 +1022,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/support" element={<SupportPage />} />
           <Route
             path="/dashboard"
             element={

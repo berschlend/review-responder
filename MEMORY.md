@@ -56,9 +56,61 @@ Diese sind bereits eingetragen:
 2. OpenAI Key wurde geleakt → neuer Key erstellt, .gitignore hinzugefügt
 3. react-scripts Permission denied → CI=false zum build command hinzugefügt
 
-## Nächste Schritte für $1000/Monat
-1. Automatisiertes Marketing-Script erstellen
-2. E-Mail Outreach automatisieren
+## Custom Domain einrichten
+
+Um eine eigene Domain (z.B. reviewresponder.app) einzurichten:
+
+### 1. Domain kaufen
+- Gehe zu https://www.namecheap.com oder https://domains.google.com
+- Kaufe eine Domain (z.B. reviewresponder.app, reviewresponder.io, reviewai.app)
+- Kosten: ~10-15€/Jahr
+
+### 2. Domain mit Render verbinden
+
+**Für Frontend:**
+1. Render Dashboard → review-responder-frontend → Settings → Custom Domains
+2. Klicke "Add Custom Domain"
+3. Gib ein: `www.deinedomain.com` und `deinedomain.com`
+4. Render gibt dir DNS-Einstellungen
+
+**Für Backend (optional):**
+1. Render Dashboard → review-responder → Settings → Custom Domains
+2. Füge hinzu: `api.deinedomain.com`
+
+### 3. DNS bei Domain-Registrar einstellen
+
+Gehe zu deinem Domain-Provider und füge diese DNS-Einträge hinzu:
+
+```
+Typ: CNAME
+Name: www
+Wert: review-responder-frontend.onrender.com
+
+Typ: A
+Name: @
+Wert: (IP von Render, wird im Dashboard angezeigt)
+
+Typ: CNAME
+Name: api
+Wert: review-responder.onrender.com
+```
+
+### 4. Environment Variables updaten
+
+Nach Domain-Setup in Render aktualisieren:
+- Backend: `FRONTEND_URL=https://www.deinedomain.com`
+- Frontend: `REACT_APP_API_URL=https://api.deinedomain.com/api`
+
+### 5. Stripe Webhook updaten
+
+In Stripe Dashboard den Webhook auf die neue URL ändern:
+`https://api.deinedomain.com/api/webhooks/stripe`
+
+---
+
+## Nächste Schritte für €1000/Monat
+1. Marketing-Content generieren (AUTO_MARKETING.bat)
+2. Content auf Medium, LinkedIn, Twitter posten
 3. ~25-35 zahlende Kunden gewinnen
 
 ## Kontakt User

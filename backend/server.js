@@ -503,6 +503,48 @@ async function handleStripeWebhook(req, res) {
   res.json({ received: true });
 }
 
+// ============ SUPPORT ============
+
+app.post('/api/support/contact', async (req, res) => {
+  try {
+    const { name, email, subject, message } = req.body;
+
+    if (!name || !email || !subject || !message) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+
+    // Store support request in database
+    db.run(`
+      CREATE TABLE IF NOT EXISTS support_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        subject TEXT NOT NULL,
+        message TEXT NOT NULL,
+        status TEXT DEFAULT 'new',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    saveDatabase();
+
+    dbInsert(
+      `INSERT INTO support_requests (name, email, subject, message) VALUES (?, ?, ?, ?)`,
+      [name, email, subject, message]
+    );
+
+    console.log(`📬 New support request from ${email}: ${subject}`);
+
+    res.json({ success: true, message: 'Message received. We will respond within 24 hours.' });
+  } catch (error) {
+    console.error('Support error:', error);
+    res.status(500).json({ error: 'Failed to send message' });
+  }
+});
+
 // ============ USAGE STATS ============
 
 app.get('/api/stats', authenticateToken, (req, res) => {
