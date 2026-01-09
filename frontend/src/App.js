@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save } from 'lucide-react';
+import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download } from 'lucide-react';
 import axios from 'axios';
 
 // API Configuration
@@ -228,6 +228,69 @@ const LandingPage = () => {
                 {lang}
               </span>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="container" style={{ marginBottom: '60px' }}>
+        <div className="card" style={{ padding: '40px', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', color: 'white' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '40px', flexWrap: 'wrap' }}>
+            <div style={{ flex: '1', minWidth: '300px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <Chrome size={32} />
+                <span style={{ background: '#4285f4', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: '600' }}>NEW</span>
+              </div>
+              <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
+                Chrome Extension Available
+              </h2>
+              <p style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '24px', lineHeight: '1.6' }}>
+                Respond to Google Reviews without leaving the page. Our Chrome extension adds a "Generate Response"
+                button directly to each review. One click generates a professional response.
+              </p>
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <a
+                  href="https://github.com/berschlend/review-responder/tree/main/chrome-extension"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn"
+                  style={{ background: 'white', color: '#1a1a2e', display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
+                  <Download size={18} />
+                  Download Extension
+                </a>
+                <Link to="/register" className="btn" style={{ background: 'transparent', border: '2px solid white', color: 'white' }}>
+                  Create Free Account First
+                </Link>
+              </div>
+            </div>
+            <div style={{ flex: '0 0 auto' }}>
+              <div style={{
+                background: 'white',
+                borderRadius: '12px',
+                padding: '20px',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.3)'
+              }}>
+                <div style={{ color: '#333', fontSize: '14px' }}>
+                  <div style={{ fontWeight: '600', marginBottom: '8px', color: '#1a1a2e' }}>How it works:</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <span style={{ background: 'var(--primary-600)', color: 'white', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }}>1</span>
+                    <span>Install extension</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <span style={{ background: 'var(--primary-600)', color: 'white', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }}>2</span>
+                    <span>Login with your account</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <span style={{ background: 'var(--primary-600)', color: 'white', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }}>3</span>
+                    <span>Click button on any review</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ background: '#10b981', color: 'white', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }}><Check size={12} /></span>
+                    <span>Copy & paste response</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

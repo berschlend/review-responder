@@ -325,7 +325,13 @@ app.put('/api/auth/profile', authenticateToken, async (req, res) => {
 
 // ============ RESPONSE GENERATION ============
 
-app.post('/api/responses/generate', authenticateToken, async (req, res) => {
+// Alias for Chrome extension (shorter path)
+app.post('/api/generate', authenticateToken, (req, res) => generateResponseHandler(req, res));
+
+// Main response generation endpoint
+app.post('/api/responses/generate', authenticateToken, (req, res) => generateResponseHandler(req, res));
+
+async function generateResponseHandler(req, res) {
   try {
     const { reviewText, reviewRating, platform, tone, businessName, customInstructions } = req.body;
 
@@ -418,7 +424,7 @@ Generate ONLY the response text, nothing else:`;
     console.error('Generation error:', error);
     res.status(500).json({ error: 'Failed to generate response' });
   }
-});
+}
 
 app.get('/api/responses/history', authenticateToken, (req, res) => {
   const page = parseInt(req.query.page) || 1;

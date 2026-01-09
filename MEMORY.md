@@ -50,6 +50,18 @@ Diese sind bereits eingetragen:
 - ✅ Automatische Abo-Aktivierung via Webhook
 - ✅ Usage Tracking & Limits (Free: 5, Starter: 100, Pro: 300, Unlimited: ∞)
 - ✅ Response History
+- ✅ Business Context Personalization (AI nutzt Unternehmensdetails)
+- ✅ 50+ Sprachen Support (automatische Spracherkennung)
+- ✅ Chrome Extension für 1-Klick Antworten direkt auf Google Maps
+
+## Chrome Extension
+Die Extension liegt in `/chrome-extension/` und ermöglicht:
+- Login mit bestehendem Account
+- 1-Klick Antwort-Generierung direkt auf Google Maps
+- "Generate Response" Button bei jeder Bewertung
+- Popup für manuelle Eingabe
+
+Installation: Siehe `/chrome-extension/INSTALL.md`
 
 ## Bekannte Issues / Gelöst
 1. better-sqlite3 funktionierte nicht auf Windows → gewechselt zu sql.js
