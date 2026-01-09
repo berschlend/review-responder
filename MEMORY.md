@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 09.01.2026 - 20:10 Uhr**
+**Stand: 09.01.2026 - 21:30 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
@@ -52,9 +52,9 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 | # | Task | Schwierigkeit | Dateien |
 |---|------|---------------|---------|
-| 1 | Bulk Response Generation (mehrere Reviews auf einmal) | Schwer | `backend/server.js`, `frontend/src/App.js` |
-| 2 | Review Analytics Dashboard | Mittel | `backend/server.js`, `frontend/src/App.js` |
-| 3 | Team/Multi-User Accounts | Schwer | `backend/server.js`, `frontend/src/App.js` |
+| 1 | Review Analytics Dashboard | Mittel | `backend/server.js`, `frontend/src/App.js` |
+| 2 | Team/Multi-User Accounts | Schwer | `backend/server.js`, `frontend/src/App.js` |
+| 3 | Referral System (Invite Friends, Get Rewards) | Mittel | `backend/server.js`, `frontend/src/App.js` |
 
 ### ✅ HEUTE ERLEDIGT:
 - [x] PostgreSQL Migration (Daten persistent)
@@ -76,6 +76,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **Product Hunt Launch Vorbereitung** - PRODUCT_HUNT.md mit Tagline, Description, Features, Maker Comment
 - [x] **Response Templates** - Templates speichern & als Startpunkt nutzen
 - [x] **QA-Test** - Live-App getestet, API-Dokumentation korrigiert, BUGS-Sektion erstellt
+- [x] **Bulk Response Generation** - Bis zu 20 Reviews auf einmal (Starter/Pro/Unlimited)
 
 ---
 
@@ -121,6 +122,7 @@ ReviewResponder/
 | POST | `/api/auth/forgot-password` | Password Reset Email |
 | POST | `/api/auth/reset-password` | Neues Password setzen |
 | POST | `/api/generate` | AI Response generieren |
+| POST | `/api/generate-bulk` | Bulk Response Generation (bis zu 20) |
 | GET | `/api/stats` | Usage Stats |
 | GET | `/api/responses/history` | Response History |
 | POST | `/api/billing/create-checkout` | Stripe Checkout |
@@ -147,6 +149,7 @@ ReviewResponder/
 - ✅ Chrome Extension
 - ✅ Regenerate mit anderem Tone
 - ✅ Response Templates (speichern & als Startpunkt nutzen)
+- ✅ Bulk Response Generation (bis zu 20 Reviews auf einmal)
 
 ---
 
@@ -336,6 +339,12 @@ git push
   - "Save as Template" Button im Dashboard
   - Template-Dropdown mit "Use as starting point" Option
   - Max 20 Templates pro User
+- **Bulk Response Generation** implementiert:
+  - POST /api/generate-bulk Endpoint
+  - Bis zu 20 Reviews auf einmal verarbeiten
+  - Verfügbar für Pro/Unlimited Pläne
+  - Tab-basierte UI im Dashboard (Single/Bulk/History)
+  - Fortschrittsanzeige und Fehlermeldungen
 
 ---
 
