@@ -218,7 +218,7 @@ git push
 - [x] Exit-Intent Popup ✅
 
 ### Phase 3: Features
-- [ ] Bulk Response Generation
+- [x] Bulk Response Generation ✅
 - [ ] Review Analytics Dashboard
 - [ ] Team/Multi-User Accounts
 - [x] Response Templates ✅
@@ -262,7 +262,15 @@ git push
 ### Offene Bugs:
 | # | Bug | Schweregrad | Status |
 |---|-----|-------------|--------|
-| 1 | `/api/capture-email` gibt 404 auf Production | Mittel | PRUEFEN - Code ist auf GitHub, evtl. Render Cache/Deployment |
+| 1 | Backend nicht vollständig deployed | 🔴 HOCH | User muss Render Redeploy machen |
+
+**Details (QA 09.01.2026 20:10):**
+Folgende neue Endpoints geben 404 auf Production:
+- `/api/capture-email` - Exit-Intent Email Capture
+- `/api/templates` - Response Templates
+- `/api/generate-bulk` - Bulk Response Generation
+
+**Lösung:** Render Dashboard -> Backend Service -> "Manual Deploy" klicken
 
 ### Dokumentationsfehler (behoben):
 - `/api/user/stats` wurde zu `/api/stats` korrigiert

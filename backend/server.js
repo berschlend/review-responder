@@ -1191,6 +1191,101 @@ app.post('/api/capture-email', async (req, res) => {
   }
 });
 
+// ============ ANALYTICS (Pro/Unlimited Only) ============
+
+app.get('/api/analytics', authenticateToken, async (req, res) => {
+  try {
+    const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+
+    // Check if user has Pro or Unlimited plan
+    if (!['professional', 'unlimited'].includes(user.subscription_plan)) {
+      return res.status(403).json({
+        error: 'Analytics is only available for Professional and Unlimited plans',
+        upgrade: true,
+        requiredPlan: 'professional'
+      });
+    }
+
+    // Total responses
+    const totalResponses = await dbGet(
+      'SELECT COUNT(*) as count FROM responses WHERE user_id = $1',
+      [req.user.id]
+    );
+
+    // Responses by tone (for pie chart)
+    const byTone = await dbAll(
+      `SELECT tone, COUNT(*) as count FROM responses WHERE user_id = $1 GROUP BY tone ORDER BY count DESC`,
+      [req.user.id]
+    );
+
+    // Responses by platform
+    const byPlatform = await dbAll(
+      `SELECT review_platform as platform, COUNT(*) as count FROM responses WHERE user_id = $1 GROUP BY review_platform ORDER BY count DESC`,
+      [req.user.id]
+    );
+
+    // Responses over time (last 30 days, grouped by day)
+    const overTime = await dbAll(
+      `SELECT
+        DATE(created_at) as date,
+        COUNT(*) as count
+       FROM responses
+       WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '30 days'
+       GROUP BY DATE(created_at)
+       ORDER BY date ASC`,
+      [req.user.id]
+    );
+
+    // Responses by rating
+    const byRating = await dbAll(
+      `SELECT review_rating as rating, COUNT(*) as count FROM responses WHERE user_id = $1 AND review_rating IS NOT NULL GROUP BY review_rating ORDER BY rating DESC`,
+      [req.user.id]
+    );
+
+    // Average responses per day (last 30 days)
+    const avgPerDay = await dbGet(
+      `SELECT COALESCE(AVG(daily_count), 0) as avg FROM (
+        SELECT DATE(created_at) as day, COUNT(*) as daily_count
+        FROM responses
+        WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '30 days'
+        GROUP BY DATE(created_at)
+      ) daily_counts`,
+      [req.user.id]
+    );
+
+    // This week vs last week
+    const thisWeek = await dbGet(
+      `SELECT COUNT(*) as count FROM responses WHERE user_id = $1 AND created_at >= DATE_TRUNC('week', CURRENT_DATE)`,
+      [req.user.id]
+    );
+    const lastWeek = await dbGet(
+      `SELECT COUNT(*) as count FROM responses WHERE user_id = $1 AND created_at >= DATE_TRUNC('week', CURRENT_DATE) - INTERVAL '7 days' AND created_at < DATE_TRUNC('week', CURRENT_DATE)`,
+      [req.user.id]
+    );
+
+    // Most used tone
+    const mostUsedTone = byTone.length > 0 ? byTone[0].tone : 'professional';
+
+    res.json({
+      totalResponses: parseInt(totalResponses.count),
+      byTone: byTone.map(t => ({ name: t.tone, value: parseInt(t.count) })),
+      byPlatform: byPlatform.map(p => ({ name: p.platform || 'unknown', value: parseInt(p.count) })),
+      overTime: overTime.map(d => ({ date: d.date, responses: parseInt(d.count) })),
+      byRating: byRating.map(r => ({ rating: r.rating, count: parseInt(r.count) })),
+      insights: {
+        avgPerDay: parseFloat(avgPerDay.avg || 0).toFixed(1),
+        thisWeek: parseInt(thisWeek.count),
+        lastWeek: parseInt(lastWeek.count),
+        weeklyChange: parseInt(thisWeek.count) - parseInt(lastWeek.count),
+        mostUsedTone
+      }
+    });
+  } catch (error) {
+    console.error('Analytics error:', error);
+    res.status(500).json({ error: 'Failed to get analytics' });
+  }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
