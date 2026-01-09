@@ -1,13 +1,13 @@
 import React, { useState, useEffect, createContext, useContext, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter } from 'lucide-react';
+import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper } from 'lucide-react';
 import axios from 'axios';
+import confetti from 'canvas-confetti';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import Papa from 'papaparse';
 import { PieChart as RechartsPieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import ApiKeyManagement from './components/ApiKeyManagement';
 
 // Lazy loaded components for code splitting
 const LazyApiDocsPage = lazy(() => import('./pages/ApiDocsPage'));
@@ -19,6 +19,97 @@ const LoadingSpinner = () => (
     <p style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>Loading...</p>
   </div>
 );
+
+// Confetti celebration function
+const fireConfetti = () => {
+  const count = 200;
+  const defaults = { origin: { y: 0.7 }, zIndex: 9999 };
+  function fire(particleRatio, opts) {
+    confetti({ ...defaults, ...opts, particleCount: Math.floor(count * particleRatio) });
+  }
+  fire(0.25, { spread: 26, startVelocity: 55 });
+  fire(0.2, { spread: 60 });
+  fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+  fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+  fire(0.1, { spread: 120, startVelocity: 45 });
+};
+
+// Onboarding Modal Component
+const OnboardingModal = ({ user, onComplete, onSkip }) => {
+  const [step, setStep] = useState(1);
+  const [businessName, setBusinessName] = useState(user?.businessName || '');
+  const [businessType, setBusinessType] = useState('');
+  const [businessContext, setBusinessContext] = useState('');
+  const totalSteps = 3;
+  const handleNext = () => { if (step < totalSteps) setStep(step + 1); else onComplete({ businessName, businessType, businessContext }); };
+  const progressPercent = (step / totalSteps) * 100;
+
+  return (
+    <div className="modal-overlay" style={{ zIndex: 10000 }}>
+      <div className="modal onboarding-modal" style={{ maxWidth: '500px' }}>
+        <div style={{ marginBottom: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Step {step} of {totalSteps}</span>
+            <button onClick={onSkip} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '14px' }}>Skip setup</button>
+          </div>
+          <div style={{ background: 'var(--bg-tertiary)', borderRadius: '10px', height: '8px', overflow: 'hidden' }}>
+            <div style={{ width: `${progressPercent}%`, height: '100%', background: 'linear-gradient(90deg, #4F46E5, #7C3AED)', borderRadius: '10px', transition: 'width 0.3s ease' }} />
+          </div>
+        </div>
+        {step === 1 && (
+          <div className="onboarding-step">
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><PartyPopper size={32} color="white" /></div>
+              <h2 style={{ margin: '0 0 8px' }}>Welcome to ReviewResponder!</h2>
+              <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Let's set up your account in 30 seconds</p>
+            </div>
+            <div className="form-group"><label>What's your business name?</label><input type="text" value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="e.g., Joe's Coffee Shop" autoFocus /></div>
+          </div>
+        )}
+        {step === 2 && (
+          <div className="onboarding-step">
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><Building size={32} color="white" /></div>
+              <h2 style={{ margin: '0 0 8px' }}>What type of business?</h2>
+              <p style={{ color: 'var(--text-secondary)', margin: 0 }}>This helps us personalize your responses</p>
+            </div>
+            <div className="form-group"><label>Business Type</label>
+              <select value={businessType} onChange={(e) => setBusinessType(e.target.value)}>
+                <option value="">Select your industry...</option><option value="restaurant">Restaurant / Cafe</option><option value="hotel">Hotel / Hospitality</option><option value="retail">Retail Store</option><option value="healthcare">Healthcare / Medical</option><option value="automotive">Automotive</option><option value="salon">Salon / Spa</option><option value="fitness">Fitness / Gym</option><option value="professional">Professional Services</option><option value="ecommerce">E-commerce</option><option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+        )}
+        {step === 3 && (
+          <div className="onboarding-step">
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><Sparkles size={32} color="white" /></div>
+              <h2 style={{ margin: '0 0 8px' }}>Any special details?</h2>
+              <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Optional: Add context for better responses</p>
+            </div>
+            <div className="form-group"><label>Business Context (Optional)</label><textarea value={businessContext} onChange={(e) => setBusinessContext(e.target.value)} placeholder="e.g., We're a family-owned Italian restaurant..." rows={4} /><small style={{ color: 'var(--text-secondary)' }}>This helps AI create more personalized responses</small></div>
+          </div>
+        )}
+        <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+          {step > 1 && <button onClick={() => setStep(step - 1)} className="btn btn-secondary" style={{ flex: 1 }}>Back</button>}
+          <button onClick={handleNext} className="btn btn-primary" style={{ flex: step === 1 ? 1 : 2 }}>{step === totalSteps ? 'Start Generating!' : 'Continue'} <ArrowRight size={16} style={{ marginLeft: '8px' }} /></button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Tooltip Component
+const FeatureTooltip = ({ children, text, position = 'top' }) => {
+  const [show, setShow] = useState(false);
+  const positions = { top: { bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '8px' }, bottom: { top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: '8px' } };
+  return (
+    <div style={{ position: 'relative', display: 'inline-block' }} onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
+      {children}
+      {show && <div style={{ position: 'absolute', ...positions[position], background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', fontSize: '13px', color: 'var(--text-primary)', whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1000 }}>{text}</div>}
+    </div>
+  );
+};
 
 // API Configuration
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -657,6 +748,19 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
 // Landing Page
 const LandingPage = () => {
   const { user } = useAuth();
+  const [testimonials, setTestimonials] = useState([]);
+
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const res = await api.get('/testimonials');
+        setTestimonials(res.data.testimonials || []);
+      } catch (err) {
+        // Silently fail - testimonials are optional
+      }
+    };
+    fetchTestimonials();
+  }, []);
 
   return (
     <div>
@@ -1856,11 +1960,29 @@ const DashboardPage = () => {
   const [exportDateTo, setExportDateTo] = useState('');
   const [exporting, setExporting] = useState(false);
 
+  // Feedback popup state
+  const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackComment, setFeedbackComment] = useState('');
+  const [feedbackDisplayName, setFeedbackDisplayName] = useState('');
+  const [submittingFeedback, setSubmittingFeedback] = useState(false);
+
+  // Onboarding state
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isFirstResponse, setIsFirstResponse] = useState(false);
+
   useEffect(() => {
     fetchStats();
     fetchHistory();
     fetchTemplates();
     fetchAllHistory();
+
+    // Check if user needs onboarding
+    const hasCompletedOnboarding = localStorage.getItem('onboardingCompleted');
+    if (!hasCompletedOnboarding && user && !user.businessType && user.responsesUsed === 0) {
+      setShowOnboarding(true);
+    }
+    if (user && user.responsesUsed === 0) setIsFirstResponse(true);
 
     // Check for success param from Stripe
     const params = new URLSearchParams(location.search);
@@ -1899,6 +2021,44 @@ const DashboardPage = () => {
   };
 
   const fetchAllHistory = async () => { try { const res = await api.get('/responses/history?limit=1000'); setAllHistory(res.data.responses); } catch (e) { console.error('Failed to fetch all history'); } };
+
+  // Check if user should see feedback popup (after 10 responses)
+  const checkFeedbackStatus = async () => {
+    try {
+      const res = await api.get('/feedback/status');
+      if (res.data.shouldShowPopup) {
+        setTimeout(() => setShowFeedbackPopup(true), 1500);
+      }
+    } catch (error) {
+      console.error('Failed to check feedback status');
+    }
+  };
+
+  // Submit feedback
+  const submitFeedback = async (e) => {
+    e.preventDefault();
+    if (feedbackRating === 0) {
+      toast.error('Please select a rating');
+      return;
+    }
+    setSubmittingFeedback(true);
+    try {
+      await api.post('/feedback', {
+        rating: feedbackRating,
+        comment: feedbackComment.trim() || null,
+        displayName: feedbackDisplayName.trim() || null
+      });
+      toast.success('Thank you for your feedback!');
+      setShowFeedbackPopup(false);
+      setFeedbackRating(0);
+      setFeedbackComment('');
+      setFeedbackDisplayName('');
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to submit feedback');
+    } finally {
+      setSubmittingFeedback(false);
+    }
+  };
 
   const getFilteredHistory = () => { let f = allHistory; if (exportDateFrom) f = f.filter(i => new Date(i.created_at) >= new Date(exportDateFrom)); if (exportDateTo) { const e = new Date(exportDateTo); e.setHours(23,59,59,999); f = f.filter(i => new Date(i.created_at) <= e); } return f; };
 
@@ -1987,6 +2147,8 @@ const DashboardPage = () => {
       });
       fetchHistory();
       toast.success('Response generated!');
+      // Check if user should see feedback popup
+      checkFeedbackStatus();
     } catch (error) {
       if (error.response?.data?.upgrade) {
         toast.error(error.response.data.message);
@@ -2934,6 +3096,13 @@ Food was amazing, will definitely come back!`}
           </div>
         </div>
       )}
+
+      {/* Feedback Popup */}
+      <FeedbackPopup
+        isVisible={showFeedbackPopup}
+        onClose={() => setShowFeedbackPopup(false)}
+        onSubmit={() => setShowFeedbackPopup(false)}
+      />
     </div>
   );
 };
@@ -2959,7 +3128,7 @@ const SettingsPage = () => {
   useEffect(() => {
     if (user) {
       setBusinessName(user.businessName || '');
-      if (user.subscriptionPlan === 'unlimited' && user.subscriptionStatus === 'active') loadApiKeys();
+      if (user.plan === 'unlimited' && user.subscriptionStatus === 'active') loadApiKeys();
       setBusinessType(user.businessType || '');
       setBusinessContext(user.businessContext || '');
       setResponseStyle(user.responseStyle || '');
@@ -3113,7 +3282,7 @@ const SettingsPage = () => {
       </form>
 
       {/* API Key Management - Only for Unlimited Plan */}
-      {user?.subscriptionPlan === 'unlimited' && user?.subscriptionStatus === 'active' && (
+      {user?.plan === 'unlimited' && user?.subscriptionStatus === 'active' && (
         <div className="card" style={{ marginTop: '24px' }}>
           <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Key size={20} />
