@@ -4380,11 +4380,36 @@ app.get('/api/admin/set-plan', async (req, res) => {
     const verifyUser = await dbGet('SELECT subscription_plan, responses_limit FROM users WHERE id = $1', [user.id]);
     console.log(`✅ Verified: plan=${verifyUser?.subscription_plan}, limit=${verifyUser?.responses_limit}`);
 
-    // If redirect=1, redirect to dashboard with cache-busting timestamp
+    // If redirect=1, send HTML page that forces a full page reload
     if (req.query.redirect === '1') {
       const frontendUrl = process.env.FRONTEND_URL || 'https://review-responder-frontend.onrender.com';
-      // Use timestamp to force browser to treat this as a new page (no cache)
-      return res.redirect(`${frontendUrl}/dashboard?_t=${Date.now()}&plan=${targetPlan}`);
+      // Send HTML that forces a hard refresh to ensure React remounts
+      return res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Plan Updated</title>
+          <style>
+            body { font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f3f4f6; }
+            .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
+            h1 { color: #10b981; margin-bottom: 10px; }
+            p { color: #6b7280; }
+          </style>
+        </head>
+        <body>
+          <div class="card">
+            <h1>✓ Plan Updated!</h1>
+            <p>Switching to ${targetPlan.toUpperCase()} plan...</p>
+          </div>
+          <script>
+            // Force a complete page reload to ensure fresh data
+            setTimeout(function() {
+              window.location.href = '${frontendUrl}/dashboard?plan=${targetPlan}&_t=${Date.now()}';
+            }, 500);
+          </script>
+        </body>
+        </html>
+      `);
     }
 
     res.json({
