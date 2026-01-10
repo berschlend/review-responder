@@ -3800,6 +3800,9 @@ const DashboardPage = () => {
         onSkip={handleOnboardingSkip}
       />
 
+      {/* Email Verification Banner */}
+      <EmailVerificationBanner />
+
       {/* Dashboard Error Banner */}
       {dashboardError && (
         <div style={{
