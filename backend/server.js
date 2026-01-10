@@ -2092,7 +2092,7 @@ app.post('/api/team/leave', authenticateToken, async (req, res) => {
 // Capture email from exit-intent popup
 app.post('/api/capture-email', async (req, res) => {
   try {
-    const { email, discountCode = 'SAVE20', source = 'exit_intent' } = req.body;
+    const { email, discountCode = 'FIRSTFREE', source = 'exit_intent' } = req.body;
 
     // Validate email
     if (!email || !validator.isEmail(email)) {
@@ -2129,54 +2129,42 @@ app.post('/api/capture-email', async (req, res) => {
         await resend.emails.send({
           from: FROM_EMAIL,
           to: email,
-          subject: 'Welcome! Here\'s your 20% discount 🎉',
+          subject: 'Your first month is on us!',
           html: `
             <!DOCTYPE html>
             <html>
             <head>
-              <style>
-                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0; }
-                .content { background: white; padding: 40px; border: 1px solid #E5E7EB; border-radius: 0 0 8px 8px; }
-                .discount-box { background: #F3F4F6; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0; }
-                .discount-code { font-size: 24px; font-weight: bold; color: #4F46E5; }
-                .cta-button { display: inline-block; background: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-top: 20px; }
-              </style>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
             </head>
-            <body>
-              <div class="container">
-                <div class="header">
-                  <h1>Welcome to ReviewResponder! 🎉</h1>
+            <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; margin: 0; padding: 0; background-color: #f9fafb;">
+              <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
+                  <h1 style="margin: 0; font-size: 24px;">Your First Month is FREE</h1>
                 </div>
-                <div class="content">
-                  <p>Hi there!</p>
-                  
-                  <p>Thanks for your interest in ReviewResponder! As one of our early supporters, here's your exclusive discount:</p>
-                  
-                  <div class="discount-box">
-                    <p>Use code</p>
-                    <div class="discount-code">${discountCode}</div>
-                    <p>for <strong>20% OFF</strong> your first month!</p>
+                <div style="background: white; padding: 40px; border: 1px solid #E5E7EB; border-top: none; border-radius: 0 0 8px 8px;">
+                  <p style="margin-top: 0;">Hi there,</p>
+
+                  <p>Thanks for checking out ReviewResponder! We noticed you were interested, so here's something special:</p>
+
+                  <div style="background: #F3F4F6; padding: 24px; border-radius: 8px; text-align: center; margin: 24px 0;">
+                    <p style="margin: 0 0 8px 0; color: #6B7280;">Use code</p>
+                    <div style="font-size: 28px; font-weight: bold; color: #4F46E5; letter-spacing: 2px;">${discountCode}</div>
+                    <p style="margin: 8px 0 0 0; font-weight: 600;">Your first month is completely FREE</p>
                   </div>
-                  
-                  <h3>Why ReviewResponder?</h3>
-                  <ul>
-                    <li>🤖 AI-powered responses that sound human</li>
-                    <li>🌍 50+ languages supported automatically</li>
-                    <li>⚡ Generate responses in seconds, not minutes</li>
-                    <li>💰 Save hours every week on review management</li>
-                  </ul>
-                  
-                  <p>Ready to transform how you handle customer reviews?</p>
-                  
-                  <center>
-                    <a href="${process.env.FRONTEND_URL}/pricing" class="cta-button">Claim Your Discount</a>
-                  </center>
-                  
-                  <p style="margin-top: 30px;">Have questions? Just reply to this email - we're here to help!</p>
-                  
-                  <p>Best regards,<br>The ReviewResponder Team</p>
+
+                  <p>ReviewResponder helps businesses respond to customer reviews in seconds using AI. No more staring at a blank screen wondering what to write.</p>
+
+                  <div style="text-align: center; margin: 32px 0;">
+                    <a href="${process.env.FRONTEND_URL}/pricing" style="display: inline-block; background: #4F46E5; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: 600;">Start Free Month</a>
+                  </div>
+
+                  <p style="color: #6B7280; font-size: 14px;">Questions? Just reply to this email.</p>
+
+                  <p style="margin-bottom: 0;">Cheers,<br>Berend from ReviewResponder</p>
+                </div>
+                <div style="text-align: center; padding: 20px; color: #9CA3AF; font-size: 12px;">
+                  <p style="margin: 0;">You're receiving this because you signed up at reviewresponder.com</p>
                 </div>
               </div>
             </body>

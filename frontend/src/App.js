@@ -420,7 +420,7 @@ const ExitIntentPopup = () => {
     try {
       const response = await api.post('/capture-email', {
         email,
-        discountCode: 'SAVE20',
+        discountCode: 'FIRSTFREE',
         source: 'exit_intent'
       });
       
@@ -505,7 +505,7 @@ const ExitIntentPopup = () => {
             Wait! Don't Leave Empty-Handed
           </h2>
           <p style={{ fontSize: '16px', opacity: 0.95 }}>
-            Get 20% off your first month of ReviewResponder
+            Get your first month of ReviewResponder FREE
           </p>
         </div>
 
@@ -524,10 +524,10 @@ const ExitIntentPopup = () => {
                   fontWeight: '600',
                   marginBottom: '12px'
                 }}>
-                  🎁 Exclusive Offer: Save 20%
+                  🎁 Exclusive: First Month FREE
                 </div>
                 <p style={{ color: 'var(--gray-600)', fontSize: '14px' }}>
-                  Enter your email to unlock this limited-time discount
+                  Enter your email to claim your free month
                 </p>
               </div>
 
@@ -550,7 +550,7 @@ const ExitIntentPopup = () => {
                   style={{ width: '100%', fontSize: '16px', padding: '12px' }}
                   disabled={loading}
                 >
-                  {loading ? 'Processing...' : 'Get My 20% Discount'}
+                  {loading ? 'Processing...' : 'Get My Free Month'}
                 </button>
               </form>
 
@@ -560,7 +560,7 @@ const ExitIntentPopup = () => {
                 color: 'var(--gray-500)',
                 marginTop: '16px'
               }}>
-                No spam, unsubscribe anytime. Discount valid for 7 days.
+                No spam, unsubscribe anytime. For new customers only.
               </p>
             </>
           ) : (
@@ -578,10 +578,10 @@ const ExitIntentPopup = () => {
                 <Check size={32} style={{ color: 'var(--success)' }} />
               </div>
               <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>
-                Discount Code Sent!
+                You're In!
               </h3>
               <p style={{ color: 'var(--gray-600)', marginBottom: '20px' }}>
-                Check your email for your exclusive 20% off code: <strong>SAVE20</strong>
+                Check your email for your free month code: <strong>FIRSTFREE</strong>
               </p>
               <Link
                 to="/register"
