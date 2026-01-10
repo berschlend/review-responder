@@ -22,6 +22,36 @@
 
 ---
 
+## BORIS CHERNY WORKFLOW (Creator of Claude Code)
+
+### Custom Slash Commands
+Nutze diese Commands für maximale Effizienz:
+- `/test-and-push` - Tests → Manual Check → Git Push (mit Retry)
+- `/feature` - Research → Plan → Code → Test → PR (Boris Method)
+- `/bug-fix` - Reproduce → Diagnose → Plan → Fix → Verify → Push
+- `/update-claude-md` - CLAUDE.md nach Session updaten
+
+### Die 8 Schritte (Boris Style):
+1. **CLAUDE.md nutzen** - Zentrale Wahrheit, Team fügt Learnings hinzu
+2. **Plan Mode ZUERST** (Shift+Tab 2x) - Erst planen, dann coden!
+3. **Slash Commands** - Für jeden "inner loop" Workflow
+4. **Research → Plan → Code → Test → PR** - Nie direkt coden
+5. **Parallel arbeiten** - 5+ Claude instances (Tabs/Windows)
+   - User arbeitet mit mehreren Claude Tabs parallel
+   - System Notifications bei Input needed
+   - Jeder Tab für eigenen Workflow
+6. **Opus 4.5 für alles** - Beste Qualität > Geschwindigkeit
+7. **Testing VOR Push** - Chrome Extension testen, iterieren
+8. **Auto-Accept nach Plan** - Plan perfektionieren, dann One-Shot
+
+### Wichtig:
+- Research OHNE Code first
+- Plan reviewen & verfeinern
+- Dann Auto-Accept Mode
+- Claude "one-shots" die Umsetzung
+
+---
+
 ## LIVE URLS
 
 | Service | URL |
@@ -92,6 +122,49 @@ cold mails cronjob
 
 ---
 
+## GEMINI DESIGN MCP
+
+**Was:** Paralleler Design-Agent der mit Gemini AI das Frontend verbessert während Claude an der Logik arbeitet.
+**URL:** https://gemini-design-mcp.com
+
+### Installation
+```bash
+claude mcp add gemini-design-mcp --env API_KEY=YOUR_GEMINI_API_KEY -- npx -y gemini-design-mcp@latest
+```
+
+**API Key:** https://aistudio.google.com/apikey
+
+### Die 4 Tools
+
+| Tool | Use Case | Beispiel |
+|------|----------|----------|
+| **create_frontend** | Komplette responsive Views generieren | "Create a modern pricing page with 3 tiers" |
+| **modify_frontend** | Chirurgische Edits an Components | "Adjust padding, change button colors, fix mobile layout" |
+| **snippet_frontend** | Standalone UI Components | "Create a modal for email verification" |
+| **Context Isolation** | Backend Logic bleibt geschützt | Arbeitet nur an Frontend-Dateien |
+
+### Wann benutzen?
+
+**Automatisch bei Frontend-Tasks:**
+- Dashboard Redesign
+- Landing Page Optimierung
+- Component Styling
+- Mobile Responsiveness
+- Neue UI Features
+
+**Workflow:**
+1. Claude analysiert Business Logic
+2. Gemini MCP übernimmt Frontend Design
+3. Beide arbeiten parallel in einer Session
+4. Kein Context-Switching nötig
+
+### Pricing
+- **Free:** 20K tokens/month
+- **Pro:** $19/month, 1M tokens
+- **Enterprise:** $79/month, 6M tokens
+
+---
+
 ## PROJEKT-STRUKTUR
 
 ```
@@ -101,8 +174,11 @@ ReviewResponder/
 ├── chrome-extension/  # Browser Extension
 ├── content/           # Marketing (outreach/, product-hunt/, social/)
 ├── scripts/           # Automation Scripts
-└── CLAUDE.md
-Todo.md
+├── .claude/
+│   ├── commands/      # Custom Slash Commands
+│   └── TESTING.md     # Testing Workflow Checklist
+├── CLAUDE.md
+└── Todo.md
 ```
 
 ---
