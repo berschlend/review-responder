@@ -48,10 +48,13 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] Stripe Yearly Prices erstellen + Price IDs in Render eintragen ✅
 - [ ] Demo-Video aufnehmen (2 Min Walkthrough) und YouTube/Loom Link einfügen
 - [ ] **Google OAuth Setup** - Google Cloud Console Credentials erstellen (siehe GOOGLE SIGN-IN SETUP unten)
-- [ ] **Eigene Domain für Outreach-Emails** - In Resend verifizieren (aktuell: resend.dev Test-Domain)
+- [ ] **Eigene Domain für Outreach-Emails** (MORGEN):
+  1. Domain kaufen (~$10/Jahr bei Namecheap oder Porkbun)
+  2. Domain in Resend verifizieren (DNS-Einträge hinzufügen)
+  3. Claude: Email-Absender im Code auf neue Domain ändern
+  4. Outreach-System aktivieren
 
 ### ✅ HEUTE ERLEDIGT (10.01.2026):
-- [x] **Google Sign-In** - "Sign in with Google" für Login & Register implementiert
 
 ### 🟡 NÄCHSTE CLAUDE TASKS (Wähle einen):
 
@@ -61,6 +64,8 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 | 2 | Chrome Web Store Screenshots (3 weitere) | Leicht | `chrome-extension/screenshots/` |
 | 3 | Chrome Web Store Einreichung | Leicht | ZIP + Store Listing fertig |
 | 4 | Landing Page A/B Testing | Mittel | `frontend/src/App.js` |
+| 5 | **Chrome Extension mit echten Google Reviews testen** | Mittel | `chrome-extension/` |
+| 6 | **AI Model Upgrade evaluieren** (GPT-4o-mini vs. GPT-4o/Claude) | Leicht | `backend/server.js` |
 
 ### 🔴 BEKANNTE BUGS:
 
