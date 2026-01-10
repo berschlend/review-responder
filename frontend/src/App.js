@@ -8226,7 +8226,9 @@ const AdminPage = () => {
   const [affiliateDetails, setAffiliateDetails] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const API_BASE = process.env.REACT_APP_API_URL || 'https://review-responder.onrender.com';
+  // Use the same API_URL as the rest of the app (already includes /api)
+  // Remove /api suffix if present to build admin URLs correctly
+  const API_BASE = API_URL.replace(/\/api$/, '');
 
   const authenticate = async (keyToUse) => {
     const key = keyToUse || adminKey;
