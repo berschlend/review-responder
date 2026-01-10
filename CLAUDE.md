@@ -65,24 +65,29 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
   - Problem: Nach `/api/admin/set-plan?redirect=1` wurden alte Daten angezeigt
   - Ursache: User-State im AuthContext wurde nicht aktualisiert
   - Fix: `api.get('/auth/me')` und `fetchStats()` nach Plan-Param erkannt
+- [x] **Chrome Extension Language Bug GEFIXT** ✅
+  - Problem: Extension antwortete nicht in der Sprache des Reviews
+  - Ursache: `outputLanguage: 'auto'` wurde gesendet statt erkannte Sprache
+  - Fix: Erkannte Sprache in `panel.dataset.detectedLanguage` speichern
+  - Fix: `outputLanguage: detectedLanguage` an alle API-Calls senden
+  - Fix: Explizite Sprach-Anweisung im `additionalContext` Prompt
+  - Alle 5 Generate-Funktionen aktualisiert (generateResponse, generateResponseWithModifier, editExistingResponse, turboGenerate, generateQueueResponse)
 
 ### 🟡 NÄCHSTE CLAUDE TASKS (Wähle einen):
 
 | # | Task | Schwierigkeit | Dateien |
 |---|------|---------------|---------|
-| 1 | **Chrome Extension Sprach-Bug FINAL fixen** | HOCH | `chrome-extension/`, `backend/server.js` |
-| 2 | Chrome Web Store Screenshots (3 weitere) | Leicht | `chrome-extension/screenshots/` |
-| 3 | Chrome Web Store Einreichung | Leicht | ZIP + Store Listing fertig |
-| 4 | Landing Page A/B Testing | Mittel | `frontend/src/App.js` |
-| 5 | **Chrome Extension mit echten Google Reviews testen** | Mittel | `chrome-extension/` |
+| 1 | **Response Templates System** | Mittel | `chrome-extension/content.js` |
+| 2 | **Draft Mode (Auto-Save)** | Mittel | `chrome-extension/content.js` |
+| 3 | Chrome Web Store Screenshots (3 weitere) | Leicht | `chrome-extension/screenshots/` |
+| 4 | Chrome Web Store Einreichung | Leicht | ZIP + Store Listing fertig |
+| 5 | Landing Page A/B Testing | Mittel | `frontend/src/App.js` |
 
 ### 🔴 BEKANNTE BUGS:
 
-**1. Chrome Extension antwortet nicht in nativer Sprache des Reviews!**
-- Englische Reviews bekommen deutsche/niederländische Antworten
-- Problem tritt NUR in der Extension auf, nicht im Dashboard
-- `cleanReviewText()` und `detectLanguage()` wurden bereits versucht
-- Nächster Ansatz: Prompt weiter vereinfachen oder Text-Extraktion debuggen
+**1. ~~Chrome Extension antwortet nicht in nativer Sprache des Reviews~~** ✅ GEFIXT
+- Fix: Erkannte Sprache wird jetzt an API gesendet (nicht mehr 'auto')
+- Fix: Explizite Sprach-Anweisung im Prompt
 
 **2. Admin Panel Login funktioniert nicht!**
 - URL: `/admin` - zeigt "Invalid admin key" obwohl Key korrekt ist
