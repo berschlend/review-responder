@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper, Utensils, CheckCircle, Keyboard, Store, MapPin, Wrench, Scissors, Car, Heart, User, Bell, ChevronDown } from 'lucide-react';
+import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper, Utensils, CheckCircle, Keyboard, Store, MapPin, Wrench, Scissors, Car, Heart, User, Bell, ChevronDown, Edit3 } from 'lucide-react';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
 import { jsPDF } from 'jspdf';
@@ -2983,6 +2983,11 @@ const DashboardPage = () => {
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
   const [templateName, setTemplateName] = useState('');
   const [savingTemplate, setSavingTemplate] = useState(false);
+  const [showEditTemplateModal, setShowEditTemplateModal] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState(null);
+  const [editTemplateName, setEditTemplateName] = useState('');
+  const [editTemplateContent, setEditTemplateContent] = useState('');
+  const [updatingTemplate, setUpdatingTemplate] = useState(false);
 
   // Bulk generation state
   const [bulkInput, setBulkInput] = useState('');
@@ -3363,6 +3368,45 @@ const DashboardPage = () => {
       }
     } catch (error) {
       toast.error('Failed to delete template');
+    }
+  };
+
+  const openEditTemplateModal = (templateId) => {
+    const template = templates.find(t => t.id.toString() === templateId);
+    if (template) {
+      setEditingTemplate(template);
+      setEditTemplateName(template.name);
+      setEditTemplateContent(template.content);
+      setShowEditTemplateModal(true);
+    }
+  };
+
+  const updateTemplate = async () => {
+    if (!editTemplateName.trim()) {
+      toast.error('Please enter a template name');
+      return;
+    }
+    if (!editTemplateContent.trim()) {
+      toast.error('Template content cannot be empty');
+      return;
+    }
+
+    setUpdatingTemplate(true);
+    try {
+      await api.put(`/templates/${editingTemplate.id}`, {
+        name: editTemplateName.trim(),
+        content: editTemplateContent.trim()
+      });
+      toast.success('Template updated!');
+      setShowEditTemplateModal(false);
+      setEditingTemplate(null);
+      setEditTemplateName('');
+      setEditTemplateContent('');
+      fetchTemplates();
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to update template');
+    } finally {
+      setUpdatingTemplate(false);
     }
   };
 
@@ -4073,6 +4117,14 @@ const DashboardPage = () => {
                       title="Use this template"
                     >
                       <Check size={16} />
+                    </button>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => openEditTemplateModal(selectedTemplate)}
+                      style={{ padding: '8px 12px' }}
+                      title="Edit template"
+                    >
+                      <Edit3 size={16} />
                     </button>
                     <button
                       className="btn btn-secondary"
@@ -4837,6 +4889,88 @@ Food was amazing, will definitely come back!`}
                 style={{ flex: 1 }}
               >
                 {savingTemplate ? 'Saving...' : 'Save Template'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Template Modal */}
+      {showEditTemplateModal && editingTemplate && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }} onClick={() => setShowEditTemplateModal(false)}>
+          <div
+            className="card"
+            style={{
+              maxWidth: '600px',
+              width: '100%',
+              padding: '24px',
+              maxHeight: '80vh',
+              overflow: 'auto'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Edit3 size={20} />
+              Edit Template
+            </h2>
+
+            <div className="form-group">
+              <label className="form-label">Template Name</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="e.g., Positive 5-star response"
+                value={editTemplateName}
+                onChange={(e) => setEditTemplateName(e.target.value)}
+                maxLength={100}
+                autoFocus
+              />
+            </div>
+
+            <div className="form-group" style={{ marginTop: '16px' }}>
+              <label className="form-label">Template Content</label>
+              <textarea
+                className="form-textarea"
+                placeholder="Template response content..."
+                value={editTemplateContent}
+                onChange={(e) => setEditTemplateContent(e.target.value)}
+                rows={8}
+                style={{ resize: 'vertical', minHeight: '150px' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  setShowEditTemplateModal(false);
+                  setEditingTemplate(null);
+                  setEditTemplateName('');
+                  setEditTemplateContent('');
+                }}
+                style={{ flex: 1 }}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={updateTemplate}
+                disabled={updatingTemplate || !editTemplateName.trim() || !editTemplateContent.trim()}
+                style={{ flex: 1 }}
+              >
+                {updatingTemplate ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </div>

@@ -39,11 +39,19 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 | **GitHub** | https://github.com/berschlend/review-responder |
 | **Outreach Dashboard** | https://review-responder.onrender.com/api/outreach/dashboard?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U |
 
+### Admin Plan-Wechsel Links (für berend.mainz@web.de)
+| Plan | Link |
+|------|------|
+| FREE | https://review-responder.onrender.com/api/admin/set-plan?email=berend.mainz@web.de&plan=free&key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U |
+| STARTER | https://review-responder.onrender.com/api/admin/set-plan?email=berend.mainz@web.de&plan=starter&key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U |
+| PROFESSIONAL | https://review-responder.onrender.com/api/admin/set-plan?email=berend.mainz@web.de&plan=professional&key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U |
+| UNLIMITED | https://review-responder.onrender.com/api/admin/set-plan?email=berend.mainz@web.de&plan=unlimited&key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U |
+
 ---
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 10.01.2026 - 17:00 Uhr**
+**Stand: 10.01.2026 - 18:30 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [x] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen ✅
@@ -112,6 +120,14 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
   - Progress Bar für nächstes Achievement
   - Toast Notifications bei Milestones
   - Golden/Amber UI für Gamification-Feel
+- [x] **Template-Bearbeitung im Dashboard** ✅
+  - Edit-Button neben Delete-Button bei Template-Auswahl
+  - Edit-Modal mit Name + Content Bearbeitung
+  - PUT /api/templates/:id Endpoint (war schon vorhanden)
+  - openEditTemplateModal() und updateTemplate() Funktionen
+- [x] **CLAUDE.md Dokumentation aktualisiert** ✅
+  - Plan-Limits korrigiert (Hybrid AI: Smart + Standard)
+  - Admin Plan-Wechsel Links hinzugefügt
 
 ### 🟡 NÄCHSTE CLAUDE TASKS (Wähle einen):
 
@@ -532,7 +548,9 @@ ReviewResponder/
 - ✅ AI Response Generation (4 Tones: Professional, Friendly, Formal, Apologetic)
 - ✅ 50+ Sprachen (automatische Erkennung)
 - ✅ Stripe Payments (Monthly & Yearly mit 20% Rabatt)
-- ✅ Usage Tracking (Free: 5, Starter: 100, Pro: 300, Unlimited: ∞)
+- ✅ Usage Tracking mit Hybrid AI (Free: 20, Starter: 300, Pro: 800, Unlimited: ∞)
+  - Smart AI (Claude): Free=3, Starter=100, Pro=300, Unlimited=∞
+  - Standard AI (GPT-4o-mini): Free=17, Starter=200, Pro=500, Unlimited=∞
 - ✅ Response History
 - ✅ Business Context Personalization
 - ✅ Response Templates (speichern & als Startpunkt nutzen)
