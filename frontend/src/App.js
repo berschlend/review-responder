@@ -2761,6 +2761,8 @@ const DashboardPage = () => {
   const [platform, setPlatform] = useState('google');
   const [tone, setTone] = useState('professional');
   const [outputLanguage, setOutputLanguage] = useState('auto');
+  const [aiModel, setAiModel] = useState('auto'); // 'auto', 'smart', 'standard'
+  const [lastAiModel, setLastAiModel] = useState(null); // Track which AI was used
   const [generating, setGenerating] = useState(false);
   const [response, setResponse] = useState('');
   const [copied, setCopied] = useState(false);
@@ -2776,6 +2778,7 @@ const DashboardPage = () => {
   const [bulkPlatform, setBulkPlatform] = useState('google');
   const [bulkTone, setBulkTone] = useState('professional');
   const [bulkOutputLanguage, setBulkOutputLanguage] = useState('auto');
+  const [bulkAiModel, setBulkAiModel] = useState('auto'); // 'auto', 'smart', 'standard'
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [bulkResults, setBulkResults] = useState(null);
   const [copiedIndex, setCopiedIndex] = useState(null);
@@ -3307,7 +3310,12 @@ const DashboardPage = () => {
     }
   }, [activeTab, canUseBlog]);
 
-  const usagePercent = user ? (user.responsesUsed / user.responsesLimit) * 100 : 0;
+  // Calculate usage percentages from stats
+  const usagePercent = stats?.usage?.total?.limit
+    ? (stats.usage.total.used / stats.usage.total.limit) * 100
+    : (user ? (user.responsesUsed / user.responsesLimit) * 100 : 0);
+  const smartRemaining = stats?.usage?.smart?.remaining ?? 0;
+  const standardRemaining = stats?.usage?.standard?.remaining ?? 0;
 
   return (
     <div className="dashboard container">
@@ -3424,28 +3432,74 @@ const DashboardPage = () => {
       )}
 
       <div className="stats-grid">
+        {/* Smart AI Usage */}
+        <div className="stat-card" style={{ background: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)', border: '1px solid var(--primary-200)' }}>
+          <div className="stat-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '16px' }}>✨</span> Smart AI
+          </div>
+          <div className="stat-value primary">
+            {stats?.usage?.smart?.used ?? 0}
+            <span style={{ fontSize: '14px', fontWeight: '400', color: 'var(--gray-500)' }}>
+              /{stats?.usage?.smart?.limit ?? 3}
+            </span>
+          </div>
+          <div className="usage-bar" style={{ background: 'rgba(255,255,255,0.5)' }}>
+            <div
+              className="usage-fill"
+              style={{
+                width: `${stats?.usage?.smart?.limit ? Math.min((stats.usage.smart.used / stats.usage.smart.limit) * 100, 100) : 0}%`,
+                background: 'linear-gradient(90deg, var(--primary-500), var(--primary-600))'
+              }}
+            />
+          </div>
+          <p className="mt-1" style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
+            Claude. Best quality
+          </p>
+        </div>
+
+        {/* Standard AI Usage */}
         <div className="stat-card">
-          <div className="stat-label">Responses Used</div>
-          <div className="stat-value primary">{user?.responsesUsed || 0}</div>
+          <div className="stat-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '16px' }}>⚡</span> Standard
+          </div>
+          <div className="stat-value">
+            {stats?.usage?.standard?.used ?? 0}
+            <span style={{ fontSize: '14px', fontWeight: '400', color: 'var(--gray-500)' }}>
+              /{stats?.usage?.standard?.limit ?? 17}
+            </span>
+          </div>
+          <div className="usage-bar">
+            <div
+              className="usage-fill"
+              style={{
+                width: `${stats?.usage?.standard?.limit ? Math.min((stats.usage.standard.used / stats.usage.standard.limit) * 100, 100) : 0}%`,
+                background: 'var(--gray-400)'
+              }}
+            />
+          </div>
+          <p className="mt-1" style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
+            GPT. Fast & reliable
+          </p>
+        </div>
+
+        {/* Total / Monthly */}
+        <div className="stat-card">
+          <div className="stat-label">This Month</div>
+          <div className="stat-value">
+            {stats?.usage?.total?.used ?? user?.responsesUsed ?? 0}
+            <span style={{ fontSize: '14px', fontWeight: '400', color: 'var(--gray-500)' }}>
+              /{stats?.usage?.total?.limit ?? user?.responsesLimit ?? 20}
+            </span>
+          </div>
           <div className="usage-bar">
             <div
               className={`usage-fill ${usagePercent > 80 ? 'warning' : ''} ${usagePercent >= 100 ? 'danger' : ''}`}
               style={{ width: `${Math.min(usagePercent, 100)}%` }}
             />
           </div>
-          <p className="mt-1" style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
-            {user?.responsesLimit - user?.responsesUsed} remaining this month
+          <p className="mt-1" style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
+            {stats?.usage?.total?.remaining ?? (user?.responsesLimit - user?.responsesUsed) ?? 0} remaining
           </p>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-label">Monthly Limit</div>
-          <div className="stat-value">{user?.responsesLimit || 5}</div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-label">Total Generated</div>
-          <div className="stat-value">{stats?.stats?.totalResponses || 0}</div>
         </div>
       </div>
 

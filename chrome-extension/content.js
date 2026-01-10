@@ -163,7 +163,58 @@ function findGoogleMapsReplyButton() {
   return null;
 }
 
-async function autoPasteToGoogleMaps(text, panel) {
+function findGoogleMapsSubmitButton() {
+  // Find the Submit/Send button after entering reply text
+  const selectors = [
+    // Google Maps Business Profile submit buttons
+    'button[aria-label*="Submit"]',
+    'button[aria-label*="submit"]',
+    'button[aria-label*="Send"]',
+    'button[aria-label*="send"]',
+    'button[aria-label*="Senden"]',
+    'button[aria-label*="Absenden"]',
+    'button[aria-label*="Publier"]',
+    'button[aria-label*="Enviar"]',
+    // Generic submit in dialogs
+    '[role="dialog"] button[type="submit"]',
+    '[role="dialog"] button.submit-button',
+    // By text content
+    'button:has-text("Submit")',
+    'button:has-text("Send")',
+    // Google's internal classes
+    'button[jsname="LgbsSe"]',
+    'button[data-mdc-dialog-action="accept"]',
+    // The primary action button (usually blue)
+    '[role="dialog"] button[class*="primary"]',
+    '[role="dialog"] button[class*="action"]',
+  ];
+
+  for (const selector of selectors) {
+    try {
+      const el = document.querySelector(selector);
+      if (el && el.offsetParent !== null && !el.disabled) {
+        return el;
+      }
+    } catch (e) {
+      // :has-text selector might not work, skip
+    }
+  }
+
+  // Fallback: Find button with submit-like text
+  const allButtons = document.querySelectorAll('[role="dialog"] button');
+  for (const btn of allButtons) {
+    const text = btn.textContent.toLowerCase();
+    if ((text.includes('submit') || text.includes('send') || text.includes('senden') ||
+         text.includes('publier') || text.includes('enviar') || text.includes('post')) &&
+        btn.offsetParent !== null && !btn.disabled) {
+      return btn;
+    }
+  }
+
+  return null;
+}
+
+async function autoPasteToGoogleMaps(text, panel, autoSubmit = false) {
   const platform = detectPlatform();
 
   if (platform.name !== 'Google') {
@@ -198,13 +249,28 @@ async function autoPasteToGoogleMaps(text, panel) {
   replyField.dispatchEvent(new Event('input', { bubbles: true }));
   replyField.dispatchEvent(new Event('change', { bubbles: true }));
 
-  showToast('🚀 Pasted! Ready to submit', 'success');
-
-  // Close our panel
+  // Close our panel first
   if (panel) {
     closePanel(panel);
   }
 
+  // Auto-submit if requested
+  if (autoSubmit) {
+    // Small delay for UI to register the input
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    const submitBtn = findGoogleMapsSubmitButton();
+    if (submitBtn) {
+      submitBtn.click();
+      showToast('🎉 Response submitted!', 'success');
+      return true;
+    } else {
+      showToast('🚀 Pasted! Click Submit manually', 'warning');
+      return false;
+    }
+  }
+
+  showToast('🚀 Pasted! Ready to submit', 'success');
   return true;
 }
 
@@ -558,8 +624,11 @@ async function createResponsePanel() {
 
         <div class="rr-action-buttons">
           <button class="rr-copy-btn">📋 Copy</button>
-          ${isGoogleMaps ? '<button class="rr-paste-btn">🚀 Paste & Reply</button>' : ''}
-          <button class="rr-regenerate-btn">🔄 Again</button>
+          ${isGoogleMaps ? `
+            <button class="rr-paste-btn">🚀 Paste</button>
+            <button class="rr-submit-btn">⚡ Paste & Submit</button>
+          ` : ''}
+          <button class="rr-regenerate-btn">🔄</button>
         </div>
 
         <!-- Quick Tone Switch -->
@@ -638,13 +707,26 @@ function initPanelEvents(panel) {
   // Copy button
   panel.querySelector('.rr-copy-btn').addEventListener('click', () => copyResponse(panel));
 
-  // Paste & Reply button (Google Maps only)
+  // Paste button (Google Maps only)
   const pasteBtn = panel.querySelector('.rr-paste-btn');
   if (pasteBtn) {
     pasteBtn.addEventListener('click', () => {
       const text = panel.querySelector('.rr-response-textarea').value;
       if (text) {
-        autoPasteToGoogleMaps(text, panel);
+        autoPasteToGoogleMaps(text, panel, false);
+      } else {
+        showToast('⚠️ Generate a response first', 'warning');
+      }
+    });
+  }
+
+  // Paste & Submit button (Google Maps only) - THE KILLER FEATURE
+  const submitBtn = panel.querySelector('.rr-submit-btn');
+  if (submitBtn) {
+    submitBtn.addEventListener('click', () => {
+      const text = panel.querySelector('.rr-response-textarea').value;
+      if (text) {
+        autoPasteToGoogleMaps(text, panel, true); // autoSubmit = true
       } else {
         showToast('⚠️ Generate a response first', 'warning');
       }
