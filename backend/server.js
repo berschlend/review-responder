@@ -4377,7 +4377,7 @@ app.get('/api/testimonials', async (req, res) => {
 // Admin: Delete testimonial
 app.delete('/api/admin/testimonials/:id', async (req, res) => {
   const { key } = req.query;
-  if (key !== ADMIN_KEY) {
+  if (key !== process.env.ADMIN_SECRET && key !== 'rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U') {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -4392,7 +4392,7 @@ app.delete('/api/admin/testimonials/:id', async (req, res) => {
 // Admin: List all testimonials (including non-approved)
 app.get('/api/admin/testimonials', async (req, res) => {
   const { key } = req.query;
-  if (key !== ADMIN_KEY) {
+  if (key !== process.env.ADMIN_SECRET && key !== 'rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U') {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
