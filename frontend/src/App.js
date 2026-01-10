@@ -3716,14 +3716,44 @@ const DashboardPage = () => {
         return matches.map(m => m.slice(1, -1).trim()).filter(r => r.length > 0);
       }
     }
-    // Try line-separated format (each line is a review)
-    const lines = input.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-    if (lines.length > 1) {
-      return lines;
-    }
     // Try separator format: ---
     if (input.includes('---')) {
       return input.split('---').map(r => r.trim()).filter(r => r.length > 0);
+    }
+    // Try numbered format: "1.", "2.", etc. at start of line
+    const numberedPattern = /^\d+\.\s/m;
+    if (numberedPattern.test(input)) {
+      const reviews = [];
+      let currentReview = '';
+      const lines = input.split('\n');
+      for (const line of lines) {
+        if (/^\d+\.\s/.test(line.trim())) {
+          if (currentReview.trim()) {
+            reviews.push(currentReview.trim());
+          }
+          currentReview = line.trim().replace(/^\d+\.\s*/, '');
+        } else if (line.trim()) {
+          currentReview += ' ' + line.trim();
+        }
+      }
+      if (currentReview.trim()) {
+        reviews.push(currentReview.trim());
+      }
+      if (reviews.length > 0) {
+        return reviews;
+      }
+    }
+    // Try double-newline separated (paragraphs)
+    if (input.includes('\n\n')) {
+      const paragraphs = input.split(/\n\n+/).map(p => p.replace(/\n/g, ' ').trim()).filter(p => p.length > 0);
+      if (paragraphs.length > 1) {
+        return paragraphs;
+      }
+    }
+    // Fallback: single-line separated
+    const lines = input.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    if (lines.length > 1) {
+      return lines;
     }
     // Single review
     return [input.trim()].filter(r => r.length > 0);
