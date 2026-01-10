@@ -588,7 +588,8 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ error: 'Password must be at least 8 characters' });
     }
 
-    const existingUser = await dbGet('SELECT id FROM users WHERE email = $1', [email]);
+    // Case-insensitive email check
+    const existingUser = await dbGet('SELECT id FROM users WHERE LOWER(email) = LOWER($1)', [email]);
     if (existingUser) {
       return res.status(400).json({ error: 'Email already registered' });
     }
@@ -685,7 +686,8 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await dbGet('SELECT * FROM users WHERE email = $1', [email]);
+    // Case-insensitive email lookup
+    const user = await dbGet('SELECT * FROM users WHERE LOWER(email) = LOWER($1)', [email]);
     if (!user) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
@@ -1281,7 +1283,8 @@ app.post('/api/auth/forgot-password', async (req, res) => {
       return res.status(400).json({ error: 'Valid email is required' });
     }
 
-    const user = await dbGet('SELECT id, email FROM users WHERE email = $1', [email]);
+    // Case-insensitive email lookup
+    const user = await dbGet('SELECT id, email FROM users WHERE LOWER(email) = LOWER($1)', [email]);
 
     // Always return success to prevent email enumeration
     if (!user) {

@@ -3,6 +3,15 @@
 > Letzte Aktualisierung: 10.01.2026 - 15:55 Uhr
 
 
+## 🔴 HEUTE NOCH (10.01.2026) - ca. 17:00 Uhr
+
+- [ ] **Custom Domain SSL prüfen**
+  - Öffne: https://tryreviewresponder.com
+  - Sollte die ReviewResponder App zeigen (ohne SSL-Fehler)
+  - Falls noch Fehler: Render Dashboard → Custom Domains prüfen
+
+---
+
 ## 🔴 MORGEN (11.01.2026) - 10:05 Uhr
 
 - [ ] **Outreach Cron-Job prüfen**
