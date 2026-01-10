@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 10.01.2026 - 19:15 Uhr**
+**Stand: 10.01.2026 - 20:00 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [x] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen ✅
@@ -72,6 +72,15 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
   - Fix: `outputLanguage: detectedLanguage` an alle API-Calls senden
   - Fix: Explizite Sprach-Anweisung im `additionalContext` Prompt
   - Alle 5 Generate-Funktionen aktualisiert (generateResponse, generateResponseWithModifier, editExistingResponse, turboGenerate, generateQueueResponse)
+- [x] **Profil-Seite mit Account-Management** ✅
+  - ProfileMenu Dropdown in Navbar (ersetzt Logout Button)
+  - ProfilePage mit 4 Tabs: Account, Security, Notifications, Danger Zone
+  - Password ändern (mit Verifikation)
+  - Email ändern (2-Schritt mit Bestätigungs-Email)
+  - Notification Einstellungen (Weekly Summary, Usage Alerts, Billing)
+  - Account löschen (mit Password + DELETE Bestätigung, Stripe Cleanup)
+  - ConfirmEmailPage für Email-Bestätigung
+  - 6 neue Backend-Endpoints
 
 ### 🟡 NÄCHSTE CLAUDE TASKS (Wähle einen):
 
@@ -476,6 +485,12 @@ ReviewResponder/
 | PUT | `/api/admin/affiliates/:id/commission` | Commission Rate ändern (Admin Key) |
 | POST | `/api/admin/affiliates/:id/payout` | Payout verarbeiten (Admin Key) |
 | GET | `/api/admin/stats` | Admin-Statistiken (User, Affiliates, Revenue) |
+| PUT | `/api/auth/change-password` | Password ändern (mit aktuelles Password Verifikation) |
+| POST | `/api/auth/change-email-request` | Email-Änderung anfordern (sendet Bestätigungs-Email) |
+| POST | `/api/auth/confirm-email-change` | Email-Änderung bestätigen (Token validieren) |
+| GET | `/api/settings/notifications` | Notification Preferences abrufen |
+| PUT | `/api/settings/notifications` | Notification Preferences aktualisieren |
+| DELETE | `/api/auth/delete-account` | Account löschen (mit Password + "DELETE" Bestätigung) |
 
 ---
 
@@ -499,6 +514,7 @@ ReviewResponder/
 - ✅ Team/Multi-User Accounts (Pro: 3, Unlimited: 10) - Rollen: Admin, Member, Viewer, Shared Usage
 - ✅ Affiliate/Partner Program - 20% recurring commission, Dashboard, Marketing Materials, Payout System
 - ✅ Admin Panel (/admin) - Affiliate-Verwaltung, User-Stats, Payout-Processing
+- ✅ Profile Page (/profile) - Account-Info, Password/Email ändern, Notification Settings, Account löschen
 
 ---
 
@@ -995,6 +1011,18 @@ Dann Frontend neu deployen und Launch genießen!
   - Frontend: Affiliate-Banner auf Landing Page bei ?aff=CODE
   - Frontend: affiliateCode Tracking in localStorage + Registration
   - Features: Min. $50 Payout, PayPal/Bank Transfer, 30-Day Cookie
+- **Profile Page mit Account-Management** implementiert:
+  - Backend: DB Schema erweitert (email_change_token, email_change_new_email, email_change_expires_at)
+  - Backend: GET /api/auth/me erweitert (createdAt, oauthProvider, profilePicture, hasPassword, Notification Prefs)
+  - Backend: PUT /api/auth/change-password (Aktuelles Password verifizieren, neues setzen)
+  - Backend: POST /api/auth/change-email-request (Email-Änderung anfordern, Token senden)
+  - Backend: POST /api/auth/confirm-email-change (Token validieren, Email aktualisieren)
+  - Backend: GET/PUT /api/settings/notifications (Email-Einstellungen)
+  - Backend: DELETE /api/auth/delete-account (mit Stripe Cleanup)
+  - Frontend: ProfileMenu Dropdown in Navbar (ersetzt Logout Button)
+  - Frontend: ProfilePage mit 4 Tabs: Account, Security, Notifications, Danger Zone
+  - Frontend: ConfirmEmailPage für Email-Bestätigung via Link
+  - Routes: /profile (protected), /confirm-email (public)
 
 ---
 
