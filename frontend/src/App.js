@@ -1894,8 +1894,8 @@ const PricingCards = ({ showFree = true }) => {
       name: 'Free',
       monthlyPrice: 0,
       yearlyPrice: 0,
-      responses: 5,
-      features: ['5 responses per month', 'All tone options', '50+ languages', 'Copy to clipboard'],
+      responses: 20,
+      features: ['✨ 3 Smart AI responses', '⚡ 17 Standard responses', '20 total per month', 'All tone options', '50+ languages'],
       buttonText: 'Get Started',
       plan: 'free'
     },
@@ -1903,8 +1903,8 @@ const PricingCards = ({ showFree = true }) => {
       name: 'Starter',
       monthlyPrice: 29,
       yearlyPrice: 23.20, // 20% off
-      responses: 100,
-      features: ['100 responses per month', 'All tone options', '50+ languages', 'Response history', 'Email support'],
+      responses: 300,
+      features: ['✨ 100 Smart AI responses', '⚡ 200 Standard responses', '300 total per month', 'Response history', 'Email support'],
       buttonText: 'Subscribe',
       plan: 'starter'
     },
@@ -1912,8 +1912,8 @@ const PricingCards = ({ showFree = true }) => {
       name: 'Professional',
       monthlyPrice: 49,
       yearlyPrice: 39.20, // 20% off
-      responses: 300,
-      features: ['300 responses per month', 'All tone options', '50+ languages', 'Bulk generation (20 at once)', 'Analytics dashboard'],
+      responses: 800,
+      features: ['✨ 300 Smart AI responses', '⚡ 500 Standard responses', '800 total per month', 'Bulk generation (20 at once)', 'Analytics dashboard', 'Team members (3)'],
       buttonText: 'Subscribe',
       plan: 'professional',
       popular: true
@@ -1923,7 +1923,7 @@ const PricingCards = ({ showFree = true }) => {
       monthlyPrice: 99,
       yearlyPrice: 79.20, // 20% off
       responses: 'Unlimited',
-      features: ['Unlimited responses', 'All tone options', '50+ languages', 'Bulk generation (20 at once)', 'Analytics dashboard'],
+      features: ['✨ Unlimited Smart AI', '⚡ Unlimited Standard', 'All premium features', 'Team members (10)', 'API access', 'Priority support'],
       buttonText: 'Subscribe',
       plan: 'unlimited'
     }
@@ -2855,8 +2855,9 @@ const DashboardPage = () => {
       const newPlan = params.get('plan_changed');
       // Store message in sessionStorage to show after reload
       sessionStorage.setItem('planChangeMessage', `Plan changed to ${newPlan.toUpperCase()}!`);
-      // Redirect to clean URL - this will trigger a fresh page load
-      window.location.replace('/dashboard');
+      // Clear URL and force hard reload with cache bust
+      window.history.replaceState({}, '', '/dashboard');
+      window.location.reload(true);
       return; // Stop execution
     }
 
@@ -3171,6 +3172,7 @@ const DashboardPage = () => {
 
     setGenerating(true);
     setResponse('');
+    setLastAiModel(null);
 
     try {
       const res = await api.post('/responses/generate', {
@@ -3179,14 +3181,17 @@ const DashboardPage = () => {
         platform,
         tone: useTone,
         outputLanguage,
+        aiModel,
         businessName: user.businessName
       });
 
       setResponse(res.data.response);
+      setLastAiModel(res.data.aiModel || 'standard');
       updateUser({
         responsesUsed: res.data.responsesUsed,
         responsesLimit: res.data.responsesLimit
       });
+      fetchStats(); // Refresh smart/standard usage
       fetchHistory();
 
       // Fire confetti on first response!
@@ -3195,12 +3200,18 @@ const DashboardPage = () => {
         toast.success('Congratulations on your first response!', { icon: '🎉', duration: 4000 });
         setIsFirstResponse(false);
       } else {
-        toast.success('Response generated!');
+        const aiLabel = res.data.aiModel === 'smart' ? 'Smart AI' : 'Standard';
+        toast.success(`Response generated with ${aiLabel}!`);
       }
       // Check if user should see feedback popup
       checkFeedbackStatus();
     } catch (error) {
-      if (error.response?.data?.upgrade) {
+      if (error.response?.data?.error) {
+        toast.error(error.response.data.error);
+        if (error.response.data.suggestion) {
+          toast.info(error.response.data.suggestion, { duration: 5000 });
+        }
+      } else if (error.response?.data?.upgrade) {
         toast.error(error.response.data.message);
       } else {
         toast.error('Failed to generate response');
@@ -3258,13 +3269,15 @@ const DashboardPage = () => {
         reviews,
         platform: bulkPlatform,
         tone: bulkTone,
-        outputLanguage: bulkOutputLanguage
+        outputLanguage: bulkOutputLanguage,
+        aiModel: bulkAiModel
       });
       setBulkResults(res.data);
       updateUser({
         responsesUsed: res.data.responsesUsed,
         responsesLimit: res.data.responsesLimit
       });
+      fetchStats(); // Refresh smart/standard usage
       fetchHistory();
       toast.success(`Generated ${res.data.summary.successful} responses!`);
     } catch (error) {
@@ -3721,7 +3734,7 @@ const DashboardPage = () => {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <div className="form-group">
               <label className="form-label">Platform</label>
               <select
@@ -3755,7 +3768,63 @@ const DashboardPage = () => {
                 <option value="apologetic">Apologetic</option>
               </select>
             </div>
+          </div>
 
+          {/* AI Model Selector */}
+          <div className="form-group" style={{ marginTop: '16px' }}>
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              AI Model
+              <FeatureTooltip text="Auto: Uses Smart AI first, then Standard. Smart AI (Claude): Best quality. Standard (GPT): Fast and reliable.">
+                <Info size={14} style={{ color: 'var(--gray-400)', cursor: 'help' }} />
+              </FeatureTooltip>
+            </label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={() => setAiModel('auto')}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '8px', cursor: 'pointer', textAlign: 'center',
+                  border: aiModel === 'auto' ? '2px solid var(--primary-500)' : '2px solid var(--gray-200)',
+                  background: aiModel === 'auto' ? 'var(--primary-50)' : 'white'
+                }}
+              >
+                <div style={{ fontSize: '20px', marginBottom: '4px' }}>🔄</div>
+                <div style={{ fontWeight: '600', fontSize: '13px' }}>Auto</div>
+                <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>Best available</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => smartRemaining > 0 && setAiModel('smart')}
+                disabled={smartRemaining <= 0}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '8px', textAlign: 'center',
+                  border: aiModel === 'smart' ? '2px solid var(--primary-500)' : '2px solid var(--gray-200)',
+                  background: aiModel === 'smart' ? 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)' : 'white',
+                  cursor: smartRemaining > 0 ? 'pointer' : 'not-allowed',
+                  opacity: smartRemaining <= 0 ? 0.5 : 1
+                }}
+              >
+                <div style={{ fontSize: '20px', marginBottom: '4px' }}>✨</div>
+                <div style={{ fontWeight: '600', fontSize: '13px' }}>Smart AI</div>
+                <div style={{ fontSize: '11px', color: smartRemaining > 0 ? 'var(--primary-600)' : 'var(--gray-400)' }}>{smartRemaining} left</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => standardRemaining > 0 && setAiModel('standard')}
+                disabled={standardRemaining <= 0}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '8px', textAlign: 'center',
+                  border: aiModel === 'standard' ? '2px solid var(--gray-500)' : '2px solid var(--gray-200)',
+                  background: aiModel === 'standard' ? 'var(--gray-100)' : 'white',
+                  cursor: standardRemaining > 0 ? 'pointer' : 'not-allowed',
+                  opacity: standardRemaining <= 0 ? 0.5 : 1
+                }}
+              >
+                <div style={{ fontSize: '20px', marginBottom: '4px' }}>⚡</div>
+                <div style={{ fontWeight: '600', fontSize: '13px' }}>Standard</div>
+                <div style={{ fontSize: '11px', color: standardRemaining > 0 ? 'var(--gray-600)' : 'var(--gray-400)' }}>{standardRemaining} left</div>
+              </button>
+            </div>
           </div>
 
           {templates.length > 0 && (
@@ -3821,9 +3890,25 @@ const DashboardPage = () => {
         </div>
 
         <div className="card">
-          <h2 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600' }}>
-            Generated Response
-          </h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>
+              Generated Response
+            </h2>
+            {lastAiModel && (
+              <span style={{
+                padding: '4px 10px',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: '600',
+                background: lastAiModel === 'smart'
+                  ? 'linear-gradient(135deg, var(--primary-100), var(--primary-200))'
+                  : 'var(--gray-100)',
+                color: lastAiModel === 'smart' ? 'var(--primary-700)' : 'var(--gray-600)'
+              }}>
+                {lastAiModel === 'smart' ? '✨ Smart AI' : '⚡ Standard'}
+              </span>
+            )}
+          </div>
 
           <div className="response-output">
             {response || 'Your AI-generated response will appear here...'}
@@ -3959,7 +4044,7 @@ Food was amazing, will definitely come back!`}
                   </p>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div className="form-group">
                     <label className="form-label">Platform</label>
                     <select
@@ -3988,7 +4073,39 @@ Food was amazing, will definitely come back!`}
                       <option value="apologetic">Apologetic</option>
                     </select>
                   </div>
+                </div>
 
+                {/* Bulk AI Model Selector */}
+                <div className="form-group" style={{ marginTop: '16px' }}>
+                  <label className="form-label">AI Model</label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button type="button" onClick={() => setBulkAiModel('auto')} style={{
+                      flex: 1, padding: '10px', borderRadius: '8px', textAlign: 'center', cursor: 'pointer',
+                      border: bulkAiModel === 'auto' ? '2px solid var(--primary-500)' : '2px solid var(--gray-200)',
+                      background: bulkAiModel === 'auto' ? 'var(--primary-50)' : 'white'
+                    }}>
+                      <span style={{ marginRight: '6px' }}>🔄</span>
+                      <span style={{ fontWeight: '600', fontSize: '13px' }}>Auto</span>
+                    </button>
+                    <button type="button" onClick={() => smartRemaining > 0 && setBulkAiModel('smart')} disabled={smartRemaining <= 0} style={{
+                      flex: 1, padding: '10px', borderRadius: '8px', textAlign: 'center',
+                      border: bulkAiModel === 'smart' ? '2px solid var(--primary-500)' : '2px solid var(--gray-200)',
+                      background: bulkAiModel === 'smart' ? 'linear-gradient(135deg, #EEF2FF, #E0E7FF)' : 'white',
+                      cursor: smartRemaining > 0 ? 'pointer' : 'not-allowed', opacity: smartRemaining <= 0 ? 0.5 : 1
+                    }}>
+                      <span style={{ marginRight: '6px' }}>✨</span>
+                      <span style={{ fontWeight: '600', fontSize: '13px' }}>Smart ({smartRemaining})</span>
+                    </button>
+                    <button type="button" onClick={() => standardRemaining > 0 && setBulkAiModel('standard')} disabled={standardRemaining <= 0} style={{
+                      flex: 1, padding: '10px', borderRadius: '8px', textAlign: 'center',
+                      border: bulkAiModel === 'standard' ? '2px solid var(--gray-500)' : '2px solid var(--gray-200)',
+                      background: bulkAiModel === 'standard' ? 'var(--gray-100)' : 'white',
+                      cursor: standardRemaining > 0 ? 'pointer' : 'not-allowed', opacity: standardRemaining <= 0 ? 0.5 : 1
+                    }}>
+                      <span style={{ marginRight: '6px' }}>⚡</span>
+                      <span style={{ fontWeight: '600', fontSize: '13px' }}>Standard ({standardRemaining})</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
