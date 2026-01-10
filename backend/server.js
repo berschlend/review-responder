@@ -1819,7 +1819,7 @@ You: ${exampleToUse.goodResponse}
 
 LANGUAGE: ${languageInstruction}`;
 
-    const userMessage = `${reviewRating ? `[${reviewRating} stars] ` : ''}${reviewText}${ratingStrategy ? `\n\n(${ratingStrategy.length})` : ''}${customInstructions ? `\n\nNote: ${customInstructions}` : ''}`;
+    const userMessage = `${reviewRating ? `[${reviewRating} stars] ` : ''}${reviewText}${ratingStrategy ? `\n\n(${ratingStrategy.length})` : ''}${customInstructions ? `\n\nIMPORTANT - Follow these instructions: ${customInstructions}` : ''}`;
 
     // Generate response using selected AI model
     let generatedResponse;
@@ -2947,8 +2947,8 @@ app.post('/api/capture-email', async (req, res) => {
     
     // Check if email already exists
     const existing = await dbGet(
-      'SELECT * FROM email_captures WHERE email = $1',
-      [email.toLowerCase()]
+      'SELECT * FROM email_captures WHERE LOWER(email) = LOWER($1)',
+      [email]
     );
     
     if (existing) {
@@ -3761,7 +3761,7 @@ app.put('/api/affiliate/settings', authenticateToken, async (req, res) => {
         return res.status(400).json({ error: 'Invalid payout email' });
       }
       updates.push(`payout_email = $${paramIndex++}`);
-      values.push(payoutEmail);
+      values.push(payoutEmail.toLowerCase());
     }
 
     if (updates.length === 0) {
