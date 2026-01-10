@@ -246,8 +246,23 @@ const AuthProvider = ({ children }) => {
     setUser(prev => ({ ...prev, ...updates }));
   };
 
+  const refreshUser = async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const res = await api.get('/auth/me');
+        setUser(res.data.user);
+        return res.data.user;
+      } catch (error) {
+        console.error('Failed to refresh user:', error);
+        return null;
+      }
+    }
+    return null;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, loginWithGoogle, logout, loading, updateUser }}>
+    <AuthContext.Provider value={{ user, login, register, loginWithGoogle, logout, loading, updateUser, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
@@ -3213,12 +3228,13 @@ const DashboardPage = () => {
         return;
       }
 
-      // Ctrl+N or Cmd+N - New Response (Clear)
-      if (ctrlOrCmd && e.key.toLowerCase() === 'n') {
+      // Alt+N - New Response (Clear) - Note: Ctrl+N opens new browser window
+      if (e.altKey && !ctrlOrCmd && e.key.toLowerCase() === 'n') {
         e.preventDefault();
         setReviewText('');
         setResponse('');
         setRating(0);
+        toast.success('Cleared!');
         return;
       }
 
@@ -5263,7 +5279,7 @@ Food was amazing, will definitely come back!`}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--gray-100)' }}>
                 <span style={{ color: 'var(--gray-700)' }}>New Response (Clear)</span>
                 <kbd style={{ background: 'var(--gray-100)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace' }}>
-                  {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} + N
+                  Alt + N
                 </kbd>
               </div>
 
@@ -5752,7 +5768,7 @@ const ProfilePage = () => {
 const VerifyEmailPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { updateUser, user } = useAuth();
+  const { refreshUser } = useAuth();
   const [status, setStatus] = useState('loading'); // loading, success, error
   const [message, setMessage] = useState('');
 
@@ -5771,10 +5787,8 @@ const VerifyEmailPage = () => {
       const res = await api.get(`/auth/verify-email?token=${token}`);
       setStatus('success');
       setMessage(res.data.message || 'Email verified successfully!');
-      // Update user context to reflect verified status
-      if (user) {
-        updateUser({ ...user, emailVerified: true });
-      }
+      // Refresh user from backend to get updated emailVerified status
+      await refreshUser();
     } catch (error) {
       setStatus('error');
       setMessage(error.response?.data?.error || 'Failed to verify email');
