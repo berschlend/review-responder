@@ -41,12 +41,16 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 10.01.2026 - 04:00 Uhr**
+**Stand: 10.01.2026 - 04:30 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [x] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen ✅
 - [x] Stripe Yearly Prices erstellen + Price IDs in Render eintragen ✅
 - [ ] Demo-Video aufnehmen (2 Min Walkthrough) und YouTube/Loom Link einfügen
+- [ ] **Google OAuth Setup** - Google Cloud Console Credentials erstellen (siehe GOOGLE SIGN-IN SETUP unten)
+
+### ✅ HEUTE ERLEDIGT (10.01.2026):
+- [x] **Google Sign-In** - "Sign in with Google" für Login & Register implementiert
 
 ### 🟡 NÄCHSTE CLAUDE TASKS (Wähle einen):
 
@@ -706,6 +710,37 @@ Dann Frontend neu deployen und Launch genießen!
   - Frontend: Affiliate-Banner auf Landing Page bei ?aff=CODE
   - Frontend: affiliateCode Tracking in localStorage + Registration
   - Features: Min. $50 Payout, PayPal/Bank Transfer, 30-Day Cookie
+
+---
+
+## GOOGLE SIGN-IN SETUP
+
+### User muss machen:
+
+1. **Google Cloud Console** öffnen: https://console.cloud.google.com
+2. Neues Projekt erstellen oder bestehendes nutzen
+3. **APIs & Services → Credentials → Create Credentials → OAuth client ID**
+4. Application Type: **Web application**
+5. Name: `ReviewResponder`
+6. **Authorized JavaScript origins** hinzufügen:
+   - `http://localhost:3000` (für lokale Entwicklung)
+   - `https://review-responder-frontend.onrender.com` (Produktion)
+7. **Client ID kopieren** (endet mit `.apps.googleusercontent.com`)
+8. **Environment Variables setzen:**
+   - **Backend (Render):** `GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com`
+   - **Frontend (Render):** `REACT_APP_GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com`
+9. Beide Services neu deployen
+
+### Technische Details:
+- Backend Endpoint: `POST /api/auth/google`
+- Google Identity Services (GSI) Library
+- Token-Verifikation mit google-auth-library
+- Neue DB-Spalten: `oauth_provider`, `oauth_id`, `profile_picture`
+- Bestehende Email-Accounts werden automatisch verknüpft
+
+### Ohne Google Client ID:
+- App funktioniert normal mit Email/Password Login
+- Google Button wird nicht angezeigt (graceful degradation)
 
 ---
 
