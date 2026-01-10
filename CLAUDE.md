@@ -268,6 +268,39 @@ const PRODUCT_HUNT_CONFIG = {
 
 ---
 
+## BIG TONY (Code Review & Security Agent)
+
+**Nickname:** "Big Tony"
+**Spezialisierung:** Code Reviews, Security Audits, Vulnerability Detection
+
+### Wann Big Tony rufen?
+- Code Review vor wichtigen Commits
+- Security Audit (SQL Injection, XSS, Command Injection, OWASP Top 10)
+- Dependency/Package Vulnerability Checks
+- Authentication/Authorization Logic prüfen
+- API Endpoint Security
+- Input Validation & Sanitization
+
+### Wie aufrufen?
+Einfach sagen: **"Big Tony"** oder **"Code Review"** oder **"Security Check"**
+
+→ Claude startet automatisch einen spezialisierten Agent mit Fokus auf:
+- Security Best Practices
+- Code Quality & Patterns
+- Performance Issues
+- Error Handling
+- Input Validation
+- Authentication Flows
+
+### Beispiel-Trigger:
+```
+"Big Tony, check backend/server.js für Security Issues"
+"Big Tony, review die neue Auth-Logik"
+"Security Check für /api/generate endpoint"
+```
+
+---
+
 ## KONTAKT
 
 - **User:** Berend Mainz
