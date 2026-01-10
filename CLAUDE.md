@@ -41,13 +41,14 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 10.01.2026 - 16:45 Uhr**
+**Stand: 10.01.2026 - 18:30 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [x] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen ✅
 - [x] Stripe Yearly Prices erstellen + Price IDs in Render eintragen ✅
 - [ ] Demo-Video aufnehmen (2 Min Walkthrough) und YouTube/Loom Link einfügen
 - [x] **Google OAuth Setup** - Google Cloud Console Credentials erstellt ✅
+- [ ] **ANTHROPIC_API_KEY in Render eintragen** (für Smart AI / Claude)
 - [ ] **Eigene Domain für Outreach-Emails** (MORGEN):
   1. Domain kaufen (~$10/Jahr bei Namecheap oder Porkbun)
   2. Domain in Resend verifizieren (DNS-Einträge hinzufügen)
@@ -56,6 +57,10 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ### ✅ HEUTE ERLEDIGT (10.01.2026):
 - [x] **Google Sign-In aktiviert** - OAuth Consent Screen + Client ID in Render konfiguriert
+- [x] **Hybrid AI System implementiert** - Smart AI (Claude) + Standard (GPT-4o-mini)
+  - Neue Limits: Free=20, Starter=300, Pro=800, Unlimited=∞
+  - AI Model Selector im Dashboard (Auto/Smart/Standard)
+  - Pricing Page mit neuen Features aktualisiert
 
 ### 🟡 NÄCHSTE CLAUDE TASKS (Wähle einen):
 
@@ -66,7 +71,6 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 | 3 | Chrome Web Store Einreichung | Leicht | ZIP + Store Listing fertig |
 | 4 | Landing Page A/B Testing | Mittel | `frontend/src/App.js` |
 | 5 | **Chrome Extension mit echten Google Reviews testen** | Mittel | `chrome-extension/` |
-| 6 | **AI Model Upgrade evaluieren** (GPT-4o-mini vs. GPT-4o/Claude) | Leicht | `backend/server.js` |
 
 ### 🔴 BEKANNTE BUGS:
 
@@ -512,6 +516,7 @@ ReviewResponder/
 ```
 DATABASE_URL=postgres://...
 OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-api03-... (für Smart AI / Claude)
 STRIPE_SECRET_KEY=sk_live_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_STARTER_PRICE_ID=price_1Sni0hQfYocZQHxZ7oxDbiVo
@@ -934,6 +939,16 @@ Zeigt: Total Opens, Unique Opens, By Campaign, By Day, Recent Opens
   - Register-Flow liest UTM aus sessionStorage und sendet ans Backend
   - DB: `utm_source, utm_medium, utm_campaign, utm_content, utm_term, landing_page`
   - Campaign Attribution: Welche Google Ads Kampagne converted am besten?
+- **Hybrid AI System implementiert** (Smart AI + Standard):
+  - Backend: @anthropic-ai/sdk installiert, Claude Sonnet 4 für Smart AI
+  - Backend: PLAN_LIMITS mit smartResponses/standardResponses
+  - Backend: Neue DB-Spalten (smart_responses_used, standard_responses_used, ai_model)
+  - Backend: Alle Generate-Endpoints unterstützen AI-Model-Auswahl (auto/smart/standard)
+  - Backend: /api/stats gibt smart/standard Usage zurück
+  - Frontend: AI Model Selector in Single + Bulk Generation
+  - Frontend: Stats-Anzeige mit Smart/Standard-Balken
+  - Frontend: AI Badge auf generierten Responses
+  - Pricing: Neue Limits (Free: 3+17=20, Starter: 100+200=300, Pro: 300+500=800, Unlimited: ∞)
 
 ## PRODUCT HUNT LAUNCH SETUP
 
