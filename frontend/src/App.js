@@ -2855,6 +2855,10 @@ const DashboardPage = () => {
     if (planParam) {
       toast.success(`Plan changed to ${planParam.toUpperCase()}!`);
       window.history.replaceState({}, '', '/dashboard');
+      // Update user data from backend to get new plan info
+      api.get('/auth/me').then(res => updateUser(res.data.user));
+      // Also refresh stats to get new limits
+      fetchStats();
     }
 
     // Handle Stripe success
