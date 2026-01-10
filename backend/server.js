@@ -3655,6 +3655,867 @@ app.get('/api/outreach/stats', async (req, res) => {
   }
 });
 
+// ==========================================
+// AUTOMATED OUTREACH SYSTEM
+// Fully automated lead generation & cold email
+// ==========================================
+
+// Initialize outreach tables
+async function initOutreachTables() {
+  try {
+    // Leads table - stores scraped business contacts
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS outreach_leads (
+        id SERIAL PRIMARY KEY,
+        business_name TEXT NOT NULL,
+        business_type TEXT,
+        address TEXT,
+        city TEXT,
+        state TEXT,
+        country TEXT DEFAULT 'US',
+        phone TEXT,
+        website TEXT,
+        google_rating DECIMAL(2,1),
+        google_reviews_count INTEGER,
+        email TEXT,
+        email_verified BOOLEAN DEFAULT FALSE,
+        email_source TEXT,
+        contact_name TEXT,
+        status TEXT DEFAULT 'new',
+        source TEXT DEFAULT 'google_places',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(business_name, city)
+      )
+    `);
+
+    // Email sequences table - tracks sent emails
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS outreach_emails (
+        id SERIAL PRIMARY KEY,
+        lead_id INTEGER REFERENCES outreach_leads(id),
+        email TEXT NOT NULL,
+        sequence_number INTEGER DEFAULT 1,
+        subject TEXT NOT NULL,
+        body TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
+        sent_at TIMESTAMP,
+        opened_at TIMESTAMP,
+        clicked_at TIMESTAMP,
+        replied_at TIMESTAMP,
+        bounced BOOLEAN DEFAULT FALSE,
+        campaign TEXT DEFAULT 'main',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Outreach campaigns config
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS outreach_campaigns (
+        id SERIAL PRIMARY KEY,
+        name TEXT UNIQUE NOT NULL,
+        active BOOLEAN DEFAULT TRUE,
+        daily_limit INTEGER DEFAULT 50,
+        sent_today INTEGER DEFAULT 0,
+        last_reset TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        target_industries TEXT[],
+        target_cities TEXT[],
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Insert default campaign if not exists
+    await dbQuery(`
+      INSERT INTO outreach_campaigns (name, target_industries, target_cities)
+      VALUES ('main', ARRAY['restaurant', 'hotel', 'dental', 'medical', 'legal', 'automotive'],
+              ARRAY['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Miami', 'Austin', 'Denver'])
+      ON CONFLICT (name) DO NOTHING
+    `);
+
+    console.log('✅ Outreach tables initialized');
+  } catch (error) {
+    console.error('Error initializing outreach tables:', error);
+  }
+}
+
+// Call this after main initDatabase
+initOutreachTables();
+
+// Email templates for cold outreach
+const EMAIL_TEMPLATES = {
+  sequence1: {
+    subject: '{business_name} - Save 5+ Hours/Week on Review Responses',
+    body: `Hi there,
+
+I noticed {business_name} has {review_count}+ reviews on Google - that's impressive!
+
+Quick question: How much time does your team spend writing responses to customer reviews each week?
+
+Most {business_type}s I talk to spend 5-10 hours weekly on this. We built ReviewResponder to cut that to under 30 minutes.
+
+Here's how it works:
+• Paste any review → Get a perfect response in 3 seconds
+• AI matches your brand voice
+• Works with Google, Yelp, TripAdvisor - any platform
+
+Would you be open to a quick demo? Or try it free: https://review-responder-frontend.onrender.com
+
+Best,
+The ReviewResponder Team
+
+P.S. First 50 customers get 50% off forever (code: EARLY50)
+
+---
+<img src="https://review-responder.onrender.com/api/outreach/track-open?email={email}&campaign=sequence1" width="1" height="1" />`
+  },
+  sequence2: {
+    subject: 'Re: Review responses for {business_name}',
+    body: `Hi again,
+
+Just following up on my last email about ReviewResponder.
+
+I wanted to share a quick stat: businesses that respond to reviews see 12% higher revenue on average (Harvard Business Review study).
+
+But I get it - writing thoughtful responses takes time you don't have.
+
+That's exactly why we built this. In the time it takes to read this email, you could have 3 professional review responses ready to post.
+
+Here's a 60-second demo: https://review-responder-frontend.onrender.com
+
+No credit card needed for the free trial.
+
+Worth a look?
+
+Best,
+The ReviewResponder Team
+
+---
+<img src="https://review-responder.onrender.com/api/outreach/track-open?email={email}&campaign=sequence2" width="1" height="1" />`
+  },
+  sequence3: {
+    subject: 'Last chance: 50% off for {business_name}',
+    body: `Hi,
+
+This is my last email - I promise!
+
+I wanted to let you know our 50% launch discount (code: EARLY50) expires soon.
+
+If review management isn't a priority right now, no worries at all. But if you ever find yourself:
+
+• Ignoring reviews because you're too busy
+• Struggling to respond to negative feedback professionally
+• Wishing you had more time to engage with customers
+
+...we're here to help.
+
+Try it free (5 responses, no card): https://review-responder-frontend.onrender.com
+
+Wishing {business_name} continued success!
+
+Best,
+The ReviewResponder Team
+
+---
+<img src="https://review-responder.onrender.com/api/outreach/track-open?email={email}&campaign=sequence3" width="1" height="1" />`
+  }
+};
+
+// Helper: Fill email template with lead data
+function fillEmailTemplate(template, lead) {
+  let subject = template.subject;
+  let body = template.body;
+
+  const replacements = {
+    '{business_name}': lead.business_name || 'your business',
+    '{business_type}': lead.business_type || 'business',
+    '{review_count}': lead.google_reviews_count || '50',
+    '{email}': encodeURIComponent(lead.email || ''),
+    '{city}': lead.city || '',
+    '{contact_name}': lead.contact_name || 'there'
+  };
+
+  for (const [key, value] of Object.entries(replacements)) {
+    subject = subject.replace(new RegExp(key, 'g'), value);
+    body = body.replace(new RegExp(key, 'g'), value);
+  }
+
+  return { subject, body };
+}
+
+// ==========================================
+// LEAD SCRAPING (Google Places API)
+// ==========================================
+
+// Scrape leads from Google Places API
+app.post('/api/outreach/scrape-leads', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (adminKey !== process.env.ADMIN_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const {
+    query = 'restaurant',
+    city = 'New York',
+    limit = 20
+  } = req.body;
+
+  const GOOGLE_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
+
+  if (!GOOGLE_API_KEY) {
+    return res.status(500).json({
+      error: 'GOOGLE_PLACES_API_KEY not configured',
+      setup: 'Add GOOGLE_PLACES_API_KEY to Render environment variables'
+    });
+  }
+
+  try {
+    const searchQuery = `${query} in ${city}`;
+    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(searchQuery)}&key=${GOOGLE_API_KEY}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.status !== 'OK') {
+      return res.status(400).json({ error: 'Google Places API error', details: data.status });
+    }
+
+    const leads = [];
+
+    for (const place of data.results.slice(0, limit)) {
+      // Get detailed info for each place
+      const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,types&key=${GOOGLE_API_KEY}`;
+
+      const detailsResponse = await fetch(detailsUrl);
+      const details = await detailsResponse.json();
+
+      if (details.status === 'OK') {
+        const result = details.result;
+
+        // Parse address
+        const addressParts = (result.formatted_address || '').split(',');
+        const cityState = addressParts[1]?.trim() || city;
+
+        const lead = {
+          business_name: result.name,
+          business_type: query,
+          address: result.formatted_address,
+          city: city,
+          phone: result.formatted_phone_number,
+          website: result.website,
+          google_rating: result.rating,
+          google_reviews_count: result.user_ratings_total,
+          source: 'google_places'
+        };
+
+        // Insert lead (ignore duplicates)
+        try {
+          await dbQuery(`
+            INSERT INTO outreach_leads
+            (business_name, business_type, address, city, phone, website, google_rating, google_reviews_count, source)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            ON CONFLICT (business_name, city) DO UPDATE SET
+              google_rating = EXCLUDED.google_rating,
+              google_reviews_count = EXCLUDED.google_reviews_count,
+              website = COALESCE(EXCLUDED.website, outreach_leads.website)
+          `, [lead.business_name, lead.business_type, lead.address, lead.city,
+              lead.phone, lead.website, lead.google_rating, lead.google_reviews_count, lead.source]);
+
+          leads.push(lead);
+        } catch (dbError) {
+          console.error('Lead insert error:', dbError.message);
+        }
+      }
+
+      // Rate limiting - don't hammer Google API
+      await new Promise(r => setTimeout(r, 200));
+    }
+
+    res.json({
+      success: true,
+      leads_found: leads.length,
+      query: searchQuery,
+      leads: leads
+    });
+  } catch (error) {
+    console.error('Lead scraping error:', error);
+    res.status(500).json({ error: 'Failed to scrape leads' });
+  }
+});
+
+// ==========================================
+// EMAIL FINDER (Hunter.io Integration)
+// ==========================================
+
+// Find emails for leads using Hunter.io
+app.post('/api/outreach/find-emails', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (adminKey !== process.env.ADMIN_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const HUNTER_API_KEY = process.env.HUNTER_API_KEY;
+
+  if (!HUNTER_API_KEY) {
+    return res.status(500).json({
+      error: 'HUNTER_API_KEY not configured',
+      setup: 'Get free API key from hunter.io and add to Render'
+    });
+  }
+
+  try {
+    // Get leads without emails that have websites
+    const leads = await dbAll(`
+      SELECT id, business_name, website
+      FROM outreach_leads
+      WHERE email IS NULL
+        AND website IS NOT NULL
+        AND website != ''
+      LIMIT 25
+    `);
+
+    if (leads.length === 0) {
+      return res.json({ success: true, message: 'No leads need email lookup', found: 0 });
+    }
+
+    let found = 0;
+
+    for (const lead of leads) {
+      try {
+        // Extract domain from website
+        let domain = lead.website;
+        domain = domain.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+
+        // Use Hunter.io Domain Search
+        const hunterUrl = `https://api.hunter.io/v2/domain-search?domain=${domain}&api_key=${HUNTER_API_KEY}`;
+        const response = await fetch(hunterUrl);
+        const data = await response.json();
+
+        if (data.data?.emails?.length > 0) {
+          // Get the most relevant email (usually first one with highest confidence)
+          const bestEmail = data.data.emails
+            .sort((a, b) => (b.confidence || 0) - (a.confidence || 0))[0];
+
+          await dbQuery(`
+            UPDATE outreach_leads
+            SET email = $1,
+                email_verified = $2,
+                email_source = 'hunter.io',
+                contact_name = $3
+            WHERE id = $4
+          `, [bestEmail.value, bestEmail.verification?.status === 'valid',
+              `${bestEmail.first_name || ''} ${bestEmail.last_name || ''}`.trim(),
+              lead.id]);
+
+          found++;
+          console.log(`📧 Found email for ${lead.business_name}: ${bestEmail.value}`);
+        }
+
+        // Rate limiting for Hunter API
+        await new Promise(r => setTimeout(r, 1000));
+      } catch (err) {
+        console.error(`Email lookup failed for ${lead.business_name}:`, err.message);
+      }
+    }
+
+    res.json({
+      success: true,
+      leads_checked: leads.length,
+      emails_found: found
+    });
+  } catch (error) {
+    console.error('Email finder error:', error);
+    res.status(500).json({ error: 'Failed to find emails' });
+  }
+});
+
+// ==========================================
+// AUTOMATED EMAIL SENDING
+// ==========================================
+
+// Send cold emails to leads
+app.post('/api/outreach/send-emails', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (adminKey !== process.env.ADMIN_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({
+      error: 'RESEND_API_KEY not configured',
+      setup: 'Add RESEND_API_KEY to Render environment variables'
+    });
+  }
+
+  const { limit = 20, campaign = 'main' } = req.body;
+
+  try {
+    // Check daily limit
+    const campaignConfig = await dbGet(
+      'SELECT * FROM outreach_campaigns WHERE name = $1',
+      [campaign]
+    );
+
+    if (!campaignConfig) {
+      return res.status(400).json({ error: 'Campaign not found' });
+    }
+
+    // Reset daily counter if new day
+    const lastReset = new Date(campaignConfig.last_reset);
+    const now = new Date();
+    if (lastReset.toDateString() !== now.toDateString()) {
+      await dbQuery(
+        'UPDATE outreach_campaigns SET sent_today = 0, last_reset = NOW() WHERE name = $1',
+        [campaign]
+      );
+      campaignConfig.sent_today = 0;
+    }
+
+    const remainingToday = campaignConfig.daily_limit - campaignConfig.sent_today;
+    const toSend = Math.min(limit, remainingToday);
+
+    if (toSend <= 0) {
+      return res.json({
+        success: true,
+        message: 'Daily limit reached',
+        sent: 0,
+        daily_limit: campaignConfig.daily_limit
+      });
+    }
+
+    // Get leads ready for first email (have email, no emails sent yet)
+    const newLeads = await dbAll(`
+      SELECT l.* FROM outreach_leads l
+      LEFT JOIN outreach_emails e ON l.id = e.lead_id
+      WHERE l.email IS NOT NULL
+        AND l.status = 'new'
+        AND e.id IS NULL
+      ORDER BY l.google_reviews_count DESC NULLS LAST
+      LIMIT $1
+    `, [toSend]);
+
+    let sent = 0;
+
+    for (const lead of newLeads) {
+      try {
+        const template = fillEmailTemplate(EMAIL_TEMPLATES.sequence1, lead);
+
+        // Send email via Resend
+        const result = await resend.emails.send({
+          from: 'ReviewResponder <hello@reviewresponder.io>',
+          to: lead.email,
+          subject: template.subject,
+          html: template.body.replace(/\n/g, '<br>'),
+          tags: [
+            { name: 'campaign', value: campaign },
+            { name: 'sequence', value: '1' }
+          ]
+        });
+
+        // Log the email
+        await dbQuery(`
+          INSERT INTO outreach_emails
+          (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
+          VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5)
+        `, [lead.id, lead.email, template.subject, template.body, campaign]);
+
+        // Update lead status
+        await dbQuery(
+          'UPDATE outreach_leads SET status = $1 WHERE id = $2',
+          ['contacted', lead.id]
+        );
+
+        sent++;
+        console.log(`✉️ Sent to ${lead.email} (${lead.business_name})`);
+
+        // Small delay between sends
+        await new Promise(r => setTimeout(r, 500));
+      } catch (err) {
+        console.error(`Failed to send to ${lead.email}:`, err.message);
+
+        // Mark as bounced if email error
+        if (err.message?.includes('bounce') || err.message?.includes('invalid')) {
+          await dbQuery(
+            'UPDATE outreach_leads SET status = $1 WHERE id = $2',
+            ['bounced', lead.id]
+          );
+        }
+      }
+    }
+
+    // Update daily counter
+    await dbQuery(
+      'UPDATE outreach_campaigns SET sent_today = sent_today + $1 WHERE name = $2',
+      [sent, campaign]
+    );
+
+    res.json({
+      success: true,
+      sent: sent,
+      remaining_today: remainingToday - sent,
+      daily_limit: campaignConfig.daily_limit
+    });
+  } catch (error) {
+    console.error('Send emails error:', error);
+    res.status(500).json({ error: 'Failed to send emails' });
+  }
+});
+
+// Send follow-up emails (sequence 2 and 3)
+app.post('/api/outreach/send-followups', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (adminKey !== process.env.ADMIN_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'RESEND_API_KEY not configured' });
+  }
+
+  try {
+    // Find leads needing follow-up 2 (3 days after sequence 1, no open)
+    const needsFollowup2 = await dbAll(`
+      SELECT l.*, e.sent_at as last_email_sent
+      FROM outreach_leads l
+      JOIN outreach_emails e ON l.id = e.lead_id
+      WHERE e.sequence_number = 1
+        AND e.sent_at < NOW() - INTERVAL '3 days'
+        AND e.opened_at IS NULL
+        AND l.status = 'contacted'
+        AND NOT EXISTS (
+          SELECT 1 FROM outreach_emails e2
+          WHERE e2.lead_id = l.id AND e2.sequence_number = 2
+        )
+      LIMIT 20
+    `);
+
+    // Find leads needing follow-up 3 (7 days after sequence 2, no reply)
+    const needsFollowup3 = await dbAll(`
+      SELECT l.*, e.sent_at as last_email_sent
+      FROM outreach_leads l
+      JOIN outreach_emails e ON l.id = e.lead_id
+      WHERE e.sequence_number = 2
+        AND e.sent_at < NOW() - INTERVAL '4 days'
+        AND e.replied_at IS NULL
+        AND l.status = 'contacted'
+        AND NOT EXISTS (
+          SELECT 1 FROM outreach_emails e2
+          WHERE e2.lead_id = l.id AND e2.sequence_number = 3
+        )
+      LIMIT 20
+    `);
+
+    let sent2 = 0, sent3 = 0;
+
+    // Send sequence 2
+    for (const lead of needsFollowup2) {
+      try {
+        const template = fillEmailTemplate(EMAIL_TEMPLATES.sequence2, lead);
+
+        await resend.emails.send({
+          from: 'ReviewResponder <hello@reviewresponder.io>',
+          to: lead.email,
+          subject: template.subject,
+          html: template.body.replace(/\n/g, '<br>')
+        });
+
+        await dbQuery(`
+          INSERT INTO outreach_emails
+          (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
+          VALUES ($1, $2, 2, $3, $4, 'sent', NOW(), 'main')
+        `, [lead.id, lead.email, template.subject, template.body]);
+
+        sent2++;
+        await new Promise(r => setTimeout(r, 500));
+      } catch (err) {
+        console.error(`Follow-up 2 failed for ${lead.email}:`, err.message);
+      }
+    }
+
+    // Send sequence 3
+    for (const lead of needsFollowup3) {
+      try {
+        const template = fillEmailTemplate(EMAIL_TEMPLATES.sequence3, lead);
+
+        await resend.emails.send({
+          from: 'ReviewResponder <hello@reviewresponder.io>',
+          to: lead.email,
+          subject: template.subject,
+          html: template.body.replace(/\n/g, '<br>')
+        });
+
+        await dbQuery(`
+          INSERT INTO outreach_emails
+          (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
+          VALUES ($1, $2, 3, $3, $4, 'sent', NOW(), 'main')
+        `, [lead.id, lead.email, template.subject, template.body]);
+
+        // Mark as completed sequence
+        await dbQuery(
+          'UPDATE outreach_leads SET status = $1 WHERE id = $2',
+          ['sequence_completed', lead.id]
+        );
+
+        sent3++;
+        await new Promise(r => setTimeout(r, 500));
+      } catch (err) {
+        console.error(`Follow-up 3 failed for ${lead.email}:`, err.message);
+      }
+    }
+
+    res.json({
+      success: true,
+      followup2_sent: sent2,
+      followup3_sent: sent3,
+      total_sent: sent2 + sent3
+    });
+  } catch (error) {
+    console.error('Follow-up error:', error);
+    res.status(500).json({ error: 'Failed to send follow-ups' });
+  }
+});
+
+// ==========================================
+// CRON ENDPOINTS (For Render Scheduled Jobs)
+// ==========================================
+
+// Daily automation: scrape + find emails + send
+// Set up as Render Cron Job: 0 9 * * * (9 AM UTC daily)
+app.post('/api/cron/daily-outreach', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (cronSecret !== process.env.CRON_SECRET && cronSecret !== process.env.ADMIN_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  console.log('🚀 Starting daily outreach automation...');
+
+  const results = {
+    scraping: null,
+    email_finding: null,
+    sending: null,
+    followups: null
+  };
+
+  try {
+    // Step 1: Scrape new leads from multiple cities/industries
+    const cities = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Miami'];
+    const industries = ['restaurant', 'hotel', 'dental office', 'law firm'];
+
+    let totalScraped = 0;
+
+    // Pick random city and industry for today
+    const todayCity = cities[new Date().getDay() % cities.length];
+    const todayIndustry = industries[new Date().getDay() % industries.length];
+
+    if (process.env.GOOGLE_PLACES_API_KEY) {
+      const scrapeUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(todayIndustry + ' in ' + todayCity)}&key=${process.env.GOOGLE_PLACES_API_KEY}`;
+
+      try {
+        const response = await fetch(scrapeUrl);
+        const data = await response.json();
+
+        if (data.results) {
+          for (const place of data.results.slice(0, 10)) {
+            try {
+              await dbQuery(`
+                INSERT INTO outreach_leads (business_name, business_type, city, source)
+                VALUES ($1, $2, $3, 'google_places')
+                ON CONFLICT (business_name, city) DO NOTHING
+              `, [place.name, todayIndustry, todayCity]);
+              totalScraped++;
+            } catch (e) {}
+          }
+        }
+      } catch (e) {
+        console.error('Scrape error:', e.message);
+      }
+    }
+
+    results.scraping = { leads_added: totalScraped, city: todayCity, industry: todayIndustry };
+
+    // Step 2: Find emails for leads without them
+    if (process.env.HUNTER_API_KEY) {
+      const leadsNeedingEmail = await dbAll(`
+        SELECT id, business_name, website FROM outreach_leads
+        WHERE email IS NULL AND website IS NOT NULL
+        LIMIT 10
+      `);
+
+      let emailsFound = 0;
+
+      for (const lead of leadsNeedingEmail) {
+        try {
+          const domain = lead.website.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+          const hunterUrl = `https://api.hunter.io/v2/domain-search?domain=${domain}&api_key=${process.env.HUNTER_API_KEY}`;
+          const response = await fetch(hunterUrl);
+          const data = await response.json();
+
+          if (data.data?.emails?.[0]) {
+            await dbQuery('UPDATE outreach_leads SET email = $1, email_source = $2 WHERE id = $3',
+              [data.data.emails[0].value, 'hunter.io', lead.id]);
+            emailsFound++;
+          }
+          await new Promise(r => setTimeout(r, 1000));
+        } catch (e) {}
+      }
+
+      results.email_finding = { checked: leadsNeedingEmail.length, found: emailsFound };
+    }
+
+    // Step 3: Send new cold emails
+    if (resend) {
+      const newLeads = await dbAll(`
+        SELECT l.* FROM outreach_leads l
+        LEFT JOIN outreach_emails e ON l.id = e.lead_id
+        WHERE l.email IS NOT NULL AND l.status = 'new' AND e.id IS NULL
+        LIMIT 30
+      `);
+
+      let sent = 0;
+
+      for (const lead of newLeads) {
+        try {
+          const template = fillEmailTemplate(EMAIL_TEMPLATES.sequence1, lead);
+
+          await resend.emails.send({
+            from: 'ReviewResponder <hello@reviewresponder.io>',
+            to: lead.email,
+            subject: template.subject,
+            html: template.body.replace(/\n/g, '<br>')
+          });
+
+          await dbQuery(`
+            INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
+            VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), 'main')
+          `, [lead.id, lead.email, template.subject, template.body]);
+
+          await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', ['contacted', lead.id]);
+          sent++;
+
+          await new Promise(r => setTimeout(r, 500));
+        } catch (e) {
+          console.error('Send error:', e.message);
+        }
+      }
+
+      results.sending = { sent: sent };
+
+      // Step 4: Send follow-ups
+      const needsFollowup = await dbAll(`
+        SELECT l.*, MAX(e.sequence_number) as last_sequence
+        FROM outreach_leads l
+        JOIN outreach_emails e ON l.id = e.lead_id
+        WHERE l.status = 'contacted'
+          AND e.sent_at < NOW() - INTERVAL '3 days'
+          AND e.replied_at IS NULL
+        GROUP BY l.id
+        HAVING MAX(e.sequence_number) < 3
+        LIMIT 20
+      `);
+
+      let followupsSent = 0;
+
+      for (const lead of needsFollowup) {
+        const nextSequence = (lead.last_sequence || 1) + 1;
+        const templateKey = `sequence${nextSequence}`;
+
+        if (EMAIL_TEMPLATES[templateKey]) {
+          try {
+            const template = fillEmailTemplate(EMAIL_TEMPLATES[templateKey], lead);
+
+            await resend.emails.send({
+              from: 'ReviewResponder <hello@reviewresponder.io>',
+              to: lead.email,
+              subject: template.subject,
+              html: template.body.replace(/\n/g, '<br>')
+            });
+
+            await dbQuery(`
+              INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
+              VALUES ($1, $2, $3, $4, $5, 'sent', NOW(), 'main')
+            `, [lead.id, lead.email, nextSequence, template.subject, template.body]);
+
+            if (nextSequence === 3) {
+              await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', ['sequence_completed', lead.id]);
+            }
+
+            followupsSent++;
+            await new Promise(r => setTimeout(r, 500));
+          } catch (e) {}
+        }
+      }
+
+      results.followups = { sent: followupsSent };
+    }
+
+    console.log('✅ Daily outreach completed:', results);
+
+    res.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      results: results
+    });
+  } catch (error) {
+    console.error('Daily outreach error:', error);
+    res.status(500).json({ error: 'Automation failed', details: error.message });
+  }
+});
+
+// Get outreach dashboard stats
+app.get('/api/outreach/dashboard', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (adminKey !== process.env.ADMIN_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const totalLeads = await dbGet('SELECT COUNT(*) as count FROM outreach_leads');
+    const leadsWithEmail = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE email IS NOT NULL');
+    const emailsSent = await dbGet('SELECT COUNT(*) as count FROM outreach_emails WHERE status = $1', ['sent']);
+    const emailsOpened = await dbGet('SELECT COUNT(*) as count FROM outreach_emails WHERE opened_at IS NOT NULL');
+
+    const byStatus = await dbAll(`
+      SELECT status, COUNT(*) as count
+      FROM outreach_leads
+      GROUP BY status
+    `);
+
+    const recentLeads = await dbAll(`
+      SELECT business_name, business_type, city, email, status, google_reviews_count
+      FROM outreach_leads
+      ORDER BY created_at DESC
+      LIMIT 10
+    `);
+
+    const recentEmails = await dbAll(`
+      SELECT e.email, e.sequence_number, e.sent_at, e.opened_at, l.business_name
+      FROM outreach_emails e
+      JOIN outreach_leads l ON e.lead_id = l.id
+      ORDER BY e.sent_at DESC
+      LIMIT 10
+    `);
+
+    const campaign = await dbGet('SELECT * FROM outreach_campaigns WHERE name = $1', ['main']);
+
+    res.json({
+      stats: {
+        total_leads: parseInt(totalLeads?.count || 0),
+        leads_with_email: parseInt(leadsWithEmail?.count || 0),
+        emails_sent: parseInt(emailsSent?.count || 0),
+        emails_opened: parseInt(emailsOpened?.count || 0),
+        open_rate: emailsSent?.count > 0
+          ? ((emailsOpened?.count / emailsSent?.count) * 100).toFixed(1) + '%'
+          : '0%'
+      },
+      by_status: byStatus,
+      recent_leads: recentLeads,
+      recent_emails: recentEmails,
+      campaign: campaign
+    });
+  } catch (error) {
+    console.error('Dashboard error:', error);
+    res.status(500).json({ error: 'Failed to get dashboard' });
+  }
+});
+
 // Health check with database status
 app.get('/api/health', async (req, res) => {
   let dbStatus = 'unknown';
