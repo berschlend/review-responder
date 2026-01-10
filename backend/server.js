@@ -4383,29 +4383,34 @@ app.get('/api/admin/set-plan', async (req, res) => {
     // If redirect=1, send HTML page that forces a full page reload
     if (req.query.redirect === '1') {
       const frontendUrl = process.env.FRONTEND_URL || 'https://review-responder-frontend.onrender.com';
+      const redirectUrl = `${frontendUrl}/dashboard?plan=${targetPlan}&_t=${Date.now()}`;
       // Send HTML that forces a hard refresh to ensure React remounts
+      // Using both meta refresh AND JavaScript for maximum compatibility
       return res.send(`
         <!DOCTYPE html>
         <html>
         <head>
           <title>Plan Updated</title>
+          <meta http-equiv="refresh" content="1;url=${redirectUrl}">
           <style>
             body { font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f3f4f6; }
             .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
             h1 { color: #10b981; margin-bottom: 10px; }
             p { color: #6b7280; }
+            a { color: #3b82f6; }
           </style>
         </head>
         <body>
           <div class="card">
             <h1>✓ Plan Updated!</h1>
             <p>Switching to ${targetPlan.toUpperCase()} plan...</p>
+            <p style="margin-top: 20px; font-size: 14px;">
+              <a href="${redirectUrl}">Click here if not redirected automatically</a>
+            </p>
           </div>
           <script>
             // Force a complete page reload to ensure fresh data
-            setTimeout(function() {
-              window.location.href = '${frontendUrl}/dashboard?plan=${targetPlan}&_t=${Date.now()}';
-            }, 500);
+            window.location.replace('${redirectUrl}');
           </script>
         </body>
         </html>
