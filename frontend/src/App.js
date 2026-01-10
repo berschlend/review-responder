@@ -2039,7 +2039,7 @@ const LandingPage = () => {
               <div className="footer-title">Support</div>
               <ul className="footer-links">
                 <li><Link to="/support">Help Center</Link></li>
-                <li><a href="mailto:berend.mainz@web.de">Contact</a></li>
+                <li><a href="mailto:support@tryreviewresponder.com">Contact</a></li>
               </ul>
             </div>
             <div>
@@ -2107,7 +2107,7 @@ const PrivacyPage = () => (
         <li><strong>Erasure:</strong> Request deletion of your account and data</li>
         <li><strong>Portability:</strong> Export your data</li>
       </ul>
-      <p style={{ marginTop: '12px' }}>To exercise these rights, email us at <a href="mailto:berend.mainz@web.de" style={{ color: 'var(--primary-600)' }}>berend.mainz@web.de</a></p>
+      <p style={{ marginTop: '12px' }}>To exercise these rights, email us at <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>support@tryreviewresponder.com</a></p>
 
       <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>6. Chrome Extension</h2>
       <p>Our Chrome Extension requires specific permissions to function:</p>
@@ -2123,7 +2123,7 @@ const PrivacyPage = () => (
       <p>We retain your data for as long as your account is active. Upon account deletion, we remove your personal data within 30 days.</p>
 
       <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>8. Contact</h2>
-      <p>Questions about this policy? Contact us at <a href="mailto:berend.mainz@web.de" style={{ color: 'var(--primary-600)' }}>berend.mainz@web.de</a></p>
+      <p>Questions about this policy? Contact us at <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>support@tryreviewresponder.com</a></p>
     </div>
   </div>
 );
@@ -2178,7 +2178,7 @@ const TermsPage = () => (
       <p>We may update these terms. Continued use after changes constitutes acceptance.</p>
 
       <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>8. Contact</h2>
-      <p>Questions? Email us at <a href="mailto:berend.mainz@web.de" style={{ color: 'var(--primary-600)' }}>berend.mainz@web.de</a></p>
+      <p>Questions? Email us at <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>support@tryreviewresponder.com</a></p>
     </div>
   </div>
 );
@@ -6747,8 +6747,8 @@ const SupportPage = () => {
             <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--gray-200)', textAlign: 'center' }}>
               <p style={{ fontSize: '14px', color: 'var(--gray-500)' }}>
                 Or email us directly at<br />
-                <a href="mailto:berend.mainz@web.de" style={{ color: 'var(--primary-600)', fontWeight: '500' }}>
-                  berend.mainz@web.de
+                <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)', fontWeight: '500' }}>
+                  support@tryreviewresponder.com
                 </a>
               </p>
             </div>
@@ -7529,7 +7529,7 @@ const ExtensionPage = () => {
       </div>
 
       <div style={{ textAlign: 'center', color: 'var(--gray-500)', fontSize: '14px' }}>
-        Need help? <a href="mailto:berend.mainz@web.de" style={{ color: 'var(--primary-600)' }}>Contact support</a>
+        Need help? <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>Contact support</a>
       </div>
     </div>
   );

@@ -279,7 +279,7 @@ console.log(data);`;
           <li><strong>100 requests per day</strong> per API key</li>
           <li>Rate limits reset at <strong>midnight UTC</strong></li>
           <li>Your current usage is shown in the Settings page</li>
-          <li>Need more? Contact us at <a href="mailto:berend.mainz@web.de" style={{ color: 'var(--primary-600)' }}>berend.mainz@web.de</a></li>
+          <li>Need more? Contact us at <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>support@tryreviewresponder.com</a></li>
         </ul>
       </div>
     </div>
