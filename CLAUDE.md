@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 10.01.2026 - 03:00 Uhr**
+**Stand: 10.01.2026 - 03:30 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [x] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen ✅
@@ -86,6 +86,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **Team/Multi-User Accounts** - Team-Mitglieder einladen (Pro: 3, Unlimited: 10), Rollen (Admin/Member/Viewer), Shared Usage
 - [x] **API Key System für Entwickler** - REST API für Unlimited-Plan User (5 Keys, 100 req/Tag, Dokumentation mit Code-Beispielen)
 - [x] **LinkedIn Outreach System** - 5 Connection Messages, 5 Follow-ups, Target Audiences, Scraper Script, Tracking Template
+- [x] **Cold Email System** - 3 Email-Sequenzen (Restaurant, Hotel, Service), Tracking Pixel, Email Finder Guide
 
 ---
 
@@ -106,6 +107,8 @@ ReviewResponder/
 │   └── content.js
 ├── content/outreach/  # Sales & Marketing Content
 │   ├── linkedin-messages.md
+│   ├── cold-emails.md
+│   ├── email-finder-guide.md
 │   ├── target-audiences.md
 │   └── tracking-template.csv
 ├── scripts/           # Automation Scripts
@@ -172,6 +175,8 @@ ReviewResponder/
 | DELETE | `/api/team/:memberId` | Mitglied entfernen |
 | GET | `/api/team/my-team` | Eigene Team-Info abrufen |
 | POST | `/api/team/leave` | Team verlassen |
+| GET | `/api/outreach/track-open` | Tracking Pixel für Email Opens |
+| GET | `/api/outreach/stats` | Outreach Kampagnen-Statistiken (Admin) |
 
 ---
 
@@ -432,6 +437,47 @@ node linkedin-scraper.js "https://linkedin.com/search/results/people/?keywords=r
 
 ---
 
+## COLD EMAIL SYSTEM
+
+### Files:
+| Datei | Beschreibung |
+|-------|--------------|
+| `content/outreach/cold-emails.md` | 3 Email-Sequenzen mit je 4 Emails |
+| `content/outreach/email-finder-guide.md` | Tools & Methoden zum Email-Finden |
+
+### Email Sequenzen:
+| Sequenz | Zielgruppe | Emails | Zeitraum |
+|---------|------------|--------|----------|
+| A | Restaurant Owners | 4 | 14 Tage |
+| B | Hotel Managers | 4 | 14 Tage |
+| C | Local Service Businesses | 4 | 14 Tage |
+
+### Tracking Pixel:
+```html
+<img src="https://review-responder.onrender.com/api/outreach/track-open?email={{EMAIL}}&campaign={{CAMPAIGN}}" width="1" height="1" style="display:none" />
+```
+
+### Stats Endpoint:
+```
+GET /api/outreach/stats?secret=reviewresponder2026
+```
+Zeigt: Total Opens, Unique Opens, By Campaign, By Day, Recent Opens
+
+### Email Finder Tools:
+- **Hunter.io** - Domain Search, Email Finder, Chrome Extension
+- **Apollo.io** - 275M+ Kontakte, Email Sequenzen
+- **Snov.io** - Email Finder & Verifier, bestes Preis-Leistung
+
+### Sending Schedule:
+| Tag | Zeit | Aktion |
+|-----|------|--------|
+| 1 | Di 10:00 | Email 1 (Eisbrecher) |
+| 4 | Fr 14:00 | Email 2 (Social Proof) |
+| 8 | Di 10:00 | Email 3 (Urgency) |
+| 14 | Fr 14:00 | Email 4 (Break-up) |
+
+---
+
 ## CHANGELOG
 
 ### 09.01.2026
@@ -523,6 +569,15 @@ node linkedin-scraper.js "https://linkedin.com/search/results/people/?keywords=r
   - LinkedIn Scraper Script (Node.js + Playwright)
   - Tracking Sheet Template (CSV + Google Sheets Format)
   - Ziel: 100 Prospects/Woche kontaktieren
+- **Cold Email Outreach System** implementiert:
+  - 3 Email-Sequenzen: Restaurant, Hotel, Local Services
+  - Jede Sequenz hat 4 Emails über 2 Wochen
+  - Tracking Pixel für Email Opens (GET /api/outreach/track-open)
+  - Stats Endpoint für Kampagnen-Analyse (GET /api/outreach/stats)
+  - `outreach_tracking` Tabelle in PostgreSQL
+  - Email Finder Guide (Hunter.io, Apollo.io, Snov.io)
+  - Personalisierungs-Checkliste & A/B Test Tracking
+  - CAN-SPAM & GDPR Compliance Hinweise
 
 ---
 

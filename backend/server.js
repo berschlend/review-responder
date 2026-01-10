@@ -1494,6 +1494,37 @@ async function handleStripeWebhook(req, res) {
             sendPlanRenewalEmail(user);
           }
           console.log(`📧 Plan renewed for user ${user.id} (${user.subscription_plan})`);
+
+          // Process affiliate commission (20% recurring)
+          if (user.affiliate_id) {
+            const affiliate = await dbGet(
+              'SELECT * FROM affiliates WHERE id = $1 AND status = $2',
+              [user.affiliate_id, 'approved']
+            );
+
+            if (affiliate) {
+              const amountPaid = (invoice.amount_paid || 0) / 100; // Convert from cents to dollars
+              const commissionRate = parseFloat(affiliate.commission_rate) || 20;
+              const commissionAmount = amountPaid * (commissionRate / 100);
+
+              if (commissionAmount > 0) {
+                // Create affiliate conversion record
+                await dbQuery(
+                  `INSERT INTO affiliate_conversions (affiliate_id, referred_user_id, subscription_plan, amount_paid, commission_amount, commission_rate, stripe_invoice_id, status)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7, 'approved')`,
+                  [affiliate.id, user.id, user.subscription_plan, amountPaid, commissionAmount, commissionRate, invoice.id]
+                );
+
+                // Update affiliate totals
+                await dbQuery(
+                  `UPDATE affiliates SET total_earned = total_earned + $1, pending_balance = pending_balance + $1 WHERE id = $2`,
+                  [commissionAmount, affiliate.id]
+                );
+
+                console.log(`💰 Affiliate commission: $${commissionAmount.toFixed(2)} for affiliate ${affiliate.affiliate_code} (User ${user.id} paid $${amountPaid.toFixed(2)})`);
+              }
+            }
+          }
         }
         break;
       }
@@ -2356,6 +2387,387 @@ app.get('/api/referrals/validate/:code', async (req, res) => {
     });
   } catch (error) {
     console.error('Validate referral error:', error);
+    res.status(500).json({ valid: false, error: 'Validation failed' });
+  }
+});
+
+// ============== AFFILIATE/PARTNER PROGRAM ==============
+
+// Helper function to generate unique affiliate code
+function generateAffiliateCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = 'AFF-';
+  for (let i = 0; i < 8; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+// Apply to become an affiliate
+app.post('/api/affiliate/apply', authenticateToken, async (req, res) => {
+  try {
+    const { website, marketingChannels, audienceSize, payoutMethod, payoutEmail } = req.body;
+
+    // Check if user already applied
+    const existingAffiliate = await dbGet(
+      'SELECT * FROM affiliates WHERE user_id = $1',
+      [req.user.id]
+    );
+
+    if (existingAffiliate) {
+      return res.status(400).json({
+        error: 'You already have an affiliate application',
+        status: existingAffiliate.status
+      });
+    }
+
+    // Generate unique affiliate code
+    let affiliateCode;
+    let attempts = 0;
+    do {
+      affiliateCode = generateAffiliateCode();
+      const existing = await dbGet('SELECT id FROM affiliates WHERE affiliate_code = $1', [affiliateCode]);
+      if (!existing) break;
+      attempts++;
+    } while (attempts < 10);
+
+    // Create affiliate application
+    const result = await dbQuery(
+      `INSERT INTO affiliates (user_id, affiliate_code, website, marketing_channels, audience_size, payout_method, payout_email)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+      [req.user.id, affiliateCode, website || null, marketingChannels || null, audienceSize || null, payoutMethod || 'paypal', payoutEmail || null]
+    );
+
+    // Auto-approve for now (can add manual review later)
+    await dbQuery(
+      `UPDATE affiliates SET status = 'approved', approved_at = NOW() WHERE id = $1`,
+      [result.rows[0].id]
+    );
+
+    console.log(`🤝 New affiliate application approved: User ${req.user.id}, Code: ${affiliateCode}`);
+
+    res.json({
+      success: true,
+      message: 'Congratulations! You are now an affiliate partner.',
+      affiliateCode,
+      commissionRate: 20
+    });
+  } catch (error) {
+    console.error('Affiliate apply error:', error);
+    res.status(500).json({ error: 'Failed to process affiliate application' });
+  }
+});
+
+// Get affiliate status and stats
+app.get('/api/affiliate/stats', authenticateToken, async (req, res) => {
+  try {
+    const affiliate = await dbGet(
+      'SELECT * FROM affiliates WHERE user_id = $1',
+      [req.user.id]
+    );
+
+    if (!affiliate) {
+      return res.json({ isAffiliate: false });
+    }
+
+    // Get click stats
+    const clickStats = await dbGet(
+      `SELECT COUNT(*) as total_clicks,
+              COUNT(DISTINCT DATE(clicked_at)) as days_with_clicks
+       FROM affiliate_clicks WHERE affiliate_id = $1`,
+      [affiliate.id]
+    );
+
+    // Get clicks last 30 days
+    const clicksLast30Days = await dbAll(
+      `SELECT DATE(clicked_at) as date, COUNT(*) as clicks
+       FROM affiliate_clicks
+       WHERE affiliate_id = $1 AND clicked_at > NOW() - INTERVAL '30 days'
+       GROUP BY DATE(clicked_at)
+       ORDER BY date DESC`,
+      [affiliate.id]
+    );
+
+    // Get conversion stats
+    const conversionStats = await dbGet(
+      `SELECT COUNT(*) as total_conversions,
+              COALESCE(SUM(commission_amount), 0) as total_commission,
+              COALESCE(SUM(CASE WHEN status = 'pending' THEN commission_amount ELSE 0 END), 0) as pending_commission,
+              COALESCE(SUM(CASE WHEN status = 'paid' THEN commission_amount ELSE 0 END), 0) as paid_commission
+       FROM affiliate_conversions WHERE affiliate_id = $1`,
+      [affiliate.id]
+    );
+
+    // Get recent conversions
+    const recentConversions = await dbAll(
+      `SELECT ac.*, u.email as referred_email
+       FROM affiliate_conversions ac
+       LEFT JOIN users u ON ac.referred_user_id = u.id
+       WHERE ac.affiliate_id = $1
+       ORDER BY ac.created_at DESC
+       LIMIT 10`,
+      [affiliate.id]
+    );
+
+    // Get conversion rate
+    const totalClicks = parseInt(clickStats?.total_clicks || 0);
+    const totalConversions = parseInt(conversionStats?.total_conversions || 0);
+    const conversionRate = totalClicks > 0 ? ((totalConversions / totalClicks) * 100).toFixed(2) : 0;
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+    res.json({
+      isAffiliate: true,
+      affiliate: {
+        code: affiliate.affiliate_code,
+        status: affiliate.status,
+        commissionRate: parseFloat(affiliate.commission_rate),
+        payoutMethod: affiliate.payout_method,
+        payoutEmail: affiliate.payout_email,
+        appliedAt: affiliate.applied_at,
+        approvedAt: affiliate.approved_at
+      },
+      links: {
+        affiliateLink: `${frontendUrl}?aff=${affiliate.affiliate_code}`,
+        dashboardLink: `${frontendUrl}/affiliate`
+      },
+      stats: {
+        totalClicks: totalClicks,
+        totalConversions: totalConversions,
+        conversionRate: parseFloat(conversionRate),
+        totalEarned: parseFloat(conversionStats?.total_commission || 0),
+        pendingBalance: parseFloat(conversionStats?.pending_commission || 0),
+        paidOut: parseFloat(conversionStats?.paid_commission || 0)
+      },
+      clicksChart: clicksLast30Days,
+      recentConversions: recentConversions.map(c => ({
+        id: c.id,
+        email: c.referred_email ? c.referred_email.replace(/(.{2}).*(@.*)/, '$1***$2') : 'Unknown',
+        plan: c.subscription_plan,
+        amount: parseFloat(c.amount_paid),
+        commission: parseFloat(c.commission_amount),
+        status: c.status,
+        createdAt: c.created_at
+      }))
+    });
+  } catch (error) {
+    console.error('Get affiliate stats error:', error);
+    res.status(500).json({ error: 'Failed to get affiliate stats' });
+  }
+});
+
+// Get payout history
+app.get('/api/affiliate/payouts', authenticateToken, async (req, res) => {
+  try {
+    const affiliate = await dbGet(
+      'SELECT id FROM affiliates WHERE user_id = $1',
+      [req.user.id]
+    );
+
+    if (!affiliate) {
+      return res.status(403).json({ error: 'You are not an affiliate' });
+    }
+
+    const payouts = await dbAll(
+      `SELECT * FROM affiliate_payouts WHERE affiliate_id = $1 ORDER BY requested_at DESC`,
+      [affiliate.id]
+    );
+
+    // Calculate totals
+    const totalPaid = payouts
+      .filter(p => p.status === 'completed')
+      .reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+    const pendingPayouts = payouts
+      .filter(p => p.status === 'pending' || p.status === 'processing')
+      .reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+    res.json({
+      payouts: payouts.map(p => ({
+        id: p.id,
+        amount: parseFloat(p.amount),
+        method: p.payout_method,
+        email: p.payout_email,
+        status: p.status,
+        transactionId: p.transaction_id,
+        requestedAt: p.requested_at,
+        processedAt: p.processed_at
+      })),
+      totalPaid,
+      pendingPayouts
+    });
+  } catch (error) {
+    console.error('Get affiliate payouts error:', error);
+    res.status(500).json({ error: 'Failed to get payout history' });
+  }
+});
+
+// Request a payout
+app.post('/api/affiliate/payout', authenticateToken, async (req, res) => {
+  try {
+    const affiliate = await dbGet(
+      'SELECT * FROM affiliates WHERE user_id = $1 AND status = $2',
+      [req.user.id, 'approved']
+    );
+
+    if (!affiliate) {
+      return res.status(403).json({ error: 'You are not an approved affiliate' });
+    }
+
+    // Calculate available balance
+    const balanceResult = await dbGet(
+      `SELECT COALESCE(SUM(CASE WHEN status = 'approved' THEN commission_amount ELSE 0 END), 0) as available
+       FROM affiliate_conversions WHERE affiliate_id = $1`,
+      [affiliate.id]
+    );
+
+    const availableBalance = parseFloat(balanceResult?.available || 0);
+    const minimumPayout = 50; // Minimum $50 for payout
+
+    if (availableBalance < minimumPayout) {
+      return res.status(400).json({
+        error: `Minimum payout is $${minimumPayout}. Your available balance is $${availableBalance.toFixed(2)}`
+      });
+    }
+
+    if (!affiliate.payout_email) {
+      return res.status(400).json({ error: 'Please set your payout email in affiliate settings' });
+    }
+
+    // Create payout request
+    await dbQuery(
+      `INSERT INTO affiliate_payouts (affiliate_id, amount, payout_method, payout_email)
+       VALUES ($1, $2, $3, $4)`,
+      [affiliate.id, availableBalance, affiliate.payout_method, affiliate.payout_email]
+    );
+
+    // Mark conversions as paid
+    await dbQuery(
+      `UPDATE affiliate_conversions SET status = 'paid', paid_at = NOW()
+       WHERE affiliate_id = $1 AND status = 'approved'`,
+      [affiliate.id]
+    );
+
+    console.log(`💰 Affiliate payout requested: User ${req.user.id}, Amount: $${availableBalance.toFixed(2)}`);
+
+    res.json({
+      success: true,
+      message: `Payout request of $${availableBalance.toFixed(2)} submitted. We will process it within 5 business days.`,
+      amount: availableBalance
+    });
+  } catch (error) {
+    console.error('Request payout error:', error);
+    res.status(500).json({ error: 'Failed to request payout' });
+  }
+});
+
+// Update affiliate settings (payout method, email)
+app.put('/api/affiliate/settings', authenticateToken, async (req, res) => {
+  try {
+    const { payoutMethod, payoutEmail } = req.body;
+
+    const affiliate = await dbGet(
+      'SELECT id FROM affiliates WHERE user_id = $1',
+      [req.user.id]
+    );
+
+    if (!affiliate) {
+      return res.status(403).json({ error: 'You are not an affiliate' });
+    }
+
+    const updates = [];
+    const values = [];
+    let paramIndex = 1;
+
+    if (payoutMethod) {
+      updates.push(`payout_method = $${paramIndex++}`);
+      values.push(payoutMethod);
+    }
+
+    if (payoutEmail) {
+      if (!validator.isEmail(payoutEmail)) {
+        return res.status(400).json({ error: 'Invalid payout email' });
+      }
+      updates.push(`payout_email = $${paramIndex++}`);
+      values.push(payoutEmail);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ error: 'No fields to update' });
+    }
+
+    values.push(affiliate.id);
+    await dbQuery(
+      `UPDATE affiliates SET ${updates.join(', ')} WHERE id = $${paramIndex}`,
+      values
+    );
+
+    res.json({ success: true, message: 'Affiliate settings updated' });
+  } catch (error) {
+    console.error('Update affiliate settings error:', error);
+    res.status(500).json({ error: 'Failed to update settings' });
+  }
+});
+
+// Track affiliate click (public endpoint)
+app.get('/api/affiliate/track/:code', async (req, res) => {
+  try {
+    const { code } = req.params;
+
+    const affiliate = await dbGet(
+      'SELECT id FROM affiliates WHERE affiliate_code = $1 AND status = $2',
+      [code.toUpperCase(), 'approved']
+    );
+
+    if (!affiliate) {
+      // Redirect to homepage without tracking if invalid code
+      return res.redirect(process.env.FRONTEND_URL || 'http://localhost:3000');
+    }
+
+    // Track the click
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+    const userAgent = req.headers['user-agent'] || '';
+    const referrer = req.headers['referer'] || '';
+
+    await dbQuery(
+      `INSERT INTO affiliate_clicks (affiliate_id, ip_address, user_agent, referrer)
+       VALUES ($1, $2, $3, $4)`,
+      [affiliate.id, ip.split(',')[0], userAgent, referrer]
+    );
+
+    // Redirect to homepage with affiliate code
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}?aff=${code}`);
+  } catch (error) {
+    console.error('Track affiliate click error:', error);
+    res.redirect(process.env.FRONTEND_URL || 'http://localhost:3000');
+  }
+});
+
+// Validate affiliate code (public endpoint)
+app.get('/api/affiliate/validate/:code', async (req, res) => {
+  try {
+    const { code } = req.params;
+
+    const affiliate = await dbGet(
+      `SELECT a.*, u.business_name, u.email
+       FROM affiliates a
+       JOIN users u ON a.user_id = u.id
+       WHERE a.affiliate_code = $1 AND a.status = $2`,
+      [code.toUpperCase(), 'approved']
+    );
+
+    if (!affiliate) {
+      return res.json({ valid: false });
+    }
+
+    res.json({
+      valid: true,
+      affiliateName: affiliate.business_name || affiliate.email.split('@')[0],
+      commissionRate: parseFloat(affiliate.commission_rate)
+    });
+  } catch (error) {
+    console.error('Validate affiliate error:', error);
     res.status(500).json({ valid: false, error: 'Validation failed' });
   }
 });

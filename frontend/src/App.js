@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper, Utensils, CheckCircle, Keyboard } from 'lucide-react';
+import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper, Utensils, CheckCircle, Keyboard, Store, MapPin, Wrench, Scissors, Car, Heart } from 'lucide-react';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
 import { jsPDF } from 'jspdf';
@@ -5781,27 +5781,31 @@ const PricingPage = () => {
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
-                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600' }}>Feature</th>
-                <th style={{ padding: '16px', textAlign: 'center', fontWeight: '600' }}>Free</th>
-                <th style={{ padding: '16px', textAlign: 'center', fontWeight: '600' }}>Starter</th>
-                <th style={{ padding: '16px', textAlign: 'center', fontWeight: '600', background: 'var(--primary-50)', position: 'relative' }}>
+                <th style={{ padding: '16px', paddingTop: '32px', textAlign: 'left', fontWeight: '600', verticalAlign: 'bottom' }}>Feature</th>
+                <th style={{ padding: '16px', paddingTop: '32px', textAlign: 'center', fontWeight: '600', verticalAlign: 'bottom' }}>Free</th>
+                <th style={{ padding: '16px', paddingTop: '32px', textAlign: 'center', fontWeight: '600', verticalAlign: 'bottom' }}>Starter</th>
+                <th style={{ padding: '16px', paddingTop: '32px', textAlign: 'center', fontWeight: '600', background: 'var(--primary-50)', position: 'relative', verticalAlign: 'bottom' }}>
                   <div style={{
                     position: 'absolute',
-                    top: '-12px',
+                    top: '4px',
                     left: '50%',
                     transform: 'translateX(-50%)',
-                    background: 'var(--primary-600)',
+                    background: 'linear-gradient(135deg, var(--primary-600), var(--primary-700))',
                     color: 'white',
-                    padding: '4px 12px',
-                    borderRadius: '12px',
-                    fontSize: '11px',
-                    fontWeight: '600'
+                    padding: '5px 14px',
+                    borderRadius: '20px',
+                    fontSize: '10px',
+                    fontWeight: '700',
+                    letterSpacing: '0.5px',
+                    boxShadow: '0 2px 8px rgba(99, 102, 241, 0.3)',
+                    whiteSpace: 'nowrap',
+                    textTransform: 'uppercase'
                   }}>
                     MOST POPULAR
                   </div>
                   Professional
                 </th>
-                <th style={{ padding: '16px', textAlign: 'center', fontWeight: '600' }}>Unlimited</th>
+                <th style={{ padding: '16px', paddingTop: '32px', textAlign: 'center', fontWeight: '600', verticalAlign: 'bottom' }}>Unlimited</th>
               </tr>
             </thead>
             <tbody>
