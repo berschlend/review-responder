@@ -85,6 +85,49 @@ cold mails cronjob
 
 ---
 
+## GEMINI DESIGN MCP
+
+**Was:** Paralleler Design-Agent der mit Gemini AI das Frontend verbessert während Claude an der Logik arbeitet.
+**URL:** https://gemini-design-mcp.com
+
+### Installation
+```bash
+claude mcp add gemini-design-mcp --env API_KEY=YOUR_GEMINI_API_KEY -- npx -y gemini-design-mcp@latest
+```
+
+**API Key:** https://aistudio.google.com/apikey
+
+### Die 4 Tools
+
+| Tool | Use Case | Beispiel |
+|------|----------|----------|
+| **create_frontend** | Komplette responsive Views generieren | "Create a modern pricing page with 3 tiers" |
+| **modify_frontend** | Chirurgische Edits an Components | "Adjust padding, change button colors, fix mobile layout" |
+| **snippet_frontend** | Standalone UI Components | "Create a modal for email verification" |
+| **Context Isolation** | Backend Logic bleibt geschützt | Arbeitet nur an Frontend-Dateien |
+
+### Wann benutzen?
+
+**Automatisch bei Frontend-Tasks:**
+- Dashboard Redesign
+- Landing Page Optimierung
+- Component Styling
+- Mobile Responsiveness
+- Neue UI Features
+
+**Workflow:**
+1. Claude analysiert Business Logic
+2. Gemini MCP übernimmt Frontend Design
+3. Beide arbeiten parallel in einer Session
+4. Kein Context-Switching nötig
+
+### Pricing
+- **Free:** 20K tokens/month
+- **Pro:** $19/month, 1M tokens
+- **Enterprise:** $79/month, 6M tokens
+
+---
+
 ## PROJEKT-STRUKTUR
 
 ```
