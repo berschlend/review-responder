@@ -3049,10 +3049,14 @@ const DashboardPage = () => {
         // If coming from admin plan change or Stripe, fetch fresh user data FIRST
         if (planParam || stripeSuccess) {
           try {
+            console.log('🔄 Fetching fresh user data...');
             const res = await api.get('/auth/me');
+            console.log('✅ Got user data:', res.data.user);
+            console.log('📋 Plan from API:', res.data.user.plan);
             updateUser(res.data.user);
+            console.log('✅ updateUser called');
           } catch (e) {
-            console.error('Failed to refresh user data:', e);
+            console.error('❌ Failed to refresh user data:', e);
           }
         }
 
