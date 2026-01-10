@@ -113,7 +113,7 @@ async function initDatabase() {
         subscription_status TEXT DEFAULT 'inactive',
         subscription_plan TEXT DEFAULT 'free',
         responses_used INTEGER DEFAULT 0,
-        responses_limit INTEGER DEFAULT 5,
+        responses_limit INTEGER DEFAULT 20,
         current_period_start TIMESTAMP,
         current_period_end TIMESTAMP,
         onboarding_completed BOOLEAN DEFAULT FALSE,
@@ -1349,7 +1349,7 @@ app.post('/api/auth/google', async (req, res) => {
         businessName: newUser.business_name,
         plan: 'free',
         responsesUsed: 0,
-        responsesLimit: 5,
+        responsesLimit: 20,
         onboardingCompleted: false,
         profilePicture: picture,
         referralCode: newReferralCode
@@ -4373,8 +4373,8 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
 
                 <p>This means you can get:</p>
                 <ul>
-                  <li><strong>Starter Plan:</strong> $14.50/mo instead of $29/mo (100 responses)</li>
-                  <li><strong>Pro Plan:</strong> $24.50/mo instead of $49/mo (300 responses + analytics)</li>
+                  <li><strong>Starter Plan:</strong> $14.50/mo instead of $29/mo (300 responses)</li>
+                  <li><strong>Pro Plan:</strong> $24.50/mo instead of $49/mo (800 responses + analytics)</li>
                   <li><strong>Unlimited:</strong> $49.50/mo instead of $99/mo (unlimited everything!)</li>
                 </ul>
 

@@ -30,42 +30,6 @@ chrome.storage.onChanged.addListener((changes) => {
   }
 });
 
-// ========== TIME SAVED TRACKING ==========
-const TIME_PER_RESPONSE_MINUTES = 3; // Average time to write a response manually
-
-async function getTimeSaved() {
-  try {
-    const stored = await chrome.storage.local.get(['rr_responses_generated', 'rr_time_saved_minutes']);
-    return {
-      count: stored.rr_responses_generated || 0,
-      minutes: stored.rr_time_saved_minutes || 0
-    };
-  } catch (e) {
-    return { count: 0, minutes: 0 };
-  }
-}
-
-async function trackTimeSaved() {
-  try {
-    const current = await getTimeSaved();
-    await chrome.storage.local.set({
-      rr_responses_generated: current.count + 1,
-      rr_time_saved_minutes: current.minutes + TIME_PER_RESPONSE_MINUTES
-    });
-    return current.minutes + TIME_PER_RESPONSE_MINUTES;
-  } catch (e) {
-    return 0;
-  }
-}
-
-function formatTimeSaved(minutes) {
-  if (minutes < 60) return `${minutes} min`;
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  if (mins === 0) return `${hours}h`;
-  return `${hours}h ${mins}m`;
-}
-
 // ========== THEME MANAGEMENT (Dark Mode) ==========
 let currentTheme = 'auto'; // light, dark, auto
 
@@ -795,9 +759,9 @@ async function generateVariations(panel) {
     panel.dataset.previousResponse = '';
 
     // Track time saved (3 responses = ~9 min)
-    const totalMinutes = await trackTimeSaved();
-    await trackTimeSaved();
-    await trackTimeSaved();
+
+
+
 
     showToast('3 Options generated! (3 credits used)', 'success');
 
@@ -1414,55 +1378,6 @@ function showOnboardingTip(panel) {
 
   panel.querySelector('.rr-panel-body').appendChild(tip);
 }
-
-// ========== CONFETTI (Limited to 3x) ==========
-async function maybeShowConfetti() {
-  try {
-    const stored = await chrome.storage.local.get(['rr_confetti_count']);
-    let count = stored.rr_confetti_count || 0;
-
-    if (count < 3) {
-      createConfetti();
-      await chrome.storage.local.set({ rr_confetti_count: count + 1 });
-    }
-  } catch (e) {
-    // Fallback: just show it
-    createConfetti();
-  }
-}
-
-function createConfetti() {
-  const colors = ['#667eea', '#764ba2', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
-
-  for (let i = 0; i < 30; i++) {
-    const confetti = document.createElement('div');
-    confetti.className = 'rr-confetti';
-    confetti.style.cssText = `
-      position: fixed;
-      width: ${Math.random() * 8 + 4}px;
-      height: ${Math.random() * 8 + 4}px;
-      background: ${colors[Math.floor(Math.random() * colors.length)]};
-      left: ${Math.random() * 100}vw;
-      top: -10px;
-      border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
-      z-index: 1000001;
-      pointer-events: none;
-      animation: rr-confetti-fall ${Math.random() * 2 + 1.5}s linear forwards;
-    `;
-    document.body.appendChild(confetti);
-    setTimeout(() => confetti.remove(), 3500);
-  }
-}
-
-// Inject confetti animation
-const confettiStyle = document.createElement('style');
-confettiStyle.textContent = `
-  @keyframes rr-confetti-fall {
-    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-  }
-`;
-document.head.appendChild(confettiStyle);
 
 // ========== LANGUAGE DETECTION ==========
 function detectLanguage(text) {
@@ -2144,7 +2059,6 @@ async function createResponsePanel() {
   panel.id = 'rr-response-panel';
 
   const platform = detectPlatform();
-  const timeSaved = await getTimeSaved();
   const isGoogleMaps = platform.name === 'Google';
   const supportedPlatforms = ['Google', 'Yelp', 'TripAdvisor', 'Facebook', 'Booking', 'Trustpilot'];
   const isPasteSupported = supportedPlatforms.includes(platform.name);
@@ -2166,11 +2080,6 @@ async function createResponsePanel() {
           <div class="rr-account-list hidden">
             <!-- Accounts populated dynamically -->
           </div>
-        </div>
-        <div class="rr-time-saved" title="Time saved using ReviewResponder">
-          <span class="rr-time-icon">⏱️</span>
-          <span class="rr-time-value">${formatTimeSaved(timeSaved.minutes)}</span>
-          <span class="rr-time-label">saved</span>
         </div>
         <button class="rr-drafts-btn" title="Drafts">📝</button>
         <button class="rr-templates-btn" title="My Templates">💾</button>
@@ -2464,11 +2373,6 @@ async function createResponsePanel() {
         <div class="rr-char-counter">
           <span class="rr-char-count">0</span>/<span class="rr-char-limit">4000</span> characters
           <button class="rr-undo-btn hidden" title="Undo last edit">↩️ Undo</button>
-        </div>
-
-        <!-- Time Saved Badge (shown after generation) -->
-        <div class="rr-time-saved-badge hidden">
-          <span>⏱️ ~3 min saved!</span>
         </div>
 
         <div class="rr-action-buttons">
@@ -3600,7 +3504,6 @@ async function generateResponse(panel) {
   const btnText = panel.querySelector('.rr-btn-text');
   const btnLoading = panel.querySelector('.rr-btn-loading');
   const responseSection = panel.querySelector('.rr-response-section');
-  const timeSavedBadge = panel.querySelector('.rr-time-saved-badge');
 
   if (!reviewText) {
     showToast('⚠️ No review text found', 'error');
@@ -3700,23 +3603,6 @@ async function generateResponse(panel) {
     panel.querySelector('.rr-undo-btn').classList.add('hidden');
     panel.dataset.previousResponse = '';
 
-    // Track time saved
-    const totalMinutes = await trackTimeSaved();
-
-    // Update time saved in header
-    const timeValue = panel.querySelector('.rr-time-value');
-    if (timeValue) {
-      timeValue.textContent = formatTimeSaved(totalMinutes);
-      timeValue.classList.add('rr-time-updated');
-      setTimeout(() => timeValue.classList.remove('rr-time-updated'), 1000);
-    }
-
-    // Show time saved badge
-    if (timeSavedBadge) {
-      timeSavedBadge.classList.remove('hidden');
-      setTimeout(() => timeSavedBadge.classList.add('hidden'), 4000);
-    }
-
     // Update quick tone buttons
     panel.querySelectorAll('.rr-quick-tone').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.tone === tone);
@@ -3727,7 +3613,7 @@ async function generateResponse(panel) {
     if (settings.autoCopy) {
       try {
         await navigator.clipboard.writeText(data.response);
-        showToast('✨ Generated & copied! ~3 min saved', 'success');
+        showToast('✨ Generated & copied!', 'success');
 
         // Update copy button
         const copyBtn = panel.querySelector('.rr-copy-btn');
@@ -3740,14 +3626,14 @@ async function generateResponse(panel) {
           }, 2000);
         }
       } catch (e) {
-        showToast('✨ Response generated! ~3 min saved', 'success');
+        showToast('✨ Response generated!', 'success');
       }
     } else {
-      showToast('✨ Response generated! ~3 min saved', 'success');
+      showToast('✨ Response generated!', 'success');
     }
 
-    // Maybe show confetti
-    await maybeShowConfetti();
+
+
 
     // Show onboarding tip first time
     const onboardingSeen = await checkOnboarding();
@@ -3777,7 +3663,6 @@ async function generateResponseWithModifier(panel, modifier) {
   const btnText = panel.querySelector('.rr-btn-text');
   const btnLoading = panel.querySelector('.rr-btn-loading');
   const responseSection = panel.querySelector('.rr-response-section');
-  const timeSavedBadge = panel.querySelector('.rr-time-saved-badge');
 
   if (!reviewText) {
     showToast('⚠️ No review text found', 'error');
@@ -3870,29 +3755,12 @@ async function generateResponseWithModifier(panel, modifier) {
     panel.querySelector('.rr-undo-btn').classList.add('hidden');
     panel.dataset.previousResponse = '';
 
-    // Track time saved
-    const totalMinutes = await trackTimeSaved();
-
-    // Update time saved in header
-    const timeValue = panel.querySelector('.rr-time-value');
-    if (timeValue) {
-      timeValue.textContent = formatTimeSaved(totalMinutes);
-      timeValue.classList.add('rr-time-updated');
-      setTimeout(() => timeValue.classList.remove('rr-time-updated'), 1000);
-    }
-
-    // Show time saved badge
-    if (timeSavedBadge) {
-      timeSavedBadge.classList.remove('hidden');
-      setTimeout(() => timeSavedBadge.classList.add('hidden'), 4000);
-    }
-
     // Auto-copy if enabled
     const settings = cachedSettings || await loadSettings();
     if (settings.autoCopy) {
       try {
         await navigator.clipboard.writeText(data.response);
-        showToast('✨ Generated & copied! ~3 min saved', 'success');
+        showToast('✨ Generated & copied!', 'success');
 
         const copyBtn = panel.querySelector('.rr-copy-btn');
         if (copyBtn) {
@@ -3904,14 +3772,14 @@ async function generateResponseWithModifier(panel, modifier) {
           }, 2000);
         }
       } catch (e) {
-        showToast('✨ Response generated! ~3 min saved', 'success');
+        showToast('✨ Response generated!', 'success');
       }
     } else {
-      showToast('✨ Response generated! ~3 min saved', 'success');
+      showToast('✨ Response generated!', 'success');
     }
 
-    // Maybe show confetti
-    await maybeShowConfetti();
+
+
 
   } catch (error) {
     showToast(`❌ ${error.message}`, 'error');
@@ -4109,13 +3977,13 @@ async function turboGenerate(reviewText) {
     await navigator.clipboard.writeText(data.response);
 
     // Track time saved
-    await trackTimeSaved();
+
 
     // Show success
     showToast('✅ Copied to clipboard! Paste with Ctrl+V', 'success');
 
-    // Maybe show confetti
-    await maybeShowConfetti();
+
+
 
   } catch (error) {
     showToast(`❌ ${error.message}`, 'error');
@@ -4305,10 +4173,6 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
   panel.querySelector('.rr-response-textarea').value = '';
   panel.querySelector('.rr-advanced').classList.add('hidden');
   panel.querySelector('.rr-help-overlay').classList.add('hidden');
-
-  // Hide time saved badge
-  const timeSavedBadge = panel.querySelector('.rr-time-saved-badge');
-  if (timeSavedBadge) timeSavedBadge.classList.add('hidden');
 
   // Reset position for desktop
   if (window.innerWidth > 640) {
@@ -5237,7 +5101,7 @@ async function generateQueueResponse(panel) {
     doneActions.classList.remove('hidden');
 
     // Track time saved
-    await trackTimeSaved();
+
 
     // Mark as processed
     currentReview.processed = true;

@@ -6745,7 +6745,7 @@ const YelpReviewPage = () => {
           </h2>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
-            Try Free - 5 Responses Included
+            Try Free - 20 Responses Included
           </Link>
         </div>
 
@@ -6883,7 +6883,7 @@ const RestaurantReviewPage = () => {
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
-            Start Free - 5 Responses Included
+            Start Free - 20 Responses Included
           </Link>
         </div>
 
@@ -7093,7 +7093,7 @@ const LocalBusinessReviewPage = () => {
           </p>
           <Link to="/register" className="btn btn-lg" style={{ background: 'white', color: '#059669', fontWeight: '600', padding: '16px 32px' }}>
             <Sparkles size={20} />
-            Try Free - 5 Responses
+            Try Free - 20 Responses
           </Link>
           <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>Works with Google, Yelp, Facebook, and more</p>
         </div>
