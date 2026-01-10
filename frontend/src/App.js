@@ -92,11 +92,37 @@ const AuthProvider = ({ children }) => {
     // Check for referral/affiliate codes in localStorage
     const referralCode = localStorage.getItem('referralCode');
     const affiliateCode = localStorage.getItem('affiliateCode');
-    const res = await api.post('/auth/register', { email, password, businessName, referralCode, affiliateCode });
+
+    // Get UTM parameters from sessionStorage (saved from landing pages)
+    let utmParams = {};
+    try {
+      const storedUtm = sessionStorage.getItem('utm_params');
+      if (storedUtm) {
+        utmParams = JSON.parse(storedUtm);
+      }
+    } catch (e) {
+      console.log('No UTM params found');
+    }
+
+    const res = await api.post('/auth/register', {
+      email,
+      password,
+      businessName,
+      referralCode,
+      affiliateCode,
+      utmSource: utmParams.utm_source,
+      utmMedium: utmParams.utm_medium,
+      utmCampaign: utmParams.utm_campaign,
+      utmContent: utmParams.utm_content,
+      utmTerm: utmParams.utm_term,
+      landingPage: utmParams.landing_page
+    });
     localStorage.setItem('token', res.data.token);
     // Clear codes after successful registration
     if (referralCode) localStorage.removeItem('referralCode');
     if (affiliateCode) localStorage.removeItem('affiliateCode');
+    // Clear UTM params after registration
+    sessionStorage.removeItem('utm_params');
     setUser(res.data.user);
     return res.data;
   };
@@ -5150,7 +5176,23 @@ const SupportPage = () => {
 
 // SEO Landing Page Component - Google Review Response Generator
 const GoogleReviewPage = () => {
+  const location = useLocation();
+
   useEffect(() => {
+    // Save UTM parameters to sessionStorage for registration
+    const params = new URLSearchParams(location.search);
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/google-review-response-generator'
+    };
+    if (utmParams.utm_source) {
+      sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    }
+
     document.title = 'Google Review Response Generator | AI-Powered Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Google review responses in seconds with AI. Reply to Google Maps reviews instantly with our free tool. Try now!');
@@ -5174,7 +5216,7 @@ const GoogleReviewPage = () => {
     });
     document.head.appendChild(script);
     return () => { if (script.parentNode) script.parentNode.removeChild(script); };
-  }, []);
+  }, [location.search]);
 
   return (
     <div>
@@ -5267,7 +5309,23 @@ const GoogleReviewPage = () => {
 
 // SEO Landing Page Component - Yelp Review Reply Tool
 const YelpReviewPage = () => {
+  const location = useLocation();
+
   useEffect(() => {
+    // Save UTM parameters to sessionStorage for registration
+    const params = new URLSearchParams(location.search);
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/yelp-review-reply-tool'
+    };
+    if (utmParams.utm_source) {
+      sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    }
+
     document.title = 'Yelp Review Reply Tool | AI Response Generator | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Yelp review responses instantly. AI-powered tool to reply to Yelp reviews quickly and professionally. Free trial available.');
@@ -5285,7 +5343,7 @@ const YelpReviewPage = () => {
     });
     document.head.appendChild(script);
     return () => { if (script.parentNode) script.parentNode.removeChild(script); };
-  }, []);
+  }, [location.search]);
 
   return (
     <div>
@@ -5388,7 +5446,23 @@ const YelpReviewPage = () => {
 
 // SEO Landing Page Component - Restaurant Review Responses
 const RestaurantReviewPage = () => {
+  const location = useLocation();
+
   useEffect(() => {
+    // Save UTM parameters to sessionStorage for registration
+    const params = new URLSearchParams(location.search);
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/restaurant-review-responses'
+    };
+    if (utmParams.utm_source) {
+      sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    }
+
     document.title = 'Restaurant Review Response Generator | AI Reply Tool | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) metaDesc.setAttribute('content', 'AI-powered review response generator for restaurants. Reply to Google, Yelp, TripAdvisor reviews professionally. Save time and boost your restaurant reputation.');
@@ -5406,7 +5480,7 @@ const RestaurantReviewPage = () => {
     });
     document.head.appendChild(script);
     return () => { if (script.parentNode) script.parentNode.removeChild(script); };
-  }, []);
+  }, [location.search]);
 
   return (
     <div>
@@ -5510,7 +5584,23 @@ const RestaurantReviewPage = () => {
 
 // SEO Landing Page Component - Hotel Review Management
 const HotelReviewPage = () => {
+  const location = useLocation();
+
   useEffect(() => {
+    // Save UTM parameters to sessionStorage for registration
+    const params = new URLSearchParams(location.search);
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/hotel-review-management'
+    };
+    if (utmParams.utm_source) {
+      sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    }
+
     document.title = 'Hotel Review Management Tool | AI Response Generator | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) metaDesc.setAttribute('content', 'AI-powered hotel review response tool. Manage reviews on Booking.com, TripAdvisor, Google, and more. Professional responses in seconds for hotels and B&Bs.');
@@ -5528,7 +5618,7 @@ const HotelReviewPage = () => {
     });
     document.head.appendChild(script);
     return () => { if (script.parentNode) script.parentNode.removeChild(script); };
-  }, []);
+  }, [location.search]);
 
   return (
     <div>
@@ -6556,6 +6646,528 @@ const AnalyticsPage = () => {
   );
 };
 
+// Affiliate Landing Page (Public)
+const AffiliateLandingPage = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [affiliateStatus, setAffiliateStatus] = useState(null);
+  const [formData, setFormData] = useState({
+    website: '',
+    marketingChannels: '',
+    audienceSize: '',
+    payoutMethod: 'paypal',
+    payoutEmail: ''
+  });
+
+  useEffect(() => {
+    if (user) {
+      api.get('/affiliate/stats')
+        .then(res => {
+          if (res.data.isAffiliate) {
+            setAffiliateStatus(res.data);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user]);
+
+  const handleApply = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await api.post('/affiliate/apply', formData);
+      toast.success(res.data.message);
+      fireConfetti();
+      navigate('/affiliate/dashboard');
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to apply');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (affiliateStatus?.isAffiliate) {
+    return (
+      <div className="container" style={{ paddingTop: '60px', paddingBottom: '60px', textAlign: 'center' }}>
+        <div className="card" style={{ maxWidth: '600px', margin: '0 auto', padding: '48px' }}>
+          <Award size={56} style={{ color: 'var(--primary-600)', marginBottom: '20px' }} />
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>You're Already an Affiliate!</h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Welcome back! Check your dashboard to see your earnings and stats.
+          </p>
+          <Link to="/affiliate/dashboard" className="btn btn-primary">Go to Affiliate Dashboard</Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #8B5CF6 100%)', color: 'white', padding: '80px 0', textAlign: 'center' }}>
+        <div className="container">
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '20px', fontSize: '14px', fontWeight: '600', marginBottom: '24px' }}>
+            <Award size={18} /> Affiliate Partner Program
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '20px', lineHeight: '1.2' }}>Earn 20% Recurring<br />Commission</h1>
+          <p style={{ fontSize: '20px', opacity: '0.9', maxWidth: '600px', margin: '0 auto 32px' }}>
+            Join our affiliate program and earn 20% on every payment from customers you refer. Not just once - on every single payment, forever.
+          </p>
+          {user ? (
+            <a href="#apply" className="btn btn-primary" style={{ background: 'white', color: '#4F46E5', padding: '16px 32px', fontSize: '18px' }}>Apply Now</a>
+          ) : (
+            <Link to="/register" className="btn btn-primary" style={{ background: 'white', color: '#4F46E5', padding: '16px 32px', fontSize: '18px' }}>Sign Up to Become an Affiliate</Link>
+          )}
+        </div>
+      </section>
+
+      <section style={{ padding: '60px 0', background: 'var(--gray-50)' }}>
+        <div className="container">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', maxWidth: '900px', margin: '0 auto' }}>
+            {[{ value: '20%', label: 'Commission Rate' }, { value: 'Recurring', label: 'Lifetime Earnings' }, { value: '$50', label: 'Min. Payout' }, { value: '30 Days', label: 'Cookie Duration' }].map(s => (
+              <div key={s.label} className="card" style={{ textAlign: 'center', padding: '24px' }}>
+                <div style={{ fontSize: '36px', fontWeight: '800', color: 'var(--primary-600)' }}>{s.value}</div>
+                <div style={{ color: 'var(--gray-600)', fontSize: '14px' }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section style={{ padding: '80px 0' }}>
+        <div className="container" style={{ maxWidth: '900px' }}>
+          <h2 style={{ fontSize: '32px', fontWeight: '700', textAlign: 'center', marginBottom: '48px' }}>How It Works</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '32px' }}>
+            {[{ num: '1', title: 'Sign Up', desc: 'Create a free account and apply to our affiliate program. Approval is instant!' },
+              { num: '2', title: 'Share Your Link', desc: 'Get your unique affiliate link and share it with your audience via blog, social media, or email.' },
+              { num: '3', title: 'Earn Commission', desc: 'Earn 20% of every payment made by customers you refer - recurring, for life!' }].map(s => (
+              <div key={s.num} style={{ textAlign: 'center' }}>
+                <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--primary-100)', color: 'var(--primary-600)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: '700', margin: '0 auto 16px' }}>{s.num}</div>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>{s.title}</h3>
+                <p style={{ color: 'var(--gray-600)', fontSize: '14px' }}>{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section style={{ padding: '60px 0', background: 'var(--gray-50)' }}>
+        <div className="container" style={{ maxWidth: '800px' }}>
+          <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '32px' }}>Potential Earnings</h2>
+          <div className="card">
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead><tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
+                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600' }}>Plan</th>
+                <th style={{ padding: '16px', textAlign: 'center', fontWeight: '600' }}>Monthly Price</th>
+                <th style={{ padding: '16px', textAlign: 'center', fontWeight: '600' }}>Your Commission</th>
+                <th style={{ padding: '16px', textAlign: 'center', fontWeight: '600' }}>Yearly Earnings</th>
+              </tr></thead>
+              <tbody>
+                {[{ plan: 'Starter', price: '$29/mo', comm: '$5.80/mo', yearly: '$69.60/year' },
+                  { plan: 'Professional', price: '$49/mo', comm: '$9.80/mo', yearly: '$117.60/year' },
+                  { plan: 'Unlimited', price: '$99/mo', comm: '$19.80/mo', yearly: '$237.60/year' }].map((r, i) => (
+                  <tr key={r.plan} style={{ borderBottom: i < 2 ? '1px solid var(--gray-100)' : 'none' }}>
+                    <td style={{ padding: '16px', fontWeight: '500' }}>{r.plan}</td>
+                    <td style={{ padding: '16px', textAlign: 'center' }}>{r.price}</td>
+                    <td style={{ padding: '16px', textAlign: 'center', color: 'var(--primary-600)', fontWeight: '600' }}>{r.comm}</td>
+                    <td style={{ padding: '16px', textAlign: 'center', color: 'var(--secondary)', fontWeight: '700' }}>{r.yearly}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div style={{ padding: '16px', background: 'var(--primary-50)', borderRadius: '8px', marginTop: '16px', textAlign: 'center' }}>
+              <strong>Example:</strong> Refer 10 Professional customers = <strong style={{ color: 'var(--primary-600)' }}>$1,176/year</strong> in passive income!
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {user && (
+        <section id="apply" style={{ padding: '80px 0' }}>
+          <div className="container" style={{ maxWidth: '600px' }}>
+            <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '8px' }}>Apply to Become an Affiliate</h2>
+            <p style={{ color: 'var(--gray-600)', textAlign: 'center', marginBottom: '32px' }}>Fill out the form below. Approval is typically instant!</p>
+            <div className="card">
+              <form onSubmit={handleApply}>
+                <div className="form-group">
+                  <label className="form-label">Website URL (Optional)</label>
+                  <input type="url" className="form-input" value={formData.website} onChange={(e) => setFormData({...formData, website: e.target.value})} placeholder="https://yourwebsite.com" />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">How will you promote ReviewResponder?</label>
+                  <select className="form-input" value={formData.marketingChannels} onChange={(e) => setFormData({...formData, marketingChannels: e.target.value})} required>
+                    <option value="">Select...</option>
+                    <option value="blog">Blog / Website</option>
+                    <option value="social">Social Media</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="email">Email Newsletter</option>
+                    <option value="podcast">Podcast</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Estimated Audience Size</label>
+                  <select className="form-input" value={formData.audienceSize} onChange={(e) => setFormData({...formData, audienceSize: e.target.value})} required>
+                    <option value="">Select...</option>
+                    <option value="small">Small (Under 1,000)</option>
+                    <option value="medium">Medium (1,000 - 10,000)</option>
+                    <option value="large">Large (10,000 - 100,000)</option>
+                    <option value="enterprise">Enterprise (100,000+)</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Preferred Payout Method</label>
+                  <select className="form-input" value={formData.payoutMethod} onChange={(e) => setFormData({...formData, payoutMethod: e.target.value})} required>
+                    <option value="paypal">PayPal</option>
+                    <option value="bank">Bank Transfer</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Payout Email</label>
+                  <input type="email" className="form-input" value={formData.payoutEmail} onChange={(e) => setFormData({...formData, payoutEmail: e.target.value})} placeholder="payments@youremail.com" required />
+                </div>
+                <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '14px' }} disabled={loading}>
+                  {loading ? 'Processing...' : 'Submit Application'}
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {!user && (
+        <section style={{ padding: '80px 0', background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)', color: 'white', textAlign: 'center' }}>
+          <div className="container">
+            <h2 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '16px' }}>Ready to Start Earning?</h2>
+            <p style={{ fontSize: '18px', opacity: '0.9', marginBottom: '24px' }}>Create a free account to apply for our affiliate program.</p>
+            <Link to="/register" className="btn btn-primary" style={{ background: 'white', color: '#4F46E5', padding: '16px 32px', fontSize: '18px' }}>Sign Up Now</Link>
+          </div>
+        </section>
+      )}
+    </div>
+  );
+};
+
+// Affiliate Dashboard Page (Protected)
+const AffiliateDashboardPage = () => {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(null);
+  const [payouts, setPayouts] = useState(null);
+  const [requestingPayout, setRequestingPayout] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [settingsForm, setSettingsForm] = useState({ payoutMethod: 'paypal', payoutEmail: '' });
+  const [updatingSettings, setUpdatingSettings] = useState(false);
+
+  const loadData = async () => {
+    try {
+      const [statsRes, payoutsRes] = await Promise.all([
+        api.get('/affiliate/stats'),
+        api.get('/affiliate/payouts')
+      ]);
+      setData(statsRes.data);
+      setPayouts(payoutsRes.data);
+      if (statsRes.data.affiliate) {
+        setSettingsForm({ payoutMethod: statsRes.data.affiliate.payoutMethod || 'paypal', payoutEmail: statsRes.data.affiliate.payoutEmail || '' });
+      }
+    } catch (error) {
+      console.error('Load affiliate data error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadData(); }, []);
+
+  const handleCopyLink = () => {
+    if (data?.links?.affiliateLink) {
+      navigator.clipboard.writeText(data.links.affiliateLink);
+      setCopied(true);
+      toast.success('Affiliate link copied!');
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleRequestPayout = async () => {
+    setRequestingPayout(true);
+    try {
+      const res = await api.post('/affiliate/payout');
+      toast.success(res.data.message);
+      loadData();
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to request payout');
+    } finally {
+      setRequestingPayout(false);
+    }
+  };
+
+  const handleUpdateSettings = async (e) => {
+    e.preventDefault();
+    setUpdatingSettings(true);
+    try {
+      await api.put('/affiliate/settings', settingsForm);
+      toast.success('Settings updated');
+      loadData();
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to update settings');
+    } finally {
+      setUpdatingSettings(false);
+    }
+  };
+
+  const chartData = data?.clicksChart?.slice(0, 30).reverse().map(d => ({
+    date: new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    clicks: parseInt(d.clicks)
+  })) || [];
+
+  if (loading) {
+    return (
+      <div className="container" style={{ paddingTop: '60px', textAlign: 'center' }}>
+        <div className="spinner" />
+        <p style={{ color: 'var(--gray-500)', marginTop: '16px' }}>Loading affiliate dashboard...</p>
+      </div>
+    );
+  }
+
+  if (!data?.isAffiliate) {
+    return (
+      <div className="container" style={{ paddingTop: '60px', textAlign: 'center' }}>
+        <div className="card" style={{ maxWidth: '500px', margin: '0 auto', padding: '48px' }}>
+          <Award size={48} style={{ color: 'var(--gray-400)', marginBottom: '16px' }} />
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>Not an Affiliate Yet</h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Apply to our affiliate program and start earning 20% recurring commission on every referral.</p>
+          <Link to="/affiliate" className="btn btn-primary">Apply Now</Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+        <div>
+          <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
+            <Award size={28} style={{ verticalAlign: 'middle', marginRight: '12px', color: 'var(--primary-600)' }} />
+            Affiliate Dashboard
+          </h1>
+          <p style={{ color: 'var(--gray-500)' }}>Track your earnings, clicks, and conversions</p>
+        </div>
+        <Link to="/dashboard" className="btn btn-secondary">← Back to Dashboard</Link>
+      </div>
+
+      <div className="card" style={{ marginBottom: '24px', background: 'linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--primary-600)', marginBottom: '4px' }}>Your Affiliate Link</div>
+            <div style={{ fontSize: '16px', fontFamily: 'monospace', color: 'var(--gray-700)' }}>{data?.links?.affiliateLink}</div>
+          </div>
+          <button onClick={handleCopyLink} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {copied ? <Check size={18} /> : <Copy size={18} />}
+            {copied ? 'Copied!' : 'Copy Link'}
+          </button>
+        </div>
+        <div style={{ marginTop: '12px', fontSize: '13px', color: 'var(--gray-600)' }}>
+          Affiliate Code: <strong>{data?.affiliate?.code}</strong> | Status: <strong style={{ color: data?.affiliate?.status === 'approved' ? 'var(--secondary)' : 'var(--warning)' }}>{data?.affiliate?.status}</strong>
+        </div>
+      </div>
+
+      <div className="stats-grid" style={{ marginBottom: '32px' }}>
+        <div className="stat-card">
+          <div className="stat-label">Total Clicks</div>
+          <div className="stat-value primary">{data?.stats?.totalClicks || 0}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Conversions</div>
+          <div className="stat-value">{data?.stats?.totalConversions || 0}</div>
+          <div style={{ fontSize: '13px', color: 'var(--gray-500)', marginTop: '4px' }}>{data?.stats?.conversionRate || 0}% rate</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Total Earned</div>
+          <div className="stat-value" style={{ color: 'var(--secondary)' }}>${data?.stats?.totalEarned?.toFixed(2) || '0.00'}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Pending Balance</div>
+          <div className="stat-value">${data?.stats?.pendingBalance?.toFixed(2) || '0.00'}</div>
+          {(data?.stats?.pendingBalance || 0) >= 50 && (
+            <button onClick={handleRequestPayout} disabled={requestingPayout} className="btn btn-primary" style={{ marginTop: '12px', fontSize: '13px', padding: '8px 16px' }}>
+              {requestingPayout ? 'Processing...' : 'Request Payout'}
+            </button>
+          )}
+          {(data?.stats?.pendingBalance || 0) < 50 && <div style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '8px' }}>Min. $50 for payout</div>}
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', borderBottom: '1px solid var(--gray-200)', paddingBottom: '8px' }}>
+        {[{ id: 'overview', label: 'Overview', icon: TrendingUp }, { id: 'conversions', label: 'Conversions', icon: Users }, { id: 'payouts', label: 'Payouts', icon: CreditCard }, { id: 'materials', label: 'Marketing Materials', icon: Download }, { id: 'settings', label: 'Settings', icon: Settings }].map(tab => (
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 16px', borderRadius: '8px', background: activeTab === tab.id ? 'var(--primary-100)' : 'transparent', color: activeTab === tab.id ? 'var(--primary-700)' : 'var(--gray-600)', border: 'none', cursor: 'pointer', fontWeight: '500', fontSize: '14px' }}>
+            <tab.icon size={16} /> {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'overview' && (
+        <div className="card">
+          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <TrendingUp size={20} style={{ color: 'var(--primary-600)' }} /> Clicks Over Time (Last 30 Days)
+          </h3>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#6B7280' }} />
+                <YAxis tick={{ fontSize: 12, fill: '#6B7280' }} allowDecimals={false} />
+                <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} />
+                <Bar dataKey="clicks" fill="#4F46E5" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gray-400)' }}>No click data yet. Share your affiliate link to get started!</div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'conversions' && (
+        <div className="card">
+          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>Recent Conversions</h3>
+          {data?.recentConversions?.length > 0 ? (
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead><tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
+                <th style={{ padding: '12px', textAlign: 'left', fontWeight: '600' }}>Customer</th>
+                <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>Plan</th>
+                <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>Payment</th>
+                <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>Commission</th>
+                <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>Status</th>
+                <th style={{ padding: '12px', textAlign: 'right', fontWeight: '600' }}>Date</th>
+              </tr></thead>
+              <tbody>
+                {data.recentConversions.map(c => (
+                  <tr key={c.id} style={{ borderBottom: '1px solid var(--gray-100)' }}>
+                    <td style={{ padding: '12px' }}>{c.email}</td>
+                    <td style={{ padding: '12px', textAlign: 'center', textTransform: 'capitalize' }}>{c.plan}</td>
+                    <td style={{ padding: '12px', textAlign: 'center' }}>${c.amount?.toFixed(2)}</td>
+                    <td style={{ padding: '12px', textAlign: 'center', color: 'var(--secondary)', fontWeight: '600' }}>${c.commission?.toFixed(2)}</td>
+                    <td style={{ padding: '12px', textAlign: 'center' }}>
+                      <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: '500', background: c.status === 'paid' ? 'var(--secondary-light)' : (c.status === 'approved' ? 'var(--primary-100)' : 'var(--gray-100)'), color: c.status === 'paid' ? 'var(--secondary)' : (c.status === 'approved' ? 'var(--primary-700)' : 'var(--gray-600)') }}>{c.status}</span>
+                    </td>
+                    <td style={{ padding: '12px', textAlign: 'right', color: 'var(--gray-500)' }}>{new Date(c.createdAt).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '48px', color: 'var(--gray-400)' }}>No conversions yet. Keep sharing your affiliate link!</div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'payouts' && (
+        <div className="card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: '600' }}>Payout History</h3>
+            <div style={{ fontSize: '14px', color: 'var(--gray-600)' }}>Total Paid Out: <strong style={{ color: 'var(--secondary)' }}>${payouts?.totalPaid?.toFixed(2) || '0.00'}</strong></div>
+          </div>
+          {payouts?.payouts?.length > 0 ? (
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead><tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
+                <th style={{ padding: '12px', textAlign: 'left', fontWeight: '600' }}>Amount</th>
+                <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>Method</th>
+                <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>Status</th>
+                <th style={{ padding: '12px', textAlign: 'right', fontWeight: '600' }}>Requested</th>
+                <th style={{ padding: '12px', textAlign: 'right', fontWeight: '600' }}>Processed</th>
+              </tr></thead>
+              <tbody>
+                {payouts.payouts.map(p => (
+                  <tr key={p.id} style={{ borderBottom: '1px solid var(--gray-100)' }}>
+                    <td style={{ padding: '12px', fontWeight: '600' }}>${p.amount?.toFixed(2)}</td>
+                    <td style={{ padding: '12px', textAlign: 'center', textTransform: 'capitalize' }}>{p.method}</td>
+                    <td style={{ padding: '12px', textAlign: 'center' }}>
+                      <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: '500', background: p.status === 'completed' ? 'var(--secondary-light)' : (p.status === 'processing' ? 'var(--warning-light)' : 'var(--gray-100)'), color: p.status === 'completed' ? 'var(--secondary)' : (p.status === 'processing' ? 'var(--warning)' : 'var(--gray-600)') }}>{p.status}</span>
+                    </td>
+                    <td style={{ padding: '12px', textAlign: 'right', color: 'var(--gray-500)' }}>{new Date(p.requestedAt).toLocaleDateString()}</td>
+                    <td style={{ padding: '12px', textAlign: 'right', color: 'var(--gray-500)' }}>{p.processedAt ? new Date(p.processedAt).toLocaleDateString() : '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '48px', color: 'var(--gray-400)' }}>No payouts yet. Earn at least $50 in commissions to request your first payout.</div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'materials' && (
+        <div className="card">
+          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>Marketing Materials</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Use these resources to promote ReviewResponder to your audience.</p>
+          <div style={{ marginBottom: '32px' }}>
+            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Your Affiliate Link</h4>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <input type="text" className="form-input" value={data?.links?.affiliateLink || ''} readOnly style={{ fontFamily: 'monospace', flex: 1 }} />
+              <button onClick={handleCopyLink} className="btn btn-primary">{copied ? 'Copied!' : 'Copy'}</button>
+            </div>
+          </div>
+          <div style={{ marginBottom: '32px' }}>
+            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Email Template</h4>
+            <div style={{ background: 'var(--gray-50)', padding: '16px', borderRadius: '8px', fontFamily: 'monospace', fontSize: '13px', whiteSpace: 'pre-wrap' }}>
+{`Subject: Save Hours on Review Responses with AI
+
+Hi [Name],
+
+I wanted to share a tool that's been a game-changer for managing customer reviews: ReviewResponder.
+
+It uses AI to generate professional, personalized responses to customer reviews in seconds.
+
+Check it out here: ${data?.links?.affiliateLink}
+
+Best,
+[Your Name]`}
+            </div>
+            <button onClick={() => { navigator.clipboard.writeText(`Subject: Save Hours on Review Responses with AI\n\nHi [Name],\n\nI wanted to share a tool that's been a game-changer for managing customer reviews: ReviewResponder.\n\nIt uses AI to generate professional, personalized responses to customer reviews in seconds.\n\nCheck it out here: ${data?.links?.affiliateLink}\n\nBest,\n[Your Name]`); toast.success('Email template copied!'); }} className="btn btn-secondary" style={{ marginTop: '12px' }}><Copy size={16} /> Copy Email Template</button>
+          </div>
+          <div style={{ marginBottom: '32px' }}>
+            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Social Media Post</h4>
+            <div style={{ background: 'var(--gray-50)', padding: '16px', borderRadius: '8px', fontFamily: 'monospace', fontSize: '13px' }}>
+              {`Struggling to respond to customer reviews? Check out ReviewResponder - AI that generates professional review responses in seconds. ${data?.links?.affiliateLink}`}
+            </div>
+            <button onClick={() => { navigator.clipboard.writeText(`Struggling to respond to customer reviews? Check out ReviewResponder - AI that generates professional review responses in seconds. ${data?.links?.affiliateLink}`); toast.success('Social post copied!'); }} className="btn btn-secondary" style={{ marginTop: '12px' }}><Copy size={16} /> Copy Social Post</button>
+          </div>
+          <div>
+            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Key Selling Points</h4>
+            <ul style={{ paddingLeft: '20px', color: 'var(--gray-600)' }}>
+              <li style={{ marginBottom: '8px' }}>AI-powered responses save hours of manual work</li>
+              <li style={{ marginBottom: '8px' }}>Supports 50+ languages with automatic detection</li>
+              <li style={{ marginBottom: '8px' }}>4 tone options: Professional, Friendly, Formal, Apologetic</li>
+              <li style={{ marginBottom: '8px' }}>Works with Google, Yelp, TripAdvisor, and more</li>
+              <li style={{ marginBottom: '8px' }}>Chrome extension for one-click responses</li>
+              <li style={{ marginBottom: '8px' }}>Free plan with 5 responses to try</li>
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'settings' && (
+        <div className="card" style={{ maxWidth: '500px' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>Payout Settings</h3>
+          <form onSubmit={handleUpdateSettings}>
+            <div className="form-group">
+              <label className="form-label">Payout Method</label>
+              <select className="form-input" value={settingsForm.payoutMethod} onChange={(e) => setSettingsForm({...settingsForm, payoutMethod: e.target.value})}>
+                <option value="paypal">PayPal</option>
+                <option value="bank">Bank Transfer</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Payout Email</label>
+              <input type="email" className="form-input" value={settingsForm.payoutEmail} onChange={(e) => setSettingsForm({...settingsForm, payoutEmail: e.target.value})} placeholder="payments@youremail.com" />
+            </div>
+            <button type="submit" className="btn btn-primary" disabled={updatingSettings}>{updatingSettings ? 'Saving...' : 'Save Settings'}</button>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Main App
 function App() {
   return (
@@ -6613,6 +7225,15 @@ function App() {
             }
           />
           <Route path="/join-team" element={<JoinTeamPage />} />
+          <Route path="/affiliate" element={<AffiliateLandingPage />} />
+          <Route
+            path="/affiliate/dashboard"
+            element={
+              <ProtectedRoute>
+                <AffiliateDashboardPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/api-docs"
             element={
