@@ -47,8 +47,8 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 const googleClient = process.env.GOOGLE_CLIENT_ID ? new OAuth2Client(process.env.GOOGLE_CLIENT_ID) : null;
 
 // Email sender addresses (configurable via ENV)
-const FROM_EMAIL = process.env.FROM_EMAIL || 'ReviewResponder <onboarding@resend.dev>';
-const OUTREACH_FROM_EMAIL = process.env.OUTREACH_FROM_EMAIL || 'ReviewResponder <onboarding@resend.dev>';
+const FROM_EMAIL = process.env.FROM_EMAIL || 'ReviewResponder <hello@tryreviewresponder.com>';
+const OUTREACH_FROM_EMAIL = process.env.OUTREACH_FROM_EMAIL || 'ReviewResponder <outreach@tryreviewresponder.com>';
 
 // Middleware
 app.use(helmet());
