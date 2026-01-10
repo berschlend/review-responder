@@ -866,14 +866,23 @@ app.post('/api/auth/reset-password', async (req, res) => {
 
 // Language detection for automatic response language matching
 function detectLanguage(text) {
-  // Heuristic language detection based on common words
+  // FIRST: Check for English with unique English-only words
+  const englishPattern = /\b(the|and|this|that|with|have|from|they|would|could|should|about|which|their|there|been|were|being|these|those|then|than|what|when|where|because|although|however|therefore|amazing|awesome|excellent|great|wonderful|terrible|fantastic|incredible|delicious|beautiful|lovely|perfect|best|worst|really|very|absolutely|definitely|certainly|highly|recommend|experience|staff|place|restaurant|visited|loved|enjoyed|disappointed|friendly|helpful|attentive|outstanding|exceptional|mediocre|average|overpriced|underrated|overrated|worth|returning|definitely|coming|back|again)\b/gi;
+  const englishMatches = (text.match(englishPattern) || []).length;
+
+  // If 2+ English unique words found, it's English
+  if (englishMatches >= 2) {
+    return { code: 'en', name: 'English', confidence: englishMatches };
+  }
+
+  // Check other languages with UNIQUE words only (no overlap with English)
   const patterns = {
-    de: /\b(und|der|die|das|ist|nicht|ich|wir|sehr|gut|schlecht|aber|haben|sein|werden|können|müssen|sollen|dürfen|wollen|mögen|lassen|wegen|trotz|während|obwohl|deshalb|außerdem|freundlich|empfehlen|leider|wirklich|immer|wieder|vielen|danke|super|toll|prima|schön|nett|lecker|gemütlich|sauber|schnell|langsam|teuer|billig|preis|qualität|service|essen|trinken|personal|ambiente|würde|könnte|sollte|möchte)\b/gi,
-    es: /\b(el|la|los|las|muy|bien|mal|pero|que|como|está|están|tienen|hacer|poder|querer|deber|saber|conocer|dar|ver|ir|venir|ser|hay|todo|nada|siempre|nunca|también|además|porque|aunque|gracias|amable|recomendar|lamentablemente|realmente|excelente|bueno|malo|delicioso|limpio|rápido|lento|caro|barato|precio|calidad|servicio|comida|bebida|personal|ambiente)\b/gi,
-    fr: /\b(le|la|les|très|bien|mal|mais|que|comme|est|sont|avoir|être|faire|pouvoir|vouloir|devoir|savoir|aller|venir|voir|prendre|tout|rien|toujours|jamais|aussi|parce|merci|aimable|recommander|malheureusement|vraiment|excellent|bon|mauvais|délicieux|propre|rapide|lent|cher|prix|qualité|service|nourriture|boisson|personnel|ambiance|je|nous|vous)\b/gi,
-    it: /\b(il|la|lo|gli|le|molto|bene|male|ma|che|come|sono|avere|essere|fare|potere|volere|dovere|sapere|andare|venire|vedere|prendere|tutto|niente|sempre|mai|anche|perché|grazie|gentile|consigliare|purtroppo|veramente|eccellente|buono|cattivo|delizioso|pulito|veloce|lento|costoso|economico|prezzo|qualità|servizio|cibo|bevanda|personale|atmosfera)\b/gi,
-    pt: /\b(o|a|os|as|muito|bem|mal|mas|que|como|são|ter|ser|fazer|poder|querer|dever|saber|ir|vir|ver|dar|tudo|nada|sempre|nunca|também|porque|obrigado|amável|recomendar|infelizmente|realmente|excelente|bom|mau|delicioso|limpo|rápido|lento|caro|barato|preço|qualidade|serviço|comida|bebida|pessoal|ambiente|eu|nós|você)\b/gi,
-    nl: /\b(de|het|en|een|van|in|is|dat|op|te|zijn|hebben|worden|kunnen|moeten|zullen|willen|mogen|laten|goed|slecht|maar|ook|altijd|nooit|omdat|hoewel|bedankt|vriendelijk|aanbevelen|helaas|echt|uitstekend|lekker|schoon|snel|langzaam|duur|goedkoop|prijs|kwaliteit|service|eten|drinken|personeel|sfeer|ik|wij|u)\b/gi,
+    de: /\b(und|der|die|das|nicht|ich|wir|sehr|schlecht|aber|können|müssen|sollen|dürfen|wollen|wegen|trotz|während|obwohl|deshalb|außerdem|freundlich|empfehlen|leider|wirklich|immer|wieder|vielen|danke|toll|prima|schön|nett|lecker|gemütlich|sauber|teuer|billig|essen|trinken|würde|könnte|sollte|möchte|hier|dort|jetzt|heute|gestern|morgen|wurde|wurden|bereits|allerdings|eigentlich|natürlich|unbedingt|vielleicht|wahrscheinlich)\b/gi,
+    es: /\b(muy|pero|como|está|están|tienen|hacer|poder|querer|deber|saber|conocer|venir|hay|todo|nada|siempre|nunca|también|además|porque|aunque|gracias|amable|lamentablemente|bueno|malo|limpio|rápido|lento|caro|barato|comida|bebida|aquí|allí|ahora|hoy|ayer|mañana|nosotros|ustedes|ellos|ella|podemos|queremos|tenemos)\b/gi,
+    fr: /\b(très|mais|comme|sont|avoir|être|faire|pouvoir|vouloir|devoir|savoir|aller|venir|voir|prendre|tout|rien|toujours|jamais|aussi|parce|merci|aimable|malheureusement|vraiment|mauvais|délicieux|propre|rapide|lent|cher|nourriture|boisson|ambiance|nous|vous|ici|maintenant|aujourd|hier|demain|pouvons|voulons|avons|sommes)\b/gi,
+    it: /\b(molto|bene|male|sono|avere|essere|fare|potere|volere|dovere|sapere|andare|venire|vedere|prendere|tutto|niente|sempre|mai|anche|perché|grazie|gentile|purtroppo|veramente|buono|cattivo|pulito|veloce|lento|costoso|economico|cibo|bevanda|atmosfera|qui|adesso|oggi|ieri|domani|possiamo|vogliamo|abbiamo|siamo)\b/gi,
+    pt: /\b(muito|bem|mal|mas|como|são|ter|ser|fazer|poder|querer|dever|saber|vir|ver|dar|tudo|nada|sempre|nunca|também|porque|obrigado|amável|infelizmente|bom|mau|limpo|rápido|lento|caro|barato|comida|bebida|aqui|agora|hoje|ontem|amanhã|podemos|queremos|temos|somos)\b/gi,
+    nl: /\b(het|een|van|dat|zijn|hebben|worden|kunnen|moeten|zullen|willen|mogen|laten|goed|slecht|maar|ook|altijd|nooit|omdat|hoewel|bedankt|vriendelijk|aanbevelen|helaas|echt|uitstekend|lekker|schoon|snel|langzaam|duur|goedkoop|eten|drinken|sfeer|wij|hier|daar|vandaag|gisteren|morgen|kunnen|willen|hebben|zijn)\b/gi,
   };
 
   const langNames = {
@@ -887,7 +896,7 @@ function detectLanguage(text) {
   };
 
   let maxMatches = 0;
-  let detectedLang = 'en'; // Default to English
+  let detectedLang = 'en';
 
   for (const [lang, pattern] of Object.entries(patterns)) {
     const matches = (text.match(pattern) || []).length;
@@ -897,9 +906,8 @@ function detectLanguage(text) {
     }
   }
 
-  // Only consider detected language if we have enough matches (min 2)
-  // Otherwise default to English
-  const finalLang = maxMatches >= 2 ? detectedLang : 'en';
+  // Need at least 3 non-English matches to override English default
+  const finalLang = maxMatches >= 3 ? detectedLang : 'en';
 
   return {
     code: finalLang,
