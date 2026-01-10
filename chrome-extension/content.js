@@ -665,6 +665,136 @@ async function saveSettings(settings) {
 let cachedSettings = null;
 loadSettings().then(s => cachedSettings = s);
 
+// ========== RESPONSE TEMPLATES ==========
+const MAX_TEMPLATES = 10;
+
+async function loadTemplates() {
+  try {
+    const stored = await chrome.storage.sync.get(['rr_templates']);
+    return stored.rr_templates || [];
+  } catch (e) {
+    // Fallback to local storage if sync fails
+    try {
+      const local = await chrome.storage.local.get(['rr_templates']);
+      return local.rr_templates || [];
+    } catch (e2) {
+      return [];
+    }
+  }
+}
+
+async function saveTemplates(templates) {
+  try {
+    // Limit to MAX_TEMPLATES
+    const limited = templates.slice(0, MAX_TEMPLATES);
+    await chrome.storage.sync.set({ rr_templates: limited });
+    // Also save to local as backup
+    await chrome.storage.local.set({ rr_templates: limited });
+  } catch (e) {
+    console.error('Failed to save templates:', e);
+  }
+}
+
+async function addTemplate(name, content, tone = 'professional') {
+  const templates = await loadTemplates();
+
+  if (templates.length >= MAX_TEMPLATES) {
+    return { success: false, error: `Maximum ${MAX_TEMPLATES} templates allowed` };
+  }
+
+  const newTemplate = {
+    id: Date.now().toString(),
+    name: name.trim().substring(0, 50),
+    content: content.trim().substring(0, 1000),
+    tone,
+    createdAt: new Date().toISOString()
+  };
+
+  templates.unshift(newTemplate); // Add to beginning
+  await saveTemplates(templates);
+  return { success: true, template: newTemplate };
+}
+
+async function deleteTemplate(id) {
+  const templates = await loadTemplates();
+  const filtered = templates.filter(t => t.id !== id);
+  await saveTemplates(filtered);
+  return { success: true };
+}
+
+async function updateTemplate(id, updates) {
+  const templates = await loadTemplates();
+  const index = templates.findIndex(t => t.id === id);
+  if (index === -1) return { success: false, error: 'Template not found' };
+
+  templates[index] = { ...templates[index], ...updates };
+  await saveTemplates(templates);
+  return { success: true };
+}
+
+function populateTemplateDropdown(panel, templates) {
+  const select = panel.querySelector('.rr-template-select');
+  if (!select) return;
+
+  // Clear existing options except the first one
+  select.innerHTML = '<option value="">💾 Use a saved template...</option>';
+
+  templates.forEach(t => {
+    const option = document.createElement('option');
+    option.value = t.id;
+    option.textContent = `${t.name} (${t.tone})`;
+    select.appendChild(option);
+  });
+}
+
+function updateTemplatesOverlay(panel, templates) {
+  const list = panel.querySelector('.rr-templates-list');
+  const count = panel.querySelector('.rr-templates-count');
+  const empty = panel.querySelector('.rr-templates-empty');
+
+  if (!list) return;
+
+  // Update count
+  if (count) count.textContent = `${templates.length}/${MAX_TEMPLATES} templates`;
+
+  // Show/hide empty message
+  if (templates.length === 0) {
+    if (empty) empty.style.display = 'block';
+    list.querySelectorAll('.rr-template-item').forEach(el => el.remove());
+    return;
+  }
+
+  if (empty) empty.style.display = 'none';
+
+  // Clear existing items
+  list.querySelectorAll('.rr-template-item').forEach(el => el.remove());
+
+  // Add template items
+  templates.forEach(t => {
+    const item = document.createElement('div');
+    item.className = 'rr-template-item';
+    item.dataset.id = t.id;
+    item.innerHTML = `
+      <div class="rr-template-info">
+        <span class="rr-template-name">${escapeHtml(t.name)}</span>
+        <span class="rr-template-tone">${t.tone}</span>
+      </div>
+      <div class="rr-template-preview">${escapeHtml(t.content.substring(0, 60))}...</div>
+      <div class="rr-template-actions">
+        <button class="rr-template-use" title="Use this template">Use</button>
+        <button class="rr-template-delete" title="Delete">🗑️</button>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 // ========== CREATE KILLER PANEL ==========
 async function createResponsePanel() {
   const existing = document.getElementById('rr-response-panel');
@@ -691,6 +821,7 @@ async function createResponsePanel() {
           <span class="rr-time-value">${formatTimeSaved(timeSaved.minutes)}</span>
           <span class="rr-time-label">saved</span>
         </div>
+        <button class="rr-templates-btn" title="My Templates">💾</button>
         <button class="rr-help-btn" title="How to use">?</button>
         <button class="rr-close-btn" title="Close (Esc)">×</button>
       </div>
@@ -726,6 +857,13 @@ async function createResponsePanel() {
         <div class="rr-smart-chips">
           <!-- Chips are dynamically inserted based on sentiment -->
         </div>
+      </div>
+
+      <!-- Templates Quick Select -->
+      <div class="rr-templates-row">
+        <select class="rr-template-select">
+          <option value="">💾 Use a saved template...</option>
+        </select>
       </div>
 
       <!-- Simple Options Row -->
@@ -816,6 +954,11 @@ async function createResponsePanel() {
             <button class="rr-edit-chip" data-edit="casual">👋 Casual</button>
           </div>
         </div>
+
+        <!-- Save as Template -->
+        <div class="rr-save-template">
+          <button class="rr-save-template-btn">💾 Save as Template</button>
+        </div>
       </div>
 
       <!-- Keyboard Shortcuts Hint -->
@@ -837,6 +980,35 @@ async function createResponsePanel() {
           <button class="rr-help-close">Got it!</button>
         </div>
       </div>
+
+      <!-- Templates Overlay -->
+      <div class="rr-templates-overlay hidden">
+        <div class="rr-templates-content">
+          <div class="rr-templates-header">
+            <h3>💾 My Templates</h3>
+            <button class="rr-templates-close">×</button>
+          </div>
+          <div class="rr-templates-list">
+            <!-- Templates will be populated dynamically -->
+            <p class="rr-templates-empty">No templates saved yet.<br>Generate a response and click "Save as Template"!</p>
+          </div>
+          <div class="rr-templates-footer">
+            <span class="rr-templates-count">0/${MAX_TEMPLATES} templates</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Save Template Modal -->
+      <div class="rr-save-modal hidden">
+        <div class="rr-save-modal-content">
+          <h3>💾 Save as Template</h3>
+          <input type="text" class="rr-template-name-input" placeholder="Template name (e.g., 'Thank You')">
+          <div class="rr-save-modal-buttons">
+            <button class="rr-save-modal-cancel">Cancel</button>
+            <button class="rr-save-modal-confirm">Save</button>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 
@@ -851,6 +1023,12 @@ async function createResponsePanel() {
     panel.querySelector('.rr-autocopy-toggle').checked = settings.autoCopy !== false;
     panel.querySelector('.rr-turbo-toggle').checked = settings.turboMode || false;
     cachedSettings = settings;
+  });
+
+  // Load templates into dropdown
+  loadTemplates().then(templates => {
+    populateTemplateDropdown(panel, templates);
+    updateTemplatesOverlay(panel, templates);
   });
 
   return panel;
@@ -868,6 +1046,111 @@ function initPanelEvents(panel) {
 
   panel.querySelector('.rr-help-close').addEventListener('click', () => {
     panel.querySelector('.rr-help-overlay').classList.add('hidden');
+  });
+
+  // Templates button (header)
+  panel.querySelector('.rr-templates-btn').addEventListener('click', async () => {
+    const templates = await loadTemplates();
+    updateTemplatesOverlay(panel, templates);
+    panel.querySelector('.rr-templates-overlay').classList.toggle('hidden');
+  });
+
+  panel.querySelector('.rr-templates-close').addEventListener('click', () => {
+    panel.querySelector('.rr-templates-overlay').classList.add('hidden');
+  });
+
+  // Template dropdown selection
+  panel.querySelector('.rr-template-select').addEventListener('change', async (e) => {
+    const templateId = e.target.value;
+    if (!templateId) return;
+
+    const templates = await loadTemplates();
+    const template = templates.find(t => t.id === templateId);
+
+    if (template) {
+      // Put template content in textarea and show response section
+      panel.querySelector('.rr-response-textarea').value = template.content;
+      panel.querySelector('.rr-response-section').classList.remove('hidden');
+      panel.querySelector('.rr-tone-select').value = template.tone;
+      showToast(`📝 Template "${template.name}" loaded`, 'success');
+
+      // Reset dropdown
+      e.target.value = '';
+    }
+  });
+
+  // Save as Template button
+  panel.querySelector('.rr-save-template-btn').addEventListener('click', () => {
+    const text = panel.querySelector('.rr-response-textarea').value;
+    if (!text) {
+      showToast('⚠️ No response to save', 'warning');
+      return;
+    }
+    // Show save modal
+    panel.querySelector('.rr-save-modal').classList.remove('hidden');
+    panel.querySelector('.rr-template-name-input').value = '';
+    panel.querySelector('.rr-template-name-input').focus();
+  });
+
+  // Save modal cancel
+  panel.querySelector('.rr-save-modal-cancel').addEventListener('click', () => {
+    panel.querySelector('.rr-save-modal').classList.add('hidden');
+  });
+
+  // Save modal confirm
+  panel.querySelector('.rr-save-modal-confirm').addEventListener('click', async () => {
+    const name = panel.querySelector('.rr-template-name-input').value.trim();
+    const content = panel.querySelector('.rr-response-textarea').value;
+    const tone = panel.querySelector('.rr-tone-select').value;
+
+    if (!name) {
+      showToast('⚠️ Enter a template name', 'warning');
+      return;
+    }
+
+    const result = await addTemplate(name, content, tone);
+    if (result.success) {
+      showToast(`💾 Template "${name}" saved!`, 'success');
+      panel.querySelector('.rr-save-modal').classList.add('hidden');
+
+      // Refresh dropdown
+      const templates = await loadTemplates();
+      populateTemplateDropdown(panel, templates);
+    } else {
+      showToast(`❌ ${result.error}`, 'error');
+    }
+  });
+
+  // Template overlay - use and delete buttons (event delegation)
+  panel.querySelector('.rr-templates-list').addEventListener('click', async (e) => {
+    const useBtn = e.target.closest('.rr-template-use');
+    const deleteBtn = e.target.closest('.rr-template-delete');
+    const item = e.target.closest('.rr-template-item');
+
+    if (!item) return;
+    const templateId = item.dataset.id;
+
+    if (useBtn) {
+      const templates = await loadTemplates();
+      const template = templates.find(t => t.id === templateId);
+      if (template) {
+        panel.querySelector('.rr-response-textarea').value = template.content;
+        panel.querySelector('.rr-response-section').classList.remove('hidden');
+        panel.querySelector('.rr-tone-select').value = template.tone;
+        panel.querySelector('.rr-templates-overlay').classList.add('hidden');
+        showToast(`📝 Template "${template.name}" loaded`, 'success');
+      }
+    }
+
+    if (deleteBtn) {
+      if (confirm('Delete this template?')) {
+        await deleteTemplate(templateId);
+        const templates = await loadTemplates();
+        updateTemplatesOverlay(panel, templates);
+        populateTemplateDropdown(panel, templates);
+        showToast('🗑️ Template deleted', 'success');
+      }
+    }
   });
 
   // Settings toggle
