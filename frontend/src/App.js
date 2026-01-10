@@ -2851,6 +2851,15 @@ const DashboardPage = () => {
       // Refresh user data
       api.get('/auth/me').then(res => updateUser(res.data.user));
     }
+    // Handle plan change from admin endpoint
+    if (params.get('plan_changed')) {
+      const newPlan = params.get('plan_changed');
+      toast.success(`Plan changed to ${newPlan.toUpperCase()}!`);
+      // Refresh user data to get new plan limits
+      api.get('/auth/me').then(res => updateUser(res.data.user));
+      // Clear the URL param
+      window.history.replaceState({}, '', '/dashboard');
+    }
   }, [user]);
 
   const handleOnboardingComplete = () => {
