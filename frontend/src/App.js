@@ -7356,6 +7356,329 @@ Best,
   );
 };
 
+// Admin Panel Page (Protected with Admin Key)
+const AdminPage = () => {
+  const [adminKey, setAdminKey] = useState(localStorage.getItem('adminKey') || '');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState(null);
+  const [affiliates, setAffiliates] = useState([]);
+  const [counts, setCounts] = useState({ pending: 0, approved: 0, rejected: 0, suspended: 0, total: 0 });
+  const [filter, setFilter] = useState('all');
+  const [selectedAffiliate, setSelectedAffiliate] = useState(null);
+  const [affiliateDetails, setAffiliateDetails] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const adminApi = axios.create({
+    baseURL: process.env.REACT_APP_API_URL || 'https://review-responder.onrender.com',
+    headers: { 'X-Admin-Key': adminKey }
+  });
+
+  const authenticate = async () => {
+    setLoading(true);
+    try {
+      const res = await adminApi.get('/api/admin/stats');
+      setStats(res.data);
+      setIsAuthenticated(true);
+      localStorage.setItem('adminKey', adminKey);
+      toast.success('Admin authenticated');
+      loadAffiliates();
+    } catch (err) {
+      toast.error('Invalid admin key');
+      localStorage.removeItem('adminKey');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadAffiliates = async () => {
+    try {
+      const url = filter === 'all' ? '/api/admin/affiliates' : `/api/admin/affiliates?status=${filter}`;
+      const res = await adminApi.get(url);
+      setAffiliates(res.data.affiliates);
+      setCounts(res.data.counts);
+    } catch (err) {
+      toast.error('Failed to load affiliates');
+    }
+  };
+
+  const loadAffiliateDetails = async (id) => {
+    try {
+      const res = await adminApi.get(`/api/admin/affiliates/${id}`);
+      setAffiliateDetails(res.data);
+      setSelectedAffiliate(id);
+    } catch (err) {
+      toast.error('Failed to load details');
+    }
+  };
+
+  const updateStatus = async (id, status, note = '') => {
+    setActionLoading(true);
+    try {
+      await adminApi.put(`/api/admin/affiliates/${id}/status`, { status, note });
+      toast.success(`Affiliate ${status}`);
+      loadAffiliates();
+      if (selectedAffiliate === id) loadAffiliateDetails(id);
+    } catch (err) {
+      toast.error('Failed to update status');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const processPayout = async (id, amount) => {
+    if (!amount || amount <= 0) {
+      toast.error('Enter a valid amount');
+      return;
+    }
+    setActionLoading(true);
+    try {
+      await adminApi.post(`/api/admin/affiliates/${id}/payout`, { amount: parseFloat(amount) });
+      toast.success('Payout processed');
+      loadAffiliateDetails(id);
+      loadAffiliates();
+    } catch (err) {
+      toast.error('Failed to process payout');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (adminKey && !isAuthenticated) {
+      authenticate();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) loadAffiliates();
+  }, [filter]);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="page-container" style={{ maxWidth: '400px', margin: '100px auto', padding: '20px' }}>
+        <div className="card">
+          <h1 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px', textAlign: 'center' }}>Admin Login</h1>
+          <div className="form-group">
+            <label className="form-label">Admin Key</label>
+            <input
+              type="password"
+              className="form-input"
+              value={adminKey}
+              onChange={(e) => setAdminKey(e.target.value)}
+              placeholder="Enter admin secret key"
+              onKeyDown={(e) => e.key === 'Enter' && authenticate()}
+            />
+          </div>
+          <button className="btn btn-primary" style={{ width: '100%' }} onClick={authenticate} disabled={loading}>
+            {loading ? 'Authenticating...' : 'Login'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+        <h1 style={{ fontSize: '28px', fontWeight: '700' }}>Admin Dashboard</h1>
+        <button className="btn btn-secondary" onClick={() => { localStorage.removeItem('adminKey'); setIsAuthenticated(false); setAdminKey(''); }}>
+          <LogOut size={16} /> Logout
+        </button>
+      </div>
+
+      {/* Stats Overview */}
+      {stats && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' }}>
+          <div className="card" style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '32px', fontWeight: '700', color: 'var(--primary)' }}>{stats.users?.total || 0}</div>
+            <div style={{ color: 'var(--gray-600)' }}>Total Users</div>
+          </div>
+          <div className="card" style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '32px', fontWeight: '700', color: '#10B981' }}>{stats.users?.paying || 0}</div>
+            <div style={{ color: 'var(--gray-600)' }}>Paying Users</div>
+          </div>
+          <div className="card" style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '32px', fontWeight: '700', color: '#F59E0B' }}>{counts.pending}</div>
+            <div style={{ color: 'var(--gray-600)' }}>Pending Affiliates</div>
+          </div>
+          <div className="card" style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '32px', fontWeight: '700', color: '#8B5CF6' }}>{counts.approved}</div>
+            <div style={{ color: 'var(--gray-600)' }}>Active Affiliates</div>
+          </div>
+          <div className="card" style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '32px', fontWeight: '700', color: '#10B981' }}>${stats.affiliates?.totalEarnings?.toFixed(2) || '0.00'}</div>
+            <div style={{ color: 'var(--gray-600)' }}>Total Affiliate Earnings</div>
+          </div>
+        </div>
+      )}
+
+      {/* Affiliate Management */}
+      <div className="card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: '600' }}>Affiliate Applications</h2>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {['all', 'pending', 'approved', 'rejected', 'suspended'].map(f => (
+              <button
+                key={f}
+                className={`btn ${filter === f ? 'btn-primary' : 'btn-secondary'}`}
+                style={{ padding: '6px 12px', fontSize: '13px' }}
+                onClick={() => setFilter(f)}
+              >
+                {f.charAt(0).toUpperCase() + f.slice(1)} {f !== 'all' && `(${counts[f] || 0})`}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: selectedAffiliate ? '1fr 1fr' : '1fr', gap: '24px' }}>
+          {/* Affiliates List */}
+          <div>
+            {affiliates.length === 0 ? (
+              <p style={{ color: 'var(--gray-500)', textAlign: 'center', padding: '40px' }}>No affiliates found</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {affiliates.map(aff => (
+                  <div
+                    key={aff.id}
+                    onClick={() => loadAffiliateDetails(aff.id)}
+                    style={{
+                      padding: '16px',
+                      border: selectedAffiliate === aff.id ? '2px solid var(--primary)' : '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      background: selectedAffiliate === aff.id ? 'var(--primary-light)' : 'transparent'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontWeight: '600' }}>{aff.email}</div>
+                        <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>{aff.affiliate_code}</div>
+                      </div>
+                      <span style={{
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        background: aff.status === 'approved' ? '#D1FAE5' : aff.status === 'pending' ? '#FEF3C7' : aff.status === 'rejected' ? '#FEE2E2' : '#E5E7EB',
+                        color: aff.status === 'approved' ? '#065F46' : aff.status === 'pending' ? '#92400E' : aff.status === 'rejected' ? '#991B1B' : '#374151'
+                      }}>
+                        {aff.status}
+                      </span>
+                    </div>
+                    <div style={{ marginTop: '8px', fontSize: '13px', color: 'var(--gray-600)' }}>
+                      Website: {aff.website || 'N/A'} | Audience: {aff.audience_size || 'N/A'}
+                    </div>
+                    <div style={{ marginTop: '4px', fontSize: '12px', color: 'var(--gray-500)' }}>
+                      Applied: {new Date(aff.applied_at).toLocaleDateString()} | Earned: ${parseFloat(aff.total_earned || 0).toFixed(2)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Affiliate Details Panel */}
+          {selectedAffiliate && affiliateDetails && (
+            <div style={{ borderLeft: '1px solid var(--border-color)', paddingLeft: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600' }}>Details</h3>
+                <button onClick={() => { setSelectedAffiliate(null); setAffiliateDetails(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <p><strong>Email:</strong> {affiliateDetails.affiliate?.email}</p>
+                <p><strong>Business:</strong> {affiliateDetails.affiliate?.business_name || 'N/A'}</p>
+                <p><strong>Code:</strong> {affiliateDetails.affiliate?.affiliate_code}</p>
+                <p><strong>Commission:</strong> {affiliateDetails.affiliate?.commission_rate}%</p>
+                <p><strong>Website:</strong> {affiliateDetails.affiliate?.website || 'N/A'}</p>
+                <p><strong>Marketing:</strong> {affiliateDetails.affiliate?.marketing_channels || 'N/A'}</p>
+                <p><strong>Audience:</strong> {affiliateDetails.affiliate?.audience_size || 'N/A'}</p>
+                <p><strong>Total Earned:</strong> ${parseFloat(affiliateDetails.affiliate?.total_earned || 0).toFixed(2)}</p>
+                <p><strong>Pending Balance:</strong> ${parseFloat(affiliateDetails.affiliate?.pending_balance || 0).toFixed(2)}</p>
+                <p><strong>Payout Method:</strong> {affiliateDetails.affiliate?.payout_method} ({affiliateDetails.affiliate?.payout_email || 'Not set'})</p>
+              </div>
+
+              {/* Actions */}
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                {affiliateDetails.affiliate?.status !== 'approved' && (
+                  <button className="btn btn-primary" onClick={() => updateStatus(selectedAffiliate, 'approved')} disabled={actionLoading}>
+                    <Check size={16} /> Approve
+                  </button>
+                )}
+                {affiliateDetails.affiliate?.status !== 'rejected' && (
+                  <button className="btn btn-secondary" style={{ background: '#FEE2E2', color: '#991B1B' }} onClick={() => updateStatus(selectedAffiliate, 'rejected')} disabled={actionLoading}>
+                    <X size={16} /> Reject
+                  </button>
+                )}
+                {affiliateDetails.affiliate?.status === 'approved' && (
+                  <button className="btn btn-secondary" onClick={() => updateStatus(selectedAffiliate, 'suspended')} disabled={actionLoading}>
+                    Suspend
+                  </button>
+                )}
+              </div>
+
+              {/* Payout Form */}
+              {affiliateDetails.affiliate?.status === 'approved' && parseFloat(affiliateDetails.affiliate?.pending_balance || 0) > 0 && (
+                <div style={{ background: 'var(--gray-50)', padding: '16px', borderRadius: '8px', marginBottom: '20px' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Process Payout</h4>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      type="number"
+                      id={`payout-${selectedAffiliate}`}
+                      className="form-input"
+                      placeholder="Amount"
+                      defaultValue={affiliateDetails.affiliate?.pending_balance}
+                      style={{ width: '120px' }}
+                    />
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => processPayout(selectedAffiliate, document.getElementById(`payout-${selectedAffiliate}`).value)}
+                      disabled={actionLoading}
+                    >
+                      Pay Out
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Conversions */}
+              <div style={{ marginBottom: '20px' }}>
+                <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>Conversions ({affiliateDetails.conversions?.length || 0})</h4>
+                {affiliateDetails.conversions?.length > 0 ? (
+                  <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                    {affiliateDetails.conversions.map(c => (
+                      <div key={c.id} style={{ fontSize: '13px', padding: '8px', borderBottom: '1px solid var(--border-color)' }}>
+                        {c.converted_email} - ${parseFloat(c.commission_amount || 0).toFixed(2)} - {new Date(c.created_at).toLocaleDateString()}
+                      </div>
+                    ))}
+                  </div>
+                ) : <p style={{ fontSize: '13px', color: 'var(--gray-500)' }}>No conversions yet</p>}
+              </div>
+
+              {/* Payouts */}
+              <div>
+                <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>Payouts ({affiliateDetails.payouts?.length || 0})</h4>
+                {affiliateDetails.payouts?.length > 0 ? (
+                  <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                    {affiliateDetails.payouts.map(p => (
+                      <div key={p.id} style={{ fontSize: '13px', padding: '8px', borderBottom: '1px solid var(--border-color)' }}>
+                        ${parseFloat(p.amount || 0).toFixed(2)} via {p.method} - {p.status} - {new Date(p.created_at).toLocaleDateString()}
+                      </div>
+                    ))}
+                  </div>
+                ) : <p style={{ fontSize: '13px', color: 'var(--gray-500)' }}>No payouts yet</p>}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Main App
 function App() {
   return (
@@ -7432,6 +7755,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/admin" element={<AdminPage />} />
           </Routes>
         </AuthProvider>
       </ThemeProvider>

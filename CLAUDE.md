@@ -95,6 +95,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **Automated Outreach System** - 100% automatisch: Google Places Lead Scraping, Hunter.io Email Finding, Cold Email Sequences, Auto Follow-ups
 - [x] **Google Ads Landing Pages** - 5 dedizierte Landing Pages mit UTM Tracking (Restaurant, Hotel, Local Business, Google, Yelp)
 - [x] **Affiliate/Partner System** - 20% recurring commission, Affiliate Dashboard, Marketing Materials, Payout System
+- [x] **Admin Panel** - /admin Seite mit Affiliate-Verwaltung (Genehmigen/Ablehnen/Suspendieren), Payouts verarbeiten, User-Statistiken
 
 ---
 
@@ -199,8 +200,14 @@ ReviewResponder/
 | GET | `/api/affiliate/payouts` | Payout-Historie abrufen |
 | POST | `/api/affiliate/payout` | Payout anfordern (Min. $50) |
 | PUT | `/api/affiliate/settings` | Affiliate-Einstellungen ändern (Payout Method, Email) |
-| GET | `/api/affiliate/track/:code` | Affiliate-Click tracken & weiterleiten |
 | GET | `/api/affiliate/validate/:code` | Affiliate-Code validieren (public) |
+| GET | `/api/affiliate/track/:code` | Affiliate-Click tracken & Redirect (public) |
+| GET | `/api/admin/affiliates` | Alle Affiliates auflisten (Admin Key) |
+| GET | `/api/admin/affiliates/:id` | Affiliate-Details abrufen (Admin Key) |
+| PUT | `/api/admin/affiliates/:id/status` | Affiliate genehmigen/ablehnen (Admin Key) |
+| PUT | `/api/admin/affiliates/:id/commission` | Commission Rate ändern (Admin Key) |
+| POST | `/api/admin/affiliates/:id/payout` | Payout verarbeiten (Admin Key) |
+| GET | `/api/admin/stats` | Admin-Statistiken (User, Affiliates, Revenue) |
 
 ---
 
@@ -225,6 +232,7 @@ ReviewResponder/
 - ✅ API Key System (Unlimited only) - REST API mit 5 Keys, 100 req/Tag, Dokumentation
 - ✅ Team/Multi-User Accounts (Pro: 3, Unlimited: 10) - Rollen: Admin, Member, Viewer, Shared Usage
 - ✅ Affiliate/Partner Program - 20% recurring commission, Dashboard, Marketing Materials, Payout System
+- ✅ Admin Panel (/admin) - Affiliate-Verwaltung, User-Stats, Payout-Processing
 
 ---
 

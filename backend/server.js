@@ -3675,6 +3675,328 @@ app.post('/api/admin/upgrade-user', async (req, res) => {
 });
 
 // ==========================================
+// ADMIN - AFFILIATE MANAGEMENT
+// ==========================================
+
+// Middleware for admin authentication
+const authenticateAdmin = (req, res, next) => {
+  const ip = req.ip || req.connection.remoteAddress;
+
+  if (!checkAdminRateLimit(ip)) {
+    return res.status(429).json({ error: 'Too many attempts. Try again in 15 minutes.' });
+  }
+
+  const adminKey = req.headers['x-admin-key'];
+  const adminSecret = process.env.ADMIN_SECRET;
+
+  if (!adminSecret) {
+    return res.status(500).json({ error: 'Admin endpoint not configured' });
+  }
+
+  if (!adminKey || !safeCompare(adminKey, adminSecret)) {
+    console.log(`⚠️ Invalid admin key attempt from IP: ${ip}`);
+    return res.status(401).json({ error: 'Invalid admin key' });
+  }
+
+  next();
+};
+
+// GET /api/admin/affiliates - List all affiliate applications
+app.get('/api/admin/affiliates', authenticateAdmin, async (req, res) => {
+  try {
+    const { status } = req.query;
+
+    let query = `
+      SELECT a.*, u.email, u.business_name
+      FROM affiliates a
+      JOIN users u ON a.user_id = u.id
+    `;
+    const params = [];
+
+    if (status && ['pending', 'approved', 'rejected', 'suspended'].includes(status)) {
+      query += ' WHERE a.status = $1';
+      params.push(status);
+    }
+
+    query += ' ORDER BY a.applied_at DESC';
+
+    const affiliates = await dbAll(query, params);
+
+    // Get summary counts
+    const counts = await dbGet(`
+      SELECT
+        COUNT(*) FILTER (WHERE status = 'pending') as pending,
+        COUNT(*) FILTER (WHERE status = 'approved') as approved,
+        COUNT(*) FILTER (WHERE status = 'rejected') as rejected,
+        COUNT(*) FILTER (WHERE status = 'suspended') as suspended,
+        COUNT(*) as total
+      FROM affiliates
+    `);
+
+    res.json({
+      affiliates,
+      counts: {
+        pending: parseInt(counts.pending) || 0,
+        approved: parseInt(counts.approved) || 0,
+        rejected: parseInt(counts.rejected) || 0,
+        suspended: parseInt(counts.suspended) || 0,
+        total: parseInt(counts.total) || 0
+      }
+    });
+  } catch (error) {
+    console.error('Admin get affiliates error:', error);
+    res.status(500).json({ error: 'Failed to get affiliates' });
+  }
+});
+
+// GET /api/admin/affiliates/:id - Get single affiliate with details
+app.get('/api/admin/affiliates/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const affiliate = await dbGet(`
+      SELECT a.*, u.email, u.business_name, u.created_at as user_created_at
+      FROM affiliates a
+      JOIN users u ON a.user_id = u.id
+      WHERE a.id = $1
+    `, [req.params.id]);
+
+    if (!affiliate) {
+      return res.status(404).json({ error: 'Affiliate not found' });
+    }
+
+    // Get conversions
+    const conversions = await dbAll(`
+      SELECT ac.*, u.email as converted_email
+      FROM affiliate_conversions ac
+      LEFT JOIN users u ON ac.converted_user_id = u.id
+      WHERE ac.affiliate_id = $1
+      ORDER BY ac.created_at DESC
+      LIMIT 50
+    `, [req.params.id]);
+
+    // Get payouts
+    const payouts = await dbAll(`
+      SELECT * FROM affiliate_payouts
+      WHERE affiliate_id = $1
+      ORDER BY created_at DESC
+    `, [req.params.id]);
+
+    res.json({ affiliate, conversions, payouts });
+  } catch (error) {
+    console.error('Admin get affiliate error:', error);
+    res.status(500).json({ error: 'Failed to get affiliate details' });
+  }
+});
+
+// PUT /api/admin/affiliates/:id/status - Approve/reject/suspend an affiliate
+app.put('/api/admin/affiliates/:id/status', authenticateAdmin, async (req, res) => {
+  try {
+    const { status, note } = req.body;
+    const { id } = req.params;
+
+    if (!['pending', 'approved', 'rejected', 'suspended'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    const affiliate = await dbGet('SELECT * FROM affiliates WHERE id = $1', [id]);
+    if (!affiliate) {
+      return res.status(404).json({ error: 'Affiliate not found' });
+    }
+
+    const updates = ['status = $1'];
+    const params = [status];
+    let paramIndex = 2;
+
+    if (status === 'approved' && affiliate.status !== 'approved') {
+      updates.push(`approved_at = NOW()`);
+    }
+
+    params.push(id);
+
+    await dbQuery(
+      `UPDATE affiliates SET ${updates.join(', ')} WHERE id = $${paramIndex}`,
+      params
+    );
+
+    // Get user email for notification
+    const user = await dbGet('SELECT email, business_name FROM users WHERE id = $1', [affiliate.user_id]);
+
+    // Send email notification if Resend is configured
+    if (resend && user) {
+      try {
+        let subject, html;
+
+        if (status === 'approved') {
+          subject = '🎉 Your Affiliate Application is Approved!';
+          html = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #10B981;">Congratulations! You're Now a ReviewResponder Affiliate</h1>
+              <p>Hi${user.business_name ? ' ' + user.business_name : ''},</p>
+              <p>Great news! Your affiliate application has been approved.</p>
+              <p><strong>Your Affiliate Code:</strong> ${affiliate.affiliate_code}</p>
+              <p><strong>Commission Rate:</strong> ${affiliate.commission_rate}% recurring</p>
+              <p>You can now start earning by sharing your unique affiliate link:</p>
+              <p style="background: #F3F4F6; padding: 15px; border-radius: 8px; font-family: monospace;">
+                https://review-responder-frontend.onrender.com/?aff=${affiliate.affiliate_code}
+              </p>
+              <p>Visit your <a href="https://review-responder-frontend.onrender.com/affiliate/dashboard">Affiliate Dashboard</a> to track your earnings and get marketing materials.</p>
+              <p>Best,<br>The ReviewResponder Team</p>
+            </div>
+          `;
+        } else if (status === 'rejected') {
+          subject = 'Update on Your Affiliate Application';
+          html = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #6B7280;">Affiliate Application Update</h1>
+              <p>Hi${user.business_name ? ' ' + user.business_name : ''},</p>
+              <p>Thank you for your interest in the ReviewResponder affiliate program.</p>
+              <p>After reviewing your application, we've decided not to move forward at this time.</p>
+              ${note ? `<p><strong>Note:</strong> ${note}</p>` : ''}
+              <p>You're welcome to reapply in the future if your circumstances change.</p>
+              <p>Best,<br>The ReviewResponder Team</p>
+            </div>
+          `;
+        }
+
+        if (subject && html) {
+          await resend.emails.send({
+            from: 'ReviewResponder <noreply@reviewresponder.app>',
+            to: user.email,
+            subject,
+            html
+          });
+        }
+      } catch (emailError) {
+        console.error('Failed to send affiliate status email:', emailError);
+      }
+    }
+
+    console.log(`✅ Admin updated affiliate ${id} status to ${status}`);
+
+    res.json({
+      success: true,
+      message: `Affiliate ${status === 'approved' ? 'approved' : status === 'rejected' ? 'rejected' : 'updated'}`,
+      affiliate_code: affiliate.affiliate_code
+    });
+  } catch (error) {
+    console.error('Admin update affiliate status error:', error);
+    res.status(500).json({ error: 'Failed to update affiliate status' });
+  }
+});
+
+// PUT /api/admin/affiliates/:id/commission - Update commission rate
+app.put('/api/admin/affiliates/:id/commission', authenticateAdmin, async (req, res) => {
+  try {
+    const { commissionRate } = req.body;
+    const { id } = req.params;
+
+    if (typeof commissionRate !== 'number' || commissionRate < 0 || commissionRate > 50) {
+      return res.status(400).json({ error: 'Commission rate must be between 0 and 50%' });
+    }
+
+    await dbQuery(
+      'UPDATE affiliates SET commission_rate = $1 WHERE id = $2',
+      [commissionRate, id]
+    );
+
+    console.log(`✅ Admin updated affiliate ${id} commission to ${commissionRate}%`);
+
+    res.json({ success: true, message: `Commission rate updated to ${commissionRate}%` });
+  } catch (error) {
+    console.error('Admin update commission error:', error);
+    res.status(500).json({ error: 'Failed to update commission rate' });
+  }
+});
+
+// POST /api/admin/affiliates/:id/payout - Mark a payout as processed
+app.post('/api/admin/affiliates/:id/payout', authenticateAdmin, async (req, res) => {
+  try {
+    const { amount, method, transactionId, note } = req.body;
+    const { id } = req.params;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ error: 'Valid payout amount required' });
+    }
+
+    const affiliate = await dbGet('SELECT * FROM affiliates WHERE id = $1', [id]);
+    if (!affiliate) {
+      return res.status(404).json({ error: 'Affiliate not found' });
+    }
+
+    // Create payout record
+    await dbQuery(`
+      INSERT INTO affiliate_payouts (affiliate_id, amount, method, transaction_id, status, note, processed_at)
+      VALUES ($1, $2, $3, $4, 'completed', $5, NOW())
+    `, [id, amount, method || affiliate.payout_method, transactionId, note]);
+
+    // Update affiliate totals
+    await dbQuery(`
+      UPDATE affiliates
+      SET total_paid = total_paid + $1, pending_balance = pending_balance - $1
+      WHERE id = $2
+    `, [amount, id]);
+
+    console.log(`✅ Admin processed payout of $${amount} for affiliate ${id}`);
+
+    res.json({ success: true, message: `Payout of $${amount} processed` });
+  } catch (error) {
+    console.error('Admin process payout error:', error);
+    res.status(500).json({ error: 'Failed to process payout' });
+  }
+});
+
+// GET /api/admin/stats - Get overall admin stats
+app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
+  try {
+    const userStats = await dbGet(`
+      SELECT
+        COUNT(*) as total_users,
+        COUNT(*) FILTER (WHERE subscription_plan != 'free') as paying_users,
+        COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '7 days') as new_users_week,
+        COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '30 days') as new_users_month
+      FROM users
+    `);
+
+    const revenueStats = await dbGet(`
+      SELECT
+        COALESCE(SUM(ac.commission_amount), 0) as total_commissions,
+        COUNT(DISTINCT ac.converted_user_id) as total_conversions
+      FROM affiliate_conversions ac
+    `);
+
+    const affiliateStats = await dbGet(`
+      SELECT
+        COUNT(*) FILTER (WHERE status = 'pending') as pending_affiliates,
+        COUNT(*) FILTER (WHERE status = 'approved') as active_affiliates,
+        COALESCE(SUM(total_earned), 0) as total_affiliate_earnings,
+        COALESCE(SUM(pending_balance), 0) as total_pending_payouts
+      FROM affiliates
+    `);
+
+    res.json({
+      users: {
+        total: parseInt(userStats.total_users) || 0,
+        paying: parseInt(userStats.paying_users) || 0,
+        newThisWeek: parseInt(userStats.new_users_week) || 0,
+        newThisMonth: parseInt(userStats.new_users_month) || 0
+      },
+      affiliates: {
+        pending: parseInt(affiliateStats.pending_affiliates) || 0,
+        active: parseInt(affiliateStats.active_affiliates) || 0,
+        totalEarnings: parseFloat(affiliateStats.total_affiliate_earnings) || 0,
+        pendingPayouts: parseFloat(affiliateStats.total_pending_payouts) || 0
+      },
+      conversions: {
+        total: parseInt(revenueStats.total_conversions) || 0,
+        totalCommissions: parseFloat(revenueStats.total_commissions) || 0
+      }
+    });
+  } catch (error) {
+    console.error('Admin stats error:', error);
+    res.status(500).json({ error: 'Failed to get admin stats' });
+  }
+});
+
+// ==========================================
 // OUTREACH EMAIL TRACKING
 // ==========================================
 
