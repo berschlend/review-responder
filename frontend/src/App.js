@@ -3908,8 +3908,9 @@ const DashboardPage = () => {
       )}
 
       {/* Tab Navigation */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', borderBottom: '1px solid var(--gray-200)', paddingBottom: '0' }}>
+      <div className="dashboard-tabs" style={{ display: 'flex', gap: '8px', marginBottom: '24px', borderBottom: '1px solid var(--gray-200)', paddingBottom: '0' }}>
         <button
+          className="dashboard-tab"
           onClick={() => setActiveTab('single')}
           style={{
             padding: '12px 20px',
@@ -3930,6 +3931,7 @@ const DashboardPage = () => {
           Single Response
         </button>
         <button
+          className="dashboard-tab"
           onClick={() => setActiveTab('bulk')}
           style={{
             padding: '12px 20px',
@@ -3960,6 +3962,7 @@ const DashboardPage = () => {
           )}
         </button>
         <button
+          className="dashboard-tab"
           onClick={() => setActiveTab('history')}
           style={{
             padding: '12px 20px',
@@ -3980,6 +3983,7 @@ const DashboardPage = () => {
           History
         </button>
         <button
+          className="dashboard-tab"
           onClick={() => setActiveTab('blog')}
           style={{
             padding: '12px 20px',
@@ -4010,6 +4014,7 @@ const DashboardPage = () => {
           )}
         </button>
         <button
+          className="dashboard-tab"
           onClick={() => setActiveTab('api')}
           style={{
             padding: '12px 20px',

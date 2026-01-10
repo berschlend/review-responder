@@ -3865,3 +3865,403 @@
   background: rgba(255, 255, 255, 0.1);
   color: #a7f3d0;
 }
+
+/* ========== BATCH MODE STYLES ========== */
+
+.rr-batch-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.rr-batch-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.rr-batch-count {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+.rr-batch-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--rr-bg);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--rr-radius);
+  overflow: hidden;
+}
+
+.rr-batch-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.rr-batch-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.rr-batch-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.rr-batch-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rr-batch-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.rr-batch-status {
+  padding: 16px 20px;
+  background: var(--rr-bg-light);
+  border-bottom: 1px solid var(--rr-border);
+}
+
+.rr-batch-found {
+  font-size: 15px;
+  color: var(--rr-text);
+  text-align: center;
+}
+
+.rr-batch-found-count {
+  font-weight: 700;
+  color: var(--rr-primary);
+  font-size: 20px;
+}
+
+.rr-batch-actions-start {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rr-batch-tone-select {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rr-batch-tone-select label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rr-text-light);
+}
+
+.rr-batch-tone {
+  padding: 12px;
+  border: 1px solid var(--rr-border);
+  border-radius: 10px;
+  font-size: 14px;
+  background: var(--rr-bg);
+  color: var(--rr-text);
+  cursor: pointer;
+}
+
+.rr-batch-generate-all {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.rr-batch-generate-all:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.rr-batch-generate-all:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.rr-batch-gen-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rr-batch-progress-bar {
+  height: 6px;
+  background: var(--rr-border);
+  border-radius: 3px;
+  margin: 0 20px 16px;
+  overflow: hidden;
+}
+
+.rr-batch-progress-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.rr-batch-results {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.rr-batch-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 12px 20px;
+  background: var(--rr-bg-light);
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  scrollbar-width: thin;
+}
+
+.rr-batch-tab {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  background: var(--rr-bg);
+  border: 1px solid var(--rr-border);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--rr-text-light);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rr-batch-tab:hover {
+  border-color: var(--rr-primary);
+  color: var(--rr-primary);
+}
+
+.rr-batch-tab.active {
+  background: var(--rr-primary);
+  border-color: var(--rr-primary);
+  color: white;
+}
+
+.rr-batch-result-content {
+  flex: 1;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.rr-batch-review-preview {
+  background: var(--rr-bg-light);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.rr-batch-review-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.rr-batch-review-sentiment {
+  font-size: 18px;
+}
+
+.rr-batch-review-rating {
+  font-size: 12px;
+}
+
+.rr-batch-review-tone {
+  font-size: 11px;
+  background: var(--rr-border);
+  padding: 2px 8px;
+  border-radius: 10px;
+  color: var(--rr-text-light);
+}
+
+.rr-batch-review-text {
+  font-size: 13px;
+  color: var(--rr-text-light);
+  line-height: 1.5;
+}
+
+.rr-batch-response-textarea {
+  flex: 1;
+  min-height: 120px;
+  padding: 12px;
+  border: 1px solid var(--rr-border);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.6;
+  resize: vertical;
+  background: var(--rr-bg);
+  color: var(--rr-text);
+}
+
+.rr-batch-response-textarea:focus {
+  outline: none;
+  border-color: var(--rr-primary);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.rr-batch-quality {
+  display: flex;
+  justify-content: center;
+}
+
+.rr-batch-error {
+  color: var(--rr-error);
+  font-size: 13px;
+}
+
+.rr-batch-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 20px 20px;
+  background: var(--rr-bg);
+  border-top: 1px solid var(--rr-border);
+}
+
+.rr-batch-result-actions button {
+  flex: 1;
+  min-width: 100px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rr-batch-copy-one {
+  background: var(--rr-success);
+  border: none;
+  color: white;
+}
+
+.rr-batch-copy-one:hover {
+  background: #059669;
+}
+
+.rr-batch-regenerate {
+  background: var(--rr-bg-light);
+  border: 1px solid var(--rr-border);
+  color: var(--rr-text);
+}
+
+.rr-batch-regenerate:hover {
+  border-color: var(--rr-primary);
+  color: var(--rr-primary);
+}
+
+.rr-batch-copy-all {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+}
+
+.rr-batch-copy-all:hover {
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.rr-batch-export {
+  background: var(--rr-bg-light);
+  border: 1px solid var(--rr-border);
+  color: var(--rr-text);
+}
+
+.rr-batch-export:hover {
+  border-color: var(--rr-primary);
+  color: var(--rr-primary);
+}
+
+.rr-batch-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--rr-text-light);
+  text-align: center;
+}
+
+.rr-batch-empty span {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.rr-batch-empty p {
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Dark mode batch styles */
+.rr-dark .rr-batch-overlay {
+  background: var(--rr-bg);
+}
+
+.rr-dark .rr-batch-tone {
+  background: var(--rr-bg-light);
+  color: var(--rr-text);
+}
+
+.rr-dark .rr-batch-tab {
+  background: var(--rr-bg);
+}
+
+.rr-dark .rr-batch-response-textarea {
+  background: var(--rr-bg-light);
+  color: var(--rr-text);
+}
+
+.rr-dark .rr-batch-regenerate,
+.rr-dark .rr-batch-export {
+  background: var(--rr-bg-light);
+  color: var(--rr-text);
+}

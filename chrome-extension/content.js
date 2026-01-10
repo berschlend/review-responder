@@ -2988,6 +2988,75 @@ function initPanelEvents(panel) {
   panel.querySelector('.rr-emoji-toggle').addEventListener('change', () => saveCurrentSettings(panel));
   panel.querySelector('.rr-autocopy-toggle').addEventListener('change', () => saveCurrentSettings(panel));
   panel.querySelector('.rr-turbo-toggle').addEventListener('change', () => saveCurrentSettings(panel));
+
+  // ========== BATCH MODE EVENTS ==========
+
+  // Batch button opens overlay and scans for reviews
+  panel.querySelector('.rr-batch-btn').addEventListener('click', () => {
+    const overlay = panel.querySelector('.rr-batch-overlay');
+    overlay.classList.toggle('hidden');
+
+    if (!overlay.classList.contains('hidden')) {
+      initBatchMode(panel);
+    }
+  });
+
+  // Batch close button
+  panel.querySelector('.rr-batch-close').addEventListener('click', () => {
+    panel.querySelector('.rr-batch-overlay').classList.add('hidden');
+    // Reset batch state
+    panel.dataset.batchResults = '';
+    panel.dataset.batchIndex = '0';
+  });
+
+  // Generate All button
+  panel.querySelector('.rr-batch-generate-all').addEventListener('click', () => {
+    generateAllBatchResponses(panel);
+  });
+
+  // Batch result tabs (event delegation)
+  panel.querySelector('.rr-batch-tabs').addEventListener('click', (e) => {
+    const tab = e.target.closest('.rr-batch-tab');
+    if (tab) {
+      const index = parseInt(tab.dataset.index);
+      switchBatchTab(panel, index);
+    }
+  });
+
+  // Copy single batch response
+  panel.querySelector('.rr-batch-copy-one').addEventListener('click', async () => {
+    const textarea = panel.querySelector('.rr-batch-response-textarea');
+    const text = textarea.value;
+    if (text) {
+      await navigator.clipboard.writeText(text);
+      showToast('✅ Copied!', 'success');
+    }
+  });
+
+  // Regenerate single batch response
+  panel.querySelector('.rr-batch-regenerate').addEventListener('click', () => {
+    regenerateBatchResponse(panel);
+  });
+
+  // Copy all batch responses
+  panel.querySelector('.rr-batch-copy-all').addEventListener('click', () => {
+    copyAllBatchResponses(panel);
+  });
+
+  // Export batch responses as CSV
+  panel.querySelector('.rr-batch-export').addEventListener('click', () => {
+    exportBatchAsCSV(panel);
+  });
+
+  // Batch response textarea - update results when edited
+  panel.querySelector('.rr-batch-response-textarea').addEventListener('input', (e) => {
+    const index = parseInt(panel.dataset.batchIndex || '0');
+    const results = JSON.parse(panel.dataset.batchResults || '[]');
+    if (results[index]) {
+      results[index].response = e.target.value;
+      panel.dataset.batchResults = JSON.stringify(results);
+    }
+  });
 }
 
 async function closePanel(panel) {
@@ -4035,6 +4104,365 @@ function scanPageForReviews() {
   });
 
   return reviews;
+}
+
+// ========== BATCH MODE FUNCTIONS ==========
+
+function initBatchMode(panel) {
+  const reviews = scanPageForReviews();
+  const foundCount = panel.querySelector('.rr-batch-found-count');
+  const actionsStart = panel.querySelector('.rr-batch-actions-start');
+  const emptyState = panel.querySelector('.rr-batch-empty');
+  const resultsSection = panel.querySelector('.rr-batch-results');
+  const progressBar = panel.querySelector('.rr-batch-progress-bar');
+
+  // Store reviews in panel data
+  panel.dataset.batchReviews = JSON.stringify(reviews);
+  panel.dataset.batchResults = '[]';
+  panel.dataset.batchIndex = '0';
+
+  // Update UI based on found reviews
+  foundCount.textContent = reviews.length;
+
+  // Update batch button count in header
+  const batchCount = panel.querySelector('.rr-batch-count');
+  if (batchCount) {
+    batchCount.textContent = reviews.length;
+    batchCount.style.display = reviews.length > 0 ? 'inline' : 'none';
+  }
+
+  if (reviews.length > 0) {
+    actionsStart.classList.remove('hidden');
+    emptyState.classList.add('hidden');
+    resultsSection.classList.add('hidden');
+    progressBar.classList.add('hidden');
+
+    // Reset generate button
+    const genBtn = panel.querySelector('.rr-batch-generate-all');
+    genBtn.disabled = false;
+    panel.querySelector('.rr-batch-gen-text').classList.remove('hidden');
+    panel.querySelector('.rr-batch-gen-loading').classList.add('hidden');
+  } else {
+    actionsStart.classList.add('hidden');
+    emptyState.classList.remove('hidden');
+    resultsSection.classList.add('hidden');
+    progressBar.classList.add('hidden');
+  }
+}
+
+async function generateAllBatchResponses(panel) {
+  const reviews = JSON.parse(panel.dataset.batchReviews || '[]');
+  if (reviews.length === 0) return;
+
+  // Check login
+  let stored;
+  try {
+    stored = await chrome.storage.local.get(['token', 'user']);
+  } catch (e) {
+    showToast('Extension error', 'error');
+    return;
+  }
+
+  if (!stored.token) {
+    showToast('Please login first', 'error');
+    return;
+  }
+
+  const tone = panel.querySelector('.rr-batch-tone').value;
+  const genBtn = panel.querySelector('.rr-batch-generate-all');
+  const genText = panel.querySelector('.rr-batch-gen-text');
+  const genLoading = panel.querySelector('.rr-batch-gen-loading');
+  const progressText = panel.querySelector('.rr-batch-progress-text');
+  const progressBar = panel.querySelector('.rr-batch-progress-bar');
+  const progressFill = panel.querySelector('.rr-batch-progress-fill');
+
+  // Show loading state
+  genBtn.disabled = true;
+  genText.classList.add('hidden');
+  genLoading.classList.remove('hidden');
+  progressBar.classList.remove('hidden');
+
+  const results = [];
+  const total = reviews.length;
+
+  for (let i = 0; i < total; i++) {
+    const review = reviews[i];
+    progressText.textContent = `${i + 1}/${total}`;
+    progressFill.style.width = `${((i + 1) / total) * 100}%`;
+
+    try {
+      // Detect language
+      const detectedLanguage = detectReviewLanguage(review.text);
+
+      // Determine tone - auto or user selected
+      let useTone = tone;
+      if (tone === 'auto') {
+        // Auto-detect best tone based on sentiment and rating
+        if (review.sentiment === 'negative' || (review.rating && review.rating <= 2)) {
+          useTone = 'apologetic';
+        } else if (review.sentiment === 'positive' || (review.rating && review.rating >= 4)) {
+          useTone = 'friendly';
+        } else {
+          useTone = 'professional';
+        }
+      }
+
+      // Generate response
+      const response = await fetch(`${API_URL}/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${stored.token}`
+        },
+        body: JSON.stringify({
+          reviewText: review.text,
+          tone: useTone,
+          outputLanguage: detectedLanguage,
+          responseLength: 'medium',
+          includeEmojis: false,
+          businessName: stored.user?.businessName || '',
+          additionalContext: `Rating: ${review.rating || 'unknown'}`
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Generation failed');
+      }
+
+      results.push({
+        review: review.text,
+        rating: review.rating,
+        sentiment: review.sentiment,
+        response: data.response,
+        quality: data.quality,
+        tone: useTone,
+        success: true
+      });
+    } catch (error) {
+      results.push({
+        review: review.text,
+        rating: review.rating,
+        sentiment: review.sentiment,
+        response: '',
+        error: error.message,
+        success: false
+      });
+    }
+
+    // Small delay between requests to avoid rate limiting
+    if (i < total - 1) {
+      await new Promise(r => setTimeout(r, 500));
+    }
+  }
+
+  // Store results
+  panel.dataset.batchResults = JSON.stringify(results);
+
+  // Show results
+  showBatchResults(panel, results);
+
+  // Update analytics
+  await recordAnalyticsResponse();
+  updateAnalytics(panel);
+
+  showToast(`Generated ${results.filter(r => r.success).length}/${total} responses!`, 'success');
+}
+
+function showBatchResults(panel, results) {
+  const actionsStart = panel.querySelector('.rr-batch-actions-start');
+  const resultsSection = panel.querySelector('.rr-batch-results');
+  const progressBar = panel.querySelector('.rr-batch-progress-bar');
+  const tabsContainer = panel.querySelector('.rr-batch-tabs');
+
+  actionsStart.classList.add('hidden');
+  progressBar.classList.add('hidden');
+  resultsSection.classList.remove('hidden');
+
+  // Generate tabs
+  tabsContainer.innerHTML = results.map((result, index) => {
+    const statusIcon = result.success ? (result.sentiment === 'negative' ? '😞' : result.sentiment === 'positive' ? '😊' : '😐') : '❌';
+    return `<button class="rr-batch-tab ${index === 0 ? 'active' : ''}" data-index="${index}">
+      ${statusIcon} ${index + 1}
+    </button>`;
+  }).join('');
+
+  // Show first result
+  panel.dataset.batchIndex = '0';
+  switchBatchTab(panel, 0);
+}
+
+function switchBatchTab(panel, index) {
+  const results = JSON.parse(panel.dataset.batchResults || '[]');
+  if (!results[index]) return;
+
+  const result = results[index];
+  panel.dataset.batchIndex = index.toString();
+
+  // Update active tab
+  panel.querySelectorAll('.rr-batch-tab').forEach((tab, i) => {
+    tab.classList.toggle('active', i === index);
+  });
+
+  // Update review preview
+  const previewEl = panel.querySelector('.rr-batch-review-preview');
+  previewEl.innerHTML = `
+    <div class="rr-batch-review-header">
+      <span class="rr-batch-review-sentiment">${result.sentiment === 'negative' ? '😞' : result.sentiment === 'positive' ? '😊' : '😐'}</span>
+      ${result.rating ? `<span class="rr-batch-review-rating">${'⭐'.repeat(result.rating)}</span>` : ''}
+      <span class="rr-batch-review-tone">Tone: ${result.tone || 'auto'}</span>
+    </div>
+    <div class="rr-batch-review-text">${result.review.substring(0, 150)}${result.review.length > 150 ? '...' : ''}</div>
+  `;
+
+  // Update response textarea
+  panel.querySelector('.rr-batch-response-textarea').value = result.response || '';
+
+  // Update quality indicator
+  const qualityEl = panel.querySelector('.rr-batch-quality');
+  if (result.quality) {
+    qualityEl.innerHTML = `<span class="rr-quality-score ${result.quality.score >= 8 ? 'high' : result.quality.score >= 6 ? 'medium' : 'low'}">Quality: ${result.quality.score}/10</span>`;
+    qualityEl.classList.remove('hidden');
+  } else if (!result.success) {
+    qualityEl.innerHTML = `<span class="rr-batch-error">Error: ${result.error}</span>`;
+    qualityEl.classList.remove('hidden');
+  } else {
+    qualityEl.classList.add('hidden');
+  }
+}
+
+async function regenerateBatchResponse(panel) {
+  const index = parseInt(panel.dataset.batchIndex || '0');
+  const results = JSON.parse(panel.dataset.batchResults || '[]');
+  const reviews = JSON.parse(panel.dataset.batchReviews || '[]');
+
+  if (!results[index] || !reviews[index]) return;
+
+  // Check login
+  let stored;
+  try {
+    stored = await chrome.storage.local.get(['token', 'user']);
+  } catch (e) {
+    showToast('Extension error', 'error');
+    return;
+  }
+
+  if (!stored.token) {
+    showToast('Please login first', 'error');
+    return;
+  }
+
+  const regenBtn = panel.querySelector('.rr-batch-regenerate');
+  const originalText = regenBtn.textContent;
+  regenBtn.disabled = true;
+  regenBtn.textContent = '...';
+
+  try {
+    const review = reviews[index];
+    const detectedLanguage = detectReviewLanguage(review.text);
+    const tone = panel.querySelector('.rr-batch-tone').value;
+    const useTone = tone === 'auto' ? 'professional' : tone;
+
+    const response = await fetch(`${API_URL}/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${stored.token}`
+      },
+      body: JSON.stringify({
+        reviewText: review.text,
+        tone: useTone,
+        outputLanguage: detectedLanguage,
+        responseLength: 'medium',
+        includeEmojis: false,
+        businessName: stored.user?.businessName || ''
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Generation failed');
+    }
+
+    // Update result
+    results[index] = {
+      ...results[index],
+      response: data.response,
+      quality: data.quality,
+      tone: useTone,
+      success: true,
+      error: null
+    };
+    panel.dataset.batchResults = JSON.stringify(results);
+
+    // Update UI
+    switchBatchTab(panel, index);
+    showToast('Regenerated!', 'success');
+  } catch (error) {
+    showToast(`Error: ${error.message}`, 'error');
+  } finally {
+    regenBtn.disabled = false;
+    regenBtn.textContent = originalText;
+  }
+}
+
+async function copyAllBatchResponses(panel) {
+  const results = JSON.parse(panel.dataset.batchResults || '[]');
+  const successfulResults = results.filter(r => r.success && r.response);
+
+  if (successfulResults.length === 0) {
+    showToast('No responses to copy', 'warning');
+    return;
+  }
+
+  // Format all responses
+  const text = successfulResults.map((r, i) => {
+    return `--- Response ${i + 1} ---\nReview: ${r.review.substring(0, 100)}...\n\nResponse:\n${r.response}\n`;
+  }).join('\n');
+
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast(`Copied ${successfulResults.length} responses!`, 'success');
+  } catch (error) {
+    showToast('Failed to copy', 'error');
+  }
+}
+
+function exportBatchAsCSV(panel) {
+  const results = JSON.parse(panel.dataset.batchResults || '[]');
+
+  if (results.length === 0) {
+    showToast('No data to export', 'warning');
+    return;
+  }
+
+  // Create CSV content
+  const headers = ['Review', 'Rating', 'Sentiment', 'Response', 'Tone', 'Quality'];
+  const rows = results.map(r => [
+    `"${(r.review || '').replace(/"/g, '""')}"`,
+    r.rating || '',
+    r.sentiment || '',
+    `"${(r.response || '').replace(/"/g, '""')}"`,
+    r.tone || '',
+    r.quality?.score || ''
+  ]);
+
+  const csv = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+
+  // Download file
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `review-responses-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+
+  showToast(`Exported ${results.length} responses!`, 'success');
 }
 
 function startQueueMode() {
