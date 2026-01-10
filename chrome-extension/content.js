@@ -2010,6 +2010,7 @@ async function createResponsePanel() {
         <button class="rr-drafts-btn" title="Drafts">📝</button>
         <button class="rr-templates-btn" title="My Templates">💾</button>
         <button class="rr-history-btn" title="Recent Responses">📜</button>
+        <button class="rr-batch-btn" title="Batch Mode - Respond to all reviews">📋 <span class="rr-batch-count">0</span></button>
         <div class="rr-theme-wrapper" style="position: relative;">
           <button class="rr-theme-toggle" title="Toggle theme">🌙</button>
           <div class="rr-theme-dropdown hidden">
@@ -2397,6 +2398,73 @@ async function createResponsePanel() {
           </div>
           <div class="rr-history-list">
             <div class="rr-history-loading">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Batch Mode Overlay -->
+      <div class="rr-batch-overlay hidden">
+        <div class="rr-batch-content">
+          <div class="rr-batch-header">
+            <h3>📋 Batch Mode</h3>
+            <button class="rr-batch-close">×</button>
+          </div>
+
+          <!-- Batch Status -->
+          <div class="rr-batch-status">
+            <div class="rr-batch-found">
+              <span class="rr-batch-found-count">0</span> reviews found on this page
+            </div>
+          </div>
+
+          <!-- Batch Actions (before generation) -->
+          <div class="rr-batch-actions-start">
+            <div class="rr-batch-tone-select">
+              <label>Default tone for all:</label>
+              <select class="rr-batch-tone">
+                <option value="auto">🤖 Auto (AI decides)</option>
+                <option value="professional">💼 Professional</option>
+                <option value="friendly">😊 Friendly</option>
+                <option value="formal">🎩 Formal</option>
+                <option value="apologetic">🙏 Apologetic</option>
+              </select>
+            </div>
+            <button class="rr-batch-generate-all">
+              <span class="rr-batch-gen-text">✨ Generate All Responses</span>
+              <span class="rr-batch-gen-loading hidden">
+                <span class="rr-spinner"></span>
+                <span class="rr-batch-progress-text">0/0</span>
+              </span>
+            </button>
+          </div>
+
+          <!-- Batch Progress Bar -->
+          <div class="rr-batch-progress-bar hidden">
+            <div class="rr-batch-progress-fill"></div>
+          </div>
+
+          <!-- Batch Results (after generation) -->
+          <div class="rr-batch-results hidden">
+            <div class="rr-batch-tabs">
+              <!-- Tabs populated dynamically -->
+            </div>
+            <div class="rr-batch-result-content">
+              <div class="rr-batch-review-preview"></div>
+              <textarea class="rr-batch-response-textarea" placeholder="Response..."></textarea>
+              <div class="rr-batch-quality"></div>
+            </div>
+            <div class="rr-batch-result-actions">
+              <button class="rr-batch-copy-one">📋 Copy This</button>
+              <button class="rr-batch-regenerate">🔄 Regenerate</button>
+              <button class="rr-batch-copy-all">📋 Copy All</button>
+              <button class="rr-batch-export">📥 Export CSV</button>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div class="rr-batch-empty">
+            <span>📭 No reviews found</span>
+            <p>Navigate to a page with customer reviews to use batch mode.</p>
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://review-responder-frontend.onrender.com/sitemap.xml
+Sitemap: https://tryreviewresponder.com/sitemap.xml
 
 # Disallow private pages
 Disallow: /dashboard

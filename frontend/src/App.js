@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper, Utensils, CheckCircle, Keyboard, Store, MapPin, Wrench, Scissors, Car, Heart, User, Bell, ChevronDown, Edit3 } from 'lucide-react';
+import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, LogIn, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper, Utensils, CheckCircle, Keyboard, Store, MapPin, Wrench, Scissors, Car, Heart, User, Bell, ChevronDown, Edit3, LayoutDashboard } from 'lucide-react';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
 import { jsPDF } from 'jspdf';
@@ -97,13 +97,17 @@ const GoogleSignInButton = ({ onSuccess, onError, text = 'Sign in with Google' }
         cancel_on_tap_outside: true
       });
 
+      // Responsive width: use container width or max 280px
+      const containerWidth = buttonRef.current?.parentElement?.offsetWidth || 280;
+      const buttonWidth = Math.min(containerWidth - 20, 280);
+
       window.google.accounts.id.renderButton(buttonRef.current, {
         type: 'standard',
         theme: 'outline',
         size: 'large',
         text: text === 'Sign up with Google' ? 'signup_with' : 'signin_with',
         shape: 'rectangular',
-        width: 280
+        width: buttonWidth
       });
     } catch (error) {
       console.error('Google Sign-In initialization error:', error);
@@ -545,44 +549,119 @@ const ProfileMenu = () => {
 };
 
 const Navbar = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    setMobileMenuOpen(false);
+    navigate('/');
+  };
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
 
   return (
-    <nav className="navbar">
-      <div className="container navbar-content">
-        <Link to="/" className="navbar-brand">
-          <MessageSquare size={24} />
-          ReviewResponder
-        </Link>
+    <>
+      <nav className="navbar">
+        <div className="container navbar-content">
+          <Link to="/" className="navbar-brand" onClick={closeMobileMenu}>
+            <MessageSquare size={24} />
+            ReviewResponder
+          </Link>
 
-        <div className="navbar-menu">
-          {user ? (
-            <>
-              <Link to="/dashboard" className="navbar-link">Dashboard</Link>
-              <Link to="/pricing" className="navbar-link">Upgrade</Link>
-              <ProfileMenu />
-            </>
-          ) : (
-            <>
-              <Link to="/pricing" className="navbar-link">Pricing</Link>
-              <Link to="/support" className="navbar-link">Support</Link>
-              <Link to="/login" className="navbar-link">Login</Link>
-              <button
-                onClick={toggleTheme}
-                className="theme-toggle"
-                title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
-              >
-                {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
-              </button>
-              <Link to="/register" className="btn btn-primary" style={{ padding: '8px 16px' }}>
-                Get Started
-              </Link>
-            </>
-          )}
+          {/* Desktop Menu */}
+          <div className="navbar-menu">
+            {user ? (
+              <>
+                <Link to="/dashboard" className="navbar-link">Dashboard</Link>
+                <Link to="/pricing" className="navbar-link">Upgrade</Link>
+                <ProfileMenu />
+              </>
+            ) : (
+              <>
+                <Link to="/pricing" className="navbar-link">Pricing</Link>
+                <Link to="/support" className="navbar-link">Support</Link>
+                <Link to="/login" className="navbar-link">Login</Link>
+                <button
+                  onClick={toggleTheme}
+                  className="theme-toggle"
+                  title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+                >
+                  {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+                </button>
+                <Link to="/register" className="btn btn-primary" style={{ padding: '8px 16px' }}>
+                  Get Started
+                </Link>
+              </>
+            )}
+          </div>
+
+          {/* Hamburger Button (Mobile) */}
+          <button
+            className={`hamburger ${mobileMenuOpen ? 'open' : ''}`}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
         </div>
+      </nav>
+
+      {/* Mobile Menu Overlay */}
+      <div className={`mobile-menu-overlay ${mobileMenuOpen ? 'open' : ''}`}>
+        {user ? (
+          <>
+            <Link to="/dashboard" onClick={closeMobileMenu}>
+              <LayoutDashboard size={20} />
+              Dashboard
+            </Link>
+            <Link to="/pricing" onClick={closeMobileMenu}>
+              <CreditCard size={20} />
+              Upgrade Plan
+            </Link>
+            <Link to="/profile" onClick={closeMobileMenu}>
+              <User size={20} />
+              Profile
+            </Link>
+            <button onClick={toggleTheme}>
+              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+              {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+            </button>
+            <button onClick={handleLogout} style={{ color: 'var(--danger)' }}>
+              <LogOut size={20} />
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <Link to="/pricing" onClick={closeMobileMenu}>
+              <CreditCard size={20} />
+              Pricing
+            </Link>
+            <Link to="/support" onClick={closeMobileMenu}>
+              <HelpCircle size={20} />
+              Support
+            </Link>
+            <Link to="/login" onClick={closeMobileMenu}>
+              <LogIn size={20} />
+              Login
+            </Link>
+            <button onClick={toggleTheme}>
+              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+              {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+            </button>
+            <Link to="/register" onClick={closeMobileMenu} style={{ background: 'var(--primary)', color: 'white' }}>
+              <Sparkles size={20} />
+              Get Started Free
+            </Link>
+          </>
+        )}
       </div>
-    </nav>
+    </>
   );
 };
 
@@ -1357,7 +1436,7 @@ const LandingPage = () => {
             AI-powered review responses for busy business owners. Generate professional,
             personalized replies to Google, Yelp, and other platform reviews instantly.
           </p>
-          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+          <div className="hero-buttons" style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
             <Link to={user ? "/dashboard" : "/register"} className="btn btn-primary btn-lg">
               <Sparkles size={20} />
               Start Free Trial

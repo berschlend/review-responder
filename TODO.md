@@ -1,133 +1,76 @@
 # ReviewResponder - Todo Liste
 
-> Letzte Aktualisierung: 10.01.2026 - 17:00 Uhr
-
+> Letzte Aktualisierung: 10.01.2026 - 22:30 Uhr
 
 ---
 
-## 🔴 MORGEN (11.01.2026) - 10:05 Uhr
+## 🔴 MORGEN (11.01.2026)
 
-- [ ] **Outreach Cron-Job prüfen**
+- [ ] **Outreach Cron-Job prüfen (10:05 Uhr)**
   - Dashboard checken: https://review-responder.onrender.com/api/outreach/dashboard?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U
   - Oder Resend Logs: https://resend.com/emails
-  - Erwartung: Mehr Emails gesendet als gestern (aktuell: 10)
+  - Erwartung: Mehr Emails gesendet als gestern
+
+- [ ] **ANTHROPIC_API_KEY in Render eintragen**
+  - Für Smart AI (Claude) - aktuell nur Standard AI aktiv
+  - Render Backend → Environment → ANTHROPIC_API_KEY=sk-ant-...
+
+- [ ] **Demo-Video aufnehmen** (2 Min Walkthrough)
+  - Chrome Extension zeigen
+  - Dashboard Features zeigen
+  - YouTube/Loom hochladen
+
+---
+
+## 🟡 NÄCHSTE TASKS
+
+### Chrome Extension
+- [ ] Chrome Web Store Screenshots (3 weitere)
+- [ ] Chrome Web Store Einreichung (ZIP + Listing fertig)
+- [ ] Tone Preview (Beispiel-Snippets für jeden Tone)
+
+### Marketing
+- [ ] Google Ads starten ($50-100 Test)
+- [ ] Product Hunt Launch (wenn bereit)
+- [ ] LinkedIn Outreach starten
+
+### Features
+- [ ] Landing Page A/B Testing
 
 ---
 
 ## ✅ HEUTE ERLEDIGT (10.01.2026)
 
-- [x] **Outreach Email System komplett eingerichtet**
-  - Domain `tryreviewresponder.com` gekauft
-  - DNS Records in Resend verifiziert (DKIM, SPF, MX)
-  - Cron-Job läuft täglich um 10:00 Uhr Berlin
-  - Test-Email erfolgreich gesendet
+### Chrome Extension v1.4.0 - 6 neue Features
+- [x] Response Quality Score (AI-Bewertung: Excellent/Good/Needs Work)
+- [x] Response Variations (3 Optionen auf einmal: A/B/C Tabs)
+- [x] Analytics Widget (Wochenstatistik + Sparkline-Chart)
+- [x] Template Library (50+ vorgefertigte Templates nach Branche)
+- [x] Tone Strength Slider (visueller Slider statt Dropdown)
+- [x] Multi-Account Support (mehrere Business-Profile)
+- [x] Response Templates System (speichern & wiederverwenden)
+- [x] Draft Mode (Auto-Save beim Panel-Schließen)
+- [x] One-Shot Perfect Response (Auto-Tone Empfehlung)
+- [x] Daily Streak & Achievements (Gamification)
+- [x] Language Bug GEFIXT (antwortet jetzt in Review-Sprache)
 
-- [x] **Custom Domain LIVE!**
-  - https://tryreviewresponder.com zeigt die App
-  - SSL-Zertifikat aktiv
-  - www.tryreviewresponder.com leitet zu Root-Domain weiter
+### Dashboard & Backend
+- [x] Google Sign-In aktiviert (OAuth Consent Screen + Client ID)
+- [x] Hybrid AI System (Smart AI Claude + Standard GPT-4o-mini)
+- [x] Admin Plan-Wechsel Fix (Dashboard zeigt korrekte Daten)
+- [x] Template-Bearbeitung im Dashboard (Edit-Button + Modal)
+- [x] Profil-Seite mit Account-Management (4 Tabs)
+- [x] Frontend Inkonsistenzen gefixt (Limits, Features, Team Members)
+- [x] /admin Route mit ProtectedRoute geschützt
 
----
-
-scrambled todos
--chrome extension funktionalbel machen am besten gleich mit irgendwie dem wie ich Rezensionen als buiseness veiwer selber sehen würde das ist dann auch fürs demo video gut müssen wir mal gucken ob das irgendwie geht wenn nicht riwie anders, fixxen auch das generate in new tone, screenshot demo etc
-- google Anmeldung enblen
--Alle bestehenden feautures anschauen und testen (auch manuell), auch feautures in allen subs testen
--Prompt optimieren
---"real" weg machen bei examples bzw durch wirklcih reale erstetzen
--Dont leave empty handed nur 1x
--Testen wo feedback hingeht und ob mail ankommt
--Response language auswählen funktionabel machen
--Bei maybe later nicht das immer wieder angezeigt wird das feedback ding
--Templates testen
--Team feature testen
--Domain und domain email dann überll implementieren
-
-
-irgendwann:
--Google adds machen mit den landing pages etc
---Launchen auf Hunter irwann
-
-
+### Infrastructure
+- [x] Custom Domain LIVE (https://tryreviewresponder.com)
+- [x] Outreach-Emails von outreach@tryreviewresponder.com
+- [x] Cron-Job läuft täglich 10:00 Uhr Berlin
 
 ---
 
-## 🔴 DRINGEND: Google Sign-In aktivieren (5 Min)
-
-Der Code ist fertig deployed - nur noch Google Credentials erstellen!
-
-### Schritt-für-Schritt:
-
-- [ ] **1. Google Cloud Console öffnen**
-  - https://console.cloud.google.com
-  - Neues Projekt erstellen → Name: `ReviewResponder`
-
-- [ ] **2. OAuth-Zustimmungsbildschirm**
-  - Suche oben: "OAuth"
-  - Klick auf "OAuth-Zustimmungsbildschirm"
-  - Wähle: **Extern**
-  - App-Name: `ReviewResponder`
-  - Nutzer-Support-E-Mail: deine Email
-  - Entwickler-E-Mail: deine Email
-  - 3x "Speichern und fortfahren" klicken
-
-- [ ] **3. OAuth Client-ID erstellen**
-  - Links: "Anmeldedaten"
-  - Oben: "+ Anmeldedaten erstellen" → "OAuth-Client-ID"
-  - Anwendungstyp: **Webanwendung**
-  - Name: `ReviewResponder Web`
-  - Autorisierte JavaScript-Quellen → "+ URI hinzufügen":
-    ```
-    https://review-responder-frontend.onrender.com
-    ```
-  - Klick "Erstellen"
-
-- [ ] **4. Client-ID in Render eintragen**
-  - Client-ID kopieren (sieht so aus: `123456789-xxx.apps.googleusercontent.com`)
-  - Render Dashboard öffnen: https://dashboard.render.com
-  - **Backend Service** → Environment → Add:
-    ```
-    GOOGLE_CLIENT_ID=deine-client-id-hier
-    ```
-  - **Frontend Service** → Environment → Add:
-    ```
-    REACT_APP_GOOGLE_CLIENT_ID=deine-client-id-hier
-    ```
-  - Beide Services: "Save Changes" → Auto-Deploy
-
-- [ ] **5. Testen**
-  - https://review-responder-frontend.onrender.com/login
-  - "Sign in with Google" Button sollte erscheinen
-  - Klicken → Google Popup → Einloggen → Dashboard
-
-
-
-
--  Cold Email System
--  Product Hunt Launch Automation
-
-
-Google Sign-In Backend implementiert
-- Google Sign-In Frontend implementiert
----
-
-## 🟡 SPÄTER: Weitere Tasks
-
-### Marketing
-- [ ] Demo-Video aufnehmen (2 Min Walkthrough)
-- [ ] Product Hunt Launch planen
-- [ ] LinkedIn Outreach starten
-
-### Features
-- [ ] Chrome Extension im Web Store veröffentlichen
-- [ ] Custom Domain einrichten
-- [ ] A/B Testing für Landing Page
-
----
-
-## ✅ ERLEDIGT
-
-
+## ✅ FRÜHER ERLEDIGT
 
 ### 09.01.2026
 - [x] PostgreSQL Migration
@@ -142,6 +85,16 @@ Google Sign-In Backend implementiert
 - [x] Email Notifications
 - [x] SEO Blog Generator
 - [x] Team/Multi-User Accounts
+- [x] API Key System
+- [x] Affiliate/Partner System
+- [x] Admin Panel
+
+### 10.01.2026 (früher am Tag)
+- [x] LinkedIn Outreach System
+- [x] Cold Email System
+- [x] Product Hunt Launch Automation
+- [x] Google Ads Landing Pages (5 Seiten)
+- [x] Automated Outreach System
 
 ---
 
@@ -157,4 +110,17 @@ Google Sign-In Backend implementiert
 
 ---
 
-> Bei Fragen: Neue Claude Session starten und diese Datei + CLAUDE.md lesen lassen!
+## 🔗 Quick Links
+
+| Link | URL |
+|------|-----|
+| **Live App** | https://tryreviewresponder.com |
+| **Backend API** | https://review-responder.onrender.com |
+| **Outreach Dashboard** | https://review-responder.onrender.com/api/outreach/dashboard?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U |
+| **Render Dashboard** | https://dashboard.render.com |
+| **Stripe Dashboard** | https://dashboard.stripe.com |
+| **Resend Logs** | https://resend.com/emails |
+
+---
+
+> Bei Fragen: Neue Claude Session starten und CLAUDE.md lesen lassen!

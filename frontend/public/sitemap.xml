@@ -1,62 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://review-responder-frontend.onrender.com/</loc>
+    <loc>https://tryreviewresponder.com/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://review-responder-frontend.onrender.com/login</loc>
+    <loc>https://tryreviewresponder.com/login</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://review-responder-frontend.onrender.com/register</loc>
+    <loc>https://tryreviewresponder.com/register</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://review-responder-frontend.onrender.com/pricing</loc>
+    <loc>https://tryreviewresponder.com/pricing</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://review-responder-frontend.onrender.com/privacy</loc>
+    <loc>https://tryreviewresponder.com/privacy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://review-responder-frontend.onrender.com/terms</loc>
+    <loc>https://tryreviewresponder.com/terms</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://review-responder-frontend.onrender.com/affiliate</loc>
+    <loc>https://tryreviewresponder.com/affiliate</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://review-responder-frontend.onrender.com/google-review-response-generator</loc>
+    <loc>https://tryreviewresponder.com/google-review-response-generator</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://review-responder-frontend.onrender.com/yelp-review-reply-tool</loc>
+    <loc>https://tryreviewresponder.com/yelp-review-reply-tool</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://review-responder-frontend.onrender.com/restaurant-review-responses</loc>
+    <loc>https://tryreviewresponder.com/restaurant-review-responses</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://review-responder-frontend.onrender.com/hotel-review-management</loc>
+    <loc>https://tryreviewresponder.com/hotel-review-management</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://review-responder-frontend.onrender.com/local-business-reviews</loc>
+    <loc>https://tryreviewresponder.com/local-business-reviews</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
