@@ -4813,13 +4813,19 @@ const TeamPage = () => {
 
   useEffect(() => { loadTeamData(); }, []);
 
+  const [lastInviteUrl, setLastInviteUrl] = useState(null);
+
   const handleInvite = async (e) => {
     e.preventDefault();
     if (!inviteEmail) return;
     setInviting(true);
     try {
-      await api.post('/team/invite', { email: inviteEmail, role: inviteRole });
+      const res = await api.post('/team/invite', { email: inviteEmail, role: inviteRole });
       toast.success(`Invitation sent to ${inviteEmail}`);
+      // Show invite URL in case email doesn't arrive
+      if (res.data.inviteUrl) {
+        setLastInviteUrl(res.data.inviteUrl);
+      }
       setInviteEmail('');
       loadTeamData();
     } catch (e) {
@@ -4966,6 +4972,41 @@ const TeamPage = () => {
           {teamData?.members?.length || 0} / {maxMembers} team members used
           {user?.plan === 'professional' && <span> · <Link to="/pricing" style={{ color: 'var(--primary-600)' }}>Upgrade for more</Link></span>}
         </p>
+        {lastInviteUrl && (
+          <div style={{ marginTop: '16px', padding: '12px', background: 'var(--primary-50)', border: '1px solid var(--primary-200)', borderRadius: '8px' }}>
+            <p style={{ fontSize: '13px', fontWeight: '500', color: 'var(--primary-700)', marginBottom: '8px' }}>
+              📧 Email not arriving? Share this invite link directly:
+            </p>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <input
+                type="text"
+                value={lastInviteUrl}
+                readOnly
+                className="form-input"
+                style={{ flex: '1', fontSize: '12px', fontFamily: 'monospace' }}
+                onClick={(e) => e.target.select()}
+              />
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => {
+                  navigator.clipboard.writeText(lastInviteUrl);
+                  toast.success('Link copied!');
+                }}
+                style={{ whiteSpace: 'nowrap' }}
+              >
+                Copy
+              </button>
+              <button
+                type="button"
+                onClick={() => setLastInviteUrl(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: 'var(--gray-400)' }}
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Role Descriptions */}

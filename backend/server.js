@@ -2025,7 +2025,8 @@ app.post('/api/team/invite', authenticateToken, async (req, res) => {
         await resend.emails.send({ from: 'ReviewResponder <noreply@reviewresponder.app>', to: email, subject: `${user.business_name || user.email} invited you to their team`, html: inviteHtml });
       } catch (e) { console.error('Failed to send team invite email:', e); }
     }
-    res.status(201).json({ success: true, message: `Invitation sent to ${email}`, inviteToken: resend ? null : inviteToken });
+    // Always return token so frontend can show invite link (useful if email fails)
+    res.status(201).json({ success: true, message: `Invitation sent to ${email}`, inviteToken, inviteUrl: `${process.env.FRONTEND_URL}/join-team?token=${inviteToken}` });
   } catch (error) { console.error('Invite error:', error); res.status(500).json({ error: 'Failed to invite team member' }); }
 });
 
