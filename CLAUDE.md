@@ -90,6 +90,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **Product Hunt Launch Automation** - HUNTLAUNCH Coupon (60% off), Badge, Countdown Timer, Launch Banner, Checklists, Social Posts
 - [x] **Automated Outreach System** - 100% automatisch: Google Places Lead Scraping, Hunter.io Email Finding, Cold Email Sequences, Auto Follow-ups
 - [x] **Google Ads Landing Pages** - 5 dedizierte Landing Pages mit UTM Tracking (Restaurant, Hotel, Local Business, Google, Yelp)
+- [x] **Affiliate/Partner System** - 20% recurring commission, Affiliate Dashboard, Marketing Materials, Payout System
 
 ---
 
@@ -189,6 +190,13 @@ ReviewResponder/
 | POST | `/api/team/leave` | Team verlassen |
 | GET | `/api/outreach/track-open` | Tracking Pixel für Email Opens |
 | GET | `/api/outreach/stats` | Outreach Kampagnen-Statistiken (Admin) |
+| POST | `/api/affiliate/apply` | Affiliate-Bewerbung einreichen |
+| GET | `/api/affiliate/stats` | Affiliate-Statistiken (Clicks, Conversions, Earnings) |
+| GET | `/api/affiliate/payouts` | Payout-Historie abrufen |
+| POST | `/api/affiliate/payout` | Payout anfordern (Min. $50) |
+| PUT | `/api/affiliate/settings` | Affiliate-Einstellungen ändern (Payout Method, Email) |
+| GET | `/api/affiliate/track/:code` | Affiliate-Click tracken & weiterleiten |
+| GET | `/api/affiliate/validate/:code` | Affiliate-Code validieren (public) |
 
 ---
 
@@ -212,6 +220,7 @@ ReviewResponder/
 - ✅ SEO Blog Generator (Pro/Unlimited) - AI-generierte SEO-Artikel für Marketing
 - ✅ API Key System (Unlimited only) - REST API mit 5 Keys, 100 req/Tag, Dokumentation
 - ✅ Team/Multi-User Accounts (Pro: 3, Unlimited: 10) - Rollen: Admin, Member, Viewer, Shared Usage
+- ✅ Affiliate/Partner Program - 20% recurring commission, Dashboard, Marketing Materials, Payout System
 
 ---
 
@@ -686,6 +695,17 @@ Dann Frontend neu deployen und Launch genießen!
   - Neue Tabellen: `outreach_leads`, `outreach_emails`, `outreach_campaigns`
   - OUTREACH_SETUP.md mit Setup-Anleitung (5 Min)
   - Erwartete Ergebnisse: 300 Leads/Monat → 3-4 neue Kunden
+- **Affiliate/Partner System** implementiert:
+  - Backend: 4 neue Tabellen (affiliates, affiliate_clicks, affiliate_conversions, affiliate_payouts)
+  - Backend: 7 neue Endpoints (/api/affiliate/apply, /stats, /payouts, /payout, /settings, /track/:code, /validate/:code)
+  - Backend: 20% recurring commission automatisch bei Stripe invoice.paid
+  - Backend: affiliate_id Spalte zu users Tabelle hinzugefügt
+  - Frontend: AffiliateLandingPage (/affiliate) - How it works, Earnings Calculator, Apply Form
+  - Frontend: AffiliateDashboardPage (/affiliate/dashboard) - Stats, Clicks Chart, Conversions, Payouts
+  - Frontend: Marketing Materials Tab mit Email Template, Social Post, Key Selling Points
+  - Frontend: Affiliate-Banner auf Landing Page bei ?aff=CODE
+  - Frontend: affiliateCode Tracking in localStorage + Registration
+  - Features: Min. $50 Payout, PayPal/Bank Transfer, 30-Day Cookie
 
 ---
 
