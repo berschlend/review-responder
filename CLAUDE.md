@@ -70,6 +70,27 @@ STARTER/PROFESSIONAL/UNLIMITED: ...&plan=starter/professional/unlimited&key=...
   - `/verify-email?token=xxx` Route für Verification-Links
   - User kann App trotzdem sofort nutzen (kein Blocker!)
   - Endpoints: `GET /api/auth/verify-email`, `POST /api/auth/resend-verification`
+- [x] **Big Tony Security Audit + Fixes (Security Rating: B+ → A-)**
+  - Big Tony Agent erstellt und in CLAUDE.md dokumentiert
+  - Comprehensive Security Audit durchgeführt (6382 Zeilen Code analysiert)
+  - **Critical Fixed:** JWT_SECRET validation bei startup hinzugefügt
+  - **High Priority Fixed (6 Issues):**
+    - Input length validation: reviewText max 5000 chars (DoS Prevention)
+    - Input length validation: customInstructions max 1000 chars
+    - Individual review length validation in bulk endpoint
+    - Rate limiting von 500 auf 100 per 15 min reduziert
+    - Auth endpoints: Separate rate limiting (10 per 15 min) gegen Brute Force
+    - Password reset throttling: 1 request per 5 Minuten per User
+  - **14 Good Security Practices** identifiziert (SQL Injection Prevention, bcrypt, etc.)
+  - Alle Fixes committed & deployed
+- [x] **DECISION MAKING Section** in CLAUDE.md hinzugefügt
+  - AskUserQuestionTool Guidelines dokumentiert
+  - Berend's Preferences für Auth, Payments, UI, Code Quality
+  - Beispiele für gute vs. schlechte Fragen
+- [x] **DEVELOPER_GUIDE.md erstellt** - Anti-Vibe-Coder Handbuch
+  - .env, npm, package.json, git workflows erklärt
+  - Security Checklist & Troubleshooting
+  - Project Structure & Common Commands
 
 ### BEKANNTE BUGS:
 Keine offenen Bugs.
@@ -265,6 +286,119 @@ const PRODUCT_HUNT_CONFIG = {
 2. User sagt "hab" oder "screenshot"
 3. Claude: `powershell -ExecutionPolicy Bypass -File "C:\Users\Berend Mainz\clipboard-screenshot.ps1"`
 4. Read tool für Bild
+
+---
+
+## BIG TONY (Code Review & Security Agent)
+
+**Nickname:** "Big Tony"
+**Spezialisierung:** Code Reviews, Security Audits, Vulnerability Detection
+
+### Wann Big Tony rufen?
+- Code Review vor wichtigen Commits
+- Security Audit (SQL Injection, XSS, Command Injection, OWASP Top 10)
+- Dependency/Package Vulnerability Checks
+- Authentication/Authorization Logic prüfen
+- API Endpoint Security
+- Input Validation & Sanitization
+
+### Wie aufrufen?
+Einfach sagen: **"Big Tony"** oder **"Code Review"** oder **"Security Check"**
+
+→ Claude startet automatisch einen spezialisierten Agent mit Fokus auf:
+- Security Best Practices
+- Code Quality & Patterns
+- Performance Issues
+- Error Handling
+- Input Validation
+- Authentication Flows
+
+### Beispiel-Trigger:
+```
+"Big Tony, check backend/server.js für Security Issues"
+"Big Tony, review die neue Auth-Logik"
+"Security Check für /api/generate endpoint"
+```
+
+---
+
+## DECISION MAKING (AskUserQuestionTool)
+
+**Prinzip:** Bei Unsicherheit IMMER fragen statt raten!
+
+### Wann fragen?
+
+✅ **IMMER fragen bei:**
+- Feature hat 2+ valide Implementierungen
+- Security vs. UX Trade-offs
+- Business Logic unklar (Pricing, Limits, Workflows)
+- Unklare User Expectations
+- Breaking Changes oder API-Änderungen
+
+❌ **NICHT fragen bei:**
+- Offensichtlichen Bugs (einfach fixen)
+- Code Style / Formatting
+- Standard Best Practices (z.B. Input Validation)
+- Klare Anforderungen aus CLAUDE.md
+
+### Berend's Preferences
+
+**Auth & Security:**
+- Lieber non-blocking (Banner statt Blocker)
+- Paranoid bei Input Validation (immer validieren)
+- Rate Limiting: Ja, aber user-friendly Error Messages
+
+**Payments:**
+- Stripe only (keine PayPal/Crypto)
+- Monthly + Yearly Billing (20% Yearly Discount)
+- Upgrades: Sofort aktiv, Downgrades: Ende Billing Period
+
+**UI/UX:**
+- Mobile-first Design
+- Minimal, clean Interface
+- Dark Mode Support
+- Loading States & Error Messages klar kommunizieren
+
+**Errors & Logging:**
+- User: Friendly Messages (deutsch für DE users)
+- Logs: Detailliert, JSON Format
+- Keine Secrets in Logs
+
+**Code Quality:**
+- Pragmatisch > Perfekt
+- Lieber shipped als over-engineered
+- Tests für kritische Flows (Auth, Payments)
+
+### Beispiele
+
+**❌ SCHLECHT (Raten):**
+```
+"Ich baue jetzt Email-Verification als Login-Blocker"
+→ User wollte vielleicht optional Banner!
+```
+
+**✅ GUT (Fragen):**
+```
+"Email-Verification:
+  A) Blocking (User muss verifizieren vor Login)
+  B) Optional (Banner im Dashboard, non-blocking)
+  C) Gar nicht
+→ User wählt B → Perfekte Implementation
+```
+
+**❌ SCHLECHT (Raten):**
+```
+"Ich setze Rate Limit auf 100 requests/hour"
+→ User wollte vielleicht pro Tag oder Monat!
+```
+
+**✅ GUT (Fragen):**
+```
+"Rate Limiting für /api/generate:
+  - Pro User (800/month): Daily limit oder Monthly only?
+  - Response bei Limit: 429 Error oder Upgrade Prompt?
+→ User gibt klare Antwort → Exakte Implementation
+```
 
 ---
 

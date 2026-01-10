@@ -48,6 +48,13 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 const googleClient = process.env.GOOGLE_CLIENT_ID ? new OAuth2Client(process.env.GOOGLE_CLIENT_ID) : null;
 const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }) : null;
 
+// Validate critical environment variables
+if (!process.env.JWT_SECRET) {
+  console.error('ERROR: JWT_SECRET environment variable is not set!');
+  console.error('Application cannot function without JWT_SECRET. Exiting.');
+  process.exit(1);
+}
+
 // Email sender addresses (configurable via ENV)
 const FROM_EMAIL = process.env.FROM_EMAIL || 'ReviewResponder <hello@tryreviewresponder.com>';
 const OUTREACH_FROM_EMAIL = process.env.OUTREACH_FROM_EMAIL || 'Berend von ReviewResponder <outreach@tryreviewresponder.com>';
@@ -68,12 +75,21 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), hand
 
 app.use(express.json());
 
-// Rate limiting (increased for testing - 500 req/15min)
+// General API rate limiting - reduced from 500 to 100 for security
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 500,
+  max: 100,
   message: { error: 'Too many requests, please try again later.' }
 });
+
+// Strict rate limiting for authentication endpoints to prevent brute force
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  skipSuccessfulRequests: true,
+  message: { error: 'Too many authentication attempts, please try again later.' }
+});
+
 app.use('/api/', limiter);
 
 // Database helper functions
@@ -581,7 +597,7 @@ const PLAN_LIMITS = {
 
 // ============ AUTH ROUTES ============
 
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', authLimiter, async (req, res) => {
   try {
     const { email, password, businessName, referralCode, affiliateCode, utmSource, utmMedium, utmCampaign, utmContent, utmTerm, landingPage } = req.body;
 
@@ -838,7 +854,7 @@ app.post('/api/auth/resend-verification', authenticateToken, async (req, res) =>
   }
 });
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -1526,7 +1542,7 @@ app.post('/api/auth/google', async (req, res) => {
 });
 
 // Password Reset - Request
-app.post('/api/auth/forgot-password', async (req, res) => {
+app.post('/api/auth/forgot-password', authLimiter, async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -1539,6 +1555,17 @@ app.post('/api/auth/forgot-password', async (req, res) => {
 
     // Always return success to prevent email enumeration
     if (!user) {
+      return res.json({ success: true, message: 'If an account exists, a reset link will be sent.' });
+    }
+
+    // Throttle password reset requests - 1 per 5 minutes per user
+    const recentReset = await dbGet(
+      'SELECT created_at FROM password_reset_tokens WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1',
+      [user.id]
+    );
+
+    if (recentReset && new Date() - new Date(recentReset.created_at) < 5 * 60 * 1000) {
+      // Return success to prevent enumeration, but don't send email
       return res.json({ success: true, message: 'If an account exists, a reset link will be sent.' });
     }
 
@@ -1597,7 +1624,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
 });
 
 // Password Reset - Reset with Token
-app.post('/api/auth/reset-password', async (req, res) => {
+app.post('/api/auth/reset-password', authLimiter, async (req, res) => {
   try {
     const { token, password } = req.body;
 
@@ -1734,6 +1761,15 @@ async function generateResponseHandler(req, res) {
 
     if (!reviewText || reviewText.trim().length === 0) {
       return res.status(400).json({ error: 'Review text is required' });
+    }
+
+    // Input length validation for security (prevent API cost attacks)
+    if (reviewText.length > 5000) {
+      return res.status(400).json({ error: 'Review text too long (max 5000 characters)' });
+    }
+
+    if (customInstructions && customInstructions.length > 1000) {
+      return res.status(400).json({ error: 'Custom instructions too long (max 1000 characters)' });
     }
 
     // Check usage limits (with team support)
@@ -2099,6 +2135,11 @@ app.post('/api/generate-variations', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Review text is required' });
     }
 
+    // Input length validation for security
+    if (reviewText.length > 5000) {
+      return res.status(400).json({ error: 'Review text too long (max 5000 characters)' });
+    }
+
     // Check usage limits (requires 3 responses)
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
     const planLimits = PLAN_LIMITS[user.subscription_plan || 'free'] || PLAN_LIMITS.free;
@@ -2209,6 +2250,13 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
 
     if (reviews.length > 20) {
       return res.status(400).json({ error: 'Maximum 20 reviews per batch' });
+    }
+
+    // Validate individual review text length for security
+    for (const review of reviews) {
+      if (review && review.length > 5000) {
+        return res.status(400).json({ error: 'Individual review text too long (max 5000 characters)' });
+      }
     }
 
     // Check user plan (Paid plans only: Starter/Pro/Unlimited) with team support
