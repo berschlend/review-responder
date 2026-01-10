@@ -2317,12 +2317,26 @@ app.get('/api/stats', authenticateToken, async (req, res) => {
     // Check if user is a team member (usage comes from team owner)
     let usageOwner = user;
     let isTeamMember = false;
-    if (user.team_owner_id) {
-      const teamOwner = await dbGet('SELECT * FROM users WHERE id = $1', [user.team_owner_id]);
-      if (teamOwner) {
-        usageOwner = teamOwner;
-        isTeamMember = true;
-      }
+    const teamMembership = await dbGet(
+      `SELECT tm.*, u.id as owner_id, u.subscription_plan as owner_plan, u.subscription_status as owner_status,
+              u.smart_responses_used as owner_smart_used, u.standard_responses_used as owner_standard_used,
+              u.responses_used as owner_responses_used, u.responses_limit as owner_responses_limit
+       FROM team_members tm
+       JOIN users u ON tm.team_owner_id = u.id
+       WHERE tm.member_user_id = $1 AND tm.accepted_at IS NOT NULL`,
+      [req.user.id]
+    );
+    if (teamMembership) {
+      isTeamMember = true;
+      usageOwner = {
+        id: teamMembership.owner_id,
+        subscription_plan: teamMembership.owner_plan,
+        subscription_status: teamMembership.owner_status,
+        smart_responses_used: teamMembership.owner_smart_used || 0,
+        standard_responses_used: teamMembership.owner_standard_used || 0,
+        responses_used: teamMembership.owner_responses_used || 0,
+        responses_limit: teamMembership.owner_responses_limit || 0
+      };
     }
 
     // Determine effective plan

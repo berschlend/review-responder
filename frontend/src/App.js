@@ -3018,6 +3018,10 @@ const DashboardPage = () => {
   const [dashboardError, setDashboardError] = useState(null);
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
 
+  // Effective plan (uses team owner's plan if user is a team member)
+  const effectivePlan = stats?.subscription?.plan || user?.plan || 'free';
+  const isTeamMember = stats?.isTeamMember || false;
+
   // Blog Generator state
   const [blogTopics, setBlogTopics] = useState([]);
   const [blogTopic, setBlogTopic] = useState('');
@@ -3614,14 +3618,14 @@ const DashboardPage = () => {
           <Link to="/analytics" className="btn btn-secondary" style={{ padding: '8px 16px' }}>
             <BarChart2 size={16} />
             Analytics
-            {!['professional', 'unlimited'].includes(user?.plan) && (
+            {!['professional', 'unlimited'].includes(effectivePlan) && (
               <span style={{ background: 'var(--primary-600)', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: '600', marginLeft: '4px' }}>PRO</span>
             )}
           </Link>
           <Link to="/team" className="btn btn-secondary" style={{ padding: '8px 16px' }}>
             <Users size={16} />
             Team
-            {!['professional', 'unlimited'].includes(user?.plan) && (
+            {!['professional', 'unlimited'].includes(effectivePlan) && !isTeamMember && (
               <span style={{ background: 'var(--primary-600)', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: '600', marginLeft: '4px' }}>PRO</span>
             )}
           </Link>
@@ -3629,10 +3633,10 @@ const DashboardPage = () => {
             <Settings size={16} />
             Settings
           </Link>
-          <span className={`badge ${user?.plan === 'free' ? 'badge-warning' : 'badge-success'}`}>
-            {user?.plan?.toUpperCase()} Plan
+          <span className={`badge ${effectivePlan === 'free' ? 'badge-warning' : 'badge-success'}`}>
+            {isTeamMember ? `TEAM (${effectivePlan?.toUpperCase()})` : `${effectivePlan?.toUpperCase()} Plan`}
           </span>
-          {user?.plan === 'free' && (
+          {effectivePlan === 'free' && !isTeamMember && (
             <Link to="/pricing" className="btn btn-primary" style={{ padding: '8px 16px' }}>
               Upgrade
             </Link>
