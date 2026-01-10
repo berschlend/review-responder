@@ -1572,32 +1572,46 @@ LANGUAGE: ${bulkLanguageInstruction}`;
 
         const bulkUserMessage = `[Review] ${reviewText}`;
 
-        const completion = await openai.chat.completions.create({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: bulkSystemMessage },
-            { role: 'user', content: bulkUserMessage }
-          ],
-          max_tokens: 350,
-          temperature: 0.6,
-          presence_penalty: 0.1,
-          frequency_penalty: 0.1
-        });
+        let generatedResponse;
 
-        const generatedResponse = completion.choices[0].message.content.trim();
+        if (useModel === 'smart' && anthropic) {
+          // Use Claude for Smart AI
+          const response = await anthropic.messages.create({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 350,
+            system: bulkSystemMessage,
+            messages: [{ role: 'user', content: bulkUserMessage }]
+          });
+          generatedResponse = response.content[0].text.trim();
+        } else {
+          // Use GPT-4o-mini for Standard AI
+          const completion = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: bulkSystemMessage },
+              { role: 'user', content: bulkUserMessage }
+            ],
+            max_tokens: 350,
+            temperature: 0.6,
+            presence_penalty: 0.1,
+            frequency_penalty: 0.1
+          });
+          generatedResponse = completion.choices[0].message.content.trim();
+        }
 
-        // Save to database
+        // Save to database with AI model
         await dbQuery(
-          `INSERT INTO responses (user_id, review_text, review_platform, generated_response, tone)
-           VALUES ($1, $2, $3, $4, $5)`,
-          [req.user.id, reviewText, platform || 'google', generatedResponse, tone || 'professional']
+          `INSERT INTO responses (user_id, review_text, review_platform, generated_response, tone, ai_model)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [req.user.id, reviewText, platform || 'google', generatedResponse, tone || 'professional', useModel]
         );
 
         return {
           index,
           success: true,
           review: reviewText,
-          response: generatedResponse
+          response: generatedResponse,
+          aiModel: useModel
         };
       } catch (error) {
         console.error(`Error generating response for review ${index}:`, error);
@@ -1620,23 +1634,38 @@ LANGUAGE: ${bulkLanguageInstruction}`;
 
     // Update usage count for the account owner (team owner if team member)
     const usageOwnerId = isTeamMember ? usageOwner.id : req.user.id;
-    await dbQuery(
-      'UPDATE users SET responses_used = responses_used + $1 WHERE id = $2',
-      [successCount, usageOwnerId]
-    );
 
-    const updatedOwner = await dbGet('SELECT responses_used, responses_limit FROM users WHERE id = $1', [usageOwnerId]);
+    // Update correct usage counter based on model used
+    if (useModel === 'smart') {
+      await dbQuery(
+        'UPDATE users SET smart_responses_used = smart_responses_used + $1, responses_used = responses_used + $1 WHERE id = $2',
+        [successCount, usageOwnerId]
+      );
+    } else {
+      await dbQuery(
+        'UPDATE users SET standard_responses_used = standard_responses_used + $1, responses_used = responses_used + $1 WHERE id = $2',
+        [successCount, usageOwnerId]
+      );
+    }
+
+    const updatedOwner = await dbGet('SELECT * FROM users WHERE id = $1', [usageOwnerId]);
+    const updatedPlanLimits = PLAN_LIMITS[updatedOwner.subscription_plan || 'free'] || PLAN_LIMITS.free;
 
     res.json({
       isTeamUsage: isTeamMember,
+      aiModel: useModel,
       results: results.sort((a, b) => a.index - b.index),
       summary: {
         total: reviews.length,
         successful: successCount,
         failed: reviews.length - successCount
       },
-      responsesUsed: updatedOwner.responses_used,
-      responsesLimit: updatedOwner.responses_limit
+      usage: {
+        smart: { used: updatedOwner.smart_responses_used || 0, limit: updatedPlanLimits.smartResponses },
+        standard: { used: updatedOwner.standard_responses_used || 0, limit: updatedPlanLimits.standardResponses }
+      },
+      responsesUsed: (updatedOwner.smart_responses_used || 0) + (updatedOwner.standard_responses_used || 0),
+      responsesLimit: updatedPlanLimits.responses
     });
   } catch (error) {
     console.error('Bulk generation error:', error);
@@ -2275,8 +2304,9 @@ app.post('/api/capture-email', async (req, res) => {
       try {
         await resend.emails.send({
           from: FROM_EMAIL,
+          replyTo: 'hello@tryreviewresponder.com',
           to: email,
-          subject: "Don't miss our 50% launch discount",
+          subject: "Your 50% discount code inside",
           html: `
             <!DOCTYPE html>
             <html>
@@ -3288,7 +3318,7 @@ app.delete('/api/keys/:id', authenticateToken, async (req, res) => {
 // POST /api/v1/generate - Public API for generating responses
 app.post('/api/v1/generate', authenticateApiKey, async (req, res) => {
   try {
-    const { review_text, review_rating, tone, language, platform } = req.body;
+    const { review_text, review_rating, tone, language, platform, ai_model = 'auto' } = req.body;
 
     if (!review_text) {
       return res.status(400).json({ error: 'review_text is required' });
@@ -3299,14 +3329,37 @@ app.post('/api/v1/generate', authenticateApiKey, async (req, res) => {
     const selectedLanguage = language || 'en';
     const selectedPlatform = platform || 'google';
 
-    // ========== OPTIMIZED PUBLIC API PROMPT ==========
-    const apiToneDescriptions = {
-      professional: 'Professional and courteous - polished but warm',
-      friendly: 'Warm and personable - like a friend who runs a great business',
-      formal: 'Formal and business-appropriate - for upscale brands',
-      apologetic: 'Empathetic and solution-focused - takes ownership'
-    };
+    // Get plan limits and check usage
+    const planLimits = PLAN_LIMITS[user.subscription_plan || 'unlimited'] || PLAN_LIMITS.unlimited;
+    const smartUsed = user.smart_responses_used || 0;
+    const standardUsed = user.standard_responses_used || 0;
+    const smartRemaining = planLimits.smartResponses - smartUsed;
+    const standardRemaining = planLimits.standardResponses - standardUsed;
 
+    // Determine which AI model to use
+    let useModel = 'standard';
+
+    if (ai_model === 'smart') {
+      if (smartRemaining <= 0) {
+        return res.status(403).json({
+          error: 'No Smart AI responses remaining',
+          smartRemaining: 0,
+          standardRemaining
+        });
+      }
+      useModel = 'smart';
+    } else if (ai_model === 'auto') {
+      useModel = smartRemaining > 0 ? 'smart' : 'standard';
+      if (useModel === 'standard' && standardRemaining <= 0) {
+        return res.status(403).json({ error: 'No responses remaining' });
+      }
+    } else {
+      if (standardRemaining <= 0) {
+        return res.status(403).json({ error: 'No Standard responses remaining' });
+      }
+    }
+
+    // ========== OPTIMIZED PUBLIC API PROMPT ==========
     const apiLanguageNames = {
       en: 'English', de: 'German', es: 'Spanish', fr: 'French',
       it: 'Italian', pt: 'Portuguese', nl: 'Dutch', ja: 'Japanese',
@@ -3338,35 +3391,60 @@ RULES:
 ${review_rating ? `[${review_rating}-star review] ${review_rating <= 2 ? 'Take ownership, offer to make it right.' : 'Show genuine appreciation.'}` : ''}
 LANGUAGE: ${apiLanguageNames[selectedLanguage] || selectedLanguage}`;
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: `[Review] ${review_text}` }
-      ],
-      max_tokens: 300,
-      temperature: 0.6,
-      presence_penalty: 0.1,
-      frequency_penalty: 0.1
-    });
+    let generatedResponse;
 
-    const generatedResponse = completion.choices[0].message.content.trim();
+    if (useModel === 'smart' && anthropic) {
+      // Use Claude for Smart AI
+      const response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: `[Review] ${review_text}` }]
+      });
+      generatedResponse = response.content[0].text.trim();
+    } else {
+      // Use GPT-4o-mini for Standard AI
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `[Review] ${review_text}` }
+        ],
+        max_tokens: 300,
+        temperature: 0.6,
+        presence_penalty: 0.1,
+        frequency_penalty: 0.1
+      });
+      generatedResponse = completion.choices[0].message.content.trim();
+      if (useModel === 'smart' && !anthropic) useModel = 'standard';
+    }
 
-    // Save to responses table
+    // Save to responses table with AI model
     await dbQuery(
-      `INSERT INTO responses (user_id, review_text, review_rating, review_platform, generated_response, tone) VALUES ($1, $2, $3, $4, $5, $6)`,
-      [user.id, review_text, review_rating || null, selectedPlatform, generatedResponse, selectedTone]
+      `INSERT INTO responses (user_id, review_text, review_rating, review_platform, generated_response, tone, ai_model) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [user.id, review_text, review_rating || null, selectedPlatform, generatedResponse, selectedTone, useModel]
     );
 
-    // Update user's response count
-    await dbQuery('UPDATE users SET responses_used = responses_used + 1 WHERE id = $1', [user.id]);
+    // Update correct usage counter
+    if (useModel === 'smart') {
+      await dbQuery('UPDATE users SET smart_responses_used = smart_responses_used + 1, responses_used = responses_used + 1 WHERE id = $1', [user.id]);
+    } else {
+      await dbQuery('UPDATE users SET standard_responses_used = standard_responses_used + 1, responses_used = responses_used + 1 WHERE id = $1', [user.id]);
+    }
+
+    const updatedUser = await dbGet('SELECT smart_responses_used, standard_responses_used FROM users WHERE id = $1', [user.id]);
 
     res.json({
       success: true,
       response: generatedResponse,
+      ai_model: useModel,
       tone: selectedTone,
       language: selectedLanguage,
-      platform: selectedPlatform
+      platform: selectedPlatform,
+      usage: {
+        smart: { used: updatedUser.smart_responses_used || 0, limit: planLimits.smartResponses },
+        standard: { used: updatedUser.standard_responses_used || 0, limit: planLimits.standardResponses }
+      }
     });
   } catch (error) {
     console.error('API generate error:', error);
