@@ -41,13 +41,13 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 10.01.2026 - 04:30 Uhr**
+**Stand: 10.01.2026 - 16:45 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [x] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen ✅
 - [x] Stripe Yearly Prices erstellen + Price IDs in Render eintragen ✅
 - [ ] Demo-Video aufnehmen (2 Min Walkthrough) und YouTube/Loom Link einfügen
-- [ ] **Google OAuth Setup** - Google Cloud Console Credentials erstellen (siehe GOOGLE SIGN-IN SETUP unten)
+- [x] **Google OAuth Setup** - Google Cloud Console Credentials erstellt ✅
 - [ ] **Eigene Domain für Outreach-Emails** (MORGEN):
   1. Domain kaufen (~$10/Jahr bei Namecheap oder Porkbun)
   2. Domain in Resend verifizieren (DNS-Einträge hinzufügen)
@@ -55,6 +55,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
   4. Outreach-System aktivieren
 
 ### ✅ HEUTE ERLEDIGT (10.01.2026):
+- [x] **Google Sign-In aktiviert** - OAuth Consent Screen + Client ID in Render konfiguriert
 
 ### 🟡 NÄCHSTE CLAUDE TASKS (Wähle einen):
 
@@ -475,8 +476,6 @@ ReviewResponder/
 - ✅ Usage Tracking (Free: 5, Starter: 100, Pro: 300, Unlimited: ∞)
 - ✅ Response History
 - ✅ Business Context Personalization
-- ✅ Chrome Extension
-- ✅ Regenerate mit anderem Tone
 - ✅ Response Templates (speichern & als Startpunkt nutzen)
 - ✅ Bulk Response Generation (bis zu 20 Reviews auf einmal)
 - ✅ Analytics Dashboard mit Charts (Pro/Unlimited)
