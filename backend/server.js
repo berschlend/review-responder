@@ -913,7 +913,7 @@ app.post('/api/auth/change-email-request', authenticateToken, async (req, res) =
     }
 
     // Check if email already exists
-    const existing = await dbGet('SELECT id FROM users WHERE email = $1', [newEmail.toLowerCase()]);
+    const existing = await dbGet('SELECT id FROM users WHERE LOWER(email) = LOWER($1)', [newEmail]);
     if (existing) {
       return res.status(400).json({ error: 'This email is already in use' });
     }
@@ -1005,7 +1005,7 @@ app.post('/api/auth/confirm-email-change', async (req, res) => {
     const newEmail = user.email_change_new_email;
 
     // Check again if email is taken (race condition protection)
-    const existing = await dbGet('SELECT id FROM users WHERE email = $1 AND id != $2', [newEmail, user.id]);
+    const existing = await dbGet('SELECT id FROM users WHERE LOWER(email) = LOWER($1) AND id != $2', [newEmail, user.id]);
     if (existing) {
       return res.status(400).json({ error: 'This email is already in use' });
     }
@@ -1199,7 +1199,7 @@ app.post('/api/auth/google', async (req, res) => {
     }
 
     // Check if user already exists (by email or Google ID)
-    let user = await dbGet('SELECT * FROM users WHERE email = $1 OR oauth_id = $2', [email, googleId]);
+    let user = await dbGet('SELECT * FROM users WHERE LOWER(email) = LOWER($1) OR oauth_id = $2', [email, googleId]);
 
     if (user) {
       // Existing user - update OAuth info if needed
@@ -1210,6 +1210,31 @@ app.post('/api/auth/google', async (req, res) => {
         );
       } else if (user.profile_picture !== picture) {
         await dbQuery('UPDATE users SET profile_picture = $1 WHERE id = $2', [picture, user.id]);
+      }
+
+      // Check if user is a team member to get effective plan
+      const teamMembership = await dbGet(
+        `SELECT tm.*, u.email as owner_email, u.business_name as owner_business,
+                u.subscription_plan as owner_plan, u.subscription_status as owner_status
+         FROM team_members tm
+         JOIN users u ON tm.team_owner_id = u.id
+         WHERE tm.member_user_id = $1 AND tm.accepted_at IS NOT NULL`,
+        [user.id]
+      );
+
+      let effectivePlan = user.subscription_plan || 'free';
+      let effectiveStatus = user.subscription_status;
+      let teamInfo = null;
+
+      if (teamMembership) {
+        effectivePlan = teamMembership.owner_plan || 'free';
+        effectiveStatus = teamMembership.owner_status;
+        teamInfo = {
+          isTeamMember: true,
+          teamOwnerEmail: teamMembership.owner_email,
+          teamOwnerBusiness: teamMembership.owner_business,
+          role: teamMembership.role
+        };
       }
 
       // Generate JWT token
@@ -1228,12 +1253,16 @@ app.post('/api/auth/google', async (req, res) => {
           businessType: user.business_type,
           businessContext: user.business_context,
           responseStyle: user.response_style,
-          plan: user.subscription_plan,
+          plan: effectivePlan,
+          ownPlan: user.subscription_plan,
           responsesUsed: user.responses_used,
           responsesLimit: user.responses_limit,
+          subscriptionStatus: effectiveStatus,
+          ownSubscriptionStatus: user.subscription_status,
           onboardingCompleted: user.onboarding_completed,
           profilePicture: picture,
-          referralCode: user.referral_code
+          referralCode: user.referral_code,
+          teamInfo: teamInfo
         }
       });
     }
@@ -2811,10 +2840,10 @@ app.post('/api/team/invite', authenticateToken, async (req, res) => {
     if (parseInt(memberCount.count) >= maxMembers) {
       return res.status(400).json({ error: `Maximum ${maxMembers} team members allowed on your plan`, upgrade: user.subscription_plan === 'professional' });
     }
-    const existing = await dbGet('SELECT * FROM team_members WHERE team_owner_id = $1 AND member_email = $2', [req.user.id, email.toLowerCase()]);
+    const existing = await dbGet('SELECT * FROM team_members WHERE team_owner_id = $1 AND LOWER(member_email) = LOWER($2)', [req.user.id, email]);
     if (existing) return res.status(400).json({ error: 'This email has already been invited' });
     const inviteToken = crypto.randomBytes(32).toString('hex');
-    const existingUser = await dbGet('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
+    const existingUser = await dbGet('SELECT id FROM users WHERE LOWER(email) = LOWER($1)', [email]);
     await dbQuery(`INSERT INTO team_members (team_owner_id, member_email, member_user_id, role, invite_token) VALUES ($1, $2, $3, $4, $5)`, [req.user.id, email.toLowerCase(), existingUser?.id || null, role, inviteToken]);
     if (resend) {
       try {

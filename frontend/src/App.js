@@ -3106,6 +3106,7 @@ const DashboardPage = () => {
   const [history, setHistory] = useState([]);
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [customInstructions, setCustomInstructions] = useState('');
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
   const [templateName, setTemplateName] = useState('');
   const [savingTemplate, setSavingTemplate] = useState(false);
@@ -5462,6 +5463,11 @@ const ProfilePage = () => {
                 <div style={{ fontWeight: '500' }}>
                   {user?.plan?.charAt(0).toUpperCase() + user?.plan?.slice(1)}
                   {user?.subscriptionStatus === 'active' && <span style={{ color: 'var(--secondary)', marginLeft: '8px' }}>Active</span>}
+                  {user?.teamInfo?.isTeamMember && (
+                    <div style={{ fontSize: '12px', color: 'var(--primary)', marginTop: '4px' }}>
+                      via {user.teamInfo.teamOwnerBusiness || user.teamInfo.teamOwnerEmail}'s Team
+                    </div>
+                  )}
                 </div>
               </div>
               <div style={{ padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '8px' }}>
