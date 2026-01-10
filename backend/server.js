@@ -1974,6 +1974,7 @@ EMOJIS: ${emojiInstruction}`;
 
     const systemMessage = `You own ${businessName || contextUser.business_name || 'a business'}${contextUser.business_type ? ` (${contextUser.business_type})` : ''}. You're responding to a review on ${platform || 'Google'}.
 ${contextUser.business_context ? `\nAbout your business: ${contextUser.business_context}` : ''}
+${contextUser.response_style ? `\nIMPORTANT - Follow these custom instructions: ${contextUser.response_style}` : ''}
 
 ${writingStyleInstructions}
 
@@ -2337,6 +2338,7 @@ RULES: Use contractions. Short sentences. Max 1 exclamation mark. No em-dashes. 
 
 BUSINESS: ${contextUser.business_name || 'Our business'}${contextUser.business_type ? ` (${contextUser.business_type})` : ''}
 ${contextUser.business_context ? `About: ${contextUser.business_context}` : ''}
+${contextUser.response_style ? `IMPORTANT - Follow these custom instructions: ${contextUser.response_style}` : ''}
 
 ${bulkWritingStyle}
 
@@ -4204,6 +4206,7 @@ app.post('/api/v1/generate', authenticateApiKey, async (req, res) => {
 
 BUSINESS: ${user.business_name || 'Our business'}${user.business_type ? ` (${user.business_type})` : ''}
 ${user.business_context ? `About: ${user.business_context}` : ''}
+${user.response_style ? `IMPORTANT - Follow these custom instructions: ${user.response_style}` : ''}
 
 OUTPUT FORMAT:
 Write the response directly. No quotes around it. No "Response:" prefix. Just the text.
