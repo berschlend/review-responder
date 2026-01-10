@@ -27,6 +27,15 @@ function createResponsePanel() {
           <button class="rr-copy-btn">Copy</button>
           <button class="rr-regenerate-btn">Regenerate</button>
         </div>
+        <div class="rr-tone-switch">
+          <span class="rr-tone-label">Try different tone:</span>
+          <div class="rr-tone-buttons">
+            <button class="rr-tone-btn" data-tone="professional">Pro</button>
+            <button class="rr-tone-btn" data-tone="friendly">Friendly</button>
+            <button class="rr-tone-btn" data-tone="formal">Formal</button>
+            <button class="rr-tone-btn" data-tone="apologetic">Sorry</button>
+          </div>
+        </div>
       </div>
       <div class="rr-message"></div>
     </div>
@@ -47,6 +56,21 @@ function createResponsePanel() {
     generateResponse(panel);
   });
   panel.querySelector('.rr-copy-btn').addEventListener('click', () => copyResponse(panel));
+
+  // Quick tone switch buttons
+  panel.querySelectorAll('.rr-tone-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tone = btn.dataset.tone;
+      console.log('[RR] Quick tone button clicked:', tone);
+      // Update dropdown to match
+      panel.querySelector('.rr-tone-select').value = tone;
+      // Update active state
+      panel.querySelectorAll('.rr-tone-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      // Generate with new tone
+      generateResponse(panel);
+    });
+  });
 
   return panel;
 }
@@ -151,72 +175,34 @@ async function copyResponse(panel) {
   }
 }
 
-// Clean review text - remove UI elements that might confuse language detection
+// Clean review text - remove ONLY UI elements, preserve actual review content
 function cleanReviewText(text) {
-  // Remove common German UI patterns from Google Maps
-  const germanUIPatterns = [
+  // Only remove very specific UI patterns that won't appear in actual reviews
+  // Be conservative - it's better to leave UI text than remove review content
+  const uiPatterns = [
+    // Time stamps (German)
     /vor \d+ (Sekunden?|Minuten?|Stunden?|Tagen?|Wochen?|Monaten?|Jahren?)/gi,
+    // Time stamps (English)
+    /\d+ (second|minute|hour|day|week|month|year)s? ago/gi,
+    // Owner response labels
     /Antwort vom Inhaber/gi,
-    /Mehr anzeigen/gi,
-    /Weniger anzeigen/gi,
-    /Hilfreich/gi,
+    /Owner response/gi,
+    /Response from the owner/gi,
+    // Helpful counts (specific patterns)
     /\d+ (Person|Personen) fanden? diese Rezension hilfreich/gi,
-    // Additional German UI patterns
-    /Lokal Guide/gi,
-    /Local Guide/gi,
-    /Rezension(en)?/gi,
-    /Bewertet:?/gi,
-    /\d+\s*Sterne?/gi,
-    /\d+\s*Fotos?/gi,
-    /\d+\s*Bewertungen?/gi,
-    /Sortieren/gi,
-    /Neueste/gi,
-    /Höchste Bewertung/gi,
-    /Niedrigste Bewertung/gi,
-    /Antworten/gi,
-    /Teilen/gi,
-    /Melden/gi,
-    /Gepostet/gi,
-    /Geändert/gi,
+    /\d+ (person|people) found this (review )?helpful/gi,
+    // Google translate indicators
+    /Von Google übersetzt/gi,
+    /Translated by Google/gi,
     /Übersetzung anzeigen/gi,
     /Original anzeigen/gi,
-    /Von Google übersetzt/gi,
-    /Neue Rezension/gi,
-    /Alle Rezensionen/gi,
-  ];
-
-  // Remove common English UI patterns
-  const englishUIPatterns = [
-    /\d+ (second|minute|hour|day|week|month|year)s? ago/gi,
-    /Owner response/gi,
-    /See more/gi,
-    /See less/gi,
-    /Helpful/gi,
-    /\d+ (person|people) found this helpful/gi,
-    // Additional English UI patterns
-    /Local Guide/gi,
-    /reviews?/gi,
-    /Rated:?/gi,
-    /\d+\s*stars?/gi,
-    /\d+\s*photos?/gi,
-    /Sort by/gi,
-    /Newest/gi,
-    /Highest rating/gi,
-    /Lowest rating/gi,
-    /Reply/gi,
-    /Share/gi,
-    /Report/gi,
-    /Posted/gi,
-    /Edited/gi,
-    /Translate/gi,
-    /See original/gi,
-    /Translated by Google/gi,
-    /New review/gi,
-    /All reviews/gi,
+    // Local Guide badge
+    /Local Guide\s*·?\s*\d*\s*(Rezension(en)?|reviews?)?/gi,
+    /Lokal Guide\s*·?\s*\d*\s*(Rezension(en)?|reviews?)?/gi,
   ];
 
   let cleaned = text;
-  [...germanUIPatterns, ...englishUIPatterns].forEach(pattern => {
+  uiPatterns.forEach(pattern => {
     cleaned = cleaned.replace(pattern, '');
   });
 

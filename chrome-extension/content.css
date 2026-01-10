@@ -209,3 +209,51 @@
   background: rgba(0, 0, 0, 0.5);
   z-index: -1;
 }
+
+/* Quick Tone Switch */
+.rr-tone-switch {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+}
+
+.rr-tone-label {
+  display: block;
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.rr-tone-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.rr-tone-btn {
+  flex: 1;
+  padding: 8px 4px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  font-size: 11px;
+  font-weight: 500;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rr-tone-btn:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.rr-tone-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.rr-tone-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

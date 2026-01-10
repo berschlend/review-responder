@@ -1,63 +1,33 @@
 const API_URL = 'https://review-responder.onrender.com/api';
 
-// Clean review text - remove UI elements that might confuse language detection
+// Clean review text - remove ONLY UI elements, preserve actual review content
 function cleanReviewText(text) {
-  const germanUIPatterns = [
+  // Only remove very specific UI patterns that won't appear in actual reviews
+  // Be conservative - it's better to leave UI text than remove review content
+  const uiPatterns = [
+    // Time stamps (German)
     /vor \d+ (Sekunden?|Minuten?|Stunden?|Tagen?|Wochen?|Monaten?|Jahren?)/gi,
+    // Time stamps (English)
+    /\d+ (second|minute|hour|day|week|month|year)s? ago/gi,
+    // Owner response labels
     /Antwort vom Inhaber/gi,
-    /Mehr anzeigen/gi,
-    /Weniger anzeigen/gi,
-    /Hilfreich/gi,
+    /Owner response/gi,
+    /Response from the owner/gi,
+    // Helpful counts (specific patterns)
     /\d+ (Person|Personen) fanden? diese Rezension hilfreich/gi,
-    /Lokal Guide/gi,
-    /Local Guide/gi,
-    /Rezension(en)?/gi,
-    /Bewertet:?/gi,
-    /\d+\s*Sterne?/gi,
-    /\d+\s*Fotos?/gi,
-    /\d+\s*Bewertungen?/gi,
-    /Sortieren/gi,
-    /Neueste/gi,
-    /Höchste Bewertung/gi,
-    /Niedrigste Bewertung/gi,
-    /Antworten/gi,
-    /Teilen/gi,
-    /Melden/gi,
-    /Gepostet/gi,
-    /Geändert/gi,
+    /\d+ (person|people) found this (review )?helpful/gi,
+    // Google translate indicators
+    /Von Google übersetzt/gi,
+    /Translated by Google/gi,
     /Übersetzung anzeigen/gi,
     /Original anzeigen/gi,
-    /Von Google übersetzt/gi,
-  ];
-
-  const englishUIPatterns = [
-    /\d+ (second|minute|hour|day|week|month|year)s? ago/gi,
-    /Owner response/gi,
-    /See more/gi,
-    /See less/gi,
-    /Helpful/gi,
-    /\d+ (person|people) found this helpful/gi,
-    /Local Guide/gi,
-    /reviews?/gi,
-    /Rated:?/gi,
-    /\d+\s*stars?/gi,
-    /\d+\s*photos?/gi,
-    /Sort by/gi,
-    /Newest/gi,
-    /Highest rating/gi,
-    /Lowest rating/gi,
-    /Reply/gi,
-    /Share/gi,
-    /Report/gi,
-    /Posted/gi,
-    /Edited/gi,
-    /Translate/gi,
-    /See original/gi,
-    /Translated by Google/gi,
+    // Local Guide badge
+    /Local Guide\s*·?\s*\d*\s*(Rezension(en)?|reviews?)?/gi,
+    /Lokal Guide\s*·?\s*\d*\s*(Rezension(en)?|reviews?)?/gi,
   ];
 
   let cleaned = text;
-  [...germanUIPatterns, ...englishUIPatterns].forEach(pattern => {
+  uiPatterns.forEach(pattern => {
     cleaned = cleaned.replace(pattern, '');
   });
   return cleaned.replace(/\s+/g, ' ').trim();
