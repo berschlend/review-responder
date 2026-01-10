@@ -745,6 +745,230 @@ async function recordAnalyticsResponse() {
   await chrome.storage.local.set({ rr_analytics: analytics });
 }
 
+// ========== TEMPLATE LIBRARY ==========
+function updateLibraryList(panel) {
+  const category = panel.querySelector('.rr-library-category').value;
+  const search = panel.querySelector('.rr-library-search').value.toLowerCase();
+  const listEl = panel.querySelector('.rr-library-list');
+
+  // Get templates from library
+  let templates = filterTemplates(category, 'all');
+
+  // Apply search filter
+  if (search) {
+    templates = templates.filter(t =>
+      t.name.toLowerCase().includes(search) ||
+      t.template.toLowerCase().includes(search)
+    );
+  }
+
+  // Build list HTML
+  if (templates.length === 0) {
+    listEl.innerHTML = '<p class="rr-library-empty">No templates found. Try a different filter.</p>';
+    return;
+  }
+
+  const categoryLabels = {
+    restaurant: '🍴',
+    hotel: '🏨',
+    local_business: '🏪',
+    generic: '📝'
+  };
+
+  const toneColors = {
+    apologetic: '#ef4444',
+    friendly: '#10b981',
+    professional: '#667eea',
+    formal: '#6b7280'
+  };
+
+  listEl.innerHTML = templates.map(t => `
+    <div class="rr-library-item" data-template-id="${t.id}">
+      <div class="rr-library-item-header">
+        <span class="rr-library-category-badge">${categoryLabels[t.category] || '📝'}</span>
+        <span class="rr-library-name">${t.name}</span>
+        <span class="rr-library-tone" style="background: ${toneColors[t.tone] || '#667eea'}">${t.tone}</span>
+      </div>
+      <div class="rr-library-preview">${t.template.substring(0, 100)}${t.template.length > 100 ? '...' : ''}</div>
+      <button class="rr-library-use-btn" data-id="${t.id}">Use This Template</button>
+    </div>
+  `).join('');
+
+  // Add click handlers
+  listEl.querySelectorAll('.rr-library-use-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const templateId = btn.dataset.id;
+      const template = templates.find(t => t.id === templateId);
+      if (template) {
+        useLibraryTemplate(panel, template);
+      }
+    });
+  });
+}
+
+function useLibraryTemplate(panel, template) {
+  // Put template in textarea
+  panel.querySelector('.rr-response-textarea').value = template.template;
+  panel.querySelector('.rr-response-section').classList.remove('hidden');
+  panel.querySelector('.rr-variations-tabs').classList.add('hidden');
+
+  // Set tone (both slider and dropdown)
+  setTone(panel, template.tone);
+
+  // Update character counter
+  updateCharCounter(panel);
+
+  // Close overlay
+  panel.querySelector('.rr-templates-overlay').classList.add('hidden');
+
+  showToast(`📚 Template "${template.name}" loaded`, 'success');
+}
+
+// ========== TONE SLIDER ==========
+const TONES = [
+  { value: 'apologetic', emoji: '🙏', name: 'Apologetic' },
+  { value: 'formal', emoji: '🎩', name: 'Formal' },
+  { value: 'professional', emoji: '💼', name: 'Professional' },
+  { value: 'friendly', emoji: '😊', name: 'Friendly' }
+];
+
+function updateToneSliderUI(panel, index) {
+  const tone = TONES[index];
+  panel.querySelector('.rr-tone-emoji').textContent = tone.emoji;
+  panel.querySelector('.rr-tone-name').textContent = tone.name;
+  panel.querySelector('.rr-tone-select').value = tone.value;
+}
+
+function setTone(panel, toneValue) {
+  const index = TONES.findIndex(t => t.value === toneValue);
+  if (index >= 0) {
+    panel.querySelector('.rr-tone-slider').value = index;
+    updateToneSliderUI(panel, index);
+  }
+}
+
+function getToneFromSlider(sliderValue) {
+  return TONES[parseInt(sliderValue)] || TONES[2];
+}
+
+// ========== MULTI-ACCOUNT SUPPORT ==========
+const MAX_ACCOUNTS = 5;
+
+async function loadAccounts() {
+  try {
+    const data = await chrome.storage.local.get(['rr_accounts', 'rr_active_account']);
+    const accounts = data.rr_accounts || [];
+    const activeId = data.rr_active_account || null;
+    return { accounts, activeId };
+  } catch (e) {
+    return { accounts: [], activeId: null };
+  }
+}
+
+async function saveAccounts(accounts, activeId) {
+  await chrome.storage.local.set({ rr_accounts: accounts, rr_active_account: activeId });
+}
+
+async function getActiveAccount() {
+  const { accounts, activeId } = await loadAccounts();
+  return accounts.find(a => a.id === activeId) || accounts[0] || null;
+}
+
+async function addAccount(name, businessName) {
+  const { accounts, activeId } = await loadAccounts();
+  if (accounts.length >= MAX_ACCOUNTS) {
+    return { success: false, error: 'Maximum accounts reached' };
+  }
+
+  const newAccount = {
+    id: 'acc_' + Date.now(),
+    name,
+    businessName,
+    createdAt: new Date().toISOString()
+  };
+
+  accounts.push(newAccount);
+  await saveAccounts(accounts, newAccount.id);
+  return { success: true, account: newAccount };
+}
+
+async function switchAccount(accountId) {
+  const { accounts } = await loadAccounts();
+  const account = accounts.find(a => a.id === accountId);
+  if (account) {
+    await saveAccounts(accounts, accountId);
+    return { success: true, account };
+  }
+  return { success: false };
+}
+
+async function deleteAccount(accountId) {
+  let { accounts, activeId } = await loadAccounts();
+  accounts = accounts.filter(a => a.id !== accountId);
+
+  // If deleted active account, switch to first remaining
+  if (activeId === accountId) {
+    activeId = accounts[0]?.id || null;
+  }
+
+  await saveAccounts(accounts, activeId);
+  return { success: true };
+}
+
+function updateAccountSwitcher(panel, accounts, activeAccount) {
+  const switcher = panel.querySelector('.rr-account-current');
+  const dropdown = panel.querySelector('.rr-account-list');
+
+  if (!switcher) return;
+
+  if (activeAccount) {
+    switcher.innerHTML = `<span class="rr-account-icon">🏪</span><span class="rr-account-name">${activeAccount.name}</span><span class="rr-account-arrow">▼</span>`;
+  } else {
+    switcher.innerHTML = `<span class="rr-account-icon">👤</span><span class="rr-account-name">Default</span><span class="rr-account-arrow">▼</span>`;
+  }
+
+  // Build dropdown
+  let dropdownHTML = '';
+  accounts.forEach(acc => {
+    const isActive = activeAccount && acc.id === activeAccount.id;
+    dropdownHTML += `
+      <button class="rr-account-option ${isActive ? 'active' : ''}" data-account-id="${acc.id}">
+        <span class="rr-acc-icon">🏪</span>
+        <span class="rr-acc-name">${acc.name}</span>
+        ${isActive ? '<span class="rr-acc-check">✓</span>' : ''}
+      </button>
+    `;
+  });
+
+  dropdownHTML += `
+    <button class="rr-account-add">
+      <span class="rr-acc-icon">➕</span>
+      <span class="rr-acc-name">Add Account</span>
+    </button>
+  `;
+
+  dropdown.innerHTML = dropdownHTML;
+
+  // Add click handlers
+  dropdown.querySelectorAll('.rr-account-option').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const accountId = btn.dataset.accountId;
+      const result = await switchAccount(accountId);
+      if (result.success) {
+        showToast(`Switched to ${result.account.name}`, 'success');
+        const { accounts } = await loadAccounts();
+        updateAccountSwitcher(panel, accounts, result.account);
+        dropdown.classList.add('hidden');
+      }
+    });
+  });
+
+  dropdown.querySelector('.rr-account-add')?.addEventListener('click', () => {
+    dropdown.classList.add('hidden');
+    panel.querySelector('.rr-add-account-modal').classList.remove('hidden');
+  });
+}
+
 // ========== CHARACTER COUNTER ==========
 const CHAR_LIMIT = 4000; // Google Maps review response limit
 
@@ -1450,6 +1674,17 @@ async function createResponsePanel() {
         <span class="rr-platform-badge" style="background: ${platform.color}">${platform.icon} ${platform.name}</span>
       </div>
       <div class="rr-header-right">
+        <!-- Account Switcher -->
+        <div class="rr-account-switcher">
+          <button class="rr-account-current" title="Switch account">
+            <span class="rr-account-icon">👤</span>
+            <span class="rr-account-name">Default</span>
+            <span class="rr-account-arrow">▼</span>
+          </button>
+          <div class="rr-account-list hidden">
+            <!-- Accounts populated dynamically -->
+          </div>
+        </div>
         <div class="rr-time-saved" title="Time saved using ReviewResponder">
           <span class="rr-time-icon">⏱️</span>
           <span class="rr-time-value">${formatTimeSaved(timeSaved.minutes)}</span>
@@ -1555,9 +1790,22 @@ async function createResponsePanel() {
         </select>
       </div>
 
-      <!-- Simple Options Row -->
+      <!-- Tone Slider -->
+      <div class="rr-tone-slider-container">
+        <div class="rr-tone-slider-labels">
+          <span class="rr-tone-label-left">🙏 Apologetic</span>
+          <span class="rr-tone-label-right">😊 Friendly</span>
+        </div>
+        <input type="range" class="rr-tone-slider" min="0" max="3" step="1" value="1">
+        <div class="rr-tone-current">
+          <span class="rr-tone-emoji">💼</span>
+          <span class="rr-tone-name">Professional</span>
+        </div>
+      </div>
+
+      <!-- Simple Options Row (dropdown hidden, used for compatibility) -->
       <div class="rr-options-row">
-        <div class="rr-option">
+        <div class="rr-option" style="display: none;">
           <label>Tone</label>
           <select class="rr-tone-select">
             <option value="professional">💼 Professional</option>
@@ -1745,15 +1993,41 @@ async function createResponsePanel() {
       <div class="rr-templates-overlay hidden">
         <div class="rr-templates-content">
           <div class="rr-templates-header">
-            <h3>💾 My Templates</h3>
+            <h3>📋 Templates</h3>
             <button class="rr-templates-close">×</button>
           </div>
-          <div class="rr-templates-list">
-            <!-- Templates will be populated dynamically -->
-            <p class="rr-templates-empty">No templates saved yet.<br>Generate a response and click "Save as Template"!</p>
+
+          <!-- Template Tabs -->
+          <div class="rr-templates-tabs">
+            <button class="rr-tpl-tab active" data-tab="my">💾 My Templates</button>
+            <button class="rr-tpl-tab" data-tab="library">📚 Library (50+)</button>
           </div>
-          <div class="rr-templates-footer">
-            <span class="rr-templates-count">0/${MAX_TEMPLATES} templates</span>
+
+          <!-- My Templates Section -->
+          <div class="rr-templates-section rr-my-templates-section">
+            <div class="rr-templates-list">
+              <p class="rr-templates-empty">No templates saved yet.<br>Generate a response and click "Save as Template"!</p>
+            </div>
+            <div class="rr-templates-footer">
+              <span class="rr-templates-count">0/${MAX_TEMPLATES} templates</span>
+            </div>
+          </div>
+
+          <!-- Library Section -->
+          <div class="rr-templates-section rr-library-section hidden">
+            <div class="rr-library-filters">
+              <select class="rr-library-category">
+                <option value="all">All Industries</option>
+                <option value="restaurant">🍴 Restaurant</option>
+                <option value="hotel">🏨 Hotel</option>
+                <option value="local_business">🏪 Local Business</option>
+                <option value="generic">📝 Generic</option>
+              </select>
+              <input type="text" class="rr-library-search" placeholder="Search templates...">
+            </div>
+            <div class="rr-library-list">
+              <!-- Library templates will be populated dynamically -->
+            </div>
           </div>
         </div>
       </div>
@@ -1766,6 +2040,19 @@ async function createResponsePanel() {
           <div class="rr-save-modal-buttons">
             <button class="rr-save-modal-cancel">Cancel</button>
             <button class="rr-save-modal-confirm">Save</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Account Modal -->
+      <div class="rr-add-account-modal hidden">
+        <div class="rr-add-account-content">
+          <h3>🏪 Add Business Account</h3>
+          <input type="text" class="rr-account-name-input" placeholder="Account name (e.g., 'My Restaurant')">
+          <input type="text" class="rr-account-business-input" placeholder="Business name for responses">
+          <div class="rr-add-account-buttons">
+            <button class="rr-add-account-cancel">Cancel</button>
+            <button class="rr-add-account-confirm">Add Account</button>
           </div>
         </div>
       </div>
@@ -1790,7 +2077,8 @@ async function createResponsePanel() {
 
   // Load saved settings
   loadSettings().then(settings => {
-    panel.querySelector('.rr-tone-select').value = settings.tone || 'professional';
+    const tone = settings.tone || 'professional';
+    setTone(panel, tone);
     panel.querySelector('.rr-length-select').value = settings.length || 'medium';
     panel.querySelector('.rr-emoji-toggle').checked = settings.emojis || false;
     panel.querySelector('.rr-autocopy-toggle').checked = settings.autoCopy !== false;
@@ -1828,6 +2116,46 @@ function initPanelEvents(panel) {
 
   // Load analytics on panel open
   updateAnalytics(panel);
+
+  // Account Switcher
+  panel.querySelector('.rr-account-current').addEventListener('click', () => {
+    panel.querySelector('.rr-account-list').classList.toggle('hidden');
+  });
+
+  // Load accounts and update switcher
+  loadAccounts().then(({ accounts, activeId }) => {
+    const activeAccount = accounts.find(a => a.id === activeId) || accounts[0] || null;
+    updateAccountSwitcher(panel, accounts, activeAccount);
+  });
+
+  // Add Account Modal
+  panel.querySelector('.rr-add-account-cancel').addEventListener('click', () => {
+    panel.querySelector('.rr-add-account-modal').classList.add('hidden');
+  });
+
+  panel.querySelector('.rr-add-account-confirm').addEventListener('click', async () => {
+    const name = panel.querySelector('.rr-account-name-input').value.trim();
+    const businessName = panel.querySelector('.rr-account-business-input').value.trim();
+
+    if (!name) {
+      showToast('Please enter an account name', 'error');
+      return;
+    }
+
+    const result = await addAccount(name, businessName);
+    if (result.success) {
+      showToast(`Account "${name}" created!`, 'success');
+      panel.querySelector('.rr-add-account-modal').classList.add('hidden');
+      panel.querySelector('.rr-account-name-input').value = '';
+      panel.querySelector('.rr-account-business-input').value = '';
+
+      const { accounts, activeId } = await loadAccounts();
+      const activeAccount = accounts.find(a => a.id === activeId);
+      updateAccountSwitcher(panel, accounts, activeAccount);
+    } else {
+      showToast(result.error || 'Failed to add account', 'error');
+    }
+  });
 
   // Help button
   panel.querySelector('.rr-help-btn').addEventListener('click', () => {
@@ -1947,6 +2275,37 @@ function initPanelEvents(panel) {
 
   panel.querySelector('.rr-templates-close').addEventListener('click', () => {
     panel.querySelector('.rr-templates-overlay').classList.add('hidden');
+  });
+
+  // Template tabs switching
+  panel.querySelectorAll('.rr-tpl-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const tabName = tab.dataset.tab;
+
+      // Update active tab
+      panel.querySelectorAll('.rr-tpl-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      // Show correct section
+      if (tabName === 'my') {
+        panel.querySelector('.rr-my-templates-section').classList.remove('hidden');
+        panel.querySelector('.rr-library-section').classList.add('hidden');
+      } else {
+        panel.querySelector('.rr-my-templates-section').classList.add('hidden');
+        panel.querySelector('.rr-library-section').classList.remove('hidden');
+        updateLibraryList(panel);
+      }
+    });
+  });
+
+  // Library category filter
+  panel.querySelector('.rr-library-category').addEventListener('change', () => {
+    updateLibraryList(panel);
+  });
+
+  // Library search
+  panel.querySelector('.rr-library-search').addEventListener('input', () => {
+    updateLibraryList(panel);
   });
 
   // Template dropdown selection
@@ -2149,6 +2508,13 @@ function initPanelEvents(panel) {
     });
   });
 
+  // Tone Slider event
+  panel.querySelector('.rr-tone-slider').addEventListener('input', (e) => {
+    const index = parseInt(e.target.value);
+    updateToneSliderUI(panel, index);
+    saveCurrentSettings(panel);
+  });
+
   // Save settings on change
   panel.querySelector('.rr-tone-select').addEventListener('change', () => saveCurrentSettings(panel));
   panel.querySelector('.rr-length-select').addEventListener('change', () => saveCurrentSettings(panel));
@@ -2282,6 +2648,10 @@ async function generateResponse(panel) {
     if (data.quality) {
       showQualityBadge(panel, data.quality);
     }
+
+    // Record analytics
+    await recordAnalyticsResponse();
+    updateAnalytics(panel);
 
     // Hide undo button (fresh generation)
     panel.querySelector('.rr-undo-btn').classList.add('hidden');
@@ -2444,6 +2814,10 @@ async function generateResponseWithModifier(panel, modifier) {
     if (data.quality) {
       showQualityBadge(panel, data.quality);
     }
+
+    // Record analytics
+    await recordAnalyticsResponse();
+    updateAnalytics(panel);
 
     // Hide undo button (fresh generation)
     panel.querySelector('.rr-undo-btn').classList.add('hidden');
