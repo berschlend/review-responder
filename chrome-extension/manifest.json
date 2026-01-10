@@ -1,18 +1,17 @@
 {
   "manifest_version": 3,
   "name": "ReviewResponder - AI Review Responses",
-  "version": "1.0.0",
-  "description": "Generate professional responses to Google Reviews with one click",
+  "version": "1.1.0",
+  "description": "Generate professional responses to reviews with one click - works on any website",
   "permissions": [
     "activeTab",
     "storage",
-    "clipboardWrite"
+    "clipboardWrite",
+    "contextMenus"
   ],
   "host_permissions": [
-    "https://www.google.com/*",
-    "https://google.com/*",
-    "https://maps.google.com/*",
-    "https://business.google.com/*",
+    "https://*/*",
+    "http://*/*",
     "https://review-responder.onrender.com/*"
   ],
   "action": {
@@ -23,14 +22,12 @@
       "128": "icons/icon128.png"
     }
   },
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
-      "matches": [
-        "https://www.google.com/maps/*",
-        "https://google.com/maps/*",
-        "https://maps.google.com/*",
-        "https://business.google.com/*"
-      ],
+      "matches": ["<all_urls>"],
       "js": ["content.js"],
       "css": ["content.css"]
     }

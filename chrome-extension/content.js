@@ -300,4 +300,36 @@ observer.observe(document.body, {
   subtree: true
 });
 
-console.log('ReviewResponder content script loaded');
+// Listen for messages from background script (context menu)
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log('[RR] Message received:', message.action);
+
+  if (message.action === 'showPanelWithText') {
+    // Show panel with the selected text from context menu
+    const reviewText = cleanReviewText(message.reviewText);
+    console.log('[RR] Showing panel with selected text:', reviewText.substring(0, 50) + '...');
+    showResponsePanel(reviewText);
+    sendResponse({ success: true });
+  }
+
+  if (message.action === 'getSelection') {
+    // Return currently selected text
+    const selection = window.getSelection().toString().trim();
+    sendResponse({ text: selection });
+  }
+
+  return true; // Keep channel open for async
+});
+
+// Also allow keyboard shortcut: Select text + press Alt+R to generate
+document.addEventListener('keydown', (e) => {
+  if (e.altKey && e.key === 'r') {
+    const selection = window.getSelection().toString().trim();
+    if (selection && selection.length > 10) {
+      console.log('[RR] Keyboard shortcut triggered with selection');
+      showResponsePanel(cleanReviewText(selection));
+    }
+  }
+});
+
+console.log('ReviewResponder content script loaded - Right-click on selected text to generate response!');
