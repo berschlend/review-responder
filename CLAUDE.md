@@ -54,6 +54,10 @@ STARTER/PROFESSIONAL/UNLIMITED: ...&plan=starter/professional/unlimited&key=...
 | Tone Preview (Beispiel-Snippets) | Leicht | `chrome-extension/content.js` |
 
 
+### HEUTE ERLEDIGT (10.01.2026):
+- [x] **Email Case-Insensitive Fix** - 7 Stellen gefixt wo Email-Vergleiche case-sensitive waren
+  - Jetzt: `test@email.com` = `TEST@EMAIL.COM` bei Login, Register, Google OAuth, Team Invite, etc.
+
 ### BEKANNTE BUGS:
 Keine offenen Bugs.
 
