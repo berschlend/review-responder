@@ -1,14 +1,7 @@
 # ReviewResponder - Todo Liste
 
-> Letzte Aktualisierung: 10.01.2026 - 15:55 Uhr
+> Letzte Aktualisierung: 10.01.2026 - 17:00 Uhr
 
-
-## 🔴 HEUTE NOCH (10.01.2026) - ca. 17:00 Uhr
-
-- [ ] **Custom Domain SSL prüfen**
-  - Öffne: https://tryreviewresponder.com
-  - Sollte die ReviewResponder App zeigen (ohne SSL-Fehler)
-  - Falls noch Fehler: Render Dashboard → Custom Domains prüfen
 
 ---
 
@@ -28,6 +21,11 @@
   - DNS Records in Resend verifiziert (DKIM, SPF, MX)
   - Cron-Job läuft täglich um 10:00 Uhr Berlin
   - Test-Email erfolgreich gesendet
+
+- [x] **Custom Domain LIVE!**
+  - https://tryreviewresponder.com zeigt die App
+  - SSL-Zertifikat aktiv
+  - www.tryreviewresponder.com leitet zu Root-Domain weiter
 
 ---
 

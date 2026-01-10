@@ -33,15 +33,17 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 | Service | URL |
 |---------|-----|
-| **Frontend** | https://review-responder-frontend.onrender.com |
+| **Frontend (Custom Domain)** | https://tryreviewresponder.com |
+| **Frontend (Render)** | https://review-responder-frontend.onrender.com |
 | **Backend API** | https://review-responder.onrender.com |
 | **GitHub** | https://github.com/berschlend/review-responder |
+| **Outreach Dashboard** | https://review-responder.onrender.com/api/outreach/dashboard?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U |
 
 ---
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 10.01.2026 - 20:00 Uhr**
+**Stand: 10.01.2026 - 17:00 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [x] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen ✅
@@ -49,11 +51,12 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [ ] Demo-Video aufnehmen (2 Min Walkthrough) und YouTube/Loom Link einfügen
 - [x] **Google OAuth Setup** - Google Cloud Console Credentials erstellt ✅
 - [ ] **ANTHROPIC_API_KEY in Render eintragen** (für Smart AI / Claude)
-- [ ] **Eigene Domain für Outreach-Emails** (MORGEN):
-  1. Domain kaufen (~$10/Jahr bei Namecheap oder Porkbun)
-  2. Domain in Resend verifizieren (DNS-Einträge hinzufügen)
-  3. Claude: Email-Absender im Code auf neue Domain ändern
-  4. Outreach-System aktivieren
+- [x] **Custom Domain + Outreach-Emails LIVE!** ✅
+  - Domain `tryreviewresponder.com` gekauft (Namecheap)
+  - DNS in Resend verifiziert (DKIM, SPF, MX)
+  - Custom Domain in Render konfiguriert + SSL aktiv
+  - Outreach-Emails von `outreach@tryreviewresponder.com`
+  - Cron-Job läuft täglich 10:00 Uhr Berlin (cron-job.org)
 
 ### ✅ HEUTE ERLEDIGT (10.01.2026):
 - [x] **Google Sign-In aktiviert** - OAuth Consent Screen + Client ID in Render konfiguriert
