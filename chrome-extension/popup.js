@@ -63,6 +63,11 @@ const businessAvatar = document.getElementById('business-avatar');
 const previewBusinessName = document.getElementById('preview-business-name');
 const toneButtons = document.querySelectorAll('.tone-btn');
 
+// Stats elements
+const statToday = document.getElementById('stat-today');
+const statWeek = document.getElementById('stat-week');
+const statTotal = document.getElementById('stat-total');
+
 // State
 let token = null;
 let user = null;
@@ -77,6 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     user = stored.user;
     showMainSection();
     fetchUsage();
+    fetchStats();
   }
 });
 
@@ -109,6 +115,7 @@ loginForm.addEventListener('submit', async (e) => {
 
     showMainSection();
     fetchUsage();
+    fetchStats();
   } catch (error) {
     loginError.textContent = error.message;
   }
@@ -282,6 +289,24 @@ function updatePreviewBusinessName() {
   const name = user.businessName || 'Your Business';
   previewBusinessName.textContent = name;
   businessAvatar.textContent = name.charAt(0).toUpperCase();
+}
+
+// Fetch stats
+async function fetchStats() {
+  try {
+    const response = await fetch(`${API_URL}/stats`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (statToday) statToday.textContent = data.today || 0;
+      if (statWeek) statWeek.textContent = data.thisWeek || 0;
+      if (statTotal) statTotal.textContent = data.total || 0;
+    }
+  } catch (error) {
+    console.error('Failed to fetch stats:', error);
+  }
 }
 
 // Show/hide sections

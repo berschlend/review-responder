@@ -1035,7 +1035,7 @@ app.post('/api/responses/generate', authenticateToken, (req, res) => generateRes
 
 async function generateResponseHandler(req, res) {
   try {
-    const { reviewText, reviewRating, platform, tone, outputLanguage, businessName, customInstructions } = req.body;
+    const { reviewText, reviewRating, platform, tone, outputLanguage, businessName, customInstructions, responseLength, includeEmojis } = req.body;
 
     if (!reviewText || reviewText.trim().length === 0) {
       return res.status(400).json({ error: 'Review text is required' });
@@ -1149,6 +1149,19 @@ async function generateResponseHandler(req, res) {
 
     // ========== PERFECTED PROMPT - CLAUDE STYLE ==========
 
+    // Response length mapping
+    const lengthInstructions = {
+      short: '1-2 sentences. Be concise.',
+      medium: '2-3 sentences. Balanced length.',
+      detailed: '4-5 sentences. More thorough.'
+    };
+    const lengthInstruction = lengthInstructions[responseLength] || lengthInstructions.medium;
+
+    // Emoji instruction
+    const emojiInstruction = includeEmojis
+      ? 'You MAY include 1-2 relevant emojis if appropriate.'
+      : 'Do NOT use any emojis.';
+
     const writingStyleInstructions = `
 OUTPUT FORMAT:
 Write the response directly. No quotes around it. No "Response:" prefix. Just the text.
@@ -1169,7 +1182,9 @@ STYLE RULES:
 - Zero or one exclamation mark total
 - Reference specific details they mentioned
 - No em-dashes. Use periods or commas instead.
-- 2-3 sentences for positive reviews. 3-4 for negative.`;
+
+LENGTH: ${lengthInstruction}
+EMOJIS: ${emojiInstruction}`;
 
     // Few-shot examples matching our demo style exactly
     const fewShotExamples = {

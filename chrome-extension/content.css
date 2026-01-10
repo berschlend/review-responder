@@ -267,3 +267,102 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Sentiment Row */
+.rr-sentiment-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.rr-sentiment-badge {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.rr-sentiment-tip {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Options Row */
+.rr-options-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.rr-options-row select {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  background: white;
+}
+
+.rr-options-row select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.rr-length-select {
+  width: auto;
+}
+
+/* Checkbox Row */
+.rr-checkbox-row {
+  margin-bottom: 12px;
+}
+
+.rr-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+.rr-checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+/* Quick Actions */
+.rr-quick-actions {
+  margin-bottom: 12px;
+}
+
+.rr-quick-actions.hidden {
+  display: none;
+}
+
+.rr-quick-btn {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rr-quick-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+/* Hidden utility class */
+.hidden {
+  display: none !important;
+}

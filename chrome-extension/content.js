@@ -1,9 +1,54 @@
-// Content script for Google Maps/Business reviews
-// Adds "Generate Response" buttons next to reviews
+// Content script for ReviewResponder
+// Universal review response generator - works on any website
 
 const API_URL = 'https://review-responder.onrender.com/api';
 
-// Create floating response panel
+// Sentiment Analysis
+function analyzeSentiment(text) {
+  const lowerText = text.toLowerCase();
+
+  const positiveWords = [
+    'great', 'amazing', 'awesome', 'excellent', 'fantastic', 'wonderful', 'love', 'loved', 'best', 'perfect',
+    'outstanding', 'brilliant', 'superb', 'delicious', 'friendly', 'helpful', 'recommend', 'highly',
+    'toll', 'super', 'wunderbar', 'perfekt', 'ausgezeichnet', 'fantastisch', 'lecker', 'freundlich',
+    'genial', 'klasse', 'prima', 'hervorragend', 'excelente', 'bueno', 'increíble', 'magnifique'
+  ];
+
+  const negativeWords = [
+    'bad', 'terrible', 'awful', 'horrible', 'worst', 'poor', 'disappointed', 'disappointing', 'rude',
+    'slow', 'cold', 'dirty', 'disgusting', 'never', 'waste', 'overpriced', 'avoid', 'mediocre',
+    'schlecht', 'furchtbar', 'schrecklich', 'enttäuscht', 'langsam', 'kalt', 'dreckig', 'teuer',
+    'nie wieder', 'malo', 'horrible', 'décevant', 'mauvais'
+  ];
+
+  let positiveScore = 0;
+  let negativeScore = 0;
+
+  positiveWords.forEach(word => {
+    if (lowerText.includes(word)) positiveScore++;
+  });
+
+  negativeWords.forEach(word => {
+    if (lowerText.includes(word)) negativeScore++;
+  });
+
+  if (positiveScore > negativeScore + 1) return 'positive';
+  if (negativeScore > positiveScore) return 'negative';
+  return 'neutral';
+}
+
+function getSentimentInfo(sentiment) {
+  switch (sentiment) {
+    case 'positive':
+      return { emoji: '🟢', label: 'Positive Review', recommendedTone: 'friendly', color: '#10b981' };
+    case 'negative':
+      return { emoji: '🔴', label: 'Negative Review', recommendedTone: 'apologetic', color: '#ef4444' };
+    default:
+      return { emoji: '🟡', label: 'Neutral Review', recommendedTone: 'professional', color: '#f59e0b' };
+  }
+}
+
+// Create floating response panel with all features
 function createResponsePanel() {
   const panel = document.createElement('div');
   panel.id = 'rr-response-panel';
@@ -14,18 +59,44 @@ function createResponsePanel() {
     </div>
     <div class="rr-panel-body">
       <div class="rr-review-preview"></div>
-      <select class="rr-tone-select">
-        <option value="professional">Professional</option>
-        <option value="friendly">Friendly</option>
-        <option value="formal">Formal</option>
-        <option value="apologetic">Apologetic</option>
-      </select>
+
+      <div class="rr-sentiment-row">
+        <span class="rr-sentiment-badge"></span>
+        <span class="rr-sentiment-tip"></span>
+      </div>
+
+      <div class="rr-options-row">
+        <select class="rr-tone-select">
+          <option value="professional">Professional</option>
+          <option value="friendly">Friendly</option>
+          <option value="formal">Formal</option>
+          <option value="apologetic">Apologetic</option>
+        </select>
+        <select class="rr-length-select">
+          <option value="short">Short</option>
+          <option value="medium" selected>Medium</option>
+          <option value="detailed">Detailed</option>
+        </select>
+      </div>
+
+      <div class="rr-checkbox-row">
+        <label class="rr-checkbox-label">
+          <input type="checkbox" class="rr-emoji-toggle">
+          Include emojis
+        </label>
+      </div>
+
+      <div class="rr-quick-actions hidden">
+        <button class="rr-quick-btn" data-type="thanks">⚡ Quick Thanks</button>
+      </div>
+
       <button class="rr-generate-btn">Generate Response</button>
+
       <div class="rr-response-area hidden">
         <textarea class="rr-response-text" placeholder="Generated response will appear here..."></textarea>
         <div class="rr-button-row">
-          <button class="rr-copy-btn">Copy</button>
-          <button class="rr-regenerate-btn">Regenerate</button>
+          <button class="rr-copy-btn">📋 Copy</button>
+          <button class="rr-regenerate-btn">🔄 Regenerate</button>
         </div>
         <div class="rr-tone-switch">
           <span class="rr-tone-label">Try different tone:</span>
@@ -48,68 +119,57 @@ function createResponsePanel() {
   });
 
   panel.querySelector('.rr-generate-btn').addEventListener('click', () => {
-    console.log('[RR] Generate button clicked');
     generateResponse(panel);
   });
+
   panel.querySelector('.rr-regenerate-btn').addEventListener('click', () => {
-    console.log('[RR] Regenerate button clicked');
     generateResponse(panel);
   });
+
   panel.querySelector('.rr-copy-btn').addEventListener('click', () => copyResponse(panel));
 
   // Quick tone switch buttons
   panel.querySelectorAll('.rr-tone-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const tone = btn.dataset.tone;
-      console.log('[RR] Quick tone button clicked:', tone);
-      // Update dropdown to match
       panel.querySelector('.rr-tone-select').value = tone;
-      // Update active state
       panel.querySelectorAll('.rr-tone-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      // Generate with new tone
       generateResponse(panel);
     });
+  });
+
+  // Quick Thanks button
+  panel.querySelector('.rr-quick-btn').addEventListener('click', () => {
+    panel.querySelector('.rr-tone-select').value = 'friendly';
+    panel.querySelector('.rr-length-select').value = 'short';
+    generateResponse(panel);
   });
 
   return panel;
 }
 
-// Generate response
+// Generate response with all options
 async function generateResponse(panel) {
-  console.log('[RR] generateResponse called');
-
-  // Safely get reviewText with optional chaining
   const reviewText = panel?.dataset?.reviewText || '';
   const tone = panel.querySelector('.rr-tone-select').value;
+  const length = panel.querySelector('.rr-length-select').value;
+  const includeEmojis = panel.querySelector('.rr-emoji-toggle').checked;
   const generateBtn = panel.querySelector('.rr-generate-btn');
   const messageEl = panel.querySelector('.rr-message');
   const responseArea = panel.querySelector('.rr-response-area');
 
-  // Defensive check: ensure reviewText exists
   if (!reviewText || reviewText.trim().length === 0) {
-    console.error('[RR] Error: No review text found in panel.dataset');
-    messageEl.textContent = 'Error: No review text found. Please close and try again.';
+    messageEl.textContent = 'Error: No review text found.';
     messageEl.className = 'rr-message rr-error';
     return;
   }
 
-  console.log('[RR] Review text:', reviewText?.substring(0, 50) + '...');
-  console.log('[RR] Tone:', tone);
-
-  // Get token from storage
   let stored;
   try {
-    stored = await chrome.storage.local.get(['token']);
-    console.log('[RR] Token retrieved:', stored.token ? 'Yes' : 'No');
+    stored = await chrome.storage.local.get(['token', 'user']);
   } catch (storageError) {
-    console.error('[RR] Storage error:', storageError);
-    // Handle "Extension context invalidated" error
-    if (storageError.message && storageError.message.includes('Extension context invalidated')) {
-      messageEl.textContent = 'Extension was updated. Please refresh this page (F5).';
-    } else {
-      messageEl.textContent = 'Error accessing storage. Please refresh the page.';
-    }
+    messageEl.textContent = 'Extension error. Please refresh the page.';
     messageEl.className = 'rr-message rr-error';
     return;
   }
@@ -125,19 +185,23 @@ async function generateResponse(panel) {
   messageEl.textContent = '';
 
   try {
-    console.log('[RR] Making API request to:', `${API_URL}/generate`);
     const response = await fetch(`${API_URL}/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${stored.token}`
       },
-      body: JSON.stringify({ reviewText, tone, outputLanguage: 'auto' })
+      body: JSON.stringify({
+        reviewText,
+        tone,
+        outputLanguage: 'auto',
+        responseLength: length,
+        includeEmojis: includeEmojis,
+        businessName: stored.user?.businessName || ''
+      })
     });
 
-    console.log('[RR] Response status:', response.status);
     const data = await response.json();
-    console.log('[RR] Response data received');
 
     if (!response.ok) {
       throw new Error(data.error || 'Generation failed');
@@ -146,9 +210,7 @@ async function generateResponse(panel) {
     panel.querySelector('.rr-response-text').value = data.response;
     responseArea.classList.remove('hidden');
     messageEl.textContent = '';
-    console.log('[RR] Response generated successfully');
   } catch (error) {
-    console.error('[RR] Error:', error);
     messageEl.textContent = error.message;
     messageEl.className = 'rr-message rr-error';
   } finally {
@@ -161,13 +223,14 @@ async function generateResponse(panel) {
 async function copyResponse(panel) {
   const responseText = panel.querySelector('.rr-response-text').value;
   const messageEl = panel.querySelector('.rr-message');
+  const copyBtn = panel.querySelector('.rr-copy-btn');
 
   try {
     await navigator.clipboard.writeText(responseText);
-    messageEl.textContent = 'Copied!';
-    messageEl.className = 'rr-message rr-success';
+    copyBtn.textContent = '✅ Copied!';
+    messageEl.textContent = '';
     setTimeout(() => {
-      messageEl.textContent = '';
+      copyBtn.textContent = '📋 Copy';
     }, 2000);
   } catch (error) {
     messageEl.textContent = 'Failed to copy';
@@ -175,67 +238,173 @@ async function copyResponse(panel) {
   }
 }
 
-// Clean review text - remove ONLY UI elements, preserve actual review content
+// Clean review text
 function cleanReviewText(text) {
-  // Only remove very specific UI patterns that won't appear in actual reviews
-  // Be conservative - it's better to leave UI text than remove review content
   const uiPatterns = [
-    // Time stamps (German)
     /vor \d+ (Sekunden?|Minuten?|Stunden?|Tagen?|Wochen?|Monaten?|Jahren?)/gi,
-    // Time stamps (English)
     /\d+ (second|minute|hour|day|week|month|year)s? ago/gi,
-    // Owner response labels
     /Antwort vom Inhaber/gi,
     /Owner response/gi,
     /Response from the owner/gi,
-    // Helpful counts (specific patterns)
     /\d+ (Person|Personen) fanden? diese Rezension hilfreich/gi,
     /\d+ (person|people) found this (review )?helpful/gi,
-    // Google translate indicators
     /Von Google übersetzt/gi,
     /Translated by Google/gi,
-    /Übersetzung anzeigen/gi,
-    /Original anzeigen/gi,
-    // Local Guide badge
     /Local Guide\s*·?\s*\d*\s*(Rezension(en)?|reviews?)?/gi,
-    /Lokal Guide\s*·?\s*\d*\s*(Rezension(en)?|reviews?)?/gi,
   ];
 
   let cleaned = text;
   uiPatterns.forEach(pattern => {
     cleaned = cleaned.replace(pattern, '');
   });
-
-  // Clean up extra whitespace
-  cleaned = cleaned.replace(/\s+/g, ' ');
-
-  return cleaned.trim();
+  return cleaned.replace(/\s+/g, ' ').trim();
 }
 
-// Add buttons to reviews
+// Show response panel with sentiment analysis
+function showResponsePanel(reviewText) {
+  let panel = document.getElementById('rr-response-panel');
+  if (!panel) {
+    panel = createResponsePanel();
+  }
+
+  // Analyze sentiment
+  const sentiment = analyzeSentiment(reviewText);
+  const sentimentInfo = getSentimentInfo(sentiment);
+
+  // Reset panel
+  panel.dataset.reviewText = reviewText;
+  panel.querySelector('.rr-review-preview').textContent =
+    reviewText.length > 100 ? reviewText.substring(0, 100) + '...' : reviewText;
+
+  // Update sentiment display
+  const sentimentBadge = panel.querySelector('.rr-sentiment-badge');
+  sentimentBadge.textContent = `${sentimentInfo.emoji} ${sentimentInfo.label}`;
+  sentimentBadge.style.color = sentimentInfo.color;
+
+  const sentimentTip = panel.querySelector('.rr-sentiment-tip');
+  sentimentTip.textContent = `💡 Recommended: ${sentimentInfo.recommendedTone.charAt(0).toUpperCase() + sentimentInfo.recommendedTone.slice(1)}`;
+
+  // Auto-select recommended tone
+  panel.querySelector('.rr-tone-select').value = sentimentInfo.recommendedTone;
+
+  // Show Quick Thanks for positive reviews
+  const quickActions = panel.querySelector('.rr-quick-actions');
+  if (sentiment === 'positive') {
+    quickActions.classList.remove('hidden');
+  } else {
+    quickActions.classList.add('hidden');
+  }
+
+  panel.querySelector('.rr-response-area').classList.add('hidden');
+  panel.querySelector('.rr-response-text').value = '';
+  panel.querySelector('.rr-message').textContent = '';
+
+  // Show panel
+  panel.classList.add('rr-visible');
+}
+
+// Floating mini-button for quick access
+let floatingBtn = null;
+
+function createFloatingButton() {
+  if (floatingBtn) return floatingBtn;
+
+  floatingBtn = document.createElement('button');
+  floatingBtn.id = 'rr-floating-btn';
+  floatingBtn.innerHTML = '⚡';
+  floatingBtn.title = 'Generate Response';
+  floatingBtn.style.cssText = `
+    position: fixed;
+    display: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 999998;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+  `;
+
+  floatingBtn.addEventListener('mouseenter', () => {
+    floatingBtn.style.transform = 'scale(1.1)';
+    floatingBtn.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.5)';
+  });
+
+  floatingBtn.addEventListener('mouseleave', () => {
+    floatingBtn.style.transform = 'scale(1)';
+    floatingBtn.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.4)';
+  });
+
+  floatingBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const selection = window.getSelection().toString().trim();
+    if (selection && selection.length > 10) {
+      showResponsePanel(cleanReviewText(selection));
+    }
+    hideFloatingButton();
+  });
+
+  document.body.appendChild(floatingBtn);
+  return floatingBtn;
+}
+
+function showFloatingButton(x, y) {
+  const btn = createFloatingButton();
+  btn.style.left = `${Math.min(x + 10, window.innerWidth - 50)}px`;
+  btn.style.top = `${Math.min(y - 40, window.innerHeight - 50)}px`;
+  btn.style.display = 'block';
+}
+
+function hideFloatingButton() {
+  if (floatingBtn) {
+    floatingBtn.style.display = 'none';
+  }
+}
+
+// Listen for text selection
+document.addEventListener('mouseup', (e) => {
+  // Don't show on our own panel
+  if (e.target.closest('#rr-response-panel') || e.target.closest('#rr-floating-btn')) {
+    return;
+  }
+
+  setTimeout(() => {
+    const selection = window.getSelection().toString().trim();
+    if (selection && selection.length > 20) {
+      showFloatingButton(e.clientX, e.clientY);
+    } else {
+      hideFloatingButton();
+    }
+  }, 10);
+});
+
+// Hide floating button on scroll or click elsewhere
+document.addEventListener('mousedown', (e) => {
+  if (!e.target.closest('#rr-floating-btn')) {
+    hideFloatingButton();
+  }
+});
+
+// Add buttons to Google Maps reviews (legacy support)
 function addButtonsToReviews() {
-  // Google Maps reviews selector
-  const reviewSelectors = [
-    '.jftiEf', // Google Maps review cards
-    '[data-review-id]', // Alternative selector
-    '.WMbnJf', // Review container
-  ];
+  const reviewSelectors = ['.jftiEf', '[data-review-id]', '.WMbnJf'];
 
   for (const selector of reviewSelectors) {
     const reviews = document.querySelectorAll(selector);
     reviews.forEach(review => {
-      // Skip if already has button
       if (review.querySelector('.rr-btn')) return;
 
-      // Find review text - be more specific to get only the actual review content
       const textEl = review.querySelector('.wiI7pd, .MyEned, .Jtu6Td');
       if (!textEl) return;
 
-      // Clean the text to remove UI elements
       const reviewText = cleanReviewText(textEl.textContent);
       if (!reviewText || reviewText.length < 10) return;
 
-      // Create button
       const btn = document.createElement('button');
       btn.className = 'rr-btn';
       btn.textContent = '💬 Generate Response';
@@ -245,43 +414,16 @@ function addButtonsToReviews() {
         showResponsePanel(reviewText);
       });
 
-      // Find action area or append to review
       const actionArea = review.querySelector('.k8MTF, .GBkF3d') || review;
       actionArea.appendChild(btn);
     });
   }
 }
 
-// Show response panel
-function showResponsePanel(reviewText) {
-  let panel = document.getElementById('rr-response-panel');
-  if (!panel) {
-    panel = createResponsePanel();
-  }
-
-  // DEBUG: Log what text was extracted
-  console.log('[RR] Raw review text extracted:', reviewText);
-  console.log('[RR] Text length:', reviewText.length);
-
-  // Reset panel
-  panel.dataset.reviewText = reviewText;
-  panel.querySelector('.rr-review-preview').textContent =
-    reviewText.length > 100 ? reviewText.substring(0, 100) + '...' : reviewText;
-  panel.querySelector('.rr-response-area').classList.add('hidden');
-  panel.querySelector('.rr-response-text').value = '';
-  panel.querySelector('.rr-message').textContent = '';
-
-  // Show panel
-  panel.classList.add('rr-visible');
-}
-
 // Initialize
-let panel = null;
-
-// Run on page load
 addButtonsToReviews();
 
-// Watch for dynamic content (Google Maps loads reviews dynamically)
+// Watch for dynamic content
 const observer = new MutationObserver((mutations) => {
   let shouldCheck = false;
   for (const mutation of mutations) {
@@ -295,41 +437,50 @@ const observer = new MutationObserver((mutations) => {
   }
 });
 
-observer.observe(document.body, {
-  childList: true,
-  subtree: true
-});
+observer.observe(document.body, { childList: true, subtree: true });
 
-// Listen for messages from background script (context menu)
+// Listen for messages from background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log('[RR] Message received:', message.action);
-
   if (message.action === 'showPanelWithText') {
-    // Show panel with the selected text from context menu
     const reviewText = cleanReviewText(message.reviewText);
-    console.log('[RR] Showing panel with selected text:', reviewText.substring(0, 50) + '...');
     showResponsePanel(reviewText);
     sendResponse({ success: true });
   }
 
   if (message.action === 'getSelection') {
-    // Return currently selected text
     const selection = window.getSelection().toString().trim();
     sendResponse({ text: selection });
   }
 
-  return true; // Keep channel open for async
+  return true;
 });
 
-// Also allow keyboard shortcut: Select text + press Alt+R to generate
+// Keyboard shortcuts
 document.addEventListener('keydown', (e) => {
+  // Alt+R: Generate from selection
   if (e.altKey && e.key === 'r') {
     const selection = window.getSelection().toString().trim();
     if (selection && selection.length > 10) {
-      console.log('[RR] Keyboard shortcut triggered with selection');
       showResponsePanel(cleanReviewText(selection));
     }
   }
+
+  // Alt+C: Copy current response
+  if (e.altKey && e.key === 'c') {
+    const panel = document.getElementById('rr-response-panel');
+    if (panel && panel.classList.contains('rr-visible')) {
+      copyResponse(panel);
+    }
+  }
+
+  // Escape: Close panel
+  if (e.key === 'Escape') {
+    const panel = document.getElementById('rr-response-panel');
+    if (panel) {
+      panel.classList.remove('rr-visible');
+    }
+    hideFloatingButton();
+  }
 });
 
-console.log('ReviewResponder content script loaded - Right-click on selected text to generate response!');
+console.log('ReviewResponder loaded! Select text + ⚡ button or Right-click to generate responses.');
