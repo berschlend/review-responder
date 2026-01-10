@@ -898,7 +898,8 @@ app.post('/api/auth/login', async (req, res) => {
         subscriptionStatus: effectiveStatus,
         ownSubscriptionStatus: user.subscription_status,
         onboardingCompleted: user.onboarding_completed,
-        teamInfo: teamInfo
+        teamInfo: teamInfo,
+        emailVerified: user.email_verified || false
       }
     });
   } catch (error) {

@@ -55,6 +55,12 @@ STARTER/PROFESSIONAL/UNLIMITED: ...&plan=starter/professional/unlimited&key=...
 
 
 ### HEUTE ERLEDIGT (10.01.2026):
+- [x] **Response History für Free freigeschaltet** - History Tab jetzt für alle User sichtbar
+- [x] **CSV/PDF Export für Starter+ freigeschaltet** - War nur Pro+, jetzt auch Starter
+  - Free-User sehen Upgrade-Prompt beim Export-Versuch
+  - Feature Table auf Pricing Page aktualisiert
+- [x] **Konsistenz-Check Frontend** - 6x "5 free responses" zu "20 free responses" korrigiert
+- [x] **CLAUDE.md Cleanup** - Nicht-implementierte Features entfernt (Achievements/Streaks, Multi-Account UI)
 - [x] **Email Case-Insensitive Fix** - 7 Stellen gefixt wo Email-Vergleiche case-sensitive waren
   - Jetzt: `test@email.com` = `TEST@EMAIL.COM` bei Login, Register, Google OAuth, Team Invite, etc.
 
