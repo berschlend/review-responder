@@ -254,7 +254,68 @@ function showClipboardBanner(panel, clipboardText) {
   }, 10000);
 }
 
-// ========== SMART ISSUE DETECTION ==========
+// ========== SMART ISSUE DETECTION WITH COMPENSATION SUGGESTIONS ==========
+const ISSUE_COMPENSATIONS = {
+  cold_food: [
+    { id: 'replacement', label: 'Offer replacement meal', text: 'a complimentary replacement meal' },
+    { id: 'discount_10', label: '10% off next visit', text: '10% off your next visit' },
+    { id: 'apology', label: 'Sincere apology only', text: null },
+  ],
+  undercooked: [
+    { id: 'replacement', label: 'Offer replacement', text: 'a properly prepared replacement' },
+    { id: 'refund', label: 'Full refund', text: 'a full refund' },
+  ],
+  overcooked: [
+    { id: 'replacement', label: 'Offer replacement', text: 'a fresh replacement dish' },
+    { id: 'discount_15', label: '15% off next visit', text: '15% off your next visit' },
+  ],
+  portion_size: [
+    { id: 'free_side', label: 'Free side dish next time', text: 'a complimentary side dish on your next visit' },
+    { id: 'apology', label: 'Explain portions', text: null },
+  ],
+  tasteless: [
+    { id: 'chef_special', label: 'Chef special next visit', text: "a special dish prepared by our chef on your next visit" },
+    { id: 'discount_10', label: '10% off next visit', text: '10% off your next visit' },
+  ],
+  slow_service: [
+    { id: 'free_appetizer', label: 'Free appetizer next visit', text: 'a complimentary appetizer on your next visit' },
+    { id: 'priority', label: 'Priority seating', text: 'priority seating on your next visit' },
+    { id: 'apology', label: 'Apology only', text: null },
+  ],
+  rude_staff: [
+    { id: 'talk_manager', label: 'Manager follow-up', text: 'a personal follow-up from our manager' },
+    { id: 'discount_20', label: '20% off next visit', text: '20% off your next visit' },
+  ],
+  ignored: [
+    { id: 'priority', label: 'VIP treatment next time', text: 'VIP treatment on your next visit' },
+    { id: 'free_drink', label: 'Free drink next visit', text: 'a complimentary drink on your next visit' },
+  ],
+  wrong_order: [
+    { id: 'replacement', label: 'Free correct order', text: 'the correct order at no charge' },
+    { id: 'discount_25', label: '25% off next visit', text: '25% off your next visit' },
+  ],
+  dirty: [
+    { id: 'discount_15', label: '15% off next visit', text: '15% off your next visit' },
+    { id: 'apology', label: 'Apology + action plan', text: null },
+  ],
+  hygiene: [
+    { id: 'refund', label: 'Full refund', text: 'a full refund' },
+    { id: 'discount_30', label: '30% off next visit', text: '30% off your next visit' },
+  ],
+  pests: [
+    { id: 'refund', label: 'Full refund', text: 'a full refund' },
+    { id: 'apology', label: 'Apology + health assurance', text: null },
+  ],
+  overpriced: [
+    { id: 'discount_10', label: '10% loyalty discount', text: 'a 10% loyalty discount' },
+    { id: 'explain_value', label: 'Explain value', text: null },
+  ],
+  hidden_fees: [
+    { id: 'waive_fees', label: 'Waive extra fees', text: 'to waive those fees' },
+    { id: 'transparency', label: 'Promise transparency', text: null },
+  ],
+};
+
 function detectIssues(text) {
   const lowerText = text.toLowerCase();
   const issues = [];
@@ -294,7 +355,8 @@ function detectIssues(text) {
 
   allIssueTypes.forEach(({ keywords, issue, label }) => {
     if (keywords.some(kw => lowerText.includes(kw))) {
-      issues.push({ issue, label });
+      const compensations = ISSUE_COMPENSATIONS[issue] || [];
+      issues.push({ issue, label, compensations, selectedCompensation: null });
     }
   });
 
@@ -2056,10 +2118,19 @@ async function createResponsePanel() {
         <div class="rr-review-text"></div>
       </div>
 
-      <!-- Issue Detection Tags (shown when issues detected) -->
-      <div class="rr-issues-row hidden">
-        <span class="rr-issues-label">Issues detected:</span>
-        <div class="rr-issues-tags"></div>
+      <!-- Issue Resolution UI (shown when issues detected) -->
+      <div class="rr-issue-resolution hidden">
+        <div class="rr-issue-header">
+          <span class="rr-issue-icon">🔧</span>
+          <span class="rr-issue-title">Issues Detected</span>
+          <span class="rr-issue-count"></span>
+        </div>
+        <div class="rr-issue-list">
+          <!-- Issues dynamically inserted -->
+        </div>
+        <div class="rr-compensation-note hidden">
+          <span>💡 Selected compensations will be included in your response</span>
+        </div>
       </div>
 
       <!-- AI Tone Recommendation (One-Shot Perfect Response) -->
@@ -2195,6 +2266,45 @@ async function createResponsePanel() {
             <span class="rr-var-label">C</span>
             <span class="rr-var-style">Actionable</span>
           </button>
+        </div>
+
+        <!-- Inline Editor Toolbar -->
+        <div class="rr-editor-toolbar">
+          <div class="rr-editor-group">
+            <button class="rr-editor-btn" data-action="bold" title="Bold text">
+              <strong>B</strong>
+            </button>
+            <button class="rr-editor-btn" data-action="italic" title="Italic text">
+              <em>I</em>
+            </button>
+            <button class="rr-editor-btn" data-action="bullet" title="Add bullet point">
+              •
+            </button>
+          </div>
+          <div class="rr-editor-divider"></div>
+          <div class="rr-emoji-picker">
+            <button class="rr-emoji-btn" title="Insert emoji">😊</button>
+            <div class="rr-emoji-dropdown hidden">
+              <button class="rr-emoji-option" data-emoji="😊">😊</button>
+              <button class="rr-emoji-option" data-emoji="🙏">🙏</button>
+              <button class="rr-emoji-option" data-emoji="⭐">⭐</button>
+              <button class="rr-emoji-option" data-emoji="👍">👍</button>
+              <button class="rr-emoji-option" data-emoji="❤️">❤️</button>
+              <button class="rr-emoji-option" data-emoji="🎉">🎉</button>
+              <button class="rr-emoji-option" data-emoji="💪">💪</button>
+              <button class="rr-emoji-option" data-emoji="✨">✨</button>
+            </div>
+          </div>
+          <div class="rr-editor-divider"></div>
+          <div class="rr-editor-group">
+            <button class="rr-editor-btn rr-auto-shorten" data-action="auto-shorten" title="Auto-shorten for platform">
+              📏 Fit
+            </button>
+          </div>
+          <div class="rr-platform-limit-indicator">
+            <span class="rr-limit-icon">📝</span>
+            <span class="rr-limit-text">4000</span>
+          </div>
         </div>
 
         <textarea class="rr-response-textarea" placeholder="Your response..."></textarea>
@@ -3057,6 +3167,236 @@ function initPanelEvents(panel) {
       panel.dataset.batchResults = JSON.stringify(results);
     }
   });
+
+  // ========== INLINE EDITOR TOOLBAR EVENTS ==========
+
+  // Editor buttons (Bold, Italic, Bullet)
+  panel.querySelectorAll('.rr-editor-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const action = btn.dataset.action;
+      const textarea = panel.querySelector('.rr-response-textarea');
+      applyEditorAction(textarea, action, panel);
+    });
+  });
+
+  // Emoji picker toggle
+  const emojiBtn = panel.querySelector('.rr-emoji-btn');
+  const emojiDropdown = panel.querySelector('.rr-emoji-dropdown');
+
+  emojiBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    emojiDropdown.classList.toggle('hidden');
+  });
+
+  // Emoji selection
+  panel.querySelectorAll('.rr-emoji-option').forEach(opt => {
+    opt.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const emoji = opt.dataset.emoji;
+      const textarea = panel.querySelector('.rr-response-textarea');
+      insertAtCursor(textarea, emoji);
+      emojiDropdown.classList.add('hidden');
+      updateCharCounter(panel);
+    });
+  });
+
+  // Close emoji dropdown when clicking elsewhere
+  document.addEventListener('click', () => {
+    emojiDropdown.classList.add('hidden');
+  });
+
+  // Auto-shorten button
+  panel.querySelector('.rr-auto-shorten').addEventListener('click', () => {
+    autoShortenForPlatform(panel);
+  });
+}
+
+// ========== INLINE EDITOR HELPER FUNCTIONS ==========
+
+function applyEditorAction(textarea, action, panel) {
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const text = textarea.value;
+  const selectedText = text.substring(start, end);
+
+  let newText = '';
+  let cursorOffset = 0;
+
+  switch (action) {
+    case 'bold':
+      if (selectedText) {
+        // Wrap selection in asterisks (markdown bold simulation)
+        newText = text.substring(0, start) + '**' + selectedText + '**' + text.substring(end);
+        cursorOffset = end + 4;
+      } else {
+        // Insert placeholder
+        newText = text.substring(0, start) + '**bold text**' + text.substring(end);
+        cursorOffset = start + 2;
+        // Select "bold text"
+        setTimeout(() => {
+          textarea.setSelectionRange(start + 2, start + 11);
+          textarea.focus();
+        }, 0);
+      }
+      break;
+
+    case 'italic':
+      if (selectedText) {
+        newText = text.substring(0, start) + '*' + selectedText + '*' + text.substring(end);
+        cursorOffset = end + 2;
+      } else {
+        newText = text.substring(0, start) + '*italic text*' + text.substring(end);
+        cursorOffset = start + 1;
+        setTimeout(() => {
+          textarea.setSelectionRange(start + 1, start + 12);
+          textarea.focus();
+        }, 0);
+      }
+      break;
+
+    case 'bullet':
+      // Add bullet point at start of current line
+      const lineStart = text.lastIndexOf('\n', start - 1) + 1;
+      newText = text.substring(0, lineStart) + '• ' + text.substring(lineStart);
+      cursorOffset = start + 2;
+      break;
+
+    default:
+      return;
+  }
+
+  textarea.value = newText;
+  textarea.setSelectionRange(cursorOffset, cursorOffset);
+  textarea.focus();
+  updateCharCounter(panel);
+}
+
+function insertAtCursor(textarea, text) {
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const value = textarea.value;
+
+  textarea.value = value.substring(0, start) + text + value.substring(end);
+  textarea.setSelectionRange(start + text.length, start + text.length);
+  textarea.focus();
+}
+
+async function autoShortenForPlatform(panel) {
+  const textarea = panel.querySelector('.rr-response-textarea');
+  const text = textarea.value;
+
+  if (!text) {
+    showToast('Generate a response first', 'warning');
+    return;
+  }
+
+  // Get platform limit
+  const platform = detectPlatform().name;
+  const limits = {
+    'Google': 4000,
+    'Yelp': 5000,
+    'TripAdvisor': 10000,
+    'Facebook': 8000,
+    'Trustpilot': 3000,
+    'Booking': 2000,
+    'default': 4000
+  };
+  const limit = limits[platform] || limits.default;
+
+  if (text.length <= limit) {
+    showToast(`Already within ${limit} char limit!`, 'info');
+    return;
+  }
+
+  // Check login for API call
+  let stored;
+  try {
+    stored = await chrome.storage.local.get(['token', 'user']);
+  } catch (e) {
+    showToast('Extension error', 'error');
+    return;
+  }
+
+  if (!stored.token) {
+    showToast('Please login first', 'error');
+    return;
+  }
+
+  const btn = panel.querySelector('.rr-auto-shorten');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  try {
+    const response = await fetch(`${API_URL}/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${stored.token}`
+      },
+      body: JSON.stringify({
+        reviewText: panel.dataset.reviewText || 'customer review',
+        tone: panel.querySelector('.rr-tone-select')?.value || 'professional',
+        outputLanguage: panel.dataset.detectedLanguage || 'en',
+        responseLength: 'short',
+        additionalContext: `IMPORTANT: Shorten this existing response to fit within ${limit} characters while keeping the key message:\n\n${text}`
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Shortening failed');
+    }
+
+    // Store previous for undo
+    panel.dataset.previousResponse = text;
+    panel.querySelector('.rr-undo-btn').classList.remove('hidden');
+
+    textarea.value = data.response;
+    updateCharCounter(panel);
+    showToast(`Shortened to ${data.response.length} chars!`, 'success');
+  } catch (error) {
+    showToast(`Error: ${error.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}
+
+// Update selected compensations in panel data
+function updateSelectedCompensations(panel) {
+  const selects = panel.querySelectorAll('.rr-compensation-select');
+  const compensations = [];
+
+  selects.forEach(select => {
+    const selectedOption = select.options[select.selectedIndex];
+    if (select.value && selectedOption) {
+      const text = selectedOption.dataset.text;
+      if (text) {
+        compensations.push(text);
+      }
+    }
+  });
+
+  // Store in panel data
+  panel.dataset.selectedCompensations = JSON.stringify(compensations);
+
+  // Show/hide compensation note
+  const note = panel.querySelector('.rr-compensation-note');
+  if (compensations.length > 0) {
+    note.classList.remove('hidden');
+  } else {
+    note.classList.add('hidden');
+  }
+}
+
+// Get compensation context for API
+function getCompensationContext(panel) {
+  const compensations = JSON.parse(panel.dataset.selectedCompensations || '[]');
+  if (compensations.length === 0) return '';
+
+  return `\n\nIMPORTANT: Include these compensations in your response: ${compensations.join(', ')}. Offer them as a gesture of goodwill to resolve the customer's concerns.`;
 }
 
 async function closePanel(panel) {
@@ -3139,6 +3479,12 @@ async function generateResponse(panel) {
     if (detectedIssues.length > 0) {
       const issueLabels = detectedIssues.map(i => i.label.replace(/[^\w\s]/g, '').trim());
       context += ` Customer complaints detected: ${issueLabels.join(', ')}. Address these specific issues in your response.`;
+    }
+
+    // Add selected compensations to context
+    const compensationContext = getCompensationContext(panel);
+    if (compensationContext) {
+      context += compensationContext;
     }
 
     // Get business name: prefer user's setting, fallback to auto-detected
@@ -3695,21 +4041,46 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
   panel.querySelector('.rr-language-flag').textContent = language.flag;
   panel.querySelector('.rr-language-name').textContent = language.name;
 
-  // Smart Issue Detection
+  // Smart Issue Detection with Resolution UI
   const issues = detectIssues(cleaned);
-  const issuesRow = panel.querySelector('.rr-issues-row');
-  const issuesTags = panel.querySelector('.rr-issues-tags');
+  const issueResolution = panel.querySelector('.rr-issue-resolution');
+  const issueList = panel.querySelector('.rr-issue-list');
+  const issueCount = panel.querySelector('.rr-issue-count');
+  const compensationNote = panel.querySelector('.rr-compensation-note');
 
   if (issues.length > 0) {
     // Store issues for generateResponse
     panel.dataset.detectedIssues = JSON.stringify(issues);
 
-    // Show issues in UI
-    issuesTags.innerHTML = issues.map(i => `<span class="rr-issue-tag">${i.label}</span>`).join('');
-    issuesRow.classList.remove('hidden');
+    // Update count badge
+    issueCount.textContent = issues.length;
+
+    // Render issues with compensation options
+    issueList.innerHTML = issues.map((issue, idx) => `
+      <div class="rr-issue-item" data-issue="${issue.issue}" data-index="${idx}">
+        <div class="rr-issue-name">${issue.label}</div>
+        ${issue.compensations.length > 0 ? `
+          <select class="rr-compensation-select" data-issue="${issue.issue}">
+            <option value="">No compensation</option>
+            ${issue.compensations.map(c => `
+              <option value="${c.id}" data-text="${c.text || ''}">${c.label}</option>
+            `).join('')}
+          </select>
+        ` : ''}
+      </div>
+    `).join('');
+
+    issueResolution.classList.remove('hidden');
+
+    // Add event listeners for compensation selects
+    issueList.querySelectorAll('.rr-compensation-select').forEach(select => {
+      select.addEventListener('change', () => {
+        updateSelectedCompensations(panel);
+      });
+    });
   } else {
     panel.dataset.detectedIssues = '[]';
-    issuesRow.classList.add('hidden');
+    issueResolution.classList.add('hidden');
   }
 
   // AI Tone Recommendation (One-Shot Perfect Response)
