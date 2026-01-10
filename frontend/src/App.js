@@ -420,7 +420,7 @@ const ExitIntentPopup = () => {
     try {
       const response = await api.post('/capture-email', {
         email,
-        discountCode: 'FIRSTFREE',
+        discountCode: 'EARLY50',
         source: 'exit_intent'
       });
       
@@ -505,7 +505,7 @@ const ExitIntentPopup = () => {
             Wait! Don't Leave Empty-Handed
           </h2>
           <p style={{ fontSize: '16px', opacity: 0.95 }}>
-            Get your first month of ReviewResponder FREE
+            Don't miss our 50% launch discount
           </p>
         </div>
 
@@ -524,10 +524,10 @@ const ExitIntentPopup = () => {
                   fontWeight: '600',
                   marginBottom: '12px'
                 }}>
-                  🎁 Exclusive: First Month FREE
+                  🎁 50% Off - Forever
                 </div>
                 <p style={{ color: 'var(--gray-600)', fontSize: '14px' }}>
-                  Enter your email to claim your free month
+                  Enter your email to get your discount code
                 </p>
               </div>
 
@@ -550,7 +550,7 @@ const ExitIntentPopup = () => {
                   style={{ width: '100%', fontSize: '16px', padding: '12px' }}
                   disabled={loading}
                 >
-                  {loading ? 'Processing...' : 'Get My Free Month'}
+                  {loading ? 'Processing...' : 'Get 50% Off'}
                 </button>
               </form>
 
@@ -560,7 +560,7 @@ const ExitIntentPopup = () => {
                 color: 'var(--gray-500)',
                 marginTop: '16px'
               }}>
-                No spam, unsubscribe anytime. For new customers only.
+                No spam. Limited to first 50 customers.
               </p>
             </>
           ) : (
@@ -581,7 +581,7 @@ const ExitIntentPopup = () => {
                 You're In!
               </h3>
               <p style={{ color: 'var(--gray-600)', marginBottom: '20px' }}>
-                Check your email for your free month code: <strong>FIRSTFREE</strong>
+                Check your email for your 50% off code: <strong>EARLY50</strong>
               </p>
               <Link
                 to="/register"

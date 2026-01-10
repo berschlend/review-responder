@@ -2092,7 +2092,7 @@ app.post('/api/team/leave', authenticateToken, async (req, res) => {
 // Capture email from exit-intent popup
 app.post('/api/capture-email', async (req, res) => {
   try {
-    const { email, discountCode = 'FIRSTFREE', source = 'exit_intent' } = req.body;
+    const { email, discountCode = 'EARLY50', source = 'exit_intent' } = req.body;
 
     // Validate email
     if (!email || !validator.isEmail(email)) {
@@ -2129,7 +2129,7 @@ app.post('/api/capture-email', async (req, res) => {
         await resend.emails.send({
           from: FROM_EMAIL,
           to: email,
-          subject: 'Your first month is on us!',
+          subject: "Don't miss our 50% launch discount",
           html: `
             <!DOCTYPE html>
             <html>
@@ -2140,23 +2140,25 @@ app.post('/api/capture-email', async (req, res) => {
             <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; margin: 0; padding: 0; background-color: #f9fafb;">
               <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
                 <div style="background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
-                  <h1 style="margin: 0; font-size: 24px;">Your First Month is FREE</h1>
+                  <h1 style="margin: 0; font-size: 24px;">50% Off - Launch Special</h1>
                 </div>
                 <div style="background: white; padding: 40px; border: 1px solid #E5E7EB; border-top: none; border-radius: 0 0 8px 8px;">
                   <p style="margin-top: 0;">Hi there,</p>
 
-                  <p>Thanks for checking out ReviewResponder! We noticed you were interested, so here's something special:</p>
+                  <p>Thanks for checking out ReviewResponder! As an early supporter, you get access to our launch discount:</p>
 
                   <div style="background: #F3F4F6; padding: 24px; border-radius: 8px; text-align: center; margin: 24px 0;">
                     <p style="margin: 0 0 8px 0; color: #6B7280;">Use code</p>
                     <div style="font-size: 28px; font-weight: bold; color: #4F46E5; letter-spacing: 2px;">${discountCode}</div>
-                    <p style="margin: 8px 0 0 0; font-weight: 600;">Your first month is completely FREE</p>
+                    <p style="margin: 8px 0 0 0; font-weight: 600;">50% off - forever, not just the first month</p>
                   </div>
 
                   <p>ReviewResponder helps businesses respond to customer reviews in seconds using AI. No more staring at a blank screen wondering what to write.</p>
 
+                  <p>This discount won't last forever - it's only for our first 50 customers.</p>
+
                   <div style="text-align: center; margin: 32px 0;">
-                    <a href="${process.env.FRONTEND_URL}/pricing" style="display: inline-block; background: #4F46E5; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: 600;">Start Free Month</a>
+                    <a href="${process.env.FRONTEND_URL}/pricing" style="display: inline-block; background: #4F46E5; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: 600;">Claim 50% Off</a>
                   </div>
 
                   <p style="color: #6B7280; font-size: 14px;">Questions? Just reply to this email.</p>
