@@ -2,6 +2,30 @@
 
 > Letzte Aktualisierung: 10.01.2026 - 01:30 Uhr
 
+
+scrambled todos
+
+-domain holen email system resend verifizieren das rausgeht mit dem hunter ding usw das automatische email ding dann testent und shcauen in den resend logs etc
+-chrome extension funktionalbel machen am besten gleich mit irgendwie dem wie ich Rezensionen als buiseness veiwer selber sehen würde das ist dann auch fürs demo video gut müssen wir mal gucken ob das irgendwie geht wenn nicht riwie anders, fixxen auch das generate in new tone, screenshot demo etc
+- google Anmeldung enblen
+-Alle bestehenden feautures anschauen und testen (auch manuell), auch feautures in allen subs testen
+-Prompt optimieren
+--"real" weg machen bei examples bzw durch wirklcih reale erstetzen
+-Dont leave empty handed nur 1x
+-Testen wo feedback hingeht und ob mail ankommt
+-Response language auswählen funktionabel machen
+-Bei maybe later nicht das immer wieder angezeigt wird das feedback ding
+-Templates testen
+-Team feature testen
+-Domain und domain email dann überll implementieren
+
+
+irgendwann:
+-Google adds machen mit den landing pages etc
+--Launchen auf Hunter irwann
+
+
+
 ---
 
 ## 🔴 DRINGEND: Google Sign-In aktivieren (5 Min)
@@ -52,6 +76,15 @@ Der Code ist fertig deployed - nur noch Google Credentials erstellen!
   - "Sign in with Google" Button sollte erscheinen
   - Klicken → Google Popup → Einloggen → Dashboard
 
+
+
+
+-  Cold Email System
+-  Product Hunt Launch Automation
+
+
+Google Sign-In Backend implementiert
+- Google Sign-In Frontend implementiert
 ---
 
 ## 🟡 SPÄTER: Weitere Tasks
@@ -70,20 +103,12 @@ Der Code ist fertig deployed - nur noch Google Credentials erstellen!
 
 ## ✅ ERLEDIGT
 
-### 10.01.2026
-- [x] Google Sign-In Backend implementiert
-- [x] Google Sign-In Frontend implementiert
-- [x] API Key System für Entwickler
-- [x] Team Management UI
-- [x] LinkedIn Outreach Templates
-- [x] Cold Email System
-- [x] Product Hunt Launch Automation
+
 
 ### 09.01.2026
 - [x] PostgreSQL Migration
 - [x] Password Reset Flow
 - [x] Jahres-Abos (20% Rabatt)
-- [x] Chrome Extension Fixes
 - [x] Ehrliches Marketing
 - [x] Exit-Intent Popup
 - [x] Response Templates

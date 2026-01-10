@@ -259,6 +259,10 @@ function showResponsePanel(reviewText) {
     panel = createResponsePanel();
   }
 
+  // DEBUG: Log what text was extracted
+  console.log('[RR] Raw review text extracted:', reviewText);
+  console.log('[RR] Text length:', reviewText.length);
+
   // Reset panel
   panel.dataset.reviewText = reviewText;
   panel.querySelector('.rr-review-preview').textContent =

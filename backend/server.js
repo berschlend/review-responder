@@ -80,7 +80,8 @@ app.use(cors({
 
     callback(new Error('Not allowed by CORS'));
   },
-  credentials: true
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Admin-Key', 'X-API-Key']
 }));
 
 // Stripe webhook needs raw body - must be before express.json()
