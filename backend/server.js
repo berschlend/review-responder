@@ -1169,31 +1169,39 @@ async function generateResponseHandler(req, res) {
       }
     };
 
-    // Phrases to NEVER use - these sound robotic
-    const antiClicheInstructions = `
-PHRASES YOU MUST NEVER USE (these sound robotic and generic):
-- "Thank you for your feedback"
-- "We appreciate you taking the time to..."
-- "Your satisfaction is our top priority"
-- "We value your input"
-- "Sorry for any inconvenience caused"
-- "We apologize for any inconvenience"
-- "Please don't hesitate to..."
-- "We look forward to serving you again"
-- "Your feedback helps us improve"
-- "We take all feedback seriously"
+    // ========== CLAUDE-STYLE WRITING INSTRUCTIONS ==========
+    // Goal: Make GPT-4o-mini write like Claude - direct, warm, human, not gushing
 
-INSTEAD: Be specific! Reference something they actually mentioned in their review.`;
+    const writingStyleInstructions = `
+WRITING STYLE - THIS IS CRITICAL:
+You write like a real small business owner, not a corporate chatbot.
+Be warm but understated. Confident, not gushing. Direct, not flowery.
 
-    // Few-shot examples for quality
+BANNED WORDS (these scream "AI wrote this" - NEVER use them):
+Enthusiasm words: thrilled, delighted, excited, absolutely, incredibly, amazing, wonderful
+Corporate words: embark, delve, foster, leverage, journey, realm, beacon, tapestry
+Filler phrases: "a testament to", "shed light on", "we can't wait", "means the world"
+Generic phrases: "Thank you for your feedback", "We appreciate you taking the time"
+                 "Your satisfaction is our priority", "Sorry for any inconvenience"
+                 "Please don't hesitate", "We value your input"
+
+WRITING RULES:
+1. Use contractions naturally (we're, you'll, it's, that's)
+2. Keep sentences short. Vary the length. Some can be fragments.
+3. Maximum ONE exclamation mark per response (often zero is better)
+4. Be specific - reference actual details from their review
+5. Sound like a confident owner who genuinely cares, not a script
+6. Warm but not effusive. Helpful but not desperate.`;
+
+    // Few-shot examples with Claude-style responses
     const fewShotExamples = {
       positive: {
         review: "Great experience! The pasta was amazing and our server Marco was so attentive.",
-        goodResponse: "So glad the pasta hit the spot - our chef sources those ingredients fresh daily! Marco will be thrilled to hear this. Hope to see you again soon, maybe try our risotto next time!"
+        goodResponse: "Really glad you enjoyed the pasta - we're pretty proud of that recipe. And Marco's going to appreciate hearing this, he puts a lot of care into what he does. Hope to see you back sometime."
       },
       negative: {
         review: "Waited 45 minutes for our food and it was cold when it arrived. Very disappointed.",
-        goodResponse: "A 45-minute wait with cold food is absolutely not acceptable, and we completely understand your frustration. This is not the standard we hold ourselves to. We'd love the chance to make this right - please reach out to us directly so we can personally address this."
+        goodResponse: "45 minutes and cold food - that's a genuine failure on our part, and I'm sorry. That's not how we operate. If you're willing to give us another shot, reach out directly and we'll make it right."
       }
     };
 
@@ -1241,42 +1249,29 @@ INSTEAD: Be specific! Reference something they actually mentioned in their revie
 
     // ========== OPTIMIZED SYSTEM + USER MESSAGE STRUCTURE ==========
 
-    const systemMessage = `You are an experienced customer service professional who writes authentic, personalized review responses. You sound like a real business owner, not a corporate robot.
+    const systemMessage = `You are a small business owner responding to customer reviews. Not a customer service rep - the actual owner.
 
-BUSINESS PROFILE:
-- Name: ${businessName || contextUser.business_name || 'Our business'}
-${contextUser.business_type ? `- Industry: ${contextUser.business_type}` : ''}
-${contextUser.business_context ? `- About us: ${contextUser.business_context}` : ''}
-${contextUser.response_style ? `- Our voice: ${contextUser.response_style}` : ''}
-- Platform: ${platform || 'Google Reviews'}
+BUSINESS:
+${businessName || contextUser.business_name || 'Our business'}${contextUser.business_type ? ` (${contextUser.business_type})` : ''}
+${contextUser.business_context ? `About us: ${contextUser.business_context}` : ''}
+Platform: ${platform || 'Google Reviews'}
 
-${antiClicheInstructions}
+${writingStyleInstructions}
 
-EXAMPLE OF A GOOD ${isNegative ? 'NEGATIVE' : 'POSITIVE'} REVIEW RESPONSE:
+EXAMPLE - THIS IS THE QUALITY AND TONE TO MATCH:
 Review: "${exampleToUse.review}"
 Response: "${exampleToUse.goodResponse}"
 
-TONE GUIDANCE:
-Style: ${toneConfig.description}
-Good: "${toneConfig.goodExample}"
-Avoid: "${toneConfig.avoidExample}"
+LANGUAGE: ${languageInstruction}`;
 
-CRITICAL LANGUAGE RULE: ${languageInstruction}`;
-
-    const userMessage = `Write a response to this ${reviewRating ? reviewRating + '-star ' : ''}review:
+    const userMessage = `${reviewRating ? `[${reviewRating}-star review]` : ''}
 
 "${reviewText}"
 
-${ratingStrategy ? `
-STRATEGY FOR ${reviewRating}-STAR REVIEW:
-- Goal: ${ratingStrategy.goal}
-- Approach: ${ratingStrategy.approach}
-- Target length: ${ratingStrategy.length}
-- Avoid: ${ratingStrategy.avoid}
-` : ''}
-${customInstructions ? `ADDITIONAL INSTRUCTIONS: ${customInstructions}` : ''}
+${ratingStrategy ? `Goal: ${ratingStrategy.goal}. Keep it to ${ratingStrategy.length}.` : ''}
+${customInstructions ? `Note: ${customInstructions}` : ''}
 
-Write ONLY the response text:`;
+Respond:`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -1409,7 +1404,11 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
       apologetic: { description: 'Empathetic and solution-focused', avoid: 'We apologize for any inconvenience' }
     };
 
-    const bulkAntiCliche = `NEVER USE: "Thank you for your feedback", "We appreciate you taking the time", "Your satisfaction is our priority", "Sorry for any inconvenience". Be specific instead!`;
+    // Claude-style instructions for bulk (compact version)
+    const bulkWritingStyle = `STYLE: Write like the actual business owner. Warm but understated, direct, not gushing.
+BANNED: thrilled, delighted, excited, absolutely, incredibly, amazing, embark, delve, foster, leverage
+NO PHRASES: "Thank you for your feedback", "We appreciate you taking the time", "Sorry for any inconvenience"
+RULES: Use contractions. Short sentences. Max 1 exclamation mark. Be specific about what they mentioned.`;
 
     const bulkLanguageNames = {
       en: 'English', de: 'German', es: 'Spanish', fr: 'French',
@@ -1420,11 +1419,10 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
     };
 
     const bulkLanguageInstruction = (!outputLanguage || outputLanguage === 'auto')
-      ? 'You MUST respond in the EXACT SAME language as the review.'
-      : `You MUST write the response in ${bulkLanguageNames[outputLanguage] || 'English'}.`;
+      ? 'Respond in the SAME language as the review.'
+      : `Respond in ${bulkLanguageNames[outputLanguage] || 'English'}.`;
 
     const contextUser = isTeamMember ? usageOwner : user;
-    const bulkToneConfig = bulkToneDefinitions[tone] || bulkToneDefinitions.professional;
 
     // Process all reviews in parallel
     const generateSingleResponse = async (reviewText, index) => {
@@ -1433,25 +1431,18 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
       }
 
       try {
-        // Build optimized system message for bulk
-        const bulkSystemMessage = `You are an experienced customer service professional who writes authentic, personalized review responses. You sound like a real business owner, not a corporate robot.
+        const bulkSystemMessage = `You're a small business owner responding to reviews. Not a customer service rep - the owner.
 
 BUSINESS: ${contextUser.business_name || 'Our business'}${contextUser.business_type ? ` (${contextUser.business_type})` : ''}
-${contextUser.business_context ? `ABOUT US: ${contextUser.business_context}` : ''}
-PLATFORM: ${platform || 'Google Reviews'}
+${contextUser.business_context ? `About: ${contextUser.business_context}` : ''}
 
-${bulkAntiCliche}
-
-TONE: ${bulkToneConfig.description}
-Avoid: "${bulkToneConfig.avoid}"
+${bulkWritingStyle}
 
 LANGUAGE: ${bulkLanguageInstruction}`;
 
-        const bulkUserMessage = `Write a response to this review:
+        const bulkUserMessage = `"${reviewText}"
 
-"${reviewText}"
-
-Write ONLY the response text:`;
+Respond:`;
 
         const completion = await openai.chat.completions.create({
           model: 'gpt-4o-mini',
@@ -3203,36 +3194,37 @@ app.post('/api/v1/generate', authenticateApiKey, async (req, res) => {
       zh: 'Chinese', ko: 'Korean', ar: 'Arabic', ru: 'Russian'
     };
 
-    const systemPrompt = `You are an experienced customer service professional who writes authentic, personalized review responses. You sound like a real business owner, not a corporate robot.
+    const systemPrompt = `You're a small business owner responding to reviews. Not a customer service rep - the actual owner.
 
-BUSINESS PROFILE:
-- Name: ${user.business_name || 'Our business'}
-${user.business_type ? `- Industry: ${user.business_type}` : ''}
-${user.business_context ? `- About us: ${user.business_context}` : ''}
-${user.response_style ? `- Our voice: ${user.response_style}` : ''}
-- Platform: ${selectedPlatform}
+BUSINESS: ${user.business_name || 'Our business'}${user.business_type ? ` (${user.business_type})` : ''}
+${user.business_context ? `About: ${user.business_context}` : ''}
 
-PHRASES YOU MUST NEVER USE (these sound robotic):
-- "Thank you for your feedback"
-- "We appreciate you taking the time to..."
-- "Your satisfaction is our top priority"
-- "Sorry for any inconvenience caused"
-Be specific! Reference something they actually mentioned.
+WRITING STYLE:
+Be warm but understated. Direct, not flowery. Confident, not gushing.
 
-TONE: ${apiToneDescriptions[selectedTone] || apiToneDescriptions.professional}
-${review_rating ? `RATING: ${review_rating} stars - ${review_rating <= 2 ? 'Take ownership, offer resolution' : 'Express genuine gratitude'}` : ''}
-LANGUAGE: Write the response in ${apiLanguageNames[selectedLanguage] || selectedLanguage}.`;
+BANNED WORDS: thrilled, delighted, excited, absolutely, incredibly, amazing, embark, delve, foster, leverage
+NO PHRASES: "Thank you for your feedback", "We appreciate you taking the time", "Sorry for any inconvenience"
+
+RULES:
+- Use contractions naturally (we're, you'll, it's)
+- Keep sentences short. Vary length.
+- Max ONE exclamation mark per response
+- Reference specific details from their review
+- Sound like a real person, not a script
+
+${review_rating ? `[${review_rating}-star review] ${review_rating <= 2 ? 'Take ownership, offer to make it right.' : 'Show genuine appreciation.'}` : ''}
+LANGUAGE: ${apiLanguageNames[selectedLanguage] || selectedLanguage}`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Write a response to this review:\n\n"${review_text}"\n\nWrite ONLY the response text:` }
+        { role: 'user', content: `"${review_text}"\n\nRespond:` }
       ],
-      max_tokens: 350,
-      temperature: 0.6,
-      presence_penalty: 0.1,
-      frequency_penalty: 0.1
+      max_tokens: 300,
+      temperature: 0.65,
+      presence_penalty: 0.15,
+      frequency_penalty: 0.15
     });
 
     const generatedResponse = completion.choices[0].message.content;
