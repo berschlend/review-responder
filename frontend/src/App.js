@@ -388,10 +388,17 @@ const ExitIntentPopup = () => {
     if (popupShown) return;
 
     const handleMouseLeave = (e) => {
+      // Double-check: Prevent multiple triggers
+      if (sessionStorage.getItem('exitIntentShown')) return;
+
       // Detect when mouse moves to top of viewport (likely going to tabs/address bar)
       if (e.clientY <= 0) {
-        setIsVisible(true);
+        // 1. Sofort sessionStorage setzen
         sessionStorage.setItem('exitIntentShown', 'true');
+        // 2. Event-Listener entfernen (verhindert weitere Aufrufe)
+        document.removeEventListener('mouseleave', handleMouseLeave);
+        // 3. Popup anzeigen
+        setIsVisible(true);
       }
     };
 
@@ -3059,6 +3066,10 @@ const DashboardPage = () => {
 
   // Check if user should see feedback popup (after 10 responses)
   const checkFeedbackStatus = async () => {
+    // Don't show if user dismissed in this session
+    if (sessionStorage.getItem('feedbackDismissed')) {
+      return;
+    }
     try {
       const res = await api.get('/feedback/status');
       if (res.data.shouldShowPopup) {
@@ -4627,7 +4638,10 @@ Food was amazing, will definitely come back!`}
       {/* Feedback Popup */}
       <FeedbackPopup
         isVisible={showFeedbackPopup}
-        onClose={() => setShowFeedbackPopup(false)}
+        onClose={() => {
+          setShowFeedbackPopup(false);
+          sessionStorage.setItem('feedbackDismissed', 'true');
+        }}
         onSubmit={() => setShowFeedbackPopup(false)}
       />
     </div>
