@@ -3173,6 +3173,75 @@ const DashboardPage = () => {
   const [loadingReferral, setLoadingReferral] = useState(false);
   const [copiedReferralLink, setCopiedReferralLink] = useState(false);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Check if user is typing in an input/textarea
+      const activeEl = document.activeElement;
+      const isTyping = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable);
+
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const ctrlOrCmd = isMac ? e.metaKey : e.ctrlKey;
+
+      // Ctrl+/ or Cmd+/ - Show keyboard help
+      if (ctrlOrCmd && e.key === '/') {
+        e.preventDefault();
+        setShowKeyboardHelp(prev => !prev);
+        return;
+      }
+
+      // Ctrl+Enter or Cmd+Enter - Generate Response (works even when typing)
+      if (ctrlOrCmd && e.key === 'Enter' && activeTab === 'single') {
+        e.preventDefault();
+        // Trigger generate button click
+        document.querySelector('[data-action="generate"]')?.click();
+        return;
+      }
+
+      // Skip other shortcuts if typing
+      if (isTyping) return;
+
+      // Ctrl+Shift+C or Cmd+Shift+C - Copy Response
+      if (ctrlOrCmd && e.shiftKey && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        if (response) {
+          navigator.clipboard.writeText(response);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+          toast.success('Response copied!');
+        }
+        return;
+      }
+
+      // Ctrl+N or Cmd+N - New Response (Clear)
+      if (ctrlOrCmd && e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        setReviewText('');
+        setResponse('');
+        setRating(0);
+        return;
+      }
+
+      // Ctrl+1/2/3/4 - Change Tone
+      const tones = ['professional', 'friendly', 'formal', 'apologetic'];
+      if (ctrlOrCmd && !e.shiftKey && ['1', '2', '3', '4'].includes(e.key)) {
+        e.preventDefault();
+        const toneIndex = parseInt(e.key) - 1;
+        setTone(tones[toneIndex]);
+        toast.success(`Tone: ${tones[toneIndex].charAt(0).toUpperCase() + tones[toneIndex].slice(1)}`);
+        return;
+      }
+
+      // Escape - Close modals
+      if (e.key === 'Escape') {
+        setShowKeyboardHelp(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [activeTab, response, setTone, setReviewText, setResponse, setRating, setCopied]);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const planParam = params.get('plan');
