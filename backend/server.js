@@ -3689,15 +3689,23 @@ const authenticateAdmin = (req, res, next) => {
   const adminKey = req.headers['x-admin-key'];
   const adminSecret = process.env.ADMIN_SECRET;
 
+  console.log(`🔐 Admin auth attempt - Key provided: ${adminKey ? 'yes (' + adminKey.substring(0,4) + '...)' : 'no'}, Secret configured: ${adminSecret ? 'yes' : 'no'}`);
+
   if (!adminSecret) {
-    return res.status(500).json({ error: 'Admin endpoint not configured' });
+    console.log('❌ ADMIN_SECRET not configured in environment');
+    return res.status(500).json({ error: 'ADMIN_SECRET not configured. Add it to Render environment variables.' });
   }
 
-  if (!adminKey || !safeCompare(adminKey, adminSecret)) {
+  if (!adminKey) {
+    return res.status(401).json({ error: 'No admin key provided' });
+  }
+
+  if (!safeCompare(adminKey, adminSecret)) {
     console.log(`⚠️ Invalid admin key attempt from IP: ${ip}`);
     return res.status(401).json({ error: 'Invalid admin key' });
   }
 
+  console.log(`✅ Admin authenticated from IP: ${ip}`);
   next();
 };
 

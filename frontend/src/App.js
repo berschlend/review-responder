@@ -7369,22 +7369,26 @@ const AdminPage = () => {
   const [affiliateDetails, setAffiliateDetails] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const adminApi = axios.create({
-    baseURL: process.env.REACT_APP_API_URL || 'https://review-responder.onrender.com',
-    headers: { 'X-Admin-Key': adminKey }
-  });
+  const API_BASE = process.env.REACT_APP_API_URL || 'https://review-responder.onrender.com';
+
+  const getHeaders = () => ({ 'X-Admin-Key': adminKey });
 
   const authenticate = async () => {
+    if (!adminKey.trim()) {
+      toast.error('Please enter an admin key');
+      return;
+    }
     setLoading(true);
     try {
-      const res = await adminApi.get('/api/admin/stats');
+      const res = await axios.get(`${API_BASE}/api/admin/stats`, { headers: getHeaders() });
       setStats(res.data);
       setIsAuthenticated(true);
       localStorage.setItem('adminKey', adminKey);
       toast.success('Admin authenticated');
       loadAffiliates();
     } catch (err) {
-      toast.error('Invalid admin key');
+      console.error('Auth error:', err.response?.data || err.message);
+      toast.error(err.response?.data?.error || 'Invalid admin key');
       localStorage.removeItem('adminKey');
     } finally {
       setLoading(false);
@@ -7394,7 +7398,7 @@ const AdminPage = () => {
   const loadAffiliates = async () => {
     try {
       const url = filter === 'all' ? '/api/admin/affiliates' : `/api/admin/affiliates?status=${filter}`;
-      const res = await adminApi.get(url);
+      const res = await axios.get(`${API_BASE}${url}`, { headers: getHeaders() });
       setAffiliates(res.data.affiliates);
       setCounts(res.data.counts);
     } catch (err) {
@@ -7404,7 +7408,7 @@ const AdminPage = () => {
 
   const loadAffiliateDetails = async (id) => {
     try {
-      const res = await adminApi.get(`/api/admin/affiliates/${id}`);
+      const res = await axios.get(`${API_BASE}/api/admin/affiliates/${id}`, { headers: getHeaders() });
       setAffiliateDetails(res.data);
       setSelectedAffiliate(id);
     } catch (err) {
@@ -7415,7 +7419,7 @@ const AdminPage = () => {
   const updateStatus = async (id, status, note = '') => {
     setActionLoading(true);
     try {
-      await adminApi.put(`/api/admin/affiliates/${id}/status`, { status, note });
+      await axios.put(`${API_BASE}/api/admin/affiliates/${id}/status`, { status, note }, { headers: getHeaders() });
       toast.success(`Affiliate ${status}`);
       loadAffiliates();
       if (selectedAffiliate === id) loadAffiliateDetails(id);
@@ -7433,7 +7437,7 @@ const AdminPage = () => {
     }
     setActionLoading(true);
     try {
-      await adminApi.post(`/api/admin/affiliates/${id}/payout`, { amount: parseFloat(amount) });
+      await axios.post(`${API_BASE}/api/admin/affiliates/${id}/payout`, { amount: parseFloat(amount) }, { headers: getHeaders() });
       toast.success('Payout processed');
       loadAffiliateDetails(id);
       loadAffiliates();
