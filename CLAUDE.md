@@ -81,13 +81,28 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
   - Account löschen (mit Password + DELETE Bestätigung, Stripe Cleanup)
   - ConfirmEmailPage für Email-Bestätigung
   - 6 neue Backend-Endpoints
+- [x] **Chrome Extension: Response Templates System** ✅
+  - 💾 Templates Button im Header öffnet Template Manager
+  - Templates speichern & wiederverwenden (max 10)
+  - chrome.storage.sync für Cross-Device Sync
+  - Quick Template Dropdown zum schnellen Laden
+  - "Save as Template" Button nach Generation
+  - Templates mit Name, Content, Tone gespeichert
+- [x] **Chrome Extension: Draft Mode (Auto-Save)** ✅
+  - 📝 Drafts Button im Header zeigt Badge mit Anzahl
+  - Auto-Save beim Panel-Schließen (wenn Response > 20 Zeichen)
+  - Drafts Overlay mit Liste aller Drafts
+  - Continue Button lädt Draft zurück ins Panel
+  - Delete Button für einzelne Drafts
+  - Max 10 Drafts, ältere werden auto-gelöscht
+  - Orange/Amber Farbschema für Drafts
 
 ### 🟡 NÄCHSTE CLAUDE TASKS (Wähle einen):
 
 | # | Task | Schwierigkeit | Dateien |
 |---|------|---------------|---------|
-| 1 | **Response Templates System** | Mittel | `chrome-extension/content.js` |
-| 2 | **Draft Mode (Auto-Save)** | Mittel | `chrome-extension/content.js` |
+| 1 | **Tone Preview** (zeige Beispiel-Snippets für jeden Tone) | Leicht | `chrome-extension/content.js` |
+| 2 | **Response Quality Score** (Bewertung nach Generation) | Mittel | `chrome-extension/content.js` |
 | 3 | Chrome Web Store Screenshots (3 weitere) | Leicht | `chrome-extension/screenshots/` |
 | 4 | Chrome Web Store Einreichung | Leicht | ZIP + Store Listing fertig |
 | 5 | Landing Page A/B Testing | Mittel | `frontend/src/App.js` |
