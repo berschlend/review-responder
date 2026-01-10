@@ -4369,6 +4369,7 @@ const DashboardPage = () => {
             onClick={() => generateResponse()}
             disabled={generating || !reviewText.trim()}
             style={{ width: '100%', marginTop: '8px' }}
+            data-action="generate"
           >
             {generating ? (
               <>Generating...</>
@@ -5739,6 +5740,159 @@ const ProfilePage = () => {
             </div>
           </div>
         </div>
+      )}
+    </div>
+  );
+};
+
+// Verify Email Page (for new user registration verification)
+const VerifyEmailPage = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { updateUser, user } = useAuth();
+  const [status, setStatus] = useState('loading'); // loading, success, error
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    const token = searchParams.get('token');
+    if (!token) {
+      setStatus('error');
+      setMessage('Invalid verification link');
+      return;
+    }
+    verifyEmail(token);
+  }, [searchParams]);
+
+  const verifyEmail = async (token) => {
+    try {
+      const res = await api.get(`/auth/verify-email?token=${token}`);
+      setStatus('success');
+      setMessage(res.data.message || 'Email verified successfully!');
+      // Update user context to reflect verified status
+      if (user) {
+        updateUser({ ...user, emailVerified: true });
+      }
+    } catch (error) {
+      setStatus('error');
+      setMessage(error.response?.data?.error || 'Failed to verify email');
+    }
+  };
+
+  return (
+    <div className="container" style={{ paddingTop: '80px', paddingBottom: '80px', maxWidth: '500px', textAlign: 'center' }}>
+      <div className="card">
+        {status === 'loading' && (
+          <>
+            <div className="spinner" style={{ margin: '0 auto 20px' }}></div>
+            <h2>Verifying Your Email...</h2>
+          </>
+        )}
+
+        {status === 'success' && (
+          <>
+            <CheckCircle size={48} style={{ color: 'var(--secondary)', marginBottom: '16px' }} />
+            <h2 style={{ marginBottom: '8px' }}>Email Verified!</h2>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
+              Your email has been verified. You're all set!
+            </p>
+            <button className="btn btn-primary" onClick={() => navigate('/dashboard')}>
+              Go to Dashboard
+            </button>
+          </>
+        )}
+
+        {status === 'error' && (
+          <>
+            <AlertCircle size={48} style={{ color: 'var(--danger)', marginBottom: '16px' }} />
+            <h2 style={{ marginBottom: '8px' }}>Verification Failed</h2>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>{message}</p>
+            <button className="btn btn-primary" onClick={() => navigate('/dashboard')}>
+              Go to Dashboard
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Email Verification Banner Component
+const EmailVerificationBanner = () => {
+  const { user, updateUser } = useAuth();
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
+
+  if (!user || user.emailVerified) {
+    return null;
+  }
+
+  const handleResend = async () => {
+    setResending(true);
+    try {
+      await api.post('/auth/resend-verification');
+      setResent(true);
+      setTimeout(() => setResent(false), 5000);
+    } catch (error) {
+      console.error('Failed to resend verification email:', error);
+    } finally {
+      setResending(false);
+    }
+  };
+
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+      color: '#78350f',
+      padding: '12px 20px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '12px',
+      fontSize: '14px',
+      fontWeight: '500'
+    }}>
+      <Mail size={18} />
+      <span>Please verify your email address. Check your inbox for the verification link.</span>
+      {resent ? (
+        <span style={{
+          background: 'rgba(255,255,255,0.3)',
+          padding: '4px 12px',
+          borderRadius: '4px',
+          fontSize: '13px'
+        }}>
+          <CheckCircle size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+          Email sent!
+        </span>
+      ) : (
+        <button
+          onClick={handleResend}
+          disabled={resending}
+          style={{
+            background: 'rgba(255,255,255,0.9)',
+            color: '#78350f',
+            border: 'none',
+            padding: '6px 14px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontWeight: '600',
+            fontSize: '13px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px'
+          }}
+        >
+          {resending ? (
+            <>
+              <div className="spinner" style={{ width: '14px', height: '14px', borderWidth: '2px' }}></div>
+              Sending...
+            </>
+          ) : (
+            <>
+              <RefreshCw size={14} />
+              Resend
+            </>
+          )}
+        </button>
       )}
     </div>
   );
@@ -8949,6 +9103,7 @@ function App() {
             }
           />
           <Route path="/confirm-email" element={<ConfirmEmailPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route
             path="/settings"
             element={
