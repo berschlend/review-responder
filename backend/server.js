@@ -4342,8 +4342,8 @@ app.get('/api/feedback/status', authenticateToken, async (req, res) => {
       [req.user.id]
     );
 
-    // Show popup after 10 responses, if not already submitted
-    const shouldShowPopup = user.responses_used >= 10 && !user.feedback_submitted;
+    // Show popup after 3 responses, if not already submitted (farm testimonials early!)
+    const shouldShowPopup = user.responses_used >= 3 && !user.feedback_submitted;
 
     res.json({
       shouldShowPopup,
