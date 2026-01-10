@@ -75,8 +75,11 @@ STARTER/PROFESSIONAL/UNLIMITED: ...&plan=starter/professional/unlimited&key=...
 
 ### USER MUSS MACHEN:
 - [ ] Demo-Video aufnehmen (2 Min Walkthrough)
-- [ ] **PayPal aktivieren**: Stripe Dashboard → Settings → Payment Methods → PayPal → Turn on
-- [ ] **Apple Pay Domain verifizieren**: Stripe Dashboard → Settings → Apple Pay → Add `tryreviewresponder.com` → Datei in `frontend/public/.well-known/` ablegen
+- [x] **PayPal aktivieren**: Stripe Dashboard ✅
+- [x] **Apple Pay aktivieren**: Stripe Dashboard ✅
+- [x] **Google Pay aktivieren**: Stripe Dashboard ✅
+- [x] **Link (Stripe Wallet) aktivieren**: Stripe Dashboard ✅
+- [ ] **SEPA-Lastschrift aktivieren**: Stripe Dashboard → Braucht ID-Verifizierung mit Lichtbildausweis
 
 ### NÄCHSTE CLAUDE TASKS:
 
