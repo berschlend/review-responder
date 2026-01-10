@@ -89,6 +89,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **Cold Email System** - 3 Email-Sequenzen (Restaurant, Hotel, Service), Tracking Pixel, Email Finder Guide
 - [x] **Product Hunt Launch Automation** - HUNTLAUNCH Coupon (60% off), Badge, Countdown Timer, Launch Banner, Checklists, Social Posts
 - [x] **Automated Outreach System** - 100% automatisch: Google Places Lead Scraping, Hunter.io Email Finding, Cold Email Sequences, Auto Follow-ups
+- [x] **Google Ads Landing Pages** - 5 dedizierte Landing Pages mit UTM Tracking (Restaurant, Hotel, Local Business, Google, Yelp)
 
 ---
 
@@ -648,6 +649,17 @@ Zeigt: Total Opens, Unique Opens, By Campaign, By Day, Recent Opens
   - Content: `/content/product-hunt/launch-day-schedule.md` (stündlicher Plan für Launch Day)
   - Social: `/content/social/launch-twitter.md` (10 Tweets + Thread)
   - Social: `/content/social/launch-linkedin.md` (3 Posts + Connection Templates)
+- **Google Ads Landing Pages** implementiert:
+  - 5 dedizierte Landing Pages für Google Ads Kampagnen
+  - `/google-review-response-generator` - Google Reviews
+  - `/yelp-review-reply-tool` - Yelp Reviews
+  - `/restaurant-review-responses` - Restaurant Owners (orange/rot Gradient)
+  - `/hotel-review-management` - Hotels & B&Bs (blau/lila Gradient)
+  - `/local-business-reviews` - **NEU** Local Businesses (grün Gradient)
+  - UTM Tracking auf allen Landing Pages (sessionStorage)
+  - Register-Flow liest UTM aus sessionStorage und sendet ans Backend
+  - DB: `utm_source, utm_medium, utm_campaign, utm_content, utm_term, landing_page`
+  - Campaign Attribution: Welche Google Ads Kampagne converted am besten?
 
 ## PRODUCT HUNT LAUNCH SETUP
 
