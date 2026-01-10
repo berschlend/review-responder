@@ -63,6 +63,13 @@ STARTER/PROFESSIONAL/UNLIMITED: ...&plan=starter/professional/unlimited&key=...
 - [x] **CLAUDE.md Cleanup** - Nicht-implementierte Features entfernt (Achievements/Streaks, Multi-Account UI)
 - [x] **Email Case-Insensitive Fix** - 7 Stellen gefixt wo Email-Vergleiche case-sensitive waren
   - Jetzt: `test@email.com` = `TEST@EMAIL.COM` bei Login, Register, Google OAuth, Team Invite, etc.
+- [x] **Email-Verifizierung mit Banner (Optional)** - Non-blocking Email-Verification
+  - Bei Registration wird Verification-Email gesendet
+  - Gelber Banner im Dashboard wenn nicht verifiziert
+  - Resend-Button sendet neue Verification-Email
+  - `/verify-email?token=xxx` Route für Verification-Links
+  - User kann App trotzdem sofort nutzen (kein Blocker!)
+  - Endpoints: `GET /api/auth/verify-email`, `POST /api/auth/resend-verification`
 
 ### BEKANNTE BUGS:
 Keine offenen Bugs.
