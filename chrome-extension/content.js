@@ -832,6 +832,51 @@ const TONES = [
   { value: 'friendly', emoji: '😊', name: 'Friendly' }
 ];
 
+// Tone Preview Snippets - shown on hover
+const TONE_PREVIEWS = {
+  apologetic: {
+    preview: "We sincerely apologize for any inconvenience. Your feedback is invaluable, and we're committed to making things right...",
+    bestFor: "Negative reviews, complaints, service issues"
+  },
+  formal: {
+    preview: "Thank you for taking the time to share your experience. We appreciate your feedback and will take it into consideration...",
+    bestFor: "Corporate responses, official replies, legal-sensitive"
+  },
+  professional: {
+    preview: "Thank you for your feedback. We're glad to hear about your experience and value your input as we continue to improve...",
+    bestFor: "Most reviews, balanced approach, everyday use"
+  },
+  friendly: {
+    preview: "Thanks so much for the kind words! We're thrilled you had a great experience. Can't wait to see you again soon!",
+    bestFor: "Positive reviews, casual businesses, building rapport"
+  }
+};
+
+function showTonePreview(panel, toneValue) {
+  const preview = TONE_PREVIEWS[toneValue];
+  if (!preview) return;
+
+  let previewEl = panel.querySelector('.rr-tone-preview-popup');
+  if (!previewEl) {
+    previewEl = document.createElement('div');
+    previewEl.className = 'rr-tone-preview-popup';
+    panel.querySelector('.rr-tone-slider-container').appendChild(previewEl);
+  }
+
+  previewEl.innerHTML = `
+    <div class="rr-preview-text">"${preview.preview}"</div>
+    <div class="rr-preview-best">✓ Best for: ${preview.bestFor}</div>
+  `;
+  previewEl.classList.add('visible');
+}
+
+function hideTonePreview(panel) {
+  const previewEl = panel.querySelector('.rr-tone-preview-popup');
+  if (previewEl) {
+    previewEl.classList.remove('visible');
+  }
+}
+
 function updateToneSliderUI(panel, index) {
   const tone = TONES[index];
   panel.querySelector('.rr-tone-emoji').textContent = tone.emoji;
@@ -1653,6 +1698,98 @@ function updateDraftsOverlay(panel, drafts) {
   });
 }
 
+// ========== RESPONSE HISTORY ==========
+async function loadHistory() {
+  try {
+    const stored = await chrome.storage.local.get(['token']);
+    if (!stored.token) return { success: false, history: [] };
+
+    const response = await fetch(`${API_URL}/responses/history?limit=10`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${stored.token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      return { success: false, history: [] };
+    }
+
+    const data = await response.json();
+    return { success: true, history: data.responses || [] };
+  } catch (e) {
+    console.error('Failed to load history:', e);
+    return { success: false, history: [] };
+  }
+}
+
+function formatHistoryTime(isoString) {
+  const date = new Date(isoString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
+}
+
+function updateHistoryOverlay(panel, history) {
+  const list = panel.querySelector('.rr-history-list');
+  if (!list) return;
+
+  // Clear existing items
+  list.innerHTML = '';
+
+  if (history.length === 0) {
+    list.innerHTML = `
+      <div class="rr-history-empty">
+        <span>📭 No responses yet</span>
+        <p>Generate your first response to see it here!</p>
+      </div>
+    `;
+    return;
+  }
+
+  history.forEach(item => {
+    const historyItem = document.createElement('div');
+    historyItem.className = 'rr-history-item';
+    historyItem.dataset.id = item.id;
+
+    // Truncate text for display
+    const reviewSnippet = item.review_text ? item.review_text.substring(0, 80) + '...' : 'No review text';
+    const responseSnippet = item.response ? item.response.substring(0, 100) + '...' : '';
+
+    // Get tone badge color
+    const toneColors = {
+      professional: '#667eea',
+      friendly: '#10b981',
+      formal: '#6b7280',
+      apologetic: '#f59e0b'
+    };
+    const toneColor = toneColors[item.tone] || '#667eea';
+
+    historyItem.innerHTML = `
+      <div class="rr-history-meta">
+        <span class="rr-history-tone" style="background: ${toneColor}">${item.tone || 'professional'}</span>
+        <span class="rr-history-time">${formatHistoryTime(item.created_at)}</span>
+      </div>
+      <div class="rr-history-review">"${escapeHtml(reviewSnippet)}"</div>
+      <div class="rr-history-response">${escapeHtml(responseSnippet)}</div>
+      <div class="rr-history-actions">
+        <button class="rr-history-use" data-response="${escapeHtml(item.response || '')}">📋 Use This</button>
+        <button class="rr-history-copy" data-response="${escapeHtml(item.response || '')}">Copy</button>
+      </div>
+    `;
+    list.appendChild(historyItem);
+  });
+}
+
 // ========== CREATE KILLER PANEL ==========
 async function createResponsePanel() {
   const existing = document.getElementById('rr-response-panel');
@@ -1692,6 +1829,7 @@ async function createResponsePanel() {
         </div>
         <button class="rr-drafts-btn" title="Drafts">📝</button>
         <button class="rr-templates-btn" title="My Templates">💾</button>
+        <button class="rr-history-btn" title="Recent Responses">📜</button>
         <div class="rr-theme-wrapper" style="position: relative;">
           <button class="rr-theme-toggle" title="Toggle theme">🌙</button>
           <div class="rr-theme-dropdown hidden">
@@ -2069,6 +2207,19 @@ async function createResponsePanel() {
           </div>
         </div>
       </div>
+
+      <!-- History Overlay -->
+      <div class="rr-history-overlay hidden">
+        <div class="rr-history-content">
+          <div class="rr-history-header">
+            <h3>📜 Recent Responses</h3>
+            <button class="rr-history-close">×</button>
+          </div>
+          <div class="rr-history-list">
+            <div class="rr-history-loading">Loading...</div>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 
@@ -2201,6 +2352,51 @@ function initPanelEvents(panel) {
 
   panel.querySelector('.rr-drafts-close').addEventListener('click', () => {
     panel.querySelector('.rr-drafts-overlay').classList.add('hidden');
+  });
+
+  // History button (header)
+  panel.querySelector('.rr-history-btn').addEventListener('click', async () => {
+    const historyOverlay = panel.querySelector('.rr-history-overlay');
+    const historyList = panel.querySelector('.rr-history-list');
+
+    // Show loading state
+    historyList.innerHTML = '<div class="rr-history-loading">Loading...</div>';
+    historyOverlay.classList.toggle('hidden');
+
+    // Load history if overlay is now visible
+    if (!historyOverlay.classList.contains('hidden')) {
+      const result = await loadHistory();
+      updateHistoryOverlay(panel, result.history);
+    }
+  });
+
+  panel.querySelector('.rr-history-close').addEventListener('click', () => {
+    panel.querySelector('.rr-history-overlay').classList.add('hidden');
+  });
+
+  // History item actions (use delegation)
+  panel.querySelector('.rr-history-list').addEventListener('click', async (e) => {
+    const useBtn = e.target.closest('.rr-history-use');
+    const copyBtn = e.target.closest('.rr-history-copy');
+
+    if (useBtn) {
+      const response = useBtn.dataset.response;
+      if (response) {
+        panel.querySelector('.rr-response-textarea').value = response;
+        panel.querySelector('.rr-response-section').classList.remove('hidden');
+        panel.querySelector('.rr-history-overlay').classList.add('hidden');
+        updateCharCounter(panel);
+        showToast('📋 Response loaded - edit as needed!', 'success');
+      }
+    }
+
+    if (copyBtn) {
+      const response = copyBtn.dataset.response;
+      if (response) {
+        await navigator.clipboard.writeText(response);
+        showToast('✅ Copied to clipboard!', 'success');
+      }
+    }
   });
 
   // Theme toggle button
@@ -2508,11 +2704,34 @@ function initPanelEvents(panel) {
     });
   });
 
-  // Tone Slider event
-  panel.querySelector('.rr-tone-slider').addEventListener('input', (e) => {
+  // Tone Slider events
+  const toneSlider = panel.querySelector('.rr-tone-slider');
+  toneSlider.addEventListener('input', (e) => {
     const index = parseInt(e.target.value);
     updateToneSliderUI(panel, index);
     saveCurrentSettings(panel);
+    // Show preview while sliding
+    const tone = TONES[index];
+    showTonePreview(panel, tone.value);
+  });
+
+  // Show preview on hover
+  toneSlider.addEventListener('mouseenter', () => {
+    const index = parseInt(toneSlider.value);
+    const tone = TONES[index];
+    showTonePreview(panel, tone.value);
+  });
+
+  // Hide preview when leaving slider
+  toneSlider.addEventListener('mouseleave', () => {
+    hideTonePreview(panel);
+  });
+
+  // Also hide after sliding stops (after a short delay)
+  let previewTimeout;
+  toneSlider.addEventListener('change', () => {
+    clearTimeout(previewTimeout);
+    previewTimeout = setTimeout(() => hideTonePreview(panel), 2000);
   });
 
   // Save settings on change
