@@ -153,12 +153,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - Fix: Erkannte Sprache wird jetzt an API gesendet (nicht mehr 'auto')
 - Fix: Explizite Sprach-Anweisung im Prompt
 
-**2. Admin Panel Login funktioniert nicht!**
-- URL: `/admin` - zeigt "Invalid admin key" obwohl Key korrekt ist
-- Backend funktioniert (curl mit X-Admin-Key Header funktioniert!)
-- Problem liegt im Frontend (React State / Header wird nicht richtig gesendet)
-- Admin Key: `rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U`
-- Dateien: `frontend/src/App.js` (AdminPage Komponente, ca. Zeile 7360)
+**2. ~~Admin Panel Login funktioniert nicht~~** ✅ GEFIXT
 
 ---
 
