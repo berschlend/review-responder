@@ -12,6 +12,7 @@ const validator = require('validator');
 const crypto = require('crypto');
 const { Resend } = require('resend');
 const { OAuth2Client } = require('google-auth-library');
+const Anthropic = require('@anthropic-ai/sdk');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -45,6 +46,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const googleClient = process.env.GOOGLE_CLIENT_ID ? new OAuth2Client(process.env.GOOGLE_CLIENT_ID) : null;
+const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }) : null;
 
 // Email sender addresses (configurable via ENV)
 const FROM_EMAIL = process.env.FROM_EMAIL || 'ReviewResponder <hello@tryreviewresponder.com>';
@@ -420,6 +422,17 @@ async function initDatabase() {
       // Columns might already exist or password column already nullable
     }
 
+    // Add Smart AI / Standard AI usage tracking columns
+    try {
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS smart_responses_used INTEGER DEFAULT 0`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS standard_responses_used INTEGER DEFAULT 0`);
+      await dbQuery(`ALTER TABLE responses ADD COLUMN IF NOT EXISTS ai_model VARCHAR(20) DEFAULT 'standard'`);
+      // Migrate existing usage to standard (backward compatibility)
+      await dbQuery(`UPDATE users SET standard_responses_used = responses_used WHERE smart_responses_used = 0 AND standard_responses_used = 0 AND responses_used > 0`);
+    } catch (error) {
+      // Columns might already exist
+    }
+
     console.log('📊 Database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -498,10 +511,19 @@ const authenticateApiKey = async (req, res, next) => {
 };
 
 // Plan limits (monthly and yearly pricing)
+// Smart AI = Claude (better quality), Standard = GPT-4o-mini (fast & cheap)
 const PLAN_LIMITS = {
-  free: { responses: 5, price: 0, teamMembers: 0 },
+  free: {
+    smartResponses: 3,       // Claude - teaser to show quality
+    standardResponses: 17,   // GPT-4o-mini
+    responses: 20,           // Total (for backward compatibility)
+    price: 0,
+    teamMembers: 0
+  },
   starter: {
-    responses: 100,
+    smartResponses: 100,
+    standardResponses: 200,
+    responses: 300,
     price: 2900,
     yearlyPrice: 27840, // 20% off: $29 * 12 * 0.8 = $278.40
     priceId: process.env.STRIPE_STARTER_PRICE_ID,
@@ -509,7 +531,9 @@ const PLAN_LIMITS = {
     teamMembers: 0
   },
   professional: {
-    responses: 300,
+    smartResponses: 300,
+    standardResponses: 500,
+    responses: 800,
     price: 4900,
     yearlyPrice: 47040, // 20% off: $49 * 12 * 0.8 = $470.40
     priceId: process.env.STRIPE_PRO_PRICE_ID,
@@ -517,6 +541,8 @@ const PLAN_LIMITS = {
     teamMembers: 3
   },
   unlimited: {
+    smartResponses: 999999,
+    standardResponses: 999999,
     responses: 999999,
     price: 9900,
     yearlyPrice: 95040, // 20% off: $99 * 12 * 0.8 = $950.40
@@ -1035,7 +1061,7 @@ app.post('/api/responses/generate', authenticateToken, (req, res) => generateRes
 
 async function generateResponseHandler(req, res) {
   try {
-    const { reviewText, reviewRating, platform, tone, outputLanguage, businessName, customInstructions, responseLength, includeEmojis } = req.body;
+    const { reviewText, reviewRating, platform, tone, outputLanguage, businessName, customInstructions, responseLength, includeEmojis, aiModel = 'auto' } = req.body;
 
     if (!reviewText || reviewText.trim().length === 0) {
       return res.status(400).json({ error: 'Review text is required' });
@@ -1046,7 +1072,7 @@ async function generateResponseHandler(req, res) {
 
     // Check if user is a team member
     const teamMembership = await dbGet(
-      `SELECT tm.*, u.id as owner_id, u.responses_used as owner_used, u.responses_limit as owner_limit, u.business_name as owner_business, u.business_type as owner_business_type, u.business_context as owner_context, u.response_style as owner_style
+      `SELECT tm.*, u.id as owner_id, u.subscription_plan as owner_plan, u.smart_responses_used as owner_smart_used, u.standard_responses_used as owner_standard_used, u.business_name as owner_business, u.business_type as owner_business_type, u.business_context as owner_context, u.response_style as owner_style
        FROM team_members tm
        JOIN users u ON tm.team_owner_id = u.id
        WHERE tm.member_user_id = $1 AND tm.accepted_at IS NOT NULL`,
@@ -1055,9 +1081,11 @@ async function generateResponseHandler(req, res) {
 
     let usageOwner = user; // Who's usage we check/update
     let isTeamMember = false;
+    let effectivePlan = user.subscription_plan || 'free';
 
     if (teamMembership) {
       isTeamMember = true;
+      effectivePlan = teamMembership.owner_plan || 'free';
       // Check role permissions - viewers cannot generate
       if (teamMembership.role === 'viewer') {
         return res.status(403).json({
@@ -1068,8 +1096,9 @@ async function generateResponseHandler(req, res) {
       // Use team owner's usage limits
       usageOwner = {
         id: teamMembership.owner_id,
-        responses_used: teamMembership.owner_used,
-        responses_limit: teamMembership.owner_limit,
+        subscription_plan: teamMembership.owner_plan,
+        smart_responses_used: teamMembership.owner_smart_used || 0,
+        standard_responses_used: teamMembership.owner_standard_used || 0,
         business_name: teamMembership.owner_business,
         business_type: teamMembership.owner_business_type,
         business_context: teamMembership.owner_context,
@@ -1077,14 +1106,52 @@ async function generateResponseHandler(req, res) {
       };
     }
 
-    if (usageOwner.responses_used >= usageOwner.responses_limit) {
-      return res.status(403).json({
-        error: 'Response limit reached',
-        upgrade: !isTeamMember,
-        message: isTeamMember
-          ? 'Your team has reached the monthly response limit. Contact your team owner.'
-          : 'You have reached your monthly response limit. Please upgrade your plan to continue.'
-      });
+    // Get plan limits
+    const planLimits = PLAN_LIMITS[effectivePlan] || PLAN_LIMITS.free;
+    const smartUsed = usageOwner.smart_responses_used || 0;
+    const standardUsed = usageOwner.standard_responses_used || 0;
+    const smartRemaining = planLimits.smartResponses - smartUsed;
+    const standardRemaining = planLimits.standardResponses - standardUsed;
+
+    // Determine which AI model to use
+    let useModel = 'standard'; // Default: GPT-4o-mini
+
+    if (aiModel === 'smart') {
+      // User explicitly wants Smart AI (Claude)
+      if (smartRemaining <= 0) {
+        return res.status(403).json({
+          error: 'No Smart AI responses remaining',
+          smartRemaining: 0,
+          standardRemaining,
+          suggestion: standardRemaining > 0 ? 'Switch to Standard AI' : 'Upgrade your plan'
+        });
+      }
+      useModel = 'smart';
+    } else if (aiModel === 'auto') {
+      // Auto: Smart if available, otherwise Standard
+      useModel = smartRemaining > 0 ? 'smart' : 'standard';
+
+      if (useModel === 'standard' && standardRemaining <= 0) {
+        return res.status(403).json({
+          error: 'No responses remaining',
+          smartRemaining: 0,
+          standardRemaining: 0,
+          upgrade: !isTeamMember,
+          message: isTeamMember
+            ? 'Your team has reached the monthly response limit. Contact your team owner.'
+            : 'You have reached your monthly response limit. Please upgrade your plan to continue.'
+        });
+      }
+    } else {
+      // Standard explicitly chosen
+      if (standardRemaining <= 0) {
+        return res.status(403).json({
+          error: 'No Standard responses remaining',
+          smartRemaining,
+          standardRemaining: 0,
+          suggestion: smartRemaining > 0 ? 'Switch to Smart AI' : 'Upgrade your plan'
+        });
+      }
     }
 
     // ========== OPTIMIZED PROMPT SYSTEM ==========
@@ -1255,36 +1322,64 @@ LANGUAGE: ${languageInstruction}`;
 
     const userMessage = `${reviewRating ? `[${reviewRating} stars] ` : ''}${reviewText}${ratingStrategy ? `\n\n(${ratingStrategy.length})` : ''}${customInstructions ? `\n\nNote: ${customInstructions}` : ''}`;
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemMessage },
-        { role: 'user', content: userMessage }
-      ],
-      max_tokens: 350,
-      temperature: 0.6,
-      presence_penalty: 0.1,
-      frequency_penalty: 0.1
-    });
+    // Generate response using selected AI model
+    let generatedResponse;
 
-    const generatedResponse = completion.choices[0].message.content.trim();
+    if (useModel === 'smart' && anthropic) {
+      // Use Claude for Smart AI
+      const response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 350,
+        system: systemMessage,
+        messages: [{ role: 'user', content: userMessage }]
+      });
+      generatedResponse = response.content[0].text.trim();
+    } else {
+      // Use GPT-4o-mini for Standard AI (or fallback if no Anthropic key)
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemMessage },
+          { role: 'user', content: userMessage }
+        ],
+        max_tokens: 350,
+        temperature: 0.6,
+        presence_penalty: 0.1,
+        frequency_penalty: 0.1
+      });
+      generatedResponse = completion.choices[0].message.content.trim();
+      // If we intended smart but fell back, mark as standard
+      if (useModel === 'smart' && !anthropic) {
+        useModel = 'standard';
+      }
+    }
 
-    // Save response and update usage
+    // Save response with AI model info
     await dbQuery(
-      `INSERT INTO responses (user_id, review_text, review_rating, review_platform, generated_response, tone)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [req.user.id, reviewText, reviewRating || null, platform || 'google', generatedResponse, tone || 'professional']
+      `INSERT INTO responses (user_id, review_text, review_rating, review_platform, generated_response, tone, ai_model)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [req.user.id, reviewText, reviewRating || null, platform || 'google', generatedResponse, tone || 'professional', useModel]
     );
 
     // Update usage for the account owner (team owner if team member, otherwise self)
     const usageOwnerId = isTeamMember ? usageOwner.id : req.user.id;
-    await dbQuery('UPDATE users SET responses_used = responses_used + 1 WHERE id = $1', [usageOwnerId]);
+
+    // Update the correct usage counter
+    if (useModel === 'smart') {
+      await dbQuery('UPDATE users SET smart_responses_used = smart_responses_used + 1, responses_used = responses_used + 1 WHERE id = $1', [usageOwnerId]);
+    } else {
+      await dbQuery('UPDATE users SET standard_responses_used = standard_responses_used + 1, responses_used = responses_used + 1 WHERE id = $1', [usageOwnerId]);
+    }
 
     const updatedOwner = await dbGet('SELECT * FROM users WHERE id = $1', [usageOwnerId]);
+    const updatedPlanLimits = PLAN_LIMITS[updatedOwner.subscription_plan || 'free'] || PLAN_LIMITS.free;
 
-    // Check if user just crossed 80% usage and send alert email
-    const usagePercent = Math.round((updatedOwner.responses_used / updatedOwner.responses_limit) * 100);
-    const previousPercent = Math.round(((updatedOwner.responses_used - 1) / updatedOwner.responses_limit) * 100);
+    // Check if user is approaching limits and send alert email (based on total usage)
+    const totalUsed = (updatedOwner.smart_responses_used || 0) + (updatedOwner.standard_responses_used || 0);
+    const totalLimit = updatedPlanLimits.responses;
+    const usagePercent = Math.round((totalUsed / totalLimit) * 100);
+    const previousTotal = totalUsed - 1;
+    const previousPercent = Math.round((previousTotal / totalLimit) * 100);
 
     // Send alert if just crossed 80% threshold (send to owner)
     if (usagePercent >= 80 && previousPercent < 80 && updatedOwner.subscription_plan !== 'unlimited') {
@@ -1302,8 +1397,24 @@ LANGUAGE: ${languageInstruction}`;
 
     res.json({
       response: generatedResponse,
-      responsesUsed: updatedOwner.responses_used,
-      responsesLimit: updatedOwner.responses_limit,
+      aiModel: useModel,
+      usage: {
+        smart: {
+          used: updatedOwner.smart_responses_used || 0,
+          limit: updatedPlanLimits.smartResponses
+        },
+        standard: {
+          used: updatedOwner.standard_responses_used || 0,
+          limit: updatedPlanLimits.standardResponses
+        },
+        total: {
+          used: totalUsed,
+          limit: totalLimit
+        }
+      },
+      // Backward compatibility
+      responsesUsed: totalUsed,
+      responsesLimit: totalLimit,
       isTeamUsage: isTeamMember
     });
   } catch (error) {
@@ -1315,7 +1426,7 @@ LANGUAGE: ${languageInstruction}`;
 // Bulk Response Generation (Paid plans only: Starter/Pro/Unlimited)
 app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
   try {
-    const { reviews, tone, platform, outputLanguage } = req.body;
+    const { reviews, tone, platform, outputLanguage, aiModel = 'auto' } = req.body;
 
     // Validate input
     if (!reviews || !Array.isArray(reviews) || reviews.length === 0) {
@@ -1331,7 +1442,7 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
 
     // Check if user is a team member
     const teamMembership = await dbGet(
-      `SELECT tm.*, u.id as owner_id, u.responses_used as owner_used, u.responses_limit as owner_limit, u.subscription_plan as owner_plan, u.business_name as owner_business, u.business_type as owner_business_type, u.business_context as owner_context
+      `SELECT tm.*, u.id as owner_id, u.subscription_plan as owner_plan, u.smart_responses_used as owner_smart_used, u.standard_responses_used as owner_standard_used, u.business_name as owner_business, u.business_type as owner_business_type, u.business_context as owner_context
        FROM team_members tm
        JOIN users u ON tm.team_owner_id = u.id
        WHERE tm.member_user_id = $1 AND tm.accepted_at IS NOT NULL`,
@@ -1347,7 +1458,14 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
       if (teamMembership.role === 'viewer') {
         return res.status(403).json({ error: 'View-only access', message: 'Your team role does not allow generating responses.' });
       }
-      usageOwner = { id: teamMembership.owner_id, responses_used: teamMembership.owner_used, responses_limit: teamMembership.owner_limit, business_name: teamMembership.owner_business, business_type: teamMembership.owner_business_type, business_context: teamMembership.owner_context };
+      usageOwner = {
+        id: teamMembership.owner_id,
+        smart_responses_used: teamMembership.owner_smart_used || 0,
+        standard_responses_used: teamMembership.owner_standard_used || 0,
+        business_name: teamMembership.owner_business,
+        business_type: teamMembership.owner_business_type,
+        business_context: teamMembership.owner_context
+      };
       effectivePlan = teamMembership.owner_plan;
     }
 
@@ -1359,13 +1477,42 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
       });
     }
 
-    // Check usage limits
+    // Get plan limits and check usage
+    const planLimits = PLAN_LIMITS[effectivePlan] || PLAN_LIMITS.free;
+    const smartUsed = usageOwner.smart_responses_used || 0;
+    const standardUsed = usageOwner.standard_responses_used || 0;
+    const smartRemaining = planLimits.smartResponses - smartUsed;
+    const standardRemaining = planLimits.standardResponses - standardUsed;
     const reviewCount = reviews.filter(r => r.trim()).length;
-    if (usageOwner.responses_used + reviewCount > usageOwner.responses_limit) {
-      return res.status(403).json({
-        error: `Not enough responses remaining. You need ${reviewCount} but only have ${usageOwner.responses_limit - usageOwner.responses_used} left.`,
-        upgrade: !isTeamMember
-      });
+
+    // Determine which AI model to use for bulk
+    let useModel = 'standard'; // Default for bulk: Standard (faster, cheaper)
+
+    if (aiModel === 'smart') {
+      if (smartRemaining < reviewCount) {
+        return res.status(403).json({
+          error: `Not enough Smart AI responses. You need ${reviewCount} but only have ${smartRemaining} left.`,
+          suggestion: standardRemaining >= reviewCount ? 'Switch to Standard AI' : 'Upgrade your plan'
+        });
+      }
+      useModel = 'smart';
+    } else if (aiModel === 'auto') {
+      // For bulk, prefer standard to save smart responses for single generations
+      useModel = standardRemaining >= reviewCount ? 'standard' : (smartRemaining >= reviewCount ? 'smart' : 'standard');
+
+      if (standardRemaining < reviewCount && smartRemaining < reviewCount) {
+        return res.status(403).json({
+          error: `Not enough responses remaining. You need ${reviewCount} but only have ${Math.max(smartRemaining, standardRemaining)} left.`,
+          upgrade: !isTeamMember
+        });
+      }
+    } else {
+      if (standardRemaining < reviewCount) {
+        return res.status(403).json({
+          error: `Not enough Standard responses. You need ${reviewCount} but only have ${standardRemaining} left.`,
+          suggestion: smartRemaining >= reviewCount ? 'Switch to Smart AI' : 'Upgrade your plan'
+        });
+      }
     }
 
     // ========== OPTIMIZED BULK PROMPT SYSTEM ==========
