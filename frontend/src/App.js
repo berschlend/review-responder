@@ -4473,13 +4473,18 @@ const DashboardPage = () => {
                   Try a different tone:
                 </p>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {['professional', 'friendly', 'formal', 'apologetic'].filter(t => t !== tone).map((newTone) => (
+                  {['professional', 'friendly', 'formal', 'apologetic'].map((newTone, index) => (
                     <button
                       key={newTone}
-                      className="btn btn-secondary"
-                      style={{ padding: '6px 12px', fontSize: '13px' }}
-                      onClick={() => generateResponse(newTone)}
-                      disabled={generating}
+                      className={`btn ${newTone === tone ? 'btn-primary' : 'btn-secondary'}`}
+                      style={{
+                        padding: '6px 12px',
+                        fontSize: '13px',
+                        opacity: newTone === tone ? 0.6 : 1
+                      }}
+                      onClick={() => newTone !== tone && generateResponse(newTone)}
+                      disabled={generating || newTone === tone}
+                      title={`Ctrl+${index + 1}`}
                     >
                       {newTone.charAt(0).toUpperCase() + newTone.slice(1)}
                     </button>
