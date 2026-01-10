@@ -1,0 +1,20 @@
+{
+  "name": "reviewresponder-scripts",
+  "version": "1.0.0",
+  "description": "Sales and marketing automation scripts for ReviewResponder",
+  "scripts": {
+    "scrape": "node linkedin-scraper.js",
+    "help": "node linkedin-scraper.js --help"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0"
+  },
+  "keywords": [
+    "linkedin",
+    "outreach",
+    "sales",
+    "automation"
+  ],
+  "license": "UNLICENSED",
+  "private": true
+}

@@ -1,0 +1,6 @@
+Name,Title,Company,Industry,Location,Profile URL,Status,Connection Sent,Connection Accepted,Follow-up 1 Sent,Follow-up 2 Sent,Response,Demo Booked,Converted,Plan,Notes
+"Example: John Smith","Restaurant Owner","Joe's Italian Kitchen","Restaurant","New York, NY","https://linkedin.com/in/example","pending","","","","","","","FALSE","",""
+"Example: Sarah Johnson","Hotel General Manager","Grand Plaza Hotel","Hotel","Miami, FL","https://linkedin.com/in/example2","connection_sent","2026-01-10","","","","","","FALSE","",""
+"Example: Mike Chen","Marketing Agency CEO","Digital Growth Co","Marketing Agency","San Francisco, CA","https://linkedin.com/in/example3","connected","2026-01-08","2026-01-09","","","","","FALSE","","Send follow-up tomorrow"
+"Example: Lisa Brown","Dental Practice Owner","Bright Smiles Dental","Dental","Chicago, IL","https://linkedin.com/in/example4","responded","2026-01-05","2026-01-06","2026-01-07","","Interested, wants demo","2026-01-15","FALSE","","Hot lead!"
+"Example: David Miller","Franchise Owner","Pizza Palace (5 locations)","Franchise","Austin, TX","https://linkedin.com/in/example5","converted","2026-01-01","2026-01-02","2026-01-03","","Love the bulk feature!","2026-01-08","TRUE","Professional","Referred by John"
