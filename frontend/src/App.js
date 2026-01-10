@@ -3241,16 +3241,6 @@ const DashboardPage = () => {
         return;
       }
 
-      // Alt+N - New Response (Clear) - Note: Ctrl+N opens new browser window
-      if (e.altKey && !ctrlOrCmd && e.key.toLowerCase() === 'n') {
-        e.preventDefault();
-        setReviewText('');
-        setResponse('');
-        setRating(0);
-        toast.success('Cleared!');
-        return;
-      }
-
       // Ctrl+1/2/3/4 - Change Tone
       const tones = ['professional', 'friendly', 'formal', 'apologetic'];
       if (ctrlOrCmd && !e.shiftKey && ['1', '2', '3', '4'].includes(e.key)) {
@@ -5276,7 +5266,7 @@ Food was amazing, will definitely come back!`}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--gray-100)' }}>
-                <span style={{ color: 'var(--gray-700)' }}>Generate Response</span>
+                <span style={{ color: 'var(--gray-700)' }}>Generate / New Response</span>
                 <kbd style={{ background: 'var(--gray-100)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace' }}>
                   {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} + Enter
                 </kbd>
@@ -5286,13 +5276,6 @@ Food was amazing, will definitely come back!`}
                 <span style={{ color: 'var(--gray-700)' }}>Copy Response</span>
                 <kbd style={{ background: 'var(--gray-100)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace' }}>
                   {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} + Shift + C
-                </kbd>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--gray-100)' }}>
-                <span style={{ color: 'var(--gray-700)' }}>New Response (Clear)</span>
-                <kbd style={{ background: 'var(--gray-100)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace' }}>
-                  Alt + N
                 </kbd>
               </div>
 
