@@ -1497,7 +1497,7 @@ const LandingPage = () => {
                 <span style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Generated in 2 seconds</span>
               </div>
               <p style={{ fontSize: '15px', color: 'var(--gray-800)', lineHeight: '1.6' }}>
-                "45 minutes and cold food - that's a failure on our part, and I'm sorry. That's not how we run things here. If you're open to it, I'd like to make this right. Give us a call or reply here and we'll sort it out."
+                "45 minutes and cold food. That's on us, and we're sorry. Not the experience we want anyone to have. Reach out to us directly and we'll make it right."
               </p>
               <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
                 <span style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--error-light)', color: 'var(--error)', borderRadius: '12px' }}>Apologetic Tone</span>
@@ -1524,7 +1524,7 @@ const LandingPage = () => {
                 <span style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Auto-detected: German</span>
               </div>
               <p style={{ fontSize: '15px', color: 'var(--gray-800)', lineHeight: '1.6' }}>
-                "Schön, dass es geschmeckt hat und der Service gepasst hat. Den Hinweis mit den Portionen nehmen wir uns zu Herzen - danke dafür. Bis zum nächsten Mal!"
+                "Den Hinweis zu den Portionen nehmen wir uns zu Herzen. Danke für die Ehrlichkeit. Freut uns, dass der Rest gepasst hat."
               </p>
               <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
                 <span style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--primary-50)', color: 'var(--primary-700)', borderRadius: '12px' }}>Professional Tone</span>
