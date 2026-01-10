@@ -829,7 +829,7 @@ const ExitIntentPopup = () => {
                   fontWeight: '600',
                   marginBottom: '12px'
                 }}>
-                  🎁 Exclusive Offer: Save 20%
+                  🎁 Exclusive Offer: Save 50%
                 </div>
                 <p style={{ color: 'var(--gray-600)', fontSize: '14px' }}>
                   Enter your email to unlock this limited-time discount
@@ -855,7 +855,7 @@ const ExitIntentPopup = () => {
                   style={{ width: '100%', fontSize: '16px', padding: '12px' }}
                   disabled={loading}
                 >
-                  {loading ? 'Processing...' : 'Get My 20% Discount'}
+                  {loading ? 'Processing...' : 'Get My 50% Discount'}
                 </button>
               </form>
 
