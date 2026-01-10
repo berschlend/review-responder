@@ -200,13 +200,12 @@ git add -A && git commit -m "Beschreibung" && git push
 - Affiliate Program (20% recurring)
 - Discount Codes: EARLY50 (50%), SAVE20 (20%), HUNTLAUNCH (60%)
 
-### Chrome Extension v1.5.0
+### Chrome Extension v1.4.1
 - Google Maps Integration
 - Templates & Drafts (Auto-Save)
 - AI Tone Recommendation
 - Quality Score & Variations
-- Streaks & Achievements
-- Multi-Account Support
+- 50+ Industry Templates
 
 ### Marketing Systems
 - Automated Outreach (Google Places → Hunter.io → Cold Emails)

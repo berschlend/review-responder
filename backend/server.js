@@ -451,6 +451,15 @@ async function initDatabase() {
       // Columns might already exist
     }
 
+    // Add email verification columns (optional banner-based verification)
+    try {
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verification_token TEXT`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verification_expires_at TIMESTAMP`);
+    } catch (error) {
+      // Columns might already exist
+    }
+
     console.log('📊 Database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -661,6 +670,49 @@ app.post('/api/auth/register', async (req, res) => {
       console.log(`🤝 User ${email} registered via affiliate ID ${affiliateId}`);
     }
 
+    // Generate email verification token and send verification email
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    await dbQuery(
+      `UPDATE users SET email_verification_token = $1, email_verification_expires_at = $2 WHERE id = $3`,
+      [verificationToken, verificationExpires, userId]
+    );
+
+    // Send verification email (non-blocking - user can still use app)
+    if (resend) {
+      const verifyUrl = `${process.env.FRONTEND_URL || 'https://tryreviewresponder.com'}/verify-email?token=${verificationToken}`;
+      try {
+        await resend.emails.send({
+          from: FROM_EMAIL,
+          to: email,
+          subject: 'Verify your email - ReviewResponder',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
+                <h1 style="color: white; margin: 0;">Welcome to ReviewResponder!</h1>
+              </div>
+              <div style="padding: 30px; background: #f9fafb;">
+                <p style="font-size: 16px; color: #374151;">Hi${businessName ? ' ' + businessName : ''},</p>
+                <p style="font-size: 16px; color: #374151;">Thanks for signing up! Please verify your email address to get the most out of ReviewResponder.</p>
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${verifyUrl}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Verify Email</a>
+                </div>
+                <p style="font-size: 14px; color: #6b7280;">Or copy this link: <a href="${verifyUrl}" style="color: #667eea;">${verifyUrl}</a></p>
+                <p style="font-size: 14px; color: #6b7280;">This link expires in 24 hours.</p>
+                <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+                <p style="font-size: 12px; color: #9ca3af;">You're receiving this email because you signed up for ReviewResponder. If you didn't sign up, you can ignore this email.</p>
+              </div>
+            </div>
+          `
+        });
+        console.log(`📧 Verification email sent to ${email}`);
+      } catch (emailError) {
+        console.error('Failed to send verification email:', emailError);
+        // Don't fail registration if email fails - user can resend later
+      }
+    }
+
     const token = jwt.sign({ id: userId, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
     res.status(201).json({
@@ -673,12 +725,116 @@ app.post('/api/auth/register', async (req, res) => {
         responsesUsed: 0,
         responsesLimit: PLAN_LIMITS.free.responses,
         onboardingCompleted: false,
-        referralCode: newUserReferralCode
+        referralCode: newUserReferralCode,
+        emailVerified: false
       }
     });
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
+// Verify email endpoint
+app.get('/api/auth/verify-email', async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({ error: 'Verification token required' });
+    }
+
+    const user = await dbGet(
+      `SELECT id, email, email_verified, email_verification_expires_at
+       FROM users WHERE email_verification_token = $1`,
+      [token]
+    );
+
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid verification token' });
+    }
+
+    if (user.email_verified) {
+      return res.json({ success: true, message: 'Email already verified', alreadyVerified: true });
+    }
+
+    if (new Date() > new Date(user.email_verification_expires_at)) {
+      return res.status(400).json({ error: 'Verification token has expired. Please request a new one.' });
+    }
+
+    // Mark email as verified and clear token
+    await dbQuery(
+      `UPDATE users SET email_verified = TRUE, email_verification_token = NULL, email_verification_expires_at = NULL WHERE id = $1`,
+      [user.id]
+    );
+
+    console.log(`✅ Email verified for user ${user.email}`);
+    res.json({ success: true, message: 'Email verified successfully' });
+  } catch (error) {
+    console.error('Verify email error:', error);
+    res.status(500).json({ error: 'Failed to verify email' });
+  }
+});
+
+// Resend verification email
+app.post('/api/auth/resend-verification', authenticateToken, async (req, res) => {
+  try {
+    const user = await dbGet('SELECT id, email, email_verified, business_name FROM users WHERE id = $1', [req.user.id]);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (user.email_verified) {
+      return res.json({ success: true, message: 'Email already verified' });
+    }
+
+    // Generate new verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    await dbQuery(
+      `UPDATE users SET email_verification_token = $1, email_verification_expires_at = $2 WHERE id = $3`,
+      [verificationToken, verificationExpires, user.id]
+    );
+
+    // Send verification email
+    if (resend) {
+      const verifyUrl = `${process.env.FRONTEND_URL || 'https://tryreviewresponder.com'}/verify-email?token=${verificationToken}`;
+      try {
+        await resend.emails.send({
+          from: FROM_EMAIL,
+          to: user.email,
+          subject: 'Verify your email - ReviewResponder',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
+                <h1 style="color: white; margin: 0;">Verify Your Email</h1>
+              </div>
+              <div style="padding: 30px; background: #f9fafb;">
+                <p style="font-size: 16px; color: #374151;">Hi${user.business_name ? ' ' + user.business_name : ''},</p>
+                <p style="font-size: 16px; color: #374151;">Click the button below to verify your email address.</p>
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${verifyUrl}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Verify Email</a>
+                </div>
+                <p style="font-size: 14px; color: #6b7280;">Or copy this link: <a href="${verifyUrl}" style="color: #667eea;">${verifyUrl}</a></p>
+                <p style="font-size: 14px; color: #6b7280;">This link expires in 24 hours.</p>
+              </div>
+            </div>
+          `
+        });
+        console.log(`📧 Verification email resent to ${user.email}`);
+        res.json({ success: true, message: 'Verification email sent' });
+      } catch (emailError) {
+        console.error('Failed to resend verification email:', emailError);
+        res.status(500).json({ error: 'Failed to send verification email' });
+      }
+    } else {
+      res.status(500).json({ error: 'Email service not configured' });
+    }
+  } catch (error) {
+    console.error('Resend verification error:', error);
+    res.status(500).json({ error: 'Failed to resend verification email' });
   }
 });
 
@@ -809,7 +965,9 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
         smartResponsesUsed: user.smart_responses_used || 0,
         standardResponsesUsed: user.standard_responses_used || 0,
         // Team info
-        teamInfo: teamInfo
+        teamInfo: teamInfo,
+        // Email verification
+        emailVerified: user.email_verified || false
       }
     });
   } catch (error) {

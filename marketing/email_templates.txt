@@ -44,7 +44,7 @@ have some reviews waiting for responses.
 I know responding to reviews is time-consuming, so I built
 a tool that generates professional responses in seconds.
 
-Would you like to try it? First 5 responses are free:
+Would you like to try it? First 20 responses are free:
 https://review-responder-frontend.onrender.com
 
 Takes 30 seconds to sign up, no credit card needed.
@@ -95,7 +95,7 @@ Just following up on my email from a few days ago.
 I know you're busy running your business, but I genuinely
 think this could save you hours every month.
 
-The free trial is still available (5 responses, no card needed):
+The free trial is still available (20 responses, no card needed):
 https://review-responder-frontend.onrender.com
 
 If it's not a good fit, no worries at all!
@@ -163,7 +163,7 @@ How it works:
 2. Select a tone (professional, friendly, apologetic)
 3. Get a personalized response instantly
 
-Free tier: 5 responses/month (no card needed)
+Free tier: 20 responses/month (no card needed)
 Link: https://review-responder-frontend.onrender.com
 
 Built this as a side project, would love your feedback!
@@ -186,6 +186,6 @@ generates responses in seconds.
 You just paste the review, pick a tone, and it writes
 a professional response.
 
-Free to try (5 responses/month): [LINK]
+Free to try (20 responses/month): [LINK]
 
 Would love to hear if it's useful for anyone else!

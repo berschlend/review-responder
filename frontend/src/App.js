@@ -1446,7 +1446,7 @@ const LandingPage = () => {
             </Link>
           </div>
           <p style={{ marginTop: '16px', color: 'var(--gray-500)', fontSize: '14px' }}>
-            5 free responses included. No credit card required.
+            20 free responses included. No credit card required.
           </p>
 
           {/* Trust Badges */}
@@ -2499,7 +2499,7 @@ const RegisterPage = () => {
     setLoading(true);
     try {
       await register(email, password, businessName);
-      toast.success('Account created! You have 5 free responses.');
+      toast.success('Account created! You have 20 free responses.');
       navigate('/dashboard');
     } catch (error) {
       toast.error(error.response?.data?.error || 'Registration failed');
@@ -2512,7 +2512,7 @@ const RegisterPage = () => {
     setGoogleLoading(true);
     try {
       await loginWithGoogle(credential);
-      toast.success('Account created! You have 5 free responses.');
+      toast.success('Account created! You have 20 free responses.');
       navigate('/dashboard');
     } catch (error) {
       toast.error(error.response?.data?.error || 'Google sign-up failed');
@@ -3454,9 +3454,9 @@ const DashboardPage = () => {
 
   const getFilteredHistory = () => { let f = allHistory; if (exportDateFrom) f = f.filter(i => new Date(i.created_at) >= new Date(exportDateFrom)); if (exportDateTo) { const e = new Date(exportDateTo); e.setHours(23,59,59,999); f = f.filter(i => new Date(i.created_at) <= e); } return f; };
 
-  const exportToCSV = () => { setExporting(true); try { const f = getFilteredHistory(); if (f.length === 0) { toast.error('No responses'); setExporting(false); return; } const d = f.map(i => ({ Date: new Date(i.created_at).toLocaleDateString(), Platform: i.review_platform||'N/A', Rating: i.review_rating||'N/A', Tone: i.tone||'professional', Review: i.review_text, Response: i.generated_response })); const csv = Papa.unparse(d); const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `responses-${new Date().toISOString().split('T')[0]}.csv`; link.click(); toast.success(`Exported ${f.length} to CSV`); } catch (e) { toast.error('Export failed'); } finally { setExporting(false); } };
+  const exportToCSV = () => { if (!canExport) { toast.info('Upgrade to Starter to export your responses'); return; } setExporting(true); try { const f = getFilteredHistory(); if (f.length === 0) { toast.error('No responses'); setExporting(false); return; } const d = f.map(i => ({ Date: new Date(i.created_at).toLocaleDateString(), Platform: i.review_platform||'N/A', Rating: i.review_rating||'N/A', Tone: i.tone||'professional', Review: i.review_text, Response: i.generated_response })); const csv = Papa.unparse(d); const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `responses-${new Date().toISOString().split('T')[0]}.csv`; link.click(); toast.success(`Exported ${f.length} to CSV`); } catch (e) { toast.error('Export failed'); } finally { setExporting(false); } };
 
-  const exportToPDF = () => { setExporting(true); try { const f = getFilteredHistory(); if (f.length === 0) { toast.error('No responses'); setExporting(false); return; } const doc = new jsPDF(); doc.setFontSize(18); doc.text('Response History', 14, 20); doc.setFontSize(10); doc.text(`${new Date().toLocaleDateString()} | ${f.length} responses`, 14, 28); const t = f.map(i => [new Date(i.created_at).toLocaleDateString(), i.review_platform||'-', i.review_rating||'-', i.review_text.substring(0,40)+'...', i.generated_response.substring(0,50)+'...']); doc.autoTable({ startY: 35, head: [['Date','Platform','Rating','Review','Response']], body: t, styles: { fontSize: 7 }, headStyles: { fillColor: [79,70,229] } }); doc.save(`responses-${new Date().toISOString().split('T')[0]}.pdf`); toast.success(`Exported ${f.length} to PDF`); } catch (e) { toast.error('Export failed'); } finally { setExporting(false); } };
+  const exportToPDF = () => { if (!canExport) { toast.info('Upgrade to Starter to export your responses'); return; } setExporting(true); try { const f = getFilteredHistory(); if (f.length === 0) { toast.error('No responses'); setExporting(false); return; } const doc = new jsPDF(); doc.setFontSize(18); doc.text('Response History', 14, 20); doc.setFontSize(10); doc.text(`${new Date().toLocaleDateString()} | ${f.length} responses`, 14, 28); const t = f.map(i => [new Date(i.created_at).toLocaleDateString(), i.review_platform||'-', i.review_rating||'-', i.review_text.substring(0,40)+'...', i.generated_response.substring(0,50)+'...']); doc.autoTable({ startY: 35, head: [['Date','Platform','Rating','Review','Response']], body: t, styles: { fontSize: 7 }, headStyles: { fillColor: [79,70,229] } }); doc.save(`responses-${new Date().toISOString().split('T')[0]}.pdf`); toast.success(`Exported ${f.length} to PDF`); } catch (e) { toast.error('Export failed'); } finally { setExporting(false); } };
 
   const saveAsTemplate = async () => {
     if (!templateName.trim()) {
@@ -3703,6 +3703,7 @@ const DashboardPage = () => {
   const canUseBulk = ['starter', 'professional', 'unlimited'].includes(effectivePlan);
   const canUseBlog = ['professional', 'unlimited'].includes(effectivePlan);
   const canUseApi = effectivePlan === 'unlimited';
+  const canExport = ['starter', 'professional', 'unlimited'].includes(effectivePlan);
 
   // Load blog data when switching to blog tab
   useEffect(() => {
@@ -6341,7 +6342,7 @@ const SupportPage = () => {
     },
     {
       q: 'How does the free trial work?',
-      a: 'You get 5 free response generations when you sign up. No credit card required. Use them to test the quality of our AI responses.'
+      a: 'You get 20 free response generations when you sign up. No credit card required. Use them to test the quality of our AI responses.'
     },
     {
       q: 'Can I cancel my subscription anytime?',
@@ -6555,7 +6556,7 @@ const GoogleReviewPage = () => {
             <Sparkles size={20} />
             Generate Free Responses
           </Link>
-          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>5 free responses • No credit card required</p>
+          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>20 free responses • No credit card required</p>
         </div>
       </section>
 
@@ -6682,7 +6683,7 @@ const YelpReviewPage = () => {
             <Sparkles size={20} />
             Reply to Yelp Reviews Free
           </Link>
-          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>5 free responses • Works with any Yelp review</p>
+          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>20 free responses • Works with any Yelp review</p>
         </div>
       </section>
 
@@ -7305,11 +7306,11 @@ const PricingPage = () => {
     { name: 'Standard AI (GPT-4o)', free: '17', starter: '200', pro: '500', unlimited: 'Unlimited' },
     { name: 'AI Tone Options', free: true, starter: true, pro: true, unlimited: true },
     { name: '50+ Languages', free: true, starter: true, pro: true, unlimited: true },
-    { name: 'Response History', free: false, starter: true, pro: true, unlimited: true },
+    { name: 'Response History', free: true, starter: true, pro: true, unlimited: true },
     { name: 'Response Templates', free: false, starter: true, pro: true, unlimited: true },
     { name: 'Bulk Generation (20 at once)', free: false, starter: false, pro: true, unlimited: true },
     { name: 'Analytics Dashboard', free: false, starter: false, pro: true, unlimited: true },
-    { name: 'CSV/PDF Export', free: false, starter: false, pro: true, unlimited: true },
+    { name: 'CSV/PDF Export', free: false, starter: true, pro: true, unlimited: true },
     { name: 'API Access', free: false, starter: false, pro: false, unlimited: true },
     { name: 'Team Members', free: '-', starter: '-', pro: '3', unlimited: '10' },
     { name: 'Priority Support', free: false, starter: false, pro: true, unlimited: true }

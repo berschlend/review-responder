@@ -802,9 +802,9 @@ function switchVariation(panel, index) {
 async function loadAnalytics() {
   try {
     const data = await chrome.storage.local.get(['rr_analytics']);
-    return data.rr_analytics || { daily: {}, total: { count: 0, time_saved_minutes: 0 } };
+    return data.rr_analytics || { daily: {}, total: { count: 0 } };
   } catch (e) {
-    return { daily: {}, total: { count: 0, time_saved_minutes: 0 } };
+    return { daily: {}, total: { count: 0 } };
   }
 }
 
@@ -837,15 +837,6 @@ async function updateAnalytics(panel) {
   // Update stats
   panel.querySelector('.rr-stat-week').textContent = weekCount;
   panel.querySelector('.rr-stat-total').textContent = analytics.total.count || 0;
-
-  const minutes = analytics.total.time_saved_minutes || 0;
-  if (minutes >= 60) {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    panel.querySelector('.rr-stat-time').textContent = `${hours}h ${mins}m`;
-  } else {
-    panel.querySelector('.rr-stat-time').textContent = `${minutes}m`;
-  }
 
   // Generate sparkline
   const sparkline = panel.querySelector('.rr-sparkline');
@@ -2112,10 +2103,6 @@ async function createResponsePanel() {
         <div class="rr-stat-item">
           <span class="rr-stat-value rr-stat-total">0</span>
           <span class="rr-stat-label">All Time</span>
-        </div>
-        <div class="rr-stat-item">
-          <span class="rr-stat-value rr-stat-time">0m</span>
-          <span class="rr-stat-label">Saved</span>
         </div>
         <div class="rr-stat-item rr-stat-chart">
           <div class="rr-sparkline"></div>
