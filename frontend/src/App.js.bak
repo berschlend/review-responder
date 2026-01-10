@@ -2845,26 +2845,22 @@ const DashboardPage = () => {
     if (user && user.responsesUsed === 0) setIsFirstResponse(true);
 
     // Check for success param from Stripe
-    // Only check URL params once using window.location (not React state)
-    const params = new URLSearchParams(window.location.search);
-    const successParam = params.get('success');
-    const planChangedParam = params.get('plan_changed');
-
-    // Clear URL immediately to prevent re-triggering on user state changes
-    if (successParam || planChangedParam) {
+    const params = new URLSearchParams(location.search);
+    if (params.get('success')) {
+      toast.success('Subscription activated! Thank you for subscribing.');
+      // Refresh user data
+      api.get('/auth/me').then(res => updateUser(res.data.user));
+    }
+    // Handle plan change from admin endpoint
+    if (params.get('plan_changed')) {
+      const newPlan = params.get('plan_changed');
+      toast.success(`Plan changed to ${newPlan.toUpperCase()}!`);
+      // Refresh user data to get new plan limits
+      api.get('/auth/me').then(res => updateUser(res.data.user));
+      // Clear the URL param
       window.history.replaceState({}, '', '/dashboard');
     }
-
-    if (successParam) {
-      toast.success('Subscription activated! Thank you for subscribing.');
-      api.get('/auth/me').then(res => updateUser(res.data.user));
-    }
-
-    if (planChangedParam) {
-      toast.success(`Plan changed to ${planChangedParam.toUpperCase()}!`);
-      api.get('/auth/me').then(res => updateUser(res.data.user));
-    }
-  }, []);
+  }, [user]);
 
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
