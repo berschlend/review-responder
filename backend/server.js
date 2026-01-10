@@ -2540,7 +2540,7 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
 
     const sessionConfig = {
       customer: user.stripe_customer_id,
-      payment_method_types: ['card'],
+      payment_method_types: ['card', 'paypal', 'sepa_debit', 'link'],
       line_items: [{
         price: priceId,
         quantity: 1
