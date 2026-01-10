@@ -1,12 +1,13 @@
 {
   "manifest_version": 3,
   "name": "ReviewResponder - AI Review Responses",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Generate professional responses to reviews with one click - works on any website",
   "permissions": [
     "activeTab",
     "storage",
     "clipboardWrite",
+    "clipboardRead",
     "contextMenus",
     "scripting"
   ],

@@ -1751,7 +1751,7 @@ const LandingPage = () => {
             Try It Free Now
           </Link>
           <p style={{ marginTop: '12px', fontSize: '13px', color: 'var(--gray-500)' }}>
-            Generate 5 responses free • No credit card required
+            Generate 20 responses free • No credit card required
           </p>
         </div>
       </section>
@@ -2050,7 +2050,7 @@ const TermsPage = () => (
 
       <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>4. Payment & Refunds</h2>
       <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
-        <li>Free tier: 5 responses per month, no payment required</li>
+        <li>Free tier: 20 responses per month, no payment required</li>
         <li>Paid plans: Billed monthly or yearly via Stripe</li>
         <li><strong>30-Day Money Back Guarantee:</strong> If you're not satisfied within 30 days, contact us for a full refund</li>
         <li>Cancel anytime - no long-term contracts</li>
@@ -6373,7 +6373,7 @@ const GoogleReviewPage = () => {
         "@type": "Offer",
         "price": "0",
         "priceCurrency": "USD",
-        "description": "Free trial with 5 responses"
+        "description": "Free trial with 20 responses"
       }
     });
     document.head.appendChild(script);
@@ -7136,15 +7136,17 @@ const PricingPage = () => {
   const faqs = [
     { q: 'Can I switch plans anytime?', a: 'Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately and we prorate the billing.' },
     { q: 'What happens if I exceed my response limit?', a: 'You\'ll receive a notification when you reach 80% of your limit. After reaching your limit, you can upgrade or wait for the next billing cycle.' },
-    { q: 'Is there a free trial?', a: 'Yes! The Free plan gives you 5 responses per month forever - no credit card required. Try it out and upgrade when ready.' },
+    { q: 'Is there a free trial?', a: 'Yes! The Free plan gives you 20 responses per month forever - no credit card required. Try it out and upgrade when ready.' },
     { q: 'What payment methods do you accept?', a: 'We accept all major credit cards (Visa, Mastercard, Amex) via our secure Stripe payment processor.' },
     { q: 'Can I cancel anytime?', a: 'Absolutely! No contracts, no hidden fees. Cancel with one click from your dashboard. Plus, we offer a 30-day money-back guarantee.' },
     { q: 'Do you offer refunds?', a: 'Yes! We have a 30-day money-back guarantee. If you\'re not satisfied, contact us for a full refund.' }
   ];
 
-  // Feature comparison data
+  // Feature comparison data - Updated with Hybrid AI limits (Smart + Standard)
   const features = [
-    { name: 'Monthly Responses', free: '5', starter: '100', pro: '300', unlimited: 'Unlimited' },
+    { name: 'Monthly Responses', free: '20', starter: '300', pro: '800', unlimited: 'Unlimited' },
+    { name: 'Smart AI (Claude)', free: '3', starter: '100', pro: '300', unlimited: 'Unlimited' },
+    { name: 'Standard AI (GPT-4o)', free: '17', starter: '200', pro: '500', unlimited: 'Unlimited' },
     { name: 'AI Tone Options', free: true, starter: true, pro: true, unlimited: true },
     { name: '50+ Languages', free: true, starter: true, pro: true, unlimited: true },
     { name: 'Response History', free: false, starter: true, pro: true, unlimited: true },
@@ -7153,7 +7155,7 @@ const PricingPage = () => {
     { name: 'Analytics Dashboard', free: false, starter: false, pro: true, unlimited: true },
     { name: 'CSV/PDF Export', free: false, starter: false, pro: true, unlimited: true },
     { name: 'API Access', free: false, starter: false, pro: false, unlimited: true },
-    { name: 'Team Members (up to 5)', free: false, starter: false, pro: false, unlimited: true },
+    { name: 'Team Members', free: '-', starter: '-', pro: '3', unlimited: '10' },
     { name: 'Priority Support', free: false, starter: false, pro: true, unlimited: true }
   ];
 
@@ -7433,7 +7435,7 @@ const PricingPage = () => {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
           <div>
             <div style={{ fontWeight: '600', fontSize: '14px' }}>Start Free</div>
-            <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>5 responses/month</div>
+            <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>20 responses/month</div>
           </div>
           <Link to="/register" className="btn btn-primary" style={{ padding: '10px 24px', fontSize: '14px' }}>
             Get Started
@@ -8301,7 +8303,7 @@ Best,
               <li style={{ marginBottom: '8px' }}>4 tone options: Professional, Friendly, Formal, Apologetic</li>
               <li style={{ marginBottom: '8px' }}>Works with Google, Yelp, TripAdvisor, and more</li>
               <li style={{ marginBottom: '8px' }}>Chrome extension for one-click responses</li>
-              <li style={{ marginBottom: '8px' }}>Free plan with 5 responses to try</li>
+              <li style={{ marginBottom: '8px' }}>Free plan with 20 responses to try</li>
             </ul>
           </div>
         </div>
