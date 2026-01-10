@@ -3772,6 +3772,12 @@ app.get('/api/admin/set-plan', async (req, res) => {
     const verifyUser = await dbGet('SELECT subscription_plan, responses_limit FROM users WHERE id = $1', [user.id]);
     console.log(`✅ Verified: plan=${verifyUser?.subscription_plan}, limit=${verifyUser?.responses_limit}`);
 
+    // If redirect=1, redirect to dashboard with success message
+    if (req.query.redirect === '1') {
+      const frontendUrl = process.env.FRONTEND_URL || 'https://review-responder-frontend.onrender.com';
+      return res.redirect(`${frontendUrl}/dashboard?plan_changed=${targetPlan}`);
+    }
+
     res.json({
       success: true,
       message: `User ${email} set to ${targetPlan} plan`,
