@@ -795,6 +795,123 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// ========== DRAFTS (Auto-Save) ==========
+const MAX_DRAFTS = 10;
+
+async function loadDrafts() {
+  try {
+    const stored = await chrome.storage.local.get(['rr_drafts']);
+    return stored.rr_drafts || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+async function saveDrafts(drafts) {
+  try {
+    const limited = drafts.slice(0, MAX_DRAFTS);
+    await chrome.storage.local.set({ rr_drafts: limited });
+  } catch (e) {
+    console.error('Failed to save drafts:', e);
+  }
+}
+
+async function saveDraft(reviewText, responseText, platform, url) {
+  if (!reviewText || !responseText) return { success: false };
+
+  const drafts = await loadDrafts();
+  const reviewKey = reviewText.substring(0, 100);
+  const existingIndex = drafts.findIndex(d => d.reviewText.substring(0, 100) === reviewKey);
+
+  const newDraft = {
+    id: Date.now().toString(),
+    reviewText: reviewText.substring(0, 500),
+    responseText: responseText.substring(0, 1000),
+    platform: platform || 'Unknown',
+    url: url || window.location.href,
+    createdAt: new Date().toISOString()
+  };
+
+  if (existingIndex >= 0) {
+    drafts[existingIndex] = newDraft;
+  } else {
+    drafts.unshift(newDraft);
+  }
+
+  await saveDrafts(drafts);
+  return { success: true, draft: newDraft };
+}
+
+async function deleteDraft(id) {
+  const drafts = await loadDrafts();
+  const filtered = drafts.filter(d => d.id !== id);
+  await saveDrafts(filtered);
+  return { success: true };
+}
+
+function formatDraftTime(isoString) {
+  const date = new Date(isoString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
+}
+
+function updateDraftsButton(panel, drafts) {
+  const btn = panel.querySelector('.rr-drafts-btn');
+  if (!btn) return;
+
+  if (drafts.length > 0) {
+    btn.innerHTML = `📝 <span class="rr-drafts-count">${drafts.length}</span>`;
+    btn.title = `${drafts.length} saved draft(s)`;
+  } else {
+    btn.innerHTML = '📝';
+    btn.title = 'No drafts';
+  }
+}
+
+function updateDraftsOverlay(panel, drafts) {
+  const list = panel.querySelector('.rr-drafts-list');
+  const empty = panel.querySelector('.rr-drafts-empty');
+
+  if (!list) return;
+
+  if (drafts.length === 0) {
+    if (empty) empty.style.display = 'block';
+    list.querySelectorAll('.rr-draft-item').forEach(el => el.remove());
+    return;
+  }
+
+  if (empty) empty.style.display = 'none';
+  list.querySelectorAll('.rr-draft-item').forEach(el => el.remove());
+
+  drafts.forEach(d => {
+    const item = document.createElement('div');
+    item.className = 'rr-draft-item';
+    item.dataset.id = d.id;
+    item.innerHTML = `
+      <div class="rr-draft-header">
+        <span class="rr-draft-platform">${d.platform}</span>
+        <span class="rr-draft-time">${formatDraftTime(d.createdAt)}</span>
+      </div>
+      <div class="rr-draft-review">"${escapeHtml(d.reviewText.substring(0, 60))}..."</div>
+      <div class="rr-draft-response">${escapeHtml(d.responseText.substring(0, 80))}...</div>
+      <div class="rr-draft-actions">
+        <button class="rr-draft-continue">Continue</button>
+        <button class="rr-draft-delete">🗑️</button>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+
 // ========== CREATE KILLER PANEL ==========
 async function createResponsePanel() {
   const existing = document.getElementById('rr-response-panel');
@@ -821,6 +938,7 @@ async function createResponsePanel() {
           <span class="rr-time-value">${formatTimeSaved(timeSaved.minutes)}</span>
           <span class="rr-time-label">saved</span>
         </div>
+        <button class="rr-drafts-btn" title="Drafts">📝</button>
         <button class="rr-templates-btn" title="My Templates">💾</button>
         <button class="rr-help-btn" title="How to use">?</button>
         <button class="rr-close-btn" title="Close (Esc)">×</button>
@@ -1009,6 +1127,19 @@ async function createResponsePanel() {
           </div>
         </div>
       </div>
+
+      <!-- Drafts Overlay -->
+      <div class="rr-drafts-overlay hidden">
+        <div class="rr-drafts-content">
+          <div class="rr-drafts-header">
+            <h3>📝 Saved Drafts</h3>
+            <button class="rr-drafts-close">×</button>
+          </div>
+          <div class="rr-drafts-list">
+            <p class="rr-drafts-empty">No drafts yet.<br>Drafts are auto-saved when you close the panel.</p>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 
@@ -1031,6 +1162,12 @@ async function createResponsePanel() {
     updateTemplatesOverlay(panel, templates);
   });
 
+  // Load drafts and update button
+  loadDrafts().then(drafts => {
+    updateDraftsButton(panel, drafts);
+    updateDraftsOverlay(panel, drafts);
+  });
+
   return panel;
 }
 
@@ -1046,6 +1183,54 @@ function initPanelEvents(panel) {
 
   panel.querySelector('.rr-help-close').addEventListener('click', () => {
     panel.querySelector('.rr-help-overlay').classList.add('hidden');
+  });
+
+  // Drafts button (header)
+  panel.querySelector('.rr-drafts-btn').addEventListener('click', async () => {
+    const drafts = await loadDrafts();
+    updateDraftsOverlay(panel, drafts);
+    panel.querySelector('.rr-drafts-overlay').classList.toggle('hidden');
+  });
+
+  panel.querySelector('.rr-drafts-close').addEventListener('click', () => {
+    panel.querySelector('.rr-drafts-overlay').classList.add('hidden');
+  });
+
+  // Drafts list - continue and delete buttons (event delegation)
+  panel.querySelector('.rr-drafts-list').addEventListener('click', async (e) => {
+    const continueBtn = e.target.closest('.rr-draft-continue');
+    const deleteBtn = e.target.closest('.rr-draft-delete');
+    const item = e.target.closest('.rr-draft-item');
+
+    if (!item) return;
+    const draftId = item.dataset.id;
+
+    if (continueBtn) {
+      const drafts = await loadDrafts();
+      const draft = drafts.find(d => d.id === draftId);
+      if (draft) {
+        // Load draft into panel
+        panel.querySelector('.rr-review-text').textContent = draft.reviewText;
+        panel.dataset.reviewText = draft.reviewText;
+        panel.querySelector('.rr-response-textarea').value = draft.responseText;
+        panel.querySelector('.rr-response-section').classList.remove('hidden');
+        panel.querySelector('.rr-drafts-overlay').classList.add('hidden');
+        showToast('📝 Draft loaded - continue editing!', 'success');
+
+        // Delete the draft after loading
+        await deleteDraft(draftId);
+        const updatedDrafts = await loadDrafts();
+        updateDraftsButton(panel, updatedDrafts);
+      }
+    }
+
+    if (deleteBtn) {
+      await deleteDraft(draftId);
+      const drafts = await loadDrafts();
+      updateDraftsOverlay(panel, drafts);
+      updateDraftsButton(panel, drafts);
+      showToast('🗑️ Draft deleted', 'success');
+    }
   });
 
   // Templates button (header)
@@ -1254,7 +1439,18 @@ function initPanelEvents(panel) {
   panel.querySelector('.rr-turbo-toggle').addEventListener('change', () => saveCurrentSettings(panel));
 }
 
-function closePanel(panel) {
+async function closePanel(panel) {
+  // Auto-save draft if there's unsaved content
+  const responseText = panel.querySelector('.rr-response-textarea')?.value;
+  const reviewText = panel.dataset.reviewText;
+  const platform = panel.querySelector('.rr-platform-badge')?.textContent?.trim() || 'Unknown';
+
+  if (responseText && responseText.length > 20 && reviewText) {
+    // Save as draft
+    await saveDraft(reviewText, responseText, platform, window.location.href);
+    showToast('📝 Draft saved!', 'info');
+  }
+
   panel.classList.remove('rr-visible');
   panel.classList.add('rr-closing');
   setTimeout(() => {
