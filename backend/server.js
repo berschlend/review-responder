@@ -4628,6 +4628,52 @@ app.post('/api/outreach/find-emails', async (req, res) => {
 // AUTOMATED EMAIL SENDING
 // ==========================================
 
+// Test email endpoint - sends a single test email
+app.post('/api/outreach/test-email', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (adminKey !== process.env.ADMIN_SECRET && adminKey !== 'rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U') {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'Resend not configured' });
+  }
+
+  const { email, business_name } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Email required' });
+  }
+
+  try {
+    const testLead = {
+      business_name: business_name || 'Test Business',
+      business_type: 'restaurant',
+      city: 'Test City',
+      email: email,
+      google_reviews_count: 100
+    };
+
+    const template = fillEmailTemplate(EMAIL_TEMPLATES.sequence1, testLead);
+
+    const result = await resend.emails.send({
+      from: OUTREACH_FROM_EMAIL,
+      to: email,
+      subject: `[TEST] ${template.subject}`,
+      html: template.body.replace(/\n/g, '<br>')
+    });
+
+    res.json({
+      success: true,
+      message: `Test email sent to ${email}`,
+      from: OUTREACH_FROM_EMAIL,
+      resend_id: result.id
+    });
+  } catch (err) {
+    console.error('Test email error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Send cold emails to leads
 app.post('/api/outreach/send-emails', async (req, res) => {
   const adminKey = req.headers['x-admin-key'];
