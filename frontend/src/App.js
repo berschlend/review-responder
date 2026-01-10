@@ -1470,7 +1470,7 @@ const LandingPage = () => {
                 <span style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Generated in 3 seconds</span>
               </div>
               <p style={{ fontSize: '15px', color: 'var(--gray-800)', lineHeight: '1.6' }}>
-                "Thank you so much for the wonderful review! We're thrilled you enjoyed our pizza and experienced our team's dedication to great service. Your kind words mean the world to us, and we can't wait to welcome you back soon! 🍕✨"
+                "Really glad you enjoyed the pizza - that crispy crust is something we're pretty proud of. And quick, friendly service is what we aim for every time. Hope to see you back soon."
               </p>
               <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
                 <span style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--primary-50)', color: 'var(--primary-700)', borderRadius: '12px' }}>Friendly Tone</span>
@@ -1497,7 +1497,7 @@ const LandingPage = () => {
                 <span style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Generated in 2 seconds</span>
               </div>
               <p style={{ fontSize: '15px', color: 'var(--gray-800)', lineHeight: '1.6' }}>
-                "We sincerely apologize for the unacceptable wait time and cold food. This is not the standard we aim for, and we understand your disappointment. Please contact us directly at (555) 123-4567 so we can make this right and ensure a much better experience next time."
+                "45 minutes and cold food - that's a failure on our part, and I'm sorry. That's not how we run things here. If you're open to it, I'd like to make this right. Give us a call or reply here and we'll sort it out."
               </p>
               <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
                 <span style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--error-light)', color: 'var(--error)', borderRadius: '12px' }}>Apologetic Tone</span>
@@ -1524,7 +1524,7 @@ const LandingPage = () => {
                 <span style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Auto-detected: German</span>
               </div>
               <p style={{ fontSize: '15px', color: 'var(--gray-800)', lineHeight: '1.6' }}>
-                "Vielen Dank für Ihre positive Bewertung! Es freut uns sehr, dass Ihnen unser Essen und der Service gefallen haben. Ihr Feedback zu den Portionsgrößen nehmen wir gerne auf. Wir freuen uns auf Ihren nächsten Besuch!"
+                "Schön, dass es geschmeckt hat und der Service gepasst hat. Den Hinweis mit den Portionen nehmen wir uns zu Herzen - danke dafür. Bis zum nächsten Mal!"
               </p>
               <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
                 <span style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--primary-50)', color: 'var(--primary-700)', borderRadius: '12px' }}>Professional Tone</span>
