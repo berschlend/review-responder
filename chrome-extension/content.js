@@ -143,6 +143,117 @@ if (window.matchMedia) {
   currentTheme = await getThemePreference();
 })();
 
+// ========== SMART CLIPBOARD DETECTION ==========
+async function checkClipboardForReview() {
+  try {
+    // Check if clipboard API is available
+    if (!navigator.clipboard || !navigator.clipboard.readText) {
+      return { hasReview: false, text: '' };
+    }
+
+    const clipboardText = await navigator.clipboard.readText();
+
+    // Skip if empty or too short
+    if (!clipboardText || clipboardText.length < 20) {
+      return { hasReview: false, text: '' };
+    }
+
+    // Skip if too long (probably not a review)
+    if (clipboardText.length > 2000) {
+      return { hasReview: false, text: '' };
+    }
+
+    // Check if it looks like a review
+    const reviewIndicators = [
+      // English
+      /\b(stars?|rating|review|experience|service|staff|food|room|stay|visit)\b/i,
+      // German
+      /\b(sterne?|bewertung|erfahrung|service|essen|zimmer|aufenthalt|besuch)\b/i,
+      // Dutch
+      /\b(sterren|beoordeling|ervaring|dienst|eten|kamer|verblijf|bezoek)\b/i,
+      // Common sentiment words
+      /\b(terrible|amazing|worst|best|never|always|recommend|avoid|great|awful)\b/i,
+      /\b(schrecklich|fantastisch|schlimmste|beste|empfehlen|vermeiden)\b/i
+    ];
+
+    const hasReviewIndicator = reviewIndicators.some(regex => regex.test(clipboardText));
+
+    // Also check for typical review structure (opinion-like text)
+    const hasOpinionStructure =
+      clipboardText.includes('!') ||
+      clipboardText.includes('.') ||
+      /\b(I|we|my|our|ich|wir|mein|unser)\b/i.test(clipboardText);
+
+    if (hasReviewIndicator || (hasOpinionStructure && clipboardText.length > 50)) {
+      return { hasReview: true, text: clipboardText.trim() };
+    }
+
+    return { hasReview: false, text: '' };
+  } catch (e) {
+    // Clipboard access denied or not available
+    console.log('Clipboard access not available:', e.message);
+    return { hasReview: false, text: '' };
+  }
+}
+
+function showClipboardBanner(panel, clipboardText) {
+  // Remove existing banner if any
+  const existingBanner = panel.querySelector('.rr-clipboard-banner');
+  if (existingBanner) existingBanner.remove();
+
+  const banner = document.createElement('div');
+  banner.className = 'rr-clipboard-banner';
+  banner.innerHTML = `
+    <div class="rr-clipboard-icon">📋</div>
+    <div class="rr-clipboard-content">
+      <div class="rr-clipboard-title">Review detected in clipboard!</div>
+      <div class="rr-clipboard-preview">"${clipboardText.substring(0, 60)}..."</div>
+    </div>
+    <div class="rr-clipboard-actions">
+      <button class="rr-clipboard-use">Use This</button>
+      <button class="rr-clipboard-dismiss">×</button>
+    </div>
+  `;
+
+  // Insert after header
+  const header = panel.querySelector('.rr-panel-header');
+  if (header) {
+    header.after(banner);
+  }
+
+  // Event listeners
+  banner.querySelector('.rr-clipboard-use').addEventListener('click', () => {
+    // Use clipboard text as review
+    panel.dataset.reviewText = clipboardText;
+    panel.querySelector('.rr-review-box').textContent = clipboardText.substring(0, 300) + (clipboardText.length > 300 ? '...' : '');
+
+    // Detect language and issues
+    const detectedLanguage = detectLanguage(clipboardText);
+    panel.dataset.detectedLanguage = detectedLanguage;
+
+    const issues = detectIssues(clipboardText);
+    panel.dataset.detectedIssues = JSON.stringify(issues);
+
+    // Update UI
+    updateSentimentAndLanguage(panel, clipboardText);
+
+    banner.remove();
+    showToast('📋 Clipboard review loaded!', 'success');
+  });
+
+  banner.querySelector('.rr-clipboard-dismiss').addEventListener('click', () => {
+    banner.remove();
+  });
+
+  // Auto-dismiss after 10 seconds
+  setTimeout(() => {
+    if (banner.parentNode) {
+      banner.classList.add('rr-fade-out');
+      setTimeout(() => banner.remove(), 300);
+    }
+  }, 10000);
+}
+
 // ========== SMART ISSUE DETECTION ==========
 function detectIssues(text) {
   const lowerText = text.toLowerCase();
@@ -1015,23 +1126,92 @@ function updateAccountSwitcher(panel, accounts, activeAccount) {
 }
 
 // ========== CHARACTER COUNTER ==========
-const CHAR_LIMIT = 4000; // Google Maps review response limit
+// Platform-specific character limits
+const PLATFORM_CHAR_LIMITS = {
+  Google: { limit: 4096, name: 'Google Maps' },
+  Yelp: { limit: 5000, name: 'Yelp' },
+  TripAdvisor: { limit: 10000, name: 'TripAdvisor' },
+  Facebook: { limit: 8000, name: 'Facebook' },
+  Booking: { limit: 2000, name: 'Booking.com' },
+  Trustpilot: { limit: 3000, name: 'Trustpilot' },
+  default: { limit: 4000, name: 'Default' }
+};
+
+function getCharLimitForPlatform(panel) {
+  const platformBadge = panel.querySelector('.rr-platform-badge');
+  if (!platformBadge) return PLATFORM_CHAR_LIMITS.default;
+
+  const platformText = platformBadge.textContent || '';
+  for (const [key, value] of Object.entries(PLATFORM_CHAR_LIMITS)) {
+    if (platformText.toLowerCase().includes(key.toLowerCase())) {
+      return value;
+    }
+  }
+  return PLATFORM_CHAR_LIMITS.default;
+}
 
 function updateCharCounter(panel) {
   const textarea = panel.querySelector('.rr-response-textarea');
   const charCount = panel.querySelector('.rr-char-count');
+  const charLimit = panel.querySelector('.rr-char-limit');
+  const charCounter = panel.querySelector('.rr-char-counter');
 
   if (!textarea || !charCount) return;
 
   const count = textarea.value.length;
-  charCount.textContent = count;
+  const platformLimit = getCharLimitForPlatform(panel);
+  const limit = platformLimit.limit;
 
-  // Update color based on count
+  charCount.textContent = count;
+  if (charLimit) charLimit.textContent = limit;
+
+  // Remove existing warning bar
+  const existingWarning = panel.querySelector('.rr-limit-warning');
+  if (existingWarning) existingWarning.remove();
+
+  // Update counter color and show warning
   charCount.classList.remove('rr-warning', 'rr-danger');
-  if (count > CHAR_LIMIT) {
+  if (charCounter) charCounter.classList.remove('rr-limit-warning-active', 'rr-limit-danger-active');
+
+  if (count > limit) {
+    // Over limit - show danger
     charCount.classList.add('rr-danger');
-  } else if (count > CHAR_LIMIT * 0.8) {
+    if (charCounter) charCounter.classList.add('rr-limit-danger-active');
+    showLimitWarning(panel, 'danger', count - limit, platformLimit.name);
+  } else if (count > limit * 0.9) {
+    // 90%+ - show warning
     charCount.classList.add('rr-warning');
+    if (charCounter) charCounter.classList.add('rr-limit-warning-active');
+    showLimitWarning(panel, 'warning', limit - count, platformLimit.name);
+  } else if (count > limit * 0.8) {
+    // 80%+ - just color
+    charCount.classList.add('rr-warning');
+  }
+}
+
+function showLimitWarning(panel, type, chars, platformName) {
+  const existingWarning = panel.querySelector('.rr-limit-warning');
+  if (existingWarning) existingWarning.remove();
+
+  const warning = document.createElement('div');
+  warning.className = `rr-limit-warning rr-limit-${type}`;
+
+  if (type === 'danger') {
+    warning.innerHTML = `
+      <span class="rr-limit-icon">⚠️</span>
+      <span class="rr-limit-text">${chars} characters over ${platformName} limit! Response may be cut off.</span>
+    `;
+  } else {
+    warning.innerHTML = `
+      <span class="rr-limit-icon">📏</span>
+      <span class="rr-limit-text">${chars} characters left for ${platformName}. Consider shortening.</span>
+    `;
+  }
+
+  // Insert before action buttons
+  const actionButtons = panel.querySelector('.rr-action-buttons');
+  if (actionButtons) {
+    actionButtons.before(warning);
   }
 }
 
@@ -3464,6 +3644,16 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
 
   // Show panel
   panel.classList.add('rr-visible');
+
+  // Check clipboard for review text (if no text was selected)
+  if (!reviewText || reviewText.length < 20) {
+    setTimeout(async () => {
+      const clipboardResult = await checkClipboardForReview();
+      if (clipboardResult.hasReview) {
+        showClipboardBanner(panel, clipboardResult.text);
+      }
+    }, 500);
+  }
 
   // Auto-generate if requested
   if (autoGenerate) {
