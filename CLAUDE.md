@@ -301,6 +301,86 @@ Einfach sagen: **"Big Tony"** oder **"Code Review"** oder **"Security Check"**
 
 ---
 
+## DECISION MAKING (AskUserQuestionTool)
+
+**Prinzip:** Bei Unsicherheit IMMER fragen statt raten!
+
+### Wann fragen?
+
+✅ **IMMER fragen bei:**
+- Feature hat 2+ valide Implementierungen
+- Security vs. UX Trade-offs
+- Business Logic unklar (Pricing, Limits, Workflows)
+- Unklare User Expectations
+- Breaking Changes oder API-Änderungen
+
+❌ **NICHT fragen bei:**
+- Offensichtlichen Bugs (einfach fixen)
+- Code Style / Formatting
+- Standard Best Practices (z.B. Input Validation)
+- Klare Anforderungen aus CLAUDE.md
+
+### Berend's Preferences
+
+**Auth & Security:**
+- Lieber non-blocking (Banner statt Blocker)
+- Paranoid bei Input Validation (immer validieren)
+- Rate Limiting: Ja, aber user-friendly Error Messages
+
+**Payments:**
+- Stripe only (keine PayPal/Crypto)
+- Monthly + Yearly Billing (20% Yearly Discount)
+- Upgrades: Sofort aktiv, Downgrades: Ende Billing Period
+
+**UI/UX:**
+- Mobile-first Design
+- Minimal, clean Interface
+- Dark Mode Support
+- Loading States & Error Messages klar kommunizieren
+
+**Errors & Logging:**
+- User: Friendly Messages (deutsch für DE users)
+- Logs: Detailliert, JSON Format
+- Keine Secrets in Logs
+
+**Code Quality:**
+- Pragmatisch > Perfekt
+- Lieber shipped als over-engineered
+- Tests für kritische Flows (Auth, Payments)
+
+### Beispiele
+
+**❌ SCHLECHT (Raten):**
+```
+"Ich baue jetzt Email-Verification als Login-Blocker"
+→ User wollte vielleicht optional Banner!
+```
+
+**✅ GUT (Fragen):**
+```
+"Email-Verification:
+  A) Blocking (User muss verifizieren vor Login)
+  B) Optional (Banner im Dashboard, non-blocking)
+  C) Gar nicht
+→ User wählt B → Perfekte Implementation
+```
+
+**❌ SCHLECHT (Raten):**
+```
+"Ich setze Rate Limit auf 100 requests/hour"
+→ User wollte vielleicht pro Tag oder Monat!
+```
+
+**✅ GUT (Fragen):**
+```
+"Rate Limiting für /api/generate:
+  - Pro User (800/month): Daily limit oder Monthly only?
+  - Response bei Limit: 429 Error oder Upgrade Prompt?
+→ User gibt klare Antwort → Exakte Implementation
+```
+
+---
+
 ## KONTAKT
 
 - **User:** Berend Mainz
