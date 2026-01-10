@@ -66,6 +66,83 @@ function formatTimeSaved(minutes) {
   return `${hours}h ${mins}m`;
 }
 
+// ========== THEME MANAGEMENT (Dark Mode) ==========
+let currentTheme = 'auto'; // light, dark, auto
+
+async function getThemePreference() {
+  try {
+    const stored = await chrome.storage.local.get(['rr_theme']);
+    return stored.rr_theme || 'auto';
+  } catch (e) {
+    return 'auto';
+  }
+}
+
+async function setThemePreference(theme) {
+  try {
+    await chrome.storage.local.set({ rr_theme: theme });
+    currentTheme = theme;
+    applyTheme(theme);
+  } catch (e) {
+    console.error('Error saving theme preference:', e);
+  }
+}
+
+function getSystemTheme() {
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'dark';
+  }
+  return 'light';
+}
+
+function applyTheme(theme) {
+  const effectiveTheme = theme === 'auto' ? getSystemTheme() : theme;
+
+  // Apply to panel if it exists
+  const panel = document.getElementById('rr-response-panel');
+  if (panel) {
+    if (effectiveTheme === 'dark') {
+      panel.classList.add('rr-dark');
+    } else {
+      panel.classList.remove('rr-dark');
+    }
+    // Update toggle button icon
+    const toggleBtn = panel.querySelector('.rr-theme-toggle');
+    if (toggleBtn) {
+      toggleBtn.textContent = effectiveTheme === 'dark' ? '☀️' : '🌙';
+    }
+    // Update active state in dropdown
+    const themeOptions = panel.querySelectorAll('.rr-theme-option');
+    themeOptions.forEach(opt => {
+      opt.classList.toggle('active', opt.dataset.theme === theme);
+    });
+  }
+
+  // Apply to queue panel if it exists
+  const queuePanel = document.getElementById('rr-queue-panel');
+  if (queuePanel) {
+    if (effectiveTheme === 'dark') {
+      queuePanel.classList.add('rr-dark');
+    } else {
+      queuePanel.classList.remove('rr-dark');
+    }
+  }
+}
+
+// Listen for OS theme changes
+if (window.matchMedia) {
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (currentTheme === 'auto') {
+      applyTheme('auto');
+    }
+  });
+}
+
+// Initialize theme on load
+(async () => {
+  currentTheme = await getThemePreference();
+})();
+
 // ========== SMART ISSUE DETECTION ==========
 function detectIssues(text) {
   const lowerText = text.toLowerCase();
@@ -424,6 +501,271 @@ function showToast(message, type = 'success') {
   }, 3000);
 }
 
+// ========== QUALITY SCORE BADGE ==========
+function showQualityBadge(panel, quality) {
+  const badge = panel.querySelector('.rr-quality-badge');
+  if (!badge) return;
+
+  const indicator = badge.querySelector('.rr-quality-indicator');
+  const label = badge.querySelector('.rr-quality-label');
+  const feedback = badge.querySelector('.rr-quality-feedback');
+
+  // Define badge styles by level
+  const styles = {
+    excellent: { emoji: '🟢', text: 'Excellent', className: 'rr-quality-excellent' },
+    good: { emoji: '🟡', text: 'Good', className: 'rr-quality-good' },
+    needs_work: { emoji: '🔴', text: 'Needs Work', className: 'rr-quality-needs-work' }
+  };
+
+  const style = styles[quality.level] || styles.good;
+
+  // Update badge content
+  indicator.textContent = style.emoji;
+  label.textContent = `${style.text} (${quality.score}/100)`;
+  feedback.textContent = quality.feedback || '';
+
+  // Update badge class
+  badge.className = 'rr-quality-badge ' + style.className;
+
+  // Show with animation
+  badge.classList.remove('hidden');
+  badge.classList.add('rr-badge-show');
+
+  // If there are suggestions, add tooltip
+  if (quality.suggestions && quality.suggestions.length > 0) {
+    badge.title = 'Tips: ' + quality.suggestions.join(', ');
+  } else {
+    badge.title = '';
+  }
+}
+
+// ========== RESPONSE VARIATIONS ==========
+let currentVariations = []; // Store variations for tab switching
+
+async function generateVariations(panel) {
+  const reviewText = panel.dataset.reviewText;
+  const detectedLanguage = panel.dataset.detectedLanguage || 'en';
+  const tone = panel.querySelector('.rr-tone-select').value;
+  const length = panel.querySelector('.rr-length-select').value;
+  const emojis = panel.querySelector('.rr-emoji-toggle').checked;
+
+  const variationsBtn = panel.querySelector('.rr-variations-btn');
+  const varText = panel.querySelector('.rr-var-text');
+  const varLoading = panel.querySelector('.rr-var-loading');
+  const responseSection = panel.querySelector('.rr-response-section');
+  const variationsTabs = panel.querySelector('.rr-variations-tabs');
+
+  if (!reviewText) {
+    showToast('No review text found', 'error');
+    return;
+  }
+
+  let stored;
+  try {
+    stored = await chrome.storage.local.get(['token', 'user']);
+  } catch (e) {
+    showToast('Extension error', 'error');
+    return;
+  }
+
+  if (!stored.token) {
+    showToast('Please login in the extension popup first', 'error');
+    return;
+  }
+
+  // Show loading
+  variationsBtn.disabled = true;
+  varText.classList.add('hidden');
+  varLoading.classList.remove('hidden');
+
+  // Get business name
+  let businessName = stored.user?.businessName || '';
+  if (!businessName) {
+    businessName = detectBusinessContext() || await getCachedBusinessName();
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/generate-variations`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${stored.token}`
+      },
+      body: JSON.stringify({
+        reviewText,
+        tone,
+        outputLanguage: detectedLanguage,
+        responseLength: length,
+        includeEmojis: emojis,
+        businessName
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || data.message || 'Failed to generate variations');
+    }
+
+    // Store variations for tab switching
+    currentVariations = data.variations;
+
+    // Show response section with tabs
+    responseSection.classList.remove('hidden');
+    variationsTabs.classList.remove('hidden');
+
+    // Show first variation
+    switchVariation(panel, 0);
+
+    // Hide undo button
+    panel.querySelector('.rr-undo-btn').classList.add('hidden');
+    panel.dataset.previousResponse = '';
+
+    // Track time saved (3 responses = ~9 min)
+    const totalMinutes = await trackTimeSaved();
+    await trackTimeSaved();
+    await trackTimeSaved();
+
+    showToast('3 Options generated! (3 credits used)', 'success');
+
+  } catch (error) {
+    showToast(error.message, 'error');
+  } finally {
+    variationsBtn.disabled = false;
+    varText.classList.remove('hidden');
+    varLoading.classList.add('hidden');
+  }
+}
+
+function switchVariation(panel, index) {
+  if (!currentVariations || !currentVariations[index]) return;
+
+  const variation = currentVariations[index];
+  const textarea = panel.querySelector('.rr-response-textarea');
+  const tabs = panel.querySelectorAll('.rr-var-tab');
+
+  // Update textarea
+  textarea.value = variation.response;
+
+  // Update active tab
+  tabs.forEach((tab, i) => {
+    tab.classList.toggle('active', i === index);
+  });
+
+  // Update character counter
+  updateCharCounter(panel);
+
+  // Show quality badge for this variation
+  if (variation.quality) {
+    showQualityBadge(panel, variation.quality);
+  }
+}
+
+// ========== ANALYTICS WIDGET ==========
+async function loadAnalytics() {
+  try {
+    const data = await chrome.storage.local.get(['rr_analytics']);
+    return data.rr_analytics || { daily: {}, total: { count: 0, time_saved_minutes: 0 } };
+  } catch (e) {
+    return { daily: {}, total: { count: 0, time_saved_minutes: 0 } };
+  }
+}
+
+async function updateAnalytics(panel) {
+  const analytics = await loadAnalytics();
+
+  // Calculate this week's responses
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - dayOfWeek);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  let weekCount = 0;
+  const last7Days = [];
+
+  // Get last 7 days data for sparkline
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    const dateKey = date.toISOString().split('T')[0];
+    const dayData = analytics.daily[dateKey] || { count: 0 };
+    last7Days.push(dayData.count);
+
+    if (date >= startOfWeek) {
+      weekCount += dayData.count;
+    }
+  }
+
+  // Update stats
+  panel.querySelector('.rr-stat-week').textContent = weekCount;
+  panel.querySelector('.rr-stat-total').textContent = analytics.total.count || 0;
+
+  const minutes = analytics.total.time_saved_minutes || 0;
+  if (minutes >= 60) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    panel.querySelector('.rr-stat-time').textContent = `${hours}h ${mins}m`;
+  } else {
+    panel.querySelector('.rr-stat-time').textContent = `${minutes}m`;
+  }
+
+  // Generate sparkline
+  const sparkline = panel.querySelector('.rr-sparkline');
+  if (sparkline) {
+    const max = Math.max(...last7Days, 1);
+    const bars = last7Days.map(count => {
+      const height = Math.max(4, (count / max) * 24);
+      return `<div class="rr-spark-bar" style="height: ${height}px" title="${count}"></div>`;
+    }).join('');
+    sparkline.innerHTML = bars;
+  }
+}
+
+async function recordAnalyticsResponse() {
+  const analytics = await loadAnalytics();
+  const today = new Date().toISOString().split('T')[0];
+
+  if (!analytics.daily[today]) {
+    analytics.daily[today] = { count: 0, tones: {} };
+  }
+  analytics.daily[today].count++;
+  analytics.total.count = (analytics.total.count || 0) + 1;
+  analytics.total.time_saved_minutes = (analytics.total.time_saved_minutes || 0) + 3;
+
+  // Clean up old data (keep last 30 days)
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 30);
+  Object.keys(analytics.daily).forEach(date => {
+    if (new Date(date) < cutoff) {
+      delete analytics.daily[date];
+    }
+  });
+
+  await chrome.storage.local.set({ rr_analytics: analytics });
+}
+
+// ========== CHARACTER COUNTER ==========
+const CHAR_LIMIT = 4000; // Google Maps review response limit
+
+function updateCharCounter(panel) {
+  const textarea = panel.querySelector('.rr-response-textarea');
+  const charCount = panel.querySelector('.rr-char-count');
+
+  if (!textarea || !charCount) return;
+
+  const count = textarea.value.length;
+  charCount.textContent = count;
+
+  // Update color based on count
+  charCount.classList.remove('rr-warning', 'rr-danger');
+  if (count > CHAR_LIMIT) {
+    charCount.classList.add('rr-danger');
+  } else if (count > CHAR_LIMIT * 0.8) {
+    charCount.classList.add('rr-warning');
+  }
+}
+
 // ========== ONBOARDING ==========
 async function checkOnboarding() {
   try {
@@ -550,6 +892,87 @@ function detectPlatform() {
   if (hostname.includes('amazon.com')) return { name: 'Amazon', icon: '📦', color: '#ff9900' };
 
   return { name: 'Reviews', icon: '💬', color: '#667eea' };
+}
+
+// ========== BUSINESS CONTEXT DETECTION ==========
+function detectBusinessContext() {
+  const hostname = window.location.hostname;
+  let businessName = '';
+
+  // Google Maps - Get business name from title or header
+  if (hostname.includes('google.com')) {
+    // Try to get from page title (format: "Business Name - Google Maps")
+    const title = document.title;
+    if (title && !title.startsWith('Google Maps')) {
+      const match = title.match(/^(.+?)(?:\s*-\s*Google Maps)?$/);
+      if (match && match[1]) {
+        businessName = match[1].trim();
+      }
+    }
+
+    // Also try h1 or main business name selector
+    if (!businessName) {
+      const h1 = document.querySelector('h1.fontHeadlineLarge, h1.DUwDvf');
+      if (h1) businessName = h1.textContent.trim();
+    }
+  }
+
+  // Yelp
+  if (hostname.includes('yelp.com')) {
+    const h1 = document.querySelector('h1[class*="heading"]');
+    if (h1) businessName = h1.textContent.trim();
+  }
+
+  // TripAdvisor
+  if (hostname.includes('tripadvisor.com')) {
+    const h1 = document.querySelector('h1[data-automation="mainH1"]');
+    if (h1) businessName = h1.textContent.trim();
+  }
+
+  // Facebook
+  if (hostname.includes('facebook.com')) {
+    const h1 = document.querySelector('h1[data-testid="entity-title"]');
+    if (h1) businessName = h1.textContent.trim();
+  }
+
+  // Trustpilot
+  if (hostname.includes('trustpilot.com')) {
+    const h1 = document.querySelector('h1[class*="typography"]');
+    if (h1) businessName = h1.textContent.trim();
+  }
+
+  // Clean up the business name
+  if (businessName) {
+    businessName = businessName
+      .replace(/\s+/g, ' ')
+      .replace(/^\"|\"$/g, '')
+      .trim();
+
+    // Don't use if it's too long or looks like a generic title
+    if (businessName.length > 50 || businessName.includes('Search results')) {
+      businessName = '';
+    }
+  }
+
+  return businessName;
+}
+
+// Save detected business to storage for reuse
+async function saveDetectedBusiness(name) {
+  if (!name) return;
+  try {
+    await chrome.storage.local.set({ rr_detected_business: name });
+  } catch (e) {}
+}
+
+// Get cached business name
+async function getCachedBusinessName() {
+  try {
+    const stored = await chrome.storage.local.get(['rr_detected_business']);
+    return stored.rr_detected_business || '';
+  } catch (e) {
+    return '';
+  }
 }
 
 // ========== SMART REPLY CHIPS ==========
@@ -1034,8 +1457,42 @@ async function createResponsePanel() {
         </div>
         <button class="rr-drafts-btn" title="Drafts">📝</button>
         <button class="rr-templates-btn" title="My Templates">💾</button>
+        <div class="rr-theme-wrapper" style="position: relative;">
+          <button class="rr-theme-toggle" title="Toggle theme">🌙</button>
+          <div class="rr-theme-dropdown hidden">
+            <button class="rr-theme-option" data-theme="light"><span>☀️</span><span>Light</span></button>
+            <button class="rr-theme-option" data-theme="dark"><span>🌙</span><span>Dark</span></button>
+            <button class="rr-theme-option" data-theme="auto"><span>💻</span><span>Auto (OS)</span></button>
+          </div>
+        </div>
         <button class="rr-help-btn" title="How to use">?</button>
         <button class="rr-close-btn" title="Close (Esc)">×</button>
+      </div>
+    </div>
+
+    <!-- Analytics Widget (collapsible) -->
+    <div class="rr-analytics-widget">
+      <div class="rr-analytics-header">
+        <span class="rr-analytics-title">📊 Your Stats</span>
+        <span class="rr-analytics-toggle">▼</span>
+      </div>
+      <div class="rr-analytics-body">
+        <div class="rr-stat-item">
+          <span class="rr-stat-value rr-stat-week">0</span>
+          <span class="rr-stat-label">This Week</span>
+        </div>
+        <div class="rr-stat-item">
+          <span class="rr-stat-value rr-stat-total">0</span>
+          <span class="rr-stat-label">All Time</span>
+        </div>
+        <div class="rr-stat-item">
+          <span class="rr-stat-value rr-stat-time">0m</span>
+          <span class="rr-stat-label">Saved</span>
+        </div>
+        <div class="rr-stat-item rr-stat-chart">
+          <div class="rr-sparkline"></div>
+          <span class="rr-stat-label">Last 7 Days</span>
+        </div>
       </div>
     </div>
 
@@ -1138,18 +1595,55 @@ async function createResponsePanel() {
         </div>
       </div>
 
-      <!-- Generate Button -->
-      <button class="rr-generate-btn">
-        <span class="rr-btn-text">✨ Generate Response</span>
-        <span class="rr-btn-loading hidden">
-          <span class="rr-spinner"></span>
-          Generating...
-        </span>
-      </button>
+      <!-- Generate Buttons -->
+      <div class="rr-generate-buttons">
+        <button class="rr-generate-btn">
+          <span class="rr-btn-text">✨ Generate Response</span>
+          <span class="rr-btn-loading hidden">
+            <span class="rr-spinner"></span>
+            Generating...
+          </span>
+        </button>
+        <button class="rr-variations-btn" title="Generate 3 different options (uses 3 credits)">
+          <span class="rr-var-text">🎯 3 Options</span>
+          <span class="rr-var-loading hidden">
+            <span class="rr-spinner"></span>
+          </span>
+        </button>
+      </div>
 
       <!-- Response Section (hidden until generated) -->
       <div class="rr-response-section hidden">
+        <!-- Variations Tabs (hidden if single response) -->
+        <div class="rr-variations-tabs hidden">
+          <button class="rr-var-tab active" data-var="0">
+            <span class="rr-var-label">A</span>
+            <span class="rr-var-style">Concise</span>
+          </button>
+          <button class="rr-var-tab" data-var="1">
+            <span class="rr-var-label">B</span>
+            <span class="rr-var-style">Detailed</span>
+          </button>
+          <button class="rr-var-tab" data-var="2">
+            <span class="rr-var-label">C</span>
+            <span class="rr-var-style">Actionable</span>
+          </button>
+        </div>
+
         <textarea class="rr-response-textarea" placeholder="Your response..."></textarea>
+
+        <!-- Quality Score Badge (NEW) -->
+        <div class="rr-quality-badge hidden">
+          <span class="rr-quality-indicator"></span>
+          <span class="rr-quality-label"></span>
+          <span class="rr-quality-feedback"></span>
+        </div>
+
+        <!-- Character Counter -->
+        <div class="rr-char-counter">
+          <span class="rr-char-count">0</span>/<span class="rr-char-limit">4000</span> characters
+          <button class="rr-undo-btn hidden" title="Undo last edit">↩️ Undo</button>
+        </div>
 
         <!-- Time Saved Badge (shown after generation) -->
         <div class="rr-time-saved-badge hidden">
@@ -1195,7 +1689,41 @@ async function createResponsePanel() {
 
       <!-- Keyboard Shortcuts Hint -->
       <div class="rr-shortcuts-hint">
-        <kbd>Alt+R</kbd> generate · <kbd>Alt+C</kbd> copy · <kbd>Alt+T</kbd> turbo · <kbd>Esc</kbd> close
+        <kbd>Alt+R</kbd> generate · <kbd>Alt+C</kbd> copy · <kbd>?</kbd> help · <kbd>Esc</kbd> close
+      </div>
+
+      <!-- Keyboard Help Overlay -->
+      <div class="rr-keyboard-help hidden">
+        <div class="rr-keyboard-content">
+          <h3>⌨️ Keyboard Shortcuts</h3>
+          <div class="rr-shortcut-grid">
+            <div class="rr-shortcut-item">
+              <kbd>Alt</kbd> + <kbd>R</kbd>
+              <span>Generate response</span>
+            </div>
+            <div class="rr-shortcut-item">
+              <kbd>Alt</kbd> + <kbd>C</kbd>
+              <span>Copy response</span>
+            </div>
+            <div class="rr-shortcut-item">
+              <kbd>Alt</kbd> + <kbd>T</kbd>
+              <span>Toggle Turbo mode</span>
+            </div>
+            <div class="rr-shortcut-item">
+              <kbd>Alt</kbd> + <kbd>Q</kbd>
+              <span>Batch mode</span>
+            </div>
+            <div class="rr-shortcut-item">
+              <kbd>?</kbd>
+              <span>Show this help</span>
+            </div>
+            <div class="rr-shortcut-item">
+              <kbd>Esc</kbd>
+              <span>Close panel</span>
+            </div>
+          </div>
+          <button class="rr-keyboard-close">Got it!</button>
+        </div>
       </div>
 
       <!-- Help Overlay -->
@@ -1290,6 +1818,17 @@ function initPanelEvents(panel) {
   // Close button
   panel.querySelector('.rr-close-btn').addEventListener('click', () => closePanel(panel));
 
+  // Analytics Widget toggle
+  panel.querySelector('.rr-analytics-header').addEventListener('click', () => {
+    const widget = panel.querySelector('.rr-analytics-widget');
+    widget.classList.toggle('collapsed');
+    const toggle = panel.querySelector('.rr-analytics-toggle');
+    toggle.textContent = widget.classList.contains('collapsed') ? '▶' : '▼';
+  });
+
+  // Load analytics on panel open
+  updateAnalytics(panel);
+
   // Help button
   panel.querySelector('.rr-help-btn').addEventListener('click', () => {
     panel.querySelector('.rr-help-overlay').classList.toggle('hidden');
@@ -1297,6 +1836,32 @@ function initPanelEvents(panel) {
 
   panel.querySelector('.rr-help-close').addEventListener('click', () => {
     panel.querySelector('.rr-help-overlay').classList.add('hidden');
+  });
+
+  // Keyboard Help close button
+  panel.querySelector('.rr-keyboard-close').addEventListener('click', () => {
+    panel.querySelector('.rr-keyboard-help').classList.add('hidden');
+  });
+
+  // Character Counter - update on input
+  const textarea = panel.querySelector('.rr-response-textarea');
+  const charCount = panel.querySelector('.rr-char-count');
+  const CHAR_LIMIT = 4000; // Google Maps limit
+
+  textarea.addEventListener('input', () => {
+    updateCharCounter(panel);
+  });
+
+  // Undo button - restore previous response
+  panel.querySelector('.rr-undo-btn').addEventListener('click', () => {
+    const previousResponse = panel.dataset.previousResponse;
+    if (previousResponse) {
+      panel.querySelector('.rr-response-textarea').value = previousResponse;
+      panel.querySelector('.rr-undo-btn').classList.add('hidden');
+      panel.dataset.previousResponse = '';
+      updateCharCounter(panel);
+      showToast('↩️ Undo successful', 'success');
+    }
   });
 
   // Drafts button (header)
@@ -1308,6 +1873,31 @@ function initPanelEvents(panel) {
 
   panel.querySelector('.rr-drafts-close').addEventListener('click', () => {
     panel.querySelector('.rr-drafts-overlay').classList.add('hidden');
+  });
+
+  // Theme toggle button
+  const themeToggle = panel.querySelector('.rr-theme-toggle');
+  const themeDropdown = panel.querySelector('.rr-theme-dropdown');
+
+  themeToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    themeDropdown.classList.toggle('hidden');
+  });
+
+  // Theme options
+  panel.querySelectorAll('.rr-theme-option').forEach(option => {
+    option.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const theme = option.dataset.theme;
+      await setThemePreference(theme);
+      themeDropdown.classList.add('hidden');
+      showToast(`${theme === 'dark' ? '🌙' : theme === 'light' ? '☀️' : '💻'} Theme set to ${theme}`, 'success');
+    });
+  });
+
+  // Close theme dropdown when clicking elsewhere
+  document.addEventListener('click', () => {
+    themeDropdown.classList.add('hidden');
   });
 
   // Drafts list - continue and delete buttons (event delegation)
@@ -1329,6 +1919,7 @@ function initPanelEvents(panel) {
         panel.querySelector('.rr-response-textarea').value = draft.responseText;
         panel.querySelector('.rr-response-section').classList.remove('hidden');
         panel.querySelector('.rr-drafts-overlay').classList.add('hidden');
+        updateCharCounter(panel);
         showToast('📝 Draft loaded - continue editing!', 'success');
 
         // Delete the draft after loading
@@ -1371,6 +1962,7 @@ function initPanelEvents(panel) {
       panel.querySelector('.rr-response-textarea').value = template.content;
       panel.querySelector('.rr-response-section').classList.remove('hidden');
       panel.querySelector('.rr-tone-select').value = template.tone;
+      updateCharCounter(panel);
       showToast(`📝 Template "${template.name}" loaded`, 'success');
 
       // Reset dropdown
@@ -1437,6 +2029,7 @@ function initPanelEvents(panel) {
         panel.querySelector('.rr-response-section').classList.remove('hidden');
         panel.querySelector('.rr-tone-select').value = template.tone;
         panel.querySelector('.rr-templates-overlay').classList.add('hidden');
+        updateCharCounter(panel);
         showToast(`📝 Template "${template.name}" loaded`, 'success');
       }
     }
@@ -1459,6 +2052,17 @@ function initPanelEvents(panel) {
 
   // Generate button
   panel.querySelector('.rr-generate-btn').addEventListener('click', () => generateResponse(panel));
+
+  // Variations button (3 Options)
+  panel.querySelector('.rr-variations-btn').addEventListener('click', () => generateVariations(panel));
+
+  // Variation tabs switching
+  panel.querySelectorAll('.rr-var-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const index = parseInt(tab.dataset.var);
+      switchVariation(panel, index);
+    });
+  });
 
   // Regenerate button
   panel.querySelector('.rr-regenerate-btn').addEventListener('click', () => generateResponse(panel));
@@ -1635,6 +2239,15 @@ async function generateResponse(panel) {
       context += ` Customer complaints detected: ${issueLabels.join(', ')}. Address these specific issues in your response.`;
     }
 
+    // Get business name: prefer user's setting, fallback to auto-detected
+    let businessName = stored.user?.businessName || '';
+    if (!businessName) {
+      businessName = detectBusinessContext() || await getCachedBusinessName();
+      if (businessName) {
+        saveDetectedBusiness(businessName); // Cache for future use
+      }
+    }
+
     const response = await fetch(`${API_URL}/generate`, {
       method: 'POST',
       headers: {
@@ -1647,7 +2260,7 @@ async function generateResponse(panel) {
         outputLanguage: detectedLanguage, // Send detected language instead of 'auto'
         responseLength: length,
         includeEmojis: emojis,
-        businessName: stored.user?.businessName || '',
+        businessName: businessName,
         additionalContext: context
       })
     });
@@ -1661,6 +2274,18 @@ async function generateResponse(panel) {
     // Show response
     panel.querySelector('.rr-response-textarea').value = data.response;
     responseSection.classList.remove('hidden');
+
+    // Update character counter
+    updateCharCounter(panel);
+
+    // Show quality badge if available
+    if (data.quality) {
+      showQualityBadge(panel, data.quality);
+    }
+
+    // Hide undo button (fresh generation)
+    panel.querySelector('.rr-undo-btn').classList.add('hidden');
+    panel.dataset.previousResponse = '';
 
     // Track time saved
     const totalMinutes = await trackTimeSaved();
@@ -1779,6 +2404,12 @@ async function generateResponseWithModifier(panel, modifier) {
       context += ` Customer complaints: ${issueLabels.join(', ')}.`;
     }
 
+    // Get business name: prefer user's setting, fallback to auto-detected
+    let businessName = stored.user?.businessName || '';
+    if (!businessName) {
+      businessName = detectBusinessContext() || await getCachedBusinessName();
+    }
+
     const response = await fetch(`${API_URL}/generate`, {
       method: 'POST',
       headers: {
@@ -1791,7 +2422,7 @@ async function generateResponseWithModifier(panel, modifier) {
         outputLanguage: detectedLanguage, // Send detected language
         responseLength: length,
         includeEmojis: emojis,
-        businessName: stored.user?.businessName || '',
+        businessName: businessName,
         additionalContext: context
       })
     });
@@ -1805,6 +2436,18 @@ async function generateResponseWithModifier(panel, modifier) {
     // Show response
     panel.querySelector('.rr-response-textarea').value = data.response;
     responseSection.classList.remove('hidden');
+
+    // Update character counter
+    updateCharCounter(panel);
+
+    // Show quality badge if available
+    if (data.quality) {
+      showQualityBadge(panel, data.quality);
+    }
+
+    // Hide undo button (fresh generation)
+    panel.querySelector('.rr-undo-btn').classList.add('hidden');
+    panel.dataset.previousResponse = '';
 
     // Track time saved
     const totalMinutes = await trackTimeSaved();
@@ -1890,6 +2533,9 @@ async function editExistingResponse(panel, editType, currentResponse) {
     return;
   }
 
+  // Save current response for undo
+  panel.dataset.previousResponse = currentResponse;
+
   // Show loading
   generateBtn.disabled = true;
   btnText.classList.add('hidden');
@@ -1904,6 +2550,12 @@ async function editExistingResponse(panel, editType, currentResponse) {
     const languageName = languageNames[detectedLanguage] || 'the same language';
     const editContext = `CRITICAL: Keep the response in ${languageName}. You are editing an existing review response. ${instruction} Here is the current response to modify: "${currentResponse}"`;
 
+    // Get business name: prefer user's setting, fallback to auto-detected
+    let businessName = stored.user?.businessName || '';
+    if (!businessName) {
+      businessName = detectBusinessContext() || await getCachedBusinessName();
+    }
+
     const response = await fetch(`${API_URL}/generate`, {
       method: 'POST',
       headers: {
@@ -1916,7 +2568,7 @@ async function editExistingResponse(panel, editType, currentResponse) {
         outputLanguage: detectedLanguage, // Keep same language
         responseLength: 'medium',
         includeEmojis: editType === 'emoji',
-        businessName: stored.user?.businessName || '',
+        businessName: businessName,
         additionalContext: editContext
       })
     });
@@ -1929,6 +2581,12 @@ async function editExistingResponse(panel, editType, currentResponse) {
 
     // Update response
     panel.querySelector('.rr-response-textarea').value = data.response;
+
+    // Update character counter
+    updateCharCounter(panel);
+
+    // Show undo button
+    panel.querySelector('.rr-undo-btn').classList.remove('hidden');
 
     // Auto-copy if enabled
     const settings = cachedSettings || await loadSettings();
@@ -1997,6 +2655,12 @@ async function turboGenerate(reviewText) {
       context += ` Customer complaints detected: ${issueLabels.join(', ')}. Address these specific issues in your response.`;
     }
 
+    // Get business name: prefer user's setting, fallback to auto-detected
+    let businessName = cachedUser?.businessName || '';
+    if (!businessName) {
+      businessName = detectBusinessContext() || await getCachedBusinessName();
+    }
+
     const response = await fetch(`${API_URL}/generate`, {
       method: 'POST',
       headers: {
@@ -2009,7 +2673,7 @@ async function turboGenerate(reviewText) {
         outputLanguage: language.code, // Send detected language
         responseLength: settings.length || 'medium',
         includeEmojis: settings.emojis || false,
-        businessName: cachedUser?.businessName || '',
+        businessName: businessName,
         additionalContext: context
       })
     });
@@ -2071,6 +2735,9 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
   if (!panel) {
     panel = await createResponsePanel();
   }
+
+  // Apply current theme
+  applyTheme(currentTheme);
 
   // Clean and store review text
   const cleaned = cleanReviewText(reviewText);
@@ -2158,6 +2825,14 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
 
   // Auto-select the recommended tone
   panel.querySelector('.rr-tone-select').value = recommendation.tone;
+
+  // Highlight recommended tone in Quick Tone buttons
+  panel.querySelectorAll('.rr-quick-tone').forEach(btn => {
+    btn.classList.remove('recommended');
+    if (btn.dataset.tone === recommendation.tone) {
+      btn.classList.add('recommended');
+    }
+  });
 
   // Add click handler for "Generate with this" button
   const useRecBtn = aiRecBox.querySelector('.rr-ai-rec-use');
@@ -2363,13 +3038,28 @@ document.addEventListener('keydown', async (e) => {
     }
   }
 
-  // Escape: Close panel
+  // Escape: Close panel or overlays
   if (e.key === 'Escape') {
     const panel = document.getElementById('rr-response-panel');
     if (panel && panel.classList.contains('rr-visible')) {
+      // First close any open overlays
+      const keyboardHelp = panel.querySelector('.rr-keyboard-help');
+      if (keyboardHelp && !keyboardHelp.classList.contains('hidden')) {
+        keyboardHelp.classList.add('hidden');
+        return;
+      }
       closePanel(panel);
     }
     hideFloatingButton();
+  }
+
+  // ?: Show keyboard help
+  if (e.key === '?' || (e.ctrlKey && e.key === '/')) {
+    const panel = document.getElementById('rr-response-panel');
+    if (panel && panel.classList.contains('rr-visible')) {
+      e.preventDefault();
+      panel.querySelector('.rr-keyboard-help').classList.toggle('hidden');
+    }
   }
 });
 
@@ -2542,6 +3232,7 @@ function showQueuePanel() {
         <span class="rr-queue-counter">${reviewQueue.currentIndex + 1}/${totalReviews}</span>
         <span class="rr-queue-processed">(${processed} done)</span>
       </div>
+      <button class="rr-queue-export" title="Export responses">📤</button>
       <button class="rr-queue-close">×</button>
     </div>
 
@@ -2578,6 +3269,9 @@ function showQueuePanel() {
 
   document.body.appendChild(panel);
 
+  // Apply current theme to queue panel
+  applyTheme(currentTheme);
+
   // Scroll to current review
   currentReview.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
   currentReview.element.classList.add('rr-queue-highlight');
@@ -2605,6 +3299,11 @@ function showQueuePanel() {
 
   panel.querySelector('.rr-queue-copy-next').addEventListener('click', () => {
     copyQueueResponse(panel, true);
+  });
+
+  // Export button
+  panel.querySelector('.rr-queue-export').addEventListener('click', () => {
+    showExportOptions();
   });
 
   // Animate in
@@ -2649,6 +3348,12 @@ async function generateQueueResponse(panel) {
     const languageName = languageNames[language.code] || 'the same language as the review';
     const context = `CRITICAL: You MUST respond in ${languageName}.`;
 
+    // Get business name: prefer user's setting, fallback to auto-detected
+    let businessName = cachedUser?.businessName || '';
+    if (!businessName) {
+      businessName = detectBusinessContext() || await getCachedBusinessName();
+    }
+
     const response = await fetch(`${API_URL}/generate`, {
       method: 'POST',
       headers: {
@@ -2661,7 +3366,7 @@ async function generateQueueResponse(panel) {
         outputLanguage: language.code, // Send detected language
         responseLength: 'medium',
         includeEmojis: false,
-        businessName: cachedUser?.businessName || '',
+        businessName: businessName,
         additionalContext: context
       })
     });
@@ -2708,6 +3413,120 @@ async function copyQueueResponse(panel, moveToNext) {
     if (moveToNext) {
       setTimeout(() => navigateQueue(1), 300);
     }
+  } catch (error) {
+    showToast('❌ Failed to copy', 'error');
+  }
+}
+
+// ========== BATCH EXPORT ==========
+function showExportOptions() {
+  const processedReviews = reviewQueue.reviews.filter(r => r.processed && r.response);
+
+  if (processedReviews.length === 0) {
+    showToast('⚠️ No responses to export yet', 'warning');
+    return;
+  }
+
+  // Create export modal
+  let modal = document.getElementById('rr-export-modal');
+  if (modal) modal.remove();
+
+  modal = document.createElement('div');
+  modal.id = 'rr-export-modal';
+  modal.className = 'rr-export-modal';
+
+  // Apply dark mode if active
+  const effectiveTheme = currentTheme === 'auto' ? getSystemTheme() : currentTheme;
+  if (effectiveTheme === 'dark') {
+    modal.classList.add('rr-dark');
+  }
+
+  const minutesSaved = processedReviews.length * 3; // ~3 min per review
+
+  modal.innerHTML = `
+    <div class="rr-export-content">
+      <div class="rr-export-header">
+        <h3>📤 Export Responses</h3>
+        <button class="rr-export-close">×</button>
+      </div>
+      <div class="rr-export-summary">
+        <div class="rr-export-stat">
+          <span class="rr-export-value">${processedReviews.length}</span>
+          <span class="rr-export-label">Responses</span>
+        </div>
+        <div class="rr-export-stat">
+          <span class="rr-export-value">~${minutesSaved}</span>
+          <span class="rr-export-label">Min Saved</span>
+        </div>
+      </div>
+      <div class="rr-export-actions">
+        <button class="rr-export-btn rr-export-csv">
+          📊 Download CSV
+        </button>
+        <button class="rr-export-btn rr-export-copy-all">
+          📋 Copy All
+        </button>
+      </div>
+      <p class="rr-export-tip">💡 CSV includes: Review text, Response, Tone, Timestamp</p>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Event listeners
+  modal.querySelector('.rr-export-close').addEventListener('click', () => {
+    modal.remove();
+  });
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
+
+  modal.querySelector('.rr-export-csv').addEventListener('click', () => {
+    exportToCSV(processedReviews);
+    modal.remove();
+  });
+
+  modal.querySelector('.rr-export-copy-all').addEventListener('click', async () => {
+    await copyAllResponses(processedReviews);
+    modal.remove();
+  });
+
+  // Animate in
+  setTimeout(() => modal.classList.add('rr-visible'), 10);
+}
+
+function exportToCSV(reviews) {
+  const headers = ['Review', 'Response', 'Sentiment', 'Timestamp'];
+  const rows = reviews.map(r => [
+    `"${(r.text || '').replace(/"/g, '""')}"`,
+    `"${(r.response || '').replace(/"/g, '""')}"`,
+    r.sentiment || 'neutral',
+    new Date().toISOString()
+  ]);
+
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+
+  // Create download link
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `reviewresponder-export-${new Date().toISOString().split('T')[0]}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+
+  showToast(`📊 Exported ${reviews.length} responses to CSV!`, 'success');
+}
+
+async function copyAllResponses(reviews) {
+  const text = reviews.map((r, i) => {
+    return `--- Review ${i + 1} ---\nReview: ${r.text}\n\nResponse: ${r.response}\n`;
+  }).join('\n');
+
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast(`📋 Copied ${reviews.length} responses!`, 'success');
   } catch (error) {
     showToast('❌ Failed to copy', 'error');
   }

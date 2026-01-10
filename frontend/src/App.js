@@ -5850,11 +5850,6 @@ const TeamPage = () => {
         <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Invite Team Member</h3>
         <form onSubmit={handleInvite} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           <input type="email" placeholder="Email address" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="form-input" style={{ flex: '1', minWidth: '200px' }} required />
-          <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)} className="form-input" style={{ width: '140px' }}>
-            <option value="admin">Admin</option>
-            <option value="member">Member</option>
-            <option value="viewer">Viewer</option>
-          </select>
           <button type="submit" className="btn btn-primary" disabled={inviting || (teamData?.members?.length >= maxMembers)}>
             {inviting ? 'Inviting...' : 'Invite'}
           </button>
@@ -5900,16 +5895,6 @@ const TeamPage = () => {
         )}
       </div>
 
-      {/* Role Descriptions */}
-      <div className="card" style={{ marginBottom: '24px', background: 'var(--gray-50)' }}>
-        <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Role Permissions</h4>
-        <div style={{ display: 'grid', gap: '8px', fontSize: '13px' }}>
-          <div><strong>Admin:</strong> Generate responses, view history, edit settings</div>
-          <div><strong>Member:</strong> Generate responses, view own history</div>
-          <div><strong>Viewer:</strong> View history only (no generation)</div>
-        </div>
-      </div>
-
       {/* Team Members List */}
       <div className="card">
         <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Team Members</h3>
@@ -5931,11 +5916,7 @@ const TeamPage = () => {
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <select value={member.role} onChange={(e) => handleRoleChange(member.id, e.target.value)} className="form-input" style={{ width: '110px', padding: '6px 10px', fontSize: '13px' }}>
-                    <option value="admin">Admin</option>
-                    <option value="member">Member</option>
-                    <option value="viewer">Viewer</option>
-                  </select>
+                  <span style={{ fontSize: '13px', color: 'var(--gray-600)', background: 'var(--gray-100)', padding: '4px 10px', borderRadius: '4px' }}>Member</span>
                   <button onClick={() => handleRemove(member.id)} className="btn btn-sm" style={{ color: 'var(--error-600)', padding: '6px' }} title="Remove member">
                     <Trash2 size={16} />
                   </button>

@@ -1393,6 +1393,90 @@ app.post('/api/generate', authenticateToken, (req, res) => generateResponseHandl
 // Main response generation endpoint
 app.post('/api/responses/generate', authenticateToken, (req, res) => generateResponseHandler(req, res));
 
+// ========== RESPONSE QUALITY SCORING ==========
+function evaluateResponseQuality(response, reviewText, tone, reviewRating) {
+  let score = 70; // Base score
+  const feedback = [];
+  const suggestions = [];
+
+  // 1. Length Check (ideal: 100-400 chars)
+  const len = response.length;
+  if (len >= 100 && len <= 400) {
+    score += 10;
+    feedback.push('Good length');
+  } else if (len < 80) {
+    score -= 10;
+    suggestions.push('Response is quite short');
+  } else if (len > 500) {
+    score -= 5;
+    suggestions.push('Consider shortening for better engagement');
+  }
+
+  // 2. Personalization (references review content)
+  const reviewWords = reviewText.toLowerCase().split(/\s+/).filter(w => w.length > 4);
+  const responseWords = response.toLowerCase();
+  const matchedWords = reviewWords.filter(w => responseWords.includes(w) && !['their', 'about', 'would', 'could', 'should', 'which', 'there'].includes(w));
+  if (matchedWords.length >= 2) {
+    score += 10;
+    feedback.push('Personalized response');
+  } else if (matchedWords.length === 0) {
+    suggestions.push('Add specific details from the review');
+  }
+
+  // 3. Avoid generic openings
+  const genericStarts = ['dear customer', 'dear valued', 'thank you for your feedback', 'we appreciate your'];
+  const lowerResponse = response.toLowerCase();
+  const hasGenericStart = genericStarts.some(g => lowerResponse.startsWith(g));
+  if (!hasGenericStart) {
+    score += 5;
+  } else {
+    suggestions.push('Avoid generic openings');
+  }
+
+  // 4. Call to action / invitation
+  const ctaPhrases = ['visit', 'return', 'come back', 'see you', 'welcome back', 'next time', 'look forward', 'contact', 'reach out', 'call us', 'email'];
+  const hasCTA = ctaPhrases.some(p => lowerResponse.includes(p));
+  if (hasCTA) {
+    score += 5;
+    feedback.push('Includes call to action');
+  }
+
+  // 5. Appropriate for rating (negative reviews need more empathy)
+  if (reviewRating && reviewRating <= 2) {
+    const empathyWords = ['sorry', 'apologize', 'understand', 'concerned', 'disappointing', 'frustrating'];
+    const hasEmpathy = empathyWords.some(w => lowerResponse.includes(w));
+    if (hasEmpathy) {
+      score += 5;
+      feedback.push('Shows empathy for negative experience');
+    } else if (tone === 'apologetic') {
+      suggestions.push('Add more empathetic language');
+    }
+  }
+
+  // 6. No defensive language
+  const defensiveWords = ['but actually', 'however you', 'that\'s not true', 'you must have', 'impossible'];
+  const hasDefensive = defensiveWords.some(w => lowerResponse.includes(w));
+  if (hasDefensive) {
+    score -= 15;
+    suggestions.push('Avoid defensive language');
+  }
+
+  // Determine level
+  let level = 'good';
+  if (score >= 85) level = 'excellent';
+  else if (score < 70) level = 'needs_work';
+
+  // Cap score between 0 and 100
+  score = Math.max(0, Math.min(100, score));
+
+  return {
+    score,
+    level,
+    feedback: feedback.length > 0 ? feedback.join(', ') : 'Solid response',
+    suggestions
+  };
+}
+
 async function generateResponseHandler(req, res) {
   try {
     const { reviewText, reviewRating, platform, tone, outputLanguage, businessName, customInstructions, responseLength, includeEmojis, aiModel = 'auto' } = req.body;
@@ -1420,13 +1504,7 @@ async function generateResponseHandler(req, res) {
     if (teamMembership) {
       isTeamMember = true;
       effectivePlan = teamMembership.owner_plan || 'free';
-      // Check role permissions - viewers cannot generate
-      if (teamMembership.role === 'viewer') {
-        return res.status(403).json({
-          error: 'View-only access',
-          message: 'Your team role does not allow generating responses. Contact your team owner to upgrade your role.'
-        });
-      }
+      // All team members can generate responses (simplified role system)
       // Use team owner's usage limits
       usageOwner = {
         id: teamMembership.owner_id,
@@ -1729,9 +1807,13 @@ LANGUAGE: ${languageInstruction}`;
       }
     }
 
+    // Evaluate response quality
+    const quality = evaluateResponseQuality(generatedResponse, reviewText, tone, reviewRating);
+
     res.json({
       response: generatedResponse,
       aiModel: useModel,
+      quality, // NEW: Quality score object
       usage: {
         smart: {
           used: updatedOwner.smart_responses_used || 0,
@@ -1756,6 +1838,113 @@ LANGUAGE: ${languageInstruction}`;
     res.status(500).json({ error: 'Failed to generate response' });
   }
 }
+
+// ========== RESPONSE VARIATIONS (3 Options) ==========
+app.post('/api/generate-variations', authenticateToken, async (req, res) => {
+  try {
+    const { reviewText, reviewRating, platform, tone, outputLanguage, businessName, responseLength, includeEmojis } = req.body;
+
+    if (!reviewText || reviewText.trim().length === 0) {
+      return res.status(400).json({ error: 'Review text is required' });
+    }
+
+    // Check usage limits (requires 3 responses)
+    const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    const planLimits = PLAN_LIMITS[user.subscription_plan || 'free'] || PLAN_LIMITS.free;
+    const totalUsed = (user.smart_responses_used || 0) + (user.standard_responses_used || 0);
+    const remaining = planLimits.responses - totalUsed;
+
+    // Need at least 3 credits for variations
+    if (remaining < 3) {
+      return res.status(403).json({
+        error: 'Not enough responses remaining',
+        message: `Variations requires 3 response credits. You have ${remaining} remaining.`,
+        upgrade: true
+      });
+    }
+
+    // Variation styles - each creates a slightly different response
+    const variationStyles = [
+      { name: 'concise', instruction: 'Keep the response brief and to the point (2-3 sentences max).', temp: 0.5 },
+      { name: 'detailed', instruction: 'Include specific details and a personal touch. Be warm and conversational.', temp: 0.7 },
+      { name: 'actionable', instruction: 'Focus on solutions and next steps. Include a clear call to action.', temp: 0.6 }
+    ];
+
+    // Language map
+    const languageNames = {
+      en: 'English', de: 'German', es: 'Spanish', fr: 'French',
+      it: 'Italian', pt: 'Portuguese', nl: 'Dutch', pl: 'Polish',
+      ru: 'Russian', zh: 'Chinese', ja: 'Japanese', ko: 'Korean'
+    };
+
+    const languageInstruction = (!outputLanguage || outputLanguage === 'auto')
+      ? 'Respond in the EXACT SAME language as the review.'
+      : `Respond in ${languageNames[outputLanguage] || 'English'}.`;
+
+    // Tone map
+    const toneStyles = {
+      professional: 'Professional and courteous',
+      friendly: 'Warm and friendly',
+      formal: 'Formal and polished',
+      apologetic: 'Empathetic and apologetic'
+    };
+    const toneStyle = toneStyles[tone] || toneStyles.professional;
+
+    // Generate all 3 variations in parallel
+    const variationPromises = variationStyles.map(async (style, index) => {
+      const systemMessage = `You are responding to a customer review for ${businessName || 'our business'}. Tone: ${toneStyle}. ${style.instruction} ${languageInstruction}`;
+
+      const userMessage = `${reviewRating ? `[${reviewRating} star review] ` : ''}${reviewText}`;
+
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemMessage },
+          { role: 'user', content: userMessage }
+        ],
+        max_tokens: 350,
+        temperature: style.temp
+      });
+
+      const generatedResponse = completion.choices[0].message.content.trim();
+      const quality = evaluateResponseQuality(generatedResponse, reviewText, tone, reviewRating);
+
+      return {
+        id: index + 1,
+        style: style.name,
+        response: generatedResponse,
+        quality
+      };
+    });
+
+    const variations = await Promise.all(variationPromises);
+
+    // Save only the first variation to history (user can save others manually)
+    await dbQuery(
+      `INSERT INTO responses (user_id, review_text, review_rating, review_platform, generated_response, tone, ai_model)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [req.user.id, reviewText, reviewRating || null, platform || 'google', variations[0].response, tone || 'professional', 'standard']
+    );
+
+    // Update usage (count as 3 responses)
+    await dbQuery('UPDATE users SET standard_responses_used = standard_responses_used + 3, responses_used = responses_used + 3 WHERE id = $1', [req.user.id]);
+
+    const updatedUser = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    const updatedTotalUsed = (updatedUser.smart_responses_used || 0) + (updatedUser.standard_responses_used || 0);
+
+    res.json({
+      variations,
+      usage: {
+        used: updatedTotalUsed,
+        limit: planLimits.responses,
+        creditsUsed: 3
+      }
+    });
+  } catch (error) {
+    console.error('Variations generation error:', error);
+    res.status(500).json({ error: 'Failed to generate variations' });
+  }
+});
 
 // Bulk Response Generation (Paid plans only: Starter/Pro/Unlimited)
 app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
@@ -1789,9 +1978,7 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
 
     if (teamMembership) {
       isTeamMember = true;
-      if (teamMembership.role === 'viewer') {
-        return res.status(403).json({ error: 'View-only access', message: 'Your team role does not allow generating responses.' });
-      }
+      // All team members can generate (simplified role system)
       usageOwner = {
         id: teamMembership.owner_id,
         smart_responses_used: teamMembership.owner_smart_used || 0,
