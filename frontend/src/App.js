@@ -2862,7 +2862,12 @@ const DashboardPage = () => {
 
     if (planChangedParam) {
       toast.success(`Plan changed to ${planChangedParam.toUpperCase()}!`);
-      api.get('/auth/me').then(res => updateUser(res.data.user));
+      // Refresh user data AND reload page to get fresh stats
+      api.get('/auth/me').then(res => {
+        updateUser(res.data.user);
+        // Reload to refresh all dashboard data with new plan limits
+        window.location.href = '/dashboard';
+      });
     }
   }, []);
 
