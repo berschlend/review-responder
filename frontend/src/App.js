@@ -2827,10 +2827,24 @@ const DashboardPage = () => {
   const [copiedReferralLink, setCopiedReferralLink] = useState(false);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const planParam = params.get('plan');
+    const stripeSuccess = params.get('success');
+
     const loadDashboard = async () => {
       setIsLoadingDashboard(true);
       setDashboardError(null);
       try {
+        // If coming from admin plan change or Stripe, fetch fresh user data FIRST
+        if (planParam || stripeSuccess) {
+          try {
+            const res = await api.get('/auth/me');
+            updateUser(res.data.user);
+          } catch (e) {
+            console.error('Failed to refresh user data:', e);
+          }
+        }
+
         await Promise.all([fetchStats(), fetchHistory(), fetchTemplates(), fetchAllHistory()]);
       } catch (error) {
         console.error('Dashboard load error:', error);
@@ -2847,25 +2861,16 @@ const DashboardPage = () => {
     }
     if (user && user.responsesUsed === 0) setIsFirstResponse(true);
 
-    // Check URL params for redirects from Stripe or admin
-    const params = new URLSearchParams(window.location.search);
-
     // Handle plan change from admin (new format with ?plan=xxx&_t=timestamp)
-    const planParam = params.get('plan');
     if (planParam) {
       toast.success(`Plan changed to ${planParam.toUpperCase()}!`);
       window.history.replaceState({}, '', '/dashboard');
-      // Update user data from backend to get new plan info
-      api.get('/auth/me').then(res => updateUser(res.data.user));
-      // Also refresh stats to get new limits
-      fetchStats();
     }
 
     // Handle Stripe success
-    if (params.get('success')) {
+    if (stripeSuccess) {
       window.history.replaceState({}, '', '/dashboard');
       toast.success('Subscription activated! Thank you for subscribing.');
-      api.get('/auth/me').then(res => updateUser(res.data.user));
     }
   }, []);
 
