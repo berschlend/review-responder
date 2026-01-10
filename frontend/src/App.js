@@ -7358,7 +7358,7 @@ Best,
 
 // Admin Panel Page (Protected with Admin Key)
 const AdminPage = () => {
-  const [adminKey, setAdminKey] = useState(localStorage.getItem('adminKey') || '');
+  const [adminKey, setAdminKey] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState(null);
@@ -7371,31 +7371,48 @@ const AdminPage = () => {
 
   const API_BASE = process.env.REACT_APP_API_URL || 'https://review-responder.onrender.com';
 
-  const getHeaders = () => ({ 'X-Admin-Key': adminKey });
-
-  const authenticate = async () => {
-    if (!adminKey.trim()) {
+  const authenticate = async (keyToUse) => {
+    const key = keyToUse || adminKey;
+    if (!key || !key.trim()) {
       toast.error('Please enter an admin key');
       return;
     }
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE}/api/admin/stats`, { headers: getHeaders() });
+      console.log('Authenticating with key:', key.substring(0, 8) + '...');
+      const res = await axios.get(`${API_BASE}/api/admin/stats`, {
+        headers: { 'X-Admin-Key': key }
+      });
       setStats(res.data);
       setIsAuthenticated(true);
-      localStorage.setItem('adminKey', adminKey);
+      setAdminKey(key);
+      localStorage.setItem('adminKey', key);
       toast.success('Admin authenticated');
-      loadAffiliates();
+      loadAffiliatesWithKey(key);
     } catch (err) {
       console.error('Auth error:', err.response?.data || err.message);
       toast.error(err.response?.data?.error || 'Invalid admin key');
       localStorage.removeItem('adminKey');
+      setAdminKey('');
     } finally {
       setLoading(false);
     }
   };
 
+  const getHeaders = () => ({ 'X-Admin-Key': adminKey });
+
+  const loadAffiliatesWithKey = async (key) => {
+    try {
+      const res = await axios.get(`${API_BASE}/api/admin/affiliates`, { headers: { 'X-Admin-Key': key } });
+      setAffiliates(res.data.affiliates);
+      setCounts(res.data.counts);
+    } catch (err) {
+      console.error('Load affiliates error:', err);
+    }
+  };
+
   const loadAffiliates = async () => {
+    if (!adminKey) return;
     try {
       const url = filter === 'all' ? '/api/admin/affiliates' : `/api/admin/affiliates?status=${filter}`;
       const res = await axios.get(`${API_BASE}${url}`, { headers: getHeaders() });
@@ -7448,14 +7465,18 @@ const AdminPage = () => {
     }
   };
 
+  // Check for saved admin key on mount
   useEffect(() => {
-    if (adminKey && !isAuthenticated) {
-      authenticate();
+    const savedKey = localStorage.getItem('adminKey');
+    if (savedKey && savedKey.trim()) {
+      setAdminKey(savedKey);
+      authenticate(savedKey);
     }
   }, []);
 
+  // Reload affiliates when filter changes
   useEffect(() => {
-    if (isAuthenticated) loadAffiliates();
+    if (isAuthenticated && adminKey) loadAffiliates();
   }, [filter]);
 
   if (!isAuthenticated) {
@@ -7471,10 +7492,10 @@ const AdminPage = () => {
               value={adminKey}
               onChange={(e) => setAdminKey(e.target.value)}
               placeholder="Enter admin secret key"
-              onKeyDown={(e) => e.key === 'Enter' && authenticate()}
+              onKeyDown={(e) => e.key === 'Enter' && authenticate(adminKey)}
             />
           </div>
-          <button className="btn btn-primary" style={{ width: '100%' }} onClick={authenticate} disabled={loading}>
+          <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => authenticate(adminKey)} disabled={loading}>
             {loading ? 'Authenticating...' : 'Login'}
           </button>
         </div>
