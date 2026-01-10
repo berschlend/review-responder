@@ -21,6 +21,9 @@ const LoadingSpinner = () => (
   </div>
 );
 
+// Google Sign-In Client ID (set in environment or hardcode for production)
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
+
 // Confetti celebration function
 const fireConfetti = () => {
   const count = 200;
@@ -44,6 +47,77 @@ const FeatureTooltip = ({ children, text, position = 'top' }) => {
     <div style={{ position: 'relative', display: 'inline-block' }} onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
       {children}
       {show && <div style={{ position: 'absolute', ...positions[position], background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', fontSize: '13px', color: 'var(--text-primary)', whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1000 }}>{text}</div>}
+    </div>
+  );
+};
+
+// Google Sign-In Button Component
+const GoogleSignInButton = ({ onSuccess, onError, text = 'Sign in with Google' }) => {
+  const buttonRef = React.useRef(null);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+
+  useEffect(() => {
+    // Check if script is already loaded
+    if (window.google?.accounts?.id) {
+      setScriptLoaded(true);
+      return;
+    }
+
+    // Load Google Identity Services script
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => setScriptLoaded(true);
+    script.onerror = () => {
+      console.error('Failed to load Google Sign-In script');
+      onError?.('Failed to load Google Sign-In');
+    };
+    document.body.appendChild(script);
+
+    return () => {
+      // Cleanup not needed as script should persist
+    };
+  }, [onError]);
+
+  useEffect(() => {
+    if (!scriptLoaded || !GOOGLE_CLIENT_ID || !buttonRef.current) return;
+
+    try {
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: (response) => {
+          if (response.credential) {
+            onSuccess(response.credential);
+          } else {
+            onError?.('No credential received from Google');
+          }
+        },
+        auto_select: false,
+        cancel_on_tap_outside: true
+      });
+
+      window.google.accounts.id.renderButton(buttonRef.current, {
+        type: 'standard',
+        theme: 'outline',
+        size: 'large',
+        text: text === 'Sign up with Google' ? 'signup_with' : 'signin_with',
+        shape: 'rectangular',
+        width: 280
+      });
+    } catch (error) {
+      console.error('Google Sign-In initialization error:', error);
+      onError?.('Failed to initialize Google Sign-In');
+    }
+  }, [scriptLoaded, onSuccess, onError, text]);
+
+  if (!GOOGLE_CLIENT_ID) {
+    return null; // Don't render if no client ID configured
+  }
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+      <div ref={buttonRef}></div>
     </div>
   );
 };
@@ -127,6 +201,38 @@ const AuthProvider = ({ children }) => {
     return res.data;
   };
 
+  const loginWithGoogle = async (credential) => {
+    // Get referral/affiliate codes from localStorage
+    const referralCode = localStorage.getItem('referralCode');
+    const affiliateCode = localStorage.getItem('affiliateCode');
+
+    // Get UTM parameters from sessionStorage
+    let utmParams = {};
+    try {
+      const storedUtm = sessionStorage.getItem('utm_params');
+      if (storedUtm) {
+        utmParams = JSON.parse(storedUtm);
+      }
+    } catch (e) {
+      console.log('No UTM params found');
+    }
+
+    const res = await api.post('/auth/google', {
+      credential,
+      referralCode,
+      affiliateCode,
+      utmParams
+    });
+
+    localStorage.setItem('token', res.data.token);
+    // Clear codes after successful login/registration
+    if (referralCode) localStorage.removeItem('referralCode');
+    if (affiliateCode) localStorage.removeItem('affiliateCode');
+    sessionStorage.removeItem('utm_params');
+    setUser(res.data.user);
+    return res.data;
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
@@ -137,7 +243,7 @@ const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading, updateUser }}>
+    <AuthContext.Provider value={{ user, login, register, loginWithGoogle, logout, loading, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
@@ -1952,7 +2058,8 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -1969,11 +2076,51 @@ const LoginPage = () => {
     }
   };
 
+  const handleGoogleSuccess = async (credential) => {
+    setGoogleLoading(true);
+    try {
+      await loginWithGoogle(credential);
+      toast.success('Welcome back!');
+      navigate('/dashboard');
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Google sign-in failed');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const handleGoogleError = (error) => {
+    console.error('Google Sign-In error:', error);
+    toast.error('Google sign-in failed. Please try again.');
+  };
+
   return (
     <div className="auth-container">
       <div className="card auth-card">
         <h1 className="auth-title">Welcome Back</h1>
         <p className="auth-subtitle">Sign in to your account</p>
+
+        {/* Google Sign-In Button */}
+        <GoogleSignInButton
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          text="Sign in with Google"
+        />
+
+        {googleLoading && (
+          <div style={{ textAlign: 'center', marginBottom: '16px', color: 'var(--text-secondary)' }}>
+            Signing in with Google...
+          </div>
+        )}
+
+        {/* Divider */}
+        {GOOGLE_CLIENT_ID && (
+          <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0' }}>
+            <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }}></div>
+            <span style={{ padding: '0 16px', color: 'var(--text-secondary)', fontSize: '14px' }}>or continue with email</span>
+            <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }}></div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -2025,7 +2172,8 @@ const RegisterPage = () => {
   const [password, setPassword] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -2042,11 +2190,51 @@ const RegisterPage = () => {
     }
   };
 
+  const handleGoogleSuccess = async (credential) => {
+    setGoogleLoading(true);
+    try {
+      await loginWithGoogle(credential);
+      toast.success('Account created! You have 5 free responses.');
+      navigate('/dashboard');
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Google sign-up failed');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const handleGoogleError = (error) => {
+    console.error('Google Sign-In error:', error);
+    toast.error('Google sign-up failed. Please try again.');
+  };
+
   return (
     <div className="auth-container">
       <div className="card auth-card">
         <h1 className="auth-title">Create Account</h1>
         <p className="auth-subtitle">Start generating review responses for free</p>
+
+        {/* Google Sign-Up Button */}
+        <GoogleSignInButton
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          text="Sign up with Google"
+        />
+
+        {googleLoading && (
+          <div style={{ textAlign: 'center', marginBottom: '16px', color: 'var(--text-secondary)' }}>
+            Creating account with Google...
+          </div>
+        )}
+
+        {/* Divider */}
+        {GOOGLE_CLIENT_ID && (
+          <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0' }}>
+            <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }}></div>
+            <span style={{ padding: '0 16px', color: 'var(--text-secondary)', fontSize: '14px' }}>or sign up with email</span>
+            <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }}></div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">

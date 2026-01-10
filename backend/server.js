@@ -11,6 +11,7 @@ const OpenAI = require('openai');
 const validator = require('validator');
 const crypto = require('crypto');
 const { Resend } = require('resend');
+const { OAuth2Client } = require('google-auth-library');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -43,6 +44,7 @@ pool.on('connect', () => {
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const googleClient = process.env.GOOGLE_CLIENT_ID ? new OAuth2Client(process.env.GOOGLE_CLIENT_ID) : null;
 
 // Middleware
 app.use(helmet());
@@ -426,6 +428,16 @@ async function initDatabase() {
       // Indexes might already exist
     }
 
+    // Add OAuth columns for Google Sign-In
+    try {
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS oauth_provider TEXT`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS oauth_id TEXT`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture TEXT`);
+      await dbQuery(`ALTER TABLE users ALTER COLUMN password DROP NOT NULL`);
+    } catch (error) {
+      // Columns might already exist or password column already nullable
+    }
+
     console.log('📊 Database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -749,6 +761,175 @@ app.put('/api/auth/profile', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Profile update error:', error);
     res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+// Google OAuth Sign-In
+app.post('/api/auth/google', async (req, res) => {
+  try {
+    const { credential, referralCode, affiliateCode, utmParams } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({ error: 'Google credential is required' });
+    }
+
+    if (!googleClient) {
+      return res.status(500).json({ error: 'Google Sign-In is not configured. Please contact support.' });
+    }
+
+    // Verify the Google ID token
+    let ticket;
+    try {
+      ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID
+      });
+    } catch (verifyError) {
+      console.error('Google token verification failed:', verifyError);
+      return res.status(401).json({ error: 'Invalid Google credential' });
+    }
+
+    const payload = ticket.getPayload();
+    const googleId = payload['sub'];
+    const email = payload['email'];
+    const name = payload['name'] || '';
+    const picture = payload['picture'] || null;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email not provided by Google' });
+    }
+
+    // Check if user already exists (by email or Google ID)
+    let user = await dbGet('SELECT * FROM users WHERE email = $1 OR oauth_id = $2', [email, googleId]);
+
+    if (user) {
+      // Existing user - update OAuth info if needed
+      if (!user.oauth_provider) {
+        await dbQuery(
+          'UPDATE users SET oauth_provider = $1, oauth_id = $2, profile_picture = $3 WHERE id = $4',
+          ['google', googleId, picture, user.id]
+        );
+      } else if (user.profile_picture !== picture) {
+        await dbQuery('UPDATE users SET profile_picture = $1 WHERE id = $2', [picture, user.id]);
+      }
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { id: user.id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      return res.json({
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          businessName: user.business_name,
+          businessType: user.business_type,
+          businessContext: user.business_context,
+          responseStyle: user.response_style,
+          plan: user.subscription_plan,
+          responsesUsed: user.responses_used,
+          responsesLimit: user.responses_limit,
+          onboardingCompleted: user.onboarding_completed,
+          profilePicture: picture,
+          referralCode: user.referral_code
+        }
+      });
+    }
+
+    // New user - create account
+    const newReferralCode = 'REF-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+
+    // Create Stripe customer
+    let stripeCustomerId = null;
+    try {
+      const customer = await stripe.customers.create({
+        email: email,
+        name: name,
+        metadata: { source: 'google_oauth' }
+      });
+      stripeCustomerId = customer.id;
+    } catch (stripeError) {
+      console.error('Stripe customer creation failed:', stripeError);
+    }
+
+    // Handle referral
+    let referredById = null;
+    if (referralCode) {
+      const referrer = await dbGet('SELECT id FROM users WHERE referral_code = $1', [referralCode]);
+      if (referrer) {
+        referredById = referrer.id;
+      }
+    }
+
+    // Handle affiliate
+    let affiliateId = null;
+    if (affiliateCode) {
+      const affiliate = await dbGet('SELECT id FROM affiliates WHERE code = $1 AND is_active = TRUE', [affiliateCode]);
+      if (affiliate) {
+        affiliateId = affiliate.id;
+        await dbQuery(
+          'INSERT INTO affiliate_clicks (affiliate_id, ip_address, user_agent) VALUES ($1, $2, $3)',
+          [affiliateId, req.ip, req.headers['user-agent']]
+        );
+      }
+    }
+
+    // Insert new user
+    const result = await dbQuery(
+      `INSERT INTO users (
+        email, password, business_name, oauth_provider, oauth_id, profile_picture,
+        stripe_customer_id, referral_code, referred_by, affiliate_id,
+        utm_source, utm_medium, utm_campaign, utm_content, utm_term, landing_page
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *`,
+      [
+        email,
+        null, // No password for OAuth users
+        name,
+        'google',
+        googleId,
+        picture,
+        stripeCustomerId,
+        newReferralCode,
+        referredById,
+        affiliateId,
+        utmParams?.utm_source || null,
+        utmParams?.utm_medium || null,
+        utmParams?.utm_campaign || null,
+        utmParams?.utm_content || null,
+        utmParams?.utm_term || null,
+        utmParams?.landing_page || null
+      ]
+    );
+
+    const newUser = result.rows[0];
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: newUser.id, email: newUser.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.status(201).json({
+      token,
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        businessName: newUser.business_name,
+        plan: 'free',
+        responsesUsed: 0,
+        responsesLimit: 5,
+        onboardingCompleted: false,
+        profilePicture: picture,
+        referralCode: newReferralCode
+      }
+    });
+  } catch (error) {
+    console.error('Google auth error:', error);
+    res.status(500).json({ error: 'Google sign-in failed. Please try again.' });
   }
 });
 
