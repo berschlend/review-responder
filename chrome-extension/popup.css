@@ -466,3 +466,63 @@ footer a:hover {
   letter-spacing: 0.5px;
   margin-top: 2px;
 }
+
+/* How to Use Section */
+.how-to-use {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-top: 15px;
+  color: white;
+}
+
+.how-to-header {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.how-to-steps {
+  margin: 0 0 12px 18px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.7;
+  opacity: 0.95;
+}
+
+.how-to-steps li {
+  margin-bottom: 4px;
+}
+
+.how-to-steps strong {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.shortcut {
+  font-size: 10px;
+  opacity: 0.9;
+}
+
+.shortcut kbd {
+  display: inline-block;
+  padding: 2px 5px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 9px;
+  margin-right: 3px;
+}

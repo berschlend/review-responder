@@ -1,31 +1,99 @@
-// ReviewResponder - ULTRA Edition
-// The most powerful review response generator ever built
+// ReviewResponder - Clean & Intuitive Edition
+// Focus: Simplicity, Speed, Mobile-First
 
 const API_URL = 'https://review-responder.onrender.com/api';
 
-// ========== CONFETTI CELEBRATION ==========
+// ========== TOAST NOTIFICATIONS ==========
+function showToast(message, type = 'success') {
+  // Remove existing toasts
+  document.querySelectorAll('.rr-toast').forEach(t => t.remove());
+
+  const toast = document.createElement('div');
+  toast.className = `rr-toast rr-toast-${type}`;
+  toast.innerHTML = message;
+  document.body.appendChild(toast);
+
+  // Animate in
+  setTimeout(() => toast.classList.add('rr-visible'), 10);
+
+  // Remove after 3 seconds
+  setTimeout(() => {
+    toast.classList.remove('rr-visible');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// ========== ONBOARDING ==========
+async function checkOnboarding() {
+  try {
+    const stored = await chrome.storage.local.get(['rr_onboarding_seen']);
+    return stored.rr_onboarding_seen || false;
+  } catch (e) {
+    return false;
+  }
+}
+
+async function markOnboardingSeen() {
+  try {
+    await chrome.storage.local.set({ rr_onboarding_seen: true });
+  } catch (e) {}
+}
+
+function showOnboardingTip(panel) {
+  const tip = document.createElement('div');
+  tip.className = 'rr-onboarding-tip';
+  tip.innerHTML = `
+    <div class="rr-tip-content">
+      <span class="rr-tip-icon">💡</span>
+      <span class="rr-tip-text">Tip: Press <kbd>Alt+R</kbd> to generate, <kbd>Alt+C</kbd> to copy!</span>
+      <button class="rr-tip-close">Got it!</button>
+    </div>
+  `;
+
+  tip.querySelector('.rr-tip-close').addEventListener('click', () => {
+    tip.classList.add('rr-hiding');
+    setTimeout(() => tip.remove(), 300);
+  });
+
+  panel.querySelector('.rr-panel-body').appendChild(tip);
+}
+
+// ========== CONFETTI (Limited to 3x) ==========
+async function maybeShowConfetti() {
+  try {
+    const stored = await chrome.storage.local.get(['rr_confetti_count']);
+    let count = stored.rr_confetti_count || 0;
+
+    if (count < 3) {
+      createConfetti();
+      await chrome.storage.local.set({ rr_confetti_count: count + 1 });
+    }
+  } catch (e) {
+    // Fallback: just show it
+    createConfetti();
+  }
+}
+
 function createConfetti() {
   const colors = ['#667eea', '#764ba2', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
-  const confettiCount = 50;
 
-  for (let i = 0; i < confettiCount; i++) {
+  for (let i = 0; i < 30; i++) {
     const confetti = document.createElement('div');
     confetti.className = 'rr-confetti';
     confetti.style.cssText = `
       position: fixed;
-      width: ${Math.random() * 10 + 5}px;
-      height: ${Math.random() * 10 + 5}px;
+      width: ${Math.random() * 8 + 4}px;
+      height: ${Math.random() * 8 + 4}px;
       background: ${colors[Math.floor(Math.random() * colors.length)]};
       left: ${Math.random() * 100}vw;
-      top: -20px;
+      top: -10px;
       border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
-      z-index: 1000000;
+      z-index: 1000001;
       pointer-events: none;
-      animation: rr-confetti-fall ${Math.random() * 2 + 2}s linear forwards;
-      transform: rotate(${Math.random() * 360}deg);
+      animation: rr-confetti-fall ${Math.random() * 2 + 1.5}s linear forwards;
     `;
     document.body.appendChild(confetti);
-    setTimeout(() => confetti.remove(), 4000);
+    setTimeout(() => confetti.remove(), 3500);
   }
 }
 
@@ -39,39 +107,48 @@ confettiStyle.textContent = `
 `;
 document.head.appendChild(confettiStyle);
 
+// ========== LANGUAGE DETECTION ==========
+function detectLanguage(text) {
+  const lowerText = text.toLowerCase();
+
+  // German indicators
+  const germanWords = ['und', 'der', 'die', 'das', 'ist', 'war', 'sehr', 'gut', 'nicht', 'aber', 'haben', 'wurde', 'toll', 'super', 'leider', 'immer', 'auch'];
+  const germanCount = germanWords.filter(w => lowerText.includes(` ${w} `) || lowerText.startsWith(w + ' ')).length;
+
+  // Dutch indicators
+  const dutchWords = ['en', 'het', 'een', 'van', 'zijn', 'naar', 'niet', 'maar', 'heel', 'goed', 'mooi', 'lekker', 'altijd'];
+  const dutchCount = dutchWords.filter(w => lowerText.includes(` ${w} `) || lowerText.startsWith(w + ' ')).length;
+
+  // French indicators
+  const frenchWords = ['et', 'est', 'très', 'bien', 'pas', 'mais', 'pour', 'avec', 'dans', 'leur', 'nous'];
+  const frenchCount = frenchWords.filter(w => lowerText.includes(` ${w} `) || lowerText.startsWith(w + ' ')).length;
+
+  // Spanish indicators
+  const spanishWords = ['y', 'es', 'muy', 'bien', 'pero', 'para', 'con', 'los', 'las', 'que', 'del'];
+  const spanishCount = spanishWords.filter(w => lowerText.includes(` ${w} `) || lowerText.startsWith(w + ' ')).length;
+
+  if (germanCount >= 2) return { code: 'de', name: 'Deutsch', flag: '🇩🇪' };
+  if (dutchCount >= 2) return { code: 'nl', name: 'Nederlands', flag: '🇳🇱' };
+  if (frenchCount >= 2) return { code: 'fr', name: 'Français', flag: '🇫🇷' };
+  if (spanishCount >= 2) return { code: 'es', name: 'Español', flag: '🇪🇸' };
+
+  return { code: 'en', name: 'English', flag: '🇬🇧' };
+}
+
 // ========== PLATFORM DETECTION ==========
 function detectPlatform() {
   const hostname = window.location.hostname;
-  const pathname = window.location.pathname;
 
-  if (hostname.includes('google.com') && pathname.includes('/maps')) {
-    return { name: 'Google Maps', icon: '📍', color: '#4285f4', gradient: 'linear-gradient(135deg, #4285f4, #34a853)' };
-  }
-  if (hostname.includes('google.com') && pathname.includes('/business')) {
-    return { name: 'Google Business', icon: '🏢', color: '#4285f4', gradient: 'linear-gradient(135deg, #4285f4, #ea4335)' };
-  }
-  if (hostname.includes('yelp.com')) {
-    return { name: 'Yelp', icon: '🔥', color: '#d32323', gradient: 'linear-gradient(135deg, #d32323, #ff6b6b)' };
-  }
-  if (hostname.includes('tripadvisor.com')) {
-    return { name: 'TripAdvisor', icon: '🦉', color: '#00aa6c', gradient: 'linear-gradient(135deg, #00aa6c, #00d4aa)' };
-  }
-  if (hostname.includes('facebook.com')) {
-    return { name: 'Facebook', icon: '📘', color: '#1877f2', gradient: 'linear-gradient(135deg, #1877f2, #42b72a)' };
-  }
-  if (hostname.includes('trustpilot.com')) {
-    return { name: 'Trustpilot', icon: '⭐', color: '#00b67a', gradient: 'linear-gradient(135deg, #00b67a, #00d4aa)' };
-  }
-  if (hostname.includes('booking.com')) {
-    return { name: 'Booking.com', icon: '🏨', color: '#003580', gradient: 'linear-gradient(135deg, #003580, #0071c2)' };
-  }
-  if (hostname.includes('airbnb.com')) {
-    return { name: 'Airbnb', icon: '🏠', color: '#ff5a5f', gradient: 'linear-gradient(135deg, #ff5a5f, #fc642d)' };
-  }
-  if (hostname.includes('amazon.com')) {
-    return { name: 'Amazon', icon: '📦', color: '#ff9900', gradient: 'linear-gradient(135deg, #ff9900, #146eb4)' };
-  }
-  return { name: 'Review Site', icon: '💬', color: '#667eea', gradient: 'linear-gradient(135deg, #667eea, #764ba2)' };
+  if (hostname.includes('google.com')) return { name: 'Google', icon: '📍', color: '#4285f4' };
+  if (hostname.includes('yelp.com')) return { name: 'Yelp', icon: '🔥', color: '#d32323' };
+  if (hostname.includes('tripadvisor.com')) return { name: 'TripAdvisor', icon: '🦉', color: '#00aa6c' };
+  if (hostname.includes('facebook.com')) return { name: 'Facebook', icon: '📘', color: '#1877f2' };
+  if (hostname.includes('trustpilot.com')) return { name: 'Trustpilot', icon: '⭐', color: '#00b67a' };
+  if (hostname.includes('booking.com')) return { name: 'Booking', icon: '🏨', color: '#003580' };
+  if (hostname.includes('airbnb.com')) return { name: 'Airbnb', icon: '🏠', color: '#ff5a5f' };
+  if (hostname.includes('amazon.com')) return { name: 'Amazon', icon: '📦', color: '#ff9900' };
+
+  return { name: 'Reviews', icon: '💬', color: '#667eea' };
 }
 
 // ========== SENTIMENT ANALYSIS ==========
@@ -80,127 +157,43 @@ function analyzeSentiment(text) {
 
   const positiveWords = [
     'great', 'amazing', 'awesome', 'excellent', 'fantastic', 'wonderful', 'love', 'loved', 'best', 'perfect',
-    'outstanding', 'brilliant', 'superb', 'delicious', 'friendly', 'helpful', 'recommend', 'highly', 'thank',
-    'toll', 'super', 'wunderbar', 'perfekt', 'ausgezeichnet', 'fantastisch', 'lecker', 'freundlich',
-    'genial', 'klasse', 'prima', 'hervorragend', 'excelente', 'bueno', 'increíble', 'magnifique',
-    'clean', 'fast', 'quick', 'professional', 'nice', 'good', 'happy', 'satisfied', 'impressed',
-    '5 stars', 'five stars', '5 sterne', 'fünf sterne', 'definitely', 'must visit', 'muss man'
+    'outstanding', 'brilliant', 'superb', 'delicious', 'friendly', 'helpful', 'recommend', 'thank',
+    'toll', 'super', 'wunderbar', 'perfekt', 'ausgezeichnet', 'lecker', 'freundlich', 'genial', 'klasse',
+    'clean', 'fast', 'professional', 'nice', 'good', 'happy', 'satisfied', 'impressed', '5 star'
   ];
 
   const negativeWords = [
-    'bad', 'terrible', 'awful', 'horrible', 'worst', 'poor', 'disappointed', 'disappointing', 'rude',
-    'slow', 'cold', 'dirty', 'disgusting', 'never', 'waste', 'overpriced', 'avoid', 'mediocre',
-    'schlecht', 'furchtbar', 'schrecklich', 'enttäuscht', 'langsam', 'kalt', 'dreckig', 'teuer',
-    'nie wieder', 'malo', 'horrible', 'décevant', 'mauvais', 'angry', 'upset', 'frustrated',
-    '1 star', 'one star', '1 stern', 'ein stern', 'refund', 'complaint', 'manager'
+    'bad', 'terrible', 'awful', 'horrible', 'worst', 'poor', 'disappointed', 'rude',
+    'slow', 'cold', 'dirty', 'disgusting', 'never', 'waste', 'overpriced', 'avoid',
+    'schlecht', 'furchtbar', 'schrecklich', 'enttäuscht', 'langsam', 'kalt', 'dreckig',
+    'nie wieder', 'angry', 'upset', 'frustrated', '1 star', 'refund', 'complaint'
   ];
 
-  let positiveScore = 0;
-  let negativeScore = 0;
+  let positive = 0, negative = 0;
+  positiveWords.forEach(w => { if (lowerText.includes(w)) positive++; });
+  negativeWords.forEach(w => { if (lowerText.includes(w)) negative++; });
 
-  positiveWords.forEach(word => {
-    if (lowerText.includes(word)) positiveScore++;
-  });
-
-  negativeWords.forEach(word => {
-    if (lowerText.includes(word)) negativeScore++;
-  });
-
-  // Check for star ratings in text
-  const starMatch = lowerText.match(/(\d)\s*(star|stern|étoile|estrella)/i);
+  // Star rating detection
+  const starMatch = lowerText.match(/(\d)\s*(star|stern|étoile)/i);
   if (starMatch) {
     const stars = parseInt(starMatch[1]);
-    if (stars >= 4) positiveScore += 3;
-    else if (stars <= 2) negativeScore += 3;
+    if (stars >= 4) positive += 3;
+    else if (stars <= 2) negative += 3;
   }
 
-  if (positiveScore > negativeScore + 1) return 'positive';
-  if (negativeScore > positiveScore) return 'negative';
+  if (positive > negative + 1) return 'positive';
+  if (negative > positive) return 'negative';
   return 'neutral';
 }
 
-function getSentimentInfo(sentiment) {
+function getSentimentDisplay(sentiment) {
   switch (sentiment) {
     case 'positive':
-      return {
-        emoji: '🟢',
-        label: 'Positive',
-        recommendedTone: 'friendly',
-        color: '#10b981',
-        tip: 'Customer loved it! Keep it warm & grateful.',
-        gradient: 'linear-gradient(135deg, #10b981, #34d399)'
-      };
+      return { emoji: '🟢', label: 'Positive', color: '#10b981', tone: 'friendly' };
     case 'negative':
-      return {
-        emoji: '🔴',
-        label: 'Negative',
-        recommendedTone: 'apologetic',
-        color: '#ef4444',
-        tip: 'Handle with care. Acknowledge & offer solution.',
-        gradient: 'linear-gradient(135deg, #ef4444, #f87171)'
-      };
+      return { emoji: '🔴', label: 'Negative', color: '#ef4444', tone: 'apologetic' };
     default:
-      return {
-        emoji: '🟡',
-        label: 'Neutral',
-        recommendedTone: 'professional',
-        color: '#f59e0b',
-        tip: 'Mixed feelings. Stay professional & helpful.',
-        gradient: 'linear-gradient(135deg, #f59e0b, #fbbf24)'
-      };
-  }
-}
-
-// ========== SETTINGS PERSISTENCE ==========
-async function loadSettings() {
-  try {
-    const stored = await chrome.storage.local.get(['rr_settings']);
-    return stored.rr_settings || {
-      tone: 'professional',
-      length: 'medium',
-      emojis: false,
-      autoGenerate: true,
-      copyAndClose: true,
-      showConfetti: true,
-      darkMode: 'auto'
-    };
-  } catch (e) {
-    return { tone: 'professional', length: 'medium', emojis: false, autoGenerate: true, copyAndClose: true, showConfetti: true, darkMode: 'auto' };
-  }
-}
-
-async function saveSettings(settings) {
-  try {
-    await chrome.storage.local.set({ rr_settings: settings });
-  } catch (e) {
-    console.error('Failed to save settings:', e);
-  }
-}
-
-// ========== RECENT RESPONSES ==========
-async function loadRecentResponses() {
-  try {
-    const stored = await chrome.storage.local.get(['rr_recent']);
-    return stored.rr_recent || [];
-  } catch (e) {
-    return [];
-  }
-}
-
-async function saveRecentResponse(reviewText, response, tone, platform) {
-  try {
-    let recent = await loadRecentResponses();
-    recent.unshift({
-      review: reviewText.substring(0, 60) + (reviewText.length > 60 ? '...' : ''),
-      response: response,
-      tone: tone,
-      platform: platform,
-      timestamp: Date.now()
-    });
-    recent = recent.slice(0, 10); // Keep last 10
-    await chrome.storage.local.set({ rr_recent: recent });
-  } catch (e) {
-    console.error('Failed to save recent response:', e);
+      return { emoji: '🟡', label: 'Neutral', color: '#f59e0b', tone: 'professional' };
   }
 }
 
@@ -209,39 +202,40 @@ function cleanReviewText(text) {
   const uiPatterns = [
     /vor \d+ (Sekunden?|Minuten?|Stunden?|Tagen?|Wochen?|Monaten?|Jahren?)/gi,
     /\d+ (second|minute|hour|day|week|month|year)s? ago/gi,
-    /Antwort vom Inhaber/gi,
-    /Owner response/gi,
-    /Response from the owner/gi,
-    /\d+ (Person|Personen) fanden? diese Rezension hilfreich/gi,
-    /\d+ (person|people) found this (review )?helpful/gi,
-    /Von Google übersetzt/gi,
-    /Translated by Google/gi,
-    /Local Guide\s*·?\s*\d*\s*(Rezension(en)?|reviews?)?/gi,
+    /Antwort vom Inhaber|Owner response|Response from the owner/gi,
+    /\d+ (Person|Personen|person|people) (fanden?|found).*helpful/gi,
+    /Von Google übersetzt|Translated by Google/gi,
+    /Local Guide\s*·?\s*\d*\s*(Rezension|review)/gi,
     /Mehr lesen|Read more|Show more/gi,
   ];
 
   let cleaned = text;
-  uiPatterns.forEach(pattern => {
-    cleaned = cleaned.replace(pattern, '');
-  });
+  uiPatterns.forEach(p => { cleaned = cleaned.replace(p, ''); });
   return cleaned.replace(/\s+/g, ' ').trim();
 }
 
-// ========== DETECT DARK MODE ==========
-function isDarkMode() {
-  // Check if site uses dark mode
-  const bgColor = window.getComputedStyle(document.body).backgroundColor;
-  const rgb = bgColor.match(/\d+/g);
-  if (rgb) {
-    const brightness = (parseInt(rgb[0]) * 299 + parseInt(rgb[1]) * 587 + parseInt(rgb[2]) * 114) / 1000;
-    return brightness < 128;
+// ========== SETTINGS ==========
+async function loadSettings() {
+  try {
+    const stored = await chrome.storage.local.get(['rr_settings']);
+    return stored.rr_settings || {
+      tone: 'professional',
+      length: 'medium',
+      emojis: false
+    };
+  } catch (e) {
+    return { tone: 'professional', length: 'medium', emojis: false };
   }
-  return window.matchMedia('(prefers-color-scheme: dark)').matches;
 }
 
-// ========== CREATE RESPONSE PANEL ==========
+async function saveSettings(settings) {
+  try {
+    await chrome.storage.local.set({ rr_settings: settings });
+  } catch (e) {}
+}
+
+// ========== CREATE CLEAN PANEL ==========
 function createResponsePanel() {
-  // Remove existing panel if any
   const existing = document.getElementById('rr-response-panel');
   if (existing) existing.remove();
 
@@ -249,225 +243,146 @@ function createResponsePanel() {
   panel.id = 'rr-response-panel';
 
   const platform = detectPlatform();
-  const darkMode = isDarkMode();
 
   panel.innerHTML = `
-    <div class="rr-panel-header" id="rr-drag-handle">
+    <div class="rr-panel-header">
       <div class="rr-header-left">
-        <div class="rr-logo-container">
-          <span class="rr-logo-icon">⚡</span>
-          <span class="rr-logo-text">ReviewResponder</span>
-        </div>
-        <span class="rr-platform-badge">${platform.icon} ${platform.name}</span>
+        <span class="rr-logo">⚡ ReviewResponder</span>
+        <span class="rr-platform-badge" style="background: ${platform.color}">${platform.icon} ${platform.name}</span>
       </div>
       <div class="rr-header-right">
-        <button class="rr-settings-btn" title="Settings">⚙️</button>
-        <button class="rr-close-btn" title="Close (Esc)">&times;</button>
+        <button class="rr-help-btn" title="How to use">?</button>
+        <button class="rr-close-btn" title="Close (Esc)">×</button>
       </div>
     </div>
 
     <div class="rr-panel-body">
-      <!-- Review Preview with animation -->
-      <div class="rr-review-section">
-        <div class="rr-section-label">📝 Review</div>
-        <div class="rr-review-preview"></div>
-        <div class="rr-review-meta">
-          <span class="rr-char-count">0 chars</span>
-          <span class="rr-word-count">0 words</span>
+      <!-- Review Section -->
+      <div class="rr-review-box">
+        <div class="rr-review-text"></div>
+      </div>
+
+      <!-- Sentiment + Language Row -->
+      <div class="rr-info-row">
+        <div class="rr-sentiment">
+          <span class="rr-sentiment-emoji"></span>
+          <span class="rr-sentiment-label"></span>
+        </div>
+        <div class="rr-language">
+          <span class="rr-language-flag"></span>
+          <span class="rr-language-name"></span>
         </div>
       </div>
 
-      <!-- Sentiment Analysis -->
-      <div class="rr-sentiment-section">
-        <div class="rr-sentiment-card">
-          <div class="rr-sentiment-icon"></div>
-          <div class="rr-sentiment-info">
-            <span class="rr-sentiment-label"></span>
-            <span class="rr-sentiment-tip"></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Options Grid -->
-      <div class="rr-options-grid">
-        <div class="rr-option-group">
-          <label>🎭 Tone</label>
+      <!-- Simple Options Row -->
+      <div class="rr-options-row">
+        <div class="rr-option">
+          <label>Tone</label>
           <select class="rr-tone-select">
-            <option value="professional">Professional</option>
-            <option value="friendly">Friendly</option>
-            <option value="formal">Formal</option>
-            <option value="apologetic">Apologetic</option>
+            <option value="professional">💼 Professional</option>
+            <option value="friendly">😊 Friendly</option>
+            <option value="formal">🎩 Formal</option>
+            <option value="apologetic">🙏 Apologetic</option>
           </select>
         </div>
-        <div class="rr-option-group">
-          <label>📏 Length</label>
+        <button class="rr-settings-toggle" title="More options">⚙️</button>
+      </div>
+
+      <!-- Advanced Settings (hidden by default) -->
+      <div class="rr-advanced hidden">
+        <div class="rr-advanced-row">
+          <label>Length</label>
           <select class="rr-length-select">
             <option value="short">Short</option>
             <option value="medium" selected>Medium</option>
             <option value="detailed">Detailed</option>
           </select>
         </div>
-      </div>
-
-      <!-- Toggles -->
-      <div class="rr-toggles-row">
-        <label class="rr-toggle-label">
+        <label class="rr-checkbox-label">
           <input type="checkbox" class="rr-emoji-toggle">
-          <span class="rr-toggle-switch"></span>
-          <span>😀 Emojis</span>
+          <span>Include emojis</span>
         </label>
-        <label class="rr-toggle-label">
-          <input type="checkbox" class="rr-copy-close-toggle" checked>
-          <span class="rr-toggle-switch"></span>
-          <span>📋 Copy & Close</span>
-        </label>
-        <label class="rr-toggle-label">
-          <input type="checkbox" class="rr-confetti-toggle" checked>
-          <span class="rr-toggle-switch"></span>
-          <span>🎉 Confetti</span>
-        </label>
-      </div>
-
-      <!-- Quick Actions -->
-      <div class="rr-quick-actions hidden">
-        <button class="rr-quick-btn rr-quick-thanks">⚡ Quick Thanks</button>
       </div>
 
       <!-- Generate Button -->
       <button class="rr-generate-btn">
         <span class="rr-btn-text">✨ Generate Response</span>
-        <span class="rr-btn-loader hidden">
+        <span class="rr-btn-loading hidden">
           <span class="rr-spinner"></span>
           Generating...
         </span>
       </button>
 
-      <!-- Response Area -->
-      <div class="rr-response-area hidden">
-        <div class="rr-section-label">💬 Your Response</div>
-        <div class="rr-response-wrapper">
-          <textarea class="rr-response-text" placeholder="Your response will appear here..."></textarea>
-          <div class="rr-response-meta">
-            <span class="rr-response-chars">0 chars</span>
-            <span class="rr-response-words">0 words</span>
-          </div>
+      <!-- Response Section (hidden until generated) -->
+      <div class="rr-response-section hidden">
+        <textarea class="rr-response-textarea" placeholder="Your response..."></textarea>
+
+        <div class="rr-action-buttons">
+          <button class="rr-copy-btn">📋 Copy</button>
+          <button class="rr-regenerate-btn">🔄 Try Again</button>
         </div>
 
-        <!-- Quick Edit Buttons -->
-        <div class="rr-quick-edit">
-          <button class="rr-edit-btn" data-action="shorter">📉 Shorter</button>
-          <button class="rr-edit-btn" data-action="longer">📈 Longer</button>
-          <button class="rr-edit-btn" data-action="add-emoji">😊 Add Emoji</button>
-          <button class="rr-edit-btn" data-action="more-formal">🎩 More Formal</button>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="rr-button-row">
-          <button class="rr-copy-btn">
-            <span class="rr-copy-text">📋 Copy</span>
-            <span class="rr-copy-success hidden">✅ Copied!</span>
-          </button>
-          <button class="rr-regenerate-btn">🔄 Regenerate</button>
-        </div>
-
-        <!-- Tone Quick Switch -->
-        <div class="rr-tone-switch">
-          <span class="rr-tone-label">Try different tone:</span>
-          <div class="rr-tone-buttons">
-            <button class="rr-tone-btn" data-tone="professional">💼 Pro</button>
-            <button class="rr-tone-btn" data-tone="friendly">😊 Friendly</button>
-            <button class="rr-tone-btn" data-tone="formal">🎩 Formal</button>
-            <button class="rr-tone-btn" data-tone="apologetic">🙏 Sorry</button>
-          </div>
-        </div>
-
-        <!-- Google Maps Preview -->
-        <div class="rr-preview-section">
-          <div class="rr-preview-header">
-            <span>👁️ Preview</span>
-            <button class="rr-preview-toggle">Show</button>
-          </div>
-          <div class="rr-preview-content hidden">
-            <div class="rr-gm-preview">
-              <div class="rr-gm-header">Response from the owner</div>
-              <div class="rr-gm-body">
-                <div class="rr-gm-avatar">B</div>
-                <div class="rr-gm-text"></div>
-              </div>
-            </div>
-          </div>
+        <!-- Quick Tone Switch -->
+        <div class="rr-quick-tones">
+          <span>Try:</span>
+          <button class="rr-quick-tone" data-tone="professional">Pro</button>
+          <button class="rr-quick-tone" data-tone="friendly">Friendly</button>
+          <button class="rr-quick-tone" data-tone="formal">Formal</button>
+          <button class="rr-quick-tone" data-tone="apologetic">Sorry</button>
         </div>
       </div>
 
-      <!-- Recent Responses -->
-      <div class="rr-recent-section hidden">
-        <div class="rr-recent-header">
-          <span>🕐 Recent Responses</span>
-          <button class="rr-recent-toggle">▼</button>
+      <!-- Keyboard Shortcuts Hint -->
+      <div class="rr-shortcuts-hint">
+        <kbd>Alt+R</kbd> generate · <kbd>Alt+C</kbd> copy · <kbd>Esc</kbd> close
+      </div>
+
+      <!-- Help Overlay -->
+      <div class="rr-help-overlay hidden">
+        <div class="rr-help-content">
+          <h3>🎯 How to use</h3>
+          <ol>
+            <li>Select review text on any page</li>
+            <li>Click the ⚡ button that appears</li>
+            <li>Choose your tone & generate</li>
+            <li>Copy & paste your response!</li>
+          </ol>
+          <button class="rr-help-close">Got it!</button>
         </div>
-        <div class="rr-recent-list hidden"></div>
-      </div>
-
-      <!-- Message Area -->
-      <div class="rr-message"></div>
-    </div>
-
-    <!-- Settings Panel (hidden by default) -->
-    <div class="rr-settings-panel hidden">
-      <div class="rr-settings-header">
-        <span>⚙️ Settings</span>
-        <button class="rr-settings-close">&times;</button>
-      </div>
-      <div class="rr-settings-body">
-        <label class="rr-setting-item">
-          <span>Auto-generate on open</span>
-          <input type="checkbox" class="rr-auto-generate-setting" checked>
-        </label>
-        <label class="rr-setting-item">
-          <span>Show confetti on success</span>
-          <input type="checkbox" class="rr-confetti-setting" checked>
-        </label>
-        <label class="rr-setting-item">
-          <span>Copy & close panel</span>
-          <input type="checkbox" class="rr-copy-close-setting" checked>
-        </label>
       </div>
     </div>
   `;
 
   document.body.appendChild(panel);
-
-  // Make panel draggable
-  makeDraggable(panel);
-
-  // Initialize all event listeners
   initPanelEvents(panel);
 
-  // Load and apply saved settings
+  // Load saved settings
   loadSettings().then(settings => {
     panel.querySelector('.rr-tone-select').value = settings.tone || 'professional';
     panel.querySelector('.rr-length-select').value = settings.length || 'medium';
     panel.querySelector('.rr-emoji-toggle').checked = settings.emojis || false;
-    panel.querySelector('.rr-copy-close-toggle').checked = settings.copyAndClose !== false;
-    panel.querySelector('.rr-confetti-toggle').checked = settings.showConfetti !== false;
-  });
-
-  // Load recent responses
-  loadRecentResponses().then(recent => {
-    if (recent.length > 0) {
-      updateRecentResponsesList(panel, recent);
-    }
   });
 
   return panel;
 }
 
+// ========== PANEL EVENTS ==========
 function initPanelEvents(panel) {
   // Close button
-  panel.querySelector('.rr-close-btn').addEventListener('click', () => {
-    panel.classList.remove('rr-visible');
-    panel.classList.add('rr-closing');
-    setTimeout(() => panel.classList.remove('rr-closing'), 300);
+  panel.querySelector('.rr-close-btn').addEventListener('click', () => closePanel(panel));
+
+  // Help button
+  panel.querySelector('.rr-help-btn').addEventListener('click', () => {
+    panel.querySelector('.rr-help-overlay').classList.toggle('hidden');
+  });
+
+  panel.querySelector('.rr-help-close').addEventListener('click', () => {
+    panel.querySelector('.rr-help-overlay').classList.add('hidden');
+  });
+
+  // Settings toggle
+  panel.querySelector('.rr-settings-toggle').addEventListener('click', () => {
+    panel.querySelector('.rr-advanced').classList.toggle('hidden');
   });
 
   // Generate button
@@ -479,276 +394,79 @@ function initPanelEvents(panel) {
   // Copy button
   panel.querySelector('.rr-copy-btn').addEventListener('click', () => copyResponse(panel));
 
-  // Settings button
-  panel.querySelector('.rr-settings-btn').addEventListener('click', () => {
-    panel.querySelector('.rr-settings-panel').classList.toggle('hidden');
-  });
-
-  panel.querySelector('.rr-settings-close').addEventListener('click', () => {
-    panel.querySelector('.rr-settings-panel').classList.add('hidden');
-  });
-
-  // Save settings on change
-  ['rr-tone-select', 'rr-length-select'].forEach(cls => {
-    panel.querySelector('.' + cls).addEventListener('change', () => saveCurrentSettings(panel));
-  });
-
-  ['rr-emoji-toggle', 'rr-copy-close-toggle', 'rr-confetti-toggle'].forEach(cls => {
-    panel.querySelector('.' + cls).addEventListener('change', () => saveCurrentSettings(panel));
-  });
-
-  // Quick tone switch buttons
-  panel.querySelectorAll('.rr-tone-btn').forEach(btn => {
+  // Quick tone buttons
+  panel.querySelectorAll('.rr-quick-tone').forEach(btn => {
     btn.addEventListener('click', () => {
       const tone = btn.dataset.tone;
       panel.querySelector('.rr-tone-select').value = tone;
-      panel.querySelectorAll('.rr-tone-btn').forEach(b => b.classList.remove('active'));
+
+      // Highlight active
+      panel.querySelectorAll('.rr-quick-tone').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+
       generateResponse(panel);
     });
   });
 
-  // Quick Thanks button
-  panel.querySelector('.rr-quick-thanks').addEventListener('click', () => {
-    panel.querySelector('.rr-tone-select').value = 'friendly';
-    panel.querySelector('.rr-length-select').value = 'short';
-    generateResponse(panel);
-  });
-
-  // Quick Edit buttons
-  panel.querySelectorAll('.rr-edit-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const action = btn.dataset.action;
-      quickEditResponse(panel, action);
-    });
-  });
-
-  // Preview toggle
-  panel.querySelector('.rr-preview-toggle').addEventListener('click', () => {
-    const content = panel.querySelector('.rr-preview-content');
-    const btn = panel.querySelector('.rr-preview-toggle');
-    content.classList.toggle('hidden');
-    btn.textContent = content.classList.contains('hidden') ? 'Show' : 'Hide';
-  });
-
-  // Recent toggle
-  panel.querySelector('.rr-recent-toggle').addEventListener('click', () => {
-    const list = panel.querySelector('.rr-recent-list');
-    const btn = panel.querySelector('.rr-recent-toggle');
-    list.classList.toggle('hidden');
-    btn.textContent = list.classList.contains('hidden') ? '▼' : '▲';
-  });
-
-  // Response text change - update counters
-  panel.querySelector('.rr-response-text').addEventListener('input', (e) => {
-    updateResponseCounters(panel, e.target.value);
-    updatePreview(panel, e.target.value);
-  });
+  // Save settings on change
+  panel.querySelector('.rr-tone-select').addEventListener('change', () => saveCurrentSettings(panel));
+  panel.querySelector('.rr-length-select').addEventListener('change', () => saveCurrentSettings(panel));
+  panel.querySelector('.rr-emoji-toggle').addEventListener('change', () => saveCurrentSettings(panel));
 }
 
-// Update recent responses list
-function updateRecentResponsesList(panel, recent) {
-  const recentSection = panel.querySelector('.rr-recent-section');
-  const recentList = panel.querySelector('.rr-recent-list');
-  recentSection.classList.remove('hidden');
-
-  recentList.innerHTML = recent.map((r, i) => `
-    <div class="rr-recent-item" data-index="${i}">
-      <div class="rr-recent-info">
-        <span class="rr-recent-review">${r.review}</span>
-        <span class="rr-recent-meta">${r.tone} • ${formatTimeAgo(r.timestamp)}</span>
-      </div>
-      <span class="rr-recent-platform">${r.platform || '💬'}</span>
-    </div>
-  `).join('');
-
-  // Click to use recent response
-  recentList.querySelectorAll('.rr-recent-item').forEach(item => {
-    item.addEventListener('click', async () => {
-      const index = parseInt(item.dataset.index);
-      const recent = await loadRecentResponses();
-      panel.querySelector('.rr-response-text').value = recent[index].response;
-      panel.querySelector('.rr-response-area').classList.remove('hidden');
-      updateResponseCounters(panel, recent[index].response);
-      updatePreview(panel, recent[index].response);
-    });
-  });
+function closePanel(panel) {
+  panel.classList.remove('rr-visible');
+  panel.classList.add('rr-closing');
+  setTimeout(() => {
+    panel.classList.remove('rr-closing');
+  }, 300);
 }
 
-// Format time ago
-function formatTimeAgo(timestamp) {
-  const seconds = Math.floor((Date.now() - timestamp) / 1000);
-  if (seconds < 60) return 'just now';
-  if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
-  if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
-  return Math.floor(seconds / 86400) + 'd ago';
-}
-
-// Save current settings
 function saveCurrentSettings(panel) {
   const settings = {
     tone: panel.querySelector('.rr-tone-select').value,
     length: panel.querySelector('.rr-length-select').value,
-    emojis: panel.querySelector('.rr-emoji-toggle').checked,
-    copyAndClose: panel.querySelector('.rr-copy-close-toggle').checked,
-    showConfetti: panel.querySelector('.rr-confetti-toggle').checked
+    emojis: panel.querySelector('.rr-emoji-toggle').checked
   };
   saveSettings(settings);
 }
 
-// Make panel draggable
-function makeDraggable(panel) {
-  const handle = panel.querySelector('#rr-drag-handle');
-  let isDragging = false;
-  let startX, startY, startLeft, startTop;
-
-  handle.addEventListener('mousedown', (e) => {
-    if (e.target.closest('.rr-close-btn') || e.target.closest('.rr-settings-btn')) return;
-    isDragging = true;
-    startX = e.clientX;
-    startY = e.clientY;
-    const rect = panel.getBoundingClientRect();
-    startLeft = rect.left;
-    startTop = rect.top;
-    panel.style.transform = 'none';
-    panel.style.left = startLeft + 'px';
-    panel.style.top = startTop + 'px';
-    handle.style.cursor = 'grabbing';
-    panel.classList.add('rr-dragging');
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
-    panel.style.left = (startLeft + dx) + 'px';
-    panel.style.top = (startTop + dy) + 'px';
-  });
-
-  document.addEventListener('mouseup', () => {
-    if (isDragging) {
-      isDragging = false;
-      handle.style.cursor = 'grab';
-      panel.classList.remove('rr-dragging');
-    }
-  });
-}
-
-// Update response counters
-function updateResponseCounters(panel, text) {
-  const chars = text.length;
-  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-  panel.querySelector('.rr-response-chars').textContent = `${chars} chars`;
-  panel.querySelector('.rr-response-words').textContent = `${words} words`;
-}
-
-// Update preview
-function updatePreview(panel, text) {
-  panel.querySelector('.rr-gm-text').textContent = text;
-}
-
-// Quick edit response
-async function quickEditResponse(panel, action) {
-  const textarea = panel.querySelector('.rr-response-text');
-  const currentText = textarea.value;
-
-  if (!currentText) return;
-
-  const btn = panel.querySelector(`[data-action="${action}"]`);
-  btn.disabled = true;
-  btn.classList.add('rr-loading');
-
-  let instruction = '';
-  switch (action) {
-    case 'shorter':
-      instruction = 'Make this response shorter while keeping the key message. Remove unnecessary words.';
-      break;
-    case 'longer':
-      instruction = 'Expand this response with more detail and warmth. Add 1-2 more sentences.';
-      break;
-    case 'add-emoji':
-      instruction = 'Add 1-2 appropriate emojis to this response to make it more friendly.';
-      break;
-    case 'more-formal':
-      instruction = 'Make this response more formal and professional in tone.';
-      break;
-  }
-
-  try {
-    const stored = await chrome.storage.local.get(['token']);
-    if (!stored.token) throw new Error('Please login first');
-
-    const response = await fetch(`${API_URL}/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${stored.token}`
-      },
-      body: JSON.stringify({
-        reviewText: currentText,
-        tone: 'professional',
-        customInstructions: instruction,
-        outputLanguage: 'auto'
-      })
-    });
-
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error);
-
-    textarea.value = data.response;
-    updateResponseCounters(panel, data.response);
-    updatePreview(panel, data.response);
-
-    // Flash effect
-    textarea.classList.add('rr-flash');
-    setTimeout(() => textarea.classList.remove('rr-flash'), 500);
-
-  } catch (error) {
-    showMessage(panel, error.message, 'error');
-  } finally {
-    btn.disabled = false;
-    btn.classList.remove('rr-loading');
-  }
-}
-
 // ========== GENERATE RESPONSE ==========
 async function generateResponse(panel) {
-  const reviewText = panel?.dataset?.reviewText || '';
+  const reviewText = panel.dataset.reviewText;
   const tone = panel.querySelector('.rr-tone-select').value;
   const length = panel.querySelector('.rr-length-select').value;
-  const includeEmojis = panel.querySelector('.rr-emoji-toggle').checked;
+  const emojis = panel.querySelector('.rr-emoji-toggle').checked;
+
   const generateBtn = panel.querySelector('.rr-generate-btn');
   const btnText = panel.querySelector('.rr-btn-text');
-  const btnLoader = panel.querySelector('.rr-btn-loader');
-  const responseArea = panel.querySelector('.rr-response-area');
+  const btnLoading = panel.querySelector('.rr-btn-loading');
+  const responseSection = panel.querySelector('.rr-response-section');
 
-  if (!reviewText || reviewText.trim().length === 0) {
-    showMessage(panel, 'No review text found. Select some text first!', 'error');
+  if (!reviewText) {
+    showToast('⚠️ No review text found', 'error');
     return;
   }
 
   let stored;
   try {
     stored = await chrome.storage.local.get(['token', 'user']);
-  } catch (storageError) {
-    showMessage(panel, 'Extension error. Please refresh the page.', 'error');
+  } catch (e) {
+    showToast('⚠️ Extension error', 'error');
     return;
   }
 
   if (!stored.token) {
-    showMessage(panel, '🔐 Please login in the extension popup first', 'error');
+    showToast('🔐 Please login in the extension popup first', 'error');
     return;
   }
 
-  // Show loading state
+  // Show loading
   generateBtn.disabled = true;
   btnText.classList.add('hidden');
-  btnLoader.classList.remove('hidden');
-  panel.querySelector('.rr-message').textContent = '';
+  btnLoading.classList.remove('hidden');
 
   try {
-    const platform = detectPlatform();
-
     const response = await fetch(`${API_URL}/generate`, {
       method: 'POST',
       headers: {
@@ -760,9 +478,8 @@ async function generateResponse(panel) {
         tone,
         outputLanguage: 'auto',
         responseLength: length,
-        includeEmojis: includeEmojis,
-        businessName: stored.user?.businessName || '',
-        platform: platform.name
+        includeEmojis: emojis,
+        businessName: stored.user?.businessName || ''
       })
     });
 
@@ -772,184 +489,120 @@ async function generateResponse(panel) {
       throw new Error(data.error || 'Generation failed');
     }
 
-    // Success!
-    const responseTextarea = panel.querySelector('.rr-response-text');
-    responseTextarea.value = data.response;
-    responseArea.classList.remove('hidden');
+    // Show response
+    panel.querySelector('.rr-response-textarea').value = data.response;
+    responseSection.classList.remove('hidden');
 
-    // Update counters and preview
-    updateResponseCounters(panel, data.response);
-    updatePreview(panel, data.response);
-
-    // Update tone buttons
-    panel.querySelectorAll('.rr-tone-btn').forEach(btn => {
+    // Update quick tone buttons
+    panel.querySelectorAll('.rr-quick-tone').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.tone === tone);
     });
 
-    // Update avatar
-    const avatarLetter = (stored.user?.businessName || 'B').charAt(0).toUpperCase();
-    panel.querySelector('.rr-gm-avatar').textContent = avatarLetter;
+    // Show success toast
+    showToast('✨ Response generated!', 'success');
 
-    // Save to recent
-    await saveRecentResponse(reviewText, data.response, tone, platform.icon);
+    // Maybe show confetti
+    await maybeShowConfetti();
 
-    // Update recent list
-    const recent = await loadRecentResponses();
-    updateRecentResponsesList(panel, recent);
-
-    // Confetti celebration!
-    const settings = await loadSettings();
-    if (settings.showConfetti !== false) {
-      createConfetti();
+    // Show onboarding tip first time
+    const onboardingSeen = await checkOnboarding();
+    if (!onboardingSeen) {
+      showOnboardingTip(panel);
+      await markOnboardingSeen();
     }
 
-    // Success animation on button
-    generateBtn.classList.add('rr-success');
-    setTimeout(() => generateBtn.classList.remove('rr-success'), 1000);
-
   } catch (error) {
-    showMessage(panel, error.message, 'error');
+    showToast(`❌ ${error.message}`, 'error');
   } finally {
     generateBtn.disabled = false;
     btnText.classList.remove('hidden');
-    btnLoader.classList.add('hidden');
+    btnLoading.classList.add('hidden');
   }
-}
-
-// Show message
-function showMessage(panel, text, type = 'info') {
-  const msgEl = panel.querySelector('.rr-message');
-  msgEl.textContent = text;
-  msgEl.className = `rr-message rr-${type}`;
-
-  // Auto-hide after 5 seconds
-  setTimeout(() => {
-    if (msgEl.textContent === text) {
-      msgEl.textContent = '';
-      msgEl.className = 'rr-message';
-    }
-  }, 5000);
 }
 
 // ========== COPY RESPONSE ==========
 async function copyResponse(panel) {
-  const responseText = panel.querySelector('.rr-response-text').value;
-  const copyBtn = panel.querySelector('.rr-copy-btn');
-  const copyText = panel.querySelector('.rr-copy-text');
-  const copySuccess = panel.querySelector('.rr-copy-success');
-  const copyAndClose = panel.querySelector('.rr-copy-close-toggle').checked;
+  const text = panel.querySelector('.rr-response-textarea').value;
 
-  if (!responseText) {
-    showMessage(panel, 'Nothing to copy!', 'error');
+  if (!text) {
+    showToast('⚠️ Nothing to copy', 'error');
     return;
   }
 
   try {
-    await navigator.clipboard.writeText(responseText);
+    await navigator.clipboard.writeText(text);
+    showToast('📋 Copied to clipboard!', 'success');
 
-    // Success animation
-    copyText.classList.add('hidden');
-    copySuccess.classList.remove('hidden');
-    copyBtn.classList.add('rr-copied');
+    // Animate button
+    const copyBtn = panel.querySelector('.rr-copy-btn');
+    copyBtn.textContent = '✅ Copied!';
+    copyBtn.classList.add('copied');
 
-    if (copyAndClose) {
-      setTimeout(() => {
-        panel.classList.remove('rr-visible');
-        // Reset button state
-        copyText.classList.remove('hidden');
-        copySuccess.classList.add('hidden');
-        copyBtn.classList.remove('rr-copied');
-      }, 800);
-    } else {
-      setTimeout(() => {
-        copyText.classList.remove('hidden');
-        copySuccess.classList.add('hidden');
-        copyBtn.classList.remove('rr-copied');
-      }, 2000);
-    }
+    setTimeout(() => {
+      copyBtn.textContent = '📋 Copy';
+      copyBtn.classList.remove('copied');
+    }, 2000);
+
   } catch (error) {
-    showMessage(panel, 'Failed to copy', 'error');
+    showToast('❌ Failed to copy', 'error');
   }
 }
 
-// ========== SHOW RESPONSE PANEL ==========
+// ========== SHOW PANEL ==========
 async function showResponsePanel(reviewText, autoGenerate = false) {
   let panel = document.getElementById('rr-response-panel');
   if (!panel) {
     panel = createResponsePanel();
   }
 
-  const platform = detectPlatform();
-
-  // Update platform badge
-  const badge = panel.querySelector('.rr-platform-badge');
-  if (badge) {
-    badge.innerHTML = `${platform.icon} ${platform.name}`;
-    badge.style.background = platform.color;
-  }
-
-  // Analyze sentiment
-  const sentiment = analyzeSentiment(reviewText);
-  const sentimentInfo = getSentimentInfo(sentiment);
-
-  // Store review text
-  panel.dataset.reviewText = reviewText;
+  // Clean and store review text
+  const cleaned = cleanReviewText(reviewText);
+  panel.dataset.reviewText = cleaned;
 
   // Update review preview
-  const previewText = reviewText.length > 150 ? reviewText.substring(0, 150) + '...' : reviewText;
-  panel.querySelector('.rr-review-preview').textContent = previewText;
+  const preview = cleaned.length > 120 ? cleaned.substring(0, 120) + '...' : cleaned;
+  panel.querySelector('.rr-review-text').textContent = preview;
 
-  // Update review counters
-  const chars = reviewText.length;
-  const words = reviewText.trim().split(/\s+/).length;
-  panel.querySelector('.rr-char-count').textContent = `${chars} chars`;
-  panel.querySelector('.rr-word-count').textContent = `${words} words`;
+  // Analyze sentiment
+  const sentiment = analyzeSentiment(cleaned);
+  const sentimentDisplay = getSentimentDisplay(sentiment);
 
-  // Update sentiment display
-  const sentimentIcon = panel.querySelector('.rr-sentiment-icon');
-  sentimentIcon.textContent = sentimentInfo.emoji;
-  sentimentIcon.style.background = sentimentInfo.gradient;
+  panel.querySelector('.rr-sentiment-emoji').textContent = sentimentDisplay.emoji;
+  panel.querySelector('.rr-sentiment-label').textContent = sentimentDisplay.label;
+  panel.querySelector('.rr-sentiment-label').style.color = sentimentDisplay.color;
 
-  panel.querySelector('.rr-sentiment-label').textContent = sentimentInfo.label + ' Review';
-  panel.querySelector('.rr-sentiment-label').style.color = sentimentInfo.color;
-  panel.querySelector('.rr-sentiment-tip').textContent = sentimentInfo.tip;
+  // Auto-select recommended tone
+  panel.querySelector('.rr-tone-select').value = sentimentDisplay.tone;
 
-  // Auto-select recommended tone for auto-generate
-  if (autoGenerate) {
-    panel.querySelector('.rr-tone-select').value = sentimentInfo.recommendedTone;
+  // Detect language
+  const language = detectLanguage(cleaned);
+  panel.querySelector('.rr-language-flag').textContent = language.flag;
+  panel.querySelector('.rr-language-name').textContent = language.name;
+
+  // Reset response section
+  panel.querySelector('.rr-response-section').classList.add('hidden');
+  panel.querySelector('.rr-response-textarea').value = '';
+  panel.querySelector('.rr-advanced').classList.add('hidden');
+  panel.querySelector('.rr-help-overlay').classList.add('hidden');
+
+  // Reset position for desktop
+  if (window.innerWidth > 640) {
+    panel.style.left = '';
+    panel.style.top = '';
+    panel.style.transform = '';
+    panel.style.bottom = '';
   }
 
-  // Show Quick Thanks for positive reviews
-  const quickActions = panel.querySelector('.rr-quick-actions');
-  if (sentiment === 'positive') {
-    quickActions.classList.remove('hidden');
-  } else {
-    quickActions.classList.add('hidden');
-  }
-
-  // Reset response area
-  panel.querySelector('.rr-response-area').classList.add('hidden');
-  panel.querySelector('.rr-response-text').value = '';
-  panel.querySelector('.rr-message').textContent = '';
-
-  // Reset position to center
-  panel.style.left = '';
-  panel.style.top = '';
-  panel.style.transform = 'translate(-50%, -50%)';
-
-  // Show panel with animation
+  // Show panel
   panel.classList.add('rr-visible');
 
-  // Auto-generate if enabled
+  // Auto-generate if requested
   if (autoGenerate) {
-    const settings = await loadSettings();
-    if (settings.autoGenerate !== false) {
-      setTimeout(() => generateResponse(panel), 200);
-    }
+    setTimeout(() => generateResponse(panel), 100);
   }
 }
 
-// ========== FLOATING MINI-BUTTON ==========
+// ========== FLOATING BUTTON ==========
 let floatingBtn = null;
 
 function createFloatingButton() {
@@ -958,14 +611,15 @@ function createFloatingButton() {
   floatingBtn = document.createElement('button');
   floatingBtn.id = 'rr-floating-btn';
   floatingBtn.innerHTML = '⚡';
-  floatingBtn.title = 'Generate Response';
+  floatingBtn.title = 'Generate response (Alt+R)';
 
   floatingBtn.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
+
     const selection = window.getSelection().toString().trim();
-    if (selection && selection.length > 10) {
-      showResponsePanel(cleanReviewText(selection), true);
+    if (selection && selection.length >= 10) {
+      showResponsePanel(selection, true);
     }
     hideFloatingButton();
   });
@@ -976,8 +630,13 @@ function createFloatingButton() {
 
 function showFloatingButton(x, y) {
   const btn = createFloatingButton();
-  btn.style.left = `${Math.min(x + 15, window.innerWidth - 60)}px`;
-  btn.style.top = `${Math.min(y - 50, window.innerHeight - 60)}px`;
+
+  // Position near cursor but keep on screen
+  const btnX = Math.min(x + 15, window.innerWidth - 70);
+  const btnY = Math.max(y - 60, 10);
+
+  btn.style.left = `${btnX}px`;
+  btn.style.top = `${btnY}px`;
   btn.classList.add('rr-visible');
 }
 
@@ -989,15 +648,18 @@ function hideFloatingButton() {
 
 // ========== EVENT LISTENERS ==========
 
-// Listen for text selection
+// Text selection - show floating button (threshold: 10 chars)
 document.addEventListener('mouseup', (e) => {
+  // Don't trigger if clicking on our UI
   if (e.target.closest('#rr-response-panel') || e.target.closest('#rr-floating-btn')) {
     return;
   }
 
   setTimeout(() => {
     const selection = window.getSelection().toString().trim();
-    if (selection && selection.length > 20) {
+
+    // Show button for 10+ character selections
+    if (selection && selection.length >= 10) {
       showFloatingButton(e.clientX, e.clientY);
     } else {
       hideFloatingButton();
@@ -1012,84 +674,21 @@ document.addEventListener('mousedown', (e) => {
   }
 });
 
-// Add buttons to Google Maps reviews (legacy support)
-function addButtonsToReviews() {
-  const reviewSelectors = ['.jftiEf', '[data-review-id]', '.WMbnJf'];
-
-  for (const selector of reviewSelectors) {
-    const reviews = document.querySelectorAll(selector);
-    reviews.forEach(review => {
-      if (review.querySelector('.rr-btn')) return;
-
-      const textEl = review.querySelector('.wiI7pd, .MyEned, .Jtu6Td');
-      if (!textEl) return;
-
-      const reviewText = cleanReviewText(textEl.textContent);
-      if (!reviewText || reviewText.length < 10) return;
-
-      const btn = document.createElement('button');
-      btn.className = 'rr-btn';
-      btn.innerHTML = '⚡ <span>Respond</span>';
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        showResponsePanel(reviewText, true);
-      });
-
-      const actionArea = review.querySelector('.k8MTF, .GBkF3d') || review;
-      actionArea.appendChild(btn);
-    });
-  }
-}
-
-// Initialize
-addButtonsToReviews();
-
-// Watch for dynamic content
-const observer = new MutationObserver((mutations) => {
-  let shouldCheck = false;
-  for (const mutation of mutations) {
-    if (mutation.addedNodes.length > 0) {
-      shouldCheck = true;
-      break;
-    }
-  }
-  if (shouldCheck) {
-    setTimeout(addButtonsToReviews, 500);
-  }
-});
-
-observer.observe(document.body, { childList: true, subtree: true });
-
-// Listen for messages from background script
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === 'showPanelWithText') {
-    const reviewText = cleanReviewText(message.reviewText);
-    showResponsePanel(reviewText, true);
-    sendResponse({ success: true });
-  }
-
-  if (message.action === 'getSelection') {
-    const selection = window.getSelection().toString().trim();
-    sendResponse({ text: selection });
-  }
-
-  return true;
-});
-
 // Keyboard shortcuts
 document.addEventListener('keydown', (e) => {
   // Alt+R: Generate from selection
-  if (e.altKey && e.key === 'r') {
+  if (e.altKey && e.key.toLowerCase() === 'r') {
     e.preventDefault();
     const selection = window.getSelection().toString().trim();
-    if (selection && selection.length > 10) {
-      showResponsePanel(cleanReviewText(selection), true);
+    if (selection && selection.length >= 10) {
+      showResponsePanel(selection, true);
+    } else {
+      showToast('⚠️ Select at least 10 characters', 'warning');
     }
   }
 
   // Alt+C: Copy current response
-  if (e.altKey && e.key === 'c') {
+  if (e.altKey && e.key.toLowerCase() === 'c') {
     const panel = document.getElementById('rr-response-panel');
     if (panel && panel.classList.contains('rr-visible')) {
       e.preventDefault();
@@ -1101,12 +700,65 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     const panel = document.getElementById('rr-response-panel');
     if (panel && panel.classList.contains('rr-visible')) {
-      panel.classList.remove('rr-visible');
+      closePanel(panel);
     }
     hideFloatingButton();
   }
 });
 
-// Log ready message
-console.log('%c⚡ ReviewResponder ULTRA loaded!', 'font-size: 16px; font-weight: bold; color: #667eea;');
-console.log('%cSelect text → Click ⚡ → Magic happens!', 'font-size: 12px; color: #764ba2;');
+// Listen for messages from background script
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'showPanelWithText') {
+    showResponsePanel(message.reviewText, true);
+    sendResponse({ success: true });
+  }
+
+  if (message.action === 'getSelection') {
+    const selection = window.getSelection().toString().trim();
+    sendResponse({ text: selection });
+  }
+
+  return true;
+});
+
+// Add inline buttons to Google Maps reviews (optional enhancement)
+function addInlineButtons() {
+  const selectors = ['.jftiEf', '[data-review-id]'];
+
+  selectors.forEach(selector => {
+    document.querySelectorAll(selector).forEach(review => {
+      if (review.querySelector('.rr-inline-btn')) return;
+
+      const textEl = review.querySelector('.wiI7pd, .MyEned');
+      if (!textEl) return;
+
+      const text = cleanReviewText(textEl.textContent);
+      if (!text || text.length < 10) return;
+
+      const btn = document.createElement('button');
+      btn.className = 'rr-inline-btn';
+      btn.innerHTML = '⚡ Respond';
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showResponsePanel(text, true);
+      });
+
+      const target = review.querySelector('.k8MTF, .GBkF3d') || review;
+      target.appendChild(btn);
+    });
+  });
+}
+
+// Initialize
+addInlineButtons();
+
+// Watch for dynamic content (Google Maps)
+const observer = new MutationObserver(() => {
+  setTimeout(addInlineButtons, 500);
+});
+observer.observe(document.body, { childList: true, subtree: true });
+
+// Ready message
+console.log('%c⚡ ReviewResponder ready!', 'font-size: 14px; font-weight: bold; color: #667eea;');
+console.log('%cSelect text → Click ⚡ → Magic!', 'font-size: 12px; color: #764ba2;');

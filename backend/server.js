@@ -1980,6 +1980,27 @@ app.get('/api/stats', authenticateToken, async (req, res) => {
   try {
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
 
+    // Check if user is a team member (usage comes from team owner)
+    let usageOwner = user;
+    let isTeamMember = false;
+    if (user.team_owner_id) {
+      const teamOwner = await dbGet('SELECT * FROM users WHERE id = $1', [user.team_owner_id]);
+      if (teamOwner) {
+        usageOwner = teamOwner;
+        isTeamMember = true;
+      }
+    }
+
+    // Determine effective plan
+    const effectivePlan = isTeamMember ? usageOwner.subscription_plan : user.subscription_plan;
+    const planLimits = PLAN_LIMITS[effectivePlan] || PLAN_LIMITS.free;
+
+    // Get smart/standard usage
+    const smartUsed = usageOwner.smart_responses_used || 0;
+    const standardUsed = usageOwner.standard_responses_used || 0;
+    const totalUsed = smartUsed + standardUsed;
+    const totalLimit = planLimits.responses;
+
     const totalResponses = await dbGet('SELECT COUNT(*) as count FROM responses WHERE user_id = $1', [req.user.id]);
 
     const thisMonth = await dbGet(
@@ -1997,22 +2018,49 @@ app.get('/api/stats', authenticateToken, async (req, res) => {
       [req.user.id]
     );
 
+    // Count responses by AI model this month
+    const byAiModel = await dbAll(
+      `SELECT COALESCE(ai_model, 'standard') as ai_model, COUNT(*) as count
+       FROM responses WHERE user_id = $1 AND created_at >= date_trunc('month', CURRENT_DATE)
+       GROUP BY COALESCE(ai_model, 'standard')`,
+      [req.user.id]
+    );
+
     res.json({
       usage: {
-        used: user.responses_used,
-        limit: user.responses_limit,
-        remaining: user.responses_limit - user.responses_used
+        smart: {
+          used: smartUsed,
+          limit: planLimits.smartResponses,
+          remaining: Math.max(0, planLimits.smartResponses - smartUsed)
+        },
+        standard: {
+          used: standardUsed,
+          limit: planLimits.standardResponses,
+          remaining: Math.max(0, planLimits.standardResponses - standardUsed)
+        },
+        total: {
+          used: totalUsed,
+          limit: totalLimit,
+          remaining: Math.max(0, totalLimit - totalUsed)
+        },
+        // Backward compatibility
+        used: totalUsed,
+        limit: totalLimit,
+        remaining: Math.max(0, totalLimit - totalUsed)
       },
       stats: {
         totalResponses: parseInt(totalResponses.count),
         thisMonth: parseInt(thisMonth.count),
         byPlatform,
-        byRating
+        byRating,
+        byAiModel
       },
       subscription: {
-        plan: user.subscription_plan,
-        status: user.subscription_status
-      }
+        plan: effectivePlan,
+        status: isTeamMember ? usageOwner.subscription_status : user.subscription_status
+      },
+      isTeamMember,
+      hasSmartAI: !!anthropic
     });
   } catch (error) {
     console.error('Stats error:', error);
