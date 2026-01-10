@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 10.01.2026 - 02:15 Uhr**
+**Stand: 10.01.2026 - 03:00 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [x] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen ✅
@@ -85,6 +85,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **SEO Blog Artikel Generator** - AI-generierte SEO-Artikel für Review-Management (Pro/Unlimited only)
 - [x] **Team/Multi-User Accounts** - Team-Mitglieder einladen (Pro: 3, Unlimited: 10), Rollen (Admin/Member/Viewer), Shared Usage
 - [x] **API Key System für Entwickler** - REST API für Unlimited-Plan User (5 Keys, 100 req/Tag, Dokumentation mit Code-Beispielen)
+- [x] **LinkedIn Outreach System** - 5 Connection Messages, 5 Follow-ups, Target Audiences, Scraper Script, Tracking Template
 
 ---
 
@@ -103,7 +104,13 @@ ReviewResponder/
 │   ├── manifest.json
 │   ├── popup.html/js
 │   └── content.js
-└── MEMORY.md          # Diese Datei
+├── content/outreach/  # Sales & Marketing Content
+│   ├── linkedin-messages.md
+│   ├── target-audiences.md
+│   └── tracking-template.csv
+├── scripts/           # Automation Scripts
+│   └── linkedin-scraper.js
+└── CLAUDE.md          # Diese Datei
 ```
 
 ---
@@ -263,7 +270,7 @@ git push
 
 ### Phase 4: Marketing
 - [x] Product Hunt Launch Vorbereitung (PRODUCT_HUNT.md)
-- [ ] LinkedIn Outreach
+- [x] LinkedIn Outreach System ✅
 - [ ] Google Ads ($50-100 Test)
 - [ ] SEO Blog-Artikel
 
@@ -327,6 +334,22 @@ Alle Endpoints erfolgreich getestet nach dem letzten Deploy
 
 ---
 
+## SCREENSHOT TOOL
+
+Zum Teilen von Screenshots mit Claude:
+
+1. Screenshot machen: `Win + Shift + S`
+2. User sagt "hab" oder "screenshot"
+3. Claude führt aus:
+```powershell
+powershell -ExecutionPolicy Bypass -File "C:\Users\Berend Mainz\clipboard-screenshot.ps1"
+```
+4. Dann mit Read tool das Bild lesen
+
+Das Script liegt unter: `C:\Users\Berend Mainz\clipboard-screenshot.ps1`
+
+---
+
 ## KONTAKT
 
 - **User:** Berend Mainz
@@ -372,6 +395,42 @@ Alle Endpoints erfolgreich getestet nach dem letzten Deploy
 - **Duplicate Check**: Verhindert mehrfache Einträge für gleiche Email
 - **Welcome Email**: Automatisch via Resend mit Discount Code (wenn konfiguriert)
 - **Frontend**: Connected via axios im ExitIntentPopup Component
+
+## LINKEDIN OUTREACH SYSTEM
+
+### Files:
+| Datei | Beschreibung |
+|-------|--------------|
+| `content/outreach/linkedin-messages.md` | Connection + Follow-up Message Templates |
+| `content/outreach/target-audiences.md` | Zielgruppen mit LinkedIn Search Queries |
+| `content/outreach/tracking-template.csv` | Google Sheets Import-Template |
+| `content/outreach/tracking-template.md` | Anleitung für Tracking Sheet |
+| `scripts/linkedin-scraper.js` | Node.js Script für Prospect Research |
+
+### Weekly Outreach Schedule:
+| Tag | Aktion | Ziel |
+|-----|--------|------|
+| Montag | 25 Connection Requests | Restaurants |
+| Dienstag | 25 Connection Requests | Hotels |
+| Mittwoch | Follow-ups an Accepts | Alle |
+| Donnerstag | 25 Connection Requests | Local Businesses |
+| Freitag | 25 Connection Requests | Agencies/Franchises |
+
+### Ziel-Metriken:
+- **100 Connection Requests/Woche**
+- **25% Accept Rate** = 25 neue Connections
+- **20% Response Rate** = 5 Conversations
+- **2-3 Demos/Woche**
+- **1-2 Conversions/Woche**
+
+### Scraper Setup:
+```bash
+cd scripts
+npm install
+node linkedin-scraper.js "https://linkedin.com/search/results/people/?keywords=restaurant%20owner"
+```
+
+---
 
 ## CHANGELOG
 
@@ -457,6 +516,13 @@ Alle Endpoints erfolgreich getestet nach dem letzten Deploy
 ### 10.01.2026
 - **API Key System für Entwickler** implementiert
 - **Team Management UI** - Frontend für Team-Verwaltung
+- **LinkedIn Outreach System** implementiert:
+  - 5 Connection Request Messages (personalisiert, < 300 chars)
+  - 5 Follow-up Message Templates
+  - Target Audiences Dokumentation (Restaurant, Hotel, Franchise, etc.)
+  - LinkedIn Scraper Script (Node.js + Playwright)
+  - Tracking Sheet Template (CSV + Google Sheets Format)
+  - Ziel: 100 Prospects/Woche kontaktieren
 
 ---
 
