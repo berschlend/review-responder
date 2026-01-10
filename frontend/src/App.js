@@ -710,7 +710,7 @@ const ExitIntentPopup = () => {
     try {
       const response = await api.post('/capture-email', {
         email,
-        discountCode: 'SAVE20',
+        discountCode: 'EARLY50',
         source: 'exit_intent'
       });
       
@@ -795,7 +795,7 @@ const ExitIntentPopup = () => {
             Wait! Don't Leave Empty-Handed
           </h2>
           <p style={{ fontSize: '16px', opacity: 0.95 }}>
-            Get 20% off your first month of ReviewResponder
+            Get 50% off your subscription - forever!
           </p>
         </div>
 
@@ -871,7 +871,7 @@ const ExitIntentPopup = () => {
                 Discount Code Sent!
               </h3>
               <p style={{ color: 'var(--gray-600)', marginBottom: '20px' }}>
-                Check your email for your exclusive 20% off code: <strong>SAVE20</strong>
+                Check your email for your exclusive 50% off code: <strong>EARLY50</strong>
               </p>
               <Link
                 to="/register"
