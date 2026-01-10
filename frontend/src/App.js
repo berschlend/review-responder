@@ -89,12 +89,14 @@ const AuthProvider = ({ children }) => {
   };
 
   const register = async (email, password, businessName) => {
-    // Check for referral code in localStorage
+    // Check for referral/affiliate codes in localStorage
     const referralCode = localStorage.getItem('referralCode');
-    const res = await api.post('/auth/register', { email, password, businessName, referralCode });
+    const affiliateCode = localStorage.getItem('affiliateCode');
+    const res = await api.post('/auth/register', { email, password, businessName, referralCode, affiliateCode });
     localStorage.setItem('token', res.data.token);
-    // Clear referral code after successful registration
+    // Clear codes after successful registration
     if (referralCode) localStorage.removeItem('referralCode');
+    if (affiliateCode) localStorage.removeItem('affiliateCode');
     setUser(res.data.user);
     return res.data;
   };
@@ -898,6 +900,7 @@ const LandingPage = () => {
   const location = useLocation();
   const [testimonials, setTestimonials] = useState([]);
   const [referralBanner, setReferralBanner] = useState(null);
+  const [affiliateBanner, setAffiliateBanner] = useState(null);
 
   useEffect(() => {
     const fetchTestimonials = async () => {
@@ -934,6 +937,28 @@ const LandingPage = () => {
     }
   }, [location.search]);
 
+  // Check for affiliate code in URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const affCode = params.get('aff');
+    if (affCode) {
+      // Validate affiliate code
+      api.get(`/affiliate/validate/${affCode}`)
+        .then(res => {
+          if (res.data.valid) {
+            setAffiliateBanner({
+              affiliateName: res.data.affiliateName
+            });
+            // Store affiliate code for registration
+            localStorage.setItem('affiliateCode', affCode.toUpperCase());
+          }
+        })
+        .catch(() => {
+          // Invalid code, ignore
+        });
+    }
+  }, [location.search]);
+
   return (
     <div>
       <ExitIntentPopup />
@@ -950,6 +975,20 @@ const LandingPage = () => {
         }}>
           <span style={{ fontWeight: '600' }}>{referralBanner.referrerName}</span> invited you!
           Sign up now and get <span style={{ fontWeight: '600' }}>{referralBanner.bonus}</span>
+        </div>
+      )}
+
+      {/* Affiliate Banner */}
+      {affiliateBanner && !referralBanner && (
+        <div style={{
+          background: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)',
+          color: 'white',
+          padding: '12px 20px',
+          textAlign: 'center',
+          fontSize: '15px'
+        }}>
+          Recommended by <span style={{ fontWeight: '600' }}>{affiliateBanner.affiliateName}</span>!
+          Sign up now to get started.
         </div>
       )}
       <section className="hero">
@@ -5591,6 +5630,167 @@ const HotelReviewPage = () => {
   );
 };
 
+// SEO Landing Page Component - Local Business Review Responses (Google Ads)
+const LocalBusinessReviewPage = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Save UTM parameters to sessionStorage for registration
+    const params = new URLSearchParams(location.search);
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/local-business-reviews'
+    };
+    if (utmParams.utm_source) {
+      sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    }
+
+    document.title = 'AI Review Responses for Local Businesses | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'AI-powered review response generator for local businesses. Respond to Google, Yelp, Facebook reviews professionally. Perfect for plumbers, salons, dentists, auto shops & more.');
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "ReviewResponder - Local Business Review Response Tool",
+      "description": "AI tool for local businesses to respond to customer reviews professionally",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', padding: '80px 0', color: 'white' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '800px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '20px', marginBottom: '24px' }}>
+            <Store size={16} />
+            <span style={{ fontSize: '14px', fontWeight: '600' }}>For Local Businesses</span>
+          </div>
+          <h1 style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}>
+            AI Review Responses for Local Businesses
+          </h1>
+          <p style={{ fontSize: '20px', opacity: 0.95, marginBottom: '32px', lineHeight: '1.6' }}>
+            You're busy running your business. Let AI write professional, personalized responses to
+            every review - from glowing 5-stars to tough complaints.
+          </p>
+          <Link to="/register" className="btn btn-lg" style={{ background: 'white', color: '#059669', fontWeight: '600', padding: '16px 32px' }}>
+            <Sparkles size={20} />
+            Try Free - 5 Responses
+          </Link>
+          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>Works with Google, Yelp, Facebook, and more</p>
+        </div>
+      </section>
+
+      <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
+        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>
+          Perfect for Every Local Business
+        </h2>
+
+        <div style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', marginBottom: '48px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '16px', background: 'var(--gray-50)', borderRadius: '12px' }}>
+            <Wrench size={24} style={{ color: '#10b981' }} />
+            <span style={{ fontWeight: '500' }}>Plumbers</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '16px', background: 'var(--gray-50)', borderRadius: '12px' }}>
+            <Scissors size={24} style={{ color: '#10b981' }} />
+            <span style={{ fontWeight: '500' }}>Salons</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '16px', background: 'var(--gray-50)', borderRadius: '12px' }}>
+            <Heart size={24} style={{ color: '#10b981' }} />
+            <span style={{ fontWeight: '500' }}>Dentists</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '16px', background: 'var(--gray-50)', borderRadius: '12px' }}>
+            <Car size={24} style={{ color: '#10b981' }} />
+            <span style={{ fontWeight: '500' }}>Auto Shops</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '16px', background: 'var(--gray-50)', borderRadius: '12px' }}>
+            <MapPin size={24} style={{ color: '#10b981' }} />
+            <span style={{ fontWeight: '500' }}>Any Local Biz</span>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+          <div className="card" style={{ padding: '24px' }}>
+            <Clock size={32} style={{ color: '#10b981', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>30 Seconds Per Review</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Stop spending 10+ minutes crafting the perfect response. Our AI generates professional replies instantly.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Star size={32} style={{ color: '#10b981', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Boost Your Rating</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Businesses that respond to reviews see 12% higher ratings on average. Show customers you care.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Shield size={32} style={{ color: '#10b981', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Handle Complaints Like a Pro</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Turn angry reviewers into loyal customers with thoughtful, apologetic responses that address their concerns.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>Common Local Business Review Scenarios</h2>
+          <div style={{ display: 'grid', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
+              <div><strong>"Great service, highly recommend!"</strong> - Thank them warmly, mention your team's dedication</div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
+              <div><strong>"Had to wait too long"</strong> - Apologize sincerely, explain improvements you're making</div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
+              <div><strong>"Price was too high"</strong> - Highlight the value and quality they received</div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
+              <div><strong>"Problem wasn't fixed properly"</strong> - Offer to make it right, provide contact info</div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Stop Ignoring Reviews. Start Growing Your Business.
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join local businesses saving hours each week on review management.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Start Free - No Credit Card
+          </Link>
+        </div>
+
+        <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}>
+          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
+            <Link to="/" style={{ color: 'var(--primary-600)' }}>ReviewResponder</Link> •
+            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Google Reviews</Link> •
+            <Link to="/restaurant-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Restaurants</Link> •
+            <Link to="/hotel-review-management" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Hotels</Link>
+          </p>
+        </div>
+      </section>
+    </div>
+  );
+};
+
 // Extension Page
 const ExtensionPage = () => {
   return (
@@ -6379,6 +6579,7 @@ function App() {
           <Route path="/yelp-review-reply-tool" element={<YelpReviewPage />} />
           <Route path="/restaurant-review-responses" element={<RestaurantReviewPage />} />
           <Route path="/hotel-review-management" element={<HotelReviewPage />} />
+          <Route path="/local-business-reviews" element={<LocalBusinessReviewPage />} />
           <Route
             path="/dashboard"
             element={
