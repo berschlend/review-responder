@@ -758,11 +758,6 @@ async function generateVariations(panel) {
     panel.querySelector('.rr-undo-btn').classList.add('hidden');
     panel.dataset.previousResponse = '';
 
-    // Track time saved (3 responses = ~9 min)
-
-
-
-
     showToast('3 Options generated! (3 credits used)', 'success');
 
   } catch (error) {
@@ -3962,14 +3957,8 @@ async function turboGenerate(reviewText) {
     // Copy to clipboard
     await navigator.clipboard.writeText(data.response);
 
-    // Track time saved
-
-
     // Show success
     showToast('✅ Copied to clipboard! Paste with Ctrl+V', 'success');
-
-
-
 
   } catch (error) {
     showToast(`❌ ${error.message}`, 'error');
@@ -5086,9 +5075,6 @@ async function generateQueueResponse(panel) {
     responseSection.classList.remove('hidden');
     doneActions.classList.remove('hidden');
 
-    // Track time saved
-
-
     // Mark as processed
     currentReview.processed = true;
 
@@ -5145,8 +5131,6 @@ function showExportOptions() {
     modal.classList.add('rr-dark');
   }
 
-  const minutesSaved = processedReviews.length * 3; // ~3 min per review
-
   modal.innerHTML = `
     <div class="rr-export-content">
       <div class="rr-export-header">
@@ -5157,10 +5141,6 @@ function showExportOptions() {
         <div class="rr-export-stat">
           <span class="rr-export-value">${processedReviews.length}</span>
           <span class="rr-export-label">Responses</span>
-        </div>
-        <div class="rr-export-stat">
-          <span class="rr-export-value">~${minutesSaved}</span>
-          <span class="rr-export-label">Min Saved</span>
         </div>
       </div>
       <div class="rr-export-actions">

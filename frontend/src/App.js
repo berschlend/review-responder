@@ -7528,8 +7528,8 @@ const PricingPage = () => {
   // Feature comparison data - Updated with Hybrid AI limits (Smart + Standard)
   const features = [
     { name: 'Monthly Responses', free: '20', starter: '300', pro: '800', unlimited: 'Unlimited' },
-    { name: 'Smart AI (Claude)', free: '3', starter: '100', pro: '300', unlimited: 'Unlimited' },
-    { name: 'Standard AI (GPT-4o)', free: '17', starter: '200', pro: '500', unlimited: 'Unlimited' },
+    { name: 'Smart AI', free: '3', starter: '100', pro: '300', unlimited: 'Unlimited' },
+    { name: 'Standard AI', free: '17', starter: '200', pro: '500', unlimited: 'Unlimited' },
     { name: 'AI Tone Options', free: true, starter: true, pro: true, unlimited: true },
     { name: '50+ Languages', free: true, starter: true, pro: true, unlimited: true },
     { name: 'Response History', free: true, starter: true, pro: true, unlimited: true },
