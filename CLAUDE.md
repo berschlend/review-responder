@@ -58,9 +58,240 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 |---|------|---------------|---------|
 | 1 | Chrome Extension Improvement | Mittel | `chrome-extension/` |
 | 2 | Landing Page A/B Testing | Mittel | `frontend/src/App.js` |
-| 3 | Custom Domain Setup | Leicht | Dokumentation |
 
-### ✅ HEUTE ERLEDIGT:
+---
+
+## 🤖 MARKETING AUTOMATION BACKLOG (Für morgen)
+
+> **ZIEL:** Vollautomatisierte Lead-Generierung für erste Sales
+
+### Priority 1 - Schnell & Hoher Impact
+
+| # | System | Beschreibung | Leads/Monat | Setup |
+|---|--------|--------------|-------------|-------|
+| 1 | **Reddit/Quora Auto-Responder** | Automatisch relevante Fragen finden, hilfreiche Antworten generieren | 20-50 | 2h |
+| 2 | **Twitter/X Auto-Engagement** | Keywords monitoren, relevante Tweets finden, Auto-Replies | 30-100 | 3h |
+| 3 | **SEO Auto-Pilot** | 5 Artikel/Woche automatisch generieren & publishen | 50-200 | 3h |
+
+### Priority 2 - Mittlerer Impact
+
+| # | System | Beschreibung | Leads/Monat | Setup |
+|---|--------|--------------|-------------|-------|
+| 4 | **Competitor Review Scraper** | Unzufriedene Kunden von Birdeye/Podium/etc finden | 10-30 | 2h |
+| 5 | **Personalized Demo Generator** | Auto-generierte Demo-Videos für jeden Lead | 5-15 | 4h |
+| 6 | **Webinar Funnel Automation** | Evergreen Webinar mit Fake-Live Sessions | 20-50 | 6h |
+
+### Priority 3 - Langfristig
+
+| # | System | Beschreibung | Leads/Monat | Setup |
+|---|--------|--------------|-------------|-------|
+| 7 | **Affiliate Auto-Recruitment** | YouTuber/Blogger automatisch finden & anschreiben | 10-30 | 3h |
+
+---
+
+### 📋 PROMPT: Reddit/Quora Auto-Responder
+
+```
+Lies CLAUDE.md. Erstelle automatisches Reddit/Quora System:
+
+BACKEND (server.js):
+1. POST /api/cron/reddit-monitor - Täglich ausführen
+   - Reddit API: Suche nach Keywords in Subreddits
+   - Keywords: "review response", "negative review", "respond to reviews", "google reviews help"
+   - Subreddits: r/smallbusiness, r/Entrepreneur, r/restaurateur, r/hoteliers, r/marketing
+   - Speichere in `reddit_opportunities` Tabelle
+
+2. POST /api/cron/quora-monitor - Täglich
+   - Quora durchsuchen nach relevanten Fragen
+
+3. GET /api/marketing/opportunities - Dashboard
+   - Post Title, URL, Upvotes, Suggested Answer (AI generiert)
+
+4. Neue Tabellen: reddit_opportunities, quora_opportunities
+
+5. Antwort-Templates: Mehrwert zuerst, Tool-Mention subtil am Ende
+
+Commit & push, update CLAUDE.md.
+```
+
+---
+
+### 📋 PROMPT: Twitter/X Auto-Engagement
+
+```
+Lies CLAUDE.md. Erstelle Twitter Automation:
+
+BACKEND (server.js):
+1. POST /api/cron/twitter-monitor - Alle 4 Stunden
+   - Twitter API v2: Search recent tweets
+   - Keywords: "negative review", "bad google review", "review killing my business"
+   - Speichere in `twitter_opportunities`, AI bewertet Relevanz (1-10)
+
+2. POST /api/cron/twitter-engage - Täglich
+   - Top 10 Tweets, generiere hilfreiche Replies
+
+3. Twitter Content Calendar:
+   - 3 Tweets/Tag auto-generieren
+   - Mix: Tips 40%, Stats 30%, Promo 20%, Memes 10%
+
+4. GET /api/marketing/twitter-dashboard
+
+ENV: TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET
+
+Commit & push, update CLAUDE.md.
+```
+
+---
+
+### 📋 PROMPT: SEO Auto-Pilot
+
+```
+Lies CLAUDE.md. Erstelle SEO Content Pipeline:
+
+BACKEND (server.js):
+1. POST /api/cron/seo-content - Täglich 6 AM
+   - Wählt Keyword aus `seo_keywords` Tabelle
+   - Generiert 1500-Wort Artikel via OpenAI
+   - Auto-Internal Linking
+   - Status: draft → scheduled → published
+
+2. Keywords Tabelle mit 100+ Long-tail Keywords:
+   - "how to respond to 1 star google review"
+   - "negative yelp review response examples"
+   - "hotel tripadvisor review reply template"
+
+3. GET /api/blog/scheduled - Content Calendar
+4. POST /api/blog/:id/publish - Veröffentlicht Artikel
+
+FRONTEND:
+- /blog Route mit allen Artikeln
+- SEO Meta Tags automatisch
+- Schema.org BlogPosting Markup
+
+Commit & push, update CLAUDE.md.
+```
+
+---
+
+### 📋 PROMPT: Competitor Review Scraper
+
+```
+Lies CLAUDE.md. Erstelle Competitor Monitoring:
+
+BACKEND (server.js):
+1. POST /api/cron/competitor-monitor - Wöchentlich
+   Konkurrenten: Birdeye, Podium, Reputation.com, ReviewTrackers, Yext
+
+   Suche auf: G2, Capterra, TrustPilot, Twitter (@birdeye "terrible")
+
+2. Speichere in `competitor_leads`:
+   - company_name, platform, complaint_type, contact_info, original_url
+
+3. Auto-Outreach generieren:
+   - "Ich hab gesehen du hattest Probleme mit [Competitor]..."
+
+4. GET /api/marketing/competitor-leads - Dashboard
+
+Commit & push, update CLAUDE.md.
+```
+
+---
+
+### 📋 PROMPT: Personalized Demo Generator
+
+```
+Lies CLAUDE.md. Erstelle automatische Demo-Videos:
+
+BACKEND (server.js):
+1. POST /api/demo/generate
+   Input: { businessName, industry, sampleReview }
+   - Generiere Response via OpenAI
+   - Screenshot mit Puppeteer
+   - Speichere in /public/demos/{leadId}/
+
+2. POST /api/outreach/send-demo-email
+   - Personalisierte Email mit Demo-Link
+
+3. Tracking: Wer hat Demo angeschaut? Conversion?
+
+4. Neue Tabelle: personalized_demos
+
+FRONTEND:
+- /demo/:id - Personalisierte Demo-Ansicht
+- CTA: "Get Your Free Trial"
+
+Commit & push, update CLAUDE.md.
+```
+
+---
+
+### 📋 PROMPT: Webinar Funnel Automation
+
+```
+Lies CLAUDE.md. Erstelle Evergreen Webinar-Funnel:
+
+BACKEND (server.js):
+1. POST /api/webinar/register - Email, Name, Business Type
+2. POST /api/cron/webinar-reminders - 24h, 1h vorher, Follow-up
+3. Neue Tabellen: webinar_registrations, webinar_attendees
+
+FRONTEND:
+1. /webinar - Landing Page mit Countdown
+2. /webinar/live - "Live" Webinar (eigentlich Aufnahme)
+   - Fake Live Chat Replay
+   - CTA Overlay bei Key Moments
+3. /webinar/replay - 48h Replay
+
+CONTENT:
+- Webinar Script (20 Min)
+- Follow-up Email Sequenz (5 Emails)
+
+Commit & push, update CLAUDE.md.
+```
+
+---
+
+### 📋 PROMPT: Affiliate Auto-Recruitment
+
+```
+Lies CLAUDE.md. Erstelle Affiliate Auto-Recruitment:
+
+BACKEND (server.js):
+1. POST /api/cron/find-affiliates - Wöchentlich
+   - YouTube Videos über "review management"
+   - Blogs über "small business tools"
+   - Podcast Hosts
+   Speichere in `potential_affiliates`
+
+2. POST /api/affiliate/auto-outreach
+   - "Hey [Name], loved your [content]. 30% lifetime commission..."
+
+3. Affiliate Portal:
+   - /affiliate/apply, /affiliate/dashboard
+   - Auto-Approval wenn > 1000 Followers
+
+FRONTEND:
+- /partners Landing Page
+- /affiliate/dashboard für Affiliates
+
+Commit & push, update CLAUDE.md.
+```
+
+---
+
+### 📊 Erwartete Ergebnisse (alle Systeme zusammen)
+
+| Metrik | Pro Monat |
+|--------|-----------|
+| Automatische Leads | 150-500 |
+| Qualifizierte Leads | 50-150 |
+| Demo Requests | 20-50 |
+| **Neue Kunden** | **5-15** |
+| **MRR Potential** | **$150-750** |
+
+---
+
+### ✅ FRÜHER ERLEDIGT:
 - [x] PostgreSQL Migration (Daten persistent)
 - [x] Password Reset Flow mit Resend.com
 - [x] Jahres-Abos mit 20% Rabatt
