@@ -864,58 +864,6 @@ app.post('/api/auth/reset-password', async (req, res) => {
 
 // ============ RESPONSE GENERATION ============
 
-// Language detection for automatic response language matching
-function detectLanguage(text) {
-  // FIRST: Check for English with unique English-only words
-  const englishPattern = /\b(the|and|this|that|with|have|from|they|would|could|should|about|which|their|there|been|were|being|these|those|then|than|what|when|where|because|although|however|therefore|amazing|awesome|excellent|great|wonderful|terrible|fantastic|incredible|delicious|beautiful|lovely|perfect|best|worst|really|very|absolutely|definitely|certainly|highly|recommend|experience|staff|place|restaurant|visited|loved|enjoyed|disappointed|friendly|helpful|attentive|outstanding|exceptional|mediocre|average|overpriced|underrated|overrated|worth|returning|definitely|coming|back|again)\b/gi;
-  const englishMatches = (text.match(englishPattern) || []).length;
-
-  // If 2+ English unique words found, it's English
-  if (englishMatches >= 2) {
-    return { code: 'en', name: 'English', confidence: englishMatches };
-  }
-
-  // Check other languages with UNIQUE words only (no overlap with English)
-  const patterns = {
-    de: /\b(und|der|die|das|nicht|ich|wir|sehr|schlecht|aber|können|müssen|sollen|dürfen|wollen|wegen|trotz|während|obwohl|deshalb|außerdem|freundlich|empfehlen|leider|wirklich|immer|wieder|vielen|danke|toll|prima|schön|nett|lecker|gemütlich|sauber|teuer|billig|essen|trinken|würde|könnte|sollte|möchte|hier|dort|jetzt|heute|gestern|morgen|wurde|wurden|bereits|allerdings|eigentlich|natürlich|unbedingt|vielleicht|wahrscheinlich)\b/gi,
-    es: /\b(muy|pero|como|está|están|tienen|hacer|poder|querer|deber|saber|conocer|venir|hay|todo|nada|siempre|nunca|también|además|porque|aunque|gracias|amable|lamentablemente|bueno|malo|limpio|rápido|lento|caro|barato|comida|bebida|aquí|allí|ahora|hoy|ayer|mañana|nosotros|ustedes|ellos|ella|podemos|queremos|tenemos)\b/gi,
-    fr: /\b(très|mais|comme|sont|avoir|être|faire|pouvoir|vouloir|devoir|savoir|aller|venir|voir|prendre|tout|rien|toujours|jamais|aussi|parce|merci|aimable|malheureusement|vraiment|mauvais|délicieux|propre|rapide|lent|cher|nourriture|boisson|ambiance|nous|vous|ici|maintenant|aujourd|hier|demain|pouvons|voulons|avons|sommes)\b/gi,
-    it: /\b(molto|bene|male|sono|avere|essere|fare|potere|volere|dovere|sapere|andare|venire|vedere|prendere|tutto|niente|sempre|mai|anche|perché|grazie|gentile|purtroppo|veramente|buono|cattivo|pulito|veloce|lento|costoso|economico|cibo|bevanda|atmosfera|qui|adesso|oggi|ieri|domani|possiamo|vogliamo|abbiamo|siamo)\b/gi,
-    pt: /\b(muito|bem|mal|mas|como|são|ter|ser|fazer|poder|querer|dever|saber|vir|ver|dar|tudo|nada|sempre|nunca|também|porque|obrigado|amável|infelizmente|bom|mau|limpo|rápido|lento|caro|barato|comida|bebida|aqui|agora|hoje|ontem|amanhã|podemos|queremos|temos|somos)\b/gi,
-    nl: /\b(het|een|van|dat|zijn|hebben|worden|kunnen|moeten|zullen|willen|mogen|laten|goed|slecht|maar|ook|altijd|nooit|omdat|hoewel|bedankt|vriendelijk|aanbevelen|helaas|echt|uitstekend|lekker|schoon|snel|langzaam|duur|goedkoop|eten|drinken|sfeer|wij|hier|daar|vandaag|gisteren|morgen|kunnen|willen|hebben|zijn)\b/gi,
-  };
-
-  const langNames = {
-    de: 'German',
-    en: 'English',
-    es: 'Spanish',
-    fr: 'French',
-    it: 'Italian',
-    pt: 'Portuguese',
-    nl: 'Dutch'
-  };
-
-  let maxMatches = 0;
-  let detectedLang = 'en';
-
-  for (const [lang, pattern] of Object.entries(patterns)) {
-    const matches = (text.match(pattern) || []).length;
-    if (matches > maxMatches) {
-      maxMatches = matches;
-      detectedLang = lang;
-    }
-  }
-
-  // Need at least 3 non-English matches to override English default
-  const finalLang = maxMatches >= 3 ? detectedLang : 'en';
-
-  return {
-    code: finalLang,
-    name: langNames[finalLang] || 'English',
-    confidence: maxMatches
-  };
-}
-
 // Alias for Chrome extension (shorter path)
 app.post('/api/generate', authenticateToken, (req, res) => generateResponseHandler(req, res));
 
@@ -1009,12 +957,10 @@ async function generateResponseHandler(req, res) {
       fi: 'Finnish'
     };
 
-    // Build language instruction based on outputLanguage selection
-    // Use explicit language detection for 'auto' mode
-    const detectedLang = detectLanguage(reviewText);
+    // Build language instruction
     const languageInstruction = (!outputLanguage || outputLanguage === 'auto')
-      ? `CRITICAL: The review is written in ${detectedLang.name}. You MUST respond in ${detectedLang.name}. This is non-negotiable.`
-      : `CRITICAL: You MUST write the response in ${languageNames[outputLanguage] || 'English'}, regardless of what language the review is written in.`;
+      ? 'You MUST respond in the EXACT SAME language as the review. If the review is in English, respond in English. If German, respond in German. Match the review language exactly.'
+      : `You MUST write the response in ${languageNames[outputLanguage] || 'English'}.`;
 
     // Build business context section (use team owner's context if team member)
     const contextUser = isTeamMember ? usageOwner : user;
@@ -1027,8 +973,6 @@ ${contextUser.business_context}
     const responseStyleSection = contextUser.response_style ? `Preferred Response Style: ${contextUser.response_style}` : '';
 
     const prompt = `You are a professional customer service expert helping a small business respond to online reviews.
-
-**CRITICAL LANGUAGE RULE**: ${languageInstruction}
 
 Business Name: ${businessName || contextUser.business_name || 'Our business'}
 ${businessTypeSection}
@@ -1051,7 +995,7 @@ Instructions:
 - If business context is provided, reference specific details about the business (e.g., mention specific menu items, services, team members)
 ${customInstructions ? `- Additional instructions: ${customInstructions}` : ''}
 
-**LANGUAGE REQUIREMENT**: Your response MUST be written in ${(!outputLanguage || outputLanguage === 'auto') ? detectedLang.name : (languageNames[outputLanguage] || 'English')}. Do not use any other language.
+**CRITICAL - LANGUAGE**: ${languageInstruction}
 
 Generate ONLY the response text, nothing else:`;
 
