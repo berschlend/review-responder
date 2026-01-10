@@ -7538,8 +7538,13 @@ const ExtensionPage = () => {
 // Pricing Page
 const PricingPage = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const [testimonials, setTestimonials] = useState([]);
   const [expandedFaq, setExpandedFaq] = useState(null);
+
+  // Check if discount is already active in URL
+  const urlParams = new URLSearchParams(location.search);
+  const discountActive = urlParams.get('discount')?.toUpperCase() === 'EARLY50';
 
   useEffect(() => {
     // Fetch testimonials
@@ -7588,29 +7593,31 @@ const PricingPage = () => {
       <div className="pricing-section">
         <div className="container">
           <div className="pricing-header">
-            <Link
-              to="/pricing?discount=EARLY50"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                background: 'linear-gradient(135deg, #10b981, #059669)',
-                color: 'white',
-                padding: '6px 16px',
-                borderRadius: '20px',
-                fontSize: '14px',
-                fontWeight: '600',
-                marginBottom: '16px',
-                textDecoration: 'none',
-                cursor: 'pointer',
-                transition: 'transform 0.2s, box-shadow 0.2s'
-              }}
-              onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(16,185,129,0.4)'; }}
-              onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
-            >
-              🎁 Click to Activate 50% OFF
-              <ArrowRight size={14} />
-            </Link>
+            {!discountActive && (
+              <Link
+                to="/pricing?discount=EARLY50"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  color: 'white',
+                  padding: '6px 16px',
+                  borderRadius: '20px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  marginBottom: '16px',
+                  textDecoration: 'none',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s, box-shadow 0.2s'
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(16,185,129,0.4)'; }}
+                onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
+              >
+                🎁 Click to Activate 50% OFF
+                <ArrowRight size={14} />
+              </Link>
+            )}
             <h1 className="pricing-title">Simple, Transparent Pricing</h1>
             <p style={{ color: 'var(--gray-600)', maxWidth: '600px', margin: '0 auto' }}>
               No hidden fees. No surprises. Choose the plan that fits your business.
