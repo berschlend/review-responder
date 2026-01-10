@@ -51,7 +51,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 10.01.2026 - 18:30 Uhr**
+**Stand: 10.01.2026 - 21:00 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [x] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen ✅
@@ -128,16 +128,24 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **CLAUDE.md Dokumentation aktualisiert** ✅
   - Plan-Limits korrigiert (Hybrid AI: Smart + Standard)
   - Admin Plan-Wechsel Links hinzugefügt
+- [x] **Chrome Extension v1.4.0 - 6 neue Features** ✅
+  1. **Response Quality Score** - AI-Bewertung nach Generation (Excellent/Good/Needs Work)
+  2. **Response Variations** - 3 Optionen auf einmal generieren (A/B/C Tabs)
+  3. **Analytics Widget** - Wochenstatistik und Sparkline-Chart im Panel
+  4. **Template Library** - 50+ vorgefertigte Templates nach Branche (Restaurant, Hotel, Local Business, Generic)
+  5. **Tone Strength Slider** - Visueller Slider statt Dropdown für Tone-Auswahl
+  6. **Multi-Account Support** - Mehrere Business-Profile verwalten und wechseln
+  - Neue Datei: `templates-library.js` mit 50+ Templates
+  - Backend: `/api/generate-variations` Endpoint für 3 parallele Response-Varianten
 
 ### 🟡 NÄCHSTE CLAUDE TASKS (Wähle einen):
 
 | # | Task | Schwierigkeit | Dateien |
 |---|------|---------------|---------|
-| 1 | **Tone Preview** (zeige Beispiel-Snippets für jeden Tone) | Leicht | `chrome-extension/content.js` |
-| 2 | **Response Quality Score** (Bewertung nach Generation) | Mittel | `chrome-extension/content.js` |
-| 3 | Chrome Web Store Screenshots (3 weitere) | Leicht | `chrome-extension/screenshots/` |
-| 4 | Chrome Web Store Einreichung | Leicht | ZIP + Store Listing fertig |
-| 5 | Landing Page A/B Testing | Mittel | `frontend/src/App.js` |
+| 1 | Chrome Web Store Screenshots (3 weitere) | Leicht | `chrome-extension/screenshots/` |
+| 2 | Chrome Web Store Einreichung | Leicht | ZIP + Store Listing fertig |
+| 3 | Landing Page A/B Testing | Mittel | `frontend/src/App.js` |
+| 4 | **Tone Preview** (zeige Beispiel-Snippets für jeden Tone) | Leicht | `chrome-extension/content.js` |
 
 ### 🔴 BEKANNTE BUGS:
 
