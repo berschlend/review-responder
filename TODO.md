@@ -11,9 +11,6 @@
   - Oder Resend Logs: https://resend.com/emails
   - Erwartung: Mehr Emails gesendet als gestern
 
-- [ ] **ANTHROPIC_API_KEY in Render eintragen**
-  - Für Smart AI (Claude) - aktuell nur Standard AI aktiv
-  - Render Backend → Environment → ANTHROPIC_API_KEY=sk-ant-...
 
 - [ ] **Demo-Video aufnehmen** (2 Min Walkthrough)
   - Chrome Extension zeigen
@@ -34,12 +31,10 @@
 - [ ] Product Hunt Launch (wenn bereit)
 - [ ] LinkedIn Outreach starten
 
-### Features
-- [ ] Landing Page A/B Testing
 
 ---
 
-## ✅ HEUTE ERLEDIGT (10.01.2026)
+## HEUTE möglicherweise ERLEDIGT bzw angegangen (10.01.2026)
 
 ### Chrome Extension v1.4.0 - 6 neue Features
 - [x] Response Quality Score (AI-Bewertung: Excellent/Good/Needs Work)
@@ -70,7 +65,7 @@
 
 ---
 
-## ✅ FRÜHER ERLEDIGT
+## ✅ FRÜHER evt. ERLEDIGT
 
 ### 09.01.2026
 - [x] PostgreSQL Migration
@@ -90,10 +85,9 @@
 - [x] Admin Panel
 
 ### 10.01.2026 (früher am Tag)
-- [x] LinkedIn Outreach System
 - [x] Cold Email System
 - [x] Product Hunt Launch Automation
-- [x] Google Ads Landing Pages (5 Seiten)
+- [x] Google Ads Landing Pages (5 Seiten) brauchen noch improvment und adds dann halt noch schalten
 - [x] Automated Outreach System
 
 ---
@@ -106,7 +100,7 @@
 |--------|---------|------|
 | Zahlende Kunden | 0 | 30 |
 | MRR | $0 | $1000 |
-| Free Users | ? | 100+ |
+| Free Users | 0 | 100+ |
 
 ---
 

@@ -697,6 +697,31 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
+    // Check if user is a team member to get effective plan
+    const teamMembership = await dbGet(
+      `SELECT tm.*, u.email as owner_email, u.business_name as owner_business,
+              u.subscription_plan as owner_plan, u.subscription_status as owner_status
+       FROM team_members tm
+       JOIN users u ON tm.team_owner_id = u.id
+       WHERE tm.member_user_id = $1 AND tm.accepted_at IS NOT NULL`,
+      [user.id]
+    );
+
+    let effectivePlan = user.subscription_plan || 'free';
+    let effectiveStatus = user.subscription_status;
+    let teamInfo = null;
+
+    if (teamMembership) {
+      effectivePlan = teamMembership.owner_plan || 'free';
+      effectiveStatus = teamMembership.owner_status;
+      teamInfo = {
+        isTeamMember: true,
+        teamOwnerEmail: teamMembership.owner_email,
+        teamOwnerBusiness: teamMembership.owner_business,
+        role: teamMembership.role
+      };
+    }
+
     const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
     res.json({
@@ -705,11 +730,14 @@ app.post('/api/auth/login', async (req, res) => {
         id: user.id,
         email: user.email,
         businessName: user.business_name,
-        plan: user.subscription_plan,
+        plan: effectivePlan,
+        ownPlan: user.subscription_plan,
         responsesUsed: user.responses_used,
         responsesLimit: user.responses_limit,
-        subscriptionStatus: user.subscription_status,
-        onboardingCompleted: user.onboarding_completed
+        subscriptionStatus: effectiveStatus,
+        ownSubscriptionStatus: user.subscription_status,
+        onboardingCompleted: user.onboarding_completed,
+        teamInfo: teamInfo
       }
     });
   } catch (error) {
@@ -725,6 +753,32 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Check if user is a team member to get effective plan
+    const teamMembership = await dbGet(
+      `SELECT tm.*, u.email as owner_email, u.business_name as owner_business,
+              u.subscription_plan as owner_plan, u.subscription_status as owner_status,
+              u.smart_responses_used as owner_smart_used, u.standard_responses_used as owner_standard_used
+       FROM team_members tm
+       JOIN users u ON tm.team_owner_id = u.id
+       WHERE tm.member_user_id = $1 AND tm.accepted_at IS NOT NULL`,
+      [req.user.id]
+    );
+
+    let effectivePlan = user.subscription_plan || 'free';
+    let effectiveStatus = user.subscription_status;
+    let teamInfo = null;
+
+    if (teamMembership) {
+      effectivePlan = teamMembership.owner_plan || 'free';
+      effectiveStatus = teamMembership.owner_status;
+      teamInfo = {
+        isTeamMember: true,
+        teamOwnerEmail: teamMembership.owner_email,
+        teamOwnerBusiness: teamMembership.owner_business,
+        role: teamMembership.role
+      };
+    }
+
     res.json({
       user: {
         id: user.id,
@@ -733,10 +787,12 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
         businessType: user.business_type,
         businessContext: user.business_context,
         responseStyle: user.response_style,
-        plan: user.subscription_plan,
+        plan: effectivePlan,
+        ownPlan: user.subscription_plan,
         responsesUsed: user.responses_used,
         responsesLimit: user.responses_limit,
-        subscriptionStatus: user.subscription_status,
+        subscriptionStatus: effectiveStatus,
+        ownSubscriptionStatus: user.subscription_status,
         onboardingCompleted: user.onboarding_completed,
         referralCode: user.referral_code,
         referralCredits: user.referral_credits || 0,
@@ -751,7 +807,9 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
         emailBillingUpdates: user.email_billing_updates ?? true,
         // Smart/Standard AI usage
         smartResponsesUsed: user.smart_responses_used || 0,
-        standardResponsesUsed: user.standard_responses_used || 0
+        standardResponsesUsed: user.standard_responses_used || 0,
+        // Team info
+        teamInfo: teamInfo
       }
     });
   } catch (error) {

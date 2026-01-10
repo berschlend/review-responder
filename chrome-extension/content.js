@@ -4454,11 +4454,19 @@ document.addEventListener('dblclick', async (e) => {
   }
 });
 
-// Keyboard shortcuts
+// Keyboard shortcuts - using capture phase to intercept before browser handles them
 document.addEventListener('keydown', async (e) => {
+  // Skip if user is typing in an input field (except our own panel)
+  const activeEl = document.activeElement;
+  const isTyping = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable);
+  const isOurPanel = activeEl && activeEl.closest('#rr-response-panel');
+
   // Alt+R: Generate from selection (respects turbo mode)
-  if (e.altKey && e.key.toLowerCase() === 'r') {
+  if (e.altKey && !e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 'r') {
     e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
     const selection = window.getSelection().toString().trim();
     if (!selection || selection.length < 10) {
       showToast('⚠️ Select at least 10 characters', 'warning');
@@ -4476,31 +4484,56 @@ document.addEventListener('keydown', async (e) => {
     } else {
       showResponsePanel(selection, true);
     }
+    return;
   }
 
   // Alt+T: Toggle Turbo Mode
-  if (e.altKey && e.key.toLowerCase() === 't') {
+  if (e.altKey && !e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 't') {
     e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
     const settings = cachedSettings || await loadSettings();
     settings.turboMode = !settings.turboMode;
     cachedSettings = settings;
     saveSettings(settings);
     showToast(settings.turboMode ? '⚡ Turbo Mode ON' : '🐢 Turbo Mode OFF', 'info');
+    return;
   }
 
   // Alt+C: Copy current response
-  if (e.altKey && e.key.toLowerCase() === 'c') {
+  if (e.altKey && !e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 'c') {
     const panel = document.getElementById('rr-response-panel');
     if (panel && panel.classList.contains('rr-visible')) {
       e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
       copyResponse(panel);
+      return;
     }
+  }
+
+  // Alt+Q: Toggle Queue Mode
+  if (e.altKey && !e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 'q') {
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    if (reviewQueue.isActive) {
+      closeQueueMode();
+      showToast('📋 Queue mode closed', 'info');
+    } else {
+      startQueueMode();
+    }
+    return;
   }
 
   // Escape: Close panel or overlays
   if (e.key === 'Escape') {
     const panel = document.getElementById('rr-response-panel');
     if (panel && panel.classList.contains('rr-visible')) {
+      e.preventDefault();
+      e.stopPropagation();
       // First close any open overlays
       const keyboardHelp = panel.querySelector('.rr-keyboard-help');
       if (keyboardHelp && !keyboardHelp.classList.contains('hidden')) {
@@ -4508,6 +4541,7 @@ document.addEventListener('keydown', async (e) => {
         return;
       }
       closePanel(panel);
+      return;
     }
     hideFloatingButton();
   }
@@ -4517,10 +4551,12 @@ document.addEventListener('keydown', async (e) => {
     const panel = document.getElementById('rr-response-panel');
     if (panel && panel.classList.contains('rr-visible')) {
       e.preventDefault();
+      e.stopPropagation();
       panel.querySelector('.rr-keyboard-help').classList.toggle('hidden');
+      return;
     }
   }
-});
+}, true); // capture: true - intercept events before they bubble
 
 // Listen for messages from background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -5369,18 +5405,7 @@ function closeQueueMode() {
   }
 }
 
-// Add keyboard shortcut for Queue Mode: Alt+Q
-document.addEventListener('keydown', (e) => {
-  if (e.altKey && e.key.toLowerCase() === 'q') {
-    e.preventDefault();
-    if (reviewQueue.isActive) {
-      closeQueueMode();
-      showToast('📋 Queue mode closed', 'info');
-    } else {
-      startQueueMode();
-    }
-  }
-});
+// Alt+Q shortcut for Queue Mode is now handled in the main keyboard shortcuts handler above
 
 // Add "Scan Page" button to floating UI
 function createScanButton() {
