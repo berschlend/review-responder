@@ -412,8 +412,8 @@ async function saveSettings(settings) {
   } catch (e) {}
 }
 
-// ========== CREATE CLEAN PANEL ==========
-function createResponsePanel() {
+// ========== CREATE KILLER PANEL ==========
+async function createResponsePanel() {
   const existing = document.getElementById('rr-response-panel');
   if (existing) existing.remove();
 
@@ -421,6 +421,8 @@ function createResponsePanel() {
   panel.id = 'rr-response-panel';
 
   const platform = detectPlatform();
+  const timeSaved = await getTimeSaved();
+  const isGoogleMaps = platform.name === 'Google';
 
   panel.innerHTML = `
     <div class="rr-panel-header">
@@ -429,6 +431,11 @@ function createResponsePanel() {
         <span class="rr-platform-badge" style="background: ${platform.color}">${platform.icon} ${platform.name}</span>
       </div>
       <div class="rr-header-right">
+        <div class="rr-time-saved" title="Time saved using ReviewResponder">
+          <span class="rr-time-icon">⏱️</span>
+          <span class="rr-time-value">${formatTimeSaved(timeSaved.minutes)}</span>
+          <span class="rr-time-label">saved</span>
+        </div>
         <button class="rr-help-btn" title="How to use">?</button>
         <button class="rr-close-btn" title="Close (Esc)">×</button>
       </div>
@@ -438,6 +445,12 @@ function createResponsePanel() {
       <!-- Review Section -->
       <div class="rr-review-box">
         <div class="rr-review-text"></div>
+      </div>
+
+      <!-- Issue Detection Tags (shown when issues detected) -->
+      <div class="rr-issues-row hidden">
+        <span class="rr-issues-label">Issues detected:</span>
+        <div class="rr-issues-tags"></div>
       </div>
 
       <!-- Sentiment + Language Row -->
@@ -495,9 +508,15 @@ function createResponsePanel() {
       <div class="rr-response-section hidden">
         <textarea class="rr-response-textarea" placeholder="Your response..."></textarea>
 
+        <!-- Time Saved Badge (shown after generation) -->
+        <div class="rr-time-saved-badge hidden">
+          <span>⏱️ ~3 min saved!</span>
+        </div>
+
         <div class="rr-action-buttons">
           <button class="rr-copy-btn">📋 Copy</button>
-          <button class="rr-regenerate-btn">🔄 Try Again</button>
+          ${isGoogleMaps ? '<button class="rr-paste-btn">🚀 Paste & Reply</button>' : ''}
+          <button class="rr-regenerate-btn">🔄 Again</button>
         </div>
 
         <!-- Quick Tone Switch -->
@@ -525,6 +544,7 @@ function createResponsePanel() {
             <li>Choose your tone & generate</li>
             <li>Copy & paste your response!</li>
           </ol>
+          ${isGoogleMaps ? '<p class="rr-help-tip">💡 On Google Maps: Use "Paste & Reply" to auto-fill!</p>' : ''}
           <button class="rr-help-close">Got it!</button>
         </div>
       </div>
@@ -572,6 +592,19 @@ function initPanelEvents(panel) {
   // Copy button
   panel.querySelector('.rr-copy-btn').addEventListener('click', () => copyResponse(panel));
 
+  // Paste & Reply button (Google Maps only)
+  const pasteBtn = panel.querySelector('.rr-paste-btn');
+  if (pasteBtn) {
+    pasteBtn.addEventListener('click', () => {
+      const text = panel.querySelector('.rr-response-textarea').value;
+      if (text) {
+        autoPasteToGoogleMaps(text, panel);
+      } else {
+        showToast('⚠️ Generate a response first', 'warning');
+      }
+    });
+  }
+
   // Quick tone buttons
   panel.querySelectorAll('.rr-quick-tone').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -612,6 +645,7 @@ function saveCurrentSettings(panel) {
 // ========== GENERATE RESPONSE ==========
 async function generateResponse(panel) {
   const reviewText = panel.dataset.reviewText;
+  const detectedIssues = panel.dataset.detectedIssues ? JSON.parse(panel.dataset.detectedIssues) : [];
   const tone = panel.querySelector('.rr-tone-select').value;
   const length = panel.querySelector('.rr-length-select').value;
   const emojis = panel.querySelector('.rr-emoji-toggle').checked;
@@ -620,6 +654,7 @@ async function generateResponse(panel) {
   const btnText = panel.querySelector('.rr-btn-text');
   const btnLoading = panel.querySelector('.rr-btn-loading');
   const responseSection = panel.querySelector('.rr-response-section');
+  const timeSavedBadge = panel.querySelector('.rr-time-saved-badge');
 
   if (!reviewText) {
     showToast('⚠️ No review text found', 'error');
@@ -645,6 +680,13 @@ async function generateResponse(panel) {
   btnLoading.classList.remove('hidden');
 
   try {
+    // Build context with detected issues for smarter AI response
+    let context = '';
+    if (detectedIssues.length > 0) {
+      const issueLabels = detectedIssues.map(i => i.label.replace(/[^\w\s]/g, '').trim());
+      context = `Customer complaints detected: ${issueLabels.join(', ')}. Address these specific issues in your response.`;
+    }
+
     const response = await fetch(`${API_URL}/generate`, {
       method: 'POST',
       headers: {
@@ -657,7 +699,8 @@ async function generateResponse(panel) {
         outputLanguage: 'auto',
         responseLength: length,
         includeEmojis: emojis,
-        businessName: stored.user?.businessName || ''
+        businessName: stored.user?.businessName || '',
+        additionalContext: context
       })
     });
 
@@ -671,13 +714,30 @@ async function generateResponse(panel) {
     panel.querySelector('.rr-response-textarea').value = data.response;
     responseSection.classList.remove('hidden');
 
+    // Track time saved
+    const totalMinutes = await trackTimeSaved();
+
+    // Update time saved in header
+    const timeValue = panel.querySelector('.rr-time-value');
+    if (timeValue) {
+      timeValue.textContent = formatTimeSaved(totalMinutes);
+      timeValue.classList.add('rr-time-updated');
+      setTimeout(() => timeValue.classList.remove('rr-time-updated'), 1000);
+    }
+
+    // Show time saved badge
+    if (timeSavedBadge) {
+      timeSavedBadge.classList.remove('hidden');
+      setTimeout(() => timeSavedBadge.classList.add('hidden'), 4000);
+    }
+
     // Update quick tone buttons
     panel.querySelectorAll('.rr-quick-tone').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.tone === tone);
     });
 
-    // Show success toast
-    showToast('✨ Response generated!', 'success');
+    // Show success toast with time saved
+    showToast('✨ Response generated! ~3 min saved', 'success');
 
     // Maybe show confetti
     await maybeShowConfetti();
@@ -730,7 +790,7 @@ async function copyResponse(panel) {
 async function showResponsePanel(reviewText, autoGenerate = false) {
   let panel = document.getElementById('rr-response-panel');
   if (!panel) {
-    panel = createResponsePanel();
+    panel = await createResponsePanel();
   }
 
   // Clean and store review text
@@ -757,11 +817,37 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
   panel.querySelector('.rr-language-flag').textContent = language.flag;
   panel.querySelector('.rr-language-name').textContent = language.name;
 
+  // Smart Issue Detection
+  const issues = detectIssues(cleaned);
+  const issuesRow = panel.querySelector('.rr-issues-row');
+  const issuesTags = panel.querySelector('.rr-issues-tags');
+
+  if (issues.length > 0) {
+    // Store issues for generateResponse
+    panel.dataset.detectedIssues = JSON.stringify(issues);
+
+    // Show issues in UI
+    issuesTags.innerHTML = issues.map(i => `<span class="rr-issue-tag">${i.label}</span>`).join('');
+    issuesRow.classList.remove('hidden');
+
+    // Auto-select apologetic tone for negative issues
+    if (sentiment === 'negative') {
+      panel.querySelector('.rr-tone-select').value = 'apologetic';
+    }
+  } else {
+    panel.dataset.detectedIssues = '[]';
+    issuesRow.classList.add('hidden');
+  }
+
   // Reset response section
   panel.querySelector('.rr-response-section').classList.add('hidden');
   panel.querySelector('.rr-response-textarea').value = '';
   panel.querySelector('.rr-advanced').classList.add('hidden');
   panel.querySelector('.rr-help-overlay').classList.add('hidden');
+
+  // Hide time saved badge
+  const timeSavedBadge = panel.querySelector('.rr-time-saved-badge');
+  if (timeSavedBadge) timeSavedBadge.classList.add('hidden');
 
   // Reset position for desktop
   if (window.innerWidth > 640) {
