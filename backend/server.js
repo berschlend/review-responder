@@ -848,6 +848,11 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
+    // Check if user has a password (OAuth users don't have one)
+    if (!user.password) {
+      return res.status(400).json({ error: 'Please sign in with Google' });
+    }
+
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return res.status(400).json({ error: 'Invalid credentials' });

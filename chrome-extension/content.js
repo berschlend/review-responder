@@ -859,7 +859,6 @@ async function recordAnalyticsResponse() {
   }
   analytics.daily[today].count++;
   analytics.total.count = (analytics.total.count || 0) + 1;
-  analytics.total.time_saved_minutes = (analytics.total.time_saved_minutes || 0) + 3;
 
   // Clean up old data (keep last 30 days)
   const cutoff = new Date();
