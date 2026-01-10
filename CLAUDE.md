@@ -70,6 +70,27 @@ STARTER/PROFESSIONAL/UNLIMITED: ...&plan=starter/professional/unlimited&key=...
   - `/verify-email?token=xxx` Route für Verification-Links
   - User kann App trotzdem sofort nutzen (kein Blocker!)
   - Endpoints: `GET /api/auth/verify-email`, `POST /api/auth/resend-verification`
+- [x] **Big Tony Security Audit + Fixes (Security Rating: B+ → A-)**
+  - Big Tony Agent erstellt und in CLAUDE.md dokumentiert
+  - Comprehensive Security Audit durchgeführt (6382 Zeilen Code analysiert)
+  - **Critical Fixed:** JWT_SECRET validation bei startup hinzugefügt
+  - **High Priority Fixed (6 Issues):**
+    - Input length validation: reviewText max 5000 chars (DoS Prevention)
+    - Input length validation: customInstructions max 1000 chars
+    - Individual review length validation in bulk endpoint
+    - Rate limiting von 500 auf 100 per 15 min reduziert
+    - Auth endpoints: Separate rate limiting (10 per 15 min) gegen Brute Force
+    - Password reset throttling: 1 request per 5 Minuten per User
+  - **14 Good Security Practices** identifiziert (SQL Injection Prevention, bcrypt, etc.)
+  - Alle Fixes committed & deployed
+- [x] **DECISION MAKING Section** in CLAUDE.md hinzugefügt
+  - AskUserQuestionTool Guidelines dokumentiert
+  - Berend's Preferences für Auth, Payments, UI, Code Quality
+  - Beispiele für gute vs. schlechte Fragen
+- [x] **DEVELOPER_GUIDE.md erstellt** - Anti-Vibe-Coder Handbuch
+  - .env, npm, package.json, git workflows erklärt
+  - Security Checklist & Troubleshooting
+  - Project Structure & Common Commands
 
 ### BEKANNTE BUGS:
 Keine offenen Bugs.
