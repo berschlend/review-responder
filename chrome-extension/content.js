@@ -161,6 +161,28 @@ function cleanReviewText(text) {
     /Weniger anzeigen/gi,
     /Hilfreich/gi,
     /\d+ (Person|Personen) fanden? diese Rezension hilfreich/gi,
+    // Additional German UI patterns
+    /Lokal Guide/gi,
+    /Local Guide/gi,
+    /Rezension(en)?/gi,
+    /Bewertet:?/gi,
+    /\d+\s*Sterne?/gi,
+    /\d+\s*Fotos?/gi,
+    /\d+\s*Bewertungen?/gi,
+    /Sortieren/gi,
+    /Neueste/gi,
+    /Höchste Bewertung/gi,
+    /Niedrigste Bewertung/gi,
+    /Antworten/gi,
+    /Teilen/gi,
+    /Melden/gi,
+    /Gepostet/gi,
+    /Geändert/gi,
+    /Übersetzung anzeigen/gi,
+    /Original anzeigen/gi,
+    /Von Google übersetzt/gi,
+    /Neue Rezension/gi,
+    /Alle Rezensionen/gi,
   ];
 
   // Remove common English UI patterns
@@ -171,12 +193,35 @@ function cleanReviewText(text) {
     /See less/gi,
     /Helpful/gi,
     /\d+ (person|people) found this helpful/gi,
+    // Additional English UI patterns
+    /Local Guide/gi,
+    /reviews?/gi,
+    /Rated:?/gi,
+    /\d+\s*stars?/gi,
+    /\d+\s*photos?/gi,
+    /Sort by/gi,
+    /Newest/gi,
+    /Highest rating/gi,
+    /Lowest rating/gi,
+    /Reply/gi,
+    /Share/gi,
+    /Report/gi,
+    /Posted/gi,
+    /Edited/gi,
+    /Translate/gi,
+    /See original/gi,
+    /Translated by Google/gi,
+    /New review/gi,
+    /All reviews/gi,
   ];
 
   let cleaned = text;
   [...germanUIPatterns, ...englishUIPatterns].forEach(pattern => {
     cleaned = cleaned.replace(pattern, '');
   });
+
+  // Clean up extra whitespace
+  cleaned = cleaned.replace(/\s+/g, ' ');
 
   return cleaned.trim();
 }

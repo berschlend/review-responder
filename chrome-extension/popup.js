@@ -1,5 +1,68 @@
 const API_URL = 'https://review-responder.onrender.com/api';
 
+// Clean review text - remove UI elements that might confuse language detection
+function cleanReviewText(text) {
+  const germanUIPatterns = [
+    /vor \d+ (Sekunden?|Minuten?|Stunden?|Tagen?|Wochen?|Monaten?|Jahren?)/gi,
+    /Antwort vom Inhaber/gi,
+    /Mehr anzeigen/gi,
+    /Weniger anzeigen/gi,
+    /Hilfreich/gi,
+    /\d+ (Person|Personen) fanden? diese Rezension hilfreich/gi,
+    /Lokal Guide/gi,
+    /Local Guide/gi,
+    /Rezension(en)?/gi,
+    /Bewertet:?/gi,
+    /\d+\s*Sterne?/gi,
+    /\d+\s*Fotos?/gi,
+    /\d+\s*Bewertungen?/gi,
+    /Sortieren/gi,
+    /Neueste/gi,
+    /Höchste Bewertung/gi,
+    /Niedrigste Bewertung/gi,
+    /Antworten/gi,
+    /Teilen/gi,
+    /Melden/gi,
+    /Gepostet/gi,
+    /Geändert/gi,
+    /Übersetzung anzeigen/gi,
+    /Original anzeigen/gi,
+    /Von Google übersetzt/gi,
+  ];
+
+  const englishUIPatterns = [
+    /\d+ (second|minute|hour|day|week|month|year)s? ago/gi,
+    /Owner response/gi,
+    /See more/gi,
+    /See less/gi,
+    /Helpful/gi,
+    /\d+ (person|people) found this helpful/gi,
+    /Local Guide/gi,
+    /reviews?/gi,
+    /Rated:?/gi,
+    /\d+\s*stars?/gi,
+    /\d+\s*photos?/gi,
+    /Sort by/gi,
+    /Newest/gi,
+    /Highest rating/gi,
+    /Lowest rating/gi,
+    /Reply/gi,
+    /Share/gi,
+    /Report/gi,
+    /Posted/gi,
+    /Edited/gi,
+    /Translate/gi,
+    /See original/gi,
+    /Translated by Google/gi,
+  ];
+
+  let cleaned = text;
+  [...germanUIPatterns, ...englishUIPatterns].forEach(pattern => {
+    cleaned = cleaned.replace(pattern, '');
+  });
+  return cleaned.replace(/\s+/g, ' ').trim();
+}
+
 // DOM Elements
 const loginSection = document.getElementById('login-section');
 const mainSection = document.getElementById('main-section');
@@ -102,6 +165,14 @@ async function generateResponse(overrideTone = null) {
     return;
   }
 
+  // Clean the review text to remove UI elements that might confuse language detection
+  const cleanedReview = cleanReviewText(review);
+
+  if (!cleanedReview || cleanedReview.length < 5) {
+    mainError.textContent = 'Please enter a valid review text';
+    return;
+  }
+
   // Update tone select if overridden
   if (overrideTone) {
     toneSelect.value = overrideTone;
@@ -122,7 +193,7 @@ async function generateResponse(overrideTone = null) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ reviewText: review, tone })
+      body: JSON.stringify({ reviewText: cleanedReview, tone, outputLanguage: 'auto' })
     });
 
     const data = await response.json();

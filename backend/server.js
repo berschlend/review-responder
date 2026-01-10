@@ -730,6 +730,50 @@ app.post('/api/auth/reset-password', async (req, res) => {
 
 // ============ RESPONSE GENERATION ============
 
+// Language detection for automatic response language matching
+function detectLanguage(text) {
+  // Heuristic language detection based on common words
+  const patterns = {
+    de: /\b(und|der|die|das|ist|nicht|ich|wir|sehr|gut|schlecht|aber|haben|sein|werden|können|müssen|sollen|dürfen|wollen|mögen|lassen|wegen|trotz|während|obwohl|deshalb|außerdem|freundlich|empfehlen|leider|wirklich|immer|wieder|vielen|danke|super|toll|prima|schön|nett|lecker|gemütlich|sauber|schnell|langsam|teuer|billig|preis|qualität|service|essen|trinken|personal|ambiente|würde|könnte|sollte|möchte)\b/gi,
+    es: /\b(el|la|los|las|muy|bien|mal|pero|que|como|está|están|tienen|hacer|poder|querer|deber|saber|conocer|dar|ver|ir|venir|ser|hay|todo|nada|siempre|nunca|también|además|porque|aunque|gracias|amable|recomendar|lamentablemente|realmente|excelente|bueno|malo|delicioso|limpio|rápido|lento|caro|barato|precio|calidad|servicio|comida|bebida|personal|ambiente)\b/gi,
+    fr: /\b(le|la|les|très|bien|mal|mais|que|comme|est|sont|avoir|être|faire|pouvoir|vouloir|devoir|savoir|aller|venir|voir|prendre|tout|rien|toujours|jamais|aussi|parce|merci|aimable|recommander|malheureusement|vraiment|excellent|bon|mauvais|délicieux|propre|rapide|lent|cher|prix|qualité|service|nourriture|boisson|personnel|ambiance|je|nous|vous)\b/gi,
+    it: /\b(il|la|lo|gli|le|molto|bene|male|ma|che|come|sono|avere|essere|fare|potere|volere|dovere|sapere|andare|venire|vedere|prendere|tutto|niente|sempre|mai|anche|perché|grazie|gentile|consigliare|purtroppo|veramente|eccellente|buono|cattivo|delizioso|pulito|veloce|lento|costoso|economico|prezzo|qualità|servizio|cibo|bevanda|personale|atmosfera)\b/gi,
+    pt: /\b(o|a|os|as|muito|bem|mal|mas|que|como|são|ter|ser|fazer|poder|querer|dever|saber|ir|vir|ver|dar|tudo|nada|sempre|nunca|também|porque|obrigado|amável|recomendar|infelizmente|realmente|excelente|bom|mau|delicioso|limpo|rápido|lento|caro|barato|preço|qualidade|serviço|comida|bebida|pessoal|ambiente|eu|nós|você)\b/gi,
+    nl: /\b(de|het|en|een|van|in|is|dat|op|te|zijn|hebben|worden|kunnen|moeten|zullen|willen|mogen|laten|goed|slecht|maar|ook|altijd|nooit|omdat|hoewel|bedankt|vriendelijk|aanbevelen|helaas|echt|uitstekend|lekker|schoon|snel|langzaam|duur|goedkoop|prijs|kwaliteit|service|eten|drinken|personeel|sfeer|ik|wij|u)\b/gi,
+  };
+
+  const langNames = {
+    de: 'German',
+    en: 'English',
+    es: 'Spanish',
+    fr: 'French',
+    it: 'Italian',
+    pt: 'Portuguese',
+    nl: 'Dutch'
+  };
+
+  let maxMatches = 0;
+  let detectedLang = 'en'; // Default to English
+
+  for (const [lang, pattern] of Object.entries(patterns)) {
+    const matches = (text.match(pattern) || []).length;
+    if (matches > maxMatches) {
+      maxMatches = matches;
+      detectedLang = lang;
+    }
+  }
+
+  // Only consider detected language if we have enough matches (min 2)
+  // Otherwise default to English
+  const finalLang = maxMatches >= 2 ? detectedLang : 'en';
+
+  return {
+    code: finalLang,
+    name: langNames[finalLang] || 'English',
+    confidence: maxMatches
+  };
+}
+
 // Alias for Chrome extension (shorter path)
 app.post('/api/generate', authenticateToken, (req, res) => generateResponseHandler(req, res));
 
@@ -824,9 +868,11 @@ async function generateResponseHandler(req, res) {
     };
 
     // Build language instruction based on outputLanguage selection
+    // Use explicit language detection for 'auto' mode
+    const detectedLang = detectLanguage(reviewText);
     const languageInstruction = (!outputLanguage || outputLanguage === 'auto')
-      ? 'IMPORTANT: Respond in the same language as the review. If the review is in German, respond in German. If in Spanish, respond in Spanish.'
-      : `IMPORTANT: You MUST write the response in ${languageNames[outputLanguage] || 'English'}, regardless of what language the review is written in.`;
+      ? `CRITICAL: The review is written in ${detectedLang.name}. You MUST respond in ${detectedLang.name}. This is non-negotiable.`
+      : `CRITICAL: You MUST write the response in ${languageNames[outputLanguage] || 'English'}, regardless of what language the review is written in.`;
 
     // Build business context section (use team owner's context if team member)
     const contextUser = isTeamMember ? usageOwner : user;
@@ -863,7 +909,7 @@ Instructions:
 - If business context is provided, reference specific details about the business (e.g., mention specific menu items, services, team members)
 ${customInstructions ? `- Additional instructions: ${customInstructions}` : ''}
 
-Remember: Write your response in the SAME LANGUAGE as the review above!
+**LANGUAGE REQUIREMENT**: Your response MUST be written in ${(!outputLanguage || outputLanguage === 'auto') ? detectedLang.name : (languageNames[outputLanguage] || 'English')}. Do not use any other language.
 
 Generate ONLY the response text, nothing else:`;
 
