@@ -3787,7 +3787,7 @@ app.post('/api/admin/set-plan', async (req, res) => {
     }
 
     const config = planConfig[targetPlan];
-    await dbQuery(
+    const updateResult = await dbQuery(
       `UPDATE users SET
         subscription_plan = $1,
         subscription_status = $2,
@@ -3797,14 +3797,21 @@ app.post('/api/admin/set-plan', async (req, res) => {
       [targetPlan, config.status, config.limit, user.id]
     );
 
-    console.log(`✅ Admin set ${email} to ${targetPlan} plan (was: ${user.subscription_plan})`);
+    console.log(`✅ Admin set ${email} to ${targetPlan} plan (was: ${user.subscription_plan}), rows affected: ${updateResult.rowCount}`);
+
+    // Verify the update worked
+    const verifyUser = await dbGet('SELECT subscription_plan, responses_limit FROM users WHERE id = $1', [user.id]);
+    console.log(`✅ Verified: plan=${verifyUser?.subscription_plan}, limit=${verifyUser?.responses_limit}`);
 
     res.json({
       success: true,
       message: `User ${email} set to ${targetPlan} plan`,
       previous_plan: user.subscription_plan,
       new_plan: targetPlan,
-      responses_limit: config.limit
+      responses_limit: config.limit,
+      rows_affected: updateResult.rowCount,
+      verified_plan: verifyUser?.subscription_plan,
+      verified_limit: verifyUser?.responses_limit
     });
   } catch (error) {
     console.error('Admin set-plan error:', error);

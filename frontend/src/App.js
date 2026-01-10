@@ -1470,7 +1470,7 @@ const LandingPage = () => {
                 <span style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Generated in 3 seconds</span>
               </div>
               <p style={{ fontSize: '15px', color: 'var(--gray-800)', lineHeight: '1.6' }}>
-                "Really glad you enjoyed the pizza - that crispy crust is something we're pretty proud of. And quick, friendly service is what we aim for every time. Hope to see you back soon."
+                "Really happy the crust worked for you. We let our dough rest 48 hours, and it makes all the difference. See you next time."
               </p>
               <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
                 <span style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--primary-50)', color: 'var(--primary-700)', borderRadius: '12px' }}>Friendly Tone</span>
