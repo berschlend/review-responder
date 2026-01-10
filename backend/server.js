@@ -3160,10 +3160,10 @@ app.post('/api/capture-email', async (req, res) => {
 
                   <p>Thanks for checking out ReviewResponder! As an early supporter, you get access to our launch discount:</p>
 
-                  <div style="background: #F3F4F6; padding: 24px; border-radius: 8px; text-align: center; margin: 24px 0;">
-                    <p style="margin: 0 0 8px 0; color: #6B7280;">Use code</p>
-                    <div style="font-size: 28px; font-weight: bold; color: #4F46E5; letter-spacing: 2px;">${discountCode}</div>
-                    <p style="margin: 8px 0 0 0; font-weight: 600;">50% off - forever, not just the first month</p>
+                  <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 24px; border-radius: 8px; text-align: center; margin: 24px 0;">
+                    <p style="margin: 0 0 8px 0; color: rgba(255,255,255,0.9); font-size: 14px;">Your exclusive discount</p>
+                    <div style="font-size: 32px; font-weight: bold; color: white;">50% OFF</div>
+                    <p style="margin: 8px 0 0 0; font-weight: 600; color: rgba(255,255,255,0.95);">Forever, not just the first month!</p>
                   </div>
 
                   <p>ReviewResponder helps businesses respond to customer reviews in seconds using AI. No more staring at a blank screen wondering what to write.</p>
@@ -3171,7 +3171,7 @@ app.post('/api/capture-email', async (req, res) => {
                   <p>This discount won't last forever - it's only for our first 50 customers.</p>
 
                   <div style="text-align: center; margin: 32px 0;">
-                    <a href="${process.env.FRONTEND_URL}/pricing" style="display: inline-block; background: #4F46E5; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: 600;">Claim 50% Off</a>
+                    <a href="${process.env.FRONTEND_URL}/pricing?discount=${discountCode}" style="display: inline-block; background: #10b981; color: white; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px;">🎁 Claim 50% Discount</a>
                   </div>
 
                   <p style="color: #6B7280; font-size: 14px;">Questions? Just reply to this email.</p>

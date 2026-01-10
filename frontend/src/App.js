@@ -829,7 +829,7 @@ const ExitIntentPopup = () => {
                   fontWeight: '600',
                   marginBottom: '12px'
                 }}>
-                  🎁 Exclusive Offer: Save 20%
+                  🎁 Exclusive Offer: Save 50%
                 </div>
                 <p style={{ color: 'var(--gray-600)', fontSize: '14px' }}>
                   Enter your email to unlock this limited-time discount
@@ -848,14 +848,14 @@ const ExitIntentPopup = () => {
                     style={{ fontSize: '16px', padding: '12px 16px' }}
                   />
                 </div>
-                
+
                 <button
                   type="submit"
                   className="btn btn-primary"
                   style={{ width: '100%', fontSize: '16px', padding: '12px' }}
                   disabled={loading}
                 >
-                  {loading ? 'Processing...' : 'Get My 20% Discount'}
+                  {loading ? 'Processing...' : 'Get My 50% Discount'}
                 </button>
               </form>
 
@@ -876,24 +876,26 @@ const ExitIntentPopup = () => {
                 justifyContent: 'center',
                 width: '64px',
                 height: '64px',
-                background: 'var(--success-light)',
+                background: '#d1fae5',
                 borderRadius: '50%',
                 marginBottom: '16px'
               }}>
-                <Check size={32} style={{ color: 'var(--success)' }} />
+                <Check size={32} style={{ color: '#10b981' }} />
               </div>
               <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>
-                Discount Code Sent!
+                🎉 50% OFF Unlocked!
               </h3>
               <p style={{ color: 'var(--gray-600)', marginBottom: '20px' }}>
-                Check your email for your exclusive 50% off code: <strong>EARLY50</strong>
+                Your exclusive discount is ready. We also sent the link to your email.
               </p>
               <Link
-                to="/register"
+                to="/pricing?discount=EARLY50"
                 className="btn btn-primary"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                 onClick={() => setIsVisible(false)}
               >
-                Sign Up Now →
+                🎁 Claim 50% Discount
+                <ArrowRight size={18} />
               </Link>
             </div>
           )}
