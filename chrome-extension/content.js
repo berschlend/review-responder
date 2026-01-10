@@ -113,28 +113,154 @@ function detectIssues(text) {
   return issues;
 }
 
-// ========== GOOGLE MAPS AUTO-PASTE ==========
-function findGoogleMapsReplyField() {
-  // Try different selectors for Google Maps reply fields
-  const selectors = [
-    // Reply to review textarea
-    'textarea[aria-label*="Reply"]',
-    'textarea[aria-label*="reply"]',
-    'textarea[aria-label*="Antwort"]',
-    'textarea[aria-label*="Répondre"]',
-    'textarea[jsname="YPqjbf"]',
-    // Business response fields
-    '.review-dialog-text textarea',
-    '[data-value="Reply"] textarea',
-    '.reply-text textarea',
-    // Generic textarea in review dialogs
-    '.review-dialog textarea',
-    '[role="dialog"] textarea',
-  ];
+// ========== MULTI-PLATFORM AUTO-PASTE ==========
+const PLATFORM_SELECTORS = {
+  Google: {
+    replyField: [
+      'textarea[aria-label*="Reply"]',
+      'textarea[aria-label*="reply"]',
+      'textarea[aria-label*="Antwort"]',
+      'textarea[aria-label*="Répondre"]',
+      'textarea[jsname="YPqjbf"]',
+      '.review-dialog-text textarea',
+      '[data-value="Reply"] textarea',
+      '.reply-text textarea',
+      '.review-dialog textarea',
+      '[role="dialog"] textarea',
+    ],
+    replyButton: [
+      '[data-value="Reply"]',
+      'button[aria-label*="Reply"]',
+      'button[aria-label*="reply"]',
+      'button[aria-label*="Antwort"]',
+      '.review-action-button',
+      '[jsaction*="reply"]',
+    ],
+    submitButton: [
+      'button[aria-label*="Submit"]',
+      'button[aria-label*="Send"]',
+      'button[aria-label*="Senden"]',
+      'button[aria-label*="Publier"]',
+      'button[jsname="LgbsSe"]',
+      '[role="dialog"] button[type="submit"]',
+    ],
+    submitText: ['submit', 'send', 'senden', 'publier', 'enviar', 'post']
+  },
+  Yelp: {
+    replyField: [
+      'textarea.comment-text',
+      '.biz-owner-reply textarea',
+      '[data-testid="reply-textarea"]',
+      '.review-response textarea',
+      'textarea[name="comment"]',
+    ],
+    replyButton: [
+      'button[data-testid="reply-button"]',
+      '.reply-link',
+      'a[href*="respond"]',
+      '.biz-owner-reply-link',
+    ],
+    submitButton: [
+      'button.send-button',
+      'button[type="submit"]',
+      '.submit-response',
+      'button[data-testid="submit-reply"]',
+    ],
+    submitText: ['submit', 'send', 'post', 'reply']
+  },
+  TripAdvisor: {
+    replyField: [
+      '.reviewResponse textarea',
+      'textarea.responseText',
+      '.management-response textarea',
+      '[data-test-target="reply-textarea"]',
+    ],
+    replyButton: [
+      '.management-response-link',
+      'button[data-test-target="reply-button"]',
+      '.respond-link',
+    ],
+    submitButton: [
+      '.submitResponse',
+      'button[data-test-target="submit-response"]',
+      'button[type="submit"]',
+    ],
+    submitText: ['submit', 'post', 'respond']
+  },
+  Facebook: {
+    replyField: [
+      '[contenteditable="true"]',
+      'div[role="textbox"]',
+      '.notranslate._5rpu',
+    ],
+    replyButton: [
+      '[aria-label="Reply"]',
+      '[data-testid="UFI2CommentActionLink"]',
+    ],
+    submitButton: [
+      '[aria-label="Submit"]',
+      '[aria-label="Post"]',
+      'div[aria-label*="Press enter"]',
+    ],
+    submitText: ['submit', 'post', 'send'],
+    useEnter: true // Facebook often uses Enter to submit
+  },
+  Booking: {
+    replyField: [
+      '.review-reply-input',
+      'textarea[data-testid="reply-input"]',
+      '.response-textarea',
+    ],
+    replyButton: [
+      '.reply-button',
+      '[data-testid="reply-link"]',
+    ],
+    submitButton: [
+      '.reply-submit',
+      'button[data-testid="submit-reply"]',
+      'button[type="submit"]',
+    ],
+    submitText: ['submit', 'send', 'reply', 'post']
+  },
+  Trustpilot: {
+    replyField: [
+      'textarea[data-service-review-reply-textarea]',
+      '.reply-box textarea',
+      '[data-testid="reply-textarea"]',
+    ],
+    replyButton: [
+      'button[data-service-review-reply-button]',
+      '.reply-link',
+    ],
+    submitButton: [
+      'button[data-service-review-reply-submit]',
+      'button[type="submit"]',
+    ],
+    submitText: ['submit', 'send', 'post', 'reply']
+  }
+};
+
+function findReplyField(platform) {
+  const selectors = PLATFORM_SELECTORS[platform.name]?.replyField || [];
 
   for (const selector of selectors) {
     const el = document.querySelector(selector);
-    if (el && el.offsetParent !== null) { // Check if visible
+    if (el && el.offsetParent !== null) {
+      return el;
+    }
+  }
+
+  // Generic fallback
+  const genericSelectors = [
+    'textarea[placeholder*="reply" i]',
+    'textarea[placeholder*="response" i]',
+    '[role="dialog"] textarea',
+    '.reply-box textarea',
+  ];
+
+  for (const selector of genericSelectors) {
+    const el = document.querySelector(selector);
+    if (el && el.offsetParent !== null) {
       return el;
     }
   }
@@ -142,16 +268,8 @@ function findGoogleMapsReplyField() {
   return null;
 }
 
-function findGoogleMapsReplyButton() {
-  // Find the "Reply" button on Google Maps reviews
-  const selectors = [
-    '[data-value="Reply"]',
-    'button[aria-label*="Reply"]',
-    'button[aria-label*="reply"]',
-    'button[aria-label*="Antwort"]',
-    '.review-action-button',
-    '[jsaction*="reply"]',
-  ];
+function findReplyButton(platform) {
+  const selectors = PLATFORM_SELECTORS[platform.name]?.replyButton || [];
 
   for (const selector of selectors) {
     const el = document.querySelector(selector);
@@ -163,31 +281,8 @@ function findGoogleMapsReplyButton() {
   return null;
 }
 
-function findGoogleMapsSubmitButton() {
-  // Find the Submit/Send button after entering reply text
-  const selectors = [
-    // Google Maps Business Profile submit buttons
-    'button[aria-label*="Submit"]',
-    'button[aria-label*="submit"]',
-    'button[aria-label*="Send"]',
-    'button[aria-label*="send"]',
-    'button[aria-label*="Senden"]',
-    'button[aria-label*="Absenden"]',
-    'button[aria-label*="Publier"]',
-    'button[aria-label*="Enviar"]',
-    // Generic submit in dialogs
-    '[role="dialog"] button[type="submit"]',
-    '[role="dialog"] button.submit-button',
-    // By text content
-    'button:has-text("Submit")',
-    'button:has-text("Send")',
-    // Google's internal classes
-    'button[jsname="LgbsSe"]',
-    'button[data-mdc-dialog-action="accept"]',
-    // The primary action button (usually blue)
-    '[role="dialog"] button[class*="primary"]',
-    '[role="dialog"] button[class*="action"]',
-  ];
+function findSubmitButton(platform) {
+  const selectors = PLATFORM_SELECTORS[platform.name]?.submitButton || [];
 
   for (const selector of selectors) {
     try {
@@ -196,17 +291,17 @@ function findGoogleMapsSubmitButton() {
         return el;
       }
     } catch (e) {
-      // :has-text selector might not work, skip
+      // Some selectors might fail
     }
   }
 
   // Fallback: Find button with submit-like text
-  const allButtons = document.querySelectorAll('[role="dialog"] button');
+  const submitText = PLATFORM_SELECTORS[platform.name]?.submitText || ['submit', 'send', 'post'];
+  const allButtons = document.querySelectorAll('button, [role="button"]');
+
   for (const btn of allButtons) {
     const text = btn.textContent.toLowerCase();
-    if ((text.includes('submit') || text.includes('send') || text.includes('senden') ||
-         text.includes('publier') || text.includes('enviar') || text.includes('post')) &&
-        btn.offsetParent !== null && !btn.disabled) {
+    if (submitText.some(t => text.includes(t)) && btn.offsetParent !== null && !btn.disabled) {
       return btn;
     }
   }
@@ -214,25 +309,39 @@ function findGoogleMapsSubmitButton() {
   return null;
 }
 
-async function autoPasteToGoogleMaps(text, panel, autoSubmit = false) {
-  const platform = detectPlatform();
+// Legacy function names for backward compatibility
+function findGoogleMapsReplyField() {
+  return findReplyField(detectPlatform());
+}
 
-  if (platform.name !== 'Google') {
-    showToast('⚠️ Auto-paste only works on Google Maps', 'warning');
+function findGoogleMapsReplyButton() {
+  return findReplyButton(detectPlatform());
+}
+
+function findGoogleMapsSubmitButton() {
+  return findSubmitButton(detectPlatform());
+}
+
+async function autoPasteToReviewField(text, panel, autoSubmit = false) {
+  const platform = detectPlatform();
+  const supportedPlatforms = ['Google', 'Yelp', 'TripAdvisor', 'Facebook', 'Booking', 'Trustpilot'];
+
+  if (!supportedPlatforms.includes(platform.name)) {
+    showToast(`⚠️ Auto-paste not yet supported on ${platform.name}`, 'warning');
     return false;
   }
 
   // First, try to find an existing reply field
-  let replyField = findGoogleMapsReplyField();
+  let replyField = findReplyField(platform);
 
   // If no field, try clicking the Reply button
   if (!replyField) {
-    const replyButton = findGoogleMapsReplyButton();
+    const replyButton = findReplyButton(platform);
     if (replyButton) {
       replyButton.click();
       // Wait for the reply field to appear
       await new Promise(resolve => setTimeout(resolve, 500));
-      replyField = findGoogleMapsReplyField();
+      replyField = findReplyField(platform);
     }
   }
 
@@ -241,13 +350,21 @@ async function autoPasteToGoogleMaps(text, panel, autoSubmit = false) {
     return false;
   }
 
-  // Focus and paste
+  // Focus the field
   replyField.focus();
-  replyField.value = text;
 
-  // Trigger input events so Google Maps registers the change
+  // Handle contenteditable fields (Facebook) differently
+  if (replyField.getAttribute('contenteditable') === 'true') {
+    replyField.textContent = text;
+    replyField.innerHTML = text;
+  } else {
+    replyField.value = text;
+  }
+
+  // Trigger input events so the platform registers the change
   replyField.dispatchEvent(new Event('input', { bubbles: true }));
   replyField.dispatchEvent(new Event('change', { bubbles: true }));
+  replyField.dispatchEvent(new InputEvent('input', { bubbles: true, data: text }));
 
   // Close our panel first
   if (panel) {
@@ -259,10 +376,18 @@ async function autoPasteToGoogleMaps(text, panel, autoSubmit = false) {
     // Small delay for UI to register the input
     await new Promise(resolve => setTimeout(resolve, 300));
 
-    const submitBtn = findGoogleMapsSubmitButton();
+    // Check if platform uses Enter to submit (Facebook)
+    const useEnter = PLATFORM_SELECTORS[platform.name]?.useEnter;
+    if (useEnter) {
+      replyField.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      showToast(`🎉 Response submitted to ${platform.name}!`, 'success');
+      return true;
+    }
+
+    const submitBtn = findSubmitButton(platform);
     if (submitBtn) {
       submitBtn.click();
-      showToast('🎉 Response submitted!', 'success');
+      showToast(`🎉 Response submitted to ${platform.name}!`, 'success');
       return true;
     } else {
       showToast('🚀 Pasted! Click Submit manually', 'warning');
@@ -270,8 +395,13 @@ async function autoPasteToGoogleMaps(text, panel, autoSubmit = false) {
     }
   }
 
-  showToast('🚀 Pasted! Ready to submit', 'success');
+  showToast(`🚀 Pasted to ${platform.name}! Ready to submit`, 'success');
   return true;
+}
+
+// Legacy alias for backward compatibility
+async function autoPasteToGoogleMaps(text, panel, autoSubmit = false) {
+  return autoPasteToReviewField(text, panel, autoSubmit);
 }
 
 // ========== TOAST NOTIFICATIONS ==========
@@ -546,6 +676,8 @@ async function createResponsePanel() {
   const platform = detectPlatform();
   const timeSaved = await getTimeSaved();
   const isGoogleMaps = platform.name === 'Google';
+  const supportedPlatforms = ['Google', 'Yelp', 'TripAdvisor', 'Facebook', 'Booking', 'Trustpilot'];
+  const isPasteSupported = supportedPlatforms.includes(platform.name);
 
   panel.innerHTML = `
     <div class="rr-panel-header">
@@ -657,7 +789,7 @@ async function createResponsePanel() {
         <div class="rr-action-buttons">
           <button class="rr-copy-btn">📋 Copy</button>
           <button class="rr-done-btn">✅ Copy & Done</button>
-          ${isGoogleMaps ? `
+          ${isPasteSupported ? `
             <button class="rr-paste-btn">🚀 Paste</button>
             <button class="rr-submit-btn">⚡ Paste & Submit</button>
           ` : ''}
@@ -701,7 +833,7 @@ async function createResponsePanel() {
             <li>Choose your tone & generate</li>
             <li>Copy & paste your response!</li>
           </ol>
-          ${isGoogleMaps ? '<p class="rr-help-tip">💡 On Google Maps: Use "Paste & Reply" to auto-fill!</p>' : ''}
+          ${isPasteSupported ? `<p class="rr-help-tip">💡 On ${platform.name}: Use "Paste & Submit" to auto-fill!</p>` : ''}
           <button class="rr-help-close">Got it!</button>
         </div>
       </div>
@@ -1643,6 +1775,347 @@ const observer = new MutationObserver(() => {
 });
 observer.observe(document.body, { childList: true, subtree: true });
 
+// ========== REVIEW QUEUE / BATCH MODE ==========
+let reviewQueue = {
+  reviews: [],
+  currentIndex: 0,
+  isActive: false
+};
+
+function scanPageForReviews() {
+  const reviews = [];
+  const platform = detectPlatform();
+
+  // Platform-specific selectors
+  const selectors = {
+    'Google': ['.jftiEf', '[data-review-id]'],
+    'Yelp': ['.review', '[data-review-id]'],
+    'TripAdvisor': ['.review-container', '.reviewSelector'],
+    'Facebook': ['[data-testid="UFI2Comment"]', '.userContentWrapper'],
+    'Trustpilot': ['.review-card', '.styles_reviewCard'],
+    'Booking': ['.review_item', '.c-review'],
+    'default': ['.review', '[data-review]', '.review-item']
+  };
+
+  const platformSelectors = selectors[platform.name] || selectors.default;
+
+  platformSelectors.forEach(selector => {
+    document.querySelectorAll(selector).forEach(reviewEl => {
+      // Find review text - try multiple selectors
+      const textSelectors = [
+        '.wiI7pd', '.MyEned',  // Google Maps
+        '.comment__373c0__Nsutg', '.raw__373c0__tQAx6', // Yelp
+        '.partial_entry', '.entry', // TripAdvisor
+        '.userContent', // Facebook
+        '.review-content__text', // Trustpilot
+        '.review_item_review_content', // Booking
+        '.review-text', '.review-body', 'p' // Generic
+      ];
+
+      let text = '';
+      for (const textSel of textSelectors) {
+        const textEl = reviewEl.querySelector(textSel);
+        if (textEl && textEl.textContent.trim().length > 20) {
+          text = cleanReviewText(textEl.textContent);
+          break;
+        }
+      }
+
+      // Try to get rating
+      let rating = null;
+      const ratingEl = reviewEl.querySelector('[aria-label*="star"], .rating, .star-rating, .review-rating');
+      if (ratingEl) {
+        const ariaLabel = ratingEl.getAttribute('aria-label') || '';
+        const ratingMatch = ariaLabel.match(/(\d)/);
+        if (ratingMatch) rating = parseInt(ratingMatch[1]);
+      }
+
+      if (text && text.length >= 20) {
+        reviews.push({
+          element: reviewEl,
+          text: text,
+          rating: rating,
+          sentiment: analyzeSentiment(text),
+          processed: false
+        });
+      }
+    });
+  });
+
+  return reviews;
+}
+
+function startQueueMode() {
+  // Check login first
+  if (!isLoggedIn) {
+    showToast('🔐 Please login first', 'error');
+    return;
+  }
+
+  const reviews = scanPageForReviews();
+
+  if (reviews.length === 0) {
+    showToast('📝 No reviews found on this page', 'info');
+    return;
+  }
+
+  reviewQueue = {
+    reviews: reviews,
+    currentIndex: 0,
+    isActive: true
+  };
+
+  showToast(`📋 Found ${reviews.length} reviews! Starting queue...`, 'success');
+  showQueuePanel();
+}
+
+function showQueuePanel() {
+  const existing = document.getElementById('rr-queue-panel');
+  if (existing) existing.remove();
+
+  const panel = document.createElement('div');
+  panel.id = 'rr-queue-panel';
+
+  const currentReview = reviewQueue.reviews[reviewQueue.currentIndex];
+  const sentimentDisplay = getSentimentDisplay(currentReview.sentiment);
+  const totalReviews = reviewQueue.reviews.length;
+  const processed = reviewQueue.reviews.filter(r => r.processed).length;
+
+  panel.innerHTML = `
+    <div class="rr-queue-header">
+      <div class="rr-queue-title">
+        <span class="rr-queue-icon">📋</span>
+        <span>Review Queue</span>
+      </div>
+      <div class="rr-queue-progress">
+        <span class="rr-queue-counter">${reviewQueue.currentIndex + 1}/${totalReviews}</span>
+        <span class="rr-queue-processed">(${processed} done)</span>
+      </div>
+      <button class="rr-queue-close">×</button>
+    </div>
+
+    <div class="rr-queue-body">
+      <div class="rr-queue-progress-bar">
+        <div class="rr-queue-progress-fill" style="width: ${((reviewQueue.currentIndex + 1) / totalReviews) * 100}%"></div>
+      </div>
+
+      <div class="rr-queue-review">
+        <div class="rr-queue-sentiment">
+          <span class="rr-queue-sentiment-emoji">${sentimentDisplay.emoji}</span>
+          <span class="rr-queue-sentiment-label" style="color: ${sentimentDisplay.color}">${sentimentDisplay.label}</span>
+          ${currentReview.rating ? `<span class="rr-queue-rating">⭐ ${currentReview.rating}</span>` : ''}
+        </div>
+        <div class="rr-queue-text">${currentReview.text.substring(0, 200)}${currentReview.text.length > 200 ? '...' : ''}</div>
+      </div>
+
+      <div class="rr-queue-response hidden">
+        <textarea class="rr-queue-textarea" placeholder="Generated response will appear here..."></textarea>
+      </div>
+
+      <div class="rr-queue-actions">
+        <button class="rr-queue-btn rr-queue-skip" ${reviewQueue.currentIndex === 0 ? 'disabled' : ''}>◀ Prev</button>
+        <button class="rr-queue-btn rr-queue-generate">⚡ Generate</button>
+        <button class="rr-queue-btn rr-queue-skip-next">Skip ▶</button>
+      </div>
+
+      <div class="rr-queue-done-actions hidden">
+        <button class="rr-queue-btn rr-queue-copy">📋 Copy</button>
+        <button class="rr-queue-btn rr-queue-copy-next">✅ Copy & Next</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(panel);
+
+  // Scroll to current review
+  currentReview.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  currentReview.element.classList.add('rr-queue-highlight');
+
+  // Event listeners
+  panel.querySelector('.rr-queue-close').addEventListener('click', () => {
+    closeQueueMode();
+  });
+
+  panel.querySelector('.rr-queue-skip').addEventListener('click', () => {
+    navigateQueue(-1);
+  });
+
+  panel.querySelector('.rr-queue-skip-next').addEventListener('click', () => {
+    navigateQueue(1);
+  });
+
+  panel.querySelector('.rr-queue-generate').addEventListener('click', () => {
+    generateQueueResponse(panel);
+  });
+
+  panel.querySelector('.rr-queue-copy').addEventListener('click', () => {
+    copyQueueResponse(panel, false);
+  });
+
+  panel.querySelector('.rr-queue-copy-next').addEventListener('click', () => {
+    copyQueueResponse(panel, true);
+  });
+
+  // Animate in
+  setTimeout(() => panel.classList.add('rr-visible'), 10);
+}
+
+function navigateQueue(direction) {
+  const newIndex = reviewQueue.currentIndex + direction;
+
+  if (newIndex < 0 || newIndex >= reviewQueue.reviews.length) {
+    if (newIndex >= reviewQueue.reviews.length) {
+      const processed = reviewQueue.reviews.filter(r => r.processed).length;
+      showToast(`🎉 Queue complete! ${processed}/${reviewQueue.reviews.length} processed`, 'success');
+      closeQueueMode();
+    }
+    return;
+  }
+
+  // Remove highlight from current
+  reviewQueue.reviews[reviewQueue.currentIndex].element.classList.remove('rr-queue-highlight');
+
+  // Update index and refresh panel
+  reviewQueue.currentIndex = newIndex;
+  showQueuePanel();
+}
+
+async function generateQueueResponse(panel) {
+  const currentReview = reviewQueue.reviews[reviewQueue.currentIndex];
+  const generateBtn = panel.querySelector('.rr-queue-generate');
+  const responseSection = panel.querySelector('.rr-queue-response');
+  const doneActions = panel.querySelector('.rr-queue-done-actions');
+
+  generateBtn.disabled = true;
+  generateBtn.innerHTML = '<span class="rr-spinner"></span> Generating...';
+
+  try {
+    const sentimentDisplay = getSentimentDisplay(currentReview.sentiment);
+
+    const response = await fetch(`${API_URL}/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${cachedToken}`
+      },
+      body: JSON.stringify({
+        reviewText: currentReview.text,
+        tone: sentimentDisplay.tone,
+        outputLanguage: 'auto',
+        responseLength: 'medium',
+        includeEmojis: false,
+        businessName: cachedUser?.businessName || '',
+        additionalContext: ''
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Generation failed');
+    }
+
+    // Show response
+    panel.querySelector('.rr-queue-textarea').value = data.response;
+    responseSection.classList.remove('hidden');
+    doneActions.classList.remove('hidden');
+
+    // Track time saved
+    await trackTimeSaved();
+
+    // Mark as processed
+    currentReview.processed = true;
+
+    showToast('✨ Generated! Copy or move to next', 'success');
+
+  } catch (error) {
+    showToast(`❌ ${error.message}`, 'error');
+  } finally {
+    generateBtn.disabled = false;
+    generateBtn.innerHTML = '⚡ Generate';
+  }
+}
+
+async function copyQueueResponse(panel, moveToNext) {
+  const text = panel.querySelector('.rr-queue-textarea').value;
+
+  if (!text) {
+    showToast('⚠️ Nothing to copy', 'warning');
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast('📋 Copied!', 'success');
+
+    if (moveToNext) {
+      setTimeout(() => navigateQueue(1), 300);
+    }
+  } catch (error) {
+    showToast('❌ Failed to copy', 'error');
+  }
+}
+
+function closeQueueMode() {
+  // Remove highlights
+  reviewQueue.reviews.forEach(r => r.element.classList.remove('rr-queue-highlight'));
+
+  // Reset queue
+  reviewQueue = {
+    reviews: [],
+    currentIndex: 0,
+    isActive: false
+  };
+
+  // Remove panel
+  const panel = document.getElementById('rr-queue-panel');
+  if (panel) {
+    panel.classList.remove('rr-visible');
+    setTimeout(() => panel.remove(), 300);
+  }
+}
+
+// Add keyboard shortcut for Queue Mode: Alt+Q
+document.addEventListener('keydown', (e) => {
+  if (e.altKey && e.key.toLowerCase() === 'q') {
+    e.preventDefault();
+    if (reviewQueue.isActive) {
+      closeQueueMode();
+      showToast('📋 Queue mode closed', 'info');
+    } else {
+      startQueueMode();
+    }
+  }
+});
+
+// Add "Scan Page" button to floating UI
+function createScanButton() {
+  const existing = document.getElementById('rr-scan-btn');
+  if (existing) return;
+
+  const platform = detectPlatform();
+  // Only show scan button on supported platforms
+  if (!['Google', 'Yelp', 'TripAdvisor', 'Booking', 'Trustpilot'].includes(platform.name)) {
+    return;
+  }
+
+  const btn = document.createElement('button');
+  btn.id = 'rr-scan-btn';
+  btn.innerHTML = '📋 Scan Reviews';
+  btn.title = 'Scan page for reviews (Alt+Q)';
+  btn.className = 'rr-scan-btn';
+
+  btn.addEventListener('click', () => {
+    startQueueMode();
+  });
+
+  document.body.appendChild(btn);
+}
+
+// Initialize scan button
+setTimeout(createScanButton, 1000);
+
 // Ready message
 console.log('%c⚡ ReviewResponder ready!', 'font-size: 14px; font-weight: bold; color: #667eea;');
 console.log('%cSelect text → Click ⚡ → Magic!', 'font-size: 12px; color: #764ba2;');
+console.log('%cAlt+Q to scan page for reviews', 'font-size: 11px; color: #10b981;');
