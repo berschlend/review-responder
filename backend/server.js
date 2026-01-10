@@ -536,7 +536,7 @@ const PLAN_LIMITS = {
 
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { email, password, businessName, referralCode, utmSource, utmMedium, utmCampaign, utmContent, utmTerm, landingPage } = req.body;
+    const { email, password, businessName, referralCode, affiliateCode, utmSource, utmMedium, utmCampaign, utmContent, utmTerm, landingPage } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password required' });
@@ -564,6 +564,18 @@ app.post('/api/auth/register', async (req, res) => {
       }
     }
 
+    // Check for valid affiliate code (for 20% recurring commission)
+    let affiliateId = null;
+    if (affiliateCode) {
+      const affiliate = await dbGet(
+        'SELECT id FROM affiliates WHERE affiliate_code = $1 AND status = $2',
+        [affiliateCode.toUpperCase(), 'approved']
+      );
+      if (affiliate) {
+        affiliateId = affiliate.id;
+      }
+    }
+
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Generate unique referral code for new user
@@ -583,13 +595,13 @@ app.post('/api/auth/register', async (req, res) => {
     // Create Stripe customer
     const customer = await stripe.customers.create({
       email,
-      metadata: { business_name: businessName || '', referred_by: referrerId || '' }
+      metadata: { business_name: businessName || '', referred_by: referrerId || '', affiliate_id: affiliateId || '' }
     });
 
     const result = await dbQuery(
-      `INSERT INTO users (email, password, business_name, stripe_customer_id, responses_limit, referral_code, referred_by, utm_source, utm_medium, utm_campaign, utm_content, utm_term, landing_page)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id`,
-      [email, hashedPassword, businessName || '', customer.id, PLAN_LIMITS.free.responses, newUserReferralCode, referrerId, utmSource || null, utmMedium || null, utmCampaign || null, utmContent || null, utmTerm || null, landingPage || null]
+      `INSERT INTO users (email, password, business_name, stripe_customer_id, responses_limit, referral_code, referred_by, affiliate_id, utm_source, utm_medium, utm_campaign, utm_content, utm_term, landing_page)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id`,
+      [email, hashedPassword, businessName || '', customer.id, PLAN_LIMITS.free.responses, newUserReferralCode, referrerId, affiliateId, utmSource || null, utmMedium || null, utmCampaign || null, utmContent || null, utmTerm || null, landingPage || null]
     );
 
     const userId = result.rows[0].id;
@@ -603,6 +615,11 @@ app.post('/api/auth/register', async (req, res) => {
         [referrerId, email, userId]
       );
       console.log(`✅ User ${email} registered via referral from user ${referrerId}`);
+    }
+
+    // Log affiliate registration
+    if (affiliateId) {
+      console.log(`🤝 User ${email} registered via affiliate ID ${affiliateId}`);
     }
 
     const token = jwt.sign({ id: userId, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
