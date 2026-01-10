@@ -50,7 +50,7 @@ const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: proces
 
 // Email sender addresses (configurable via ENV)
 const FROM_EMAIL = process.env.FROM_EMAIL || 'ReviewResponder <hello@tryreviewresponder.com>';
-const OUTREACH_FROM_EMAIL = process.env.OUTREACH_FROM_EMAIL || 'ReviewResponder <outreach@tryreviewresponder.com>';
+const OUTREACH_FROM_EMAIL = process.env.OUTREACH_FROM_EMAIL || 'Berend von ReviewResponder <outreach@tryreviewresponder.com>';
 
 // Middleware
 app.use(helmet());
@@ -5031,84 +5031,127 @@ async function initOutreachTables() {
 // Call this after main initDatabase
 initOutreachTables();
 
-// Email templates for cold outreach
-const EMAIL_TEMPLATES = {
+// German-speaking cities for language detection
+const GERMAN_CITIES = ['Berlin', 'München', 'Munich', 'Hamburg', 'Frankfurt', 'Köln', 'Cologne', 'Stuttgart', 'Düsseldorf', 'Wien', 'Vienna', 'Zürich', 'Zurich', 'Salzburg', 'Graz', 'Innsbruck', 'Bern', 'Basel'];
+
+// Helper: Detect language based on city
+function detectLanguage(city) {
+  if (!city) return 'en';
+  return GERMAN_CITIES.some(gc => city.toLowerCase().includes(gc.toLowerCase())) ? 'de' : 'en';
+}
+
+// Email templates for cold outreach - ENGLISH
+const EMAIL_TEMPLATES_EN = {
   sequence1: {
-    subject: '{business_name} - Save 5+ Hours/Week on Review Responses',
-    body: `Hi there,
-
-I noticed {business_name} has {review_count}+ reviews on Google - that's impressive!
-
-Quick question: How much time does your team spend writing responses to customer reviews each week?
-
-Most {business_type}s I talk to spend 5-10 hours weekly on this. We built ReviewResponder to cut that to under 30 minutes.
-
-Here's how it works:
-• Paste any review → Get a perfect response in 3 seconds
-• AI matches your brand voice
-• Works with Google, Yelp, TripAdvisor - any platform
-
-Would you be open to a quick demo? Or try it free: https://review-responder-frontend.onrender.com
-
-Best,
-The ReviewResponder Team
-
-P.S. First 50 customers get 50% off forever (code: EARLY50)
-
----
-<img src="https://review-responder.onrender.com/api/outreach/track-open?email={email}&campaign=sequence1" width="1" height="1" />`
-  },
-  sequence2: {
-    subject: 'Re: Review responses for {business_name}',
-    body: `Hi again,
-
-Just following up on my last email about ReviewResponder.
-
-I wanted to share a quick stat: businesses that respond to reviews see 12% higher revenue on average (Harvard Business Review study).
-
-But I get it - writing thoughtful responses takes time you don't have.
-
-That's exactly why we built this. In the time it takes to read this email, you could have 3 professional review responses ready to post.
-
-Here's a 60-second demo: https://review-responder-frontend.onrender.com
-
-No credit card needed for the free trial.
-
-Worth a look?
-
-Best,
-The ReviewResponder Team
-
----
-<img src="https://review-responder.onrender.com/api/outreach/track-open?email={email}&campaign=sequence2" width="1" height="1" />`
-  },
-  sequence3: {
-    subject: 'Last chance: 50% off for {business_name}',
+    subject: '{business_name} - quick question',
     body: `Hi,
 
-This is my last email - I promise!
+I noticed {business_name} has {review_count}+ Google reviews - impressive!
 
-I wanted to let you know our 50% launch discount (code: EARLY50) expires soon.
+Quick question: How much time does your team spend responding to customer reviews each week?
 
-If review management isn't a priority right now, no worries at all. But if you ever find yourself:
+I built a tool that helps with exactly this - 3 seconds per response instead of 5 minutes.
 
-• Ignoring reviews because you're too busy
-• Struggling to respond to negative feedback professionally
-• Wishing you had more time to engage with customers
+If you're interested: https://tryreviewresponder.com
 
-...we're here to help.
+Cheers,
+Berend
 
-Try it free (5 responses, no card): https://review-responder-frontend.onrender.com
+P.S. I'm the founder, feel free to reply if you have any questions.`
+  },
+  sequence2: {
+    subject: 'Re: {business_name}',
+    body: `Hey,
 
-Wishing {business_name} continued success!
+just wanted to check if you saw my last email.
 
-Best,
-The ReviewResponder Team
+Businesses that respond to reviews get higher ratings and up to 9% more revenue (Harvard study) - but I get that time is tight.
 
----
-<img src="https://review-responder.onrender.com/api/outreach/track-open?email={email}&campaign=sequence3" width="1" height="1" />`
+If you have 2 minutes: https://tryreviewresponder.com
+
+Cheers,
+Berend`
+  },
+  sequence3: {
+    subject: '{business_name}',
+    body: `Hi,
+
+last email from me - promise!
+
+If review management isn't a priority right now, no worries.
+
+But if you ever find reviews piling up: https://tryreviewresponder.com is there.
+
+Wishing you continued success!
+
+Berend`
   }
 };
+
+// Email templates for cold outreach - GERMAN
+const EMAIL_TEMPLATES_DE = {
+  sequence1: {
+    subject: '{business_name} - kurze Frage',
+    body: `Hi,
+
+ich hab gesehen dass {business_name} über {review_count} Google Reviews hat - Respekt!
+
+Kurze Frage: Wie viel Zeit verbringt ihr pro Woche damit, auf Kundenrezensionen zu antworten?
+
+Ich hab ein Tool gebaut das genau dabei hilft - 3 Sekunden pro Antwort statt 5 Minuten.
+
+Falls interessant: https://tryreviewresponder.com
+
+Grüße,
+Berend
+
+P.S. Bin der Gründer, bei Fragen einfach antworten.`
+  },
+  sequence2: {
+    subject: 'Re: {business_name}',
+    body: `Hey nochmal,
+
+wollte nur kurz nachfragen ob du meine letzte Mail gesehen hast.
+
+Wer auf Reviews antwortet bekommt bessere Bewertungen und bis zu 9% mehr Umsatz (Harvard Studie) - aber ich versteh dass Zeit knapp ist.
+
+Falls du mal 2 Minuten hast: https://tryreviewresponder.com
+
+Grüße,
+Berend`
+  },
+  sequence3: {
+    subject: '{business_name}',
+    body: `Hi,
+
+letzte Mail von mir - versprochen!
+
+Falls Review-Management gerade keine Priorität ist, kein Problem.
+
+Aber falls Reviews mal liegen bleiben: https://tryreviewresponder.com ist da.
+
+Viel Erfolg weiterhin!
+
+Berend`
+  }
+};
+
+// Combined templates with language selection
+const EMAIL_TEMPLATES = {
+  sequence1: EMAIL_TEMPLATES_EN.sequence1,
+  sequence2: EMAIL_TEMPLATES_EN.sequence2,
+  sequence3: EMAIL_TEMPLATES_EN.sequence3,
+  sequence1_de: EMAIL_TEMPLATES_DE.sequence1,
+  sequence2_de: EMAIL_TEMPLATES_DE.sequence2,
+  sequence3_de: EMAIL_TEMPLATES_DE.sequence3
+};
+
+// Helper: Get template based on language
+function getTemplateForLead(sequenceNum, lead) {
+  const lang = detectLanguage(lead.city);
+  const key = lang === 'de' ? `sequence${sequenceNum}_de` : `sequence${sequenceNum}`;
+  return EMAIL_TEMPLATES[key];
+}
 
 // Helper: Fill email template with lead data
 function fillEmailTemplate(template, lead) {
@@ -5333,7 +5376,7 @@ app.post('/api/outreach/test-email', async (req, res) => {
     return res.status(500).json({ error: 'Resend not configured' });
   }
 
-  const { email, business_name } = req.body;
+  const { email, business_name, city } = req.body;
   if (!email) {
     return res.status(400).json({ error: 'Email required' });
   }
@@ -5342,12 +5385,13 @@ app.post('/api/outreach/test-email', async (req, res) => {
     const testLead = {
       business_name: business_name || 'Test Business',
       business_type: 'restaurant',
-      city: 'Test City',
+      city: city || 'New York', // Default to English, use 'Berlin' for German
       email: email,
       google_reviews_count: 100
     };
 
-    const template = fillEmailTemplate(EMAIL_TEMPLATES.sequence1, testLead);
+    const template = fillEmailTemplate(getTemplateForLead(1, testLead), testLead);
+    const language = detectLanguage(testLead.city);
 
     const result = await resend.emails.send({
       from: OUTREACH_FROM_EMAIL,
@@ -5360,6 +5404,8 @@ app.post('/api/outreach/test-email', async (req, res) => {
       success: true,
       message: `Test email sent to ${email}`,
       from: OUTREACH_FROM_EMAIL,
+      language: language,
+      city: testLead.city,
       resend_id: result.id
     });
   } catch (err) {
@@ -5433,7 +5479,7 @@ app.post('/api/outreach/send-emails', async (req, res) => {
 
     for (const lead of newLeads) {
       try {
-        const template = fillEmailTemplate(EMAIL_TEMPLATES.sequence1, lead);
+        const template = fillEmailTemplate(getTemplateForLead(1, lead), lead);
 
         // Send email via Resend
         const result = await resend.emails.send({
@@ -5545,7 +5591,7 @@ app.post('/api/outreach/send-followups', async (req, res) => {
     // Send sequence 2
     for (const lead of needsFollowup2) {
       try {
-        const template = fillEmailTemplate(EMAIL_TEMPLATES.sequence2, lead);
+        const template = fillEmailTemplate(getTemplateForLead(2, lead), lead);
 
         await resend.emails.send({
           from: OUTREACH_FROM_EMAIL,
@@ -5570,7 +5616,7 @@ app.post('/api/outreach/send-followups', async (req, res) => {
     // Send sequence 3
     for (const lead of needsFollowup3) {
       try {
-        const template = fillEmailTemplate(EMAIL_TEMPLATES.sequence3, lead);
+        const template = fillEmailTemplate(getTemplateForLead(3, lead), lead);
 
         await resend.emails.send({
           from: OUTREACH_FROM_EMAIL,
@@ -5710,7 +5756,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
 
       for (const lead of newLeads) {
         try {
-          const template = fillEmailTemplate(EMAIL_TEMPLATES.sequence1, lead);
+          const template = fillEmailTemplate(getTemplateForLead(1, lead), lead);
 
           await resend.emails.send({
             from: OUTREACH_FROM_EMAIL,
@@ -5752,11 +5798,10 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
 
       for (const lead of needsFollowup) {
         const nextSequence = (lead.last_sequence || 1) + 1;
-        const templateKey = `sequence${nextSequence}`;
 
-        if (EMAIL_TEMPLATES[templateKey]) {
+        if (nextSequence <= 3) {
           try {
-            const template = fillEmailTemplate(EMAIL_TEMPLATES[templateKey], lead);
+            const template = fillEmailTemplate(getTemplateForLead(nextSequence, lead), lead);
 
             await resend.emails.send({
               from: OUTREACH_FROM_EMAIL,
