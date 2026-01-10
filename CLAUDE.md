@@ -61,6 +61,18 @@ STARTER/PROFESSIONAL/UNLIMITED: ...&plan=starter/professional/unlimited&key=...
 
 
 ### HEUTE ERLEDIGT (10.01.2026):
+- [x] **Claude Code Best Practices Implementation** - Basierend auf Anthropic "Claude Code in Action" Kurs
+  - CLAUDE.md erweitert mit Development Guidelines (Code Style, Testing, Git Conventions)
+  - 3 automatische Hooks eingerichtet:
+    - `check-branch.sh` - Verhindert versehentliche main/master Pushes
+    - `log-commands.sh` - Loggt alle Commands nach `.claude/command-history.log`
+    - `remind-test.sh` - Erinnert an Tests nach Code-Änderungen
+  - Umfangreiche Dokumentation erstellt:
+    - `.claude/README.md` - Master Übersicht
+    - `.claude/hooks/README.md` - Hook System erklärt
+    - `.claude/github-workflow.md` - Git/GitHub Best Practices
+    - `.claude/mcp-servers.md` - MCP Server Setup Guide
+  - Alle Best Practices aus 2h Kurs implementiert ✅
 - [x] **Response History für Free freigeschaltet** - History Tab jetzt für alle User sichtbar
 - [x] **CSV/PDF Export für Starter+ freigeschaltet** - War nur Pro+, jetzt auch Starter
   - Free-User sehen Upgrade-Prompt beim Export-Versuch
