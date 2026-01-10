@@ -96,6 +96,19 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
   - Delete Button für einzelne Drafts
   - Max 10 Drafts, ältere werden auto-gelöscht
   - Orange/Amber Farbschema für Drafts
+- [x] **Chrome Extension: One-Shot Perfect Response (Auto-Tone)** ✅
+  - 🎯 AI Recommendation Box zeigt besten Tone basierend auf Review-Analyse
+  - Issue-to-Tone Mapping (cold food → apologetic, praise → friendly)
+  - Confidence Indicator (High/Medium)
+  - Ein-Klick "Generate with this" Button
+  - Pulsierender blauer Rand für Aufmerksamkeit
+- [x] **Chrome Extension: Daily Streak & Achievements** ✅
+  - 🔥 Streak Badge mit animierter Flamme (7+ Tage = on-fire)
+  - 6 Achievements: First Response, 10/50/100 Responses, 7/30-Day Streak
+  - Achievements Panel mit Unlock-Status
+  - Progress Bar für nächstes Achievement
+  - Toast Notifications bei Milestones
+  - Golden/Amber UI für Gamification-Feel
 
 ### 🟡 NÄCHSTE CLAUDE TASKS (Wähle einen):
 
