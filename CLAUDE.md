@@ -75,6 +75,8 @@ STARTER/PROFESSIONAL/UNLIMITED: ...&plan=starter/professional/unlimited&key=...
 
 ### USER MUSS MACHEN:
 - [ ] Demo-Video aufnehmen (2 Min Walkthrough)
+- [ ] **PayPal aktivieren**: Stripe Dashboard → Settings → Payment Methods → PayPal → Turn on
+- [ ] **Apple Pay Domain verifizieren**: Stripe Dashboard → Settings → Apple Pay → Add `tryreviewresponder.com` → Datei in `frontend/public/.well-known/` ablegen
 
 ### NÄCHSTE CLAUDE TASKS:
 
@@ -85,6 +87,10 @@ STARTER/PROFESSIONAL/UNLIMITED: ...&plan=starter/professional/unlimited&key=...
 
 
 ### HEUTE ERLEDIGT (10.01.2026):
+- [x] **Weitere Zahlungsmethoden aktiviert** - PayPal, SEPA-Lastschrift, Link (Stripe Wallet), Apple Pay/Google Pay
+  - Backend: `payment_method_types` erweitert in `/api/billing/create-checkout`
+  - `.well-known` Ordner für Apple Pay Verifizierung vorbereitet
+  - User muss PayPal + Apple Pay Domain manuell im Stripe Dashboard aktivieren
 - [x] **Response History für Free freigeschaltet** - History Tab jetzt für alle User sichtbar
 - [x] **CSV/PDF Export für Starter+ freigeschaltet** - War nur Pro+, jetzt auch Starter
   - Free-User sehen Upgrade-Prompt beim Export-Versuch
