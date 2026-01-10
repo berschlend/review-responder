@@ -3735,8 +3735,8 @@ const safeCompare = (a, b) => {
   return crypto.timingSafeEqual(bufA, bufB);
 };
 
-// POST /api/admin/set-plan - Set user plan (for testing)
-app.post('/api/admin/set-plan', async (req, res) => {
+// GET /api/admin/set-plan - Set user plan (for testing via browser)
+app.get('/api/admin/set-plan', async (req, res) => {
   const ip = req.ip || req.connection.remoteAddress;
 
   if (!checkAdminRateLimit(ip)) {
