@@ -2282,7 +2282,7 @@ const PricingCards = ({ showFree = true }) => {
       {/* Active Discount Banner - only shown when discount code is in URL */}
       {currentDiscount && (
         <div style={{
-          background: 'linear-gradient(135deg, var(--success) 0%, #059669 100%)',
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
           color: 'white',
           padding: '16px 24px',
           borderRadius: '12px',
@@ -2291,7 +2291,7 @@ const PricingCards = ({ showFree = true }) => {
           boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
         }}>
           <div style={{ fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>
-            🎉 {currentDiscount.percent}% OFF Applied!
+            ✨ {currentDiscount.percent}% OFF Applied!
           </div>
           <div style={{ fontSize: '14px', opacity: 0.9 }}>
             {currentDiscount.label} - Code <strong>{activeDiscount}</strong> will be applied at checkout
