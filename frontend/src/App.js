@@ -457,6 +457,216 @@ const ExitIntentPopup = () => {
   );
 };
 
+// ============ PRODUCT HUNT LAUNCH COMPONENTS ============
+
+// Configuration - Set these on launch day!
+const PRODUCT_HUNT_CONFIG = {
+  isLaunched: false, // Set to true on launch day
+  launchEndTime: null, // Set to new Date('2025-01-20T23:59:59-08:00') on launch day (24h after launch)
+  productHuntUrl: 'https://www.producthunt.com/posts/reviewresponder', // Update with actual URL
+};
+
+// Product Hunt Badge Component
+const ProductHuntBadge = ({ style = {} }) => {
+  if (!PRODUCT_HUNT_CONFIG.isLaunched) return null;
+
+  return (
+    <a
+      href={PRODUCT_HUNT_CONFIG.productHuntUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '8px 16px',
+        background: 'linear-gradient(135deg, #DA552F 0%, #FF6154 100%)',
+        color: 'white',
+        borderRadius: '8px',
+        fontSize: '14px',
+        fontWeight: '600',
+        textDecoration: 'none',
+        boxShadow: '0 4px 12px rgba(218, 85, 47, 0.3)',
+        transition: 'transform 0.2s, box-shadow 0.2s',
+        ...style
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-2px)';
+        e.currentTarget.style.boxShadow = '0 6px 16px rgba(218, 85, 47, 0.4)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.boxShadow = '0 4px 12px rgba(218, 85, 47, 0.3)';
+      }}
+    >
+      <svg width="20" height="20" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 40C31.0457 40 40 31.0457 40 20C40 8.95431 31.0457 0 20 0C8.95431 0 0 8.95431 0 20C0 31.0457 8.95431 40 20 40Z" fill="white"/>
+        <path d="M22.5 20H17.5V12.5H22.5C24.575 12.5 26.25 14.175 26.25 16.25C26.25 18.325 24.575 20 22.5 20Z" fill="#DA552F"/>
+        <path d="M17.5 12.5H15V27.5H17.5V12.5Z" fill="#DA552F"/>
+        <path d="M22.5 22.5H17.5V27.5H22.5V22.5Z" fill="#DA552F"/>
+      </svg>
+      Featured on Product Hunt
+    </a>
+  );
+};
+
+// Countdown Timer Component
+const CountdownTimer = ({ endTime, onExpire }) => {
+  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0, expired: false });
+
+  useEffect(() => {
+    if (!endTime) return;
+
+    const calculateTimeLeft = () => {
+      const now = new Date().getTime();
+      const end = new Date(endTime).getTime();
+      const difference = end - now;
+
+      if (difference <= 0) {
+        setTimeLeft({ hours: 0, minutes: 0, seconds: 0, expired: true });
+        if (onExpire) onExpire();
+        return;
+      }
+
+      setTimeLeft({
+        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((difference / (1000 * 60)) % 60),
+        seconds: Math.floor((difference / 1000) % 60),
+        expired: false
+      });
+    };
+
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
+
+    return () => clearInterval(timer);
+  }, [endTime, onExpire]);
+
+  if (timeLeft.expired) return null;
+
+  const TimeBlock = ({ value, label }) => (
+    <div style={{ textAlign: 'center' }}>
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.2)',
+        borderRadius: '8px',
+        padding: '8px 12px',
+        minWidth: '50px',
+        fontSize: '24px',
+        fontWeight: '700',
+        fontFamily: 'monospace'
+      }}>
+        {String(value).padStart(2, '0')}
+      </div>
+      <div style={{ fontSize: '11px', marginTop: '4px', opacity: 0.9 }}>{label}</div>
+    </div>
+  );
+
+  return (
+    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+      <TimeBlock value={timeLeft.hours} label="HRS" />
+      <span style={{ fontSize: '24px', fontWeight: '700' }}>:</span>
+      <TimeBlock value={timeLeft.minutes} label="MIN" />
+      <span style={{ fontSize: '24px', fontWeight: '700' }}>:</span>
+      <TimeBlock value={timeLeft.seconds} label="SEC" />
+    </div>
+  );
+};
+
+// Product Hunt Launch Banner - Shows at top of page on launch day
+const ProductHuntLaunchBanner = () => {
+  const [isVisible, setIsVisible] = useState(true);
+  const [isExpired, setIsExpired] = useState(false);
+  const navigate = useNavigate();
+
+  // Check URL for Product Hunt launch mode
+  const urlParams = new URLSearchParams(window.location.search);
+  const isFromProductHunt = urlParams.get('ref') === 'producthunt' || PRODUCT_HUNT_CONFIG.isLaunched;
+
+  if (!isFromProductHunt || !isVisible || isExpired) return null;
+
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, #DA552F 0%, #FF6154 100%)',
+      color: 'white',
+      padding: '12px 20px',
+      position: 'relative',
+      zIndex: 1000
+    }}>
+      <div className="container" style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '24px',
+        flexWrap: 'wrap'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <PartyPopper size={24} />
+          <span style={{ fontSize: '16px', fontWeight: '600' }}>
+            Product Hunt Launch Special: <strong>60% OFF</strong> for the next 24 hours!
+          </span>
+        </div>
+
+        {PRODUCT_HUNT_CONFIG.launchEndTime && (
+          <CountdownTimer
+            endTime={PRODUCT_HUNT_CONFIG.launchEndTime}
+            onExpire={() => setIsExpired(true)}
+          />
+        )}
+
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <code style={{
+            background: 'rgba(255,255,255,0.2)',
+            padding: '6px 12px',
+            borderRadius: '6px',
+            fontFamily: 'monospace',
+            fontSize: '16px',
+            fontWeight: '700'
+          }}>
+            HUNTLAUNCH
+          </code>
+          <button
+            onClick={() => navigate('/pricing?discount=HUNTLAUNCH')}
+            style={{
+              background: 'white',
+              color: '#DA552F',
+              border: 'none',
+              padding: '8px 20px',
+              borderRadius: '6px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            Claim Offer <ArrowRight size={16} />
+          </button>
+        </div>
+
+        <button
+          onClick={() => setIsVisible(false)}
+          style={{
+            position: 'absolute',
+            right: '12px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            background: 'transparent',
+            border: 'none',
+            color: 'white',
+            cursor: 'pointer',
+            padding: '4px',
+            opacity: 0.7
+          }}
+        >
+          <X size={18} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ============ END PRODUCT HUNT COMPONENTS ============
+
 // Feedback Popup Component (shown after 10 responses)
 const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
   const [rating, setRating] = useState(0);
@@ -727,6 +937,7 @@ const LandingPage = () => {
   return (
     <div>
       <ExitIntentPopup />
+      <ProductHuntLaunchBanner />
 
       {/* Referral Banner */}
       {referralBanner && (
@@ -743,9 +954,12 @@ const LandingPage = () => {
       )}
       <section className="hero">
         <div className="container">
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: 'white', padding: '6px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '600', marginBottom: '16px' }}>
-            <Zap size={14} />
-            NEW: 50% OFF for Early Adopters
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: 'white', padding: '6px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '600' }}>
+              <Zap size={14} />
+              NEW: 50% OFF for Early Adopters
+            </div>
+            <ProductHuntBadge />
           </div>
           <h1 className="hero-title">
             Respond to Reviews<br />in Seconds, Not Hours

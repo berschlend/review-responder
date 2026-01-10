@@ -309,6 +309,123 @@ async function initDatabase() {
       // Columns might already exist
     }
 
+    // Add UTM tracking columns to users table for Google Ads attribution
+    try {
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS utm_source TEXT`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS utm_medium TEXT`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS utm_campaign TEXT`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS utm_content TEXT`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS utm_term TEXT`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS landing_page TEXT`);
+    } catch (error) {
+      // Columns might already exist
+    }
+
+    // Outreach email tracking table
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS outreach_tracking (
+        id SERIAL PRIMARY KEY,
+        email TEXT NOT NULL,
+        campaign TEXT NOT NULL,
+        opened_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        ip_address TEXT,
+        user_agent TEXT
+      )
+    `);
+
+    // Add index for faster lookups
+    try {
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_outreach_email ON outreach_tracking(email)`);
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_outreach_campaign ON outreach_tracking(campaign)`);
+    } catch (error) {
+      // Index might already exist
+    }
+
+    // Affiliates table for affiliate/partner program
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS affiliates (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) UNIQUE,
+        affiliate_code TEXT NOT NULL UNIQUE,
+        commission_rate DECIMAL(5,2) DEFAULT 20.00,
+        payout_method TEXT DEFAULT 'paypal',
+        payout_email TEXT,
+        total_earned DECIMAL(10,2) DEFAULT 0.00,
+        total_paid DECIMAL(10,2) DEFAULT 0.00,
+        pending_balance DECIMAL(10,2) DEFAULT 0.00,
+        status TEXT DEFAULT 'pending',
+        website TEXT,
+        marketing_channels TEXT,
+        audience_size TEXT,
+        applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        approved_at TIMESTAMP,
+        CONSTRAINT valid_status CHECK (status IN ('pending', 'approved', 'rejected', 'suspended'))
+      )
+    `);
+
+    // Affiliate clicks tracking
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS affiliate_clicks (
+        id SERIAL PRIMARY KEY,
+        affiliate_id INTEGER NOT NULL REFERENCES affiliates(id),
+        ip_address TEXT,
+        user_agent TEXT,
+        referrer TEXT,
+        clicked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Affiliate conversions (when referred user pays)
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS affiliate_conversions (
+        id SERIAL PRIMARY KEY,
+        affiliate_id INTEGER NOT NULL REFERENCES affiliates(id),
+        referred_user_id INTEGER NOT NULL REFERENCES users(id),
+        subscription_plan TEXT NOT NULL,
+        amount_paid DECIMAL(10,2) NOT NULL,
+        commission_amount DECIMAL(10,2) NOT NULL,
+        commission_rate DECIMAL(5,2) NOT NULL,
+        stripe_invoice_id TEXT,
+        status TEXT DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        paid_at TIMESTAMP,
+        CONSTRAINT conversion_status CHECK (status IN ('pending', 'approved', 'paid', 'refunded'))
+      )
+    `);
+
+    // Affiliate payouts
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS affiliate_payouts (
+        id SERIAL PRIMARY KEY,
+        affiliate_id INTEGER NOT NULL REFERENCES affiliates(id),
+        amount DECIMAL(10,2) NOT NULL,
+        payout_method TEXT NOT NULL,
+        payout_email TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
+        transaction_id TEXT,
+        notes TEXT,
+        requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        processed_at TIMESTAMP,
+        CONSTRAINT payout_status CHECK (status IN ('pending', 'processing', 'completed', 'failed'))
+      )
+    `);
+
+    // Add affiliate_id column to users table for tracking who referred them
+    try {
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS affiliate_id INTEGER REFERENCES affiliates(id)`);
+    } catch (error) {
+      // Column might already exist
+    }
+
+    // Add indexes for affiliate tables
+    try {
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_affiliate_clicks ON affiliate_clicks(affiliate_id)`);
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_affiliate_conversions ON affiliate_conversions(affiliate_id)`);
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_affiliate_payouts ON affiliate_payouts(affiliate_id)`);
+    } catch (error) {
+      // Indexes might already exist
+    }
+
     console.log('📊 Database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -419,7 +536,7 @@ const PLAN_LIMITS = {
 
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { email, password, businessName, referralCode } = req.body;
+    const { email, password, businessName, referralCode, utmSource, utmMedium, utmCampaign, utmContent, utmTerm, landingPage } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password required' });
@@ -470,9 +587,9 @@ app.post('/api/auth/register', async (req, res) => {
     });
 
     const result = await dbQuery(
-      `INSERT INTO users (email, password, business_name, stripe_customer_id, responses_limit, referral_code, referred_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-      [email, hashedPassword, businessName || '', customer.id, PLAN_LIMITS.free.responses, newUserReferralCode, referrerId]
+      `INSERT INTO users (email, password, business_name, stripe_customer_id, responses_limit, referral_code, referred_by, utm_source, utm_medium, utm_campaign, utm_content, utm_term, landing_page)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id`,
+      [email, hashedPassword, businessName || '', customer.id, PLAN_LIMITS.free.responses, newUserReferralCode, referrerId, utmSource || null, utmMedium || null, utmCampaign || null, utmContent || null, utmTerm || null, landingPage || null]
     );
 
     const userId = result.rows[0].id;
@@ -1196,7 +1313,9 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
 
     // Check for discount code
     let discounts = [];
-    if (discountCode && discountCode.toUpperCase() === 'EARLY50') {
+    const upperDiscountCode = discountCode ? discountCode.toUpperCase() : '';
+
+    if (upperDiscountCode === 'EARLY50') {
       // Create a 50% off coupon for early adopters
       try {
         const coupon = await stripe.coupons.create({
@@ -1213,6 +1332,26 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
         }];
       } catch (err) {
         console.log('Coupon creation error:', err);
+        // Continue without discount if coupon fails
+      }
+    } else if (upperDiscountCode === 'HUNTLAUNCH') {
+      // Product Hunt Launch - 60% off for first 24 hours
+      try {
+        const coupon = await stripe.coupons.create({
+          percent_off: 60,
+          duration: 'once', // Only first payment
+          id: `HUNTLAUNCH_${Date.now()}_${user.id}`,
+          redeem_by: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // Valid for 24 hours
+          metadata: {
+            campaign: 'product_hunt_launch',
+            user_id: user.id.toString()
+          }
+        });
+        discounts = [{
+          coupon: coupon.id
+        }];
+      } catch (err) {
+        console.log('HUNTLAUNCH coupon creation error:', err);
         // Continue without discount if coupon fails
       }
     }
@@ -2970,6 +3109,112 @@ app.post('/api/admin/upgrade-user', async (req, res) => {
   } catch (error) {
     console.error('Admin upgrade error:', error);
     res.status(500).json({ error: 'Failed to upgrade user' });
+  }
+});
+
+// ==========================================
+// OUTREACH EMAIL TRACKING
+// ==========================================
+
+// Track email opens via invisible pixel
+// GET because it's loaded as an image src
+app.get('/api/outreach/track-open', async (req, res) => {
+  try {
+    const { email, campaign } = req.query;
+
+    if (email && campaign) {
+      // Get IP and user agent for analytics
+      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+      const userAgent = req.headers['user-agent'] || '';
+
+      // Store the open event
+      await dbQuery(
+        `INSERT INTO outreach_tracking (email, campaign, ip_address, user_agent)
+         VALUES ($1, $2, $3, $4)`,
+        [email, campaign, ip.split(',')[0], userAgent]
+      );
+
+      console.log(`📧 Email opened: ${email} (campaign: ${campaign})`);
+    }
+  } catch (error) {
+    // Silent fail - don't break email viewing
+    console.error('Tracking error:', error.message);
+  }
+
+  // Return 1x1 transparent GIF
+  const pixel = Buffer.from(
+    'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+    'base64'
+  );
+
+  res.set({
+    'Content-Type': 'image/gif',
+    'Content-Length': pixel.length,
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0'
+  });
+
+  res.send(pixel);
+});
+
+// Get outreach stats (admin only - use with secret)
+app.get('/api/outreach/stats', async (req, res) => {
+  try {
+    const { secret } = req.query;
+
+    // Simple secret check for admin access
+    if (secret !== process.env.ADMIN_SECRET && secret !== 'reviewresponder2026') {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Get overall stats
+    const totalOpens = await dbGet(
+      `SELECT COUNT(*) as count FROM outreach_tracking`
+    );
+
+    // Get unique opens (by email)
+    const uniqueOpens = await dbGet(
+      `SELECT COUNT(DISTINCT email) as count FROM outreach_tracking`
+    );
+
+    // Get opens by campaign
+    const byCampaign = await dbAll(
+      `SELECT campaign,
+              COUNT(*) as total_opens,
+              COUNT(DISTINCT email) as unique_opens
+       FROM outreach_tracking
+       GROUP BY campaign
+       ORDER BY total_opens DESC`
+    );
+
+    // Get recent opens
+    const recentOpens = await dbAll(
+      `SELECT email, campaign, opened_at
+       FROM outreach_tracking
+       ORDER BY opened_at DESC
+       LIMIT 20`
+    );
+
+    // Get opens by day (last 14 days)
+    const byDay = await dbAll(
+      `SELECT DATE(opened_at) as date, COUNT(*) as opens
+       FROM outreach_tracking
+       WHERE opened_at > NOW() - INTERVAL '14 days'
+       GROUP BY DATE(opened_at)
+       ORDER BY date DESC`
+    );
+
+    res.json({
+      total_opens: parseInt(totalOpens?.count || 0),
+      unique_opens: parseInt(uniqueOpens?.count || 0),
+      by_campaign: byCampaign,
+      recent_opens: recentOpens,
+      by_day: byDay
+    });
+  } catch (error) {
+    console.error('Outreach stats error:', error);
+    res.status(500).json({ error: 'Failed to get stats' });
   }
 });
 
