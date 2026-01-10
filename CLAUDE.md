@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 10.01.2026 - 18:30 Uhr**
+**Stand: 10.01.2026 - 19:15 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [x] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen ✅
@@ -61,6 +61,10 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
   - Neue Limits: Free=20, Starter=300, Pro=800, Unlimited=∞
   - AI Model Selector im Dashboard (Auto/Smart/Standard)
   - Pricing Page mit neuen Features aktualisiert
+- [x] **Admin Plan-Wechsel Fix** - Dashboard zeigt jetzt korrekte Plan-Daten nach Redirect
+  - Problem: Nach `/api/admin/set-plan?redirect=1` wurden alte Daten angezeigt
+  - Ursache: User-State im AuthContext wurde nicht aktualisiert
+  - Fix: `api.get('/auth/me')` und `fetchStats()` nach Plan-Param erkannt
 
 ### 🟡 NÄCHSTE CLAUDE TASKS (Wähle einen):
 
