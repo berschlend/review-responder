@@ -180,14 +180,118 @@ textarea {
   text-overflow: ellipsis;
 }
 
-.usage-info {
+/* Plan Info Widget */
+.plan-info {
   background: #f3f4f6;
   padding: 12px;
   border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.plan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.plan-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.plan-badge.free {
+  background: #e5e7eb;
+  color: #6b7280;
+}
+
+.plan-badge.starter {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.plan-badge.pro {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.plan-badge.unlimited {
+  background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  color: white;
+}
+
+.upgrade-link {
+  font-size: 11px;
+  font-weight: 600;
+  color: #667eea;
+  text-decoration: none;
+  padding: 4px 10px;
+  border: 1px solid #667eea;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.upgrade-link:hover {
+  background: #667eea;
+  color: white;
+}
+
+.usage-row {
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.usage-text {
   font-size: 13px;
   color: #666;
+}
+
+/* First-Time Onboarding Card */
+.onboarding-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   margin-bottom: 15px;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.onboarding-content h3 {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 12px;
   text-align: center;
+}
+
+.onboarding-steps {
+  margin: 0 0 15px 20px;
+  padding: 0;
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.8;
+}
+
+.onboarding-steps li {
+  margin-bottom: 6px;
+}
+
+.onboarding-steps strong {
+  color: #667eea;
 }
 
 .progress-bar {
@@ -525,5 +629,91 @@ footer a:hover {
   font-family: monospace;
   font-size: 9px;
   margin-right: 3px;
+}
+
+/* Batch Mode Tip */
+.batch-tip {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 11px;
+  opacity: 0.95;
+}
+
+.batch-tip strong {
+  color: #fbbf24;
+}
+
+/* Upgrade Banner */
+.upgrade-banner {
+  background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.upgrade-banner a {
+  color: white;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 10px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.upgrade-banner a:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Limit Reached Modal */
+.limit-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.limit-modal-content {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+  max-width: 280px;
+  animation: slideIn 0.3s ease-out;
+}
+
+.limit-modal-content h3 {
+  font-size: 18px;
+  color: #ef4444;
+  margin-bottom: 8px;
+}
+
+.limit-modal-content p {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.limit-modal-content .btn {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.limit-modal-content .btn:last-child {
+  margin-bottom: 0;
 }
 

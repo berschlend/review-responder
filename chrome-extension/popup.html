@@ -27,6 +27,20 @@
       <p id="login-error" class="error"></p>
     </div>
 
+    <!-- First-Time Onboarding Card -->
+    <div id="onboarding-card" class="onboarding-card hidden">
+      <div class="onboarding-content">
+        <h3>Welcome to ReviewResponder!</h3>
+        <ol class="onboarding-steps">
+          <li>Go to <strong>Google Maps</strong>, <strong>Yelp</strong>, or any review page</li>
+          <li>Select any <strong>review text</strong> you want to respond to</li>
+          <li>Click the <strong>lightning button</strong> that appears</li>
+          <li>Copy your AI-generated response and paste it!</li>
+        </ol>
+        <button id="dismiss-onboarding" class="btn btn-primary">Got it, let's go!</button>
+      </div>
+    </div>
+
     <!-- Main Section (after login) -->
     <div id="main-section" class="section hidden">
       <div class="user-info">
@@ -34,26 +48,21 @@
         <button id="logout-btn" class="btn btn-small">Logout</button>
       </div>
 
-      <div class="usage-info">
-        <span id="usage-count">0</span> / <span id="usage-limit">5</span> responses used
+      <div class="plan-info">
+        <div class="plan-header">
+          <span class="plan-badge" id="plan-badge">Free Plan</span>
+          <a href="https://review-responder-frontend.onrender.com/#pricing"
+             target="_blank" class="upgrade-link hidden" id="upgrade-link">
+            Upgrade
+          </a>
+        </div>
+        <div class="usage-row">
+          <span class="usage-text">
+            <span id="usage-count">0</span> / <span id="usage-limit">5</span> responses
+          </span>
+        </div>
         <div class="progress-bar">
           <div id="progress" class="progress"></div>
-        </div>
-      </div>
-
-      <!-- Stats Widget -->
-      <div class="stats-widget">
-        <div class="stat-item">
-          <span class="stat-value" id="stat-today">0</span>
-          <span class="stat-label">Today</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value" id="stat-week">0</span>
-          <span class="stat-label">This Week</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value" id="stat-total">0</span>
-          <span class="stat-label">Total</span>
         </div>
       </div>
 
@@ -121,6 +130,24 @@
 
       <p id="main-error" class="error"></p>
       <p id="success-msg" class="success"></p>
+
+      <!-- Upgrade Banner (shown at 80% usage) -->
+      <div id="upgrade-banner" class="upgrade-banner hidden">
+        <span>Running low on responses!</span>
+        <a href="https://review-responder-frontend.onrender.com/#pricing" target="_blank">Upgrade now</a>
+      </div>
+    </div>
+
+    <!-- Limit Reached Modal -->
+    <div id="limit-modal" class="limit-modal hidden">
+      <div class="limit-modal-content">
+        <h3>Limit Reached</h3>
+        <p>You've used all your responses for this month.</p>
+        <a href="https://review-responder-frontend.onrender.com/#pricing" target="_blank" class="btn btn-primary">
+          Upgrade Plan
+        </a>
+        <button id="close-limit-modal" class="btn btn-secondary">Maybe Later</button>
+      </div>
     </div>
 
     <!-- How to Use Section -->
@@ -138,6 +165,9 @@
         <span class="shortcut"><kbd>Alt+R</kbd> Generate</span>
         <span class="shortcut"><kbd>Alt+C</kbd> Copy</span>
         <span class="shortcut"><kbd>Esc</kbd> Close</span>
+      </div>
+      <div class="batch-tip">
+        <strong>Pro Tip:</strong> Click "Scan Page" in the panel to respond to multiple reviews at once!
       </div>
     </div>
 

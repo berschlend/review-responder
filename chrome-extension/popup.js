@@ -1,5 +1,33 @@
 const API_URL = 'https://review-responder.onrender.com/api';
 
+// Detect language from review text (must be called BEFORE cleaning!)
+function detectLanguage(text) {
+  const lowerText = text.toLowerCase();
+
+  // German indicators
+  const germanWords = ['und', 'der', 'die', 'das', 'ist', 'war', 'sehr', 'gut', 'nicht', 'aber', 'haben', 'wurde', 'toll', 'super', 'leider', 'immer', 'auch'];
+  const germanCount = germanWords.filter(w => lowerText.includes(` ${w} `) || lowerText.startsWith(w + ' ')).length;
+
+  // Dutch indicators
+  const dutchWords = ['en', 'het', 'een', 'van', 'zijn', 'naar', 'niet', 'maar', 'heel', 'goed', 'mooi', 'lekker', 'altijd'];
+  const dutchCount = dutchWords.filter(w => lowerText.includes(` ${w} `) || lowerText.startsWith(w + ' ')).length;
+
+  // French indicators
+  const frenchWords = ['et', 'est', 'très', 'bien', 'pas', 'mais', 'pour', 'avec', 'dans', 'leur', 'nous'];
+  const frenchCount = frenchWords.filter(w => lowerText.includes(` ${w} `) || lowerText.startsWith(w + ' ')).length;
+
+  // Spanish indicators
+  const spanishWords = ['y', 'es', 'muy', 'bien', 'pero', 'para', 'con', 'los', 'las', 'que', 'del'];
+  const spanishCount = spanishWords.filter(w => lowerText.includes(` ${w} `) || lowerText.startsWith(w + ' ')).length;
+
+  if (germanCount >= 2) return { code: 'de', name: 'Deutsch' };
+  if (dutchCount >= 2) return { code: 'nl', name: 'Nederlands' };
+  if (frenchCount >= 2) return { code: 'fr', name: 'Français' };
+  if (spanishCount >= 2) return { code: 'es', name: 'Español' };
+
+  return { code: 'en', name: 'English' };
+}
+
 // Clean review text - remove ONLY UI elements, preserve actual review content
 function cleanReviewText(text) {
   // Only remove very specific UI patterns that won't appear in actual reviews
@@ -45,6 +73,8 @@ const logoutBtn = document.getElementById('logout-btn');
 const usageCount = document.getElementById('usage-count');
 const usageLimit = document.getElementById('usage-limit');
 const progress = document.getElementById('progress');
+const planBadge = document.getElementById('plan-badge');
+const upgradeLink = document.getElementById('upgrade-link');
 const reviewText = document.getElementById('review-text');
 const toneSelect = document.getElementById('tone-select');
 const generateBtn = document.getElementById('generate-btn');
@@ -67,6 +97,15 @@ const toneButtons = document.querySelectorAll('.tone-btn');
 const statToday = document.getElementById('stat-today');
 const statWeek = document.getElementById('stat-week');
 const statTotal = document.getElementById('stat-total');
+
+// Onboarding elements
+const onboardingCard = document.getElementById('onboarding-card');
+const dismissOnboarding = document.getElementById('dismiss-onboarding');
+
+// Upgrade elements
+const upgradeBanner = document.getElementById('upgrade-banner');
+const limitModal = document.getElementById('limit-modal');
+const closeLimitModal = document.getElementById('close-limit-modal');
 
 // State
 let token = null;
@@ -142,7 +181,11 @@ async function generateResponse(overrideTone = null) {
     return;
   }
 
-  // Clean the review text to remove UI elements that might confuse language detection
+  // CRITICAL: Detect language from RAW text BEFORE cleaning!
+  // The cleanReviewText() removes UI elements that could contain language indicators
+  const detectedLang = detectLanguage(review);
+
+  // Clean the review text to remove UI elements
   const cleanedReview = cleanReviewText(review);
 
   if (!cleanedReview || cleanedReview.length < 5) {
@@ -170,7 +213,8 @@ async function generateResponse(overrideTone = null) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ reviewText: cleanedReview, tone, outputLanguage: 'auto' })
+      // Send explicit language code instead of 'auto' to fix wrong-language responses
+      body: JSON.stringify({ reviewText: cleanedReview, tone, outputLanguage: detectedLang.code })
     });
 
     const data = await response.json();
@@ -187,8 +231,9 @@ async function generateResponse(overrideTone = null) {
     // Update tone button states
     updateToneButtons(tone);
 
-    // Update usage
-    fetchUsage();
+    // Update usage and check for upgrade triggers
+    await fetchUsage();
+    checkUpgradeTriggers();
   } catch (error) {
     mainError.textContent = error.message;
   } finally {
@@ -270,12 +315,30 @@ async function fetchUsage() {
 function updateUsageDisplay() {
   const used = user.responsesUsed || 0;
   const limit = user.responsesLimit || 5;
+  const plan = user.plan || 'free';
 
   usageCount.textContent = used;
   usageLimit.textContent = limit === 999999 ? '∞' : limit;
 
+  // Update plan badge
+  const planNames = {
+    free: 'Free Plan',
+    starter: 'Starter',
+    pro: 'Pro',
+    unlimited: 'Unlimited'
+  };
+  planBadge.textContent = planNames[plan] || 'Free Plan';
+  planBadge.className = 'plan-badge ' + plan;
+
   const percentage = limit === 999999 ? 0 : (used / limit) * 100;
   progress.style.width = `${Math.min(percentage, 100)}%`;
+
+  // Show upgrade link when >80% used (not for unlimited)
+  if (percentage >= 80 && plan !== 'unlimited') {
+    upgradeLink.classList.remove('hidden');
+  } else {
+    upgradeLink.classList.add('hidden');
+  }
 
   if (percentage >= 90 && limit !== 999999) {
     progress.style.background = '#ef4444';
@@ -325,4 +388,58 @@ function showMainSection() {
   userEmail.textContent = user.email;
   updateUsageDisplay();
   updatePreviewBusinessName();
+
+  // Show onboarding card for first-time users
+  checkOnboarding();
+}
+
+// Onboarding logic
+function checkOnboarding() {
+  const onboardingSeen = localStorage.getItem('rr_onboarding_seen');
+  if (!onboardingSeen && onboardingCard) {
+    onboardingCard.classList.remove('hidden');
+  }
+}
+
+// Dismiss onboarding
+if (dismissOnboarding) {
+  dismissOnboarding.addEventListener('click', () => {
+    localStorage.setItem('rr_onboarding_seen', 'true');
+    onboardingCard.classList.add('hidden');
+  });
+}
+
+// Close limit modal
+if (closeLimitModal) {
+  closeLimitModal.addEventListener('click', () => {
+    limitModal.classList.add('hidden');
+  });
+}
+
+// Check if user needs upgrade prompts
+function checkUpgradeTriggers() {
+  if (!user) return;
+
+  const used = user.responsesUsed || 0;
+  const limit = user.responsesLimit || 5;
+  const plan = user.plan || 'free';
+
+  // Don't show triggers for unlimited plan
+  if (plan === 'unlimited' || limit === 999999) return;
+
+  const percentage = (used / limit) * 100;
+
+  // Show limit modal at 100%
+  if (percentage >= 100) {
+    if (limitModal) limitModal.classList.remove('hidden');
+    if (upgradeBanner) upgradeBanner.classList.add('hidden');
+    return;
+  }
+
+  // Show upgrade banner at 80%
+  if (percentage >= 80) {
+    if (upgradeBanner) upgradeBanner.classList.remove('hidden');
+  } else {
+    if (upgradeBanner) upgradeBanner.classList.add('hidden');
+  }
 }
