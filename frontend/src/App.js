@@ -5825,10 +5825,15 @@ const TeamPage = () => {
     try {
       const [teamRes, myTeamRes] = await Promise.all([
         api.get('/team').catch(() => null),
-        api.get('/team/my-team')
+        api.get('/team/my-team').catch((err) => {
+          console.error('my-team API error:', err);
+          return null;
+        })
       ]);
       setTeamData(teamRes?.data || null);
-      setMyTeam(myTeamRes.data);
+      const myTeamData = myTeamRes?.data || null;
+      console.log('myTeamData:', myTeamData);
+      setMyTeam(myTeamData);
     } catch (e) {
       console.error('Load team error:', e);
     } finally {

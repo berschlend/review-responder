@@ -2826,8 +2826,10 @@ app.delete('/api/team/:memberId', authenticateToken, async (req, res) => {
 app.get('/api/team/my-team', authenticateToken, async (req, res) => {
   try {
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    console.log('my-team check for user:', req.user.id, 'email:', user?.email);
     // Check if user is a team member (belongs to someone else's team)
     const tm = await dbGet(`SELECT tm.*, u.email as owner_email, u.business_name as owner_business, u.responses_used, u.responses_limit, u.subscription_plan as owner_plan FROM team_members tm JOIN users u ON tm.team_owner_id = u.id WHERE tm.member_user_id = $1 AND tm.accepted_at IS NOT NULL`, [req.user.id]);
+    console.log('team membership found:', tm ? 'YES' : 'NO', tm);
     if (tm) {
       return res.json({ isTeamMember: true, teamOwner: { email: tm.owner_email, businessName: tm.owner_business }, role: tm.role, teamUsage: { used: tm.responses_used, limit: tm.responses_limit } });
     }
