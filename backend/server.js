@@ -1109,16 +1109,105 @@ async function generateResponseHandler(req, res) {
       });
     }
 
-    const ratingContext = reviewRating
-      ? `This is a ${reviewRating}-star review.`
-      : '';
+    // ========== OPTIMIZED PROMPT SYSTEM ==========
 
-    const toneInstructions = {
-      professional: 'Use a professional, courteous tone.',
-      friendly: 'Use a warm, friendly, and personable tone.',
-      formal: 'Use a formal, business-appropriate tone.',
-      apologetic: 'Use an apologetic and empathetic tone, focusing on resolution.'
+    // Rating-specific strategies for better responses
+    const ratingStrategies = {
+      5: {
+        goal: 'Reinforce positive feelings, encourage return visit',
+        approach: 'Express genuine gratitude, mention something specific from their review, invite them back',
+        length: '2-3 sentences',
+        avoid: 'Being too generic or effusive'
+      },
+      4: {
+        goal: 'Thank them while subtly showing you care about perfection',
+        approach: 'Appreciate their feedback, acknowledge room for improvement without being defensive',
+        length: '2-3 sentences',
+        avoid: 'Ignoring their slight criticism'
+      },
+      3: {
+        goal: 'Show you take feedback seriously',
+        approach: 'Acknowledge their mixed experience, express desire to do better, invite them to give you another chance',
+        length: '3-4 sentences',
+        avoid: 'Being dismissive or overly apologetic'
+      },
+      2: {
+        goal: 'Recover the relationship',
+        approach: 'Sincerely acknowledge disappointment, take responsibility, offer concrete resolution',
+        length: '3-4 sentences',
+        avoid: 'Making excuses or being defensive'
+      },
+      1: {
+        goal: 'Damage control, show professionalism to future readers',
+        approach: 'Acknowledge frustration, take ownership, apologize specifically, offer direct contact to resolve',
+        length: '4-5 sentences',
+        avoid: 'Arguing, making excuses, passive-aggressive tone'
+      }
     };
+
+    // Enhanced tone definitions with examples
+    const toneDefinitions = {
+      professional: {
+        description: 'Professional and courteous - polished but warm',
+        goodExample: 'We really appreciate you sharing this. Our team takes great pride in...',
+        avoidExample: 'Thank you for your feedback. We value your input.'
+      },
+      friendly: {
+        description: 'Warm and personable - like a friend who runs a great business',
+        goodExample: 'You just made our day! We loved having you...',
+        avoidExample: 'Dear valued customer, we appreciate your kind words.'
+      },
+      formal: {
+        description: 'Formal and business-appropriate - for upscale brands',
+        goodExample: 'We are honored by your gracious review. Our commitment to excellence...',
+        avoidExample: 'Hey thanks for the review!'
+      },
+      apologetic: {
+        description: 'Empathetic and solution-focused - takes ownership',
+        goodExample: 'We completely understand your frustration, and we take this seriously...',
+        avoidExample: 'We apologize for any inconvenience this may have caused.'
+      }
+    };
+
+    // Phrases to NEVER use - these sound robotic
+    const antiClicheInstructions = `
+PHRASES YOU MUST NEVER USE (these sound robotic and generic):
+- "Thank you for your feedback"
+- "We appreciate you taking the time to..."
+- "Your satisfaction is our top priority"
+- "We value your input"
+- "Sorry for any inconvenience caused"
+- "We apologize for any inconvenience"
+- "Please don't hesitate to..."
+- "We look forward to serving you again"
+- "Your feedback helps us improve"
+- "We take all feedback seriously"
+
+INSTEAD: Be specific! Reference something they actually mentioned in their review.`;
+
+    // Few-shot examples for quality
+    const fewShotExamples = {
+      positive: {
+        review: "Great experience! The pasta was amazing and our server Marco was so attentive.",
+        goodResponse: "So glad the pasta hit the spot - our chef sources those ingredients fresh daily! Marco will be thrilled to hear this. Hope to see you again soon, maybe try our risotto next time!"
+      },
+      negative: {
+        review: "Waited 45 minutes for our food and it was cold when it arrived. Very disappointed.",
+        goodResponse: "A 45-minute wait with cold food is absolutely not acceptable, and we completely understand your frustration. This is not the standard we hold ourselves to. We'd love the chance to make this right - please reach out to us directly so we can personally address this."
+      }
+    };
+
+    // Get rating strategy
+    const getRatingStrategy = (rating) => {
+      if (!rating) return null;
+      return ratingStrategies[rating] || ratingStrategies[3];
+    };
+
+    // Build the optimized prompt
+    const ratingStrategy = getRatingStrategy(reviewRating);
+    const toneConfig = toneDefinitions[tone] || toneDefinitions.professional;
+    const isNegative = reviewRating && reviewRating <= 2;
+    const exampleToUse = isNegative ? fewShotExamples.negative : fewShotExamples.positive;
 
     // Language mapping for output language selection
     const languageNames = {
@@ -1149,46 +1238,56 @@ async function generateResponseHandler(req, res) {
 
     // Build business context section (use team owner's context if team member)
     const contextUser = isTeamMember ? usageOwner : user;
-    const businessContextSection = contextUser.business_context ? `
-Business Context (use this to personalize your response):
-${contextUser.business_context}
-` : '';
 
-    const businessTypeSection = contextUser.business_type ? `Business Type: ${contextUser.business_type}` : '';
-    const responseStyleSection = contextUser.response_style ? `Preferred Response Style: ${contextUser.response_style}` : '';
+    // ========== OPTIMIZED SYSTEM + USER MESSAGE STRUCTURE ==========
 
-    const prompt = `You are a professional customer service expert helping a small business respond to online reviews.
+    const systemMessage = `You are an experienced customer service professional who writes authentic, personalized review responses. You sound like a real business owner, not a corporate robot.
 
-Business Name: ${businessName || contextUser.business_name || 'Our business'}
-${businessTypeSection}
-Platform: ${platform || 'Google Reviews'}
-${ratingContext}
-${businessContextSection}
-${responseStyleSection}
+BUSINESS PROFILE:
+- Name: ${businessName || contextUser.business_name || 'Our business'}
+${contextUser.business_type ? `- Industry: ${contextUser.business_type}` : ''}
+${contextUser.business_context ? `- About us: ${contextUser.business_context}` : ''}
+${contextUser.response_style ? `- Our voice: ${contextUser.response_style}` : ''}
+- Platform: ${platform || 'Google Reviews'}
 
-Review to respond to:
+${antiClicheInstructions}
+
+EXAMPLE OF A GOOD ${isNegative ? 'NEGATIVE' : 'POSITIVE'} REVIEW RESPONSE:
+Review: "${exampleToUse.review}"
+Response: "${exampleToUse.goodResponse}"
+
+TONE GUIDANCE:
+Style: ${toneConfig.description}
+Good: "${toneConfig.goodExample}"
+Avoid: "${toneConfig.avoidExample}"
+
+CRITICAL LANGUAGE RULE: ${languageInstruction}`;
+
+    const userMessage = `Write a response to this ${reviewRating ? reviewRating + '-star ' : ''}review:
+
 "${reviewText}"
 
-Instructions:
-- ${toneInstructions[tone] || toneInstructions.professional}
-- Keep the response concise (2-4 sentences for positive reviews, 3-5 for negative)
-- Thank them for their feedback
-- For negative reviews: acknowledge their concerns, apologize if appropriate, offer to make it right
-- For positive reviews: express genuine gratitude and invite them back
-- Don't be overly formal or use canned phrases
-- Make it feel personal and authentic
-- If business context is provided, reference specific details about the business (e.g., mention specific menu items, services, team members)
-${customInstructions ? `- Additional instructions: ${customInstructions}` : ''}
+${ratingStrategy ? `
+STRATEGY FOR ${reviewRating}-STAR REVIEW:
+- Goal: ${ratingStrategy.goal}
+- Approach: ${ratingStrategy.approach}
+- Target length: ${ratingStrategy.length}
+- Avoid: ${ratingStrategy.avoid}
+` : ''}
+${customInstructions ? `ADDITIONAL INSTRUCTIONS: ${customInstructions}` : ''}
 
-**CRITICAL - LANGUAGE**: ${languageInstruction}
-
-Generate ONLY the response text, nothing else:`;
+Write ONLY the response text:`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 300,
-      temperature: 0.7
+      messages: [
+        { role: 'system', content: systemMessage },
+        { role: 'user', content: userMessage }
+      ],
+      max_tokens: 350,
+      temperature: 0.6,
+      presence_penalty: 0.1,
+      frequency_penalty: 0.1
     });
 
     const generatedResponse = completion.choices[0].message.content.trim();
@@ -1292,15 +1391,27 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
       });
     }
 
-    const toneInstructions = {
-      professional: 'Use a professional, courteous tone.',
-      friendly: 'Use a warm, friendly, and personable tone.',
-      formal: 'Use a formal, business-appropriate tone.',
-      apologetic: 'Use an apologetic and empathetic tone, focusing on resolution.'
+    // ========== OPTIMIZED BULK PROMPT SYSTEM ==========
+
+    // Reuse optimized prompt components
+    const bulkRatingStrategies = {
+      5: { goal: 'Reinforce positive feelings', approach: 'Express genuine gratitude, mention specifics', length: '2-3 sentences' },
+      4: { goal: 'Thank while showing you care', approach: 'Appreciate feedback, acknowledge room for improvement', length: '2-3 sentences' },
+      3: { goal: 'Show you take feedback seriously', approach: 'Acknowledge mixed experience, invite them back', length: '3-4 sentences' },
+      2: { goal: 'Recover the relationship', approach: 'Take responsibility, offer resolution', length: '3-4 sentences' },
+      1: { goal: 'Damage control', approach: 'Acknowledge frustration, offer direct contact', length: '4-5 sentences' }
     };
 
-    // Language mapping for output language selection
-    const languageNames = {
+    const bulkToneDefinitions = {
+      professional: { description: 'Professional and courteous - polished but warm', avoid: 'Thank you for your feedback' },
+      friendly: { description: 'Warm and personable - like a friend', avoid: 'Dear valued customer' },
+      formal: { description: 'Formal and business-appropriate', avoid: 'Hey thanks!' },
+      apologetic: { description: 'Empathetic and solution-focused', avoid: 'We apologize for any inconvenience' }
+    };
+
+    const bulkAntiCliche = `NEVER USE: "Thank you for your feedback", "We appreciate you taking the time", "Your satisfaction is our priority", "Sorry for any inconvenience". Be specific instead!`;
+
+    const bulkLanguageNames = {
       en: 'English', de: 'German', es: 'Spanish', fr: 'French',
       it: 'Italian', pt: 'Portuguese', nl: 'Dutch', pl: 'Polish',
       ru: 'Russian', zh: 'Chinese', ja: 'Japanese', ko: 'Korean',
@@ -1308,17 +1419,12 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
       no: 'Norwegian', fi: 'Finnish'
     };
 
-    // Build language instruction based on outputLanguage selection
-    const languageInstruction = (!outputLanguage || outputLanguage === 'auto')
-      ? 'IMPORTANT: Respond in the same language as the review.'
-      : `IMPORTANT: You MUST write the response in ${languageNames[outputLanguage] || 'English'}, regardless of what language the review is written in.`;
+    const bulkLanguageInstruction = (!outputLanguage || outputLanguage === 'auto')
+      ? 'You MUST respond in the EXACT SAME language as the review.'
+      : `You MUST write the response in ${bulkLanguageNames[outputLanguage] || 'English'}.`;
 
-    // Build business context (use team owner's context if team member)
     const contextUser = isTeamMember ? usageOwner : user;
-    const businessContextSection = contextUser.business_context ? `
-Business Context (use this to personalize your response):
-${contextUser.business_context}
-` : '';
+    const bulkToneConfig = bulkToneDefinitions[tone] || bulkToneDefinitions.professional;
 
     // Process all reviews in parallel
     const generateSingleResponse = async (reviewText, index) => {
@@ -1327,34 +1433,36 @@ ${contextUser.business_context}
       }
 
       try {
-        const prompt = `You are a professional customer service expert helping a small business respond to online reviews.
+        // Build optimized system message for bulk
+        const bulkSystemMessage = `You are an experienced customer service professional who writes authentic, personalized review responses. You sound like a real business owner, not a corporate robot.
 
-Business Name: ${contextUser.business_name || 'Our business'}
-${contextUser.business_type ? `Business Type: ${contextUser.business_type}` : ''}
-Platform: ${platform || 'Google Reviews'}
-${businessContextSection}
+BUSINESS: ${contextUser.business_name || 'Our business'}${contextUser.business_type ? ` (${contextUser.business_type})` : ''}
+${contextUser.business_context ? `ABOUT US: ${contextUser.business_context}` : ''}
+PLATFORM: ${platform || 'Google Reviews'}
 
-Review to respond to:
+${bulkAntiCliche}
+
+TONE: ${bulkToneConfig.description}
+Avoid: "${bulkToneConfig.avoid}"
+
+LANGUAGE: ${bulkLanguageInstruction}`;
+
+        const bulkUserMessage = `Write a response to this review:
+
 "${reviewText}"
 
-Instructions:
-- ${toneInstructions[tone] || toneInstructions.professional}
-- Keep the response concise (2-4 sentences for positive reviews, 3-5 for negative)
-- Thank them for their feedback
-- For negative reviews: acknowledge their concerns, apologize if appropriate, offer to make it right
-- For positive reviews: express genuine gratitude and invite them back
-- Don't be overly formal or use canned phrases
-- Make it feel personal and authentic
-- If business context is provided, reference specific details about the business
-- ${languageInstruction}
-
-Generate ONLY the response text, nothing else:`;
+Write ONLY the response text:`;
 
         const completion = await openai.chat.completions.create({
           model: 'gpt-4o-mini',
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: 300,
-          temperature: 0.7
+          messages: [
+            { role: 'system', content: bulkSystemMessage },
+            { role: 'user', content: bulkUserMessage }
+          ],
+          max_tokens: 350,
+          temperature: 0.6,
+          presence_penalty: 0.1,
+          frequency_penalty: 0.1
         });
 
         const generatedResponse = completion.choices[0].message.content.trim();
@@ -3081,25 +3189,50 @@ app.post('/api/v1/generate', authenticateApiKey, async (req, res) => {
     const selectedLanguage = language || 'en';
     const selectedPlatform = platform || 'google';
 
-    const systemPrompt = `You are an expert at writing professional responses to customer reviews.
-Business: ${user.business_name || 'A business'}
-Business Type: ${user.business_type || 'General'}
-${user.business_context ? `Context: ${user.business_context}` : ''}
-${user.response_style ? `Style: ${user.response_style}` : ''}
+    // ========== OPTIMIZED PUBLIC API PROMPT ==========
+    const apiToneDescriptions = {
+      professional: 'Professional and courteous - polished but warm',
+      friendly: 'Warm and personable - like a friend who runs a great business',
+      formal: 'Formal and business-appropriate - for upscale brands',
+      apologetic: 'Empathetic and solution-focused - takes ownership'
+    };
 
-Write a ${selectedTone} response to the following review.
-${review_rating ? `The review has a rating of ${review_rating} out of 5 stars.` : ''}
-Language: Write the response in ${selectedLanguage}.
-Keep the response concise, professional, and helpful.`;
+    const apiLanguageNames = {
+      en: 'English', de: 'German', es: 'Spanish', fr: 'French',
+      it: 'Italian', pt: 'Portuguese', nl: 'Dutch', ja: 'Japanese',
+      zh: 'Chinese', ko: 'Korean', ar: 'Arabic', ru: 'Russian'
+    };
+
+    const systemPrompt = `You are an experienced customer service professional who writes authentic, personalized review responses. You sound like a real business owner, not a corporate robot.
+
+BUSINESS PROFILE:
+- Name: ${user.business_name || 'Our business'}
+${user.business_type ? `- Industry: ${user.business_type}` : ''}
+${user.business_context ? `- About us: ${user.business_context}` : ''}
+${user.response_style ? `- Our voice: ${user.response_style}` : ''}
+- Platform: ${selectedPlatform}
+
+PHRASES YOU MUST NEVER USE (these sound robotic):
+- "Thank you for your feedback"
+- "We appreciate you taking the time to..."
+- "Your satisfaction is our top priority"
+- "Sorry for any inconvenience caused"
+Be specific! Reference something they actually mentioned.
+
+TONE: ${apiToneDescriptions[selectedTone] || apiToneDescriptions.professional}
+${review_rating ? `RATING: ${review_rating} stars - ${review_rating <= 2 ? 'Take ownership, offer resolution' : 'Express genuine gratitude'}` : ''}
+LANGUAGE: Write the response in ${apiLanguageNames[selectedLanguage] || selectedLanguage}.`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: review_text }
+        { role: 'user', content: `Write a response to this review:\n\n"${review_text}"\n\nWrite ONLY the response text:` }
       ],
-      max_tokens: 500,
-      temperature: 0.7
+      max_tokens: 350,
+      temperature: 0.6,
+      presence_penalty: 0.1,
+      frequency_penalty: 0.1
     });
 
     const generatedResponse = completion.choices[0].message.content;
