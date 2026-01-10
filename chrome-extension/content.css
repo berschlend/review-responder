@@ -476,6 +476,24 @@
   accent-color: var(--rr-primary);
 }
 
+/* ========== SPEED OPTIONS ========== */
+.rr-speed-options {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--rr-border);
+}
+
+.rr-speed-options .rr-checkbox-label {
+  margin-bottom: 8px;
+}
+
+.rr-turbo-label span {
+  background: linear-gradient(135deg, #fef08a, #fde047);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
 /* ========== GENERATE BUTTON ========== */
 .rr-generate-btn {
   width: 100%;

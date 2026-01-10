@@ -1,7 +1,34 @@
-// ReviewResponder - Killer Features Edition
-// Focus: Time Saving, One-Click, Smart Detection
+// ReviewResponder - Speed Edition
+// Focus: FAST, Easy, One-Click
 
 const API_URL = 'https://review-responder.onrender.com/api';
+
+// ========== PRE-FLIGHT LOGIN CHECK ==========
+let isLoggedIn = false;
+let cachedUser = null;
+let cachedToken = null;
+
+async function checkLoginStatus() {
+  try {
+    const stored = await chrome.storage.local.get(['token', 'user']);
+    isLoggedIn = !!stored.token;
+    cachedToken = stored.token;
+    cachedUser = stored.user;
+    return isLoggedIn;
+  } catch (e) {
+    return false;
+  }
+}
+
+// Check login on load
+checkLoginStatus();
+
+// Re-check when storage changes
+chrome.storage.onChanged.addListener((changes) => {
+  if (changes.token) {
+    checkLoginStatus();
+  }
+});
 
 // ========== TIME SAVED TRACKING ==========
 const TIME_PER_RESPONSE_MINUTES = 3; // Average time to write a response manually
@@ -399,10 +426,12 @@ async function loadSettings() {
     return stored.rr_settings || {
       tone: 'professional',
       length: 'medium',
-      emojis: false
+      emojis: false,
+      autoCopy: true,       // NEW: Auto-copy after generation
+      turboMode: false      // NEW: Skip panel, instant generate
     };
   } catch (e) {
-    return { tone: 'professional', length: 'medium', emojis: false };
+    return { tone: 'professional', length: 'medium', emojis: false, autoCopy: true, turboMode: false };
   }
 }
 
@@ -411,6 +440,10 @@ async function saveSettings(settings) {
     await chrome.storage.local.set({ rr_settings: settings });
   } catch (e) {}
 }
+
+// Cache settings for speed
+let cachedSettings = null;
+loadSettings().then(s => cachedSettings = s);
 
 // ========== CREATE KILLER PANEL ==========
 async function createResponsePanel() {
@@ -493,6 +526,16 @@ async function createResponsePanel() {
           <input type="checkbox" class="rr-emoji-toggle">
           <span>Include emojis</span>
         </label>
+        <div class="rr-speed-options">
+          <label class="rr-checkbox-label">
+            <input type="checkbox" class="rr-autocopy-toggle" checked>
+            <span>Auto-copy after generate</span>
+          </label>
+          <label class="rr-checkbox-label rr-turbo-label">
+            <input type="checkbox" class="rr-turbo-toggle">
+            <span>⚡ Turbo Mode (instant, no panel)</span>
+          </label>
+        </div>
       </div>
 
       <!-- Generate Button -->
@@ -531,7 +574,7 @@ async function createResponsePanel() {
 
       <!-- Keyboard Shortcuts Hint -->
       <div class="rr-shortcuts-hint">
-        <kbd>Alt+R</kbd> generate · <kbd>Alt+C</kbd> copy · <kbd>Esc</kbd> close
+        <kbd>Alt+R</kbd> generate · <kbd>Alt+C</kbd> copy · <kbd>Alt+T</kbd> turbo · <kbd>Esc</kbd> close
       </div>
 
       <!-- Help Overlay -->
@@ -559,6 +602,9 @@ async function createResponsePanel() {
     panel.querySelector('.rr-tone-select').value = settings.tone || 'professional';
     panel.querySelector('.rr-length-select').value = settings.length || 'medium';
     panel.querySelector('.rr-emoji-toggle').checked = settings.emojis || false;
+    panel.querySelector('.rr-autocopy-toggle').checked = settings.autoCopy !== false;
+    panel.querySelector('.rr-turbo-toggle').checked = settings.turboMode || false;
+    cachedSettings = settings;
   });
 
   return panel;
@@ -623,6 +669,8 @@ function initPanelEvents(panel) {
   panel.querySelector('.rr-tone-select').addEventListener('change', () => saveCurrentSettings(panel));
   panel.querySelector('.rr-length-select').addEventListener('change', () => saveCurrentSettings(panel));
   panel.querySelector('.rr-emoji-toggle').addEventListener('change', () => saveCurrentSettings(panel));
+  panel.querySelector('.rr-autocopy-toggle').addEventListener('change', () => saveCurrentSettings(panel));
+  panel.querySelector('.rr-turbo-toggle').addEventListener('change', () => saveCurrentSettings(panel));
 }
 
 function closePanel(panel) {
@@ -637,8 +685,11 @@ function saveCurrentSettings(panel) {
   const settings = {
     tone: panel.querySelector('.rr-tone-select').value,
     length: panel.querySelector('.rr-length-select').value,
-    emojis: panel.querySelector('.rr-emoji-toggle').checked
+    emojis: panel.querySelector('.rr-emoji-toggle').checked,
+    autoCopy: panel.querySelector('.rr-autocopy-toggle').checked,
+    turboMode: panel.querySelector('.rr-turbo-toggle').checked
   };
+  cachedSettings = settings;
   saveSettings(settings);
 }
 
@@ -736,8 +787,29 @@ async function generateResponse(panel) {
       btn.classList.toggle('active', btn.dataset.tone === tone);
     });
 
-    // Show success toast with time saved
-    showToast('✨ Response generated! ~3 min saved', 'success');
+    // Auto-copy if enabled
+    const settings = cachedSettings || await loadSettings();
+    if (settings.autoCopy) {
+      try {
+        await navigator.clipboard.writeText(data.response);
+        showToast('✨ Generated & copied! ~3 min saved', 'success');
+
+        // Update copy button
+        const copyBtn = panel.querySelector('.rr-copy-btn');
+        if (copyBtn) {
+          copyBtn.textContent = '✅ Copied!';
+          copyBtn.classList.add('copied');
+          setTimeout(() => {
+            copyBtn.textContent = '📋 Copy';
+            copyBtn.classList.remove('copied');
+          }, 2000);
+        }
+      } catch (e) {
+        showToast('✨ Response generated! ~3 min saved', 'success');
+      }
+    } else {
+      showToast('✨ Response generated! ~3 min saved', 'success');
+    }
 
     // Maybe show confetti
     await maybeShowConfetti();
@@ -755,6 +827,76 @@ async function generateResponse(panel) {
     generateBtn.disabled = false;
     btnText.classList.remove('hidden');
     btnLoading.classList.add('hidden');
+  }
+}
+
+// ========== TURBO MODE: Instant generation without panel ==========
+async function turboGenerate(reviewText) {
+  // Pre-flight checks
+  if (!isLoggedIn) {
+    showToast('🔐 Please login first (click extension icon)', 'error');
+    return;
+  }
+
+  const cleaned = cleanReviewText(reviewText);
+  if (!cleaned || cleaned.length < 10) {
+    showToast('⚠️ Select more text', 'warning');
+    return;
+  }
+
+  // Show loading toast
+  showToast('⚡ Generating...', 'info');
+
+  try {
+    const settings = cachedSettings || await loadSettings();
+    const sentiment = analyzeSentiment(cleaned);
+    const sentimentDisplay = getSentimentDisplay(sentiment);
+    const issues = detectIssues(cleaned);
+
+    // Build context
+    let context = '';
+    if (issues.length > 0) {
+      const issueLabels = issues.map(i => i.label.replace(/[^\w\s]/g, '').trim());
+      context = `Customer complaints detected: ${issueLabels.join(', ')}. Address these specific issues in your response.`;
+    }
+
+    const response = await fetch(`${API_URL}/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${cachedToken}`
+      },
+      body: JSON.stringify({
+        reviewText: cleaned,
+        tone: sentimentDisplay.tone, // Auto-select based on sentiment
+        outputLanguage: 'auto',
+        responseLength: settings.length || 'medium',
+        includeEmojis: settings.emojis || false,
+        businessName: cachedUser?.businessName || '',
+        additionalContext: context
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Generation failed');
+    }
+
+    // Copy to clipboard
+    await navigator.clipboard.writeText(data.response);
+
+    // Track time saved
+    await trackTimeSaved();
+
+    // Show success
+    showToast('✅ Copied to clipboard! Paste with Ctrl+V', 'success');
+
+    // Maybe show confetti
+    await maybeShowConfetti();
+
+  } catch (error) {
+    showToast(`❌ ${error.message}`, 'error');
   }
 }
 
@@ -877,15 +1019,32 @@ function createFloatingButton() {
   floatingBtn.innerHTML = '⚡';
   floatingBtn.title = 'Generate response (Alt+R)';
 
-  floatingBtn.addEventListener('click', (e) => {
+  floatingBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
     const selection = window.getSelection().toString().trim();
-    if (selection && selection.length >= 10) {
-      showResponsePanel(selection, true);
+    if (!selection || selection.length < 10) {
+      hideFloatingButton();
+      return;
     }
-    hideFloatingButton();
+
+    // Pre-flight login check
+    if (!isLoggedIn) {
+      showToast('🔐 Please login first (click extension icon)', 'error');
+      hideFloatingButton();
+      return;
+    }
+
+    // Check if turbo mode is enabled
+    const settings = cachedSettings || await loadSettings();
+    if (settings.turboMode) {
+      hideFloatingButton();
+      turboGenerate(selection);
+    } else {
+      showResponsePanel(selection, true);
+      hideFloatingButton();
+    }
   });
 
   document.body.appendChild(floatingBtn);
@@ -938,17 +1097,66 @@ document.addEventListener('mousedown', (e) => {
   }
 });
 
+// Double-click on text = Instant Generate (Turbo shortcut)
+document.addEventListener('dblclick', async (e) => {
+  // Don't trigger if clicking on our UI or inputs
+  if (e.target.closest('#rr-response-panel') ||
+      e.target.closest('#rr-floating-btn') ||
+      e.target.closest('input') ||
+      e.target.closest('textarea')) {
+    return;
+  }
+
+  // Wait a moment for text selection to complete
+  await new Promise(r => setTimeout(r, 50));
+
+  const selection = window.getSelection().toString().trim();
+  if (!selection || selection.length < 10) return;
+
+  // Only in turbo mode OR if logged in and holding Alt
+  const settings = cachedSettings || await loadSettings();
+
+  if (settings.turboMode || e.altKey) {
+    if (!isLoggedIn) {
+      showToast('🔐 Please login first', 'error');
+      return;
+    }
+    turboGenerate(selection);
+  }
+});
+
 // Keyboard shortcuts
-document.addEventListener('keydown', (e) => {
-  // Alt+R: Generate from selection
+document.addEventListener('keydown', async (e) => {
+  // Alt+R: Generate from selection (respects turbo mode)
   if (e.altKey && e.key.toLowerCase() === 'r') {
     e.preventDefault();
     const selection = window.getSelection().toString().trim();
-    if (selection && selection.length >= 10) {
-      showResponsePanel(selection, true);
-    } else {
+    if (!selection || selection.length < 10) {
       showToast('⚠️ Select at least 10 characters', 'warning');
+      return;
     }
+
+    if (!isLoggedIn) {
+      showToast('🔐 Please login first', 'error');
+      return;
+    }
+
+    const settings = cachedSettings || await loadSettings();
+    if (settings.turboMode) {
+      turboGenerate(selection);
+    } else {
+      showResponsePanel(selection, true);
+    }
+  }
+
+  // Alt+T: Toggle Turbo Mode
+  if (e.altKey && e.key.toLowerCase() === 't') {
+    e.preventDefault();
+    const settings = cachedSettings || await loadSettings();
+    settings.turboMode = !settings.turboMode;
+    cachedSettings = settings;
+    saveSettings(settings);
+    showToast(settings.turboMode ? '⚡ Turbo Mode ON' : '🐢 Turbo Mode OFF', 'info');
   }
 
   // Alt+C: Copy current response
