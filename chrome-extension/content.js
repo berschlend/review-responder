@@ -22,7 +22,7 @@ function createResponsePanel() {
       </select>
       <button class="rr-generate-btn">Generate Response</button>
       <div class="rr-response-area hidden">
-        <div class="rr-response-text"></div>
+        <textarea class="rr-response-text" placeholder="Generated response will appear here..."></textarea>
         <div class="rr-button-row">
           <button class="rr-copy-btn">Copy</button>
           <button class="rr-regenerate-btn">Regenerate</button>
@@ -143,7 +143,7 @@ async function generateResponse(panel) {
       throw new Error(data.error || 'Generation failed');
     }
 
-    panel.querySelector('.rr-response-text').textContent = data.response;
+    panel.querySelector('.rr-response-text').value = data.response;
     responseArea.classList.remove('hidden');
     messageEl.textContent = '';
     console.log('[RR] Response generated successfully');
@@ -159,7 +159,7 @@ async function generateResponse(panel) {
 
 // Copy response to clipboard
 async function copyResponse(panel) {
-  const responseText = panel.querySelector('.rr-response-text').textContent;
+  const responseText = panel.querySelector('.rr-response-text').value;
   const messageEl = panel.querySelector('.rr-message');
 
   try {
@@ -268,7 +268,7 @@ function showResponsePanel(reviewText) {
   panel.querySelector('.rr-review-preview').textContent =
     reviewText.length > 100 ? reviewText.substring(0, 100) + '...' : reviewText;
   panel.querySelector('.rr-response-area').classList.add('hidden');
-  panel.querySelector('.rr-response-text').textContent = '';
+  panel.querySelector('.rr-response-text').value = '';
   panel.querySelector('.rr-message').textContent = '';
 
   // Show panel

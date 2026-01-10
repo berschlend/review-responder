@@ -138,6 +138,9 @@
 }
 
 .rr-response-text {
+  width: 100%;
+  min-height: 120px;
+  max-height: 200px;
   background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -146,8 +149,15 @@
   line-height: 1.5;
   color: #374151;
   margin-bottom: 12px;
-  max-height: 150px;
-  overflow-y: auto;
+  resize: vertical;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.rr-response-text:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
 }
 
 .rr-button-row {
