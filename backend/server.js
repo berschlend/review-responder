@@ -4374,6 +4374,38 @@ app.get('/api/testimonials', async (req, res) => {
   }
 });
 
+// Admin: Delete testimonial
+app.delete('/api/admin/testimonials/:id', async (req, res) => {
+  const { key } = req.query;
+  if (key !== ADMIN_KEY) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    await dbQuery('DELETE FROM user_feedback WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete' });
+  }
+});
+
+// Admin: List all testimonials (including non-approved)
+app.get('/api/admin/testimonials', async (req, res) => {
+  const { key } = req.query;
+  if (key !== ADMIN_KEY) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const testimonials = await dbAll(
+      `SELECT id, rating, comment, user_name, approved, created_at FROM user_feedback ORDER BY created_at DESC`
+    );
+    res.json({ testimonials });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch' });
+  }
+});
+
 // Drip Email Campaign - Send scheduled emails based on user signup date
 // Call this endpoint via cron job (e.g., daily at 9am)
 app.post('/api/cron/send-drip-emails', async (req, res) => {
