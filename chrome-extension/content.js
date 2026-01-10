@@ -3,7 +3,39 @@
 
 const API_URL = 'https://review-responder.onrender.com/api';
 
-// Sentiment Analysis
+// ========== PLATFORM DETECTION ==========
+function detectPlatform() {
+  const hostname = window.location.hostname;
+  const pathname = window.location.pathname;
+
+  if (hostname.includes('google.com') && pathname.includes('/maps')) {
+    return { name: 'Google Maps', icon: '📍', color: '#4285f4' };
+  }
+  if (hostname.includes('google.com') && pathname.includes('/business')) {
+    return { name: 'Google Business', icon: '🏢', color: '#4285f4' };
+  }
+  if (hostname.includes('yelp.com')) {
+    return { name: 'Yelp', icon: '⭐', color: '#d32323' };
+  }
+  if (hostname.includes('tripadvisor.com')) {
+    return { name: 'TripAdvisor', icon: '🦉', color: '#00aa6c' };
+  }
+  if (hostname.includes('facebook.com')) {
+    return { name: 'Facebook', icon: '📘', color: '#1877f2' };
+  }
+  if (hostname.includes('trustpilot.com')) {
+    return { name: 'Trustpilot', icon: '⭐', color: '#00b67a' };
+  }
+  if (hostname.includes('booking.com')) {
+    return { name: 'Booking.com', icon: '🏨', color: '#003580' };
+  }
+  if (hostname.includes('airbnb.com')) {
+    return { name: 'Airbnb', icon: '🏠', color: '#ff5a5f' };
+  }
+  return { name: 'Review Site', icon: '💬', color: '#667eea' };
+}
+
+// ========== SENTIMENT ANALYSIS ==========
 function analyzeSentiment(text) {
   const lowerText = text.toLowerCase();
 
@@ -11,14 +43,15 @@ function analyzeSentiment(text) {
     'great', 'amazing', 'awesome', 'excellent', 'fantastic', 'wonderful', 'love', 'loved', 'best', 'perfect',
     'outstanding', 'brilliant', 'superb', 'delicious', 'friendly', 'helpful', 'recommend', 'highly',
     'toll', 'super', 'wunderbar', 'perfekt', 'ausgezeichnet', 'fantastisch', 'lecker', 'freundlich',
-    'genial', 'klasse', 'prima', 'hervorragend', 'excelente', 'bueno', 'increíble', 'magnifique'
+    'genial', 'klasse', 'prima', 'hervorragend', 'excelente', 'bueno', 'increíble', 'magnifique',
+    'clean', 'fast', 'quick', 'professional', 'nice', 'good', 'happy', 'satisfied', 'impressed'
   ];
 
   const negativeWords = [
     'bad', 'terrible', 'awful', 'horrible', 'worst', 'poor', 'disappointed', 'disappointing', 'rude',
     'slow', 'cold', 'dirty', 'disgusting', 'never', 'waste', 'overpriced', 'avoid', 'mediocre',
     'schlecht', 'furchtbar', 'schrecklich', 'enttäuscht', 'langsam', 'kalt', 'dreckig', 'teuer',
-    'nie wieder', 'malo', 'horrible', 'décevant', 'mauvais'
+    'nie wieder', 'malo', 'horrible', 'décevant', 'mauvais', 'angry', 'upset', 'frustrated'
   ];
 
   let positiveScore = 0;
@@ -40,21 +73,100 @@ function analyzeSentiment(text) {
 function getSentimentInfo(sentiment) {
   switch (sentiment) {
     case 'positive':
-      return { emoji: '🟢', label: 'Positive Review', recommendedTone: 'friendly', color: '#10b981' };
+      return { emoji: '🟢', label: 'Positive', recommendedTone: 'friendly', color: '#10b981' };
     case 'negative':
-      return { emoji: '🔴', label: 'Negative Review', recommendedTone: 'apologetic', color: '#ef4444' };
+      return { emoji: '🔴', label: 'Negative', recommendedTone: 'apologetic', color: '#ef4444' };
     default:
-      return { emoji: '🟡', label: 'Neutral Review', recommendedTone: 'professional', color: '#f59e0b' };
+      return { emoji: '🟡', label: 'Neutral', recommendedTone: 'professional', color: '#f59e0b' };
   }
 }
 
-// Create floating response panel with all features
+// ========== SETTINGS PERSISTENCE ==========
+async function loadSettings() {
+  try {
+    const stored = await chrome.storage.local.get(['rr_settings']);
+    return stored.rr_settings || {
+      tone: 'professional',
+      length: 'medium',
+      emojis: false,
+      autoGenerate: true,
+      copyAndClose: true
+    };
+  } catch (e) {
+    return { tone: 'professional', length: 'medium', emojis: false, autoGenerate: true, copyAndClose: true };
+  }
+}
+
+async function saveSettings(settings) {
+  try {
+    await chrome.storage.local.set({ rr_settings: settings });
+  } catch (e) {
+    console.error('Failed to save settings:', e);
+  }
+}
+
+// ========== RECENT RESPONSES ==========
+async function loadRecentResponses() {
+  try {
+    const stored = await chrome.storage.local.get(['rr_recent']);
+    return stored.rr_recent || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+async function saveRecentResponse(reviewText, response, tone) {
+  try {
+    let recent = await loadRecentResponses();
+    recent.unshift({
+      review: reviewText.substring(0, 50) + (reviewText.length > 50 ? '...' : ''),
+      response: response,
+      tone: tone,
+      timestamp: Date.now()
+    });
+    // Keep only last 5
+    recent = recent.slice(0, 5);
+    await chrome.storage.local.set({ rr_recent: recent });
+  } catch (e) {
+    console.error('Failed to save recent response:', e);
+  }
+}
+
+// ========== CLEAN REVIEW TEXT ==========
+function cleanReviewText(text) {
+  const uiPatterns = [
+    /vor \d+ (Sekunden?|Minuten?|Stunden?|Tagen?|Wochen?|Monaten?|Jahren?)/gi,
+    /\d+ (second|minute|hour|day|week|month|year)s? ago/gi,
+    /Antwort vom Inhaber/gi,
+    /Owner response/gi,
+    /Response from the owner/gi,
+    /\d+ (Person|Personen) fanden? diese Rezension hilfreich/gi,
+    /\d+ (person|people) found this (review )?helpful/gi,
+    /Von Google übersetzt/gi,
+    /Translated by Google/gi,
+    /Local Guide\s*·?\s*\d*\s*(Rezension(en)?|reviews?)?/gi,
+  ];
+
+  let cleaned = text;
+  uiPatterns.forEach(pattern => {
+    cleaned = cleaned.replace(pattern, '');
+  });
+  return cleaned.replace(/\s+/g, ' ').trim();
+}
+
+// ========== CREATE RESPONSE PANEL ==========
 function createResponsePanel() {
   const panel = document.createElement('div');
   panel.id = 'rr-response-panel';
+
+  const platform = detectPlatform();
+
   panel.innerHTML = `
-    <div class="rr-panel-header">
-      <span>ReviewResponder</span>
+    <div class="rr-panel-header" id="rr-drag-handle">
+      <div class="rr-header-left">
+        <span class="rr-logo">⚡ ReviewResponder</span>
+        <span class="rr-platform-badge" style="background: ${platform.color}">${platform.icon} ${platform.name}</span>
+      </div>
       <button class="rr-close-btn">&times;</button>
     </div>
     <div class="rr-panel-body">
@@ -84,6 +196,10 @@ function createResponsePanel() {
           <input type="checkbox" class="rr-emoji-toggle">
           Include emojis
         </label>
+        <label class="rr-checkbox-label">
+          <input type="checkbox" class="rr-copy-close-toggle" checked>
+          Copy & Close
+        </label>
       </div>
 
       <div class="rr-quick-actions hidden">
@@ -108,10 +224,56 @@ function createResponsePanel() {
           </div>
         </div>
       </div>
+
+      <!-- Recent Responses -->
+      <div class="rr-recent-section hidden">
+        <div class="rr-recent-header">
+          <span>Recent Responses</span>
+          <button class="rr-recent-toggle">▼</button>
+        </div>
+        <div class="rr-recent-list hidden"></div>
+      </div>
+
       <div class="rr-message"></div>
     </div>
   `;
   document.body.appendChild(panel);
+
+  // Make panel draggable
+  makeDraggable(panel);
+
+  // Load and apply saved settings
+  loadSettings().then(settings => {
+    panel.querySelector('.rr-tone-select').value = settings.tone || 'professional';
+    panel.querySelector('.rr-length-select').value = settings.length || 'medium';
+    panel.querySelector('.rr-emoji-toggle').checked = settings.emojis || false;
+    panel.querySelector('.rr-copy-close-toggle').checked = settings.copyAndClose !== false;
+  });
+
+  // Load recent responses
+  loadRecentResponses().then(recent => {
+    if (recent.length > 0) {
+      const recentSection = panel.querySelector('.rr-recent-section');
+      const recentList = panel.querySelector('.rr-recent-list');
+      recentSection.classList.remove('hidden');
+
+      recentList.innerHTML = recent.map((r, i) => `
+        <div class="rr-recent-item" data-index="${i}">
+          <span class="rr-recent-review">${r.review}</span>
+          <span class="rr-recent-tone">${r.tone}</span>
+        </div>
+      `).join('');
+
+      // Click to use recent response
+      recentList.querySelectorAll('.rr-recent-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const index = parseInt(item.dataset.index);
+          panel.querySelector('.rr-response-text').value = recent[index].response;
+          panel.querySelector('.rr-response-area').classList.remove('hidden');
+        });
+      });
+    }
+  });
 
   // Event listeners
   panel.querySelector('.rr-close-btn').addEventListener('click', () => {
@@ -127,6 +289,20 @@ function createResponsePanel() {
   });
 
   panel.querySelector('.rr-copy-btn').addEventListener('click', () => copyResponse(panel));
+
+  // Save settings on change
+  panel.querySelector('.rr-tone-select').addEventListener('change', (e) => {
+    saveCurrentSettings(panel);
+  });
+  panel.querySelector('.rr-length-select').addEventListener('change', () => {
+    saveCurrentSettings(panel);
+  });
+  panel.querySelector('.rr-emoji-toggle').addEventListener('change', () => {
+    saveCurrentSettings(panel);
+  });
+  panel.querySelector('.rr-copy-close-toggle').addEventListener('change', () => {
+    saveCurrentSettings(panel);
+  });
 
   // Quick tone switch buttons
   panel.querySelectorAll('.rr-tone-btn').forEach(btn => {
@@ -146,11 +322,64 @@ function createResponsePanel() {
     generateResponse(panel);
   });
 
+  // Recent toggle
+  panel.querySelector('.rr-recent-toggle').addEventListener('click', () => {
+    const list = panel.querySelector('.rr-recent-list');
+    const btn = panel.querySelector('.rr-recent-toggle');
+    list.classList.toggle('hidden');
+    btn.textContent = list.classList.contains('hidden') ? '▼' : '▲';
+  });
+
   return panel;
 }
 
-// Generate response with all options
-async function generateResponse(panel) {
+// Save current settings
+function saveCurrentSettings(panel) {
+  const settings = {
+    tone: panel.querySelector('.rr-tone-select').value,
+    length: panel.querySelector('.rr-length-select').value,
+    emojis: panel.querySelector('.rr-emoji-toggle').checked,
+    copyAndClose: panel.querySelector('.rr-copy-close-toggle').checked
+  };
+  saveSettings(settings);
+}
+
+// Make panel draggable
+function makeDraggable(panel) {
+  const handle = panel.querySelector('#rr-drag-handle');
+  let isDragging = false;
+  let startX, startY, startLeft, startTop;
+
+  handle.addEventListener('mousedown', (e) => {
+    if (e.target.classList.contains('rr-close-btn')) return;
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    const rect = panel.getBoundingClientRect();
+    startLeft = rect.left;
+    startTop = rect.top;
+    panel.style.transform = 'none';
+    panel.style.left = startLeft + 'px';
+    panel.style.top = startTop + 'px';
+    handle.style.cursor = 'grabbing';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    panel.style.left = (startLeft + dx) + 'px';
+    panel.style.top = (startTop + dy) + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+    handle.style.cursor = 'grab';
+  });
+}
+
+// ========== GENERATE RESPONSE ==========
+async function generateResponse(panel, autoTriggered = false) {
   const reviewText = panel?.dataset?.reviewText || '';
   const tone = panel.querySelector('.rr-tone-select').value;
   const length = panel.querySelector('.rr-length-select').value;
@@ -197,7 +426,8 @@ async function generateResponse(panel) {
         outputLanguage: 'auto',
         responseLength: length,
         includeEmojis: includeEmojis,
-        businessName: stored.user?.businessName || ''
+        businessName: stored.user?.businessName || '',
+        platform: detectPlatform().name
       })
     });
 
@@ -210,6 +440,15 @@ async function generateResponse(panel) {
     panel.querySelector('.rr-response-text').value = data.response;
     responseArea.classList.remove('hidden');
     messageEl.textContent = '';
+
+    // Update active tone button
+    panel.querySelectorAll('.rr-tone-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tone === tone);
+    });
+
+    // Save to recent responses
+    await saveRecentResponse(reviewText, data.response, tone);
+
   } catch (error) {
     messageEl.textContent = error.message;
     messageEl.className = 'rr-message rr-error';
@@ -219,52 +458,47 @@ async function generateResponse(panel) {
   }
 }
 
-// Copy response to clipboard
+// ========== COPY RESPONSE ==========
 async function copyResponse(panel) {
   const responseText = panel.querySelector('.rr-response-text').value;
   const messageEl = panel.querySelector('.rr-message');
   const copyBtn = panel.querySelector('.rr-copy-btn');
+  const copyAndClose = panel.querySelector('.rr-copy-close-toggle').checked;
 
   try {
     await navigator.clipboard.writeText(responseText);
     copyBtn.textContent = '✅ Copied!';
     messageEl.textContent = '';
-    setTimeout(() => {
-      copyBtn.textContent = '📋 Copy';
-    }, 2000);
+
+    if (copyAndClose) {
+      setTimeout(() => {
+        panel.classList.remove('rr-visible');
+        copyBtn.textContent = '📋 Copy';
+      }, 500);
+    } else {
+      setTimeout(() => {
+        copyBtn.textContent = '📋 Copy';
+      }, 2000);
+    }
   } catch (error) {
     messageEl.textContent = 'Failed to copy';
     messageEl.className = 'rr-message rr-error';
   }
 }
 
-// Clean review text
-function cleanReviewText(text) {
-  const uiPatterns = [
-    /vor \d+ (Sekunden?|Minuten?|Stunden?|Tagen?|Wochen?|Monaten?|Jahren?)/gi,
-    /\d+ (second|minute|hour|day|week|month|year)s? ago/gi,
-    /Antwort vom Inhaber/gi,
-    /Owner response/gi,
-    /Response from the owner/gi,
-    /\d+ (Person|Personen) fanden? diese Rezension hilfreich/gi,
-    /\d+ (person|people) found this (review )?helpful/gi,
-    /Von Google übersetzt/gi,
-    /Translated by Google/gi,
-    /Local Guide\s*·?\s*\d*\s*(Rezension(en)?|reviews?)?/gi,
-  ];
-
-  let cleaned = text;
-  uiPatterns.forEach(pattern => {
-    cleaned = cleaned.replace(pattern, '');
-  });
-  return cleaned.replace(/\s+/g, ' ').trim();
-}
-
-// Show response panel with sentiment analysis
-function showResponsePanel(reviewText) {
+// ========== SHOW RESPONSE PANEL ==========
+async function showResponsePanel(reviewText, autoGenerate = false) {
   let panel = document.getElementById('rr-response-panel');
   if (!panel) {
     panel = createResponsePanel();
+  }
+
+  // Update platform badge
+  const platform = detectPlatform();
+  const badge = panel.querySelector('.rr-platform-badge');
+  if (badge) {
+    badge.style.background = platform.color;
+    badge.innerHTML = `${platform.icon} ${platform.name}`;
   }
 
   // Analyze sentiment
@@ -274,7 +508,7 @@ function showResponsePanel(reviewText) {
   // Reset panel
   panel.dataset.reviewText = reviewText;
   panel.querySelector('.rr-review-preview').textContent =
-    reviewText.length > 100 ? reviewText.substring(0, 100) + '...' : reviewText;
+    reviewText.length > 120 ? reviewText.substring(0, 120) + '...' : reviewText;
 
   // Update sentiment display
   const sentimentBadge = panel.querySelector('.rr-sentiment-badge');
@@ -284,8 +518,10 @@ function showResponsePanel(reviewText) {
   const sentimentTip = panel.querySelector('.rr-sentiment-tip');
   sentimentTip.textContent = `💡 Recommended: ${sentimentInfo.recommendedTone.charAt(0).toUpperCase() + sentimentInfo.recommendedTone.slice(1)}`;
 
-  // Auto-select recommended tone
-  panel.querySelector('.rr-tone-select').value = sentimentInfo.recommendedTone;
+  // Auto-select recommended tone (but respect saved settings for manual triggers)
+  if (autoGenerate) {
+    panel.querySelector('.rr-tone-select').value = sentimentInfo.recommendedTone;
+  }
 
   // Show Quick Thanks for positive reviews
   const quickActions = panel.querySelector('.rr-quick-actions');
@@ -299,11 +535,24 @@ function showResponsePanel(reviewText) {
   panel.querySelector('.rr-response-text').value = '';
   panel.querySelector('.rr-message').textContent = '';
 
+  // Reset position to center
+  panel.style.left = '';
+  panel.style.top = '';
+  panel.style.transform = 'translate(-50%, -50%)';
+
   // Show panel
   panel.classList.add('rr-visible');
+
+  // Auto-generate if enabled
+  if (autoGenerate) {
+    const settings = await loadSettings();
+    if (settings.autoGenerate !== false) {
+      setTimeout(() => generateResponse(panel, true), 100);
+    }
+  }
 }
 
-// Floating mini-button for quick access
+// ========== FLOATING MINI-BUTTON ==========
 let floatingBtn = null;
 
 function createFloatingButton() {
@@ -312,31 +561,31 @@ function createFloatingButton() {
   floatingBtn = document.createElement('button');
   floatingBtn.id = 'rr-floating-btn';
   floatingBtn.innerHTML = '⚡';
-  floatingBtn.title = 'Generate Response';
+  floatingBtn.title = 'Generate Response (Auto)';
   floatingBtn.style.cssText = `
     position: fixed;
     display: none;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    border: none;
-    font-size: 18px;
+    border: 2px solid white;
+    font-size: 20px;
     cursor: pointer;
     z-index: 999998;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
     transition: transform 0.2s, box-shadow 0.2s;
   `;
 
   floatingBtn.addEventListener('mouseenter', () => {
-    floatingBtn.style.transform = 'scale(1.1)';
-    floatingBtn.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.5)';
+    floatingBtn.style.transform = 'scale(1.15)';
+    floatingBtn.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
   });
 
   floatingBtn.addEventListener('mouseleave', () => {
     floatingBtn.style.transform = 'scale(1)';
-    floatingBtn.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.4)';
+    floatingBtn.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.5)';
   });
 
   floatingBtn.addEventListener('click', (e) => {
@@ -344,7 +593,7 @@ function createFloatingButton() {
     e.stopPropagation();
     const selection = window.getSelection().toString().trim();
     if (selection && selection.length > 10) {
-      showResponsePanel(cleanReviewText(selection));
+      showResponsePanel(cleanReviewText(selection), true); // Auto-generate!
     }
     hideFloatingButton();
   });
@@ -356,7 +605,7 @@ function createFloatingButton() {
 function showFloatingButton(x, y) {
   const btn = createFloatingButton();
   btn.style.left = `${Math.min(x + 10, window.innerWidth - 50)}px`;
-  btn.style.top = `${Math.min(y - 40, window.innerHeight - 50)}px`;
+  btn.style.top = `${Math.min(y - 45, window.innerHeight - 50)}px`;
   btn.style.display = 'block';
 }
 
@@ -365,6 +614,8 @@ function hideFloatingButton() {
     floatingBtn.style.display = 'none';
   }
 }
+
+// ========== EVENT LISTENERS ==========
 
 // Listen for text selection
 document.addEventListener('mouseup', (e) => {
@@ -407,11 +658,11 @@ function addButtonsToReviews() {
 
       const btn = document.createElement('button');
       btn.className = 'rr-btn';
-      btn.textContent = '💬 Generate Response';
+      btn.textContent = '⚡ Respond';
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        showResponsePanel(reviewText);
+        showResponsePanel(reviewText, true); // Auto-generate!
       });
 
       const actionArea = review.querySelector('.k8MTF, .GBkF3d') || review;
@@ -443,7 +694,7 @@ observer.observe(document.body, { childList: true, subtree: true });
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'showPanelWithText') {
     const reviewText = cleanReviewText(message.reviewText);
-    showResponsePanel(reviewText);
+    showResponsePanel(reviewText, true); // Auto-generate on right-click!
     sendResponse({ success: true });
   }
 
@@ -461,7 +712,7 @@ document.addEventListener('keydown', (e) => {
   if (e.altKey && e.key === 'r') {
     const selection = window.getSelection().toString().trim();
     if (selection && selection.length > 10) {
-      showResponsePanel(cleanReviewText(selection));
+      showResponsePanel(cleanReviewText(selection), true);
     }
   }
 
@@ -483,4 +734,4 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-console.log('ReviewResponder loaded! Select text + ⚡ button or Right-click to generate responses.');
+console.log('⚡ ReviewResponder loaded! Select review text → Click ⚡ → Auto-generate response!');
