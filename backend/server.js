@@ -3775,7 +3775,7 @@ app.get('/api/admin/affiliates/:id', authenticateAdmin, async (req, res) => {
     const conversions = await dbAll(`
       SELECT ac.*, u.email as converted_email
       FROM affiliate_conversions ac
-      LEFT JOIN users u ON ac.converted_user_id = u.id
+      LEFT JOIN users u ON ac.referred_user_id = u.id
       WHERE ac.affiliate_id = $1
       ORDER BY ac.created_at DESC
       LIMIT 50
@@ -3974,7 +3974,7 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
       revenueStats = await dbGet(`
         SELECT
           COALESCE(SUM(commission_amount), 0) as total_commissions,
-          COUNT(DISTINCT converted_user_id) as total_conversions
+          COUNT(DISTINCT referred_user_id) as total_conversions
         FROM affiliate_conversions
       `) || revenueStats;
     } catch (e) { console.error('Revenue stats query error:', e.message); }
