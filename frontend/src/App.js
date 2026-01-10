@@ -2159,20 +2159,39 @@ const TermsPage = () => (
 const PricingCards = ({ showFree = true }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [billingCycle, setBillingCycle] = useState('monthly');
+
+  // Get discount code from URL parameter (e.g., ?discount=EARLY50)
+  const urlParams = new URLSearchParams(location.search);
+  const discountFromUrl = urlParams.get('discount');
+
+  // Valid discount codes
+  const validDiscountCodes = ['EARLY50', 'SAVE20', 'HUNTLAUNCH'];
+  const activeDiscount = validDiscountCodes.includes(discountFromUrl?.toUpperCase())
+    ? discountFromUrl.toUpperCase()
+    : null;
 
   const handleSubscribe = async (plan) => {
     if (!user) {
-      navigate('/register');
+      // Preserve discount code when redirecting to register
+      const registerUrl = activeDiscount ? `/register?discount=${activeDiscount}` : '/register';
+      navigate(registerUrl);
       return;
     }
 
     try {
-      const res = await api.post('/billing/create-checkout', { 
-        plan, 
-        billing: billingCycle,
-        discountCode: 'EARLY50' // Automatically apply launch discount
-      });
+      const checkoutData = {
+        plan,
+        billing: billingCycle
+      };
+
+      // Only add discount code if valid one is present in URL
+      if (activeDiscount) {
+        checkoutData.discountCode = activeDiscount;
+      }
+
+      const res = await api.post('/billing/create-checkout', checkoutData);
       window.location.href = res.data.url;
     } catch (error) {
       toast.error('Failed to start checkout');
@@ -2222,8 +2241,36 @@ const PricingCards = ({ showFree = true }) => {
   const displayPlans = showFree ? plans : plans.filter(p => p.plan !== 'free');
   const isYearly = billingCycle === 'yearly';
 
+  // Discount details for each code
+  const discountDetails = {
+    'EARLY50': { percent: 50, label: 'Launch Special' },
+    'SAVE20': { percent: 20, label: 'Special Offer' },
+    'HUNTLAUNCH': { percent: 60, label: 'Product Hunt Special' }
+  };
+  const currentDiscount = activeDiscount ? discountDetails[activeDiscount] : null;
+
   return (
     <div>
+      {/* Active Discount Banner - only shown when discount code is in URL */}
+      {currentDiscount && (
+        <div style={{
+          background: 'linear-gradient(135deg, var(--success) 0%, #059669 100%)',
+          color: 'white',
+          padding: '16px 24px',
+          borderRadius: '12px',
+          marginBottom: '24px',
+          textAlign: 'center',
+          boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+        }}>
+          <div style={{ fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>
+            🎉 {currentDiscount.percent}% OFF Applied!
+          </div>
+          <div style={{ fontSize: '14px', opacity: 0.9 }}>
+            {currentDiscount.label} - Code <strong>{activeDiscount}</strong> will be applied at checkout
+          </div>
+        </div>
+      )}
+
       {/* Billing Toggle */}
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px', gap: '8px', alignItems: 'center' }}>
         <span style={{ fontWeight: billingCycle === 'monthly' ? '600' : '400', color: billingCycle === 'monthly' ? 'var(--gray-900)' : 'var(--gray-500)' }}>
