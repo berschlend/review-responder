@@ -4567,7 +4567,7 @@ app.post('/api/outreach/send-emails', async (req, res) => {
 
         // Send email via Resend
         const result = await resend.emails.send({
-          from: 'ReviewResponder <hello@reviewresponder.io>',
+          from: 'ReviewResponder <onboarding@resend.dev>',
           to: lead.email,
           subject: template.subject,
           html: template.body.replace(/\n/g, '<br>'),
@@ -4678,7 +4678,7 @@ app.post('/api/outreach/send-followups', async (req, res) => {
         const template = fillEmailTemplate(EMAIL_TEMPLATES.sequence2, lead);
 
         await resend.emails.send({
-          from: 'ReviewResponder <hello@reviewresponder.io>',
+          from: 'ReviewResponder <onboarding@resend.dev>',
           to: lead.email,
           subject: template.subject,
           html: template.body.replace(/\n/g, '<br>')
@@ -4703,7 +4703,7 @@ app.post('/api/outreach/send-followups', async (req, res) => {
         const template = fillEmailTemplate(EMAIL_TEMPLATES.sequence3, lead);
 
         await resend.emails.send({
-          from: 'ReviewResponder <hello@reviewresponder.io>',
+          from: 'ReviewResponder <onboarding@resend.dev>',
           to: lead.email,
           subject: template.subject,
           html: template.body.replace(/\n/g, '<br>')
@@ -4843,7 +4843,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
           const template = fillEmailTemplate(EMAIL_TEMPLATES.sequence1, lead);
 
           await resend.emails.send({
-            from: 'ReviewResponder <hello@reviewresponder.io>',
+            from: 'ReviewResponder <onboarding@resend.dev>',
             to: lead.email,
             subject: template.subject,
             html: template.body.replace(/\n/g, '<br>')
@@ -4889,7 +4889,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
             const template = fillEmailTemplate(EMAIL_TEMPLATES[templateKey], lead);
 
             await resend.emails.send({
-              from: 'ReviewResponder <hello@reviewresponder.io>',
+              from: 'ReviewResponder <onboarding@resend.dev>',
               to: lead.email,
               subject: template.subject,
               html: template.body.replace(/\n/g, '<br>')
