@@ -4013,18 +4013,16 @@ app.get('/api/admin/set-plan', async (req, res) => {
     return res.status(400).json({ error: 'Valid email required' });
   }
 
-  // Plan configuration
-  const planConfig = {
-    free: { status: 'inactive', limit: 5 },
-    starter: { status: 'active', limit: 100 },
-    professional: { status: 'active', limit: 300 },
-    unlimited: { status: 'active', limit: 999999 }
-  };
-
+  // Use PLAN_LIMITS for consistency
   const targetPlan = plan || 'unlimited';
-  if (!planConfig[targetPlan]) {
+  if (!PLAN_LIMITS[targetPlan]) {
     return res.status(400).json({ error: 'Invalid plan. Use: free, starter, professional, unlimited' });
   }
+
+  const planConfig = {
+    status: targetPlan === 'free' ? 'inactive' : 'active',
+    limit: PLAN_LIMITS[targetPlan].responses
+  };
 
   try {
     const user = await dbGet('SELECT id, email, subscription_plan FROM users WHERE LOWER(email) = LOWER($1)', [email]);
@@ -4033,15 +4031,16 @@ app.get('/api/admin/set-plan', async (req, res) => {
       return res.status(404).json({ error: `User not found: ${email}` });
     }
 
-    const config = planConfig[targetPlan];
     const updateResult = await dbQuery(
       `UPDATE users SET
         subscription_plan = $1,
         subscription_status = $2,
         responses_limit = $3,
-        responses_used = 0
+        responses_used = 0,
+        smart_responses_used = 0,
+        standard_responses_used = 0
        WHERE id = $4`,
-      [targetPlan, config.status, config.limit, user.id]
+      [targetPlan, planConfig.status, planConfig.limit, user.id]
     );
 
     console.log(`✅ Admin set ${email} to ${targetPlan} plan (was: ${user.subscription_plan}), rows affected: ${updateResult.rowCount}`);
@@ -4061,7 +4060,7 @@ app.get('/api/admin/set-plan', async (req, res) => {
       message: `User ${email} set to ${targetPlan} plan`,
       previous_plan: user.subscription_plan,
       new_plan: targetPlan,
-      responses_limit: config.limit,
+      responses_limit: planConfig.limit,
       rows_affected: updateResult.rowCount,
       verified_plan: verifyUser?.subscription_plan,
       verified_limit: verifyUser?.responses_limit
