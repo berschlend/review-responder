@@ -48,6 +48,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] Stripe Yearly Prices erstellen + Price IDs in Render eintragen ✅
 - [ ] Demo-Video aufnehmen (2 Min Walkthrough) und YouTube/Loom Link einfügen
 - [ ] **Google OAuth Setup** - Google Cloud Console Credentials erstellen (siehe GOOGLE SIGN-IN SETUP unten)
+- [ ] **Eigene Domain für Outreach-Emails** - In Resend verifizieren (aktuell: resend.dev Test-Domain)
 
 ### ✅ HEUTE ERLEDIGT (10.01.2026):
 - [x] **Google Sign-In** - "Sign in with Google" für Login & Register implementiert
@@ -56,8 +57,17 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 | # | Task | Schwierigkeit | Dateien |
 |---|------|---------------|---------|
-| 1 | Chrome Extension Improvement | Mittel | `chrome-extension/` |
-| 2 | Landing Page A/B Testing | Mittel | `frontend/src/App.js` |
+| 1 | **Chrome Extension Sprach-Bug FINAL fixen** | HOCH | `chrome-extension/`, `backend/server.js` |
+| 2 | Chrome Web Store Screenshots (3 weitere) | Leicht | `chrome-extension/screenshots/` |
+| 3 | Chrome Web Store Einreichung | Leicht | ZIP + Store Listing fertig |
+| 4 | Landing Page A/B Testing | Mittel | `frontend/src/App.js` |
+
+### 🔴 BEKANNTER BUG:
+**Chrome Extension antwortet nicht in nativer Sprache des Reviews!**
+- Englische Reviews bekommen deutsche/niederländische Antworten
+- Problem tritt NUR in der Extension auf, nicht im Dashboard
+- `cleanReviewText()` und `detectLanguage()` wurden bereits versucht
+- Nächster Ansatz: Prompt weiter vereinfachen oder Text-Extraktion debuggen
 
 ---
 
