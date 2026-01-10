@@ -995,6 +995,7 @@ function saveCurrentSettings(panel) {
 async function generateResponse(panel) {
   const reviewText = panel.dataset.reviewText;
   const detectedIssues = panel.dataset.detectedIssues ? JSON.parse(panel.dataset.detectedIssues) : [];
+  const detectedLanguage = panel.dataset.detectedLanguage || 'en'; // Use stored language
   const tone = panel.querySelector('.rr-tone-select').value;
   const length = panel.querySelector('.rr-length-select').value;
   const emojis = panel.querySelector('.rr-emoji-toggle').checked;
@@ -1030,10 +1031,15 @@ async function generateResponse(panel) {
 
   try {
     // Build context with detected issues for smarter AI response
-    let context = '';
+    // IMPORTANT: Add explicit language instruction to fix language bug
+    const languageNames = { de: 'German', en: 'English', nl: 'Dutch', fr: 'French', es: 'Spanish' };
+    const languageName = languageNames[detectedLanguage] || 'the same language as the review';
+
+    let context = `CRITICAL: You MUST respond in ${languageName}. The review is written in ${languageName}, so your response must also be in ${languageName}.`;
+
     if (detectedIssues.length > 0) {
       const issueLabels = detectedIssues.map(i => i.label.replace(/[^\w\s]/g, '').trim());
-      context = `Customer complaints detected: ${issueLabels.join(', ')}. Address these specific issues in your response.`;
+      context += ` Customer complaints detected: ${issueLabels.join(', ')}. Address these specific issues in your response.`;
     }
 
     const response = await fetch(`${API_URL}/generate`, {
@@ -1045,7 +1051,7 @@ async function generateResponse(panel) {
       body: JSON.stringify({
         reviewText,
         tone,
-        outputLanguage: 'auto',
+        outputLanguage: detectedLanguage, // Send detected language instead of 'auto'
         responseLength: length,
         includeEmojis: emojis,
         businessName: stored.user?.businessName || '',
@@ -1132,6 +1138,7 @@ async function generateResponse(panel) {
 async function generateResponseWithModifier(panel, modifier) {
   const reviewText = panel.dataset.reviewText;
   const detectedIssues = panel.dataset.detectedIssues ? JSON.parse(panel.dataset.detectedIssues) : [];
+  const detectedLanguage = panel.dataset.detectedLanguage || 'en'; // Use stored language
   const length = panel.querySelector('.rr-length-select').value;
   const emojis = panel.querySelector('.rr-emoji-toggle').checked;
 
@@ -1169,7 +1176,11 @@ async function generateResponseWithModifier(panel, modifier) {
 
   try {
     // Build context with modifier + detected issues
-    let context = modifier;
+    // IMPORTANT: Add explicit language instruction to fix language bug
+    const languageNames = { de: 'German', en: 'English', nl: 'Dutch', fr: 'French', es: 'Spanish' };
+    const languageName = languageNames[detectedLanguage] || 'the same language as the review';
+
+    let context = `CRITICAL: You MUST respond in ${languageName}. ${modifier}`;
     if (detectedIssues.length > 0) {
       const issueLabels = detectedIssues.map(i => i.label.replace(/[^\w\s]/g, '').trim());
       context += ` Customer complaints: ${issueLabels.join(', ')}.`;
@@ -1184,7 +1195,7 @@ async function generateResponseWithModifier(panel, modifier) {
       body: JSON.stringify({
         reviewText,
         tone: 'professional', // Base tone, modifier overrides the style
-        outputLanguage: 'auto',
+        outputLanguage: detectedLanguage, // Send detected language
         responseLength: length,
         includeEmojis: emojis,
         businessName: stored.user?.businessName || '',
@@ -1267,6 +1278,7 @@ async function editExistingResponse(panel, editType, currentResponse) {
   };
 
   const instruction = editInstructions[editType] || editInstructions.shorter;
+  const detectedLanguage = panel.dataset.detectedLanguage || 'en'; // Keep same language
 
   const generateBtn = panel.querySelector('.rr-generate-btn');
   const btnText = panel.querySelector('.rr-btn-text');
@@ -1294,6 +1306,11 @@ async function editExistingResponse(panel, editType, currentResponse) {
   panel.querySelectorAll('.rr-edit-chip').forEach(c => c.disabled = true);
 
   try {
+    // Build context with language instruction
+    const languageNames = { de: 'German', en: 'English', nl: 'Dutch', fr: 'French', es: 'Spanish' };
+    const languageName = languageNames[detectedLanguage] || 'the same language';
+    const editContext = `CRITICAL: Keep the response in ${languageName}. You are editing an existing review response. ${instruction} Here is the current response to modify: "${currentResponse}"`;
+
     const response = await fetch(`${API_URL}/generate`, {
       method: 'POST',
       headers: {
@@ -1303,11 +1320,11 @@ async function editExistingResponse(panel, editType, currentResponse) {
       body: JSON.stringify({
         reviewText: currentResponse, // Use current response as input
         tone: 'professional',
-        outputLanguage: 'auto',
+        outputLanguage: detectedLanguage, // Keep same language
         responseLength: 'medium',
         includeEmojis: editType === 'emoji',
         businessName: stored.user?.businessName || '',
-        additionalContext: `IMPORTANT: You are editing an existing review response. ${instruction} Here is the current response to modify: "${currentResponse}"`
+        additionalContext: editContext
       })
     });
 
@@ -1375,12 +1392,16 @@ async function turboGenerate(reviewText) {
     const sentiment = analyzeSentiment(cleaned);
     const sentimentDisplay = getSentimentDisplay(sentiment);
     const issues = detectIssues(cleaned);
+    const language = detectLanguage(cleaned); // Detect language for turbo mode
 
-    // Build context
-    let context = '';
+    // Build context with language instruction
+    const languageNames = { de: 'German', en: 'English', nl: 'Dutch', fr: 'French', es: 'Spanish' };
+    const languageName = languageNames[language.code] || 'the same language as the review';
+
+    let context = `CRITICAL: You MUST respond in ${languageName}.`;
     if (issues.length > 0) {
       const issueLabels = issues.map(i => i.label.replace(/[^\w\s]/g, '').trim());
-      context = `Customer complaints detected: ${issueLabels.join(', ')}. Address these specific issues in your response.`;
+      context += ` Customer complaints detected: ${issueLabels.join(', ')}. Address these specific issues in your response.`;
     }
 
     const response = await fetch(`${API_URL}/generate`, {
@@ -1392,7 +1413,7 @@ async function turboGenerate(reviewText) {
       body: JSON.stringify({
         reviewText: cleaned,
         tone: sentimentDisplay.tone, // Auto-select based on sentiment
-        outputLanguage: 'auto',
+        outputLanguage: language.code, // Send detected language
         responseLength: settings.length || 'medium',
         includeEmojis: settings.emojis || false,
         businessName: cachedUser?.businessName || '',
@@ -1498,8 +1519,9 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
     });
   });
 
-  // Detect language
+  // Detect language and store it for API calls
   const language = detectLanguage(cleaned);
+  panel.dataset.detectedLanguage = language.code; // Store for generateResponse
   panel.querySelector('.rr-language-flag').textContent = language.flag;
   panel.querySelector('.rr-language-name').textContent = language.name;
 
@@ -1991,6 +2013,12 @@ async function generateQueueResponse(panel) {
 
   try {
     const sentimentDisplay = getSentimentDisplay(currentReview.sentiment);
+    const language = detectLanguage(currentReview.text); // Detect language for queue mode
+
+    // Build context with language instruction
+    const languageNames = { de: 'German', en: 'English', nl: 'Dutch', fr: 'French', es: 'Spanish' };
+    const languageName = languageNames[language.code] || 'the same language as the review';
+    const context = `CRITICAL: You MUST respond in ${languageName}.`;
 
     const response = await fetch(`${API_URL}/generate`, {
       method: 'POST',
@@ -2001,11 +2029,11 @@ async function generateQueueResponse(panel) {
       body: JSON.stringify({
         reviewText: currentReview.text,
         tone: sentimentDisplay.tone,
-        outputLanguage: 'auto',
+        outputLanguage: language.code, // Send detected language
         responseLength: 'medium',
         includeEmojis: false,
         businessName: cachedUser?.businessName || '',
-        additionalContext: ''
+        additionalContext: context
       })
     });
 
