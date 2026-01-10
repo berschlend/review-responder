@@ -137,6 +137,12 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
   6. **Multi-Account Support** - Mehrere Business-Profile verwalten und wechseln
   - Neue Datei: `templates-library.js` mit 50+ Templates
   - Backend: `/api/generate-variations` Endpoint für 3 parallele Response-Varianten
+- [x] **Frontend Inkonsistenzen gefixt** ✅
+  - Feature Table aktualisiert mit Hybrid AI Limits (20/300/800 statt 5/100/300)
+  - Smart AI (Claude) und Standard AI (GPT-4o) Zeilen in Feature-Vergleich hinzugefügt
+  - Team Members korrigiert (Pro: 3, Unlimited: 10 statt "up to 5")
+  - Alle "5 responses" zu "20 responses" geändert (Landing Pages, FAQ, CTAs)
+  - /admin Route mit ProtectedRoute geschützt (Security Fix)
 
 ### 🟡 NÄCHSTE CLAUDE TASKS (Wähle einen):
 
