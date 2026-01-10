@@ -2850,22 +2850,11 @@ const DashboardPage = () => {
     // Check URL params for redirects from Stripe or admin
     const params = new URLSearchParams(window.location.search);
 
-    // Handle plan change - do a full page reload to get fresh data
-    if (params.get('plan_changed')) {
-      const newPlan = params.get('plan_changed');
-      // Store message in sessionStorage to show after reload
-      sessionStorage.setItem('planChangeMessage', `Plan changed to ${newPlan.toUpperCase()}!`);
-      // Clear URL and force hard reload with cache bust
+    // Handle plan change from admin (new format with ?plan=xxx&_t=timestamp)
+    const planParam = params.get('plan');
+    if (planParam) {
+      toast.success(`Plan changed to ${planParam.toUpperCase()}!`);
       window.history.replaceState({}, '', '/dashboard');
-      window.location.reload(true);
-      return; // Stop execution
-    }
-
-    // Show plan change message if stored
-    const planMsg = sessionStorage.getItem('planChangeMessage');
-    if (planMsg) {
-      sessionStorage.removeItem('planChangeMessage');
-      toast.success(planMsg);
     }
 
     // Handle Stripe success

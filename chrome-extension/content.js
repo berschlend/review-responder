@@ -422,6 +422,30 @@ function detectPlatform() {
   return { name: 'Reviews', icon: '💬', color: '#667eea' };
 }
 
+// ========== SMART REPLY CHIPS ==========
+function getSmartReplyChips(sentiment) {
+  if (sentiment === 'positive') {
+    return [
+      { id: 'thank_invite', label: '🙏 Thank & Invite', modifier: 'Thank the customer warmly and invite them to visit again. Mention you look forward to seeing them.' },
+      { id: 'personal', label: '💬 Personal', modifier: 'Make the response very personal. Reference specific details from the review. Show genuine appreciation.' },
+      { id: 'short', label: '⚡ Short', modifier: 'Keep the response very short and sweet - maximum 2 sentences. Be warm but concise.' }
+    ];
+  } else if (sentiment === 'negative') {
+    return [
+      { id: 'apologize_fix', label: '🙏 Apologize & Fix', modifier: 'Sincerely apologize for the issues. Explain what you will do to fix the problem. Show genuine concern.' },
+      { id: 'offer_solution', label: '🎁 Offer Solution', modifier: 'Apologize and offer a concrete solution like a discount, refund, or free service. Include contact information.' },
+      { id: 'request_details', label: '📞 Request Details', modifier: 'Apologize briefly and ask for more details to understand the situation better. Provide contact email/phone.' }
+    ];
+  } else {
+    // Neutral
+    return [
+      { id: 'professional', label: '💼 Professional', modifier: 'Respond professionally. Acknowledge their feedback and express commitment to good service.' },
+      { id: 'friendly', label: '😊 Friendly', modifier: 'Respond in a warm, friendly tone. Show appreciation and invite them back.' },
+      { id: 'improve', label: '📈 Ask to Improve', modifier: 'Thank them and ask if there is anything you could do better to earn a higher rating.' }
+    ];
+  }
+}
+
 // ========== SENTIMENT ANALYSIS ==========
 function analyzeSentiment(text) {
   const lowerText = text.toLowerCase();
@@ -561,6 +585,14 @@ async function createResponsePanel() {
         <div class="rr-language">
           <span class="rr-language-flag"></span>
           <span class="rr-language-name"></span>
+        </div>
+      </div>
+
+      <!-- Smart Reply Chips (Gmail-Style) -->
+      <div class="rr-smart-replies">
+        <span class="rr-smart-label">Quick replies:</span>
+        <div class="rr-smart-chips">
+          <!-- Chips are dynamically inserted based on sentiment -->
         </div>
       </div>
 
@@ -912,6 +944,134 @@ async function generateResponse(panel) {
   }
 }
 
+// ========== GENERATE WITH MODIFIER (Smart Chips) ==========
+async function generateResponseWithModifier(panel, modifier) {
+  const reviewText = panel.dataset.reviewText;
+  const detectedIssues = panel.dataset.detectedIssues ? JSON.parse(panel.dataset.detectedIssues) : [];
+  const length = panel.querySelector('.rr-length-select').value;
+  const emojis = panel.querySelector('.rr-emoji-toggle').checked;
+
+  const generateBtn = panel.querySelector('.rr-generate-btn');
+  const btnText = panel.querySelector('.rr-btn-text');
+  const btnLoading = panel.querySelector('.rr-btn-loading');
+  const responseSection = panel.querySelector('.rr-response-section');
+  const timeSavedBadge = panel.querySelector('.rr-time-saved-badge');
+
+  if (!reviewText) {
+    showToast('⚠️ No review text found', 'error');
+    return;
+  }
+
+  let stored;
+  try {
+    stored = await chrome.storage.local.get(['token', 'user']);
+  } catch (e) {
+    showToast('⚠️ Extension error', 'error');
+    return;
+  }
+
+  if (!stored.token) {
+    showToast('🔐 Please login in the extension popup first', 'error');
+    return;
+  }
+
+  // Show loading
+  generateBtn.disabled = true;
+  btnText.classList.add('hidden');
+  btnLoading.classList.remove('hidden');
+
+  // Disable all smart chips while generating
+  panel.querySelectorAll('.rr-smart-chip').forEach(c => c.disabled = true);
+
+  try {
+    // Build context with modifier + detected issues
+    let context = modifier;
+    if (detectedIssues.length > 0) {
+      const issueLabels = detectedIssues.map(i => i.label.replace(/[^\w\s]/g, '').trim());
+      context += ` Customer complaints: ${issueLabels.join(', ')}.`;
+    }
+
+    const response = await fetch(`${API_URL}/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${stored.token}`
+      },
+      body: JSON.stringify({
+        reviewText,
+        tone: 'professional', // Base tone, modifier overrides the style
+        outputLanguage: 'auto',
+        responseLength: length,
+        includeEmojis: emojis,
+        businessName: stored.user?.businessName || '',
+        additionalContext: context
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Generation failed');
+    }
+
+    // Show response
+    panel.querySelector('.rr-response-textarea').value = data.response;
+    responseSection.classList.remove('hidden');
+
+    // Track time saved
+    const totalMinutes = await trackTimeSaved();
+
+    // Update time saved in header
+    const timeValue = panel.querySelector('.rr-time-value');
+    if (timeValue) {
+      timeValue.textContent = formatTimeSaved(totalMinutes);
+      timeValue.classList.add('rr-time-updated');
+      setTimeout(() => timeValue.classList.remove('rr-time-updated'), 1000);
+    }
+
+    // Show time saved badge
+    if (timeSavedBadge) {
+      timeSavedBadge.classList.remove('hidden');
+      setTimeout(() => timeSavedBadge.classList.add('hidden'), 4000);
+    }
+
+    // Auto-copy if enabled
+    const settings = cachedSettings || await loadSettings();
+    if (settings.autoCopy) {
+      try {
+        await navigator.clipboard.writeText(data.response);
+        showToast('✨ Generated & copied! ~3 min saved', 'success');
+
+        const copyBtn = panel.querySelector('.rr-copy-btn');
+        if (copyBtn) {
+          copyBtn.textContent = '✅ Copied!';
+          copyBtn.classList.add('copied');
+          setTimeout(() => {
+            copyBtn.textContent = '📋 Copy';
+            copyBtn.classList.remove('copied');
+          }, 2000);
+        }
+      } catch (e) {
+        showToast('✨ Response generated! ~3 min saved', 'success');
+      }
+    } else {
+      showToast('✨ Response generated! ~3 min saved', 'success');
+    }
+
+    // Maybe show confetti
+    await maybeShowConfetti();
+
+  } catch (error) {
+    showToast(`❌ ${error.message}`, 'error');
+  } finally {
+    generateBtn.disabled = false;
+    btnText.classList.remove('hidden');
+    btnLoading.classList.add('hidden');
+    // Re-enable smart chips
+    panel.querySelectorAll('.rr-smart-chip').forEach(c => c.disabled = false);
+  }
+}
+
 // ========== TURBO MODE: Instant generation without panel ==========
 async function turboGenerate(reviewText) {
   // Pre-flight checks
@@ -1035,6 +1195,27 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
 
   // Auto-select recommended tone
   panel.querySelector('.rr-tone-select').value = sentimentDisplay.tone;
+
+  // Populate Smart Reply Chips
+  const smartChips = getSmartReplyChips(sentiment);
+  const chipsContainer = panel.querySelector('.rr-smart-chips');
+  chipsContainer.innerHTML = smartChips.map(chip =>
+    `<button class="rr-smart-chip" data-modifier="${encodeURIComponent(chip.modifier)}">${chip.label}</button>`
+  ).join('');
+
+  // Add click handlers for smart chips
+  chipsContainer.querySelectorAll('.rr-smart-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const modifier = decodeURIComponent(chip.dataset.modifier);
+      generateResponseWithModifier(panel, modifier);
+
+      // Visual feedback
+      chip.classList.add('active');
+      chipsContainer.querySelectorAll('.rr-smart-chip').forEach(c => {
+        if (c !== chip) c.classList.remove('active');
+      });
+    });
+  });
 
   // Detect language
   const language = detectLanguage(cleaned);

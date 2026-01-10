@@ -4049,10 +4049,11 @@ app.get('/api/admin/set-plan', async (req, res) => {
     const verifyUser = await dbGet('SELECT subscription_plan, responses_limit FROM users WHERE id = $1', [user.id]);
     console.log(`✅ Verified: plan=${verifyUser?.subscription_plan}, limit=${verifyUser?.responses_limit}`);
 
-    // If redirect=1, redirect to dashboard with success message
+    // If redirect=1, redirect to dashboard with cache-busting timestamp
     if (req.query.redirect === '1') {
       const frontendUrl = process.env.FRONTEND_URL || 'https://review-responder-frontend.onrender.com';
-      return res.redirect(`${frontendUrl}/dashboard?plan_changed=${targetPlan}`);
+      // Use timestamp to force browser to treat this as a new page (no cache)
+      return res.redirect(`${frontendUrl}/dashboard?_t=${Date.now()}&plan=${targetPlan}`);
     }
 
     res.json({
