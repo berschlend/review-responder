@@ -8,5 +8,18 @@
       "Glob",
       "Grep"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/inject-todos.sh",
+            "statusMessage": "Injecting recursive TODO context..."
+          }
+        ]
+      }
+    ]
   }
 }

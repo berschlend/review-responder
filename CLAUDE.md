@@ -55,6 +55,12 @@ STARTER/PROFESSIONAL/UNLIMITED: ...&plan=starter/professional/unlimited&key=...
 
 
 ### HEUTE ERLEDIGT (10.01.2026):
+- [x] **Beads System implementiert** - Recursive TODO.md Management für bessere Task-Organisation
+  - SessionStart Hook injiziert automatisch alle TODO.md Dateien
+  - Directory-scoped TODOs: Root, Frontend, Backend, Chrome Extension
+  - `.claude/hooks/inject-todos.sh` findet & formatiert alle TODOs
+  - Siehe `BEADS.md` für komplette Dokumentation
+  - Inspiriert von Steve Yegge's Beads System
 - [x] **Response History für Free freigeschaltet** - History Tab jetzt für alle User sichtbar
 - [x] **CSV/PDF Export für Starter+ freigeschaltet** - War nur Pro+, jetzt auch Starter
   - Free-User sehen Upgrade-Prompt beim Export-Versuch
@@ -97,13 +103,36 @@ cold mails cronjob
 ```
 ReviewResponder/
 ├── frontend/          # React App (src/App.js, src/App.css)
+│   └── TODO.md       # Frontend-spezifische Tasks
 ├── backend/           # Express API (server.js)
+│   └── TODO.md       # Backend-spezifische Tasks
 ├── chrome-extension/  # Browser Extension
+│   └── TODO.md       # Extension-spezifische Tasks
 ├── content/           # Marketing (outreach/, product-hunt/, social/)
 ├── scripts/           # Automation Scripts
-└── CLAUDE.md
-Todo.md
+├── .claude/           # Claude Code Konfiguration
+│   ├── settings.json # Hooks & Permissions
+│   └── hooks/
+│       └── inject-todos.sh  # Recursive TODO Injection
+├── CLAUDE.md         # Langzeit-Gedächtnis (Architektur, Features, Kontext)
+├── TODO.md           # Root-Level Tasks (Projekt-weit)
+└── BEADS.md          # Beads System Dokumentation
 ```
+
+### Beads System - Recursive TODO Management
+
+Das Projekt nutzt ein **hierarchisches TODO-System** inspiriert von [Steve Yegge's Beads](https://github.com/steveyegge/beads):
+
+- **Jedes Verzeichnis kann ein eigenes `TODO.md` haben** (scoped zu diesem Directory)
+- **SessionStart Hook** injiziert automatisch alle TODO.md Dateien in Claude's Context
+- **Siehe BEADS.md für Details** - Komplette Dokumentation des Systems
+
+**Wichtig:**
+- `CLAUDE.md` = Langzeit-Gedächtnis (Architektur, Features, abgeschlossene Arbeit)
+- `TODO.md` (Root) = Projekt-weite aktive Tasks
+- `frontend/TODO.md` = Frontend-spezifische Tasks
+- `backend/TODO.md` = Backend-spezifische Tasks
+- `chrome-extension/TODO.md` = Extension-spezifische Tasks
 
 ---
 
