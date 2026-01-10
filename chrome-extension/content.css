@@ -338,6 +338,147 @@
   color: #b91c1c;
 }
 
+/* ========== AI TONE RECOMMENDATION (One-Shot Perfect Response) ========== */
+.rr-ai-recommendation {
+  margin-bottom: 14px;
+  padding: 14px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 2px solid #3b82f6;
+  border-radius: 12px;
+  animation: rr-pulse-border 2s ease-in-out infinite;
+}
+
+@keyframes rr-pulse-border {
+  0%, 100% { border-color: #3b82f6; }
+  50% { border-color: #60a5fa; }
+}
+
+.rr-ai-recommendation.hidden {
+  display: none;
+}
+
+.rr-ai-recommendation.used {
+  opacity: 0.6;
+  pointer-events: none;
+  animation: none;
+  border-color: #93c5fd;
+}
+
+.rr-ai-rec-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.rr-ai-rec-icon {
+  font-size: 18px;
+}
+
+.rr-ai-rec-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e40af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex: 1;
+}
+
+.rr-ai-rec-confidence {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 10px;
+}
+
+.rr-ai-rec-confidence.high {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.rr-ai-rec-confidence.medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.rr-ai-rec-body {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.rr-ai-rec-tone {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.15);
+}
+
+.rr-ai-rec-emoji {
+  font-size: 20px;
+}
+
+.rr-ai-rec-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+.rr-ai-rec-reason {
+  font-size: 12px;
+  color: #3b82f6;
+  font-style: italic;
+}
+
+.rr-ai-rec-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.rr-ai-rec-use {
+  flex: 1;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.rr-ai-rec-use:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.rr-ai-rec-use:active {
+  transform: translateY(0);
+}
+
+.rr-ai-rec-other {
+  padding: 10px 14px;
+  background: white;
+  color: #3b82f6;
+  border: 1px solid #93c5fd;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rr-ai-rec-other:hover {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
 /* ========== INFO ROW (Sentiment + Language) ========== */
 .rr-info-row {
   display: flex;

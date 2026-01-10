@@ -622,6 +622,100 @@ function getSentimentDisplay(sentiment) {
   }
 }
 
+// ========== AUTO-TONE RECOMMENDATION (One-Shot Perfect Response) ==========
+function getAutoToneRecommendation(sentiment, issues) {
+  // Issue priority mapping for tone selection
+  const issueToTone = {
+    // Critical issues - always apologetic
+    'hygiene': { tone: 'apologetic', priority: 10, reason: 'hygiene concerns' },
+    'pests': { tone: 'apologetic', priority: 10, reason: 'pest issues reported' },
+    'rude_staff': { tone: 'apologetic', priority: 9, reason: 'staff rudeness complaints' },
+
+    // Service issues - apologetic
+    'slow_service': { tone: 'apologetic', priority: 8, reason: 'slow service' },
+    'ignored': { tone: 'apologetic', priority: 8, reason: 'customer felt ignored' },
+    'wrong_order': { tone: 'apologetic', priority: 8, reason: 'order errors' },
+
+    // Food issues - apologetic
+    'cold_food': { tone: 'apologetic', priority: 7, reason: 'food temperature issues' },
+    'undercooked': { tone: 'apologetic', priority: 7, reason: 'undercooked food' },
+    'overcooked': { tone: 'apologetic', priority: 7, reason: 'overcooked food' },
+    'tasteless': { tone: 'apologetic', priority: 6, reason: 'taste complaints' },
+    'portion_size': { tone: 'apologetic', priority: 5, reason: 'portion size concerns' },
+
+    // Cleanliness - apologetic
+    'dirty': { tone: 'apologetic', priority: 7, reason: 'cleanliness issues' },
+
+    // Price issues - professional (not apologetic, justify value)
+    'overpriced': { tone: 'professional', priority: 4, reason: 'pricing concerns' },
+    'hidden_fees': { tone: 'professional', priority: 4, reason: 'pricing transparency' },
+  };
+
+  let recommendation = {
+    tone: 'professional',
+    confidence: 'medium',
+    reasons: [],
+    emoji: '💼',
+    label: 'Professional',
+    shortReason: ''
+  };
+
+  // Find highest priority issue
+  let highestPriority = 0;
+  let primaryIssue = null;
+
+  issues.forEach(issue => {
+    const mapping = issueToTone[issue.issue];
+    if (mapping && mapping.priority > highestPriority) {
+      highestPriority = mapping.priority;
+      primaryIssue = { ...mapping, label: issue.label };
+    }
+  });
+
+  if (primaryIssue) {
+    recommendation.tone = primaryIssue.tone;
+    recommendation.reasons.push(primaryIssue.reason);
+    recommendation.confidence = highestPriority >= 7 ? 'high' : 'medium';
+    recommendation.shortReason = primaryIssue.reason;
+
+    if (primaryIssue.tone === 'apologetic') {
+      recommendation.emoji = '🙏';
+      recommendation.label = 'Apologetic';
+    }
+  } else {
+    // No specific issues - base on sentiment
+    switch (sentiment) {
+      case 'positive':
+        recommendation.tone = 'friendly';
+        recommendation.emoji = '😊';
+        recommendation.label = 'Friendly';
+        recommendation.shortReason = 'positive feedback';
+        recommendation.confidence = 'high';
+        break;
+      case 'negative':
+        recommendation.tone = 'apologetic';
+        recommendation.emoji = '🙏';
+        recommendation.label = 'Apologetic';
+        recommendation.shortReason = 'negative experience';
+        recommendation.confidence = 'medium';
+        break;
+      default:
+        recommendation.tone = 'professional';
+        recommendation.emoji = '💼';
+        recommendation.label = 'Professional';
+        recommendation.shortReason = 'neutral feedback';
+        recommendation.confidence = 'medium';
+    }
+  }
+
+  // Add additional context reasons
+  if (issues.length > 1) {
+    recommendation.reasons.push(`${issues.length} issues detected`);
+  }
+
+  return recommendation;
+}
+
 // ========== CLEAN REVIEW TEXT ==========
 function cleanReviewText(text) {
   const uiPatterns = [
@@ -955,6 +1049,26 @@ async function createResponsePanel() {
       <div class="rr-issues-row hidden">
         <span class="rr-issues-label">Issues detected:</span>
         <div class="rr-issues-tags"></div>
+      </div>
+
+      <!-- AI Tone Recommendation (One-Shot Perfect Response) -->
+      <div class="rr-ai-recommendation hidden">
+        <div class="rr-ai-rec-header">
+          <span class="rr-ai-rec-icon">🎯</span>
+          <span class="rr-ai-rec-title">AI Recommendation</span>
+          <span class="rr-ai-rec-confidence"></span>
+        </div>
+        <div class="rr-ai-rec-body">
+          <div class="rr-ai-rec-tone">
+            <span class="rr-ai-rec-emoji"></span>
+            <span class="rr-ai-rec-label"></span>
+          </div>
+          <div class="rr-ai-rec-reason"></div>
+        </div>
+        <div class="rr-ai-rec-actions">
+          <button class="rr-ai-rec-use">⚡ Generate with this</button>
+          <button class="rr-ai-rec-other">Choose other</button>
+        </div>
       </div>
 
       <!-- Sentiment + Language Row -->
@@ -2016,15 +2130,51 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
     // Show issues in UI
     issuesTags.innerHTML = issues.map(i => `<span class="rr-issue-tag">${i.label}</span>`).join('');
     issuesRow.classList.remove('hidden');
-
-    // Auto-select apologetic tone for negative issues
-    if (sentiment === 'negative') {
-      panel.querySelector('.rr-tone-select').value = 'apologetic';
-    }
   } else {
     panel.dataset.detectedIssues = '[]';
     issuesRow.classList.add('hidden');
   }
+
+  // AI Tone Recommendation (One-Shot Perfect Response)
+  const recommendation = getAutoToneRecommendation(sentiment, issues);
+  const aiRecBox = panel.querySelector('.rr-ai-recommendation');
+
+  // Store recommendation for later use
+  panel.dataset.recommendation = JSON.stringify(recommendation);
+
+  // Update recommendation UI
+  aiRecBox.querySelector('.rr-ai-rec-emoji').textContent = recommendation.emoji;
+  aiRecBox.querySelector('.rr-ai-rec-label').textContent = recommendation.label;
+  aiRecBox.querySelector('.rr-ai-rec-reason').textContent =
+    `Based on ${recommendation.shortReason}${issues.length > 0 ? ` (${issues.length} issue${issues.length > 1 ? 's' : ''})` : ''}`;
+
+  // Confidence badge
+  const confidenceBadge = aiRecBox.querySelector('.rr-ai-rec-confidence');
+  confidenceBadge.textContent = recommendation.confidence === 'high' ? '✓ High confidence' : '~ Medium';
+  confidenceBadge.className = `rr-ai-rec-confidence ${recommendation.confidence}`;
+
+  // Show recommendation box
+  aiRecBox.classList.remove('hidden');
+
+  // Auto-select the recommended tone
+  panel.querySelector('.rr-tone-select').value = recommendation.tone;
+
+  // Add click handler for "Generate with this" button
+  const useRecBtn = aiRecBox.querySelector('.rr-ai-rec-use');
+  useRecBtn.onclick = () => {
+    panel.querySelector('.rr-tone-select').value = recommendation.tone;
+    generateResponse(panel);
+    // Hide recommendation after use
+    aiRecBox.classList.add('used');
+  };
+
+  // Add click handler for "Choose other" button
+  const otherBtn = aiRecBox.querySelector('.rr-ai-rec-other');
+  otherBtn.onclick = () => {
+    aiRecBox.classList.add('hidden');
+    // Focus on tone select
+    panel.querySelector('.rr-tone-select').focus();
+  };
 
   // Reset response section
   panel.querySelector('.rr-response-section').classList.add('hidden');
