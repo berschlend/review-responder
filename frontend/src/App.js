@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper, Utensils, CheckCircle, Keyboard, Store, MapPin, Wrench, Scissors, Car, Heart } from 'lucide-react';
+import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper, Utensils, CheckCircle, Keyboard, Store, MapPin, Wrench, Scissors, Car, Heart, User, Bell, ChevronDown } from 'lucide-react';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
 import { jsPDF } from 'jspdf';
@@ -315,17 +315,238 @@ const ProtectedRoute = ({ children }) => {
 };
 
 // Navbar Component
-const Navbar = () => {
+// Profile Menu Dropdown Component
+const ProfileMenu = () => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = React.useRef(null);
+
+  // Close on click outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLogout = () => {
+    setIsOpen(false);
     logout();
     navigate('/');
     toast.success('Logged out successfully');
   };
+
+  // Get user initials
+  const getInitials = () => {
+    if (user?.businessName) {
+      return user.businessName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+    return user?.email?.charAt(0).toUpperCase() || 'U';
+  };
+
+  return (
+    <div ref={menuRef} style={{ position: 'relative' }}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border-color)',
+          borderRadius: '24px',
+          padding: '4px 12px 4px 4px',
+          cursor: 'pointer',
+          transition: 'all 0.2s'
+        }}
+      >
+        {user?.profilePicture ? (
+          <img
+            src={user.profilePicture}
+            alt="Profile"
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              objectFit: 'cover'
+            }}
+          />
+        ) : (
+          <div style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            background: 'var(--primary)',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '13px',
+            fontWeight: '600'
+          }}>
+            {getInitials()}
+          </div>
+        )}
+        <ChevronDown
+          size={16}
+          style={{
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.2s',
+            color: 'var(--text-secondary)'
+          }}
+        />
+      </button>
+
+      {isOpen && (
+        <div style={{
+          position: 'absolute',
+          top: '100%',
+          right: 0,
+          marginTop: '8px',
+          background: 'var(--card-bg)',
+          border: '1px solid var(--border-color)',
+          borderRadius: '12px',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+          minWidth: '240px',
+          zIndex: 1000,
+          overflow: 'hidden'
+        }}>
+          {/* User Info Header */}
+          <div style={{
+            padding: '16px',
+            borderBottom: '1px solid var(--border-color)',
+            background: 'var(--bg-tertiary)'
+          }}>
+            <div style={{ fontWeight: '600', fontSize: '14px', color: 'var(--text-primary)' }}>
+              {user?.businessName || 'Your Account'}
+            </div>
+            <div style={{
+              fontSize: '12px',
+              color: 'var(--text-muted)',
+              marginTop: '2px'
+            }}>
+              {user?.email}
+            </div>
+            <span
+              className={`badge ${user?.plan === 'free' ? 'badge-warning' : 'badge-success'}`}
+              style={{ marginTop: '8px', display: 'inline-block' }}
+            >
+              {user?.plan?.toUpperCase()} Plan
+            </span>
+          </div>
+
+          {/* Menu Items */}
+          <div style={{ padding: '8px' }}>
+            <Link
+              to="/profile"
+              onClick={() => setIsOpen(false)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '10px 12px',
+                borderRadius: '8px',
+                color: 'var(--text-primary)',
+                textDecoration: 'none',
+                fontSize: '14px',
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-tertiary)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <User size={16} />
+              Account Settings
+            </Link>
+
+            <Link
+              to="/settings"
+              onClick={() => setIsOpen(false)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '10px 12px',
+                borderRadius: '8px',
+                color: 'var(--text-primary)',
+                textDecoration: 'none',
+                fontSize: '14px',
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-tertiary)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <Building size={16} />
+              Business Settings
+            </Link>
+
+            <button
+              onClick={toggleTheme}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '10px 12px',
+                borderRadius: '8px',
+                color: 'var(--text-primary)',
+                background: 'transparent',
+                border: 'none',
+                width: '100%',
+                textAlign: 'left',
+                fontSize: '14px',
+                cursor: 'pointer',
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-tertiary)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+              {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+            </button>
+          </div>
+
+          {/* Logout */}
+          <div style={{
+            padding: '8px',
+            borderTop: '1px solid var(--border-color)'
+          }}>
+            <button
+              onClick={handleLogout}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '10px 12px',
+                borderRadius: '8px',
+                color: 'var(--danger)',
+                background: 'transparent',
+                border: 'none',
+                width: '100%',
+                textAlign: 'left',
+                fontSize: '14px',
+                cursor: 'pointer',
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <LogOut size={16} />
+              Sign Out
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const Navbar = () => {
+  const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <nav className="navbar">
@@ -340,17 +561,7 @@ const Navbar = () => {
             <>
               <Link to="/dashboard" className="navbar-link">Dashboard</Link>
               <Link to="/pricing" className="navbar-link">Upgrade</Link>
-              <button
-                onClick={toggleTheme}
-                className="theme-toggle"
-                title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
-              >
-                {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
-              </button>
-              <button onClick={handleLogout} className="btn btn-secondary" style={{ padding: '8px 16px' }}>
-                <LogOut size={16} />
-                Logout
-              </button>
+              <ProfileMenu />
             </>
           ) : (
             <>
@@ -4749,6 +4960,488 @@ Food was amazing, will definitely come back!`}
   );
 };
 
+// Profile / Account Settings Page
+const ProfilePage = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState('account');
+
+  // Password change state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [showPasswords, setShowPasswords] = useState(false);
+
+  // Email change state
+  const [newEmail, setNewEmail] = useState('');
+  const [emailPassword, setEmailPassword] = useState('');
+  const [changingEmail, setChangingEmail] = useState(false);
+
+  // Notification settings state
+  const [notifications, setNotifications] = useState({
+    emailWeeklySummary: true,
+    emailUsageAlerts: true,
+    emailBillingUpdates: true
+  });
+  const [loadingNotifications, setLoadingNotifications] = useState(true);
+  const [savingNotifications, setSavingNotifications] = useState(false);
+
+  // Delete account state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [deleting, setDeleting] = useState(false);
+
+  // Load notification settings
+  useEffect(() => {
+    loadNotificationSettings();
+  }, []);
+
+  const loadNotificationSettings = async () => {
+    try {
+      const res = await api.get('/settings/notifications');
+      setNotifications(res.data);
+    } catch (error) {
+      console.error('Failed to load notification settings:', error);
+    } finally {
+      setLoadingNotifications(false);
+    }
+  };
+
+  // Handle password change
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      return toast.error('Passwords do not match');
+    }
+    if (newPassword.length < 8) {
+      return toast.error('Password must be at least 8 characters');
+    }
+    setChangingPassword(true);
+    try {
+      await api.put('/auth/change-password', { currentPassword, newPassword });
+      toast.success('Password changed successfully');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to change password');
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  // Handle email change request
+  const handleChangeEmail = async (e) => {
+    e.preventDefault();
+    if (!newEmail) {
+      return toast.error('Please enter a new email address');
+    }
+    setChangingEmail(true);
+    try {
+      await api.post('/auth/change-email-request', { newEmail, password: emailPassword });
+      toast.success('Confirmation email sent! Check your inbox.');
+      setNewEmail('');
+      setEmailPassword('');
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to request email change');
+    } finally {
+      setChangingEmail(false);
+    }
+  };
+
+  // Handle notification settings save
+  const handleSaveNotifications = async () => {
+    setSavingNotifications(true);
+    try {
+      await api.put('/settings/notifications', notifications);
+      toast.success('Notification settings saved');
+    } catch (error) {
+      toast.error('Failed to save notification settings');
+    } finally {
+      setSavingNotifications(false);
+    }
+  };
+
+  // Handle account deletion
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmation !== 'DELETE') {
+      return toast.error('Please type DELETE to confirm');
+    }
+    setDeleting(true);
+    try {
+      await api.delete('/auth/delete-account', {
+        data: { password: deletePassword, confirmation: deleteConfirmation }
+      });
+      toast.success('Account deleted successfully');
+      logout();
+      navigate('/');
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to delete account');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // Format join date
+  const formatJoinDate = (dateStr) => {
+    if (!dateStr) return 'Unknown';
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const tabs = [
+    { id: 'account', label: 'Account', icon: User },
+    { id: 'security', label: 'Security', icon: Lock },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'danger', label: 'Danger Zone', icon: AlertCircle }
+  ];
+
+  return (
+    <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '900px' }}>
+      {/* Header */}
+      <div style={{ marginBottom: '32px' }}>
+        <Link to="/dashboard" style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '16px', fontSize: '14px', textDecoration: 'none' }}>
+          <ChevronRight size={16} style={{ transform: 'rotate(180deg)' }} /> Back to Dashboard
+        </Link>
+        <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>Account Settings</h1>
+        <p style={{ color: 'var(--text-muted)' }}>Manage your account, security, and notification preferences</p>
+      </div>
+
+      {/* Tab Navigation */}
+      <div style={{ display: 'flex', gap: '4px', marginBottom: '24px', background: 'var(--bg-tertiary)', padding: '4px', borderRadius: '12px', flexWrap: 'wrap' }}>
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              flex: '1 1 auto',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '12px 16px',
+              borderRadius: '8px',
+              border: 'none',
+              background: activeTab === tab.id ? 'var(--card-bg)' : 'transparent',
+              color: activeTab === tab.id ? 'var(--primary)' : 'var(--text-muted)',
+              fontWeight: activeTab === tab.id ? '600' : '500',
+              fontSize: '14px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: activeTab === tab.id ? '0 2px 8px rgba(0,0,0,0.1)' : 'none'
+            }}
+          >
+            <tab.icon size={16} />
+            <span className="hide-mobile">{tab.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Account Tab */}
+      {activeTab === 'account' && (
+        <div className="card">
+          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <User size={20} /> Account Information
+          </h2>
+
+          <div style={{ display: 'grid', gap: '16px' }}>
+            {/* Profile Avatar Section */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '12px' }}>
+              {user?.profilePicture ? (
+                <img src={user.profilePicture} alt="Profile" style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover' }} />
+              ) : (
+                <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: '600' }}>
+                  {user?.email?.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div>
+                <div style={{ fontWeight: '600', fontSize: '16px' }}>{user?.businessName || 'No business name set'}</div>
+                <div style={{ color: 'var(--text-muted)', fontSize: '14px' }}>{user?.email}</div>
+                {user?.oauthProvider && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '4px', padding: '2px 8px', background: 'var(--bg-secondary)', borderRadius: '4px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                    Signed in with {user.oauthProvider}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Account Details Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+              <div style={{ padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '8px' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Email</div>
+                <div style={{ fontWeight: '500' }}>{user?.email}</div>
+              </div>
+              <div style={{ padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '8px' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Member Since</div>
+                <div style={{ fontWeight: '500' }}>{formatJoinDate(user?.createdAt)}</div>
+              </div>
+              <div style={{ padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '8px' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Current Plan</div>
+                <div style={{ fontWeight: '500' }}>
+                  {user?.plan?.charAt(0).toUpperCase() + user?.plan?.slice(1)}
+                  {user?.subscriptionStatus === 'active' && <span style={{ color: 'var(--secondary)', marginLeft: '8px' }}>Active</span>}
+                </div>
+              </div>
+              <div style={{ padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '8px' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Responses Used</div>
+                <div style={{ fontWeight: '500' }}>{user?.responsesUsed || 0} / {user?.responsesLimit === 999999 ? '∞' : user?.responsesLimit}</div>
+              </div>
+            </div>
+
+            {/* Change Email Section */}
+            <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Change Email Address</h3>
+              <form onSubmit={handleChangeEmail} style={{ display: 'grid', gap: '12px' }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">New Email Address</label>
+                  <input type="email" className="form-input" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Enter new email address" />
+                </div>
+                {user?.hasPassword && (
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Current Password</label>
+                    <input type="password" className="form-input" value={emailPassword} onChange={(e) => setEmailPassword(e.target.value)} placeholder="Enter your password to confirm" />
+                  </div>
+                )}
+                <button type="submit" className="btn btn-primary" disabled={changingEmail || !newEmail} style={{ width: 'fit-content' }}>
+                  {changingEmail ? 'Sending...' : 'Send Confirmation Email'}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Security Tab */}
+      {activeTab === 'security' && (
+        <div className="card">
+          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Lock size={20} /> Security
+          </h2>
+
+          {user?.oauthProvider && !user?.hasPassword ? (
+            <div style={{ padding: '20px', background: 'var(--bg-tertiary)', borderRadius: '8px', textAlign: 'center' }}>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '12px' }}>
+                You signed in with Google. Password management is handled by Google.
+              </p>
+              <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                Manage Google Security <ExternalLink size={14} />
+              </a>
+            </div>
+          ) : (
+            <form onSubmit={handleChangePassword} style={{ display: 'grid', gap: '16px' }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">Current Password</label>
+                <input type={showPasswords ? 'text' : 'password'} className="form-input" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Enter current password" />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">New Password</label>
+                <input type={showPasswords ? 'text' : 'password'} className="form-input" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Enter new password (min 8 characters)" />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">Confirm New Password</label>
+                <input type={showPasswords ? 'text' : 'password'} className="form-input" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm new password" />
+              </div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
+                <input type="checkbox" checked={showPasswords} onChange={(e) => setShowPasswords(e.target.checked)} />
+                Show passwords
+              </label>
+              <button type="submit" className="btn btn-primary" disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword} style={{ width: 'fit-content' }}>
+                {changingPassword ? 'Changing...' : 'Change Password'}
+              </button>
+            </form>
+          )}
+        </div>
+      )}
+
+      {/* Notifications Tab */}
+      {activeTab === 'notifications' && (
+        <div className="card">
+          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Bell size={20} /> Email Notifications
+          </h2>
+
+          {loadingNotifications ? (
+            <div className="loading"><div className="spinner"></div></div>
+          ) : (
+            <div style={{ display: 'grid', gap: '16px' }}>
+              {[
+                { key: 'emailWeeklySummary', title: 'Weekly Summary', description: 'Get a weekly email with your response stats and tips' },
+                { key: 'emailUsageAlerts', title: 'Usage Alerts', description: 'Get notified when you reach 80% of your monthly limit' },
+                { key: 'emailBillingUpdates', title: 'Billing Updates', description: 'Receive emails about subscription renewals and invoices' }
+              ].map(item => (
+                <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '8px', flexWrap: 'wrap', gap: '12px' }}>
+                  <div style={{ flex: 1, minWidth: '200px' }}>
+                    <div style={{ fontWeight: '500', marginBottom: '4px' }}>{item.title}</div>
+                    <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{item.description}</div>
+                  </div>
+                  <label style={{ position: 'relative', display: 'inline-block', width: '48px', height: '26px', flexShrink: 0 }}>
+                    <input
+                      type="checkbox"
+                      checked={notifications[item.key]}
+                      onChange={(e) => setNotifications(prev => ({ ...prev, [item.key]: e.target.checked }))}
+                      style={{ opacity: 0, width: 0, height: 0 }}
+                    />
+                    <span style={{
+                      position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
+                      background: notifications[item.key] ? 'var(--primary)' : 'var(--gray-300)',
+                      borderRadius: '26px', transition: '0.3s'
+                    }}>
+                      <span style={{
+                        position: 'absolute', height: '20px', width: '20px',
+                        left: notifications[item.key] ? '24px' : '3px', bottom: '3px',
+                        background: 'white', borderRadius: '50%', transition: '0.3s'
+                      }} />
+                    </span>
+                  </label>
+                </div>
+              ))}
+              <button className="btn btn-primary" onClick={handleSaveNotifications} disabled={savingNotifications} style={{ width: 'fit-content', marginTop: '8px' }}>
+                {savingNotifications ? 'Saving...' : 'Save Preferences'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Danger Zone Tab */}
+      {activeTab === 'danger' && (
+        <div className="card" style={{ border: '1px solid var(--danger)' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--danger)' }}>
+            <AlertCircle size={20} /> Danger Zone
+          </h2>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>These actions are irreversible. Please proceed with caution.</p>
+
+          <div style={{ padding: '20px', background: 'rgba(239,68,68,0.05)', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.2)' }}>
+            <h3 style={{ fontWeight: '600', marginBottom: '8px' }}>Delete Account</h3>
+            <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+              Permanently delete your account and all associated data. This action cannot be undone.
+              Your subscription will be cancelled and you will lose access immediately.
+            </p>
+            <button className="btn" onClick={() => setShowDeleteModal(true)} style={{ background: 'var(--danger)', color: 'white' }}>
+              <Trash2 size={16} /> Delete My Account
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Account Modal */}
+      {showDeleteModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
+          <div style={{ background: 'var(--card-bg)', borderRadius: '16px', padding: '24px', maxWidth: '450px', width: '100%' }}>
+            <h2 style={{ color: 'var(--danger)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AlertCircle size={24} /> Delete Account
+            </h2>
+            <p style={{ marginBottom: '16px', color: 'var(--text-secondary)' }}>This will permanently delete:</p>
+            <ul style={{ marginBottom: '20px', paddingLeft: '20px', color: 'var(--text-muted)', fontSize: '14px' }}>
+              <li>All your generated responses</li>
+              <li>Your saved templates</li>
+              <li>Your team members</li>
+              <li>Your subscription (will be cancelled)</li>
+              <li>All associated data</li>
+            </ul>
+
+            {user?.hasPassword && (
+              <div className="form-group">
+                <label className="form-label">Enter your password</label>
+                <input type="password" className="form-input" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} placeholder="Your password" />
+              </div>
+            )}
+
+            <div className="form-group">
+              <label className="form-label">Type DELETE to confirm</label>
+              <input type="text" className="form-input" value={deleteConfirmation} onChange={(e) => setDeleteConfirmation(e.target.value)} placeholder="DELETE" />
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+              <button className="btn btn-secondary" onClick={() => { setShowDeleteModal(false); setDeletePassword(''); setDeleteConfirmation(''); }} style={{ flex: 1 }}>
+                Cancel
+              </button>
+              <button className="btn" onClick={handleDeleteAccount} disabled={deleting || deleteConfirmation !== 'DELETE'} style={{ flex: 1, background: 'var(--danger)', color: 'white' }}>
+                {deleting ? 'Deleting...' : 'Delete Forever'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Confirm Email Change Page
+const ConfirmEmailPage = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [status, setStatus] = useState('loading'); // loading, success, error
+  const [message, setMessage] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+
+  useEffect(() => {
+    const token = searchParams.get('token');
+    if (!token) {
+      setStatus('error');
+      setMessage('Invalid confirmation link');
+      return;
+    }
+    confirmEmailChange(token);
+  }, [searchParams]);
+
+  const confirmEmailChange = async (token) => {
+    try {
+      const res = await api.post('/auth/confirm-email-change', { token });
+      setStatus('success');
+      setNewEmail(res.data.newEmail);
+      setMessage('Email changed successfully!');
+    } catch (error) {
+      setStatus('error');
+      setMessage(error.response?.data?.error || 'Failed to confirm email change');
+    }
+  };
+
+  return (
+    <div className="container" style={{ paddingTop: '80px', paddingBottom: '80px', maxWidth: '500px', textAlign: 'center' }}>
+      <div className="card">
+        {status === 'loading' && (
+          <>
+            <div className="spinner" style={{ margin: '0 auto 20px' }}></div>
+            <h2>Confirming Email Change...</h2>
+          </>
+        )}
+
+        {status === 'success' && (
+          <>
+            <CheckCircle size={48} style={{ color: 'var(--secondary)', marginBottom: '16px' }} />
+            <h2 style={{ marginBottom: '8px' }}>Email Changed!</h2>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
+              Your email has been changed to <strong>{newEmail}</strong>
+            </p>
+            <button className="btn btn-primary" onClick={() => navigate('/dashboard')}>
+              Go to Dashboard
+            </button>
+          </>
+        )}
+
+        {status === 'error' && (
+          <>
+            <AlertCircle size={48} style={{ color: 'var(--danger)', marginBottom: '16px' }} />
+            <h2 style={{ marginBottom: '8px' }}>Confirmation Failed</h2>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>{message}</p>
+            <button className="btn btn-primary" onClick={() => navigate('/profile')}>
+              Back to Profile
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Settings Page
 const SettingsPage = () => {
   const { user, updateUser } = useAuth();
@@ -7892,6 +8585,15 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/confirm-email" element={<ConfirmEmailPage />} />
           <Route
             path="/settings"
             element={

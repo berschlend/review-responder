@@ -433,6 +433,24 @@ async function initDatabase() {
       // Columns might already exist
     }
 
+    // Add email notification preferences columns
+    try {
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_weekly_summary BOOLEAN DEFAULT TRUE`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_usage_alerts BOOLEAN DEFAULT TRUE`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_billing_updates BOOLEAN DEFAULT TRUE`);
+    } catch (error) {
+      // Columns might already exist
+    }
+
+    // Add email change columns for secure email updates
+    try {
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_change_token TEXT`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_change_new_email TEXT`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_change_expires_at TIMESTAMP`);
+    } catch (error) {
+      // Columns might already exist
+    }
+
     console.log('📊 Database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -719,7 +737,19 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
         subscriptionStatus: user.subscription_status,
         onboardingCompleted: user.onboarding_completed,
         referralCode: user.referral_code,
-        referralCredits: user.referral_credits || 0
+        referralCredits: user.referral_credits || 0,
+        // Profile page additions
+        createdAt: user.created_at,
+        oauthProvider: user.oauth_provider,
+        profilePicture: user.profile_picture,
+        hasPassword: !!user.password,
+        // Notification preferences
+        emailWeeklySummary: user.email_weekly_summary ?? true,
+        emailUsageAlerts: user.email_usage_alerts ?? true,
+        emailBillingUpdates: user.email_billing_updates ?? true,
+        // Smart/Standard AI usage
+        smartResponsesUsed: user.smart_responses_used || 0,
+        standardResponsesUsed: user.standard_responses_used || 0
       }
     });
   } catch (error) {
@@ -769,6 +799,307 @@ app.put('/api/auth/profile', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Profile update error:', error);
     res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+// ============ PROFILE & ACCOUNT MANAGEMENT ============
+
+// Change Password
+app.put('/api/auth/change-password', authenticateToken, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current and new password required' });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'New password must be at least 8 characters' });
+    }
+
+    const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+
+    // Check if OAuth user without password
+    if (user.oauth_provider && !user.password) {
+      return res.status(400).json({
+        error: 'Cannot change password for accounts signed in with Google. Manage your password through Google.'
+      });
+    }
+
+    // Verify current password
+    const validPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!validPassword) {
+      return res.status(400).json({ error: 'Current password is incorrect' });
+    }
+
+    // Hash and save new password
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    await dbQuery('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, req.user.id]);
+
+    res.json({ success: true, message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({ error: 'Failed to change password' });
+  }
+});
+
+// Request Email Change
+app.post('/api/auth/change-email-request', authenticateToken, async (req, res) => {
+  try {
+    const { newEmail, password } = req.body;
+
+    if (!newEmail || !validator.isEmail(newEmail)) {
+      return res.status(400).json({ error: 'Valid email address required' });
+    }
+
+    // Check if email already exists
+    const existing = await dbGet('SELECT id FROM users WHERE email = $1', [newEmail.toLowerCase()]);
+    if (existing) {
+      return res.status(400).json({ error: 'This email is already in use' });
+    }
+
+    const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+
+    // Verify password if user has one (not pure OAuth)
+    if (user.password) {
+      if (!password) {
+        return res.status(400).json({ error: 'Password required for verification' });
+      }
+      const validPassword = await bcrypt.compare(password, user.password);
+      if (!validPassword) {
+        return res.status(400).json({ error: 'Password is incorrect' });
+      }
+    }
+
+    // Generate token
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    // Save token
+    await dbQuery(
+      `UPDATE users SET
+        email_change_token = $1,
+        email_change_new_email = $2,
+        email_change_expires_at = $3
+      WHERE id = $4`,
+      [token, newEmail.toLowerCase(), expiresAt, req.user.id]
+    );
+
+    // Send confirmation email
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const confirmUrl = `${frontendUrl}/confirm-email?token=${token}`;
+
+    if (resend) {
+      try {
+        await resend.emails.send({
+          from: FROM_EMAIL,
+          to: newEmail,
+          subject: 'Confirm Your New Email - ReviewResponder',
+          html: `
+            <h2>Confirm Your Email Change</h2>
+            <p>Hi there,</p>
+            <p>You requested to change your ReviewResponder account email to <strong>${newEmail}</strong>.</p>
+            <p>Click the button below to confirm this change:</p>
+            <p><a href="${confirmUrl}" style="background: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Confirm Email Change</a></p>
+            <p>Or copy this link: ${confirmUrl}</p>
+            <p>This link will expire in 24 hours. If you didn't request this, you can safely ignore this email.</p>
+            <p>Best regards,<br>ReviewResponder Team</p>
+          `
+        });
+      } catch (emailError) {
+        console.error('Email send error:', emailError);
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Confirmation email sent to ${newEmail}. Please check your inbox.`
+    });
+  } catch (error) {
+    console.error('Change email request error:', error);
+    res.status(500).json({ error: 'Failed to process email change request' });
+  }
+});
+
+// Confirm Email Change
+app.post('/api/auth/confirm-email-change', async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ error: 'Token is required' });
+    }
+
+    // Validate token
+    const user = await dbGet(
+      `SELECT * FROM users
+       WHERE email_change_token = $1
+         AND email_change_expires_at > NOW()`,
+      [token]
+    );
+
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired confirmation link' });
+    }
+
+    const newEmail = user.email_change_new_email;
+
+    // Check again if email is taken (race condition protection)
+    const existing = await dbGet('SELECT id FROM users WHERE email = $1 AND id != $2', [newEmail, user.id]);
+    if (existing) {
+      return res.status(400).json({ error: 'This email is already in use' });
+    }
+
+    // Update email
+    await dbQuery(
+      `UPDATE users SET
+        email = $1,
+        email_change_token = NULL,
+        email_change_new_email = NULL,
+        email_change_expires_at = NULL
+      WHERE id = $2`,
+      [newEmail, user.id]
+    );
+
+    // Update Stripe customer email
+    if (user.stripe_customer_id) {
+      try {
+        await stripe.customers.update(user.stripe_customer_id, { email: newEmail });
+      } catch (stripeError) {
+        console.error('Stripe email update error:', stripeError);
+      }
+    }
+
+    console.log(`✅ User ${user.id} changed email from ${user.email} to ${newEmail}`);
+
+    res.json({
+      success: true,
+      message: 'Email changed successfully',
+      newEmail
+    });
+  } catch (error) {
+    console.error('Confirm email change error:', error);
+    res.status(500).json({ error: 'Failed to confirm email change' });
+  }
+});
+
+// Get Notification Settings
+app.get('/api/settings/notifications', authenticateToken, async (req, res) => {
+  try {
+    const user = await dbGet(
+      'SELECT email_weekly_summary, email_usage_alerts, email_billing_updates FROM users WHERE id = $1',
+      [req.user.id]
+    );
+
+    res.json({
+      emailWeeklySummary: user.email_weekly_summary ?? true,
+      emailUsageAlerts: user.email_usage_alerts ?? true,
+      emailBillingUpdates: user.email_billing_updates ?? true
+    });
+  } catch (error) {
+    console.error('Get notification settings error:', error);
+    res.status(500).json({ error: 'Failed to get notification settings' });
+  }
+});
+
+// Update Notification Settings
+app.put('/api/settings/notifications', authenticateToken, async (req, res) => {
+  try {
+    const { emailWeeklySummary, emailUsageAlerts, emailBillingUpdates } = req.body;
+
+    await dbQuery(
+      `UPDATE users SET
+        email_weekly_summary = $1,
+        email_usage_alerts = $2,
+        email_billing_updates = $3
+      WHERE id = $4`,
+      [
+        emailWeeklySummary ?? true,
+        emailUsageAlerts ?? true,
+        emailBillingUpdates ?? true,
+        req.user.id
+      ]
+    );
+
+    res.json({
+      success: true,
+      message: 'Notification settings updated'
+    });
+  } catch (error) {
+    console.error('Update notification settings error:', error);
+    res.status(500).json({ error: 'Failed to update notification settings' });
+  }
+});
+
+// Delete Account
+app.delete('/api/auth/delete-account', authenticateToken, async (req, res) => {
+  try {
+    const { password, confirmation } = req.body;
+
+    // Require typing DELETE
+    if (confirmation !== 'DELETE') {
+      return res.status(400).json({
+        error: 'Please type DELETE to confirm account deletion'
+      });
+    }
+
+    const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+
+    // Verify password if user has one
+    if (user.password) {
+      if (!password) {
+        return res.status(400).json({ error: 'Password required for verification' });
+      }
+      const validPassword = await bcrypt.compare(password, user.password);
+      if (!validPassword) {
+        return res.status(400).json({ error: 'Password is incorrect' });
+      }
+    }
+
+    // Cancel Stripe subscription and delete customer
+    if (user.stripe_customer_id) {
+      try {
+        // Cancel all active subscriptions
+        const subscriptions = await stripe.subscriptions.list({
+          customer: user.stripe_customer_id,
+          status: 'active'
+        });
+
+        for (const sub of subscriptions.data) {
+          await stripe.subscriptions.cancel(sub.id);
+        }
+
+        // Delete Stripe customer
+        await stripe.customers.del(user.stripe_customer_id);
+        console.log(`🗑️ Deleted Stripe customer ${user.stripe_customer_id}`);
+      } catch (stripeError) {
+        console.error('Stripe cleanup error:', stripeError);
+        // Continue with account deletion even if Stripe cleanup fails
+      }
+    }
+
+    // Delete all user data
+    await dbQuery('DELETE FROM responses WHERE user_id = $1', [req.user.id]);
+    await dbQuery('DELETE FROM response_templates WHERE user_id = $1', [req.user.id]);
+    await dbQuery('DELETE FROM team_members WHERE team_owner_id = $1 OR member_user_id = $1', [req.user.id]);
+    await dbQuery('DELETE FROM api_keys WHERE user_id = $1', [req.user.id]);
+    await dbQuery('DELETE FROM blog_articles WHERE user_id = $1', [req.user.id]);
+    await dbQuery('DELETE FROM referrals WHERE referrer_id = $1', [req.user.id]);
+    await dbQuery('DELETE FROM user_feedback WHERE user_id = $1', [req.user.id]);
+    await dbQuery('DELETE FROM drip_emails WHERE user_id = $1', [req.user.id]);
+
+    // Delete the user
+    await dbQuery('DELETE FROM users WHERE id = $1', [req.user.id]);
+
+    console.log(`🗑️ User ${user.email} (ID: ${user.id}) deleted their account`);
+
+    res.json({
+      success: true,
+      message: 'Account deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({ error: 'Failed to delete account' });
   }
 });
 
