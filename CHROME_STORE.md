@@ -57,9 +57,9 @@ PERFECT FOR:
 - Anyone managing Google Reviews
 
 PRICING:
-- Free: 5 responses/month to try it out
-- Starter ($29/mo): 100 responses
-- Professional ($49/mo): 300 responses + Analytics
+- Free: 20 responses/month to try it out
+- Starter ($29/mo): 300 responses
+- Professional ($49/mo): 800 responses + Analytics
 - Unlimited ($99/mo): Unlimited responses + API access
 
 GET STARTED:

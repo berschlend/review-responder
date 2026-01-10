@@ -314,7 +314,7 @@ async function fetchUsage() {
 // Update usage display
 function updateUsageDisplay() {
   const used = user.responsesUsed || 0;
-  const limit = user.responsesLimit || 5;
+  const limit = user.responsesLimit || 20;
   const plan = user.plan || 'free';
 
   usageCount.textContent = used;
@@ -421,7 +421,7 @@ function checkUpgradeTriggers() {
   if (!user) return;
 
   const used = user.responsesUsed || 0;
-  const limit = user.responsesLimit || 5;
+  const limit = user.responsesLimit || 20;
   const plan = user.plan || 'free';
 
   // Don't show triggers for unlimited plan

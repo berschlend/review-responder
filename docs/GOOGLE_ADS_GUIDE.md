@@ -77,7 +77,7 @@ ai review response
 ```
 AI Review Response Generator
 Reply to Reviews in Seconds
-Free Trial - 5 Responses
+Free Trial - 20 Responses
 Save Hours on Reviews
 Professional Review Replies
 Respond to Reviews with AI

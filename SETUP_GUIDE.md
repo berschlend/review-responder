@@ -241,9 +241,9 @@ Best,
 ## Pricing Strategy
 
 Your pricing is already set up:
-- **Free**: 5 responses/month (lead generation)
-- **Starter ($29/mo)**: 100 responses (small businesses)
-- **Professional ($49/mo)**: 300 responses (busy businesses)
+- **Free**: 20 responses/month (lead generation)
+- **Starter ($29/mo)**: 300 responses (small businesses)
+- **Professional ($49/mo)**: 800 responses (busy businesses)
 - **Unlimited ($99/mo)**: Unlimited (agencies, franchises)
 
 ### Revenue Math:

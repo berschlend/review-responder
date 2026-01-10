@@ -184,13 +184,13 @@ Or I can do a quick screen share if you prefer!
 ```
 Great question! We have 3 plans:
 
-- Starter: $29/mo (100 responses)
-- Professional: $49/mo (300 responses + analytics)
+- Starter: $29/mo (300 responses)
+- Professional: $49/mo (800 responses + analytics)
 - Unlimited: $99/mo (unlimited everything)
 
 But right now we have a 50% launch discount (EARLY50) - so it's $14.50-$49.50/mo.
 
-Plus there's a 5-response free trial, no card needed!
+Plus there's a 20-response free trial, no card needed!
 ```
 
 ---

@@ -39,9 +39,9 @@ ReviewResponder helps small businesses respond to Google Reviews professionally 
 - Anyone managing Google Reviews
 
 **PRICING:**
-- Free: 5 responses/month
-- Starter ($29/mo): 100 responses
-- Pro ($49/mo): 300 responses + analytics
+- Free: 20 responses/month
+- Starter ($29/mo): 300 responses
+- Pro ($49/mo): 800 responses + analytics
 - Unlimited ($99/mo): Unlimited responses + API access
 
 Start responding to reviews in seconds, not hours. Try ReviewResponder free today!

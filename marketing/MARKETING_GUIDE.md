@@ -41,7 +41,7 @@ I was tired of spending 20+ minutes responding to Google reviews for my friend's
 
 You paste the review, pick a tone (professional, friendly, apologetic), and it generates a personalized response.
 
-Free tier: 5 responses/month
+Free tier: 20 responses/month
 Link: https://review-responder-frontend.onrender.com
 
 Would love feedback!
@@ -103,7 +103,7 @@ in seconds. You can try it for free:
 
 https://review-responder-frontend.onrender.com
 
-5 responses free - no credit card required.
+20 responses free - no credit card required.
 
 Best,
 [Your Name]

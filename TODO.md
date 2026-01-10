@@ -1,35 +1,79 @@
 # ReviewResponder - Todo Liste
 
-> Letzte Aktualisierung: 10.01.2026 - 22:30 Uhr
+> Letzte Aktualisierung: 10.01.2026 - 19:15 Uhr
 
 ---
 
-## 🔴 MORGEN (11.01.2026)
+## 🔴 SALES PRIORITY - Erste Kunden bekommen!
 
-- [ ] **Outreach Cron-Job prüfen (10:05 Uhr)**
-  - Dashboard checken: https://review-responder.onrender.com/api/outreach/dashboard?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U
-  - Oder Resend Logs: https://resend.com/emails
-  - Erwartung: Mehr Emails gesendet als gestern
+### 1. Automated Outreach System aktivieren
+- [ ] **API Keys in Render prüfen:**
+  - [ ] `GOOGLE_PLACES_API_KEY` - Haben wir schon? Sonst: console.cloud.google.com
+  - [ ] `HUNTER_API_KEY` - ✅ Haben wir (für Outreach)
+  - [ ] `ADMIN_SECRET` - Für Dashboard-Zugriff
+  - [ ] `CRON_SECRET` - Für automatische Jobs
+- [ ] **Outreach Dashboard checken:** https://review-responder.onrender.com/api/outreach/dashboard?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U
+- [ ] **Resend Logs checken:** https://resend.com/emails (gehen Outreach-Mails raus?)
+- [ ] **Cron-Job läuft?** Täglich 10:00 Uhr Berlin → scrapen + emails senden
 
+### 2. Google Ads starten ($50-100 Test)
+- [ ] Google Ads Account erstellen
+- [ ] Kampagne für "google review response generator" Keywords
+- [ ] Landing Pages sind fertig: `/google-review-response-generator`, `/restaurant-review-responses`
+- [ ] Budget: $50 für 1 Woche testen
 
-- [ ] **Demo-Video aufnehmen** (2 Min Walkthrough)
-  - Chrome Extension zeigen
-  - Dashboard Features zeigen
-  - YouTube/Loom hochladen
+### 3. Product Hunt Launch
+- [ ] Launch-Tag festlegen (Dienstag oder Mittwoch beste Tage)
+- [ ] `PRODUCT_HUNT_CONFIG.isLaunched = true` setzen
+- [ ] Upvote-Netzwerk aktivieren (Freunde, LinkedIn Kontakte)
+- [ ] HUNTLAUNCH Coupon (60% off) ist schon im Code
+
+### 4. LinkedIn Outreach (manuell)
+- [ ] 25 Connection Requests pro Tag an Restaurant/Hotel Owner
+- [ ] Templates sind fertig in `content/outreach/linkedin-messages.md`
+- [ ] Ziel: 5 Conversations → 1-2 Demos pro Woche
 
 ---
 
-## 🟡 NÄCHSTE TASKS
+## 🟡 FOLLOW-UP CHECKS
+
+### Täglich prüfen:
+- [ ] Outreach Dashboard: Neue Leads? Emails gesendet?
+- [ ] Resend: Werden Emails zugestellt? Bounces?
+- [ ] Stripe Dashboard: Neue Kunden?
+
+### Wöchentlich prüfen:
+- [ ] Google Search Console: Impressionen? Klicks? Keywords?
+- [ ] Analytics: Welche Landing Pages konvertieren?
+
+---
+
+## 🟢 HEUTE ERLEDIGT (10.01.2026)
+
+- [x] **Google Search Console eingerichtet**
+  - Domain verifiziert: tryreviewresponder.com
+  - Sitemap eingereicht: 13 Seiten
+  - Indexierung läuft (2-7 Tage)
+- [x] **Team Feature getestet & gefixt**
+  - Team Member sieht Owner's Plan
+  - Rollen vereinfacht (nur Member)
+  - Shared Usage funktioniert
+- [x] sitemap.xml erstellt
+- [x] robots.txt erstellt
+- [x] Alle URLs auf tryreviewresponder.com umgestellt
+
+---
+
+## 📋 BACKLOG (Später)
 
 ### Chrome Extension
 - [ ] Chrome Web Store Screenshots (3 weitere)
 - [ ] Chrome Web Store Einreichung (ZIP + Listing fertig)
 - [ ] Tone Preview (Beispiel-Snippets für jeden Tone)
 
-### Marketing
-- [ ] Google Ads starten ($50-100 Test)
-- [ ] Product Hunt Launch (wenn bereit)
-- [ ] LinkedIn Outreach starten
+### Content
+- [ ] Demo-Video aufnehmen (2 Min Walkthrough)
+- [ ] Blog-Artikel schreiben (SEO)
 
 
 ---

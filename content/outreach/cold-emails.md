@@ -434,8 +434,8 @@ thoughtful response from you.
 ReviewResponder makes this possible in minutes, not hours.
 
 Our 50% launch discount ends soon:
-- Starter: $14.50/mo (100 responses)
-- Professional: $24.50/mo (300 responses + analytics)
+- Starter: $14.50/mo (300 responses)
+- Professional: $24.50/mo (800 responses + analytics)
 
 Reply YES - I'll set you up today.
 

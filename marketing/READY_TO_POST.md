@@ -12,7 +12,7 @@ I run a small restaurant and was spending 30+ minutes every day responding to Go
 
 So I built a simple tool that uses AI to generate professional responses. You paste the review, pick a tone (professional, friendly, apologetic), and it gives you a response in seconds.
 
-I'm offering it free to try (5 responses, no credit card). Would love feedback from other business owners:
+I'm offering it free to try (20 responses, no credit card). Would love feedback from other business owners:
 
 https://review-responder-frontend.onrender.com
 
@@ -64,7 +64,7 @@ I built ReviewResponder - an AI tool that generates professional review response
 
 ✅ Works in 50+ languages
 ✅ 4 tone options (professional, friendly, formal, apologetic)
-✅ Free to try (5 responses)
+✅ Free to try (20 responses)
 
 Perfect for restaurants, hotels, dental practices, and any business that values their online reputation.
 
@@ -108,7 +108,7 @@ Research shows that 45% of consumers are more likely to visit a business that re
 
 I built a tool that generates professional responses in seconds. Just paste the review and get a response.
 
-Want to try it free? 5 responses included, no credit card needed:
+Want to try it free? 20 responses included, no credit card needed:
 https://review-responder-frontend.onrender.com
 
 Best,
