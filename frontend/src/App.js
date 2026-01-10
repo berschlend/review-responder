@@ -2844,30 +2844,31 @@ const DashboardPage = () => {
     }
     if (user && user.responsesUsed === 0) setIsFirstResponse(true);
 
-    // Check for success param from Stripe
-    // Only check URL params once using window.location (not React state)
+    // Check URL params for redirects from Stripe or admin
     const params = new URLSearchParams(window.location.search);
-    const successParam = params.get('success');
-    const planChangedParam = params.get('plan_changed');
 
-    // Clear URL immediately to prevent re-triggering on user state changes
-    if (successParam || planChangedParam) {
-      window.history.replaceState({}, '', '/dashboard');
+    // Handle plan change - do a full page reload to get fresh data
+    if (params.get('plan_changed')) {
+      const newPlan = params.get('plan_changed');
+      // Store message in sessionStorage to show after reload
+      sessionStorage.setItem('planChangeMessage', `Plan changed to ${newPlan.toUpperCase()}!`);
+      // Redirect to clean URL - this will trigger a fresh page load
+      window.location.replace('/dashboard');
+      return; // Stop execution
     }
 
-    if (successParam) {
+    // Show plan change message if stored
+    const planMsg = sessionStorage.getItem('planChangeMessage');
+    if (planMsg) {
+      sessionStorage.removeItem('planChangeMessage');
+      toast.success(planMsg);
+    }
+
+    // Handle Stripe success
+    if (params.get('success')) {
+      window.history.replaceState({}, '', '/dashboard');
       toast.success('Subscription activated! Thank you for subscribing.');
       api.get('/auth/me').then(res => updateUser(res.data.user));
-    }
-
-    if (planChangedParam) {
-      toast.success(`Plan changed to ${planChangedParam.toUpperCase()}!`);
-      // Refresh user data AND reload page to get fresh stats
-      api.get('/auth/me').then(res => {
-        updateUser(res.data.user);
-        // Reload to refresh all dashboard data with new plan limits
-        window.location.href = '/dashboard';
-      });
     }
   }, []);
 

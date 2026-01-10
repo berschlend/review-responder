@@ -1,7 +1,185 @@
-// ReviewResponder - Clean & Intuitive Edition
-// Focus: Simplicity, Speed, Mobile-First
+// ReviewResponder - Killer Features Edition
+// Focus: Time Saving, One-Click, Smart Detection
 
 const API_URL = 'https://review-responder.onrender.com/api';
+
+// ========== TIME SAVED TRACKING ==========
+const TIME_PER_RESPONSE_MINUTES = 3; // Average time to write a response manually
+
+async function getTimeSaved() {
+  try {
+    const stored = await chrome.storage.local.get(['rr_responses_generated', 'rr_time_saved_minutes']);
+    return {
+      count: stored.rr_responses_generated || 0,
+      minutes: stored.rr_time_saved_minutes || 0
+    };
+  } catch (e) {
+    return { count: 0, minutes: 0 };
+  }
+}
+
+async function trackTimeSaved() {
+  try {
+    const current = await getTimeSaved();
+    await chrome.storage.local.set({
+      rr_responses_generated: current.count + 1,
+      rr_time_saved_minutes: current.minutes + TIME_PER_RESPONSE_MINUTES
+    });
+    return current.minutes + TIME_PER_RESPONSE_MINUTES;
+  } catch (e) {
+    return 0;
+  }
+}
+
+function formatTimeSaved(minutes) {
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (mins === 0) return `${hours}h`;
+  return `${hours}h ${mins}m`;
+}
+
+// ========== SMART ISSUE DETECTION ==========
+function detectIssues(text) {
+  const lowerText = text.toLowerCase();
+  const issues = [];
+
+  // Food-related issues
+  const foodIssues = [
+    { keywords: ['cold food', 'food was cold', 'cold meal', 'kalt', 'froid'], issue: 'cold_food', label: '🥶 Cold food' },
+    { keywords: ['undercooked', 'raw', 'not cooked', 'roh'], issue: 'undercooked', label: '🍖 Undercooked' },
+    { keywords: ['overcooked', 'burnt', 'verbrannt', 'angebrannt'], issue: 'overcooked', label: '🔥 Overcooked' },
+    { keywords: ['small portion', 'tiny portion', 'not enough food', 'kleine portion'], issue: 'portion_size', label: '📏 Small portions' },
+    { keywords: ['tasteless', 'no flavor', 'bland', 'geschmacklos', 'fade'], issue: 'tasteless', label: '😐 Tasteless' },
+  ];
+
+  // Service-related issues
+  const serviceIssues = [
+    { keywords: ['slow service', 'waited forever', 'took too long', 'lange gewartet', 'ewig gewartet'], issue: 'slow_service', label: '⏰ Slow service' },
+    { keywords: ['rude', 'unfriendly', 'impolite', 'unhöflich', 'unfreundlich'], issue: 'rude_staff', label: '😤 Rude staff' },
+    { keywords: ['ignored', 'no attention', 'couldn\'t find waiter', 'ignoriert'], issue: 'ignored', label: '👻 Ignored' },
+    { keywords: ['wrong order', 'incorrect order', 'falsche bestellung'], issue: 'wrong_order', label: '❌ Wrong order' },
+  ];
+
+  // Cleanliness issues
+  const cleanIssues = [
+    { keywords: ['dirty', 'unclean', 'filthy', 'dreckig', 'schmutzig'], issue: 'dirty', label: '🧹 Cleanliness' },
+    { keywords: ['hair in', 'found hair', 'haare im', 'haar im'], issue: 'hygiene', label: '🦠 Hygiene' },
+    { keywords: ['bug', 'insect', 'cockroach', 'fly in', 'fliege', 'insekt'], issue: 'pests', label: '🪳 Pests' },
+  ];
+
+  // Pricing issues
+  const priceIssues = [
+    { keywords: ['overpriced', 'too expensive', 'not worth', 'zu teuer', 'überteuert'], issue: 'overpriced', label: '💰 Overpriced' },
+    { keywords: ['hidden charges', 'extra fees', 'versteckte kosten'], issue: 'hidden_fees', label: '💸 Hidden fees' },
+  ];
+
+  // Check all issue categories
+  const allIssueTypes = [...foodIssues, ...serviceIssues, ...cleanIssues, ...priceIssues];
+
+  allIssueTypes.forEach(({ keywords, issue, label }) => {
+    if (keywords.some(kw => lowerText.includes(kw))) {
+      issues.push({ issue, label });
+    }
+  });
+
+  return issues;
+}
+
+// ========== GOOGLE MAPS AUTO-PASTE ==========
+function findGoogleMapsReplyField() {
+  // Try different selectors for Google Maps reply fields
+  const selectors = [
+    // Reply to review textarea
+    'textarea[aria-label*="Reply"]',
+    'textarea[aria-label*="reply"]',
+    'textarea[aria-label*="Antwort"]',
+    'textarea[aria-label*="Répondre"]',
+    'textarea[jsname="YPqjbf"]',
+    // Business response fields
+    '.review-dialog-text textarea',
+    '[data-value="Reply"] textarea',
+    '.reply-text textarea',
+    // Generic textarea in review dialogs
+    '.review-dialog textarea',
+    '[role="dialog"] textarea',
+  ];
+
+  for (const selector of selectors) {
+    const el = document.querySelector(selector);
+    if (el && el.offsetParent !== null) { // Check if visible
+      return el;
+    }
+  }
+
+  return null;
+}
+
+function findGoogleMapsReplyButton() {
+  // Find the "Reply" button on Google Maps reviews
+  const selectors = [
+    '[data-value="Reply"]',
+    'button[aria-label*="Reply"]',
+    'button[aria-label*="reply"]',
+    'button[aria-label*="Antwort"]',
+    '.review-action-button',
+    '[jsaction*="reply"]',
+  ];
+
+  for (const selector of selectors) {
+    const el = document.querySelector(selector);
+    if (el && el.offsetParent !== null) {
+      return el;
+    }
+  }
+
+  return null;
+}
+
+async function autoPasteToGoogleMaps(text, panel) {
+  const platform = detectPlatform();
+
+  if (platform.name !== 'Google') {
+    showToast('⚠️ Auto-paste only works on Google Maps', 'warning');
+    return false;
+  }
+
+  // First, try to find an existing reply field
+  let replyField = findGoogleMapsReplyField();
+
+  // If no field, try clicking the Reply button
+  if (!replyField) {
+    const replyButton = findGoogleMapsReplyButton();
+    if (replyButton) {
+      replyButton.click();
+      // Wait for the reply field to appear
+      await new Promise(resolve => setTimeout(resolve, 500));
+      replyField = findGoogleMapsReplyField();
+    }
+  }
+
+  if (!replyField) {
+    showToast('📝 No reply field found - click "Reply" on a review first', 'info');
+    return false;
+  }
+
+  // Focus and paste
+  replyField.focus();
+  replyField.value = text;
+
+  // Trigger input events so Google Maps registers the change
+  replyField.dispatchEvent(new Event('input', { bubbles: true }));
+  replyField.dispatchEvent(new Event('change', { bubbles: true }));
+
+  showToast('🚀 Pasted! Ready to submit', 'success');
+
+  // Close our panel
+  if (panel) {
+    closePanel(panel);
+  }
+
+  return true;
+}
 
 // ========== TOAST NOTIFICATIONS ==========
 function showToast(message, type = 'success') {
