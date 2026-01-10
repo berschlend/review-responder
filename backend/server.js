@@ -3743,7 +3743,76 @@ const safeCompare = (a, b) => {
   return crypto.timingSafeEqual(bufA, bufB);
 };
 
-// POST /api/admin/upgrade-user - Upgrade a user to Unlimited plan
+// POST /api/admin/set-plan - Set user plan (for testing)
+app.post('/api/admin/set-plan', async (req, res) => {
+  const ip = req.ip || req.connection.remoteAddress;
+
+  if (!checkAdminRateLimit(ip)) {
+    return res.status(429).json({ error: 'Too many attempts. Try again in 15 minutes.' });
+  }
+
+  const { email, plan, key } = req.query;
+  const adminSecret = process.env.ADMIN_SECRET;
+
+  if (!adminSecret) {
+    return res.status(500).json({ error: 'Admin endpoint not configured' });
+  }
+
+  if (!safeCompare(key, adminSecret)) {
+    return res.status(401).json({ error: 'Invalid admin key' });
+  }
+
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ error: 'Valid email required' });
+  }
+
+  // Plan configuration
+  const planConfig = {
+    free: { status: 'inactive', limit: 5 },
+    starter: { status: 'active', limit: 100 },
+    professional: { status: 'active', limit: 300 },
+    unlimited: { status: 'active', limit: 999999 }
+  };
+
+  const targetPlan = plan || 'unlimited';
+  if (!planConfig[targetPlan]) {
+    return res.status(400).json({ error: 'Invalid plan. Use: free, starter, professional, unlimited' });
+  }
+
+  try {
+    const user = await dbGet('SELECT id, email, subscription_plan FROM users WHERE LOWER(email) = LOWER($1)', [email]);
+
+    if (!user) {
+      return res.status(404).json({ error: `User not found: ${email}` });
+    }
+
+    const config = planConfig[targetPlan];
+    await dbQuery(
+      `UPDATE users SET
+        subscription_plan = $1,
+        subscription_status = $2,
+        responses_limit = $3,
+        responses_used = 0
+       WHERE id = $4`,
+      [targetPlan, config.status, config.limit, user.id]
+    );
+
+    console.log(`✅ Admin set ${email} to ${targetPlan} plan (was: ${user.subscription_plan})`);
+
+    res.json({
+      success: true,
+      message: `User ${email} set to ${targetPlan} plan`,
+      previous_plan: user.subscription_plan,
+      new_plan: targetPlan,
+      responses_limit: config.limit
+    });
+  } catch (error) {
+    console.error('Admin set-plan error:', error);
+    res.status(500).json({ error: 'Failed to update user plan' });
+  }
+});
+
+// POST /api/admin/upgrade-user - Upgrade a user to Unlimited plan (legacy)
 app.post('/api/admin/upgrade-user', async (req, res) => {
   const ip = req.ip || req.connection.remoteAddress;
 
