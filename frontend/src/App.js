@@ -1438,10 +1438,10 @@ const LandingPage = () => {
       <section className="hero">
         <div className="container">
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: 'white', padding: '6px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '600' }}>
+            <Link to="/pricing?discount=EARLY50" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: 'white', padding: '6px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '600', textDecoration: 'none', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }} onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(245,158,11,0.4)'; }} onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}>
               <Zap size={14} />
-              NEW: 50% OFF for Early Adopters
-            </div>
+              🎁 50% OFF - Click to Claim
+            </Link>
             <ProductHuntBadge />
           </div>
           <h1 className="hero-title">
@@ -1507,34 +1507,36 @@ const LandingPage = () => {
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px', color: 'var(--gray-900)' }}>
             🎉 Launch Special: 50% OFF
           </h2>
-          <p style={{ fontSize: '16px', color: 'var(--gray-600)', marginBottom: '20px' }}>
-            We just launched! Use code <strong style={{ color: 'var(--primary-600)' }}>EARLY50</strong> at checkout for 50% off your subscription.
+          <p style={{ fontSize: '16px', color: 'var(--gray-600)', marginBottom: '24px' }}>
+            We just launched! Get 50% off your subscription - limited time only.
           </p>
 
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '24px',
-            padding: '16px 32px',
-            background: 'white',
-            borderRadius: '12px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
-          }}>
-            <div>
-              <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Launch Discount</div>
-              <div style={{ fontSize: '28px', fontWeight: '700', color: '#10b981' }}>50% OFF</div>
-            </div>
-            <div style={{ width: '1px', height: '40px', background: 'var(--gray-200)' }} />
-            <div>
-              <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Code</div>
-              <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--primary-600)', fontFamily: 'monospace' }}>EARLY50</div>
-            </div>
-            <div style={{ width: '1px', height: '40px', background: 'var(--gray-200)' }} />
-            <div>
-              <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Risk-Free</div>
-              <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--gray-900)' }}>30-Day Refund</div>
-            </div>
-          </div>
+          <Link
+            to="/pricing?discount=EARLY50"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '16px 32px',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              color: 'white',
+              borderRadius: '12px',
+              boxShadow: '0 4px 16px rgba(16,185,129,0.3)',
+              textDecoration: 'none',
+              fontSize: '18px',
+              fontWeight: '700',
+              transition: 'transform 0.2s, box-shadow 0.2s'
+            }}
+            onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(16,185,129,0.4)'; }}
+            onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(16,185,129,0.3)'; }}
+          >
+            🎁 Claim 50% Discount
+            <ArrowRight size={20} />
+          </Link>
+
+          <p style={{ fontSize: '13px', color: 'var(--gray-500)', marginTop: '16px' }}>
+            Limited time • 30-day money-back guarantee
+          </p>
         </div>
       </section>
 
@@ -1988,18 +1990,29 @@ const LandingPage = () => {
           <div className="pricing-header">
             <h2 className="pricing-title">Simple, Transparent Pricing</h2>
             <p style={{ color: 'var(--gray-600)' }}>Start free, upgrade when you need more</p>
-            <div style={{ 
-              display: 'inline-block', 
-              marginTop: '16px',
-              padding: '8px 20px',
-              background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
-              color: 'white',
-              borderRadius: '20px',
-              fontSize: '14px',
-              fontWeight: '600'
-            }}>
-              🎉 Launch Special: Use code EARLY50 for 50% off any plan!
-            </div>
+            <Link
+              to="/pricing?discount=EARLY50"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginTop: '16px',
+                padding: '8px 20px',
+                background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                color: 'white',
+                borderRadius: '20px',
+                fontSize: '14px',
+                fontWeight: '600',
+                textDecoration: 'none',
+                cursor: 'pointer',
+                transition: 'transform 0.2s, box-shadow 0.2s'
+              }}
+              onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(245,158,11,0.4)'; }}
+              onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
+            >
+              🎁 Get 50% OFF
+              <ArrowRight size={14} />
+            </Link>
           </div>
           <PricingCards />
         </div>
@@ -7562,18 +7575,29 @@ const PricingPage = () => {
       <div className="pricing-section">
         <div className="container">
           <div className="pricing-header">
-            <div style={{
-              display: 'inline-block',
-              background: 'linear-gradient(135deg, #10b981, #059669)',
-              color: 'white',
-              padding: '6px 16px',
-              borderRadius: '20px',
-              fontSize: '14px',
-              fontWeight: '600',
-              marginBottom: '16px'
-            }}>
-              🎉 Launch Special: 50% OFF with code EARLY50
-            </div>
+            <Link
+              to="/pricing?discount=EARLY50"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'linear-gradient(135deg, #10b981, #059669)',
+                color: 'white',
+                padding: '6px 16px',
+                borderRadius: '20px',
+                fontSize: '14px',
+                fontWeight: '600',
+                marginBottom: '16px',
+                textDecoration: 'none',
+                cursor: 'pointer',
+                transition: 'transform 0.2s, box-shadow 0.2s'
+              }}
+              onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(16,185,129,0.4)'; }}
+              onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
+            >
+              🎁 Click to Activate 50% OFF
+              <ArrowRight size={14} />
+            </Link>
             <h1 className="pricing-title">Simple, Transparent Pricing</h1>
             <p style={{ color: 'var(--gray-600)', maxWidth: '600px', margin: '0 auto' }}>
               No hidden fees. No surprises. Choose the plan that fits your business.
