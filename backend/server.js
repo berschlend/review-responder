@@ -1170,39 +1170,39 @@ async function generateResponseHandler(req, res) {
       }
     };
 
-    // ========== CLAUDE-STYLE WRITING INSTRUCTIONS ==========
-    // Goal: Make GPT-4o-mini write like Claude - direct, warm, human, not gushing
+    // ========== PERFECTED PROMPT - CLAUDE STYLE ==========
 
     const writingStyleInstructions = `
-WRITING STYLE - THIS IS CRITICAL:
-You write like a real small business owner, not a corporate chatbot.
-Be warm but understated. Confident, not gushing. Direct, not flowery.
+OUTPUT FORMAT:
+Write the response directly. No quotes around it. No "Response:" prefix. Just the text.
 
-BANNED WORDS (these scream "AI wrote this" - NEVER use them):
-Enthusiasm words: thrilled, delighted, excited, absolutely, incredibly, amazing, wonderful
-Corporate words: embark, delve, foster, leverage, journey, realm, beacon, tapestry
-Filler phrases: "a testament to", "shed light on", "we can't wait", "means the world"
-Generic phrases: "Thank you for your feedback", "We appreciate you taking the time"
-                 "Your satisfaction is our priority", "Sorry for any inconvenience"
-                 "Please don't hesitate", "We value your input"
+VOICE:
+You are the business owner. Not customer service. The actual owner who built this place.
+Write like you talk. Warm but not gushing. Confident but not arrogant.
 
-WRITING RULES:
-1. Use contractions naturally (we're, you'll, it's, that's)
-2. Keep sentences short. Vary the length. Some can be fragments.
-3. Maximum ONE exclamation mark per response (often zero is better)
-4. Be specific - reference actual details from their review
-5. Sound like a confident owner who genuinely cares, not a script
-6. Warm but not effusive. Helpful but not desperate.`;
+BANNED (instant AI detection):
+Words: thrilled, delighted, excited, absolutely, incredibly, amazing, wonderful, commendable
+Corporate: embark, delve, foster, leverage, journey, beacon, tapestry, vital, crucial
+Phrases: "Thank you for your feedback" | "We appreciate you taking the time" | "means the world"
+         "Your satisfaction is our priority" | "Sorry for any inconvenience" | "Please don't hesitate"
 
-    // Few-shot examples with Claude-style responses
+STYLE RULES:
+- Contractions always (we're, you'll, it's, that's, don't)
+- Short sentences. Some fragments. Vary rhythm.
+- Zero or one exclamation mark total
+- Reference specific details they mentioned
+- No em-dashes. Use periods or commas instead.
+- 2-3 sentences for positive reviews. 3-4 for negative.`;
+
+    // Few-shot examples matching our demo style exactly
     const fewShotExamples = {
       positive: {
-        review: "Great experience! The pasta was amazing and our server Marco was so attentive.",
-        goodResponse: "Really glad you enjoyed the pasta - we're pretty proud of that recipe. And Marco's going to appreciate hearing this, he puts a lot of care into what he does. Hope to see you back sometime."
+        review: "Amazing pizza! The crust was perfectly crispy and the toppings were fresh. Service was quick and friendly.",
+        goodResponse: "Really happy the crust worked for you. We let our dough rest 48 hours, and it makes all the difference. See you next time."
       },
       negative: {
-        review: "Waited 45 minutes for our food and it was cold when it arrived. Very disappointed.",
-        goodResponse: "45 minutes and cold food - that's a genuine failure on our part, and I'm sorry. That's not how we operate. If you're willing to give us another shot, reach out directly and we'll make it right."
+        review: "Waited 45 minutes for our food. When it finally arrived, it was cold. Very disappointed.",
+        goodResponse: "45 minutes and cold food. That's on us, and we're sorry. Not the experience we want anyone to have. Reach out to us directly and we'll make it right."
       }
     };
 
@@ -1250,29 +1250,18 @@ WRITING RULES:
 
     // ========== OPTIMIZED SYSTEM + USER MESSAGE STRUCTURE ==========
 
-    const systemMessage = `You are a small business owner responding to customer reviews. Not a customer service rep - the actual owner.
-
-BUSINESS:
-${businessName || contextUser.business_name || 'Our business'}${contextUser.business_type ? ` (${contextUser.business_type})` : ''}
-${contextUser.business_context ? `About us: ${contextUser.business_context}` : ''}
-Platform: ${platform || 'Google Reviews'}
+    const systemMessage = `You own ${businessName || contextUser.business_name || 'a business'}${contextUser.business_type ? ` (${contextUser.business_type})` : ''}. You're responding to a review on ${platform || 'Google'}.
+${contextUser.business_context ? `\nAbout your business: ${contextUser.business_context}` : ''}
 
 ${writingStyleInstructions}
 
-EXAMPLE - THIS IS THE QUALITY AND TONE TO MATCH:
-Review: "${exampleToUse.review}"
-Response: "${exampleToUse.goodResponse}"
+EXAMPLE:
+Customer: "${exampleToUse.review}"
+You: ${exampleToUse.goodResponse}
 
 LANGUAGE: ${languageInstruction}`;
 
-    const userMessage = `${reviewRating ? `[${reviewRating}-star review]` : ''}
-
-"${reviewText}"
-
-${ratingStrategy ? `Goal: ${ratingStrategy.goal}. Keep it to ${ratingStrategy.length}.` : ''}
-${customInstructions ? `Note: ${customInstructions}` : ''}
-
-Respond:`;
+    const userMessage = `${reviewRating ? `[${reviewRating} stars] ` : ''}${reviewText}${ratingStrategy ? `\n\n(${ratingStrategy.length})` : ''}${customInstructions ? `\n\nNote: ${customInstructions}` : ''}`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -1406,10 +1395,11 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
     };
 
     // Claude-style instructions for bulk (compact version)
-    const bulkWritingStyle = `STYLE: Write like the actual business owner. Warm but understated, direct, not gushing.
+    const bulkWritingStyle = `OUTPUT: Write response directly. No quotes around it. No "Response:" prefix.
+STYLE: Write like the actual business owner. Warm but understated, direct, not gushing.
 BANNED: thrilled, delighted, excited, absolutely, incredibly, amazing, embark, delve, foster, leverage
 NO PHRASES: "Thank you for your feedback", "We appreciate you taking the time", "Sorry for any inconvenience"
-RULES: Use contractions. Short sentences. Max 1 exclamation mark. Be specific about what they mentioned.`;
+RULES: Use contractions. Short sentences. Max 1 exclamation mark. No em-dashes. Be specific about what they mentioned.`;
 
     const bulkLanguageNames = {
       en: 'English', de: 'German', es: 'Spanish', fr: 'French',
@@ -1441,9 +1431,7 @@ ${bulkWritingStyle}
 
 LANGUAGE: ${bulkLanguageInstruction}`;
 
-        const bulkUserMessage = `"${reviewText}"
-
-Respond:`;
+        const bulkUserMessage = `[Review] ${reviewText}`;
 
         const completion = await openai.chat.completions.create({
           model: 'gpt-4o-mini',
@@ -3201,6 +3189,9 @@ app.post('/api/v1/generate', authenticateApiKey, async (req, res) => {
 BUSINESS: ${user.business_name || 'Our business'}${user.business_type ? ` (${user.business_type})` : ''}
 ${user.business_context ? `About: ${user.business_context}` : ''}
 
+OUTPUT FORMAT:
+Write the response directly. No quotes around it. No "Response:" prefix. Just the text.
+
 WRITING STYLE:
 Be warm but understated. Direct, not flowery. Confident, not gushing.
 
@@ -3211,6 +3202,7 @@ RULES:
 - Use contractions naturally (we're, you'll, it's)
 - Keep sentences short. Vary length.
 - Max ONE exclamation mark per response
+- No em-dashes. Use periods or commas instead.
 - Reference specific details from their review
 - Sound like a real person, not a script
 
@@ -3221,15 +3213,15 @@ LANGUAGE: ${apiLanguageNames[selectedLanguage] || selectedLanguage}`;
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `"${review_text}"\n\nRespond:` }
+        { role: 'user', content: `[Review] ${review_text}` }
       ],
       max_tokens: 300,
-      temperature: 0.65,
-      presence_penalty: 0.15,
-      frequency_penalty: 0.15
+      temperature: 0.6,
+      presence_penalty: 0.1,
+      frequency_penalty: 0.1
     });
 
-    const generatedResponse = completion.choices[0].message.content;
+    const generatedResponse = completion.choices[0].message.content.trim();
 
     // Save to responses table
     await dbQuery(
