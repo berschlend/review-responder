@@ -918,6 +918,109 @@ async function recordAnalyticsResponse() {
   await chrome.storage.local.set({ rr_analytics: analytics });
 }
 
+// ========== REVIEW INSIGHTS ==========
+
+async function loadInsights() {
+  const result = await chrome.storage.local.get('rr_insights');
+  return result.rr_insights || {
+    issues: {},       // { issue_type: count }
+    sentiments: { positive: 0, neutral: 0, negative: 0 },
+    lastUpdated: null
+  };
+}
+
+async function recordInsights(issues, sentiment) {
+  const insights = await loadInsights();
+
+  // Track issues
+  issues.forEach(issue => {
+    insights.issues[issue.issue] = (insights.issues[issue.issue] || 0) + 1;
+  });
+
+  // Track sentiment
+  if (sentiment && insights.sentiments[sentiment] !== undefined) {
+    insights.sentiments[sentiment]++;
+  }
+
+  insights.lastUpdated = new Date().toISOString();
+
+  // Clean up old data - keep issues with count > 0
+  await chrome.storage.local.set({ rr_insights: insights });
+}
+
+async function updateInsightsWidget(panel) {
+  const insights = await loadInsights();
+
+  // Calculate top issues
+  const issueEntries = Object.entries(insights.issues)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 3);
+
+  const issueLabels = {
+    cold_food: '🥶 Cold food',
+    undercooked: '🍖 Undercooked',
+    overcooked: '🔥 Overcooked',
+    portion_size: '📏 Small portions',
+    tasteless: '😐 Tasteless',
+    slow_service: '⏰ Slow service',
+    rude_staff: '😤 Rude staff',
+    ignored: '👻 Ignored',
+    wrong_order: '❌ Wrong order',
+    dirty: '🧹 Cleanliness',
+    hygiene: '🦠 Hygiene',
+    pests: '🪳 Pests',
+    overpriced: '💰 Overpriced',
+    hidden_fees: '💸 Hidden fees',
+  };
+
+  const topIssuesEl = panel.querySelector('.rr-top-issues');
+  if (issueEntries.length > 0) {
+    topIssuesEl.innerHTML = issueEntries.map(([issue, count]) => {
+      const label = issueLabels[issue] || issue;
+      return `<div class="rr-top-issue-item">${label} <span class="rr-issue-freq">${count}x</span></div>`;
+    }).join('');
+  } else {
+    topIssuesEl.innerHTML = '<div class="rr-no-data">No issues tracked yet</div>';
+  }
+
+  // Calculate sentiment percentages
+  const totalSentiments = insights.sentiments.positive + insights.sentiments.neutral + insights.sentiments.negative;
+  let positivePct = 0, neutralPct = 0, negativePct = 0;
+
+  if (totalSentiments > 0) {
+    positivePct = Math.round((insights.sentiments.positive / totalSentiments) * 100);
+    neutralPct = Math.round((insights.sentiments.neutral / totalSentiments) * 100);
+    negativePct = Math.round((insights.sentiments.negative / totalSentiments) * 100);
+  }
+
+  // Update sentiment bars
+  const sentBars = panel.querySelectorAll('.rr-sentiment-bar');
+  if (sentBars[0]) {
+    sentBars[0].querySelector('.rr-sent-fill').style.width = `${positivePct}%`;
+    sentBars[0].querySelector('.rr-sent-pct').textContent = `${positivePct}%`;
+  }
+  if (sentBars[1]) {
+    sentBars[1].querySelector('.rr-sent-fill').style.width = `${neutralPct}%`;
+    sentBars[1].querySelector('.rr-sent-pct').textContent = `${neutralPct}%`;
+  }
+  if (sentBars[2]) {
+    sentBars[2].querySelector('.rr-sent-fill').style.width = `${negativePct}%`;
+    sentBars[2].querySelector('.rr-sent-pct').textContent = `${negativePct}%`;
+  }
+
+  // Generate dynamic tip
+  const tips = [
+    { condition: negativePct > 30, tip: 'Many negative reviews - focus on apologetic responses and offer compensations.' },
+    { condition: issueEntries.some(([issue]) => issue === 'slow_service'), tip: 'Slow service is common - consider offering priority seating.' },
+    { condition: issueEntries.some(([issue]) => issue === 'cold_food'), tip: 'Cold food complaints - mention your quality standards.' },
+    { condition: positivePct > 60, tip: 'Great positive sentiment! Use friendly tone to maintain relationships.' },
+    { condition: true, tip: 'Personalize responses by using the customer\'s name when available.' },
+  ];
+
+  const tip = tips.find(t => t.condition)?.tip || tips[tips.length - 1].tip;
+  panel.querySelector('.rr-tip-text').textContent = tip;
+}
+
 // ========== TEMPLATE LIBRARY ==========
 function updateLibraryList(panel) {
   const category = panel.querySelector('.rr-library-category').value;
@@ -2112,6 +2215,47 @@ async function createResponsePanel() {
       </div>
     </div>
 
+    <!-- Review Insights Widget (collapsible) -->
+    <div class="rr-insights-widget collapsed">
+      <div class="rr-insights-header">
+        <span class="rr-insights-title">💡 Insights</span>
+        <span class="rr-insights-toggle">▶</span>
+      </div>
+      <div class="rr-insights-body">
+        <div class="rr-insights-section">
+          <div class="rr-insights-label">Top Issues This Month</div>
+          <div class="rr-top-issues">
+            <div class="rr-top-issue-item"><span class="rr-issue-emoji">⏰</span> Slow service <span class="rr-issue-freq">5x</span></div>
+            <div class="rr-top-issue-item"><span class="rr-issue-emoji">🥶</span> Cold food <span class="rr-issue-freq">3x</span></div>
+            <div class="rr-top-issue-item"><span class="rr-issue-emoji">💰</span> Pricing <span class="rr-issue-freq">2x</span></div>
+          </div>
+        </div>
+        <div class="rr-insights-section">
+          <div class="rr-insights-label">Sentiment Distribution</div>
+          <div class="rr-sentiment-bars">
+            <div class="rr-sentiment-bar">
+              <span class="rr-sent-label">😊</span>
+              <div class="rr-sent-fill rr-sent-positive" style="width: 60%"></div>
+              <span class="rr-sent-pct">60%</span>
+            </div>
+            <div class="rr-sentiment-bar">
+              <span class="rr-sent-label">😐</span>
+              <div class="rr-sent-fill rr-sent-neutral" style="width: 25%"></div>
+              <span class="rr-sent-pct">25%</span>
+            </div>
+            <div class="rr-sentiment-bar">
+              <span class="rr-sent-label">😞</span>
+              <div class="rr-sent-fill rr-sent-negative" style="width: 15%"></div>
+              <span class="rr-sent-pct">15%</span>
+            </div>
+          </div>
+        </div>
+        <div class="rr-insights-tip">
+          <strong>💡 Tip:</strong> <span class="rr-tip-text">Use apologetic tone for negative reviews to show empathy.</span>
+        </div>
+      </div>
+    </div>
+
     <div class="rr-panel-body">
       <!-- Review Section -->
       <div class="rr-review-box">
@@ -2625,6 +2769,19 @@ function initPanelEvents(panel) {
 
   // Load analytics on panel open
   updateAnalytics(panel);
+
+  // Insights Widget toggle
+  panel.querySelector('.rr-insights-header').addEventListener('click', () => {
+    const widget = panel.querySelector('.rr-insights-widget');
+    widget.classList.toggle('collapsed');
+    const toggle = panel.querySelector('.rr-insights-toggle');
+    toggle.textContent = widget.classList.contains('collapsed') ? '▶' : '▼';
+
+    // Load insights when opening
+    if (!widget.classList.contains('collapsed')) {
+      updateInsightsWidget(panel);
+    }
+  });
 
   // Account Switcher
   panel.querySelector('.rr-account-current').addEventListener('click', () => {
@@ -3531,9 +3688,13 @@ async function generateResponse(panel) {
       showQualityBadge(panel, data.quality);
     }
 
-    // Record analytics
+    // Record analytics and insights
     await recordAnalyticsResponse();
     updateAnalytics(panel);
+
+    // Record insights for tracking
+    const currentSentiment = panel.dataset.sentiment || 'neutral';
+    await recordInsights(detectedIssues, currentSentiment);
 
     // Hide undo button (fresh generation)
     panel.querySelector('.rr-undo-btn').classList.add('hidden');
@@ -3697,9 +3858,13 @@ async function generateResponseWithModifier(panel, modifier) {
       showQualityBadge(panel, data.quality);
     }
 
-    // Record analytics
+    // Record analytics and insights
     await recordAnalyticsResponse();
     updateAnalytics(panel);
+
+    // Record insights for tracking
+    const currentSentiment = panel.dataset.sentiment || 'neutral';
+    await recordInsights(detectedIssues, currentSentiment);
 
     // Hide undo button (fresh generation)
     panel.querySelector('.rr-undo-btn').classList.add('hidden');
@@ -4006,6 +4171,9 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
   // Analyze sentiment
   const sentiment = analyzeSentiment(cleaned);
   const sentimentDisplay = getSentimentDisplay(sentiment);
+
+  // Store sentiment for insights tracking
+  panel.dataset.sentiment = sentiment;
 
   panel.querySelector('.rr-sentiment-emoji').textContent = sentimentDisplay.emoji;
   panel.querySelector('.rr-sentiment-label').textContent = sentimentDisplay.label;
