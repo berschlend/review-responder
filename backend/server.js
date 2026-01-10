@@ -2002,7 +2002,7 @@ app.post('/api/team/invite', authenticateToken, async (req, res) => {
     if (resend) {
       try {
         const inviteHtml = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;"><div style="background:linear-gradient(135deg,#4F46E5 0%,#7C3AED 100%);padding:30px;text-align:center;"><h1 style="color:white;margin:0;">You're Invited!</h1></div><div style="padding:30px;background:#f9fafb;"><p style="font-size:16px;color:#374151;"><strong>${user.business_name || user.email}</strong> has invited you to join their ReviewResponder team as a <strong>${role}</strong>.</p><p style="font-size:14px;color:#6b7280;">As a team member, you'll be able to generate AI-powered review responses using their subscription.</p><div style="text-align:center;margin:30px 0;"><a href="${process.env.FRONTEND_URL}/join-team?token=${inviteToken}" style="background:#4F46E5;color:white;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:bold;display:inline-block;">Accept Invitation</a></div></div></div>`;
-        await resend.emails.send({ from: 'ReviewResponder <noreply@reviewresponder.app>', to: email, subject: `${user.business_name || user.email} invited you to their team`, html: inviteHtml });
+        await resend.emails.send({ from: FROM_EMAIL, to: email, subject: `${user.business_name || user.email} invited you to their team`, html: inviteHtml });
       } catch (e) { console.error('Failed to send team invite email:', e); }
     }
     // Always return token so frontend can show invite link (useful if email fails)
@@ -4064,7 +4064,7 @@ app.put('/api/admin/affiliates/:id/status', authenticateAdmin, async (req, res) 
 
         if (subject && html) {
           await resend.emails.send({
-            from: 'ReviewResponder <noreply@reviewresponder.app>',
+            from: FROM_EMAIL,
             to: user.email,
             subject,
             html
