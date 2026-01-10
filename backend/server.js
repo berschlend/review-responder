@@ -46,6 +46,10 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const googleClient = process.env.GOOGLE_CLIENT_ID ? new OAuth2Client(process.env.GOOGLE_CLIENT_ID) : null;
 
+// Email sender addresses (configurable via ENV)
+const FROM_EMAIL = process.env.FROM_EMAIL || 'ReviewResponder <onboarding@resend.dev>';
+const OUTREACH_FROM_EMAIL = process.env.OUTREACH_FROM_EMAIL || 'ReviewResponder <onboarding@resend.dev>';
+
 // Middleware
 app.use(helmet());
 
@@ -969,7 +973,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     if (resend && process.env.NODE_ENV === 'production') {
       try {
         await resend.emails.send({
-          from: 'ReviewResponder <onboarding@resend.dev>',
+          from: FROM_EMAIL,
           to: user.email,
           subject: 'Reset Your Password - ReviewResponder',
           html: `
@@ -2042,7 +2046,7 @@ app.post('/api/capture-email', async (req, res) => {
     if (resend && process.env.NODE_ENV === 'production') {
       try {
         await resend.emails.send({
-          from: 'ReviewResponder <onboarding@resend.dev>',
+          from: FROM_EMAIL,
           to: email,
           subject: 'Welcome! Here\'s your 20% discount 🎉',
           html: `
@@ -3541,7 +3545,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
         try {
           if (process.env.NODE_ENV === 'production') {
             await resend.emails.send({
-              from: 'ReviewResponder <onboarding@resend.dev>',
+              from: FROM_EMAIL,
               to: user.email,
               subject: emailContent.subject,
               html: emailContent.html
@@ -4567,7 +4571,7 @@ app.post('/api/outreach/send-emails', async (req, res) => {
 
         // Send email via Resend
         const result = await resend.emails.send({
-          from: 'ReviewResponder <onboarding@resend.dev>',
+          from: OUTREACH_FROM_EMAIL,
           to: lead.email,
           subject: template.subject,
           html: template.body.replace(/\n/g, '<br>'),
@@ -4678,7 +4682,7 @@ app.post('/api/outreach/send-followups', async (req, res) => {
         const template = fillEmailTemplate(EMAIL_TEMPLATES.sequence2, lead);
 
         await resend.emails.send({
-          from: 'ReviewResponder <onboarding@resend.dev>',
+          from: OUTREACH_FROM_EMAIL,
           to: lead.email,
           subject: template.subject,
           html: template.body.replace(/\n/g, '<br>')
@@ -4703,7 +4707,7 @@ app.post('/api/outreach/send-followups', async (req, res) => {
         const template = fillEmailTemplate(EMAIL_TEMPLATES.sequence3, lead);
 
         await resend.emails.send({
-          from: 'ReviewResponder <onboarding@resend.dev>',
+          from: OUTREACH_FROM_EMAIL,
           to: lead.email,
           subject: template.subject,
           html: template.body.replace(/\n/g, '<br>')
@@ -4843,7 +4847,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
           const template = fillEmailTemplate(EMAIL_TEMPLATES.sequence1, lead);
 
           await resend.emails.send({
-            from: 'ReviewResponder <onboarding@resend.dev>',
+            from: OUTREACH_FROM_EMAIL,
             to: lead.email,
             subject: template.subject,
             html: template.body.replace(/\n/g, '<br>')
@@ -4889,7 +4893,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
             const template = fillEmailTemplate(EMAIL_TEMPLATES[templateKey], lead);
 
             await resend.emails.send({
-              from: 'ReviewResponder <onboarding@resend.dev>',
+              from: OUTREACH_FROM_EMAIL,
               to: lead.email,
               subject: template.subject,
               html: template.body.replace(/\n/g, '<br>')
