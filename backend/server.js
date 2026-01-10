@@ -53,33 +53,10 @@ const OUTREACH_FROM_EMAIL = process.env.OUTREACH_FROM_EMAIL || 'ReviewResponder 
 // Middleware
 app.use(helmet());
 
-// CORS configuration - allow frontend and Chrome extension
-const allowedOrigins = [
-  process.env.FRONTEND_URL || 'http://localhost:3000',
-  'https://www.google.com',
-  'https://google.com',
-  'https://maps.google.com',
-  'https://business.google.com',
-  'chrome-extension://*'
-];
-
+// CORS configuration - allow all origins for Chrome extension compatibility
+// Security is handled via JWT tokens, not CORS
 app.use(cors({
-  origin: function(origin, callback) {
-    // Allow requests with no origin (Chrome extensions, mobile apps, curl, etc.)
-    if (!origin) return callback(null, true);
-
-    // Check if origin is in allowed list or is a chrome extension
-    if (allowedOrigins.includes(origin) || origin.startsWith('chrome-extension://')) {
-      return callback(null, true);
-    }
-
-    // Also allow the frontend URL variations
-    if (origin.includes('review-responder')) {
-      return callback(null, true);
-    }
-
-    callback(new Error('Not allowed by CORS'));
-  },
+  origin: true, // Allow all origins - extension needs to work on any review site
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Admin-Key', 'X-API-Key']
 }));
