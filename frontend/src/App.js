@@ -1115,7 +1115,7 @@ const ProductHuntLaunchBanner = () => {
 
 // ============ END PRODUCT HUNT COMPONENTS ============
 
-// Feedback Popup Component (shown after 10 responses)
+// Feedback Popup Component (shown after 3 responses)
 const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -1211,7 +1211,7 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
           <p style={{ opacity: 0.9, fontSize: '14px' }}>
             {submitted
               ? 'Your feedback helps us improve!'
-              : 'You\'ve generated 10+ responses! We\'d love to hear your thoughts.'}
+              : 'We\'d love to hear your thoughts!'}
           </p>
         </div>
 
@@ -3500,7 +3500,7 @@ const DashboardPage = () => {
     toast.success('Downloaded as Text!');
   };
 
-  // Check if user should see feedback popup (after 10 responses)
+  // Check if user should see feedback popup (after 3 responses)
   const checkFeedbackStatus = async () => {
     // Don't show if user dismissed in this session
     if (sessionStorage.getItem('feedbackDismissed')) {
