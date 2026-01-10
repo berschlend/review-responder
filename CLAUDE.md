@@ -20,6 +20,12 @@
 1. CLAUDE.md lesen → 2. Task wählen → 3. Erledigen → 4. Testen → 5. Git push → 6. CLAUDE.md updaten
 ```
 
+### Claude Code Setup
+📂 **Erweiterte Dokumentation:** `.claude/README.md`
+- **Hooks:** `.claude/hooks/README.md` (Auto-Branch-Protection, Test-Reminders, Command-Logging)
+- **GitHub Workflow:** `.claude/github-workflow.md` (PR/Issue Management, Git Best Practices)
+- **MCP Servers:** `.claude/mcp-servers.md` (Optional für externe Tools)
+
 ---
 
 ## LIVE URLS
@@ -101,9 +107,68 @@ ReviewResponder/
 ├── chrome-extension/  # Browser Extension
 ├── content/           # Marketing (outreach/, product-hunt/, social/)
 ├── scripts/           # Automation Scripts
-└── CLAUDE.md
-Todo.md
+├── .claude/           # Claude Code Config (hooks, settings)
+├── CLAUDE.md          # Projekt-Gedächtnis
+└── Todo.md            # Task Tracking
 ```
+
+---
+
+## DEVELOPMENT GUIDELINES
+
+### Code Style
+- **JavaScript/React**: ES6+ syntax, destructuring, arrow functions
+- **Async**: Prefer async/await over promises chains
+- **Error Handling**: Try-catch blocks for async operations, proper HTTP status codes
+- **Naming**: camelCase für Variablen/Funktionen, PascalCase für React Components
+- **Comments**: Nur wenn Logic nicht selbsterklärend ist
+- **Security**: NIEMALS Secrets committen, immer Input validieren (SQL Injection, XSS Prevention)
+
+### Testing Requirements
+- **Backend**: Teste alle neuen API Endpoints vor Push
+  ```bash
+  # Local Backend testen:
+  cd backend && node server.js
+  # Test mit curl oder Postman
+  ```
+- **Frontend**: Check Console Errors, teste User Flow manuell
+  ```bash
+  # Local Frontend testen:
+  cd frontend && npm start
+  ```
+- **Chrome Extension**: Teste in chrome://extensions nach jeder Änderung
+
+### Git Conventions
+- **Commit Messages**: Beschreibend, prägnant (z.B. "Fix email case-sensitivity in login")
+- **Commit Häufigkeit**: Nach jedem completed Feature/Fix
+- **Branch**: Arbeite auf `claude/learn-claude-code-eKiGe` Branch
+- **Push**: Immer nach erfolgreichem Test mit `git push -u origin claude/learn-claude-code-eKiGe`
+- **NIEMALS**: Force push auf main/master
+
+### Development Commands
+```bash
+# Backend lokal starten (Port 5000)
+cd backend && node server.js
+
+# Frontend lokal starten (Port 3000)
+cd frontend && npm start
+
+# Chrome Extension reload
+# chrome://extensions → Developer Mode → Reload
+
+# Git Status checken
+git status
+
+# Schnelles Commit & Push
+git add -A && git commit -m "Beschreibung" && git push -u origin claude/learn-claude-code-eKiGe
+```
+
+### Preferred Patterns
+- **Small Diffs**: Lieber mehrere kleine Commits als ein riesiger
+- **Read before Edit**: IMMER Datei lesen vor Änderungen
+- **No Over-Engineering**: Nur ändern was nötig ist, keine "improvements" ohne Request
+- **No Premature Abstraction**: Kein Helper-Code für einmalige Operations
+- **Backwards Compatibility**: Keine unnötigen Renames/Re-exports, einfach löschen wenn unused
 
 ---
 
