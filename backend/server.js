@@ -3955,30 +3955,42 @@ app.post('/api/admin/affiliates/:id/payout', authenticateAdmin, async (req, res)
 // GET /api/admin/stats - Get overall admin stats
 app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
   try {
-    const userStats = await dbGet(`
-      SELECT
-        COUNT(*) as total_users,
-        COUNT(*) FILTER (WHERE subscription_plan != 'free') as paying_users,
-        COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '7 days') as new_users_week,
-        COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '30 days') as new_users_month
-      FROM users
-    `);
+    // User stats - this should always work
+    let userStats = { total_users: 0, paying_users: 0, new_users_week: 0, new_users_month: 0 };
+    try {
+      userStats = await dbGet(`
+        SELECT
+          COUNT(*) as total_users,
+          COUNT(*) FILTER (WHERE subscription_plan != 'free') as paying_users,
+          COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '7 days') as new_users_week,
+          COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '30 days') as new_users_month
+        FROM users
+      `) || userStats;
+    } catch (e) { console.error('User stats query error:', e.message); }
 
-    const revenueStats = await dbGet(`
-      SELECT
-        COALESCE(SUM(ac.commission_amount), 0) as total_commissions,
-        COUNT(DISTINCT ac.converted_user_id) as total_conversions
-      FROM affiliate_conversions ac
-    `);
+    // Revenue stats - might fail if table doesn't exist
+    let revenueStats = { total_commissions: 0, total_conversions: 0 };
+    try {
+      revenueStats = await dbGet(`
+        SELECT
+          COALESCE(SUM(commission_amount), 0) as total_commissions,
+          COUNT(DISTINCT converted_user_id) as total_conversions
+        FROM affiliate_conversions
+      `) || revenueStats;
+    } catch (e) { console.error('Revenue stats query error:', e.message); }
 
-    const affiliateStats = await dbGet(`
-      SELECT
-        COUNT(*) FILTER (WHERE status = 'pending') as pending_affiliates,
-        COUNT(*) FILTER (WHERE status = 'approved') as active_affiliates,
-        COALESCE(SUM(total_earned), 0) as total_affiliate_earnings,
-        COALESCE(SUM(pending_balance), 0) as total_pending_payouts
-      FROM affiliates
-    `);
+    // Affiliate stats - might fail if table doesn't exist
+    let affiliateStats = { pending_affiliates: 0, active_affiliates: 0, total_affiliate_earnings: 0, total_pending_payouts: 0 };
+    try {
+      affiliateStats = await dbGet(`
+        SELECT
+          COUNT(*) FILTER (WHERE status = 'pending') as pending_affiliates,
+          COUNT(*) FILTER (WHERE status = 'approved') as active_affiliates,
+          COALESCE(SUM(total_earned), 0) as total_affiliate_earnings,
+          COALESCE(SUM(pending_balance), 0) as total_pending_payouts
+        FROM affiliates
+      `) || affiliateStats;
+    } catch (e) { console.error('Affiliate stats query error:', e.message); }
 
     res.json({
       users: {
