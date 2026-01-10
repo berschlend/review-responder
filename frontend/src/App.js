@@ -4438,8 +4438,8 @@ Great service! The staff was very helpful and friendly.
 Terrible experience. Waited 30 minutes and nobody helped me.
 
 Food was amazing, will definitely come back!`}
-                    rows={10}
-                    style={{ fontFamily: 'inherit' }}
+                    rows={20}
+                    style={{ fontFamily: 'inherit', minHeight: '400px' }}
                   />
                   <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '8px' }}>
                     Supported formats: One review per line, CSV format ("review1","review2"), or separated by ---
