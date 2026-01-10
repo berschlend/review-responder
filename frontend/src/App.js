@@ -3527,8 +3527,10 @@ const DashboardPage = () => {
     toast.success('All responses copied!');
   };
 
-  const canUseBulk = ['starter', 'professional', 'unlimited'].includes(user?.plan);
-  const canUseBlog = ['professional', 'unlimited'].includes(user?.plan);
+  // Use effectivePlan for team members (they get access to team owner's plan features)
+  const canUseBulk = ['starter', 'professional', 'unlimited'].includes(effectivePlan);
+  const canUseBlog = ['professional', 'unlimited'].includes(effectivePlan);
+  const canUseApi = effectivePlan === 'unlimited';
 
   // Load blog data when switching to blog tab
   useEffect(() => {
@@ -3903,7 +3905,7 @@ const DashboardPage = () => {
         >
           <Code size={18} />
           API
-          {user?.plan !== 'unlimited' && (
+          {!canUseApi && (
             <span style={{
               background: 'var(--primary-600)',
               color: 'white',
@@ -4770,7 +4772,7 @@ Food was amazing, will definitely come back!`}
       )}
 
       {/* API Tab */}
-      {activeTab === 'api' && <ApiTab user={user} api={api} />}
+      {activeTab === 'api' && <ApiTab user={user} api={api} effectivePlan={effectivePlan} isTeamMember={isTeamMember} />}
 
       {/* Save Template Modal */}
       {showSaveTemplateModal && (

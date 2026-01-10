@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Code, Key, Zap, BookOpen, Settings, Trash2, Copy, CheckCircle, AlertCircle } from 'lucide-react';
 
-const ApiTab = ({ user, api }) => {
+const ApiTab = ({ user, api, effectivePlan, isTeamMember }) => {
   const [apiKeys, setApiKeys] = useState([]);
   const [loadingApiKeys, setLoadingApiKeys] = useState(false);
   const [showCreateKeyModal, setShowCreateKeyModal] = useState(false);
@@ -14,8 +14,12 @@ const ApiTab = ({ user, api }) => {
   const [editingKeyName, setEditingKeyName] = useState('');
   const [apiDocSection, setApiDocSection] = useState('quickstart');
 
+  // Use effectivePlan for team members
+  const actualPlan = effectivePlan || user?.plan;
+  const canUseApi = actualPlan === 'unlimited';
+
   const fetchApiKeys = async () => {
-    if (user?.plan !== 'unlimited' || user?.subscriptionStatus !== 'active') return;
+    if (!canUseApi) return;
     setLoadingApiKeys(true);
     try {
       const res = await api.get('/keys');
@@ -28,10 +32,10 @@ const ApiTab = ({ user, api }) => {
   };
 
   useEffect(() => {
-    if (user?.plan === 'unlimited' && user?.subscriptionStatus === 'active') {
+    if (canUseApi) {
       fetchApiKeys();
     }
-  }, [user?.plan, user?.subscriptionStatus]);
+  }, [actualPlan]);
 
   const createApiKey = async () => {
     if (!newKeyName.trim()) {
@@ -79,8 +83,8 @@ const ApiTab = ({ user, api }) => {
     toast.success('API key copied to clipboard');
   };
 
-  // Show upgrade prompt for non-unlimited users
-  if (user?.plan !== 'unlimited' || user?.subscriptionStatus !== 'active') {
+  // Show upgrade prompt for non-unlimited users (but team members with unlimited access can use it)
+  if (!canUseApi) {
     return (
       <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
         <div style={{ width: '80px', height: '80px', background: 'linear-gradient(135deg, var(--primary-100), var(--primary-200))', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
