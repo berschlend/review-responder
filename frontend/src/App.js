@@ -3570,7 +3570,8 @@ const DashboardPage = () => {
         tone: useTone,
         outputLanguage,
         aiModel,
-        businessName: user.businessName
+        businessName: user.businessName,
+        customInstructions: customInstructions.trim() || undefined
       });
 
       setResponse(res.data.response);
@@ -4274,6 +4275,24 @@ const DashboardPage = () => {
               </p>
             </div>
           )}
+
+          <div className="form-group" style={{ marginTop: '16px' }}>
+            <label className="form-label">
+              <Edit3 size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+              Custom Instructions (optional)
+            </label>
+            <textarea
+              className="form-textarea"
+              value={customInstructions}
+              onChange={(e) => setCustomInstructions(e.target.value)}
+              placeholder="Add specific instructions for the AI, e.g.: 'Always mention our 24/7 support' or 'Include a discount code SAVE10'"
+              rows={2}
+              style={{ resize: 'vertical', minHeight: '60px' }}
+            />
+            <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
+              Guide the AI with specific requirements for your response
+            </p>
+          </div>
 
           <button
             className="btn btn-primary"
