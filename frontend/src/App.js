@@ -3466,7 +3466,7 @@ const DashboardPage = () => {
             />
           </div>
           <p className="mt-1" style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
-            Claude. Best quality
+            Best quality responses
           </p>
         </div>
 
@@ -3491,7 +3491,7 @@ const DashboardPage = () => {
             />
           </div>
           <p className="mt-1" style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
-            GPT. Fast & reliable
+            Fast & reliable
           </p>
         </div>
 
@@ -3774,7 +3774,7 @@ const DashboardPage = () => {
           <div className="form-group" style={{ marginTop: '16px' }}>
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               AI Model
-              <FeatureTooltip text="Auto: Uses Smart AI first, then Standard. Smart AI (Claude): Best quality. Standard (GPT): Fast and reliable.">
+              <FeatureTooltip text="Auto: Uses Smart AI first, then Standard. Smart AI: Best quality. Standard: Fast and reliable.">
                 <Info size={14} style={{ color: 'var(--gray-400)', cursor: 'help' }} />
               </FeatureTooltip>
             </label>

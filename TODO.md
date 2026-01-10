@@ -1,11 +1,28 @@
 # ReviewResponder - Todo Liste
 
-> Letzte Aktualisierung: 10.01.2026 - 01:30 Uhr
+> Letzte Aktualisierung: 10.01.2026 - 15:55 Uhr
 
+
+## 🔴 MORGEN (11.01.2026) - 10:05 Uhr
+
+- [ ] **Outreach Cron-Job prüfen**
+  - Dashboard checken: https://review-responder.onrender.com/api/outreach/dashboard?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U
+  - Oder Resend Logs: https://resend.com/emails
+  - Erwartung: Mehr Emails gesendet als gestern (aktuell: 10)
+
+---
+
+## ✅ HEUTE ERLEDIGT (10.01.2026)
+
+- [x] **Outreach Email System komplett eingerichtet**
+  - Domain `tryreviewresponder.com` gekauft
+  - DNS Records in Resend verifiziert (DKIM, SPF, MX)
+  - Cron-Job läuft täglich um 10:00 Uhr Berlin
+  - Test-Email erfolgreich gesendet
+
+---
 
 scrambled todos
-
--domain holen email system resend verifizieren das rausgeht mit dem hunter ding usw das automatische email ding dann testent und shcauen in den resend logs etc
 -chrome extension funktionalbel machen am besten gleich mit irgendwie dem wie ich Rezensionen als buiseness veiwer selber sehen würde das ist dann auch fürs demo video gut müssen wir mal gucken ob das irgendwie geht wenn nicht riwie anders, fixxen auch das generate in new tone, screenshot demo etc
 - google Anmeldung enblen
 -Alle bestehenden feautures anschauen und testen (auch manuell), auch feautures in allen subs testen
