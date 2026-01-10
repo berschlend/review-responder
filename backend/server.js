@@ -3708,9 +3708,9 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
 
 // ============ ADMIN ENDPOINTS ============
 
-// Rate limiter for admin endpoints (5 attempts per 15 minutes per IP)
+// Rate limiter for admin endpoints (50 attempts per 15 minutes per IP)
 const adminRateLimiter = new Map();
-const ADMIN_RATE_LIMIT = 5;
+const ADMIN_RATE_LIMIT = 50;
 const ADMIN_RATE_WINDOW = 15 * 60 * 1000; // 15 minutes
 
 const checkAdminRateLimit = (ip) => {
