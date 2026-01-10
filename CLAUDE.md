@@ -41,7 +41,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## CURRENT_TASKS (Aktuelle Aufgaben)
 
-**Stand: 10.01.2026 - 03:30 Uhr**
+**Stand: 10.01.2026 - 04:00 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
 - [x] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen ✅
@@ -87,6 +87,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **API Key System für Entwickler** - REST API für Unlimited-Plan User (5 Keys, 100 req/Tag, Dokumentation mit Code-Beispielen)
 - [x] **LinkedIn Outreach System** - 5 Connection Messages, 5 Follow-ups, Target Audiences, Scraper Script, Tracking Template
 - [x] **Cold Email System** - 3 Email-Sequenzen (Restaurant, Hotel, Service), Tracking Pixel, Email Finder Guide
+- [x] **Product Hunt Launch Automation** - HUNTLAUNCH Coupon (60% off), Badge, Countdown Timer, Launch Banner, Checklists, Social Posts
 
 ---
 
@@ -105,12 +106,21 @@ ReviewResponder/
 │   ├── manifest.json
 │   ├── popup.html/js
 │   └── content.js
-├── content/outreach/  # Sales & Marketing Content
-│   ├── linkedin-messages.md
-│   ├── cold-emails.md
-│   ├── email-finder-guide.md
-│   ├── target-audiences.md
-│   └── tracking-template.csv
+├── content/           # Marketing & Launch Content
+│   ├── outreach/      # Sales Outreach
+│   │   ├── linkedin-messages.md
+│   │   ├── cold-emails.md
+│   │   ├── email-finder-guide.md
+│   │   ├── target-audiences.md
+│   │   └── tracking-template.csv
+│   ├── product-hunt/  # PH Launch
+│   │   ├── launch-checklist.md
+│   │   ├── hunter-outreach.md
+│   │   ├── upvote-strategy.md
+│   │   └── launch-day-schedule.md
+│   └── social/        # Social Media Posts
+│       ├── launch-twitter.md
+│       └── launch-linkedin.md
 ├── scripts/           # Automation Scripts
 │   └── linkedin-scraper.js
 └── CLAUDE.md          # Diese Datei
@@ -401,7 +411,54 @@ Das Script liegt unter: `C:\Users\Berend Mainz\clipboard-screenshot.ps1`
 - **Welcome Email**: Automatisch via Resend mit Discount Code (wenn konfiguriert)
 - **Frontend**: Connected via axios im ExitIntentPopup Component
 
-## LINKEDIN OUTREACH SYSTEM
+## AUTOMATED OUTREACH SYSTEM (NEU!)
+
+> **100% AUTOMATISCH** - Läuft täglich ohne manuellen Eingriff
+
+### Was es macht (jeden Tag 9 AM UTC):
+1. Scrapt 10 neue Business-Leads von Google Maps
+2. Findet Email-Adressen via Hunter.io
+3. Sendet personalisierte Cold Emails
+4. Follow-ups nach 3 und 7 Tagen
+5. Trackt Email-Opens
+
+### Setup erforderlich (einmalig 5 Min):
+Siehe `OUTREACH_SETUP.md` für komplette Anleitung.
+
+| Variable | Wo bekommst du es |
+|----------|-------------------|
+| `GOOGLE_PLACES_API_KEY` | console.cloud.google.com (kostenlos) |
+| `HUNTER_API_KEY` | hunter.io (25 free/Monat) |
+| `ADMIN_SECRET` | Selbst generieren |
+| `CRON_SECRET` | Selbst generieren |
+
+### Neue Endpoints:
+| Endpoint | Beschreibung |
+|----------|--------------|
+| `POST /api/outreach/scrape-leads` | Leads von Google Maps scrapen |
+| `POST /api/outreach/find-emails` | Emails via Hunter.io finden |
+| `POST /api/outreach/send-emails` | Cold Emails senden |
+| `POST /api/outreach/send-followups` | Follow-up Sequenz |
+| `POST /api/cron/daily-outreach` | Komplette tägliche Automation |
+| `GET /api/outreach/dashboard?key=X` | Stats & Dashboard |
+
+### Email-Sequenz:
+- **Tag 1:** Erste Cold Email (Value Prop + Free Trial)
+- **Tag 4:** Follow-up (Social Proof + Stats)
+- **Tag 8:** Letzte Email (Scarcity + Discount)
+
+### Erwartete Ergebnisse:
+| Pro Monat | Anzahl |
+|-----------|--------|
+| Leads | 300 |
+| Emails gefunden | 120-160 |
+| Cold Emails | 800 |
+| Replies (~5%) | 40 |
+| **Neue Kunden** | **3-4** |
+
+---
+
+## LINKEDIN OUTREACH SYSTEM (Manual - Optional)
 
 ### Files:
 | Datei | Beschreibung |
@@ -578,6 +635,32 @@ Zeigt: Total Opens, Unique Opens, By Campaign, By Day, Recent Opens
   - Email Finder Guide (Hunter.io, Apollo.io, Snov.io)
   - Personalisierungs-Checkliste & A/B Test Tracking
   - CAN-SPAM & GDPR Compliance Hinweise
+- **Product Hunt Launch Automation** implementiert:
+  - Backend: HUNTLAUNCH Coupon (60% off, 24h gültig) in `/api/billing/create-checkout`
+  - Frontend: `ProductHuntBadge` Component (zeigt "Featured on Product Hunt" wenn isLaunched=true)
+  - Frontend: `CountdownTimer` Component (24h Countdown mit HRS:MIN:SEC)
+  - Frontend: `ProductHuntLaunchBanner` (Top-Banner mit Discount Code und CTA)
+  - Frontend: `PRODUCT_HUNT_CONFIG` in App.js (isLaunched, launchEndTime, productHuntUrl)
+  - Content: `/content/product-hunt/launch-checklist.md` (2-Wochen-Plan bis Launch)
+  - Content: `/content/product-hunt/hunter-outreach.md` (Top Hunter kontaktieren, Templates)
+  - Content: `/content/product-hunt/upvote-strategy.md` (legale Upvote-Quellen, Templates)
+  - Content: `/content/product-hunt/launch-day-schedule.md` (stündlicher Plan für Launch Day)
+  - Social: `/content/social/launch-twitter.md` (10 Tweets + Thread)
+  - Social: `/content/social/launch-linkedin.md` (3 Posts + Connection Templates)
+
+## PRODUCT HUNT LAUNCH SETUP
+
+Am Launch-Tag in `frontend/src/App.js` ändern:
+
+```javascript
+const PRODUCT_HUNT_CONFIG = {
+  isLaunched: true, // Auf true setzen!
+  launchEndTime: new Date('2025-XX-XXTXX:XX:XX-08:00'), // 24h nach Launch
+  productHuntUrl: 'https://www.producthunt.com/posts/reviewresponder', // Echte URL
+};
+```
+
+Dann Frontend neu deployen und Launch genießen!
 
 ---
 
