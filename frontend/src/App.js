@@ -1378,33 +1378,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      <section className="container" style={{ marginTop: '60px', marginBottom: '60px' }}>
-        <div className="card" style={{ textAlign: 'center', padding: '40px', background: 'linear-gradient(135deg, var(--primary-50), var(--gray-50))' }}>
-          <Globe size={48} style={{ color: 'var(--primary-600)', marginBottom: '16px' }} />
-          <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>
-            Works in Any Language
-          </h2>
-          <p style={{ color: 'var(--gray-600)', maxWidth: '600px', margin: '0 auto 24px' }}>
-            Got a review in German? Spanish? Japanese? Our AI automatically detects the language
-            and generates a native-quality response. No translation needed.
-          </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center' }}>
-            {['Deutsch', 'Español', 'Français', '中文', '日本語', 'Italiano', 'Português', 'Nederlands', 'العربية', 'Polski'].map(lang => (
-              <span key={lang} style={{
-                background: 'white',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                fontSize: '14px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-              }}>
-                {lang}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="container" style={{ marginBottom: '60px' }}>
+      <section className="container" style={{ marginBottom: '60px', marginTop: '60px' }}>
         <div className="card" style={{ padding: '40px', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', color: 'white' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '40px', flexWrap: 'wrap' }}>
             <div style={{ flex: '1', minWidth: '300px' }}>
