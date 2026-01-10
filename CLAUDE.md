@@ -62,12 +62,20 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 | 3 | Chrome Web Store Einreichung | Leicht | ZIP + Store Listing fertig |
 | 4 | Landing Page A/B Testing | Mittel | `frontend/src/App.js` |
 
-### 🔴 BEKANNTER BUG:
-**Chrome Extension antwortet nicht in nativer Sprache des Reviews!**
+### 🔴 BEKANNTE BUGS:
+
+**1. Chrome Extension antwortet nicht in nativer Sprache des Reviews!**
 - Englische Reviews bekommen deutsche/niederländische Antworten
 - Problem tritt NUR in der Extension auf, nicht im Dashboard
 - `cleanReviewText()` und `detectLanguage()` wurden bereits versucht
 - Nächster Ansatz: Prompt weiter vereinfachen oder Text-Extraktion debuggen
+
+**2. Admin Panel Login funktioniert nicht!**
+- URL: `/admin` - zeigt "Invalid admin key" obwohl Key korrekt ist
+- Backend funktioniert (curl mit X-Admin-Key Header funktioniert!)
+- Problem liegt im Frontend (React State / Header wird nicht richtig gesendet)
+- Admin Key: `rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U`
+- Dateien: `frontend/src/App.js` (AdminPage Komponente, ca. Zeile 7360)
 
 ---
 
