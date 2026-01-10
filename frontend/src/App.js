@@ -3709,39 +3709,6 @@ const DashboardPage = () => {
               </select>
             </div>
 
-            <div className="form-group">
-              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                Response Language
-                <FeatureTooltip text="Auto-detect matches the customer's language automatically. Great for multilingual businesses!">
-                  <Info size={14} style={{ color: 'var(--gray-400)', cursor: 'help' }} />
-                </FeatureTooltip>
-              </label>
-              <select
-                className="form-select"
-                value={outputLanguage}
-                onChange={(e) => setOutputLanguage(e.target.value)}
-              >
-                <option value="auto">Auto-detect (match review)</option>
-                <option value="en">English</option>
-                <option value="de">German (Deutsch)</option>
-                <option value="es">Spanish (Español)</option>
-                <option value="fr">French (Français)</option>
-                <option value="it">Italian (Italiano)</option>
-                <option value="pt">Portuguese (Português)</option>
-                <option value="nl">Dutch (Nederlands)</option>
-                <option value="pl">Polish (Polski)</option>
-                <option value="ru">Russian (Русский)</option>
-                <option value="zh">Chinese (中文)</option>
-                <option value="ja">Japanese (日本語)</option>
-                <option value="ko">Korean (한국어)</option>
-                <option value="ar">Arabic (العربية)</option>
-                <option value="tr">Turkish (Türkçe)</option>
-                <option value="sv">Swedish (Svenska)</option>
-                <option value="da">Danish (Dansk)</option>
-                <option value="no">Norwegian (Norsk)</option>
-                <option value="fi">Finnish (Suomi)</option>
-              </select>
-            </div>
           </div>
 
           {templates.length > 0 && (
@@ -3975,34 +3942,6 @@ Food was amazing, will definitely come back!`}
                     </select>
                   </div>
 
-                  <div className="form-group">
-                    <label className="form-label">Response Language</label>
-                    <select
-                      className="form-select"
-                      value={bulkOutputLanguage}
-                      onChange={(e) => setBulkOutputLanguage(e.target.value)}
-                    >
-                      <option value="auto">Auto-detect (match review)</option>
-                      <option value="en">English</option>
-                      <option value="de">German (Deutsch)</option>
-                      <option value="es">Spanish (Español)</option>
-                      <option value="fr">French (Français)</option>
-                      <option value="it">Italian (Italiano)</option>
-                      <option value="pt">Portuguese (Português)</option>
-                      <option value="nl">Dutch (Nederlands)</option>
-                      <option value="pl">Polish (Polski)</option>
-                      <option value="ru">Russian (Русский)</option>
-                      <option value="zh">Chinese (中文)</option>
-                      <option value="ja">Japanese (日本語)</option>
-                      <option value="ko">Korean (한국어)</option>
-                      <option value="ar">Arabic (العربية)</option>
-                      <option value="tr">Turkish (Türkçe)</option>
-                      <option value="sv">Swedish (Svenska)</option>
-                      <option value="da">Danish (Dansk)</option>
-                      <option value="no">Norwegian (Norsk)</option>
-                      <option value="fi">Finnish (Suomi)</option>
-                    </select>
-                  </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
