@@ -371,6 +371,96 @@
   color: var(--rr-text-light);
 }
 
+/* ========== SMART REPLY CHIPS ========== */
+.rr-smart-replies {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border: 1px solid #7dd3fc;
+  border-radius: 10px;
+}
+
+.rr-smart-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0369a1;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.rr-smart-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rr-smart-chip {
+  padding: 10px 14px;
+  border: 2px solid #38bdf8;
+  border-radius: 20px;
+  background: white;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0284c7;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(56, 189, 248, 0.15);
+}
+
+.rr-smart-chip:hover {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+.rr-smart-chip:active {
+  transform: translateY(0);
+}
+
+.rr-smart-chip.active {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  border-color: #0284c7;
+  color: white;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+}
+
+.rr-smart-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Different colors for negative sentiment chips */
+.rr-issues-row + .rr-info-row + .rr-smart-replies {
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border-color: #fca5a5;
+}
+
+.rr-issues-row + .rr-info-row + .rr-smart-replies .rr-smart-label {
+  color: #b91c1c;
+}
+
+.rr-issues-row + .rr-info-row + .rr-smart-replies .rr-smart-chip {
+  border-color: #f87171;
+  color: #dc2626;
+}
+
+.rr-issues-row + .rr-info-row + .rr-smart-replies .rr-smart-chip:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.rr-issues-row + .rr-info-row + .rr-smart-replies .rr-smart-chip.active {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  border-color: #dc2626;
+}
+
 /* ========== OPTIONS ROW ========== */
 .rr-options-row {
   display: flex;
@@ -633,6 +723,26 @@
   background: var(--rr-primary);
 }
 
+/* Copy & Done Button */
+.rr-done-btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+}
+
+.rr-done-btn:hover {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
 .rr-regenerate-btn {
   background: #64748b;
   color: white;
@@ -767,6 +877,64 @@
   background: var(--rr-primary);
   border-color: var(--rr-primary);
   color: white;
+}
+
+/* ========== QUICK EDIT CHIPS ========== */
+.rr-quick-edits {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--rr-border);
+}
+
+.rr-edit-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rr-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.rr-edit-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.rr-edit-chip {
+  padding: 8px 12px;
+  border: 2px solid var(--rr-border);
+  border-radius: 16px;
+  background: white;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rr-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rr-edit-chip:hover {
+  border-color: var(--rr-primary);
+  color: var(--rr-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+.rr-edit-chip:active {
+  transform: translateY(0);
+}
+
+.rr-edit-chip.active {
+  background: var(--rr-primary);
+  border-color: var(--rr-primary);
+  color: white;
+}
+
+.rr-edit-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* ========== KEYBOARD SHORTCUTS HINT ========== */

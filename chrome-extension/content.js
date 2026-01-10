@@ -656,6 +656,7 @@ async function createResponsePanel() {
 
         <div class="rr-action-buttons">
           <button class="rr-copy-btn">📋 Copy</button>
+          <button class="rr-done-btn">✅ Copy & Done</button>
           ${isGoogleMaps ? `
             <button class="rr-paste-btn">🚀 Paste</button>
             <button class="rr-submit-btn">⚡ Paste & Submit</button>
@@ -670,6 +671,18 @@ async function createResponsePanel() {
           <button class="rr-quick-tone" data-tone="friendly">Friendly</button>
           <button class="rr-quick-tone" data-tone="formal">Formal</button>
           <button class="rr-quick-tone" data-tone="apologetic">Sorry</button>
+        </div>
+
+        <!-- Quick Edit Chips -->
+        <div class="rr-quick-edits">
+          <span class="rr-edit-label">Quick edit:</span>
+          <div class="rr-edit-chips">
+            <button class="rr-edit-chip" data-edit="shorter">📏 Shorter</button>
+            <button class="rr-edit-chip" data-edit="longer">📝 Longer</button>
+            <button class="rr-edit-chip" data-edit="emoji">😊 +Emoji</button>
+            <button class="rr-edit-chip" data-edit="formal">🎩 Formal</button>
+            <button class="rr-edit-chip" data-edit="casual">👋 Casual</button>
+          </div>
         </div>
       </div>
 
@@ -739,6 +752,26 @@ function initPanelEvents(panel) {
   // Copy button
   panel.querySelector('.rr-copy-btn').addEventListener('click', () => copyResponse(panel));
 
+  // Copy & Done button - copies and closes panel
+  panel.querySelector('.rr-done-btn').addEventListener('click', async () => {
+    const text = panel.querySelector('.rr-response-textarea').value;
+
+    if (!text) {
+      showToast('⚠️ Nothing to copy', 'warning');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('✅ Copied! Ready to paste', 'success');
+
+      // Close panel after short delay
+      setTimeout(() => closePanel(panel), 300);
+    } catch (error) {
+      showToast('❌ Failed to copy', 'error');
+    }
+  });
+
   // Paste button (Google Maps only)
   const pasteBtn = panel.querySelector('.rr-paste-btn');
   if (pasteBtn) {
@@ -776,6 +809,25 @@ function initPanelEvents(panel) {
       btn.classList.add('active');
 
       generateResponse(panel);
+    });
+  });
+
+  // Quick Edit Chips - modify existing response
+  panel.querySelectorAll('.rr-edit-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const editType = chip.dataset.edit;
+      const currentResponse = panel.querySelector('.rr-response-textarea').value;
+
+      if (!currentResponse) {
+        showToast('⚠️ Generate a response first', 'warning');
+        return;
+      }
+
+      // Highlight active chip
+      panel.querySelectorAll('.rr-edit-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+
+      editExistingResponse(panel, editType, currentResponse);
     });
   });
 
@@ -1069,6 +1121,103 @@ async function generateResponseWithModifier(panel, modifier) {
     btnLoading.classList.add('hidden');
     // Re-enable smart chips
     panel.querySelectorAll('.rr-smart-chip').forEach(c => c.disabled = false);
+  }
+}
+
+// ========== EDIT EXISTING RESPONSE (Quick Edit Chips) ==========
+async function editExistingResponse(panel, editType, currentResponse) {
+  const editInstructions = {
+    shorter: 'Make this response about 50% shorter. Keep the key points but be more concise.',
+    longer: 'Expand this response with more detail and warmth. Add specific touches.',
+    emoji: 'Add 2-3 relevant emojis to make this response more friendly and engaging.',
+    formal: 'Rewrite this to be more formal and professional in tone.',
+    casual: 'Rewrite this to be more casual, friendly, and approachable.'
+  };
+
+  const instruction = editInstructions[editType] || editInstructions.shorter;
+
+  const generateBtn = panel.querySelector('.rr-generate-btn');
+  const btnText = panel.querySelector('.rr-btn-text');
+  const btnLoading = panel.querySelector('.rr-btn-loading');
+
+  let stored;
+  try {
+    stored = await chrome.storage.local.get(['token', 'user']);
+  } catch (e) {
+    showToast('⚠️ Extension error', 'error');
+    return;
+  }
+
+  if (!stored.token) {
+    showToast('🔐 Please login first', 'error');
+    return;
+  }
+
+  // Show loading
+  generateBtn.disabled = true;
+  btnText.classList.add('hidden');
+  btnLoading.classList.remove('hidden');
+
+  // Disable edit chips while processing
+  panel.querySelectorAll('.rr-edit-chip').forEach(c => c.disabled = true);
+
+  try {
+    const response = await fetch(`${API_URL}/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${stored.token}`
+      },
+      body: JSON.stringify({
+        reviewText: currentResponse, // Use current response as input
+        tone: 'professional',
+        outputLanguage: 'auto',
+        responseLength: 'medium',
+        includeEmojis: editType === 'emoji',
+        businessName: stored.user?.businessName || '',
+        additionalContext: `IMPORTANT: You are editing an existing review response. ${instruction} Here is the current response to modify: "${currentResponse}"`
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Edit failed');
+    }
+
+    // Update response
+    panel.querySelector('.rr-response-textarea').value = data.response;
+
+    // Auto-copy if enabled
+    const settings = cachedSettings || await loadSettings();
+    if (settings.autoCopy) {
+      try {
+        await navigator.clipboard.writeText(data.response);
+        showToast(`✨ ${editType.charAt(0).toUpperCase() + editType.slice(1)} & copied!`, 'success');
+
+        const copyBtn = panel.querySelector('.rr-copy-btn');
+        if (copyBtn) {
+          copyBtn.textContent = '✅ Copied!';
+          copyBtn.classList.add('copied');
+          setTimeout(() => {
+            copyBtn.textContent = '📋 Copy';
+            copyBtn.classList.remove('copied');
+          }, 2000);
+        }
+      } catch (e) {
+        showToast(`✨ Response ${editType}!`, 'success');
+      }
+    } else {
+      showToast(`✨ Response ${editType}!`, 'success');
+    }
+
+  } catch (error) {
+    showToast(`❌ ${error.message}`, 'error');
+  } finally {
+    generateBtn.disabled = false;
+    btnText.classList.remove('hidden');
+    btnLoading.classList.add('hidden');
+    panel.querySelectorAll('.rr-edit-chip').forEach(c => c.disabled = false);
   }
 }
 
