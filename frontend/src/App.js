@@ -3128,6 +3128,67 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
   );
 };
 
+// Extension Promo Card Component
+const ExtensionPromoCard = () => {
+  const [showVideo, setShowVideo] = useState(false);
+
+  return (
+    <div className="extension-promo-card">
+      <div className="extension-promo-header">
+        <Chrome size={24} />
+        <h3>Chrome Extension</h3>
+        <span className="badge-new">NEW</span>
+      </div>
+
+      <div className="extension-promo-content">
+        <div className="video-preview" onClick={() => setShowVideo(!showVideo)}>
+          {showVideo ? (
+            <div className="video-placeholder">
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
+                Demo Video Coming Soon
+              </p>
+            </div>
+          ) : (
+            <div className="video-thumbnail">
+              <img
+                src="/extension-preview.png"
+                alt="Chrome Extension Preview"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
+              />
+              <div className="video-thumbnail-fallback" style={{ display: 'none' }}>
+                <Chrome size={32} style={{ opacity: 0.5 }} />
+              </div>
+              <div className="play-overlay">
+                <Play size={32} fill="white" />
+              </div>
+              <span className="video-duration">Demo</span>
+            </div>
+          )}
+        </div>
+
+        <div className="extension-benefits">
+          <h4>Respond to Reviews 10x Faster</h4>
+          <ul>
+            <li><CheckCircle size={16} /> One-click responses on Google Maps</li>
+            <li><CheckCircle size={16} /> Works on Yelp, TripAdvisor & more</li>
+            <li><CheckCircle size={16} /> Auto-detects review language</li>
+          </ul>
+
+          <div className="extension-ctas">
+            <Link to="/extension" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <Download size={18} />
+              Get Chrome Extension
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Dashboard Page
 const DashboardPage = () => {
   const { user, updateUser } = useAuth();
@@ -4041,6 +4102,9 @@ const DashboardPage = () => {
           </p>
         </div>
       </div>
+
+      {/* Chrome Extension Promotion */}
+      <ExtensionPromoCard />
 
       {/* Referral Widget */}
       {referralData && (
