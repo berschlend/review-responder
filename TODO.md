@@ -1,42 +1,48 @@
 # ReviewResponder - Todo Liste
 
-> Letzte Aktualisierung: 11.01.2026 - 04:30 Uhr (Claude Overnight Sprint)
+> Letzte Aktualisierung: 11.01.2026 - Morgen Update (Google Sign-In hinzugefügt)
 
 ---
 
-## OVERNIGHT SPRINT ERGEBNIS (11.01.2026 04:30)
+## NEUES UPDATE: Google Sign-In für Extension (11.01.2026)
 
-### Was Claude erledigt hat:
-- [x] **ZIP-Paket erstellt** - `chrome-extension-v1.5.1.zip` (84KB) ready for upload
-- [x] **Backend Health verifiziert** - `status: ok`, `database: connected`
-- [x] **Production Site getestet** - https://tryreviewresponder.com funktioniert
-- [x] **Dashboard getestet** - Login, Usage Stats, alle Tabs funktionieren
-- [x] **AI Generation getestet** - Response erfolgreich generiert (Smart AI: 1/3 verwendet)
-- [x] **Extension "Scan Reviews" Button** - Erscheint auf Google Maps
-- [x] **STORE_LISTING.md** - Updated auf v1.5.1
-- [x] **Git gepusht** - Commit `3d630411`
+### Was Claude gerade erledigt hat:
+- [x] **Google Sign-In Button** - Hinzugefügt zu Extension Popup
+- [x] **OAuth Flow implementiert** - `chrome.identity.launchWebAuthFlow()`
+- [x] **identity Permission** - Manifest.json aktualisiert
+- [x] **Version 1.5.2** - Neues ZIP erstellt (86KB)
+- [x] **Git gepusht** - Commit `89cad64a`
 
-### Was DU heute machen musst (~30 Min):
-1. **Screenshots machen** (10 Min)
+### Was DU jetzt machen musst:
+
+1. **Google Cloud Console konfigurieren** (2 Min)
+   - https://console.cloud.google.com/apis/credentials
+   - OAuth Client ID auswählen
+   - Redirect URI hinzufügen: `https://<EXTENSION_ID>.chromiumapp.org/`
+   - Extension ID bekommst du nach Upload zum Chrome Web Store
+
+2. **Screenshots machen** (10 Min)
    - Google Maps mit Restaurant + Reviews öffnen
    - Extension nutzen, Screenshots mit `Win + Shift + S`
    - 3-5 Bilder bei 1280x800 px
 
-2. **Chrome Web Store Submit** (5 Min)
+3. **Chrome Web Store Submit** (5 Min)
    - https://chrome.google.com/webstore/devconsole
-   - ZIP hochladen: `chrome-extension-v1.5.1.zip`
+   - ZIP hochladen: `chrome-extension-v1.5.2.zip`
    - Text aus `chrome-extension/STORE_LISTING.md` kopieren
 
-3. **Demo Video aufnehmen** (optional, 15 Min)
+4. **Demo Video aufnehmen** (optional, 15 Min)
 
 ---
 
 ## 🟠 AKTUELL IN ARBEIT
 
-### Chrome Extension Release
+### Chrome Extension Release v1.5.2
 - [x] Extension fertig testen - CLAUDE HAT GETESTET
+- [x] Google Sign-In hinzugefügt - FERTIG
 - [ ] 3 Screenshots machen (1280x800 px, sauberer Browser) - **DU MUSST MACHEN**
-- [x] ZIP erstellen - `chrome-extension-v1.5.1.zip` FERTIG
+- [x] ZIP erstellen - `chrome-extension-v1.5.2.zip` FERTIG (86KB)
+- [ ] Google Cloud Console Redirect URI konfigurieren - **DU MUSST MACHEN**
 - [ ] Chrome Web Store einreichen - **DU MUSST MACHEN**
 - [x] Chrome Developer Account: Vorhanden
 
