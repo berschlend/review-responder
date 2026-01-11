@@ -1672,6 +1672,7 @@ const LandingPage = () => {
   const [referralBanner, setReferralBanner] = useState(null);
   const [affiliateBanner, setAffiliateBanner] = useState(null);
   const [showLandingVideo, setShowLandingVideo] = useState(false);
+  const [showDemoVideo, setShowDemoVideo] = useState(false);
 
   useEffect(() => {
     const fetchTestimonials = async () => {
@@ -2015,7 +2016,7 @@ const LandingPage = () => {
           </p>
         </div>
 
-        {/* Video Placeholder - Replace with actual video later */}
+        {/* Demo Video Section */}
         <div style={{
           maxWidth: '800px',
           margin: '0 auto',
@@ -2023,82 +2024,74 @@ const LandingPage = () => {
           overflow: 'hidden',
           boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
           position: 'relative',
-          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-          aspectRatio: '16/9'
+          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
         }}>
-          {/* Placeholder Content */}
-          <div style={{
-            position: 'absolute',
-            inset: '0',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white'
-          }}>
-            {/* Play Button */}
-            <div style={{
-              width: '80px',
-              height: '80px',
-              borderRadius: '50%',
-              background: 'var(--primary-600)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              boxShadow: '0 8px 32px rgba(79, 70, 229, 0.4)',
-              transition: 'transform 0.2s, box-shadow 0.2s',
-              marginBottom: '20px'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'scale(1.1)';
-              e.currentTarget.style.boxShadow = '0 12px 40px rgba(79, 70, 229, 0.5)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = '0 8px 32px rgba(79, 70, 229, 0.4)';
-            }}
+          {showDemoVideo ? (
+            <video
+              controls
+              autoPlay
+              style={{ width: '100%', display: 'block' }}
+              onEnded={() => setShowDemoVideo(false)}
             >
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
-                <path d="M8 5v14l11-7z"/>
-              </svg>
+              <source src="/demo-video.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          ) : (
+            <div style={{ aspectRatio: '16/9', position: 'relative' }}>
+              {/* Play Button Overlay */}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: '0',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  cursor: 'pointer'
+                }}
+                onClick={() => setShowDemoVideo(true)}
+              >
+                {/* Play Button */}
+                <div
+                  className="play-overlay"
+                  style={{
+                    width: '80px',
+                    height: '80px',
+                    borderRadius: '50%',
+                    background: 'var(--primary-600)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 8px 32px rgba(79, 70, 229, 0.4)',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    marginBottom: '16px'
+                  }}
+                >
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </div>
+                <p style={{ fontSize: '14px', opacity: '0.7' }}>
+                  Quick dashboard demo (0:38)
+                </p>
+              </div>
+
+              {/* Decorative Browser Dots */}
+              <div style={{
+                position: 'absolute',
+                top: '20px',
+                left: '20px',
+                display: 'flex',
+                gap: '8px'
+              }}>
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ff5f56' }} />
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ffbd2e' }} />
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#27ca40' }} />
+              </div>
             </div>
-            <p style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
-              Demo Video Coming Soon
-            </p>
-            <p style={{ fontSize: '14px', opacity: '0.7' }}>
-              2 minute walkthrough of all features
-            </p>
-          </div>
-
-          {/* Decorative Elements */}
-          <div style={{
-            position: 'absolute',
-            top: '20px',
-            left: '20px',
-            display: 'flex',
-            gap: '8px'
-          }}>
-            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ff5f56' }} />
-            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ffbd2e' }} />
-            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#27ca40' }} />
-          </div>
+          )}
         </div>
-
-        {/* TODO: Replace placeholder with actual video embed */}
-        {/*
-        <div style={{ maxWidth: '800px', margin: '0 auto', borderRadius: '16px', overflow: 'hidden' }}>
-          <iframe
-            width="100%"
-            style={{ aspectRatio: '16/9' }}
-            src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
-            title="ReviewResponder Demo"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        </div>
-        */}
       </section>
 
       {/* Reviews About Us, Answered By Us - Dogfooding Section */}

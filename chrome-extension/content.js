@@ -3061,8 +3061,9 @@ function initPanelEvents(panel) {
     updateLibraryList(panel);
   });
 
-  // Template dropdown selection
-  panel.querySelector('.rr-template-select').addEventListener('change', async (e) => {
+  // Template dropdown selection (if exists)
+  const templateSelect = panel.querySelector('.rr-template-select');
+  if (templateSelect) templateSelect.addEventListener('change', async (e) => {
     const templateId = e.target.value;
     if (!templateId) return;
 
@@ -3164,8 +3165,9 @@ function initPanelEvents(panel) {
     });
   }
 
-  // Settings toggle - opens overlay
-  panel.querySelector('.rr-settings-toggle').addEventListener('click', async () => {
+  // Settings toggle - opens overlay (if button exists)
+  const settingsToggle = panel.querySelector('.rr-settings-toggle');
+  if (settingsToggle) settingsToggle.addEventListener('click', async () => {
     const overlay = panel.querySelector('.rr-settings-overlay');
     overlay.classList.remove('hidden');
 
@@ -4517,80 +4519,90 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
   // Store sentiment for insights tracking
   panel.dataset.sentiment = sentiment;
 
-  panel.querySelector('.rr-sentiment-emoji').textContent = sentimentDisplay.emoji;
-  panel.querySelector('.rr-sentiment-label').textContent = sentimentDisplay.label;
-  panel.querySelector('.rr-sentiment-label').style.color = sentimentDisplay.color;
+  // Update sentiment display (if elements exist)
+  const sentEmoji = panel.querySelector('.rr-sentiment-emoji');
+  const sentLabel = panel.querySelector('.rr-sentiment-label');
+  if (sentEmoji) sentEmoji.textContent = sentimentDisplay.emoji;
+  if (sentLabel) {
+    sentLabel.textContent = sentimentDisplay.label;
+    sentLabel.style.color = sentimentDisplay.color;
+  }
 
   // Auto-select recommended tone
-  panel.querySelector('.rr-tone-select').value = sentimentDisplay.tone;
+  const toneSelectEl = panel.querySelector('.rr-tone-select');
+  if (toneSelectEl) toneSelectEl.value = sentimentDisplay.tone;
 
-  // Populate Smart Reply Chips
+  // Populate Smart Reply Chips (if container exists)
   const smartChips = getSmartReplyChips(sentiment);
   const chipsContainer = panel.querySelector('.rr-smart-chips');
-  chipsContainer.innerHTML = smartChips.map(chip =>
-    `<button class="rr-smart-chip" data-modifier="${encodeURIComponent(chip.modifier)}">${chip.label}</button>`
-  ).join('');
+  if (chipsContainer) {
+    chipsContainer.innerHTML = smartChips.map(chip =>
+      `<button class="rr-smart-chip" data-modifier="${encodeURIComponent(chip.modifier)}">${chip.label}</button>`
+    ).join('');
 
-  // Add click handlers for smart chips
-  chipsContainer.querySelectorAll('.rr-smart-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      const modifier = decodeURIComponent(chip.dataset.modifier);
-      generateResponseWithModifier(panel, modifier);
+    // Add click handlers for smart chips
+    chipsContainer.querySelectorAll('.rr-smart-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const modifier = decodeURIComponent(chip.dataset.modifier);
+        generateResponseWithModifier(panel, modifier);
 
-      // Visual feedback
-      chip.classList.add('active');
-      chipsContainer.querySelectorAll('.rr-smart-chip').forEach(c => {
-        if (c !== chip) c.classList.remove('active');
+        // Visual feedback
+        chip.classList.add('active');
+        chipsContainer.querySelectorAll('.rr-smart-chip').forEach(c => {
+          if (c !== chip) c.classList.remove('active');
+        });
       });
     });
-  });
+  }
 
   // Detect language and store it for API calls
   const language = detectLanguage(cleaned);
   panel.dataset.detectedLanguage = language.code; // Store for generateResponse
-  panel.querySelector('.rr-language-flag').textContent = language.flag;
-  panel.querySelector('.rr-language-name').textContent = language.name;
+  const langFlag = panel.querySelector('.rr-language-flag');
+  const langName = panel.querySelector('.rr-language-name');
+  if (langFlag) langFlag.textContent = language.flag;
+  if (langName) langName.textContent = language.name;
 
   // Smart Issue Detection with Resolution UI
   const issues = detectIssues(cleaned);
   const issueResolution = panel.querySelector('.rr-issue-resolution');
   const issueList = panel.querySelector('.rr-issue-list');
   const issueCount = panel.querySelector('.rr-issue-count');
-  const compensationNote = panel.querySelector('.rr-compensation-note');
 
-  if (issues.length > 0) {
-    // Store issues for generateResponse
-    panel.dataset.detectedIssues = JSON.stringify(issues);
+  // Store issues for generateResponse
+  panel.dataset.detectedIssues = JSON.stringify(issues.length > 0 ? issues : []);
 
-    // Update count badge
-    issueCount.textContent = issues.length;
+  // Update issue resolution UI (only if elements exist)
+  if (issueResolution && issueList) {
+    if (issues.length > 0) {
+      if (issueCount) issueCount.textContent = issues.length;
 
-    // Render issues with compensation options
-    issueList.innerHTML = issues.map((issue, idx) => `
-      <div class="rr-issue-item" data-issue="${issue.issue}" data-index="${idx}">
-        <div class="rr-issue-name">${issue.label}</div>
-        ${issue.compensations.length > 0 ? `
-          <select class="rr-compensation-select" data-issue="${issue.issue}">
-            <option value="">No compensation</option>
-            ${issue.compensations.map(c => `
-              <option value="${c.id}" data-text="${c.text || ''}">${c.label}</option>
-            `).join('')}
-          </select>
-        ` : ''}
-      </div>
-    `).join('');
+      // Render issues with compensation options
+      issueList.innerHTML = issues.map((issue, idx) => `
+        <div class="rr-issue-item" data-issue="${issue.issue}" data-index="${idx}">
+          <div class="rr-issue-name">${issue.label}</div>
+          ${issue.compensations.length > 0 ? `
+            <select class="rr-compensation-select" data-issue="${issue.issue}">
+              <option value="">No compensation</option>
+              ${issue.compensations.map(c => `
+                <option value="${c.id}" data-text="${c.text || ''}">${c.label}</option>
+              `).join('')}
+            </select>
+          ` : ''}
+        </div>
+      `).join('');
 
-    issueResolution.classList.remove('hidden');
+      issueResolution.classList.remove('hidden');
 
-    // Add event listeners for compensation selects
-    issueList.querySelectorAll('.rr-compensation-select').forEach(select => {
-      select.addEventListener('change', () => {
-        updateSelectedCompensations(panel);
+      // Add event listeners for compensation selects
+      issueList.querySelectorAll('.rr-compensation-select').forEach(select => {
+        select.addEventListener('change', () => {
+          updateSelectedCompensations(panel);
+        });
       });
-    });
-  } else {
-    panel.dataset.detectedIssues = '[]';
-    issueResolution.classList.add('hidden');
+    } else {
+      issueResolution.classList.add('hidden');
+    }
   }
 
   // AI Tone Recommendation (One-Shot Perfect Response)
@@ -4600,22 +4612,35 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
   // Store recommendation for later use
   panel.dataset.recommendation = JSON.stringify(recommendation);
 
-  // Update recommendation UI
-  aiRecBox.querySelector('.rr-ai-rec-emoji').textContent = recommendation.emoji;
-  aiRecBox.querySelector('.rr-ai-rec-label').textContent = recommendation.label;
-  aiRecBox.querySelector('.rr-ai-rec-reason').textContent =
-    `Based on ${recommendation.shortReason}${issues.length > 0 ? ` (${issues.length} issue${issues.length > 1 ? 's' : ''})` : ''}`;
+  // Auto-select the recommended tone (always works)
+  const toneSelect = panel.querySelector('.rr-tone-select');
+  if (toneSelect) toneSelect.value = recommendation.tone;
 
-  // Confidence badge
-  const confidenceBadge = aiRecBox.querySelector('.rr-ai-rec-confidence');
-  confidenceBadge.textContent = recommendation.confidence === 'high' ? '✓ High confidence' : '~ Medium';
-  confidenceBadge.className = `rr-ai-rec-confidence ${recommendation.confidence}`;
+  // Update AI recommendation UI (only if element exists)
+  if (aiRecBox) {
+    aiRecBox.querySelector('.rr-ai-rec-emoji').textContent = recommendation.emoji;
+    aiRecBox.querySelector('.rr-ai-rec-label').textContent = recommendation.label;
+    aiRecBox.querySelector('.rr-ai-rec-reason').textContent =
+      `Based on ${recommendation.shortReason}${issues.length > 0 ? ` (${issues.length} issue${issues.length > 1 ? 's' : ''})` : ''}`;
 
-  // Show recommendation box
-  aiRecBox.classList.remove('hidden');
+    const confidenceBadge = aiRecBox.querySelector('.rr-ai-rec-confidence');
+    confidenceBadge.textContent = recommendation.confidence === 'high' ? '✓ High confidence' : '~ Medium';
+    confidenceBadge.className = `rr-ai-rec-confidence ${recommendation.confidence}`;
 
-  // Auto-select the recommended tone
-  panel.querySelector('.rr-tone-select').value = recommendation.tone;
+    aiRecBox.classList.remove('hidden');
+
+    const useRecBtn = aiRecBox.querySelector('.rr-ai-rec-use');
+    if (useRecBtn) useRecBtn.onclick = () => {
+      panel.querySelector('.rr-tone-select').value = recommendation.tone;
+      generateResponse(panel);
+      aiRecBox.classList.add('used');
+    };
+
+    const otherBtn = aiRecBox.querySelector('.rr-ai-rec-other');
+    if (otherBtn) otherBtn.onclick = () => {
+      aiRecBox.classList.add('hidden');
+    };
+  }
 
   // Highlight recommended tone in Quick Tone buttons
   panel.querySelectorAll('.rr-quick-tone').forEach(btn => {
@@ -4624,23 +4649,6 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
       btn.classList.add('recommended');
     }
   });
-
-  // Add click handler for "Generate with this" button
-  const useRecBtn = aiRecBox.querySelector('.rr-ai-rec-use');
-  useRecBtn.onclick = () => {
-    panel.querySelector('.rr-tone-select').value = recommendation.tone;
-    generateResponse(panel);
-    // Hide recommendation after use
-    aiRecBox.classList.add('used');
-  };
-
-  // Add click handler for "Choose other" button
-  const otherBtn = aiRecBox.querySelector('.rr-ai-rec-other');
-  otherBtn.onclick = () => {
-    aiRecBox.classList.add('hidden');
-    // Focus on tone select
-    panel.querySelector('.rr-tone-select').focus();
-  };
 
   // Reset response section
   panel.querySelector('.rr-response-section').classList.add('hidden');
