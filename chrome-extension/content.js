@@ -55,24 +55,37 @@ function initDraggable(panel) {
       let left = parseInt(stored.rr_panel_position.left) || 0;
       let top = parseInt(stored.rr_panel_position.top) || 0;
 
-      // Validate: keep within viewport
-      const pw = panel.offsetWidth || 380;
-      const ph = panel.offsetHeight || 500;
-      left = Math.max(0, Math.min(left, window.innerWidth - pw));
-      top = Math.max(0, Math.min(top, window.innerHeight - ph));
+      // Get actual panel dimensions (wait for render)
+      setTimeout(() => {
+        const pw = panel.offsetWidth || 380;
+        const ph = panel.offsetHeight || 500;
 
-      // Only apply if position is reasonable
-      if (left >= 0 && top >= 0) {
-        panel.style.position = 'fixed';
-        panel.style.right = 'auto';
-        panel.style.bottom = 'auto';
-        panel.style.left = left + 'px';
-        panel.style.top = top + 'px';
-        panel.style.transform = 'none'; // Remove centering transform
-      } else {
-        // Reset to default position
-        chrome.storage.local.remove(['rr_panel_position']);
-      }
+        // Validate: keep within viewport with minimum 50px visible
+        const maxLeft = Math.max(50, window.innerWidth - pw);
+        const maxTop = Math.max(50, window.innerHeight - ph);
+
+        left = Math.max(0, Math.min(left, maxLeft));
+        top = Math.max(0, Math.min(top, maxTop));
+
+        // Only apply if position is reasonable (at least header visible)
+        if (left >= 0 && top >= 0 && top < window.innerHeight - 60) {
+          panel.style.position = 'fixed';
+          panel.style.right = 'auto';
+          panel.style.bottom = 'auto';
+          panel.style.left = left + 'px';
+          panel.style.top = top + 'px';
+          panel.style.transform = 'none'; // Remove centering transform
+        } else {
+          // Reset to default centered position
+          chrome.storage.local.remove(['rr_panel_position']);
+          panel.style.position = 'fixed';
+          panel.style.top = '50%';
+          panel.style.left = '50%';
+          panel.style.right = 'auto';
+          panel.style.bottom = 'auto';
+          panel.style.transform = 'translate(-50%, -50%)';
+        }
+      }, 50);
     }
   });
 }
@@ -116,11 +129,11 @@ document.addEventListener('mousemove', (e) => {
   let newX = dragState.panelX + deltaX;
   let newY = dragState.panelY + deltaY;
 
-  // Keep within viewport
+  // Keep within viewport - ensure at least header (60px) is visible
   const pw = activeDragPanel.offsetWidth;
-  const ph = activeDragPanel.offsetHeight;
-  newX = Math.max(0, Math.min(newX, window.innerWidth - pw));
-  newY = Math.max(0, Math.min(newY, window.innerHeight - ph));
+  const minBottom = 60; // Keep at least header visible
+  newX = Math.max(0, Math.min(newX, window.innerWidth - 100)); // Keep 100px visible on right
+  newY = Math.max(0, Math.min(newY, window.innerHeight - minBottom)); // Keep header visible
 
   activeDragPanel.style.left = newX + 'px';
   activeDragPanel.style.top = newY + 'px';
@@ -2794,7 +2807,9 @@ function initPanelEvents(panel) {
 
   // Turbo Mode toggle button in header
   const turboBtn = panel.querySelector('.rr-turbo-btn');
-  if (turboBtn) turboBtn.addEventListener('click', async () => {
+  if (turboBtn) turboBtn.addEventListener('click', async (e) => {
+    e.stopPropagation(); // Prevent event bubbling to panel
+
     // Always load fresh settings
     const settings = await loadSettings();
     settings.turboMode = !settings.turboMode;
@@ -3640,6 +3655,14 @@ function saveCurrentSettings(panel) {
   };
   cachedSettings = settings;
   saveSettings(settings);
+
+  // Update turbo button in header to match checkbox
+  const turboBtn = panel.querySelector('.rr-turbo-btn');
+  if (turboBtn) {
+    turboBtn.textContent = settings.turboMode ? '⚡' : '🐢';
+    turboBtn.title = settings.turboMode ? 'Turbo Mode ON (click to disable)' : 'Turbo Mode OFF (click to enable)';
+    turboBtn.classList.toggle('rr-turbo-active', settings.turboMode);
+  }
 }
 
 // ========== GENERATE RESPONSE ==========
@@ -4539,6 +4562,26 @@ document.addEventListener('keydown', async (e) => {
     await saveSettings(settings);
     showToast(settings.turboMode ? '⚡ Turbo Mode ON' : '🐢 Turbo Mode OFF', 'info');
     console.log('[RR] Turbo Mode toggled to:', settings.turboMode);
+    return;
+  }
+
+  // Alt+R: Reset Panel Position to center
+  if (e.altKey && !e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 'r') {
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    chrome.storage.local.remove(['rr_panel_position']);
+    const panel = document.getElementById('rr-response-panel');
+    if (panel) {
+      panel.style.position = 'fixed';
+      panel.style.top = '50%';
+      panel.style.left = '50%';
+      panel.style.right = 'auto';
+      panel.style.bottom = 'auto';
+      panel.style.transform = 'translate(-50%, -50%)';
+    }
+    showToast('📍 Panel position reset to center', 'info');
     return;
   }
 
