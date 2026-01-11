@@ -114,7 +114,25 @@ berend.mainz@web.de
 ---
 
 ## ZIP File Location
-`C:\Users\Berend Mainz\Documents\Start-up\ReviewResponder\chrome-extension-v1.5.1.zip`
+`C:\Users\Berend Mainz\Documents\Start-up\ReviewResponder\chrome-extension-v1.5.2.zip`
+
+---
+
+## Google OAuth Setup (REQUIRED for Google Sign-In)
+
+After uploading to Chrome Web Store, you need to add the extension's redirect URL to Google Cloud Console:
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+2. Select the OAuth 2.0 Client ID for ReviewResponder
+3. Under "Authorized redirect URIs", add:
+   `https://<EXTENSION_ID>.chromiumapp.org/`
+
+   Replace `<EXTENSION_ID>` with your Chrome Web Store extension ID
+   (visible after publishing or in chrome://extensions when loaded unpacked)
+
+4. Save the changes
+
+**Note:** The extension ID from Chrome Web Store is permanent. For local testing, the ID may vary.
 
 ---
 
@@ -130,7 +148,7 @@ berend.mainz@web.de
 ### ZIP erstellen (PowerShell):
 ```powershell
 cd "C:\Users\Berend Mainz\Documents\Start-up\ReviewResponder"
-Compress-Archive -Path "chrome-extension\manifest.json", "chrome-extension\background.js", "chrome-extension\content.js", "chrome-extension\content.css", "chrome-extension\popup.html", "chrome-extension\popup.js", "chrome-extension\popup.css", "chrome-extension\templates-library.js", "chrome-extension\icons" -DestinationPath "chrome-extension-v1.5.1.zip" -Force
+Compress-Archive -Path "chrome-extension\manifest.json", "chrome-extension\background.js", "chrome-extension\content.js", "chrome-extension\content.css", "chrome-extension\popup.html", "chrome-extension\popup.js", "chrome-extension\popup.css", "chrome-extension\templates-library.js", "chrome-extension\icons" -DestinationPath "chrome-extension-v1.5.2.zip" -Force
 ```
 
 ### Nach Einreichung:

@@ -1182,6 +1182,10 @@ function useLibraryTemplate(panel, template) {
   panel.querySelector('.rr-response-section').classList.remove('hidden');
   panel.querySelector('.rr-variations-tabs').classList.add('hidden');
 
+  // Store template content for AI style guide (used when regenerating)
+  panel.dataset.selectedTemplateContent = template.template;
+  panel.dataset.selectedTemplateName = template.name;
+
   // Set tone (both slider and dropdown)
   setTone(panel, template.tone);
 
@@ -3950,6 +3954,9 @@ async function generateResponse(panel) {
       }
     }
 
+    // Get template content if a template was applied (for AI style guide)
+    const templateContent = panel.dataset.selectedTemplateContent || undefined;
+
     const response = await fetch(`${API_URL}/generate`, {
       method: 'POST',
       headers: {
@@ -3963,7 +3970,8 @@ async function generateResponse(panel) {
         responseLength: length,
         includeEmojis: emojis,
         businessName: businessName,
-        additionalContext: context
+        additionalContext: context,
+        templateContent: templateContent
       })
     });
 
@@ -4107,6 +4115,9 @@ async function generateResponseWithModifier(panel, modifier) {
       businessName = detectBusinessContext() || await getCachedBusinessName();
     }
 
+    // Get template content if a template was applied (for AI style guide)
+    const templateContent = panel.dataset.selectedTemplateContent || undefined;
+
     const response = await fetch(`${API_URL}/generate`, {
       method: 'POST',
       headers: {
@@ -4120,7 +4131,8 @@ async function generateResponseWithModifier(panel, modifier) {
         responseLength: length,
         includeEmojis: emojis,
         businessName: businessName,
-        additionalContext: context
+        additionalContext: context,
+        templateContent: templateContent
       })
     });
 
