@@ -1,6 +1,25 @@
 # ReviewResponder - Todo Liste
 
-> Letzte Aktualisierung: 10.01.2026 - 19:15 Uhr
+> Letzte Aktualisierung: 11.01.2026 - 03:30 Uhr
+
+---
+
+## 🟠 AKTUELL IN ARBEIT
+
+### Chrome Extension Release
+- [ ] Extension fertig testen (in Arbeit)
+- [ ] 3 Screenshots machen (1280x800 px, sauberer Browser)
+- [ ] ZIP erstellen (Claude macht das)
+- [ ] Chrome Web Store einreichen
+- [ ] Chrome Developer Account: ✅ Vorhanden
+
+### Videos (nach Extension Release)
+- [ ] **Video 1:** Extension Demo (30-60 Sek) → ExtensionPromoCard
+- [ ] **Video 2:** Full Walkthrough (2 Min) → Landing Page
+  - 0:00-0:30 Extension installieren & erste Review
+  - 0:30-1:00 Features: Tones, Templates, Variations
+  - 1:00-1:30 Dashboard: History, Analytics, Bulk
+  - 1:30-2:00 Team Features, Pricing CTA
 
 ---
 
@@ -48,7 +67,14 @@
 
 ---
 
-## 🟢 HEUTE ERLEDIGT (10.01.2026)
+## 🟢 HEUTE ERLEDIGT (11.01.2026)
+
+- [x] **Video-Platzhalter auf Landing Page** - Extension Demo Preview mit Play-Button in Chrome Extension Section
+- [x] **Yelp Scan Reviews gefixt** - CSS-Selektoren für dynamische Klassen aktualisiert
+- [x] **Video-Strategie geplant** - 2 Videos (Extension Demo + Full Walkthrough)
+- [x] **Chrome Web Store Vorbereitung** - Store Listing + Account vorhanden
+
+## 🟢 ERLEDIGT (10.01.2026)
 
 - [x] **Google Search Console eingerichtet**
   - Domain verifiziert: tryreviewresponder.com
@@ -70,6 +96,7 @@
 - [ ] Chrome Web Store Screenshots (3 weitere)
 - [ ] Chrome Web Store Einreichung (ZIP + Listing fertig)
 - [ ] Tone Preview (Beispiel-Snippets für jeden Tone)
+- [ ] Weitere Plattformen fixen wenn nötig (TripAdvisor, Trustpilot, Booking, Facebook)
 
 ### Content
 - [ ] Demo-Video aufnehmen (2 Min Walkthrough)
