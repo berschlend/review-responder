@@ -1671,18 +1671,26 @@ function cleanReviewText(text) {
 }
 
 // ========== SETTINGS ==========
+const DEFAULT_SETTINGS = {
+  tone: 'professional',
+  length: 'medium',
+  emojis: false,
+  autoCopy: true,       // Auto-copy after generation
+  turboMode: false      // Skip panel, instant generate - DEFAULT OFF
+};
+
 async function loadSettings() {
   try {
     const stored = await chrome.storage.local.get(['rr_settings']);
-    return stored.rr_settings || {
-      tone: 'professional',
-      length: 'medium',
-      emojis: false,
-      autoCopy: true,       // NEW: Auto-copy after generation
-      turboMode: false      // NEW: Skip panel, instant generate
-    };
+    // Merge with defaults to ensure all keys exist and turboMode defaults to false
+    const settings = { ...DEFAULT_SETTINGS, ...(stored.rr_settings || {}) };
+    // Safety: if turboMode is somehow not a boolean, reset it
+    if (typeof settings.turboMode !== 'boolean') {
+      settings.turboMode = false;
+    }
+    return settings;
   } catch (e) {
-    return { tone: 'professional', length: 'medium', emojis: false, autoCopy: true, turboMode: false };
+    return { ...DEFAULT_SETTINGS };
   }
 }
 
@@ -2079,6 +2087,7 @@ async function createResponsePanel() {
           </div>
         </div>
         <button class="rr-help-btn" title="How to use">?</button>
+        <button class="rr-turbo-btn" title="Toggle Turbo Mode (Alt+T)">🐢</button>
         <button class="rr-close-btn" title="Close (Esc)">×</button>
       </div>
     </div>
@@ -2621,6 +2630,15 @@ async function createResponsePanel() {
     panel.querySelector('.rr-emoji-toggle').checked = settings.emojis || false;
     panel.querySelector('.rr-autocopy-toggle').checked = settings.autoCopy !== false;
     panel.querySelector('.rr-turbo-toggle').checked = settings.turboMode || false;
+
+    // Update turbo button in header
+    const turboBtn = panel.querySelector('.rr-turbo-btn');
+    if (turboBtn) {
+      turboBtn.textContent = settings.turboMode ? '⚡' : '🐢';
+      turboBtn.title = settings.turboMode ? 'Turbo Mode ON (click to disable)' : 'Turbo Mode OFF (click to enable)';
+      turboBtn.classList.toggle('rr-turbo-active', settings.turboMode);
+    }
+
     cachedSettings = settings;
   });
 
@@ -2643,6 +2661,23 @@ async function createResponsePanel() {
 function initPanelEvents(panel) {
   // Close button
   panel.querySelector('.rr-close-btn').addEventListener('click', () => closePanel(panel));
+
+  // Turbo Mode toggle button in header
+  const turboBtn = panel.querySelector('.rr-turbo-btn');
+  turboBtn.addEventListener('click', async () => {
+    const settings = cachedSettings || await loadSettings();
+    settings.turboMode = !settings.turboMode;
+    cachedSettings = settings;
+    saveSettings(settings);
+
+    // Update button icon and checkbox
+    turboBtn.textContent = settings.turboMode ? '⚡' : '🐢';
+    turboBtn.title = settings.turboMode ? 'Turbo Mode ON (click to disable)' : 'Turbo Mode OFF (click to enable)';
+    turboBtn.classList.toggle('rr-turbo-active', settings.turboMode);
+    panel.querySelector('.rr-turbo-toggle').checked = settings.turboMode;
+
+    showToast(settings.turboMode ? '⚡ Turbo Mode ON - Panel will skip next time' : '🐢 Turbo Mode OFF - Normal panel mode', 'info');
+  });
 
   // Analytics Widget toggle
   panel.querySelector('.rr-analytics-header').addEventListener('click', () => {
@@ -3613,8 +3648,8 @@ async function generateResponse(panel) {
       showToast('✨ Response generated!', 'success');
     }
 
-
-
+    // Check if we should show review popup (after 3+ responses)
+    checkShowReviewPopup();
 
     // Show onboarding tip first time
     const onboardingSeen = await checkOnboarding();
@@ -3960,6 +3995,9 @@ async function turboGenerate(reviewText) {
     // Show success
     showToast('✅ Copied to clipboard! Paste with Ctrl+V', 'success');
 
+    // Check if we should show review popup
+    checkShowReviewPopup();
+
   } catch (error) {
     showToast(`❌ ${error.message}`, 'error');
   }
@@ -4205,8 +4243,9 @@ function createFloatingButton() {
     }
 
     // Check if turbo mode is enabled
+    // Hold Shift while clicking to FORCE open panel (override turbo mode)
     const settings = cachedSettings || await loadSettings();
-    if (settings.turboMode) {
+    if (settings.turboMode && !e.shiftKey) {
       hideFloatingButton();
       turboGenerate(selection);
     } else {
@@ -4337,6 +4376,22 @@ document.addEventListener('keydown', async (e) => {
     cachedSettings = settings;
     saveSettings(settings);
     showToast(settings.turboMode ? '⚡ Turbo Mode ON' : '🐢 Turbo Mode OFF', 'info');
+    return;
+  }
+
+  // Alt+P: Force open Panel (ignores Turbo Mode) - useful to access settings
+  if (e.altKey && !e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 'p') {
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    const selection = window.getSelection().toString().trim();
+    if (!isLoggedIn) {
+      showToast('🔐 Please login first', 'error');
+      return;
+    }
+    // Force open panel regardless of turbo mode
+    showResponsePanel(selection || '', true);
     return;
   }
 
@@ -5300,6 +5355,224 @@ function createScanButton() {
 
 // Initialize scan button
 setTimeout(createScanButton, 1000);
+
+// ========== REVIEW POPUP ==========
+
+// Check if review popup should be shown
+async function checkShowReviewPopup() {
+  try {
+    const stored = await chrome.storage.local.get(['token', 'rr_review_dismissed', 'rr_review_submitted']);
+
+    // Not logged in
+    if (!stored.token) return;
+
+    // Already submitted review
+    if (stored.rr_review_submitted) return;
+
+    // Dismissed within last 7 days
+    if (stored.rr_review_dismissed) {
+      const dismissedAt = stored.rr_review_dismissed;
+      const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+      if (dismissedAt > sevenDaysAgo) return;
+    }
+
+    // Check with backend if should show popup
+    const response = await fetch(`${API_URL}/feedback/status`, {
+      headers: {
+        'Authorization': `Bearer ${stored.token}`
+      }
+    });
+
+    if (!response.ok) return;
+
+    const data = await response.json();
+
+    // Show popup if: 3+ responses used AND not yet submitted
+    if (data.shouldShowPopup && !data.feedbackSubmitted) {
+      // Small delay to not interrupt the flow
+      setTimeout(() => showReviewPopup(), 1500);
+    }
+  } catch (error) {
+    // Silently fail - not critical
+    console.log('Review popup check failed:', error);
+  }
+}
+
+// Show the review popup modal
+function showReviewPopup() {
+  // Don't show if already visible
+  if (document.getElementById('rr-review-popup')) return;
+
+  const modal = document.createElement('div');
+  modal.id = 'rr-review-popup';
+  modal.className = 'rr-review-popup';
+
+  // Apply dark mode if active
+  const effectiveTheme = currentTheme === 'auto' ? getSystemTheme() : currentTheme;
+  if (effectiveTheme === 'dark') {
+    modal.classList.add('rr-dark');
+  }
+
+  modal.innerHTML = `
+    <div class="rr-review-popup-content">
+      <div class="rr-review-header">
+        <h3>⭐ How's ReviewResponder?</h3>
+        <button class="rr-review-close">×</button>
+      </div>
+      <div class="rr-review-body">
+        <div class="rr-review-stars">
+          <svg class="rr-review-star" data-rating="1" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          <svg class="rr-review-star" data-rating="2" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          <svg class="rr-review-star" data-rating="3" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          <svg class="rr-review-star" data-rating="4" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          <svg class="rr-review-star" data-rating="5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <p class="rr-review-hint">Click to rate your experience</p>
+
+        <label class="rr-review-label">Your feedback (optional)</label>
+        <textarea class="rr-review-textarea" placeholder="Tell us what you think about ReviewResponder..."></textarea>
+
+        <label class="rr-review-label">Your name (optional)</label>
+        <input type="text" class="rr-review-name-input" placeholder="How should we display your name?">
+
+        <div class="rr-review-warning">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <span>Your review may appear on our website if approved.</span>
+        </div>
+
+        <div class="rr-review-buttons">
+          <button class="rr-review-submit" disabled>Submit Review</button>
+          <button class="rr-review-later">Maybe Later</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Animate in
+  setTimeout(() => modal.classList.add('rr-visible'), 10);
+
+  // Star rating logic
+  let selectedRating = 0;
+  const stars = modal.querySelectorAll('.rr-review-star');
+  const submitBtn = modal.querySelector('.rr-review-submit');
+
+  stars.forEach(star => {
+    star.addEventListener('mouseenter', () => {
+      const rating = parseInt(star.dataset.rating);
+      stars.forEach((s, i) => {
+        s.classList.toggle('rr-star-hover', i < rating);
+      });
+    });
+
+    star.addEventListener('mouseleave', () => {
+      stars.forEach((s, i) => {
+        s.classList.remove('rr-star-hover');
+      });
+    });
+
+    star.addEventListener('click', () => {
+      selectedRating = parseInt(star.dataset.rating);
+      stars.forEach((s, i) => {
+        s.classList.toggle('rr-star-filled', i < selectedRating);
+      });
+      submitBtn.disabled = false;
+      modal.querySelector('.rr-review-hint').textContent =
+        selectedRating === 5 ? 'Awesome! 🎉' :
+        selectedRating === 4 ? 'Great!' :
+        selectedRating === 3 ? 'Thanks!' :
+        selectedRating === 2 ? 'We\'ll improve!' :
+        'Sorry to hear that';
+    });
+  });
+
+  // Close button
+  modal.querySelector('.rr-review-close').addEventListener('click', () => {
+    closeReviewPopup(modal, true);
+  });
+
+  // Maybe Later button
+  modal.querySelector('.rr-review-later').addEventListener('click', () => {
+    closeReviewPopup(modal, true);
+  });
+
+  // Submit button
+  submitBtn.addEventListener('click', async () => {
+    if (selectedRating === 0) return;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    const comment = modal.querySelector('.rr-review-textarea').value.trim();
+    const displayName = modal.querySelector('.rr-review-name-input').value.trim();
+
+    try {
+      const stored = await chrome.storage.local.get(['token']);
+
+      const response = await fetch(`${API_URL}/feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${stored.token}`
+        },
+        body: JSON.stringify({
+          rating: selectedRating,
+          comment: comment || null,
+          displayName: displayName || null
+        })
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to submit');
+      }
+
+      // Mark as submitted
+      await chrome.storage.local.set({ rr_review_submitted: true });
+
+      showToast('🙏 Thank you for your feedback!', 'success');
+      closeReviewPopup(modal, false);
+
+    } catch (error) {
+      showToast(`❌ ${error.message}`, 'error');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Review';
+    }
+  });
+
+  // Click outside to close
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeReviewPopup(modal, true);
+    }
+  });
+}
+
+// Close review popup
+async function closeReviewPopup(modal, dismissed) {
+  if (dismissed) {
+    // Save dismiss timestamp
+    await chrome.storage.local.set({ rr_review_dismissed: Date.now() });
+  }
+
+  modal.classList.remove('rr-visible');
+  setTimeout(() => modal.remove(), 200);
+}
 
 // Ready message
 console.log('%c⚡ ReviewResponder ready!', 'font-size: 14px; font-weight: bold; color: #667eea;');
