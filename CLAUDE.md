@@ -76,6 +76,10 @@ STARTER/PROFESSIONAL/UNLIMITED: ...&plan=starter/professional/unlimited&key=...
 | **ImprovMX** | https://app.improvmx.com/domains/tryreviewresponder.com/aliases | Email-Forwarding |
 | **Resend** | https://resend.com/emails | Email-Logs, Bounces |
 | **Stripe** | https://dashboard.stripe.com | Payments, Subscriptions |
+| **Stripe Payment Methods** | https://dashboard.stripe.com/settings/payment_methods | PayPal, Apple Pay, etc. |
+| **Cron-job.org** | https://console.cron-job.org/dashboard | Scheduled Jobs (Outreach) |
+| **Google Search Console** | https://search.google.com/search-console?resource_id=https://tryreviewresponder.com/ | SEO, Indexierung |
+| **Gmail** | https://mail.google.com/mail/u/0/#inbox | Support-Anfragen |
 
 ---
 
