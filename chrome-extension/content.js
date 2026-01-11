@@ -1829,8 +1829,12 @@ async function loadSettings() {
 
 async function saveSettings(settings) {
   try {
+    console.log('[RR] Saving settings:', JSON.stringify(settings));
     await chrome.storage.local.set({ rr_settings: settings });
-  } catch (e) {}
+    console.log('[RR] Settings saved successfully');
+  } catch (e) {
+    console.error('[RR] Failed to save settings:', e);
+  }
 }
 
 // Cache settings for speed
@@ -4443,10 +4447,14 @@ function createFloatingButton() {
     // Always load fresh settings to ensure we have the latest turbo mode state
     const settings = await loadSettings();
     cachedSettings = settings;
+    console.log('[RR] Floating button clicked. Settings:', JSON.stringify(settings));
+    console.log('[RR] turboMode =', settings.turboMode, '| shiftKey =', e.shiftKey);
     if (settings.turboMode && !e.shiftKey) {
+      console.log('[RR] Turbo mode active - calling turboGenerate');
       hideFloatingButton();
       turboGenerate(selection);
     } else {
+      console.log('[RR] Normal mode - showing panel');
       showResponsePanel(selection, true);
       hideFloatingButton();
     }
