@@ -23,6 +23,96 @@ async function checkLoginStatus() {
 // Check login on load
 checkLoginStatus();
 
+// ========== DRAGGABLE PANEL HANDLER ==========
+let activeDragPanel = null;
+let dragState = { startX: 0, startY: 0, panelX: 0, panelY: 0 };
+
+function initDraggable(panel) {
+  const header = panel.querySelector('.rr-panel-header');
+  if (!header) return;
+
+  header.style.cursor = 'grab';
+  header.setAttribute('data-draggable', 'true');
+
+  header.addEventListener('mousedown', handleDragStart);
+
+  // Restore saved position
+  chrome.storage.local.get(['rr_panel_position']).then(stored => {
+    if (stored.rr_panel_position) {
+      panel.style.position = 'fixed';
+      panel.style.right = 'auto';
+      panel.style.bottom = 'auto';
+      panel.style.left = stored.rr_panel_position.left;
+      panel.style.top = stored.rr_panel_position.top;
+    }
+  });
+}
+
+function handleDragStart(e) {
+  // Don't drag if clicking buttons
+  if (e.target.closest('button')) return;
+
+  const header = e.currentTarget;
+  const panel = header.closest('#rr-response-panel');
+  if (!panel) return;
+
+  activeDragPanel = panel;
+  header.style.cursor = 'grabbing';
+
+  const rect = panel.getBoundingClientRect();
+  dragState = {
+    startX: e.clientX,
+    startY: e.clientY,
+    panelX: rect.left,
+    panelY: rect.top
+  };
+
+  // Set initial position
+  panel.style.position = 'fixed';
+  panel.style.right = 'auto';
+  panel.style.bottom = 'auto';
+  panel.style.left = rect.left + 'px';
+  panel.style.top = rect.top + 'px';
+
+  e.preventDefault();
+}
+
+document.addEventListener('mousemove', (e) => {
+  if (!activeDragPanel) return;
+
+  const deltaX = e.clientX - dragState.startX;
+  const deltaY = e.clientY - dragState.startY;
+
+  let newX = dragState.panelX + deltaX;
+  let newY = dragState.panelY + deltaY;
+
+  // Keep within viewport
+  const pw = activeDragPanel.offsetWidth;
+  const ph = activeDragPanel.offsetHeight;
+  newX = Math.max(0, Math.min(newX, window.innerWidth - pw));
+  newY = Math.max(0, Math.min(newY, window.innerHeight - ph));
+
+  activeDragPanel.style.left = newX + 'px';
+  activeDragPanel.style.top = newY + 'px';
+});
+
+document.addEventListener('mouseup', () => {
+  if (activeDragPanel) {
+    const header = activeDragPanel.querySelector('.rr-panel-header');
+    if (header) header.style.cursor = 'grab';
+
+    // Save position
+    chrome.storage.local.set({
+      rr_panel_position: {
+        left: activeDragPanel.style.left,
+        top: activeDragPanel.style.top
+      }
+    });
+
+    activeDragPanel = null;
+  }
+});
+
 // Re-check when storage changes
 chrome.storage.onChanged.addListener((changes) => {
   if (changes.token) {
@@ -2692,80 +2782,7 @@ function initPanelEvents(panel) {
   });
 
   // ========== DRAGGABLE PANEL ==========
-  const header = panel.querySelector('.rr-panel-header');
-  let isDragging = false;
-  let dragStartX, dragStartY, panelStartX, panelStartY;
-
-  header.style.cursor = 'grab';
-
-  header.addEventListener('mousedown', (e) => {
-    // Don't drag if clicking buttons
-    if (e.target.closest('button') || e.target.closest('.rr-turbo-btn')) return;
-
-    isDragging = true;
-    header.style.cursor = 'grabbing';
-
-    // Get current panel position
-    const rect = panel.getBoundingClientRect();
-    dragStartX = e.clientX;
-    dragStartY = e.clientY;
-    panelStartX = rect.left;
-    panelStartY = rect.top;
-
-    // Remove default positioning
-    panel.style.position = 'fixed';
-    panel.style.right = 'auto';
-    panel.style.bottom = 'auto';
-    panel.style.left = panelStartX + 'px';
-    panel.style.top = panelStartY + 'px';
-
-    e.preventDefault();
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-
-    const deltaX = e.clientX - dragStartX;
-    const deltaY = e.clientY - dragStartY;
-
-    let newX = panelStartX + deltaX;
-    let newY = panelStartY + deltaY;
-
-    // Keep panel within viewport bounds
-    const panelWidth = panel.offsetWidth;
-    const panelHeight = panel.offsetHeight;
-    newX = Math.max(0, Math.min(newX, window.innerWidth - panelWidth));
-    newY = Math.max(0, Math.min(newY, window.innerHeight - panelHeight));
-
-    panel.style.left = newX + 'px';
-    panel.style.top = newY + 'px';
-  });
-
-  document.addEventListener('mouseup', () => {
-    if (isDragging) {
-      isDragging = false;
-      header.style.cursor = 'grab';
-
-      // Save position
-      chrome.storage.local.set({
-        rr_panel_position: {
-          left: panel.style.left,
-          top: panel.style.top
-        }
-      });
-    }
-  });
-
-  // Restore saved position
-  chrome.storage.local.get(['rr_panel_position']).then(stored => {
-    if (stored.rr_panel_position) {
-      panel.style.position = 'fixed';
-      panel.style.right = 'auto';
-      panel.style.bottom = 'auto';
-      panel.style.left = stored.rr_panel_position.left;
-      panel.style.top = stored.rr_panel_position.top;
-    }
-  });
+  initDraggable(panel);
 
   // Analytics Widget toggle
   panel.querySelector('.rr-analytics-header').addEventListener('click', () => {
