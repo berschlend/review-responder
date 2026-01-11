@@ -135,25 +135,31 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 ## CURRENT TASKS
 
-**Stand: 10.01.2026**
+**Stand: 11.01.2026**
 
 ### USER MUSS MACHEN:
 - [ ] Demo-Video aufnehmen (2 Min Walkthrough)
-- [x] **PayPal aktivieren**: Stripe Dashboard ✅
-- [x] **Apple Pay aktivieren**: Stripe Dashboard ✅
-- [x] **Google Pay aktivieren**: Stripe Dashboard ✅
-- [x] **Link (Stripe Wallet) aktivieren**: Stripe Dashboard ✅
-- [ ] **SEPA-Lastschrift aktivieren**: Stripe Dashboard → Braucht ID-Verifizierung mit Lichtbildausweis
+- [ ] Chrome Web Store einreichen (ZIP + Screenshots)
+- [ ] **SEPA-Lastschrift aktivieren**: Stripe Dashboard → Braucht ID-Verifizierung
 
 ### NÄCHSTE CLAUDE TASKS:
 
 | Task | Schwierigkeit | Dateien |
 |------|---------------|---------|
-| Chrome Web Store Einreichung | Leicht | ZIP fertig |
 | Tone Preview (Beispiel-Snippets) | Leicht | `chrome-extension/content.js` |
 
 
-### HEUTE ERLEDIGT (10.01.2026):
+### HEUTE ERLEDIGT (11.01.2026):
+- [x] **Dogfooding Section** - "Reviews About Us, Answered By Us"
+  - Zeigt echte Testimonials mit AI-generierten Antworten
+  - Open-Source Business Context (aufklappbar)
+  - Alle 3 Testimonials werden angezeigt
+- [x] **Auto AI-Response für Testimonials** - Bei neuem Testimonial wird automatisch AI-Antwort generiert
+  - Helper-Funktion `generateAIResponseForTestimonial()`
+  - Non-blocking (async im Hintergrund)
+  - Verwendet Claude Sonnet 4 mit ReviewResponder Business Context
+
+### ERLEDIGT (10.01.2026):
 - [x] **Weitere Zahlungsmethoden aktiviert** - PayPal, SEPA-Lastschrift, Link (Stripe Wallet), Apple Pay/Google Pay
   - Backend: `payment_method_types` erweitert in `/api/billing/create-checkout`
   - `.well-known` Ordner für Apple Pay Verifizierung vorbereitet
