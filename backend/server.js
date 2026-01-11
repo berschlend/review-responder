@@ -1043,6 +1043,55 @@ app.put('/api/auth/profile', authenticateToken, async (req, res) => {
 
 // ============ AI PERSONALIZATION ============
 
+// Quick Demo - generates sample review AND response in one fast API call
+app.post('/api/personalization/quick-demo', authenticateToken, async (req, res) => {
+  try {
+    const { businessName, businessType, keywords } = req.body;
+
+    if (!keywords || keywords.trim().length === 0) {
+      return res.status(400).json({ error: 'Keywords are required' });
+    }
+
+    const prompt = `You are helping demonstrate a review response tool.
+
+Business: ${businessName || 'the business'}
+Type: ${businessType || 'General Business'}
+Keywords: ${keywords}
+
+Generate TWO things in JSON format:
+1. "sampleReview": A realistic 5-star customer review (2 sentences max) that naturally mentions the keywords
+2. "aiResponse": A friendly, warm business owner response to that review (2 sentences max)
+
+Keep both SHORT and natural. Respond ONLY with valid JSON, no markdown:
+{"sampleReview": "...", "aiResponse": "..."}`;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 250,
+      temperature: 0.7
+    });
+
+    let result;
+    try {
+      const content = response.choices[0].message.content.trim();
+      result = JSON.parse(content);
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      return res.status(500).json({ error: 'Failed to parse AI response' });
+    }
+
+    res.json({
+      sampleReview: result.sampleReview,
+      aiResponse: result.aiResponse
+    });
+
+  } catch (error) {
+    console.error('Quick demo error:', error);
+    res.status(500).json({ error: 'Failed to generate demo' });
+  }
+});
+
 // Generate Business Context or Response Style with AI
 app.post('/api/personalization/generate-context', authenticateToken, async (req, res) => {
   try {

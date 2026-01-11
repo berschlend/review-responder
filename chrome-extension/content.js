@@ -4499,8 +4499,8 @@ async function turboGenerate(reviewText) {
     }
 
     // Get settings for tone
-    const settings = await getSettings();
-    const tone = settings.defaultTone || 'professional';
+    const settings = await loadSettings();
+    const tone = settings.defaultTone || settings.tone || 'professional';
 
     // Detect language
     const language = detectLanguage(reviewText);
@@ -5124,7 +5124,7 @@ function addInlineButtons() {
         e.stopPropagation();
 
         // Check Turbo Mode - instant generate without full panel
-        const settings = await getSettings();
+        const settings = await loadSettings();
         if (settings.turboMode) {
           turboGenerate(text);
         } else {

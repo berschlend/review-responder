@@ -3009,22 +3009,6 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
     }
   };
 
-  // Pre-defined sample reviews for faster demo (no API call needed)
-  const sampleReviewsByType = {
-    'Restaurant': `Had dinner at ${businessName || 'this place'} last night and it was amazing! The food was delicious and the service was excellent. Will definitely be back!`,
-    'Cafe / Coffee Shop': `Best coffee in town! ${businessName || 'This cafe'} has such a cozy atmosphere and the baristas really know their craft. My new favorite spot.`,
-    'Hotel / Accommodation': `Stayed at ${businessName || 'this hotel'} for 3 nights. Clean rooms, friendly staff, great location. Highly recommend!`,
-    'Bar / Nightclub': `Great vibes at ${businessName || 'this place'}! Excellent cocktails, good music, and friendly bartenders. Perfect for a night out.`,
-    'Spa / Wellness': `Such a relaxing experience at ${businessName || 'this spa'}! The massage was incredible and the staff made me feel so welcome.`,
-    'Hair Salon / Barbershop': `Best haircut I've ever had! ${businessName || 'This salon'} really listens to what you want. Love my new look!`,
-    'Dental Practice': `Finally found a dentist I actually like! ${businessName || 'This practice'} is professional, gentle, and explains everything clearly.`,
-    'Medical Practice': `${businessName || 'This clinic'} provides excellent care. Short wait times, attentive staff, and the doctor really listens.`,
-    'Auto Repair / Service': `Honest and reliable! ${businessName || 'This shop'} fixed my car quickly and at a fair price. Trust them completely.`,
-    'Gym / Fitness Studio': `Love working out at ${businessName || 'this gym'}! Great equipment, clean facilities, and motivating trainers.`,
-    'Retail Store': `Amazing selection at ${businessName || 'this store'}! Staff was super helpful and I found exactly what I needed.`,
-    'default': `Great experience at ${businessName || 'this business'}! Professional service and exceeded my expectations. Highly recommend!`
-  };
-
   const generateBusinessContext = async () => {
     if (!keywords.trim()) {
       toast.error('Please enter some keywords');
@@ -3033,28 +3017,21 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
 
     setGeneratingContext(true);
     try {
-      // Use keywords as context (no API call needed)
-      const context = keywords.trim();
-      setGeneratedContext(context);
-
-      // Use pre-defined sample review (no API call needed)
-      const review = sampleReviewsByType[businessType] || sampleReviewsByType['default'];
-      setSampleReview(review);
-
-      // Only 1 API call: Generate AI response
-      const responseResult = await api.post('/generate', {
-        reviewText: review,
-        tone: 'friendly',
+      // One API call generates both: sample review AND AI response
+      const result = await api.post('/personalization/quick-demo', {
         businessName: businessName.trim(),
-        businessContext: context,
-        businessType: businessType
+        businessType,
+        keywords: keywords.trim()
       });
-      setSampleResponse(responseResult.data.response);
+
+      setGeneratedContext(keywords.trim());
+      setSampleReview(result.data.sampleReview);
+      setSampleResponse(result.data.aiResponse);
 
       toast.success('See how AI personalizes responses using your keywords!');
     } catch (error) {
       console.error('Failed to generate:', error);
-      toast.error(error.response?.data?.error || 'Failed to generate');
+      toast.error(error.response?.data?.error || 'Failed to generate demo');
     } finally {
       setGeneratingContext(false);
     }
@@ -3270,7 +3247,11 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                     </p>
                   </div>
 
-                  <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '12px', textAlign: 'center' }}>
+                  <p style={{ fontSize: '11px', color: 'var(--gray-400)', marginTop: '8px', textAlign: 'center' }}>
+                    Generated with Standard AI
+                  </p>
+
+                  <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '8px', textAlign: 'center' }}>
                     See how the AI uses your business details? Click Next to continue.
                   </p>
                 </>
