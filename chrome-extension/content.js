@@ -27,6 +27,19 @@ checkLoginStatus();
 let activeDragPanel = null;
 let dragState = { startX: 0, startY: 0, panelX: 0, panelY: 0 };
 
+// Clear invalid saved position on startup
+chrome.storage.local.get(['rr_panel_position']).then(stored => {
+  if (stored.rr_panel_position) {
+    const left = parseInt(stored.rr_panel_position.left) || 0;
+    const top = parseInt(stored.rr_panel_position.top) || 0;
+    // If position is negative or way off screen, clear it
+    if (left < 0 || top < 0 || left > 3000 || top > 2000) {
+      chrome.storage.local.remove(['rr_panel_position']);
+      console.log('[RR] Cleared invalid panel position');
+    }
+  }
+});
+
 function initDraggable(panel) {
   const header = panel.querySelector('.rr-panel-header');
   if (!header) return;
@@ -36,14 +49,30 @@ function initDraggable(panel) {
 
   header.addEventListener('mousedown', handleDragStart);
 
-  // Restore saved position
+  // Restore saved position (with validation)
   chrome.storage.local.get(['rr_panel_position']).then(stored => {
     if (stored.rr_panel_position) {
-      panel.style.position = 'fixed';
-      panel.style.right = 'auto';
-      panel.style.bottom = 'auto';
-      panel.style.left = stored.rr_panel_position.left;
-      panel.style.top = stored.rr_panel_position.top;
+      let left = parseInt(stored.rr_panel_position.left) || 0;
+      let top = parseInt(stored.rr_panel_position.top) || 0;
+
+      // Validate: keep within viewport
+      const pw = panel.offsetWidth || 380;
+      const ph = panel.offsetHeight || 500;
+      left = Math.max(0, Math.min(left, window.innerWidth - pw));
+      top = Math.max(0, Math.min(top, window.innerHeight - ph));
+
+      // Only apply if position is reasonable
+      if (left >= 0 && top >= 0) {
+        panel.style.position = 'fixed';
+        panel.style.right = 'auto';
+        panel.style.bottom = 'auto';
+        panel.style.left = left + 'px';
+        panel.style.top = top + 'px';
+        panel.style.transform = 'none'; // Remove centering transform
+      } else {
+        // Reset to default position
+        chrome.storage.local.remove(['rr_panel_position']);
+      }
     }
   });
 }
@@ -67,10 +96,11 @@ function handleDragStart(e) {
     panelY: rect.top
   };
 
-  // Set initial position
+  // Set initial position (remove centering transform)
   panel.style.position = 'fixed';
   panel.style.right = 'auto';
   panel.style.bottom = 'auto';
+  panel.style.transform = 'none';
   panel.style.left = rect.left + 'px';
   panel.style.top = rect.top + 'px';
 
