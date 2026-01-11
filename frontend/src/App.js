@@ -4670,6 +4670,43 @@ const DashboardPage = () => {
             />
           </div>
 
+          {/* Generate Button - prominently placed right after textarea */}
+          <button
+            className="btn btn-primary"
+            onClick={() => generateResponse()}
+            disabled={generating || !reviewText.trim()}
+            style={{ width: '100%', marginBottom: '20px' }}
+            data-action="generate"
+          >
+            {generating ? (
+              <>Generating...</>
+            ) : (
+              <>
+                <Sparkles size={18} />
+                Generate Response
+              </>
+            )}
+          </button>
+
+          {/* Collapsible Options Section */}
+          <details style={{ marginBottom: '8px' }}>
+            <summary style={{
+              cursor: 'pointer',
+              padding: '12px 0',
+              fontSize: '14px',
+              fontWeight: '500',
+              color: 'var(--gray-600)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              borderTop: '1px solid var(--gray-200)',
+              listStyle: 'none'
+            }}>
+              <ChevronDown size={16} style={{ transition: 'transform 0.2s' }} />
+              Options (Tone, Rating, AI Model...)
+            </summary>
+            <div style={{ paddingTop: '16px' }}>
+
           <div className="form-group">
             <label className="form-label">Star Rating (optional)</label>
             <div className="rating-select">
@@ -4866,22 +4903,8 @@ const DashboardPage = () => {
             </p>
           </div>
 
-          <button
-            className="btn btn-primary"
-            onClick={() => generateResponse()}
-            disabled={generating || !reviewText.trim()}
-            style={{ width: '100%', marginTop: '8px' }}
-            data-action="generate"
-          >
-            {generating ? (
-              <>Generating...</>
-            ) : (
-              <>
-                <Sparkles size={18} />
-                Generate Response
-              </>
-            )}
-          </button>
+            </div>
+          </details>
         </div>
 
         <div className="card">
