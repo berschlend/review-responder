@@ -2037,7 +2037,13 @@ const LandingPage = () => {
               Your browser does not support the video tag.
             </video>
           ) : (
-            <div style={{ aspectRatio: '16/9', position: 'relative' }}>
+            <div style={{
+              aspectRatio: '16/9',
+              position: 'relative',
+              backgroundImage: 'url(/demo-thumbnail.jpg)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}>
               {/* Play Button Overlay */}
               <div
                 style={{
