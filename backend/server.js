@@ -1052,8 +1052,8 @@ app.post('/api/personalization/generate-context', authenticateToken, async (req,
       return res.status(400).json({ error: 'Keywords are required' });
     }
 
-    if (!field || !['context', 'style'].includes(field)) {
-      return res.status(400).json({ error: 'Field must be "context" or "style"' });
+    if (!field || !['context', 'style', 'sample_review'].includes(field)) {
+      return res.status(400).json({ error: 'Field must be "context", "style", or "sample_review"' });
     }
 
     // Check if Anthropic is available
@@ -1079,8 +1079,11 @@ app.post('/api/personalization/generate-context', authenticateToken, async (req,
     }
 
     // Build the prompt based on field type
-    const systemPrompt = field === 'context'
-      ? `Du hilfst einem Unternehmer, eine professionelle Beschreibung seines Unternehmens zu erstellen.
+    let systemPrompt;
+    let userMessage;
+
+    if (field === 'context') {
+      systemPrompt = `Du hilfst einem Unternehmer, eine professionelle Beschreibung seines Unternehmens zu erstellen.
 Diese Beschreibung wird verwendet, um KI-generierte Antworten auf Kundenbewertungen zu personalisieren.
 
 Unternehmenstyp: ${businessType || 'Allgemeines Unternehmen'}
@@ -1091,8 +1094,10 @@ Fokussiere auf: Alleinstellungsmerkmale, Atmosphäre, was das Unternehmen besond
 Halte es authentisch und nicht zu werblich.
 VERMEIDE Phrasen wie "Wir sind bestrebt" oder "Wir setzen uns ein".
 Schreibe in der ersten Person Plural (wir, unser).
-Antworte NUR mit dem generierten Text, keine Einleitung oder Erklärung.`
-      : `Du hilfst einem Unternehmer, seinen Antwortstil für Kundenbewertungen zu definieren.
+Antworte NUR mit dem generierten Text, keine Einleitung oder Erklärung.`;
+      userMessage = `Stichwörter: ${keywords.trim()}`;
+    } else if (field === 'style') {
+      systemPrompt = `Du hilfst einem Unternehmer, seinen Antwortstil für Kundenbewertungen zu definieren.
 Diese Richtlinien werden verwendet, um KI-generierte Antworten zu personalisieren.
 
 Unternehmenstyp: ${businessType || 'Allgemeines Unternehmen'}
@@ -1102,8 +1107,22 @@ Erstelle basierend auf den Stichwörtern 3-5 kurze Stil-Richtlinien.
 Beispiele: Signatur-Abschlüsse, Tonalität, was immer/nie erwähnt werden soll.
 Halte jeden Punkt kurz und umsetzbar.
 Antworte NUR mit den Richtlinien als Bullet Points, keine Einleitung.`;
+      userMessage = `Stichwörter: ${keywords.trim()}`;
+    } else if (field === 'sample_review') {
+      // Generate a sample review that references the business context
+      systemPrompt = `Du erstellst eine realistische 5-Sterne Kundenbewertung für ein Unternehmen.
+Die Bewertung soll subtil auf die Besonderheiten des Unternehmens eingehen.
 
-    const userMessage = `Stichwörter: ${keywords.trim()}`;
+Unternehmenstyp: ${businessType || 'Allgemeines Unternehmen'}
+Unternehmensname: ${businessName || 'das Unternehmen'}
+
+Erstelle eine authentische, positive Kundenbewertung (2-3 Sätze).
+- Erwähne 1-2 spezifische Details aus der Unternehmensbeschreibung
+- Klinge wie ein echter Kunde (nicht zu perfekt oder werblich)
+- Füge eine persönliche Note hinzu (z.B. "werde wiederkommen", "habe es meinen Freunden empfohlen")
+Antworte NUR mit dem Bewertungstext, keine Anführungszeichen.`;
+      userMessage = `Unternehmensbeschreibung: ${keywords.trim()}`;
+    }
 
     // Use Claude Sonnet for best quality
     const response = await anthropic.messages.create({

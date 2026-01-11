@@ -2978,31 +2978,9 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
   const [generatingContext, setGeneratingContext] = useState(false);
 
   // Step 3: Sample Response Test
+  const [sampleReview, setSampleReview] = useState('');
   const [sampleResponse, setSampleResponse] = useState('');
   const [generatingSample, setGeneratingSample] = useState(false);
-
-  // Generate dynamic sample review based on business type
-  const getSampleReview = () => {
-    const reviews = {
-      'Restaurant': "Amazing dinner! The pasta was incredible and the staff made us feel so welcome. Perfect atmosphere for a special occasion.",
-      'Cafe / Coffee Shop': "Best coffee in town! The baristas really know their craft and the cozy atmosphere makes it my favorite work spot.",
-      'Hotel / Accommodation': "Wonderful stay! The room was spotless, staff was incredibly helpful, and the location couldn't be better.",
-      'Bar / Nightclub': "Great night out! Amazing cocktails, fun atmosphere, and the DJ was fantastic. Will definitely be back!",
-      'Spa / Wellness': "So relaxing! The massage was exactly what I needed. The therapist was professional and the ambiance was perfect.",
-      'Hair Salon / Barbershop': "Best haircut I've ever had! They really listened to what I wanted and the result exceeded my expectations.",
-      'Dental Practice': "Finally a dentist I'm not scared of! Professional, gentle, and the office is so modern and clean.",
-      'Medical Practice': "Excellent care! The doctor took time to explain everything and the staff was friendly and efficient.",
-      'Auto Repair / Service': "Honest and reliable! They fixed my car quickly and didn't try to upsell me on things I didn't need.",
-      'Gym / Fitness Studio': "Love this gym! Great equipment, clean facilities, and the trainers are really motivating.",
-      'Retail Store': "Wonderful shopping experience! Great selection and the staff was so helpful in finding exactly what I needed.",
-      'E-commerce': "Fast shipping and the product was exactly as described. Customer service was super responsive too!",
-      'Professional Services': "Excellent service! They were professional, responsive, and really understood my needs.",
-      'Real Estate': "Made buying our first home so easy! They guided us through every step of the process.",
-      'Home Services': "Fantastic work! They showed up on time, were professional, and did an amazing job. Highly recommend!",
-      'Other': "Great experience! Professional service and friendly staff. Would definitely recommend to others."
-    };
-    return reviews[businessType] || reviews['Other'];
-  };
 
   const businessTypes = [
     'Restaurant', 'Cafe / Coffee Shop', 'Hotel / Accommodation', 'Bar / Nightclub',
@@ -3082,8 +3060,19 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
   const generateSampleResponse = async () => {
     setGeneratingSample(true);
     try {
+      // Step 1: Generate a contextual sample review based on the business description
+      const reviewResult = await api.post('/personalization/generate-context', {
+        keywords: generatedContext,
+        businessType,
+        businessName: businessName.trim(),
+        field: 'sample_review'
+      });
+      const generatedReview = reviewResult.data.generated;
+      setSampleReview(generatedReview);
+
+      // Step 2: Generate a response to that review
       const response = await api.post('/generate', {
-        review: getSampleReview(),
+        review: generatedReview,
         tone: 'friendly',
         businessName: businessName.trim(),
         businessContext: generatedContext,
@@ -3092,7 +3081,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
       setSampleResponse(response.data.response);
     } catch (error) {
       console.error('Failed to generate sample:', error);
-      toast.error(error.response?.data?.error || 'Failed to generate sample response');
+      toast.error(error.response?.data?.error || 'Failed to generate sample');
     } finally {
       setGeneratingSample(false);
     }
@@ -3326,48 +3315,61 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                   <span style={{ fontSize: '14px', fontWeight: '600' }}>See it in action</span>
                 </div>
 
-                <div style={{
-                  background: 'var(--gray-50)',
-                  border: '1px solid var(--gray-200)',
-                  borderRadius: '8px',
-                  padding: '12px',
-                  marginBottom: '12px'
-                }}>
-                  <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginBottom: '4px' }}>Sample Review:</p>
-                  <p style={{ fontSize: '14px', margin: 0, lineHeight: '1.5' }}>"{getSampleReview()}"</p>
-                </div>
-
                 {!sampleResponse ? (
-                  <button
-                    className="btn btn-secondary"
-                    onClick={generateSampleResponse}
-                    disabled={generatingSample}
-                    style={{ width: '100%', fontSize: '14px' }}
-                  >
-                    {generatingSample ? (
-                      <>
-                        <Loader size={14} className="spin" style={{ marginRight: '8px' }} />
-                        Generating...
-                      </>
-                    ) : (
-                      '✨ Test with Sample Review'
-                    )}
-                  </button>
-                ) : (
-                  <div style={{
-                    background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-                    border: '1px solid #86efac',
-                    borderRadius: '8px',
-                    padding: '12px'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                      <CheckCircle size={14} style={{ color: '#22c55e' }} />
-                      <span style={{ fontSize: '12px', fontWeight: '600', color: '#15803d' }}>AI Response:</span>
-                    </div>
-                    <p style={{ fontSize: '13px', color: '#166534', margin: 0, lineHeight: '1.5' }}>
-                      {sampleResponse}
+                  <>
+                    <p style={{ fontSize: '13px', color: 'var(--gray-600)', marginBottom: '12px' }}>
+                      Generate a sample review based on your business description and see how the AI responds.
                     </p>
-                  </div>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={generateSampleResponse}
+                      disabled={generatingSample}
+                      style={{ width: '100%', fontSize: '14px' }}
+                    >
+                      {generatingSample ? (
+                        <>
+                          <Loader size={14} className="spin" style={{ marginRight: '8px' }} />
+                          Generating review & response...
+                        </>
+                      ) : (
+                        '✨ Generate Sample Test'
+                      )}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {/* Sample Review */}
+                    <div style={{
+                      background: 'var(--gray-50)',
+                      border: '1px solid var(--gray-200)',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      marginBottom: '12px'
+                    }}>
+                      <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginBottom: '4px' }}>
+                        ⭐⭐⭐⭐⭐ Sample Customer Review:
+                      </p>
+                      <p style={{ fontSize: '14px', margin: 0, lineHeight: '1.5', fontStyle: 'italic' }}>
+                        "{sampleReview}"
+                      </p>
+                    </div>
+
+                    {/* AI Response */}
+                    <div style={{
+                      background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                      border: '1px solid #86efac',
+                      borderRadius: '8px',
+                      padding: '12px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                        <CheckCircle size={14} style={{ color: '#22c55e' }} />
+                        <span style={{ fontSize: '12px', fontWeight: '600', color: '#15803d' }}>Your AI Response:</span>
+                      </div>
+                      <p style={{ fontSize: '13px', color: '#166534', margin: 0, lineHeight: '1.5' }}>
+                        {sampleResponse}
+                      </p>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
