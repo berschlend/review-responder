@@ -460,6 +460,13 @@ async function initDatabase() {
       // Columns might already exist
     }
 
+    // Add ai_response column to user_feedback for "dogfooding" section
+    try {
+      await dbQuery(`ALTER TABLE user_feedback ADD COLUMN IF NOT EXISTS ai_response TEXT`);
+    } catch (error) {
+      // Column might already exist
+    }
+
     console.log('📊 Database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -4410,7 +4417,7 @@ app.get('/api/feedback/status', authenticateToken, async (req, res) => {
 app.get('/api/testimonials', async (req, res) => {
   try {
     const testimonials = await dbAll(
-      `SELECT rating, comment, user_name, created_at
+      `SELECT rating, comment, user_name, created_at, ai_response
        FROM user_feedback
        WHERE approved = TRUE AND comment IS NOT NULL AND comment != ''
        ORDER BY featured DESC, rating DESC, created_at DESC
@@ -4468,11 +4475,146 @@ app.get('/api/admin/testimonials', async (req, res) => {
 
   try {
     const testimonials = await dbAll(
-      `SELECT id, rating, comment, user_name, approved, created_at FROM user_feedback ORDER BY created_at DESC`
+      `SELECT id, rating, comment, user_name, approved, created_at, ai_response FROM user_feedback ORDER BY created_at DESC`
     );
     res.json({ testimonials });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch' });
+  }
+});
+
+// Admin: Generate AI response for a testimonial (dogfooding section)
+app.post('/api/admin/testimonials/:id/generate-response', async (req, res) => {
+  const { key } = req.query;
+  if (!process.env.ADMIN_SECRET || !safeCompare(key, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Get the testimonial
+    const testimonial = await dbGet('SELECT * FROM user_feedback WHERE id = $1', [req.params.id]);
+    if (!testimonial) {
+      return res.status(404).json({ error: 'Testimonial not found' });
+    }
+
+    // ReviewResponder's own business context (open source)
+    const REVIEWRESPONDER_CONTEXT = {
+      businessName: "ReviewResponder",
+      businessType: "SaaS / AI Software Tool",
+      businessContext: `ReviewResponder helps small business owners respond to customer reviews quickly and professionally.
+
+WHO WE ARE:
+- Created by Berend in Germany, 2026
+- I built this because I watched restaurant owners spend hours every week writing review responses - time they could spend on their actual business
+
+HOW IT WORKS - OUR CHROME EXTENSION:
+The ReviewResponder Chrome Extension is the main product. You install it in your browser, and it works directly on review platforms:
+- Google Maps, Yelp, TripAdvisor, Trustpilot, Booking.com
+- Click "Generate Response" next to any review
+- AI creates a personalized response in seconds
+- One click to copy or paste directly
+- No switching between tabs or copy-pasting
+
+FEATURES:
+- Automatic language detection - responds in the reviewer's language (50+ supported)
+- 4 tone options: Professional, Friendly, Apologetic, Enthusiastic
+- Business context - AI knows your specific business details
+- Template library with industry-specific starting points
+- Bulk generation for catching up on multiple reviews
+- Response history to track what you've responded to
+
+WHY I BUILT THIS:
+Small business owners shouldn't have to choose between ignoring reviews and spending hours writing responses. Every review deserves a thoughtful reply - but it shouldn't take 10 minutes to write one.
+
+PRICING (honest and simple):
+- Free: 20 responses/month - enough to try it properly
+- Starter $29/mo: 300 responses
+- Pro $49/mo: 800 responses + team access for 3 people
+- Unlimited $99/mo: No limits + API for developers
+- 20% off yearly billing on all plans
+
+HOW WE HANDLE YOUR DATA:
+- Reviews are processed and immediately discarded
+- We don't store or train on your customer data
+- GDPR compliant (required as a German company)
+- No hidden fees, cancel anytime
+
+CONTACT:
+- support@tryreviewresponder.com
+- I (Berend) personally read and respond to support emails
+- Usually within 24 hours, often faster`,
+      responseStyle: `HOW TO RESPOND (our internal guidelines):
+
+BE AUTHENTIC:
+- Sound like a real person, not a corporate entity
+- It's okay to say "I" (as Berend) or "we" (as the team)
+- Be genuinely grateful, not performatively grateful
+- Never be defensive about criticism
+
+WHEN SOMEONE IS HAPPY:
+- Thank them sincerely (one sentence is enough)
+- If they mention a specific feature they love, acknowledge it
+- If they mention time saved, that means a lot to us - say so
+- Keep it short - a genuine 2-sentence response beats a long fake one
+
+WHEN SOMEONE HAS FEEDBACK OR CONCERNS:
+- Take it seriously - they're helping us improve
+- Be honest about what we can and can't do
+- Offer to help: support@tryreviewresponder.com
+- Don't make promises we can't keep
+
+NEVER DO:
+- Over-the-top enthusiasm ("WOW! AMAZING! THANK YOU SO MUCH!!!")
+- Corporate-speak ("We value your feedback...")
+- Begging for more reviews
+- Being defensive or dismissive
+- Making excuses
+- Pretending to be human - be honest that this is an AI-generated response
+
+SIGN OFF:
+- "Thanks, Berend" or "- The ReviewResponder Team"
+- Keep it natural and direct`
+    };
+
+    // Generate AI response using Claude (Smart AI)
+    const systemMessage = `You are responding to a customer review for ${REVIEWRESPONDER_CONTEXT.businessName} (${REVIEWRESPONDER_CONTEXT.businessType}).
+
+${REVIEWRESPONDER_CONTEXT.businessContext}
+
+${REVIEWRESPONDER_CONTEXT.responseStyle}`;
+
+    const userMessage = `[${testimonial.rating} star review from ${testimonial.user_name || 'a customer'}]
+
+"${testimonial.comment}"
+
+Generate a response following the guidelines above. Keep it concise (2-4 sentences).`;
+
+    // Use Claude (Anthropic) for this special response
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const completion = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 500,
+      messages: [
+        { role: 'user', content: systemMessage + '\n\n' + userMessage }
+      ]
+    });
+
+    const aiResponse = completion.content[0].text.trim();
+
+    // Save the response to the database
+    await dbQuery(
+      'UPDATE user_feedback SET ai_response = $1 WHERE id = $2',
+      [aiResponse, req.params.id]
+    );
+
+    res.json({
+      success: true,
+      ai_response: aiResponse,
+      testimonial_id: req.params.id
+    });
+  } catch (error) {
+    console.error('Generate testimonial response error:', error);
+    res.status(500).json({ error: 'Failed to generate response' });
   }
 });
 

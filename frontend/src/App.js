@@ -1349,6 +1349,325 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
   );
 };
 
+// Dogfooding Section - "Reviews About Us, Answered By Us"
+const DogfoodingSection = ({ testimonials }) => {
+  const [isContextExpanded, setIsContextExpanded] = useState(false);
+
+  // ReviewResponder's business context (open source - exactly what we give the AI)
+  const REVIEWRESPONDER_CONTEXT = {
+    businessName: "ReviewResponder",
+    businessType: "SaaS / AI Software Tool",
+    businessContext: `ReviewResponder helps small business owners respond to customer reviews quickly and professionally.
+
+WHO WE ARE:
+- Created by Berend in Germany, 2026
+- I built this because I watched restaurant owners spend hours every week writing review responses - time they could spend on their actual business
+
+HOW IT WORKS - OUR CHROME EXTENSION:
+The ReviewResponder Chrome Extension is the main product. You install it in your browser, and it works directly on review platforms:
+- Google Maps, Yelp, TripAdvisor, Trustpilot, Booking.com
+- Click "Generate Response" next to any review
+- AI creates a personalized response in seconds
+- One click to copy or paste directly
+- No switching between tabs or copy-pasting
+
+FEATURES:
+- Automatic language detection - responds in the reviewer's language (50+ supported)
+- 4 tone options: Professional, Friendly, Apologetic, Enthusiastic
+- Business context - AI knows your specific business details
+- Template library with industry-specific starting points
+- Bulk generation for catching up on multiple reviews
+- Response history to track what you've responded to
+
+WHY I BUILT THIS:
+Small business owners shouldn't have to choose between ignoring reviews and spending hours writing responses. Every review deserves a thoughtful reply - but it shouldn't take 10 minutes to write one.
+
+PRICING (honest and simple):
+- Free: 20 responses/month - enough to try it properly
+- Starter $29/mo: 300 responses
+- Pro $49/mo: 800 responses + team access for 3 people
+- Unlimited $99/mo: No limits + API for developers
+- 20% off yearly billing on all plans
+
+HOW WE HANDLE YOUR DATA:
+- Reviews are processed and immediately discarded
+- We don't store or train on your customer data
+- GDPR compliant (required as a German company)
+- No hidden fees, cancel anytime
+
+CONTACT:
+- support@tryreviewresponder.com
+- I (Berend) personally read and respond to support emails
+- Usually within 24 hours, often faster`,
+    responseStyle: `HOW TO RESPOND (our internal guidelines):
+
+BE AUTHENTIC:
+- Sound like a real person, not a corporate entity
+- It's okay to say "I" (as Berend) or "we" (as the team)
+- Be genuinely grateful, not performatively grateful
+- Never be defensive about criticism
+
+WHEN SOMEONE IS HAPPY:
+- Thank them sincerely (one sentence is enough)
+- If they mention a specific feature they love, acknowledge it
+- If they mention time saved, that means a lot to us - say so
+- Keep it short - a genuine 2-sentence response beats a long fake one
+
+WHEN SOMEONE HAS FEEDBACK OR CONCERNS:
+- Take it seriously - they're helping us improve
+- Be honest about what we can and can't do
+- Offer to help: support@tryreviewresponder.com
+- Don't make promises we can't keep
+
+NEVER DO:
+- Over-the-top enthusiasm ("WOW! AMAZING! THANK YOU SO MUCH!!!")
+- Corporate-speak ("We value your feedback...")
+- Begging for more reviews
+- Being defensive or dismissive
+- Making excuses
+- Pretending to be human - be honest that this is an AI-generated response
+
+SIGN OFF:
+- "Thanks, Berend" or "- The ReviewResponder Team"
+- Keep it natural and direct`,
+    generationSettings: {
+      tone: "Friendly",
+      ai: "Smart AI",
+      emojis: "Off"
+    }
+  };
+
+  return (
+    <section className="container" style={{ marginBottom: '60px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+        <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
+          Reviews About Us, Answered By Us
+        </h2>
+        <p style={{ color: 'var(--gray-600)', maxWidth: '600px', margin: '0 auto' }}>
+          See how our AI responds to real reviews — and the exact settings we used
+        </p>
+      </div>
+
+      {/* Collapsible Context Box */}
+      <div style={{
+        maxWidth: '800px',
+        margin: '0 auto 32px auto',
+        border: '1px solid var(--gray-200)',
+        borderRadius: '12px',
+        overflow: 'hidden'
+      }}>
+        <button
+          onClick={() => setIsContextExpanded(!isContextExpanded)}
+          style={{
+            width: '100%',
+            padding: '16px 20px',
+            background: 'var(--gray-50)',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: '15px',
+            fontWeight: '600',
+            color: 'var(--gray-700)'
+          }}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Settings size={18} />
+            See how we configured our AI (click to expand)
+          </span>
+          <ChevronDown
+            size={20}
+            style={{
+              transform: isContextExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s'
+            }}
+          />
+        </button>
+
+        {isContextExpanded && (
+          <div style={{ padding: '20px', borderTop: '1px solid var(--gray-200)' }}>
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '4px' }}>Business Name</div>
+              <div style={{ fontWeight: '600' }}>{REVIEWRESPONDER_CONTEXT.businessName}</div>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '4px' }}>Business Type</div>
+              <div style={{ fontWeight: '600' }}>{REVIEWRESPONDER_CONTEXT.businessType}</div>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '8px' }}>About our business</div>
+              <div style={{
+                background: 'var(--gray-50)',
+                padding: '12px',
+                borderRadius: '8px',
+                fontSize: '13px',
+                lineHeight: '1.6',
+                whiteSpace: 'pre-wrap',
+                maxHeight: '200px',
+                overflow: 'auto',
+                fontFamily: 'monospace'
+              }}>
+                {REVIEWRESPONDER_CONTEXT.businessContext}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '8px' }}>Response style</div>
+              <div style={{
+                background: 'var(--gray-50)',
+                padding: '12px',
+                borderRadius: '8px',
+                fontSize: '13px',
+                lineHeight: '1.6',
+                whiteSpace: 'pre-wrap',
+                maxHeight: '200px',
+                overflow: 'auto',
+                fontFamily: 'monospace'
+              }}>
+                {REVIEWRESPONDER_CONTEXT.responseStyle}
+              </div>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              gap: '16px',
+              flexWrap: 'wrap',
+              paddingTop: '12px',
+              borderTop: '1px solid var(--gray-200)'
+            }}>
+              <div style={{ fontSize: '13px' }}>
+                <span style={{ color: 'var(--gray-500)' }}>Tone:</span>{' '}
+                <span style={{ fontWeight: '600' }}>{REVIEWRESPONDER_CONTEXT.generationSettings.tone}</span>
+              </div>
+              <div style={{ fontSize: '13px' }}>
+                <span style={{ color: 'var(--gray-500)' }}>AI:</span>{' '}
+                <span style={{ fontWeight: '600' }}>{REVIEWRESPONDER_CONTEXT.generationSettings.ai}</span>
+              </div>
+              <div style={{ fontSize: '13px' }}>
+                <span style={{ color: 'var(--gray-500)' }}>Emojis:</span>{' '}
+                <span style={{ fontWeight: '600' }}>{REVIEWRESPONDER_CONTEXT.generationSettings.emojis}</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Testimonials with AI Responses */}
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        {testimonials.slice(0, 2).map((testimonial, index) => (
+          <div
+            key={index}
+            className="dogfooding-grid"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '24px',
+              marginBottom: '32px',
+              alignItems: 'start'
+            }}
+          >
+            {/* The Review */}
+            <div style={{
+              background: 'white',
+              border: '1px solid var(--gray-200)',
+              borderRadius: '12px',
+              padding: '20px'
+            }}>
+              <div style={{
+                fontSize: '12px',
+                fontWeight: '600',
+                color: 'var(--gray-500)',
+                marginBottom: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}>
+                <Star size={14} fill="#f59e0b" color="#f59e0b" />
+                THE REVIEW
+              </div>
+              <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    size={16}
+                    fill={star <= testimonial.rating ? '#f59e0b' : 'none'}
+                    color={star <= testimonial.rating ? '#f59e0b' : '#d1d5db'}
+                  />
+                ))}
+              </div>
+              <p style={{
+                fontSize: '15px',
+                lineHeight: '1.6',
+                color: 'var(--gray-700)',
+                fontStyle: 'italic',
+                marginBottom: '12px'
+              }}>
+                "{testimonial.comment}"
+              </p>
+              <div style={{
+                fontSize: '13px',
+                color: 'var(--gray-500)',
+                fontWeight: '500'
+              }}>
+                — {testimonial.user_name || 'Verified User'}
+              </div>
+            </div>
+
+            {/* Our AI Response */}
+            <div style={{
+              background: 'linear-gradient(135deg, var(--primary-50) 0%, white 100%)',
+              border: '1px solid var(--primary-200)',
+              borderRadius: '12px',
+              padding: '20px'
+            }}>
+              <div style={{
+                fontSize: '12px',
+                fontWeight: '600',
+                color: 'var(--primary-600)',
+                marginBottom: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}>
+                <Sparkles size={14} />
+                OUR AI RESPONSE
+              </div>
+              <p style={{
+                fontSize: '15px',
+                lineHeight: '1.6',
+                color: 'var(--gray-700)'
+              }}>
+                {testimonial.ai_response}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <div style={{ textAlign: 'center', marginTop: '32px' }}>
+        <p style={{
+          fontSize: '14px',
+          color: 'var(--gray-600)',
+          marginBottom: '16px'
+        }}>
+          Set up your own business context in Settings and get responses like these
+        </p>
+        <Link
+          to="/register"
+          className="btn btn-primary"
+          style={{ padding: '12px 24px' }}
+        >
+          Try It Free
+        </Link>
+      </div>
+    </section>
+  );
+};
+
 // Landing Page
 const LandingPage = () => {
   const { user } = useAuth();
@@ -1998,6 +2317,11 @@ const LandingPage = () => {
           </p>
         </div>
       </section>
+
+      {/* Reviews About Us, Answered By Us - Dogfooding Section */}
+      {testimonials.filter(t => t.ai_response).length > 0 && (
+        <DogfoodingSection testimonials={testimonials.filter(t => t.ai_response)} />
+      )}
 
       {/* Testimonials Section - Real User Feedback */}
       {testimonials.length > 0 && (
