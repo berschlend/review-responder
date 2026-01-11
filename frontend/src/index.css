@@ -1465,6 +1465,16 @@ body {
   }
 }
 
+/* Extension Video Preview Hover Effects */
+.extension-video-preview:hover .play-overlay {
+  transform: scale(1.1);
+  background: rgba(79, 70, 229, 1) !important;
+}
+
+.extension-video-preview:hover {
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4) !important;
+}
+
 /* ============================================
    SAFE AREA (NOTCH) SUPPORT
    ============================================ */

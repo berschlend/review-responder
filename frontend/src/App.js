@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, LogIn, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper, Utensils, CheckCircle, Keyboard, Store, MapPin, Wrench, Scissors, Car, Heart, User, Bell, ChevronDown, Edit3, LayoutDashboard, Play } from 'lucide-react';
+import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, LogIn, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper, Utensils, CheckCircle, Keyboard, Store, MapPin, Wrench, Scissors, Car, Heart, User, Bell, ChevronDown, Edit3, LayoutDashboard, Play, Video } from 'lucide-react';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
 import { jsPDF } from 'jspdf';
@@ -1727,6 +1727,65 @@ const LandingPage = () => {
                 </Link>
               </div>
             </div>
+
+            {/* Extension Demo Video Preview */}
+            <div style={{ flex: '0 0 280px', minWidth: '240px' }}>
+              <div style={{
+                background: '#0d0d1a',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                aspectRatio: '16/9',
+                position: 'relative',
+                cursor: 'pointer',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              className="extension-video-preview"
+              >
+                {/* Play Button */}
+                <div className="play-overlay" style={{
+                  width: '64px',
+                  height: '64px',
+                  background: 'rgba(79, 70, 229, 0.9)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'transform 0.2s, background 0.2s',
+                  zIndex: 2
+                }}>
+                  <Play size={28} fill="white" style={{ marginLeft: '3px' }} />
+                </div>
+                {/* Duration Badge */}
+                <span style={{
+                  position: 'absolute',
+                  bottom: '8px',
+                  right: '8px',
+                  background: 'rgba(0,0,0,0.7)',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: '500'
+                }}>
+                  0:45
+                </span>
+                {/* Label */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: '8px',
+                  left: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
+                  <Video size={14} style={{ opacity: 0.7 }} />
+                  <span style={{ fontSize: '11px', opacity: 0.7 }}>Extension Demo</span>
+                </div>
+              </div>
+            </div>
+
             <div style={{ flex: '0 0 auto' }}>
               <div style={{
                 background: 'white',
