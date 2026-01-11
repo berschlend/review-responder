@@ -2044,19 +2044,23 @@ const LandingPage = () => {
               backgroundSize: 'cover',
               backgroundPosition: 'center'
             }}>
-              {/* Play Button Overlay */}
+              {/* Dark Overlay + Play Button */}
               <div
                 style={{
                   position: 'absolute',
                   inset: '0',
+                  background: 'rgba(0, 0, 0, 0.45)',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: 'white',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  transition: 'background 0.2s'
                 }}
                 onClick={() => setShowDemoVideo(true)}
+                onMouseOver={(e) => e.currentTarget.style.background = 'rgba(0, 0, 0, 0.3)'}
+                onMouseOut={(e) => e.currentTarget.style.background = 'rgba(0, 0, 0, 0.45)'}
               >
                 {/* Play Button */}
                 <div
@@ -2069,7 +2073,7 @@ const LandingPage = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 8px 32px rgba(79, 70, 229, 0.4)',
+                    boxShadow: '0 8px 32px rgba(79, 70, 229, 0.5)',
                     transition: 'transform 0.2s, box-shadow 0.2s',
                     marginBottom: '16px'
                   }}
@@ -2078,22 +2082,13 @@ const LandingPage = () => {
                     <path d="M8 5v14l11-7z"/>
                   </svg>
                 </div>
-                <p style={{ fontSize: '14px', opacity: '0.7' }}>
-                  Quick dashboard demo (0:38)
+                <p style={{
+                  fontSize: '15px',
+                  fontWeight: '500',
+                  textShadow: '0 2px 4px rgba(0,0,0,0.5)'
+                }}>
+                  Watch Demo (0:38)
                 </p>
-              </div>
-
-              {/* Decorative Browser Dots */}
-              <div style={{
-                position: 'absolute',
-                top: '20px',
-                left: '20px',
-                display: 'flex',
-                gap: '8px'
-              }}>
-                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ff5f56' }} />
-                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ffbd2e' }} />
-                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#27ca40' }} />
               </div>
             </div>
           )}

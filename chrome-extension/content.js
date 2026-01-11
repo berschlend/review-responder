@@ -945,9 +945,13 @@ function switchVariation(panel, index) {
 // ========== ANALYTICS WIDGET ==========
 async function loadAnalytics() {
   try {
+    if (!chrome.runtime?.id) return { daily: {}, total: { count: 0 } }; // Extension context invalid
     const data = await chrome.storage.local.get(['rr_analytics']);
     return data.rr_analytics || { daily: {}, total: { count: 0 } };
   } catch (e) {
+    if (!e.message?.includes('Extension context invalidated')) {
+      console.error('Failed to load analytics:', e);
+    }
     return { daily: {}, total: { count: 0 } };
   }
 }
@@ -995,55 +999,77 @@ async function updateAnalytics(panel) {
 }
 
 async function recordAnalyticsResponse() {
-  const analytics = await loadAnalytics();
-  const today = new Date().toISOString().split('T')[0];
+  try {
+    if (!chrome.runtime?.id) return; // Extension context invalid
+    const analytics = await loadAnalytics();
+    const today = new Date().toISOString().split('T')[0];
 
-  if (!analytics.daily[today]) {
-    analytics.daily[today] = { count: 0, tones: {} };
-  }
-  analytics.daily[today].count++;
-  analytics.total.count = (analytics.total.count || 0) + 1;
-
-  // Clean up old data (keep last 30 days)
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - 30);
-  Object.keys(analytics.daily).forEach(date => {
-    if (new Date(date) < cutoff) {
-      delete analytics.daily[date];
+    if (!analytics.daily[today]) {
+      analytics.daily[today] = { count: 0, tones: {} };
     }
-  });
+    analytics.daily[today].count++;
+    analytics.total.count = (analytics.total.count || 0) + 1;
 
-  await chrome.storage.local.set({ rr_analytics: analytics });
+    // Clean up old data (keep last 30 days)
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 30);
+    Object.keys(analytics.daily).forEach(date => {
+      if (new Date(date) < cutoff) {
+        delete analytics.daily[date];
+      }
+    });
+
+    await chrome.storage.local.set({ rr_analytics: analytics });
+  } catch (e) {
+    if (!e.message?.includes('Extension context invalidated')) {
+      console.error('Failed to record analytics:', e);
+    }
+  }
 }
 
 // ========== REVIEW INSIGHTS ==========
 
 async function loadInsights() {
-  const result = await chrome.storage.local.get('rr_insights');
-  return result.rr_insights || {
-    issues: {},       // { issue_type: count }
-    sentiments: { positive: 0, neutral: 0, negative: 0 },
-    lastUpdated: null
-  };
+  try {
+    if (!chrome.runtime?.id) return { issues: {}, sentiments: { positive: 0, neutral: 0, negative: 0 }, lastUpdated: null }; // Extension context invalid
+    const result = await chrome.storage.local.get('rr_insights');
+    return result.rr_insights || {
+      issues: {},       // { issue_type: count }
+      sentiments: { positive: 0, neutral: 0, negative: 0 },
+      lastUpdated: null
+    };
+  } catch (e) {
+    if (!e.message?.includes('Extension context invalidated')) {
+      console.error('Failed to load insights:', e);
+    }
+    return { issues: {}, sentiments: { positive: 0, neutral: 0, negative: 0 }, lastUpdated: null };
+  }
 }
 
 async function recordInsights(issues, sentiment) {
-  const insights = await loadInsights();
+  try {
+    if (!chrome.runtime?.id) return; // Extension context invalid
+    const insights = await loadInsights();
 
-  // Track issues
-  issues.forEach(issue => {
-    insights.issues[issue.issue] = (insights.issues[issue.issue] || 0) + 1;
-  });
+    // Track issues
+    issues.forEach(issue => {
+      insights.issues[issue.issue] = (insights.issues[issue.issue] || 0) + 1;
+    });
 
-  // Track sentiment
-  if (sentiment && insights.sentiments[sentiment] !== undefined) {
-    insights.sentiments[sentiment]++;
+    // Track sentiment
+    if (sentiment && insights.sentiments[sentiment] !== undefined) {
+      insights.sentiments[sentiment]++;
+    }
+
+    insights.lastUpdated = new Date().toISOString();
+
+    // Clean up old data - keep issues with count > 0
+    await chrome.storage.local.set({ rr_insights: insights });
+  } catch (e) {
+    if (!e.message?.includes('Extension context invalidated')) {
+      console.error('Failed to record insights:', e);
+    }
   }
-
-  insights.lastUpdated = new Date().toISOString();
-
-  // Clean up old data - keep issues with count > 0
-  await chrome.storage.local.set({ rr_insights: insights });
 }
 
 async function updateInsightsWidget(panel) {
