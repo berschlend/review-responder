@@ -2896,29 +2896,36 @@ const ResetPasswordPage = () => {
 
 // Onboarding Modal Component
 const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  
+
   // Step 1: Business Name
   const [businessName, setBusinessName] = useState(user?.businessName || '');
-  
+
   // Step 2: Sample Review
   const [sampleReview, setSampleReview] = useState('');
   const [sampleResponse, setSampleResponse] = useState('');
   const [generating, setGenerating] = useState(false);
-  
+
   const sampleReviews = [
     "Great service and fast delivery! Really happy with my experience. Will definitely come back again.",
     "The food was amazing and the staff was very friendly. Highly recommend this place to everyone!",
     "Terrible experience. The product broke after one day and customer service was unhelpful."
   ];
 
+  // Sync businessName with user data when modal opens
   useEffect(() => {
-    if (isVisible && sampleReview === '') {
-      setSampleReview(sampleReviews[0]);
+    if (isVisible) {
+      if (sampleReview === '') {
+        setSampleReview(sampleReviews[0]);
+      }
+      // Restore business name from user if available
+      if (user?.businessName && !businessName) {
+        setBusinessName(user.businessName);
+      }
     }
-  }, [isVisible]);
+  }, [isVisible, user?.businessName]);
 
   const nextStep = () => {
     if (currentStep === 1 && businessName.trim()) {
@@ -2933,6 +2940,8 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
       await api.put('/auth/profile', {
         businessName: businessName.trim()
       });
+      // Update the auth context so businessName persists
+      updateUser({ businessName: businessName.trim() });
       setCurrentStep(2);
     } catch (error) {
       console.error('Failed to update business name:', error);
@@ -3177,15 +3186,26 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-          <button
-            className="btn btn-secondary"
-            onClick={skipOnboarding}
-            disabled={loading}
-            style={{ fontSize: '14px' }}
-          >
-            Skip for now
-          </button>
-          
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {currentStep > 1 && (
+              <button
+                className="btn btn-secondary"
+                onClick={() => setCurrentStep(currentStep - 1)}
+                style={{ fontSize: '14px' }}
+              >
+                ← Back
+              </button>
+            )}
+            <button
+              className="btn btn-secondary"
+              onClick={skipOnboarding}
+              disabled={loading}
+              style={{ fontSize: '14px' }}
+            >
+              Skip for now
+            </button>
+          </div>
+
           {currentStep < 3 ? (
             <button
               className="btn btn-primary"
