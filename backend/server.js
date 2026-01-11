@@ -1110,18 +1110,18 @@ Respond ONLY with the guidelines as bullet points, no introduction.`;
       userMessage = `Keywords: ${keywords.trim()}`;
     } else if (field === 'sample_review') {
       // Generate a sample review that references the business context
-      systemPrompt = `Du erstellst eine realistische 5-Sterne Kundenbewertung für ein Unternehmen.
-Die Bewertung soll subtil auf die Besonderheiten des Unternehmens eingehen.
+      systemPrompt = `You create a realistic 5-star customer review for a business.
+The review should subtly reference the business's unique features.
 
-Unternehmenstyp: ${businessType || 'Allgemeines Unternehmen'}
-Unternehmensname: ${businessName || 'das Unternehmen'}
+Business Type: ${businessType || 'General Business'}
+Business Name: ${businessName || 'the business'}
 
-Erstelle eine authentische, positive Kundenbewertung (2-3 Sätze).
-- Erwähne 1-2 spezifische Details aus der Unternehmensbeschreibung
-- Klinge wie ein echter Kunde (nicht zu perfekt oder werblich)
-- Füge eine persönliche Note hinzu (z.B. "werde wiederkommen", "habe es meinen Freunden empfohlen")
-Antworte NUR mit dem Bewertungstext, keine Anführungszeichen.`;
-      userMessage = `Unternehmensbeschreibung: ${keywords.trim()}`;
+Create an authentic, positive customer review (2-3 sentences).
+- Mention 1-2 specific details from the business description
+- Sound like a real customer (not too perfect or promotional)
+- Add a personal touch (e.g., "will come back", "recommended to my friends")
+Respond ONLY with the review text, no quotes.`;
+      userMessage = `Business description: ${keywords.trim()}`;
     }
 
     // Use Claude Sonnet for best quality
