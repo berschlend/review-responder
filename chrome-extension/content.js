@@ -3153,26 +3153,39 @@ function initPanelEvents(panel) {
   });
 
   // Template overlay - use and delete buttons (event delegation)
-  panel.querySelector('.rr-templates-list').addEventListener('click', async (e) => {
-    const useBtn = e.target.closest('.rr-template-use');
-    const deleteBtn = e.target.closest('.rr-template-delete');
-    const item = e.target.closest('.rr-template-item');
+  const templatesList = panel.querySelector('.rr-templates-list');
+  if (!templatesList) {
+    console.error('[RR] Templates list not found!');
+  } else {
+    templatesList.addEventListener('click', async (e) => {
+      console.log('[RR] Templates list clicked', e.target);
+      const useBtn = e.target.closest('.rr-template-use');
+      const deleteBtn = e.target.closest('.rr-template-delete');
+      const item = e.target.closest('.rr-template-item');
 
-    if (!item) return;
-    const templateId = item.dataset.id;
+      console.log('[RR] useBtn:', useBtn, 'item:', item);
 
-    if (useBtn) {
-      const templates = await loadTemplates();
-      const template = templates.find(t => t.id === templateId);
-      if (template) {
-        panel.querySelector('.rr-response-textarea').value = template.content;
-        panel.querySelector('.rr-response-section').classList.remove('hidden');
-        panel.querySelector('.rr-tone-select').value = template.tone;
-        panel.querySelector('.rr-templates-overlay').classList.add('hidden');
-        updateCharCounter(panel);
-        showToast(`📝 Template "${template.name}" loaded`, 'success');
+      if (!item) return;
+      const templateId = item.dataset.id;
+      console.log('[RR] Template ID:', templateId);
+
+      if (useBtn) {
+        const templates = await loadTemplates();
+        console.log('[RR] Loaded templates:', templates);
+        const template = templates.find(t => t.id === templateId);
+        console.log('[RR] Found template:', template);
+        if (template) {
+          panel.querySelector('.rr-response-textarea').value = template.content;
+          panel.querySelector('.rr-response-section').classList.remove('hidden');
+          panel.querySelector('.rr-tone-select').value = template.tone;
+          panel.querySelector('.rr-templates-overlay').classList.add('hidden');
+          updateCharCounter(panel);
+          showToast(`📝 Template "${template.name}" loaded`, 'success');
+        } else {
+          console.error('[RR] Template not found for ID:', templateId);
+          showToast('❌ Template not found', 'error');
+        }
       }
-    }
 
     if (deleteBtn) {
       if (confirm('Delete this template?')) {
@@ -3183,7 +3196,8 @@ function initPanelEvents(panel) {
         showToast('🗑️ Template deleted', 'success');
       }
     }
-  });
+    });
+  }
 
   // Settings toggle
   panel.querySelector('.rr-settings-toggle').addEventListener('click', () => {
