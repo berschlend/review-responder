@@ -4804,7 +4804,7 @@ const DashboardPage = () => {
                     fontWeight: '600',
                     marginLeft: 'auto'
                   }}>
-                    AI Recommended
+                    Automatic
                   </span>
                 )}
               </label>
