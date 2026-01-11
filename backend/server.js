@@ -1427,7 +1427,8 @@ app.post('/api/auth/google', async (req, res) => {
           onboardingCompleted: user.onboarding_completed,
           profilePicture: picture,
           referralCode: user.referral_code,
-          teamInfo: teamInfo
+          teamInfo: teamInfo,
+          emailVerified: true // Google OAuth users are always verified
         }
       });
     }
@@ -1519,7 +1520,8 @@ app.post('/api/auth/google', async (req, res) => {
         responsesLimit: 20,
         onboardingCompleted: false,
         profilePicture: picture,
-        referralCode: newReferralCode
+        referralCode: newReferralCode,
+        emailVerified: true // Google OAuth users are always verified
       }
     });
   } catch (error) {
