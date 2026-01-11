@@ -22,7 +22,7 @@ const LoadingSpinner = () => (
 );
 
 // Google Sign-In Client ID (set in environment or hardcode for production)
-const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '395576602784-inhppfo12c9o26okl6g3dgnb2cslqdv1.apps.googleusercontent.com';
 
 // Confetti celebration function
 const fireConfetti = () => {
