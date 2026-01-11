@@ -4402,7 +4402,7 @@ const DashboardPage = () => {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div className="dashboard-form-grid">
             <div className="form-group">
               <label className="form-label">Platform</label>
               <select
@@ -4446,7 +4446,7 @@ const DashboardPage = () => {
                 <Info size={14} style={{ color: 'var(--gray-400)', cursor: 'help' }} />
               </FeatureTooltip>
             </label>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="ai-model-buttons">
               <button
                 type="button"
                 onClick={() => setAiModel('auto')}
@@ -4739,7 +4739,7 @@ Food was amazing, will definitely come back!`}
                   </p>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="dashboard-form-grid">
                   <div className="form-group">
                     <label className="form-label">Platform</label>
                     <select
@@ -5003,7 +5003,7 @@ Food was amazing, will definitely come back!`}
               </Link>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+            <div className="blog-generator-grid">
               {/* Left Column - Generator Form */}
               <div className="card">
                 <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -7794,9 +7794,17 @@ const PricingPage = () => {
           <PricingCards />
 
           {user && user.plan !== 'free' && (
-            <div style={{ textAlign: 'center', marginTop: '24px' }}>
+            <div style={{ textAlign: 'center', marginTop: '24px', display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button onClick={openBillingPortal} className="btn btn-secondary">
                 Manage Subscription
+              </button>
+              <button
+                onClick={() => setShowAdminSubscriptionModal(true)}
+                className="btn btn-secondary"
+                style={{ opacity: 0.7 }}
+                title="For testing without Stripe"
+              >
+                Switch Plan (Test)
               </button>
             </div>
           )}

@@ -1494,3 +1494,84 @@ body {
     padding-bottom: max(20px, env(safe-area-inset-bottom));
   }
 }
+
+/* ============================================
+   DASHBOARD MOBILE RESPONSIVE FIXES
+   ============================================ */
+
+/* Dashboard Form Grid - 2 columns to 1 on mobile */
+.dashboard-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .dashboard-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* AI Model Selection Buttons */
+.ai-model-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 480px) {
+  .ai-model-buttons {
+    flex-wrap: wrap;
+  }
+  .ai-model-buttons button {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 120px;
+  }
+}
+
+/* Blog Generator Grid */
+.blog-generator-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .blog-generator-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* FAQ & Contact Grid */
+.faq-contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .faq-contact-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+/* Table Scroll Container for Mobile */
+.table-scroll-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-scroll-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 3px;
+}
+
+.table-scroll-container::-webkit-scrollbar-track {
+  background: var(--gray-100);
+}

@@ -1735,7 +1735,7 @@ function evaluateResponseQuality(response, reviewText, tone, reviewRating) {
 
 async function generateResponseHandler(req, res) {
   try {
-    const { reviewText, reviewRating, platform, tone, outputLanguage, businessName, customInstructions, responseLength, includeEmojis, aiModel = 'auto' } = req.body;
+    const { reviewText, reviewRating, platform, tone, outputLanguage, businessName, customInstructions, responseLength, includeEmojis, aiModel = 'auto', templateContent } = req.body;
 
     if (!reviewText || reviewText.trim().length === 0) {
       return res.status(400).json({ error: 'Review text is required' });
@@ -1980,6 +1980,7 @@ EMOJIS: ${emojiInstruction}`;
     const systemMessage = `You own ${businessName || contextUser.business_name || 'a business'}${contextUser.business_type ? ` (${contextUser.business_type})` : ''}. You're responding to a review on ${platform || 'Google'}.
 ${contextUser.business_context ? `\nAbout your business: ${contextUser.business_context}` : ''}
 ${contextUser.response_style ? `\nIMPORTANT - Follow these custom instructions: ${contextUser.response_style}` : ''}
+${templateContent ? `\nTEMPLATE STYLE GUIDE: Use this template as a style reference. Match its tone, structure, and approach, but adapt the content to address the specific review:\n"${templateContent}"` : ''}
 
 ${writingStyleInstructions}
 
@@ -2600,7 +2601,8 @@ app.post('/api/billing/portal', authenticateToken, async (req, res) => {
   }
 });
 
-// Self-service plan change for users without Stripe (admin-upgraded users)
+// Self-service plan change for testing (bypasses Stripe)
+// WARNING: This allows plan changes without payment - use only for testing!
 app.post('/api/admin/self-set-plan', authenticateToken, async (req, res) => {
   try {
     const { plan } = req.body;
@@ -2608,16 +2610,6 @@ app.post('/api/admin/self-set-plan', authenticateToken, async (req, res) => {
 
     if (!validPlans.includes(plan)) {
       return res.status(400).json({ error: 'Invalid plan' });
-    }
-
-    // Check if user has no stripe_customer_id (manually upgraded)
-    const user = await dbGet('SELECT stripe_customer_id FROM users WHERE id = $1', [req.user.id]);
-
-    if (user.stripe_customer_id) {
-      return res.status(403).json({
-        error: 'Use Stripe portal to manage your subscription',
-        hasStripeCustomer: true
-      });
     }
 
     // Update plan (same logic as admin/set-plan)
