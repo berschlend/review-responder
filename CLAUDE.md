@@ -52,6 +52,58 @@ Nutze diese Commands für maximale Effizienz:
 
 ---
 
+## RALPH LOOP (Autonome Overnight Development)
+
+**Was:** Claude Code Plugin für iterative, selbstverbessernde Entwicklungs-Loops.
+**Installiert:** 11.01.2026
+
+### Wie es funktioniert
+```
+User: /ralph-loop "Task" --max-iterations 30 --completion-promise "DONE"
+     ↓
+Claude arbeitet → Will beenden → Stop Hook blockiert
+     ↓
+Claude sieht eigene Änderungen (Files + Git) → Verbessert iterativ
+     ↓
+Wiederholt bis <promise>DONE</promise> oder max-iterations erreicht
+```
+
+### Commands
+- `/ralph-loop "<prompt>" --max-iterations N --completion-promise "TEXT"` - Loop starten
+- `/cancel-ralph` - Loop abbrechen
+
+### Beispiele für ReviewResponder
+
+**Feature Development (overnight):**
+```bash
+/ralph-loop "Implement sentiment analysis:
+- POST /api/analyze-sentiment endpoint
+- Returns positive/negative/neutral score
+- Tests with >80% coverage
+Output <promise>DONE</promise> when complete" --max-iterations 30 --completion-promise "DONE"
+```
+
+**Test Coverage erhöhen:**
+```bash
+/ralph-loop "Write tests for all backend endpoints:
+- Cover edge cases
+- Target: 80% coverage
+Output <promise>TESTS DONE</promise>" --max-iterations 40 --completion-promise "TESTS DONE"
+```
+
+### Best Practices
+1. **Immer `--max-iterations` setzen** (10-50 je nach Komplexität)
+2. **Klare Completion Criteria** mit `<promise>TEXT</promise>`
+3. **Git Branch vor Start** für einfaches Rollback
+4. **TDD Approach:** Tests first → Implement → Iterate
+
+### Kosten-Erwartung
+- Einfache Features: ~$5-20
+- Komplexe Features: ~$50-100
+- Große Projekte: ~$200-300
+
+---
+
 ## LIVE URLS
 
 | Service | URL |
