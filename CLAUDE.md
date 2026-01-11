@@ -83,7 +83,7 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 ## CURRENT TASKS
 
-**Stand: 10.01.2026**
+**Stand: 11.01.2026**
 
 ### USER MUSS MACHEN:
 - [ ] Demo-Video aufnehmen (2 Min Walkthrough)
@@ -101,7 +101,16 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 | Tone Preview (Beispiel-Snippets) | Leicht | `chrome-extension/content.js` |
 
 
-### HEUTE ERLEDIGT (10.01.2026):
+### HEUTE ERLEDIGT (11.01.2026):
+- [x] **Unsubscribe System implementiert** - CAN-SPAM & GDPR Compliance ✅
+  - DB Schema: `email_marketing`, `email_product`, `unsubscribe_token` für users/email_captures/outreach_leads
+  - Backend: `GET/POST /api/unsubscribe` für Preferences-Verwaltung
+  - Frontend: `/unsubscribe` Page mit granularen Preferences für registered users
+  - Alle Marketing-Emails (Welcome, Drip, Outreach) haben jetzt Unsubscribe-Links
+  - Unsubscribed Leads werden automatisch von allen Campaigns gefiltert
+  - Token-basierte Sicherheit für sichere Unsubscribe-Links
+
+### GESTERN ERLEDIGT (10.01.2026):
 - [x] **Weitere Zahlungsmethoden aktiviert** - PayPal, SEPA-Lastschrift, Link (Stripe Wallet), Apple Pay/Google Pay
   - Backend: `payment_method_types` erweitert in `/api/billing/create-checkout`
   - `.well-known` Ordner für Apple Pay Verifizierung vorbereitet
