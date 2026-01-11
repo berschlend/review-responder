@@ -2662,6 +2662,16 @@ function initPanelEvents(panel) {
   // Close button
   panel.querySelector('.rr-close-btn').addEventListener('click', () => closePanel(panel));
 
+  // Click to expand minimized panel (Turbo Mode)
+  panel.addEventListener('click', (e) => {
+    if (panel.classList.contains('rr-minimized')) {
+      // Don't expand if clicking close button
+      if (e.target.closest('.rr-close-btn')) return;
+      panel.classList.remove('rr-minimized');
+      showToast('📋 Panel expanded', 'info');
+    }
+  });
+
   // Turbo Mode toggle button in header
   const turboBtn = panel.querySelector('.rr-turbo-btn');
   if (turboBtn) turboBtn.addEventListener('click', async () => {
@@ -3928,7 +3938,7 @@ async function editExistingResponse(panel, editType, currentResponse) {
   }
 }
 
-// ========== TURBO MODE: Instant generation without panel ==========
+// ========== TURBO MODE: Generate and show minimized panel ==========
 async function turboGenerate(reviewText) {
   // Pre-flight checks
   if (!isLoggedIn) {
@@ -3942,15 +3952,27 @@ async function turboGenerate(reviewText) {
     return;
   }
 
-  // Show loading toast
-  showToast('⚡ Generating...', 'info');
+  // Show the panel but minimized - this way user can expand if needed
+  const panel = await showResponsePanel(cleaned, false); // false = don't animate focus
+  if (!panel) return;
+
+  // Minimize the panel immediately
+  panel.classList.add('rr-minimized');
+
+  // Show loading state
+  const generateBtn = panel.querySelector('.rr-generate-btn');
+  const btnText = generateBtn?.querySelector('.rr-btn-text');
+  const btnLoading = generateBtn?.querySelector('.rr-btn-loading');
+  if (generateBtn) generateBtn.disabled = true;
+  if (btnText) btnText.classList.add('hidden');
+  if (btnLoading) btnLoading.classList.remove('hidden');
 
   try {
     const settings = cachedSettings || await loadSettings();
     const sentiment = analyzeSentiment(cleaned);
     const sentimentDisplay = getSentimentDisplay(sentiment);
     const issues = detectIssues(cleaned);
-    const language = detectLanguage(cleaned); // Detect language for turbo mode
+    const language = detectLanguage(cleaned);
 
     // Build context with language instruction
     const languageNames = { de: 'German', en: 'English', nl: 'Dutch', fr: 'French', es: 'Spanish' };
@@ -3962,7 +3984,7 @@ async function turboGenerate(reviewText) {
       context += ` Customer complaints detected: ${issueLabels.join(', ')}. Address these specific issues in your response.`;
     }
 
-    // Get business name: prefer user's setting, fallback to auto-detected
+    // Get business name
     let businessName = cachedUser?.businessName || '';
     if (!businessName) {
       businessName = detectBusinessContext() || await getCachedBusinessName();
@@ -3976,8 +3998,8 @@ async function turboGenerate(reviewText) {
       },
       body: JSON.stringify({
         reviewText: cleaned,
-        tone: sentimentDisplay.tone, // Auto-select based on sentiment
-        outputLanguage: language.code, // Send detected language
+        tone: sentimentDisplay.tone,
+        outputLanguage: language.code,
         responseLength: settings.length || 'medium',
         includeEmojis: settings.emojis || false,
         businessName: businessName,
@@ -3991,17 +4013,29 @@ async function turboGenerate(reviewText) {
       throw new Error(data.error || 'Generation failed');
     }
 
+    // Fill response in panel
+    const responseSection = panel.querySelector('.rr-response-section');
+    panel.querySelector('.rr-response-textarea').value = data.response;
+    if (responseSection) responseSection.classList.remove('hidden');
+
+    // Update character counter
+    updateCharCounter(panel);
+
     // Copy to clipboard
     await navigator.clipboard.writeText(data.response);
 
-    // Show success
-    showToast('✅ Copied to clipboard! Paste with Ctrl+V', 'success');
+    // Show success toast
+    showToast('✅ Copied! Click panel to expand', 'success');
 
     // Check if we should show review popup
     checkShowReviewPopup();
 
   } catch (error) {
     showToast(`❌ ${error.message}`, 'error');
+  } finally {
+    if (generateBtn) generateBtn.disabled = false;
+    if (btnText) btnText.classList.remove('hidden');
+    if (btnLoading) btnLoading.classList.add('hidden');
   }
 }
 
