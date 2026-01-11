@@ -634,6 +634,10 @@ body {
   }
 }
 
+.spin {
+  animation: spin 1s linear infinite;
+}
+
 /* Badge */
 .badge {
   display: inline-block;

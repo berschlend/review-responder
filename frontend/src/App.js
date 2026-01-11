@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, createContext, useContext, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, LogIn, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper, Utensils, CheckCircle, Keyboard, Store, MapPin, Wrench, Scissors, Car, Heart, User, Bell, ChevronDown, Edit3, LayoutDashboard, Play, Video } from 'lucide-react';
+import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, LogIn, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper, Utensils, CheckCircle, Keyboard, Store, MapPin, Wrench, Scissors, Car, Heart, User, Bell, ChevronDown, Edit3, LayoutDashboard, Play, Video, Loader } from 'lucide-react';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
 import { jsPDF } from 'jspdf';
@@ -6620,6 +6620,175 @@ const ConfirmEmailPage = () => {
   );
 };
 
+// AI Context Generator Component
+const AIContextGenerator = ({ field, businessType, businessName, currentValue, onGenerated }) => {
+  const [keywords, setKeywords] = useState('');
+  const [generating, setGenerating] = useState(false);
+  const [generated, setGenerated] = useState('');
+  const [remaining, setRemaining] = useState(null);
+  const [showGenerator, setShowGenerator] = useState(false);
+
+  const handleGenerate = async () => {
+    if (!keywords.trim()) {
+      toast.error('Bitte gib ein paar Stichwörter ein');
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const res = await api.post('/personalization/generate-context', {
+        keywords: keywords.trim(),
+        businessType,
+        businessName,
+        field
+      });
+      setGenerated(res.data.generated);
+      setRemaining(res.data.remaining);
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Fehler beim Generieren');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleAccept = () => {
+    onGenerated(generated);
+    setKeywords('');
+    setGenerated('');
+    setShowGenerator(false);
+    toast.success('Text übernommen!');
+  };
+
+  if (!showGenerator) {
+    return (
+      <button
+        type="button"
+        onClick={() => setShowGenerator(true)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '8px 12px',
+          background: 'linear-gradient(135deg, var(--primary-50), var(--primary-100))',
+          border: '1px solid var(--primary-200)',
+          borderRadius: '8px',
+          cursor: 'pointer',
+          fontSize: '13px',
+          color: 'var(--primary-700)',
+          marginBottom: '12px',
+          transition: 'all 0.2s'
+        }}
+      >
+        <Sparkles size={14} />
+        Mit KI generieren
+      </button>
+    );
+  }
+
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, var(--primary-50), #f0f7ff)',
+      border: '1px solid var(--primary-200)',
+      borderRadius: '12px',
+      padding: '16px',
+      marginBottom: '16px'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+        <span style={{ fontWeight: '600', fontSize: '14px', color: 'var(--primary-700)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Sparkles size={16} />
+          {field === 'context' ? 'Business Context generieren' : 'Response Style generieren'}
+        </span>
+        <button
+          type="button"
+          onClick={() => setShowGenerator(false)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
+        >
+          <X size={16} style={{ color: 'var(--gray-500)' }} />
+        </button>
+      </div>
+
+      <div style={{ marginBottom: '12px' }}>
+        <label style={{ fontSize: '13px', color: 'var(--gray-600)', marginBottom: '6px', display: 'block' }}>
+          Stichwörter eingeben (kommagetrennt):
+        </label>
+        <input
+          type="text"
+          className="form-input"
+          value={keywords}
+          onChange={(e) => setKeywords(e.target.value)}
+          placeholder={field === 'context'
+            ? 'z.B. italienisch, familiengeführt, 1985, hausgemachte Pasta, Terrasse'
+            : 'z.B. freundlich, kurz, mit Grußformel, locker'}
+          style={{ fontSize: '14px' }}
+        />
+      </div>
+
+      <button
+        type="button"
+        onClick={handleGenerate}
+        disabled={generating || !keywords.trim()}
+        className="btn btn-primary btn-sm"
+        style={{ marginBottom: generated ? '12px' : '0' }}
+      >
+        {generating ? (
+          <>
+            <Loader size={14} className="spin" style={{ marginRight: '6px' }} />
+            Generiere...
+          </>
+        ) : (
+          <>
+            <Sparkles size={14} style={{ marginRight: '6px' }} />
+            Generieren
+          </>
+        )}
+      </button>
+
+      {remaining !== null && remaining < 10 && (
+        <span style={{ fontSize: '12px', color: 'var(--gray-500)', marginLeft: '8px' }}>
+          ({remaining} Generierungen verbleibend heute)
+        </span>
+      )}
+
+      {generated && (
+        <div style={{
+          background: 'white',
+          border: '1px solid var(--primary-200)',
+          borderRadius: '8px',
+          padding: '12px',
+          marginTop: '12px'
+        }}>
+          <label style={{ fontSize: '12px', color: 'var(--gray-500)', marginBottom: '6px', display: 'block' }}>
+            Generierter Text:
+          </label>
+          <p style={{ fontSize: '14px', color: 'var(--gray-800)', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+            {generated}
+          </p>
+          <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+            <button
+              type="button"
+              onClick={handleGenerate}
+              disabled={generating}
+              className="btn btn-sm"
+              style={{ background: 'var(--gray-100)', border: '1px solid var(--gray-200)' }}
+            >
+              <RefreshCw size={14} style={{ marginRight: '4px' }} />
+              Neu generieren
+            </button>
+            <button
+              type="button"
+              onClick={handleAccept}
+              className="btn btn-primary btn-sm"
+            >
+              <Check size={14} style={{ marginRight: '4px' }} />
+              Übernehmen
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Settings Page
 const SettingsPage = () => {
   const { user, updateUser } = useAuth();
@@ -6743,6 +6912,14 @@ const SettingsPage = () => {
             Tell us about your business so AI can mention specific details in responses
           </p>
 
+          <AIContextGenerator
+            field="context"
+            businessType={businessType}
+            businessName={businessName}
+            currentValue={businessContext}
+            onGenerated={(text) => setBusinessContext(text)}
+          />
+
           <div className="form-group">
             <label className="form-label">About Your Business</label>
             <textarea
@@ -6771,6 +6948,14 @@ const SettingsPage = () => {
           <p style={{ fontSize: '14px', color: 'var(--gray-500)', marginBottom: '16px' }}>
             Any specific instructions for how you want responses written
           </p>
+
+          <AIContextGenerator
+            field="style"
+            businessType={businessType}
+            businessName={businessName}
+            currentValue={responseStyle}
+            onGenerated={(text) => setResponseStyle(text)}
+          />
 
           <div className="form-group">
             <label className="form-label">Style Instructions (optional)</label>

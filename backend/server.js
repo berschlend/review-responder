@@ -467,6 +467,14 @@ async function initDatabase() {
       // Column might already exist
     }
 
+    // Add AI context generation rate limiting columns
+    try {
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS context_generations_today INTEGER DEFAULT 0`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS context_gen_reset_date TEXT`);
+    } catch (error) {
+      // Columns might already exist
+    }
+
     console.log('📊 Database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
