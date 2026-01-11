@@ -3372,15 +3372,19 @@ const ExtensionPromoCard = () => {
       </div>
 
       <div className="extension-promo-content">
-        <div className="video-preview" onClick={() => setShowVideo(!showVideo)}>
+        <div className="video-preview">
           {showVideo ? (
-            <div className="video-placeholder">
-              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
-                Demo Video Coming Soon
-              </p>
-            </div>
+            <video
+              controls
+              autoPlay
+              style={{ width: '100%', borderRadius: '12px' }}
+              onEnded={() => setShowVideo(false)}
+            >
+              <source src="/demo-video.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
           ) : (
-            <div className="video-thumbnail">
+            <div className="video-thumbnail" onClick={() => setShowVideo(true)}>
               <img
                 src="/extension-preview.png"
                 alt="Chrome Extension Preview"
@@ -3395,7 +3399,7 @@ const ExtensionPromoCard = () => {
               <div className="play-overlay">
                 <Play size={32} fill="white" />
               </div>
-              <span className="video-duration">Demo</span>
+              <span className="video-duration">0:38</span>
             </div>
           )}
         </div>
