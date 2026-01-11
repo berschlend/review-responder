@@ -1366,14 +1366,15 @@ app.post('/api/auth/google', async (req, res) => {
     let user = await dbGet('SELECT * FROM users WHERE LOWER(email) = LOWER($1) OR oauth_id = $2', [email, googleId]);
 
     if (user) {
-      // Existing user - update OAuth info if needed
+      // Existing user - update OAuth info and mark email as verified (Google verified it)
       if (!user.oauth_provider) {
         await dbQuery(
-          'UPDATE users SET oauth_provider = $1, oauth_id = $2, profile_picture = $3 WHERE id = $4',
+          'UPDATE users SET oauth_provider = $1, oauth_id = $2, profile_picture = $3, email_verified = TRUE WHERE id = $4',
           ['google', googleId, picture, user.id]
         );
-      } else if (user.profile_picture !== picture) {
-        await dbQuery('UPDATE users SET profile_picture = $1 WHERE id = $2', [picture, user.id]);
+      } else {
+        // Update profile picture and ensure email is verified for Google users
+        await dbQuery('UPDATE users SET profile_picture = $1, email_verified = TRUE WHERE id = $2', [picture, user.id]);
       }
 
       // Check if user is a team member to get effective plan
@@ -1469,13 +1470,14 @@ app.post('/api/auth/google', async (req, res) => {
       }
     }
 
-    // Insert new user
+    // Insert new user (email_verified = true for Google OAuth users)
     const result = await dbQuery(
       `INSERT INTO users (
         email, password, business_name, oauth_provider, oauth_id, profile_picture,
         stripe_customer_id, referral_code, referred_by, affiliate_id,
-        utm_source, utm_medium, utm_campaign, utm_content, utm_term, landing_page
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *`,
+        utm_source, utm_medium, utm_campaign, utm_content, utm_term, landing_page,
+        email_verified
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *`,
       [
         email,
         null, // No password for OAuth users
@@ -1492,7 +1494,8 @@ app.post('/api/auth/google', async (req, res) => {
         utmParams?.utm_campaign || null,
         utmParams?.utm_content || null,
         utmParams?.utm_term || null,
-        utmParams?.landing_page || null
+        utmParams?.landing_page || null,
+        true // Google has already verified the email
       ]
     );
 

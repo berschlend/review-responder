@@ -3,15 +3,31 @@
 
 const API_URL = 'https://review-responder.onrender.com/api';
 
-// Create context menu on install
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.contextMenus.create({
-    id: 'generateResponse',
-    title: 'Generate Response with ReviewResponder',
-    contexts: ['selection']
+// Create context menu - with cleanup to prevent duplicates on reload
+function setupContextMenu() {
+  // Remove existing menu first to prevent duplicates
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: 'generateResponse',
+      title: 'Generate Response with ReviewResponder',
+      contexts: ['selection']
+    });
+    console.log('[RR] Context menu created/refreshed');
   });
-  console.log('[RR] Context menu created');
+}
+
+// Setup on install
+chrome.runtime.onInstalled.addListener(() => {
+  setupContextMenu();
 });
+
+// Also setup on startup (for reloads)
+chrome.runtime.onStartup.addListener(() => {
+  setupContextMenu();
+});
+
+// Immediate setup for service worker activation
+setupContextMenu();
 
 // Handle context menu click
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {

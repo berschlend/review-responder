@@ -87,10 +87,10 @@ English (Primary), German
 ---
 
 ## Privacy Policy URL
-https://review-responder-frontend.onrender.com/privacy
+https://tryreviewresponder.com/privacy
 
 ## Website
-https://review-responder-frontend.onrender.com
+https://tryreviewresponder.com
 
 ## Support Email
 berend.mainz@web.de
@@ -114,4 +114,25 @@ berend.mainz@web.de
 ---
 
 ## ZIP File Location
-`C:\Users\Berend Mainz\Documents\Start-up\ReviewResponder\chrome-extension-v1.0.0.zip`
+`C:\Users\Berend Mainz\Documents\Start-up\ReviewResponder\chrome-extension-v1.5.0.zip`
+
+---
+
+## Submission Checklist
+
+### Before Submitting:
+- [ ] Extension getestet auf Google Maps
+- [ ] Alle Features funktionieren (Generate, Copy, Tones)
+- [ ] 3+ Screenshots erstellt (1280x800 px)
+- [ ] ZIP-Datei erstellt (ohne screenshots/ Ordner)
+- [ ] Chrome Developer Account ($5 einmalig)
+
+### ZIP erstellen (PowerShell):
+```powershell
+cd "C:\Users\Berend Mainz\Documents\Start-up\ReviewResponder"
+Compress-Archive -Path "chrome-extension\manifest.json", "chrome-extension\background.js", "chrome-extension\content.js", "chrome-extension\content.css", "chrome-extension\popup.html", "chrome-extension\popup.js", "chrome-extension\popup.css", "chrome-extension\templates-library.js", "chrome-extension\icons" -DestinationPath "chrome-extension-v1.5.0.zip" -Force
+```
+
+### Nach Einreichung:
+- Review dauert 1-3 Werktage
+- Bei Ablehnung: Feedback lesen, fixen, neu einreichen
