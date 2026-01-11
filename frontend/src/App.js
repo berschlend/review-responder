@@ -3010,21 +3010,40 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
 
     setGeneratingContext(true);
     try {
-      // One API call generates both: sample review AND AI response
-      const result = await api.post('/personalization/quick-demo', {
-        businessName: businessName.trim(),
+      // Step 1: Generate business context
+      const contextResult = await api.post('/personalization/generate-context', {
+        keywords: keywords.trim(),
         businessType,
-        keywords: keywords.trim()
+        businessName: businessName.trim(),
+        field: 'context'
       });
+      const context = contextResult.data.generated;
+      setGeneratedContext(context);
 
-      setGeneratedContext(keywords.trim());
-      setSampleReview(result.data.sampleReview);
-      setSampleResponse(result.data.aiResponse);
+      // Step 2: Generate sample review based on context
+      const reviewResult = await api.post('/personalization/generate-context', {
+        keywords: context,
+        businessType,
+        businessName: businessName.trim(),
+        field: 'sample_review'
+      });
+      const review = reviewResult.data.generated;
+      setSampleReview(review);
 
-      toast.success('See how AI personalizes responses using your keywords!');
+      // Step 3: Generate response to that review
+      const responseResult = await api.post('/generate', {
+        reviewText: review,
+        tone: 'friendly',
+        businessName: businessName.trim(),
+        businessContext: context,
+        businessType: businessType
+      });
+      setSampleResponse(responseResult.data.response);
+
+      toast.success('Ready! Check out your personalized AI response below.');
     } catch (error) {
       console.error('Failed to generate:', error);
-      toast.error(error.response?.data?.error || 'Failed to generate demo');
+      toast.error(error.response?.data?.error || 'Failed to generate');
     } finally {
       setGeneratingContext(false);
     }
@@ -3240,11 +3259,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                     </p>
                   </div>
 
-                  <p style={{ fontSize: '11px', color: 'var(--gray-400)', marginTop: '8px', textAlign: 'center' }}>
-                    Generated with Standard AI
-                  </p>
-
-                  <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '8px', textAlign: 'center' }}>
+                  <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '12px', textAlign: 'center' }}>
                     See how the AI uses your business details? Click Next to continue.
                   </p>
                 </>

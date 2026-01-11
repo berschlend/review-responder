@@ -1043,62 +1043,6 @@ app.put('/api/auth/profile', authenticateToken, async (req, res) => {
 
 // ============ AI PERSONALIZATION ============
 
-// Quick Demo - generates sample review AND response in one fast API call
-app.post('/api/personalization/quick-demo', authenticateToken, async (req, res) => {
-  try {
-    const { businessName, businessType, keywords } = req.body;
-
-    if (!keywords || keywords.trim().length === 0) {
-      return res.status(400).json({ error: 'Keywords are required' });
-    }
-
-    const prompt = `You are demonstrating a review response tool for a ${businessType || 'business'} called "${businessName || 'the business'}".
-
-TASK: Generate a sample review and a personalized AI response.
-
-1. "sampleReview": Write a GENERIC positive customer review (2 sentences).
-   - Just a typical happy customer review for this type of business
-   - Do NOT mention these keywords: ${keywords}
-   - Example for restaurant: "Great food and service! Will definitely come back."
-
-2. "aiResponse": Write the business owner's response (2 sentences) that:
-   - Thanks the customer warmly
-   - Subtly references ONE of these business traits: ${keywords}
-   - Shows personality and personalization
-   - Example: "Thank you! We're so glad you enjoyed our family recipes passed down through generations."
-
-The point is to show how the AI RESPONSE is personalized, not the review.
-
-Respond ONLY with valid JSON:
-{"sampleReview": "...", "aiResponse": "..."}`;
-
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 250,
-      temperature: 0.7
-    });
-
-    let result;
-    try {
-      const content = response.choices[0].message.content.trim();
-      result = JSON.parse(content);
-    } catch (parseError) {
-      console.error('JSON parse error:', parseError);
-      return res.status(500).json({ error: 'Failed to parse AI response' });
-    }
-
-    res.json({
-      sampleReview: result.sampleReview,
-      aiResponse: result.aiResponse
-    });
-
-  } catch (error) {
-    console.error('Quick demo error:', error);
-    res.status(500).json({ error: 'Failed to generate demo' });
-  }
-});
-
 // Generate Business Context or Response Style with AI
 app.post('/api/personalization/generate-context', authenticateToken, async (req, res) => {
   try {

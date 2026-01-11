@@ -426,13 +426,12 @@
 /* ========== MAIN PANEL ========== */
 #rr-response-panel {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  left: auto;
-  transform: none;
-  width: 400px;
+  top: 5vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 420px;
   max-width: 95vw;
-  max-height: calc(100vh - 40px);
+  max-height: 90vh;
   background: var(--rr-bg);
   border-radius: var(--rr-radius);
   box-shadow: var(--rr-shadow);
@@ -441,8 +440,6 @@
   visibility: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
   transition: all 0.3s ease;
 }
 
@@ -454,7 +451,7 @@
 
 #rr-response-panel.rr-closing {
   opacity: 0;
-  transform: scale(0.95);
+  transform: translateX(-50%) scale(0.9);
 }
 
 /* ========== PANEL HEADER ========== */
@@ -462,21 +459,19 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 14px;
+  padding: 14px 18px;
   background: linear-gradient(135deg, var(--rr-primary), var(--rr-primary-dark));
   color: white;
-  flex-shrink: 0;
 }
 
 .rr-header-left {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
+  gap: 10px;
 }
 
 .rr-logo {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.3px;
 }
@@ -493,20 +488,19 @@
 .rr-header-right {
   display: flex;
   align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
+  gap: 6px;
 }
 
 .rr-help-btn,
 .rr-turbo-btn,
 .rr-close-btn {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.15);
   color: white;
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -531,84 +525,100 @@
   font-weight: 300;
 }
 
-/* ========== BUSINESS CONTEXT BAR ========== */
-.rr-context-bar {
-  padding: 8px 14px;
+/* ========== ANALYTICS WIDGET ========== */
+.rr-analytics-widget {
   background: var(--rr-bg-light);
   border-bottom: 1px solid var(--rr-border);
-}
-
-.rr-context-btn {
-  width: 100%;
-  padding: 8px 12px;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-  border: 1px dashed var(--rr-primary);
-  border-radius: 8px;
-  color: var(--rr-primary);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.rr-context-btn:hover {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
-  transform: translateY(-1px);
-}
-
-/* ========== COLLAPSIBLE SECTIONS ========== */
-.rr-review-details,
-.rr-options-details {
-  border: 1px solid var(--rr-border);
-  border-radius: 8px;
-  margin-bottom: 10px;
   overflow: hidden;
+  transition: max-height 0.3s ease;
 }
 
-.rr-review-summary,
-.rr-options-summary {
+.rr-analytics-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 6px;
-  padding: 10px 14px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--rr-text);
-  background: var(--rr-bg-light);
+  padding: 8px 16px;
   cursor: pointer;
   user-select: none;
-  list-style: none;
 }
 
-.rr-review-summary::-webkit-details-marker,
-.rr-options-summary::-webkit-details-marker {
+.rr-analytics-header:hover {
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.rr-analytics-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rr-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rr-analytics-toggle {
+  font-size: 10px;
+  color: var(--rr-text-light);
+  transition: transform 0.3s;
+}
+
+.rr-analytics-body {
+  display: flex;
+  justify-content: space-around;
+  padding: 0 16px 12px;
+  gap: 8px;
+}
+
+.rr-analytics-widget.collapsed .rr-analytics-body {
   display: none;
 }
 
-.rr-review-summary::before,
-.rr-options-summary::before {
-  content: '▶';
-  font-size: 10px;
-  color: var(--rr-text-light);
-  transition: transform 0.2s;
-}
-
-.rr-review-details[open] .rr-review-summary::before,
-.rr-options-details[open] .rr-options-summary::before {
-  transform: rotate(90deg);
-}
-
-.rr-review-details .rr-review-box {
-  margin: 0;
-  border: none;
-  border-radius: 0;
-}
-
-.rr-options-content {
-  padding: 12px 14px;
+.rr-stat-item {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--rr-bg);
+  border-radius: 8px;
+  min-width: 60px;
+}
+
+.rr-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--rr-primary);
+  line-height: 1.2;
+}
+
+.rr-stat-item .rr-stat-label {
+  font-size: 9px;
+  color: var(--rr-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-top: 2px;
+}
+
+.rr-stat-chart {
+  flex: 1;
+  max-width: 100px;
+}
+
+.rr-sparkline {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 24px;
+  gap: 3px;
+}
+
+.rr-spark-bar {
+  flex: 1;
+  background: linear-gradient(180deg, var(--rr-primary) 0%, var(--rr-primary-dark) 100%);
+  border-radius: 2px;
+  min-width: 8px;
+  transition: height 0.3s;
+}
+
+.rr-spark-bar:hover {
+  opacity: 0.8;
 }
 
 /* ========== ACCOUNT SWITCHER ========== */
@@ -797,11 +807,10 @@
 
 /* ========== PANEL BODY ========== */
 .rr-panel-body {
-  padding: 16px;
-  flex: 1;
+  padding: 18px;
+  max-height: calc(90vh - 60px);
   overflow-y: auto;
   overflow-x: hidden;
-  min-height: 0;
 }
 
 /* ========== REVIEW BOX ========== */
@@ -4747,6 +4756,171 @@
 .rr-dark .rr-compensation-note {
   background: rgba(16, 185, 129, 0.15);
   color: #34d399;
+}
+
+/* ========== REVIEW INSIGHTS WIDGET STYLES ========== */
+
+.rr-insights-widget {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  border-bottom: 1px solid var(--rr-border);
+  overflow: hidden;
+}
+
+.rr-insights-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.rr-insights-header:hover {
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.rr-insights-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rr-text);
+}
+
+.rr-insights-toggle {
+  font-size: 10px;
+  color: var(--rr-text-light);
+}
+
+.rr-insights-body {
+  padding: 0 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rr-insights-widget.collapsed .rr-insights-body {
+  display: none;
+}
+
+.rr-insights-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rr-insights-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--rr-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rr-top-issues {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rr-top-issue-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--rr-text);
+  background: var(--rr-bg);
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--rr-border);
+}
+
+.rr-issue-emoji {
+  font-size: 14px;
+}
+
+.rr-issue-freq {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--rr-primary);
+  background: rgba(102, 126, 234, 0.1);
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+
+.rr-no-data {
+  font-size: 12px;
+  color: var(--rr-text-light);
+  font-style: italic;
+}
+
+.rr-sentiment-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rr-sentiment-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rr-sent-label {
+  font-size: 14px;
+  width: 24px;
+  text-align: center;
+}
+
+.rr-sent-fill {
+  height: 12px;
+  border-radius: 6px;
+  min-width: 4px;
+  transition: width 0.3s ease;
+}
+
+.rr-sent-positive {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.rr-sent-neutral {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.rr-sent-negative {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.rr-sent-pct {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--rr-text-light);
+  min-width: 32px;
+}
+
+.rr-insights-tip {
+  background: rgba(102, 126, 234, 0.08);
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--rr-text);
+}
+
+.rr-insights-tip strong {
+  color: var(--rr-primary);
+}
+
+/* Dark mode insights */
+.rr-dark .rr-insights-widget {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+}
+
+.rr-dark .rr-top-issue-item {
+  background: var(--rr-bg-light);
+}
+
+.rr-dark .rr-insights-tip {
+  background: rgba(102, 126, 234, 0.12);
 }
 
 /* ========== REVIEW POPUP ========== */
