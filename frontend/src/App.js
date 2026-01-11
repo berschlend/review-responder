@@ -4061,7 +4061,7 @@ const DashboardPage = () => {
           <h1 className="dashboard-title">Welcome, {user?.businessName || 'there'}!</h1>
           <p style={{ color: 'var(--gray-500)' }}>Generate professional review responses</p>
         </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div className="dashboard-header-actions" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <button
             onClick={() => setShowKeyboardHelp(true)}
             className="btn btn-secondary"
@@ -4204,7 +4204,7 @@ const DashboardPage = () => {
                 Share your referral link. When friends subscribe, you both get rewarded!
               </p>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <code style={{ background: 'white', padding: '8px 12px', borderRadius: '6px', fontSize: '13px', color: 'var(--primary-600)', border: '1px solid var(--primary-200)' }}>
+                <code style={{ background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '6px', fontSize: '13px', color: 'var(--primary-600)', border: '1px solid var(--primary-200)' }}>
                   {referralData.referralLink}
                 </code>
                 <button
@@ -4465,7 +4465,7 @@ const DashboardPage = () => {
                 style={{
                   flex: 1, padding: '12px', borderRadius: '8px', cursor: 'pointer', textAlign: 'center',
                   border: aiModel === 'auto' ? '2px solid var(--primary-500)' : '2px solid var(--gray-200)',
-                  background: aiModel === 'auto' ? 'var(--primary-50)' : 'white'
+                  background: aiModel === 'auto' ? 'var(--primary-50)' : 'var(--bg-secondary)'
                 }}
               >
                 <div style={{ fontSize: '20px', marginBottom: '4px' }}>🔄</div>
@@ -4479,7 +4479,7 @@ const DashboardPage = () => {
                 style={{
                   flex: 1, padding: '12px', borderRadius: '8px', textAlign: 'center',
                   border: aiModel === 'smart' ? '2px solid var(--primary-500)' : '2px solid var(--gray-200)',
-                  background: aiModel === 'smart' ? 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)' : 'white',
+                  background: aiModel === 'smart' ? 'var(--hero-gradient)' : 'var(--bg-secondary)',
                   cursor: smartRemaining > 0 ? 'pointer' : 'not-allowed',
                   opacity: smartRemaining <= 0 ? 0.5 : 1
                 }}
@@ -4495,7 +4495,7 @@ const DashboardPage = () => {
                 style={{
                   flex: 1, padding: '12px', borderRadius: '8px', textAlign: 'center',
                   border: aiModel === 'standard' ? '2px solid var(--gray-500)' : '2px solid var(--gray-200)',
-                  background: aiModel === 'standard' ? 'var(--gray-100)' : 'white',
+                  background: aiModel === 'standard' ? 'var(--gray-100)' : 'var(--bg-secondary)',
                   cursor: standardRemaining > 0 ? 'pointer' : 'not-allowed',
                   opacity: standardRemaining <= 0 ? 0.5 : 1
                 }}
@@ -4789,7 +4789,7 @@ Food was amazing, will definitely come back!`}
                     <button type="button" onClick={() => setBulkAiModel('auto')} style={{
                       flex: 1, padding: '10px', borderRadius: '8px', textAlign: 'center', cursor: 'pointer',
                       border: bulkAiModel === 'auto' ? '2px solid var(--primary-500)' : '2px solid var(--gray-200)',
-                      background: bulkAiModel === 'auto' ? 'var(--primary-50)' : 'white'
+                      background: bulkAiModel === 'auto' ? 'var(--primary-50)' : 'var(--bg-secondary)'
                     }}>
                       <span style={{ marginRight: '6px' }}>🔄</span>
                       <span style={{ fontWeight: '600', fontSize: '13px' }}>Auto</span>
@@ -4797,7 +4797,7 @@ Food was amazing, will definitely come back!`}
                     <button type="button" onClick={() => smartRemaining > 0 && setBulkAiModel('smart')} disabled={smartRemaining <= 0} style={{
                       flex: 1, padding: '10px', borderRadius: '8px', textAlign: 'center',
                       border: bulkAiModel === 'smart' ? '2px solid var(--primary-500)' : '2px solid var(--gray-200)',
-                      background: bulkAiModel === 'smart' ? 'linear-gradient(135deg, #EEF2FF, #E0E7FF)' : 'white',
+                      background: bulkAiModel === 'smart' ? 'var(--hero-gradient)' : 'var(--bg-secondary)',
                       cursor: smartRemaining > 0 ? 'pointer' : 'not-allowed', opacity: smartRemaining <= 0 ? 0.5 : 1
                     }}>
                       <span style={{ marginRight: '6px' }}>✨</span>
@@ -4806,7 +4806,7 @@ Food was amazing, will definitely come back!`}
                     <button type="button" onClick={() => standardRemaining > 0 && setBulkAiModel('standard')} disabled={standardRemaining <= 0} style={{
                       flex: 1, padding: '10px', borderRadius: '8px', textAlign: 'center',
                       border: bulkAiModel === 'standard' ? '2px solid var(--gray-500)' : '2px solid var(--gray-200)',
-                      background: bulkAiModel === 'standard' ? 'var(--gray-100)' : 'white',
+                      background: bulkAiModel === 'standard' ? 'var(--gray-100)' : 'var(--bg-secondary)',
                       cursor: standardRemaining > 0 ? 'pointer' : 'not-allowed', opacity: standardRemaining <= 0 ? 0.5 : 1
                     }}>
                       <span style={{ marginRight: '6px' }}>⚡</span>
@@ -4907,7 +4907,7 @@ Food was amazing, will definitely come back!`}
                             <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--gray-500)', marginBottom: '4px' }}>
                               RESPONSE:
                             </div>
-                            <div style={{ fontSize: '14px', color: 'var(--gray-900)', background: 'white', padding: '12px', borderRadius: '6px', border: '1px solid var(--gray-200)' }}>
+                            <div style={{ fontSize: '14px', color: 'var(--text-primary)', background: 'var(--bg-secondary)', padding: '12px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
                               {result.response}
                             </div>
                           </div>
@@ -6361,7 +6361,7 @@ const SettingsPage = () => {
               <p style={{ fontWeight: '600', color: 'var(--success-700)', marginBottom: '8px' }}>New API Key Created!</p>
               <p style={{ fontSize: '12px', color: 'var(--success-600)', marginBottom: '8px' }}>Copy this key now. It won't be shown again.</p>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <code style={{ flex: 1, background: 'white', padding: '8px 12px', borderRadius: '4px', fontSize: '12px', wordBreak: 'break-all' }}>{generatedKey}</code>
+                <code style={{ flex: 1, background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '4px', fontSize: '12px', wordBreak: 'break-all', color: 'var(--text-primary)' }}>{generatedKey}</code>
                 <button onClick={() => copyToClipboard(generatedKey)} className="btn btn-sm" style={{ whiteSpace: 'nowrap' }}><Copy size={14} /> Copy</button>
               </div>
               <button onClick={() => setGeneratedKey(null)} style={{ marginTop: '8px', fontSize: '12px', color: 'var(--success-600)', background: 'none', border: 'none', cursor: 'pointer' }}>Dismiss</button>
@@ -6622,7 +6622,7 @@ const TeamPage = () => {
         ) : (
           <div style={{ border: '1px solid var(--gray-200)', borderRadius: '8px', overflow: 'hidden' }}>
             {teamData.members.map((member, idx) => (
-              <div key={member.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderBottom: idx < teamData.members.length - 1 ? '1px solid var(--gray-200)' : 'none', background: member.status === 'pending' ? 'var(--gray-50)' : 'white' }}>
+              <div key={member.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderBottom: idx < teamData.members.length - 1 ? '1px solid var(--gray-200)' : 'none', background: member.status === 'pending' ? 'var(--gray-50)' : 'var(--bg-secondary)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: member.status === 'active' ? 'var(--primary-100)' : 'var(--gray-200)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Users size={18} style={{ color: member.status === 'active' ? 'var(--primary-600)' : 'var(--gray-400)' }} />

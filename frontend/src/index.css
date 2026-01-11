@@ -971,6 +971,21 @@ body {
     align-items: stretch;
   }
 
+  .dashboard-header-actions {
+    flex-wrap: wrap;
+    gap: 8px !important;
+  }
+
+  .dashboard-header-actions .btn {
+    padding: 6px 10px !important;
+    font-size: 13px;
+  }
+
+  .dashboard-header-actions .badge {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
   .dashboard-title {
     font-size: 20px;
   }
