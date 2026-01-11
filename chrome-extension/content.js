@@ -1847,8 +1847,16 @@ const MAX_TEMPLATES = 10;
 async function loadTemplates() {
   try {
     const stored = await chrome.storage.sync.get(['rr_templates']);
-    return stored.rr_templates || [];
+    console.log('[RR] loadTemplates from sync:', stored.rr_templates);
+    if (stored.rr_templates && stored.rr_templates.length > 0) {
+      return stored.rr_templates;
+    }
+    // Fallback to local storage if sync is empty
+    const local = await chrome.storage.local.get(['rr_templates']);
+    console.log('[RR] loadTemplates from local:', local.rr_templates);
+    return local.rr_templates || [];
   } catch (e) {
+    console.error('[RR] loadTemplates error:', e);
     // Fallback to local storage if sync fails
     try {
       const local = await chrome.storage.local.get(['rr_templates']);
@@ -1924,11 +1932,15 @@ function populateTemplateDropdown(panel, templates) {
 }
 
 function updateTemplatesOverlay(panel, templates) {
+  console.log('[RR] updateTemplatesOverlay called with', templates?.length, 'templates');
   const list = panel.querySelector('.rr-templates-list');
   const count = panel.querySelector('.rr-templates-count');
   const empty = panel.querySelector('.rr-templates-empty');
 
-  if (!list) return;
+  if (!list) {
+    console.error('[RR] updateTemplatesOverlay: list not found!');
+    return;
+  }
 
   // Update count
   if (count) count.textContent = `${templates.length}/${MAX_TEMPLATES} templates`;
@@ -4454,8 +4466,8 @@ function createFloatingButton() {
       hideFloatingButton();
       turboGenerate(selection);
     } else {
-      console.log('[RR] Normal mode - showing panel');
-      showResponsePanel(selection, true);
+      console.log('[RR] Normal mode - showing panel (no auto-generate)');
+      showResponsePanel(selection, false);  // FALSE = let user choose tone first!
       hideFloatingButton();
     }
   });
@@ -4566,7 +4578,7 @@ document.addEventListener('keydown', async (e) => {
     if (settings.turboMode) {
       turboGenerate(selection);
     } else {
-      showResponsePanel(selection, true);
+      showResponsePanel(selection, false);  // FALSE = let user choose tone first!
     }
     return;
   }
@@ -4587,8 +4599,33 @@ document.addEventListener('keydown', async (e) => {
     return;
   }
 
-  // Alt+R: Reset Panel Position to center
-  if (e.altKey && !e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 'r') {
+  // Alt+0: Reset ALL settings to defaults (debug)
+  if (e.altKey && !e.ctrlKey && !e.shiftKey && e.key === '0') {
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    // Reset settings to defaults
+    const defaults = {
+      tone: 'professional',
+      length: 'medium',
+      emojis: false,
+      autoCopy: true,
+      turboMode: false  // EXPLICITLY OFF
+    };
+    await chrome.storage.local.set({ rr_settings: defaults });
+    cachedSettings = defaults;
+
+    // Also clear panel position
+    await chrome.storage.local.remove(['rr_panel_position']);
+
+    console.log('[RR] ALL SETTINGS RESET TO DEFAULTS:', defaults);
+    showToast('🔄 All settings reset to defaults (Turbo Mode OFF)', 'success');
+    return;
+  }
+
+  // Alt+Shift+R: Reset Panel Position to center
+  if (e.altKey && !e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'r') {
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
