@@ -2891,11 +2891,12 @@ function initPanelEvents(panel) {
     cachedSettings = settings;
     await saveSettings(settings);
 
-    // Update button icon and checkbox
+    // Update button icon and all checkboxes (hidden + settings overlay)
     turboBtn.textContent = settings.turboMode ? '⚡' : '🐢';
     turboBtn.title = settings.turboMode ? 'Turbo Mode ON (click to disable)' : 'Turbo Mode OFF (click to enable)';
     turboBtn.classList.toggle('rr-turbo-active', settings.turboMode);
     panel.querySelector('.rr-turbo-toggle').checked = settings.turboMode;
+    panel.querySelector('.rr-settings-turbo-toggle').checked = settings.turboMode;
 
     showToast(settings.turboMode ? '⚡ Turbo Mode ON - Panel will skip next time' : '🐢 Turbo Mode OFF - Normal panel mode', 'info');
   });
@@ -3298,6 +3299,14 @@ function initPanelEvents(panel) {
   // Settings overlay close
   panel.querySelector('.rr-settings-close').addEventListener('click', () => {
     panel.querySelector('.rr-settings-overlay').classList.add('hidden');
+  });
+
+  // Settings overlay click outside to close
+  panel.querySelector('.rr-settings-overlay').addEventListener('click', (e) => {
+    // Only close if clicking the backdrop, not the content
+    if (e.target.classList.contains('rr-settings-overlay')) {
+      panel.querySelector('.rr-settings-overlay').classList.add('hidden');
+    }
   });
 
   // Settings length buttons
@@ -4837,8 +4846,8 @@ document.addEventListener('keydown', async (e) => {
       showToast('🔐 Please login first', 'error');
       return;
     }
-    // Force open panel regardless of turbo mode
-    showResponsePanel(selection || '', true);
+    // Force open panel regardless of turbo mode - FALSE = don't auto-generate, let user choose
+    showResponsePanel(selection || '', false);
     return;
   }
 
@@ -4875,12 +4884,32 @@ document.addEventListener('keydown', async (e) => {
     if (panel && panel.classList.contains('rr-visible')) {
       e.preventDefault();
       e.stopPropagation();
-      // First close any open overlays
+
+      // First close any open overlays (in priority order)
+      const settingsOverlay = panel.querySelector('.rr-settings-overlay');
+      if (settingsOverlay && !settingsOverlay.classList.contains('hidden')) {
+        settingsOverlay.classList.add('hidden');
+        return;
+      }
+
+      const templatesOverlay = panel.querySelector('.rr-templates-overlay');
+      if (templatesOverlay && !templatesOverlay.classList.contains('hidden')) {
+        templatesOverlay.classList.add('hidden');
+        return;
+      }
+
+      const historyOverlay = panel.querySelector('.rr-history-overlay');
+      if (historyOverlay && !historyOverlay.classList.contains('hidden')) {
+        historyOverlay.classList.add('hidden');
+        return;
+      }
+
       const keyboardHelp = panel.querySelector('.rr-keyboard-help');
       if (keyboardHelp && !keyboardHelp.classList.contains('hidden')) {
         keyboardHelp.classList.add('hidden');
         return;
       }
+
       closePanel(panel);
       return;
     }

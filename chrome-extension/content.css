@@ -3835,6 +3835,10 @@
   animation: rr-fadeIn 0.2s ease;
 }
 
+.rr-settings-overlay.hidden {
+  display: none;
+}
+
 .rr-settings-content {
   background: var(--rr-bg);
   border-radius: 16px;
