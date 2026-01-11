@@ -7687,10 +7687,11 @@ const ExtensionPage = () => {
 
 // Pricing Page
 const PricingPage = () => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const location = useLocation();
   const [testimonials, setTestimonials] = useState([]);
   const [expandedFaq, setExpandedFaq] = useState(null);
+  const [showAdminSubscriptionModal, setShowAdminSubscriptionModal] = useState(false);
 
   // Check if discount is already active in URL
   const urlParams = new URLSearchParams(location.search);
@@ -7706,7 +7707,23 @@ const PricingPage = () => {
       const res = await api.post('/billing/portal');
       window.location.href = res.data.url;
     } catch (error) {
-      toast.error('Failed to open billing portal');
+      // Check if user has no Stripe customer (admin-upgraded)
+      if (error.response?.data?.noStripeCustomer) {
+        setShowAdminSubscriptionModal(true);
+      } else {
+        toast.error('Failed to open billing portal');
+      }
+    }
+  };
+
+  const handleAdminPlanChange = async (planId) => {
+    try {
+      await api.post('/admin/self-set-plan', { plan: planId });
+      toast.success(`Plan changed to ${planId.charAt(0).toUpperCase() + planId.slice(1)}`);
+      setShowAdminSubscriptionModal(false);
+      refreshUser();
+    } catch (error) {
+      toast.error('Failed to change plan');
     }
   };
 
@@ -8043,6 +8060,59 @@ const PricingPage = () => {
           }
         `}
       </style>
+
+      {/* Admin Subscription Modal - for users without Stripe customer ID */}
+      {showAdminSubscriptionModal && (
+        <div className="modal-overlay" onClick={() => setShowAdminSubscriptionModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <button
+              onClick={() => setShowAdminSubscriptionModal(false)}
+              className="modal-close"
+              style={{ position: 'absolute', right: '16px', top: '16px' }}
+            >
+              <X size={20} />
+            </button>
+            <h2 style={{ marginBottom: '8px' }}>Manage Subscription</h2>
+            <p style={{ color: 'var(--gray-600)', fontSize: '14px', marginBottom: '24px' }}>
+              Admin Mode - Switch plans instantly
+            </p>
+            <div style={{ display: 'grid', gap: '12px' }}>
+              {[
+                { id: 'free', name: 'Free', responses: '20 responses/mo' },
+                { id: 'starter', name: 'Starter', responses: '300 responses/mo' },
+                { id: 'professional', name: 'Professional', responses: '800 responses/mo' },
+                { id: 'unlimited', name: 'Unlimited', responses: 'Unlimited' }
+              ].map(plan => (
+                <button
+                  key={plan.id}
+                  onClick={() => handleAdminPlanChange(plan.id)}
+                  disabled={user?.plan === plan.id}
+                  className={`btn ${user?.plan === plan.id ? 'btn-secondary' : 'btn-primary'}`}
+                  style={{
+                    padding: '16px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    opacity: user?.plan === plan.id ? 0.6 : 1
+                  }}
+                >
+                  <span style={{ fontWeight: '600' }}>{plan.name}</span>
+                  <span style={{ fontSize: '13px', opacity: 0.8 }}>
+                    {user?.plan === plan.id ? '(Current)' : plan.responses}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowAdminSubscriptionModal(false)}
+              className="btn btn-secondary"
+              style={{ width: '100%', marginTop: '16px' }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

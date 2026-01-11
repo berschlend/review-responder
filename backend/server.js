@@ -2580,6 +2580,14 @@ app.post('/api/billing/portal', authenticateToken, async (req, res) => {
   try {
     const user = await dbGet('SELECT stripe_customer_id FROM users WHERE id = $1', [req.user.id]);
 
+    // Check if user has no Stripe customer (admin-upgraded)
+    if (!user.stripe_customer_id) {
+      return res.status(400).json({
+        error: 'No Stripe subscription',
+        noStripeCustomer: true
+      });
+    }
+
     const session = await stripe.billingPortal.sessions.create({
       customer: user.stripe_customer_id,
       return_url: `${process.env.FRONTEND_URL}/dashboard`
@@ -2589,6 +2597,47 @@ app.post('/api/billing/portal', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Portal error:', error);
     res.status(500).json({ error: 'Failed to create portal session' });
+  }
+});
+
+// Self-service plan change for users without Stripe (admin-upgraded users)
+app.post('/api/admin/self-set-plan', authenticateToken, async (req, res) => {
+  try {
+    const { plan } = req.body;
+    const validPlans = ['free', 'starter', 'professional', 'unlimited'];
+
+    if (!validPlans.includes(plan)) {
+      return res.status(400).json({ error: 'Invalid plan' });
+    }
+
+    // Check if user has no stripe_customer_id (manually upgraded)
+    const user = await dbGet('SELECT stripe_customer_id FROM users WHERE id = $1', [req.user.id]);
+
+    if (user.stripe_customer_id) {
+      return res.status(403).json({
+        error: 'Use Stripe portal to manage your subscription',
+        hasStripeCustomer: true
+      });
+    }
+
+    // Update plan (same logic as admin/set-plan)
+    const limits = PLAN_LIMITS[plan];
+    await dbRun(`
+      UPDATE users SET
+        subscription_plan = $1,
+        subscription_status = $2,
+        responses_limit = $3,
+        responses_used = 0,
+        smart_responses_used = 0,
+        standard_responses_used = 0
+      WHERE id = $4
+    `, [plan, plan === 'free' ? 'inactive' : 'active', limits.responses, req.user.id]);
+
+    console.log(`Self-service plan change: User ${req.user.id} changed to ${plan}`);
+    res.json({ success: true, plan });
+  } catch (error) {
+    console.error('Self-set-plan error:', error);
+    res.status(500).json({ error: 'Failed to change plan' });
   }
 });
 
