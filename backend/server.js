@@ -1052,17 +1052,24 @@ app.post('/api/personalization/quick-demo', authenticateToken, async (req, res) 
       return res.status(400).json({ error: 'Keywords are required' });
     }
 
-    const prompt = `You are helping demonstrate a review response tool.
+    const prompt = `You are demonstrating a review response tool for a ${businessType || 'business'} called "${businessName || 'the business'}".
 
-Business: ${businessName || 'the business'}
-Type: ${businessType || 'General Business'}
-Keywords: ${keywords}
+TASK: Generate a sample review and a personalized AI response.
 
-Generate TWO things in JSON format:
-1. "sampleReview": A realistic 5-star customer review (2 sentences max) that naturally mentions the keywords
-2. "aiResponse": A friendly, warm business owner response to that review (2 sentences max)
+1. "sampleReview": Write a GENERIC positive customer review (2 sentences).
+   - Just a typical happy customer review for this type of business
+   - Do NOT mention these keywords: ${keywords}
+   - Example for restaurant: "Great food and service! Will definitely come back."
 
-Keep both SHORT and natural. Respond ONLY with valid JSON, no markdown:
+2. "aiResponse": Write the business owner's response (2 sentences) that:
+   - Thanks the customer warmly
+   - Subtly references ONE of these business traits: ${keywords}
+   - Shows personality and personalization
+   - Example: "Thank you! We're so glad you enjoyed our family recipes passed down through generations."
+
+The point is to show how the AI RESPONSE is personalized, not the review.
+
+Respond ONLY with valid JSON:
 {"sampleReview": "...", "aiResponse": "..."}`;
 
     const response = await openai.chat.completions.create({
