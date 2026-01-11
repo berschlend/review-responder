@@ -49,7 +49,6 @@ chrome.storage.local.get(['rr_panel_position']).then(stored => {
     // If position is negative or way off screen, clear it
     if (left < 0 || top < 0 || left > 3000 || top > 2000) {
       chrome.storage.local.remove(['rr_panel_position']);
-      console.log('[RR] Cleared invalid panel position');
     }
   }
 });
@@ -302,7 +301,6 @@ async function checkClipboardForReview() {
     return { hasReview: false, text: '' };
   } catch (e) {
     // Clipboard access denied or not available
-    console.log('Clipboard access not available:', e.message);
     return { hasReview: false, text: '' };
   }
 }
@@ -1843,11 +1841,9 @@ async function loadSettings() {
 
 async function saveSettings(settings) {
   try {
-    console.log('[RR] Saving settings:', JSON.stringify(settings));
     await chrome.storage.local.set({ rr_settings: settings });
-    console.log('[RR] Settings saved successfully');
   } catch (e) {
-    console.error('[RR] Failed to save settings:', e);
+    // Settings save failed silently
   }
 }
 
@@ -1861,16 +1857,13 @@ const MAX_TEMPLATES = 10;
 async function loadTemplates() {
   try {
     const stored = await chrome.storage.sync.get(['rr_templates']);
-    console.log('[RR] loadTemplates from sync:', stored.rr_templates);
     if (stored.rr_templates && stored.rr_templates.length > 0) {
       return stored.rr_templates;
     }
     // Fallback to local storage if sync is empty
     const local = await chrome.storage.local.get(['rr_templates']);
-    console.log('[RR] loadTemplates from local:', local.rr_templates);
     return local.rr_templates || [];
   } catch (e) {
-    console.error('[RR] loadTemplates error:', e);
     // Fallback to local storage if sync fails
     try {
       const local = await chrome.storage.local.get(['rr_templates']);
@@ -1946,15 +1939,11 @@ function populateTemplateDropdown(panel, templates) {
 }
 
 function updateTemplatesOverlay(panel, templates) {
-  console.log('[RR] updateTemplatesOverlay called with', templates?.length, 'templates');
   const list = panel.querySelector('.rr-templates-list');
   const count = panel.querySelector('.rr-templates-count');
   const empty = panel.querySelector('.rr-templates-empty');
 
-  if (!list) {
-    console.error('[RR] updateTemplatesOverlay: list not found!');
-    return;
-  }
+  if (!list) return;
 
   // Update count
   if (count) count.textContent = `${templates.length}/${MAX_TEMPLATES} templates`;
@@ -2901,7 +2890,6 @@ function initPanelEvents(panel) {
     settings.turboMode = !settings.turboMode;
     cachedSettings = settings;
     await saveSettings(settings);
-    console.log('[RR] Turbo button toggled to:', settings.turboMode);
 
     // Update button icon and checkbox
     turboBtn.textContent = settings.turboMode ? '⚡' : '🐢';
@@ -3254,22 +3242,16 @@ function initPanelEvents(panel) {
     console.error('[RR] Templates list not found!');
   } else {
     templatesList.addEventListener('click', async (e) => {
-      console.log('[RR] Templates list clicked', e.target);
       const useBtn = e.target.closest('.rr-template-use');
       const deleteBtn = e.target.closest('.rr-template-delete');
       const item = e.target.closest('.rr-template-item');
 
-      console.log('[RR] useBtn:', useBtn, 'item:', item);
-
       if (!item) return;
       const templateId = item.dataset.id;
-      console.log('[RR] Template ID:', templateId);
 
       if (useBtn) {
         const templates = await loadTemplates();
-        console.log('[RR] Loaded templates:', templates);
         const template = templates.find(t => t.id === templateId);
-        console.log('[RR] Found template:', template);
         if (template) {
           panel.querySelector('.rr-response-textarea').value = template.content;
           panel.querySelector('.rr-response-section').classList.remove('hidden');
@@ -3278,7 +3260,6 @@ function initPanelEvents(panel) {
           updateCharCounter(panel);
           showToast(`📝 Template "${template.name}" loaded`, 'success');
         } else {
-          console.error('[RR] Template not found for ID:', templateId);
           showToast('❌ Template not found', 'error');
         }
       }
@@ -4459,7 +4440,26 @@ async function copyResponse(panel) {
 async function showResponsePanel(reviewText, autoGenerate = false) {
   let panel = document.getElementById('rr-response-panel');
   if (!panel) {
-    panel = await createResponsePanel();
+    // Prevent race condition: wait if panel is already being created
+    if (isCreatingPanel) {
+      await new Promise(resolve => {
+        const checkPanel = setInterval(() => {
+          if (!isCreatingPanel) {
+            clearInterval(checkPanel);
+            resolve();
+          }
+        }, 50);
+      });
+      panel = document.getElementById('rr-response-panel');
+    }
+    if (!panel) {
+      isCreatingPanel = true;
+      try {
+        panel = await createResponsePanel();
+      } finally {
+        isCreatingPanel = false;
+      }
+    }
   }
 
   // Apply current theme
@@ -4671,14 +4671,10 @@ function createFloatingButton() {
     // Always load fresh settings to ensure we have the latest turbo mode state
     const settings = await loadSettings();
     cachedSettings = settings;
-    console.log('[RR] Floating button clicked. Settings:', JSON.stringify(settings));
-    console.log('[RR] turboMode =', settings.turboMode, '| shiftKey =', e.shiftKey);
     if (settings.turboMode && !e.shiftKey) {
-      console.log('[RR] Turbo mode active - calling turboGenerate');
       hideFloatingButton();
       turboGenerate(selection);
     } else {
-      console.log('[RR] Normal mode - showing panel (no auto-generate)');
       showResponsePanel(selection, false);  // FALSE = let user choose tone first!
       hideFloatingButton();
     }
@@ -4807,32 +4803,6 @@ document.addEventListener('keydown', async (e) => {
     cachedSettings = settings;
     await saveSettings(settings);
     showToast(settings.turboMode ? '⚡ Turbo Mode ON' : '🐢 Turbo Mode OFF', 'info');
-    console.log('[RR] Turbo Mode toggled to:', settings.turboMode);
-    return;
-  }
-
-  // Alt+0: Reset ALL settings to defaults (debug)
-  if (e.altKey && !e.ctrlKey && !e.shiftKey && e.key === '0') {
-    e.preventDefault();
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-
-    // Reset settings to defaults
-    const defaults = {
-      tone: 'professional',
-      length: 'medium',
-      emojis: false,
-      autoCopy: true,
-      turboMode: false  // EXPLICITLY OFF
-    };
-    await chrome.storage.local.set({ rr_settings: defaults });
-    cachedSettings = defaults;
-
-    // Also clear panel position
-    await chrome.storage.local.remove(['rr_panel_position']);
-
-    console.log('[RR] ALL SETTINGS RESET TO DEFAULTS:', defaults);
-    showToast('🔄 All settings reset to defaults (Turbo Mode OFF)', 'success');
     return;
   }
 
@@ -5871,7 +5841,6 @@ async function checkShowReviewPopup() {
     }
   } catch (error) {
     // Silently fail - not critical
-    console.log('Review popup check failed:', error);
   }
 }
 

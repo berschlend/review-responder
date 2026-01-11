@@ -6068,7 +6068,7 @@ app.post('/api/outreach/send-emails', async (req, res) => {
 // Send follow-up emails (sequence 2 and 3)
 app.post('/api/outreach/send-followups', async (req, res) => {
   const adminKey = req.headers['x-admin-key'];
-  if (adminKey !== process.env.ADMIN_SECRET) {
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -6187,7 +6187,7 @@ app.post('/api/outreach/send-followups', async (req, res) => {
 // Set up as Render Cron Job: 0 9 * * * (9 AM UTC daily)
 app.post('/api/cron/daily-outreach', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (cronSecret !== process.env.CRON_SECRET && cronSecret !== process.env.ADMIN_SECRET) {
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -6367,7 +6367,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
 // Get outreach dashboard stats
 app.get('/api/outreach/dashboard', async (req, res) => {
   const adminKey = req.headers['x-admin-key'] || req.query.key;
-  if (adminKey !== process.env.ADMIN_SECRET) {
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
