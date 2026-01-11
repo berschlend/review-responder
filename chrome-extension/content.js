@@ -2664,7 +2664,7 @@ function initPanelEvents(panel) {
 
   // Turbo Mode toggle button in header
   const turboBtn = panel.querySelector('.rr-turbo-btn');
-  turboBtn.addEventListener('click', async () => {
+  if (turboBtn) turboBtn.addEventListener('click', async () => {
     const settings = cachedSettings || await loadSettings();
     settings.turboMode = !settings.turboMode;
     cachedSettings = settings;
