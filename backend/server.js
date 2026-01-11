@@ -4439,6 +4439,26 @@ app.delete('/api/admin/testimonials/:id', async (req, res) => {
   }
 });
 
+// Admin: Update testimonial (name, comment, approved)
+app.put('/api/admin/testimonials/:id', async (req, res) => {
+  const { key } = req.query;
+  if (!process.env.ADMIN_SECRET || !safeCompare(key, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { user_name, comment, approved } = req.body;
+
+  try {
+    await dbQuery(
+      'UPDATE user_feedback SET user_name = COALESCE($1, user_name), comment = COALESCE($2, comment), approved = COALESCE($3, approved) WHERE id = $4',
+      [user_name, comment, approved, req.params.id]
+    );
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update' });
+  }
+});
+
 // Admin: List all testimonials (including non-approved)
 app.get('/api/admin/testimonials', async (req, res) => {
   const { key } = req.query;
