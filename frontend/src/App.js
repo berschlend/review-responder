@@ -1580,12 +1580,8 @@ SIGN OFF:
                 fontSize: '12px',
                 fontWeight: '600',
                 color: 'var(--gray-500)',
-                marginBottom: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
+                marginBottom: '12px'
               }}>
-                <Star size={14} fill="#f59e0b" color="#f59e0b" />
                 THE REVIEW
               </div>
               <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
