@@ -3365,17 +3365,16 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
             </button>
           </div>
 
-          {currentStep < 4 ? (
+          {currentStep < 3 ? (
             <button
               className="btn btn-primary"
               onClick={nextStep}
               disabled={
                 (currentStep === 1 && !businessName.trim()) ||
-                (currentStep === 2 && !generatedContext) ||
-                (currentStep === 3 && !generatedContext.trim())
+                (currentStep === 2 && !sampleResponse)
               }
             >
-              {currentStep === 1 ? 'Continue' : currentStep === 3 ? 'Save & Continue' : 'Next'}
+              {currentStep === 1 ? 'Continue' : 'Save & Continue'}
             </button>
           ) : (
             <button
