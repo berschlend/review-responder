@@ -4461,10 +4461,47 @@ function scanPageForReviews() {
   const reviews = [];
   const platform = detectPlatform();
 
-  // Platform-specific selectors
+  // Yelp-specific scanning strategy (Yelp uses dynamic CSS classes)
+  if (platform.name === 'Yelp') {
+    document.querySelectorAll('p[class*="comment__"]').forEach(commentP => {
+      const text = commentP.textContent.trim();
+      if (text.length >= 20) {
+        // Find rating by walking up DOM to find star rating element
+        let rating = null;
+        let parent = commentP;
+        for (let i = 0; i < 10; i++) {
+          parent = parent.parentElement;
+          if (!parent) break;
+          // Find star rating - exclude filter buttons
+          const starEls = parent.querySelectorAll('div[aria-label*="star rating"]');
+          for (const starEl of starEls) {
+            const ariaLabel = starEl.getAttribute('aria-label') || '';
+            if (ariaLabel.includes('Filter')) continue;
+            // Parse rating from "5 star rating" or "4.5 star rating"
+            const ratingNum = parseFloat(ariaLabel.split(' ')[0]);
+            if (!isNaN(ratingNum)) {
+              rating = ratingNum;
+              break;
+            }
+          }
+          if (rating !== null) break;
+        }
+
+        reviews.push({
+          element: commentP,
+          text: cleanReviewText(text),
+          rating: rating,
+          sentiment: analyzeSentiment(text),
+          processed: false
+        });
+      }
+    });
+    return reviews;
+  }
+
+  // Platform-specific selectors for other platforms
   const selectors = {
     'Google': ['.jftiEf', '[data-review-id]'],
-    'Yelp': ['.review', '[data-review-id]'],
     'TripAdvisor': ['.review-container', '.reviewSelector'],
     'Facebook': ['[data-testid="UFI2Comment"]', '.userContentWrapper'],
     'Trustpilot': ['.review-card', '.styles_reviewCard'],
@@ -4479,7 +4516,7 @@ function scanPageForReviews() {
       // Find review text - try multiple selectors
       const textSelectors = [
         '.wiI7pd', '.MyEned',  // Google Maps
-        '.comment__373c0__Nsutg', '.raw__373c0__tQAx6', // Yelp
+        '[class*="comment__"]', '[class*="raw__"]', // Yelp (wildcard for dynamic classes)
         '.partial_entry', '.entry', // TripAdvisor
         '.userContent', // Facebook
         '.review-content__text', // Trustpilot
@@ -4498,11 +4535,11 @@ function scanPageForReviews() {
 
       // Try to get rating
       let rating = null;
-      const ratingEl = reviewEl.querySelector('[aria-label*="star"], .rating, .star-rating, .review-rating');
+      const ratingEl = reviewEl.querySelector('[aria-label*="star rating"]:not([aria-label*="Filter"]), [aria-label*="star"], .rating, .star-rating, .review-rating');
       if (ratingEl) {
         const ariaLabel = ratingEl.getAttribute('aria-label') || '';
-        const ratingMatch = ariaLabel.match(/(\d)/);
-        if (ratingMatch) rating = parseInt(ratingMatch[1]);
+        const ratingMatch = ariaLabel.match(/^(\d\.?\d?)\s*star/i) || ariaLabel.match(/(\d)/);
+        if (ratingMatch) rating = parseFloat(ratingMatch[1]);
       }
 
       if (text && text.length >= 20) {
