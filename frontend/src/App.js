@@ -1840,7 +1840,7 @@ const LandingPage = () => {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-          {/* Example 1: Restaurant - Wrong Bill */}
+          {/* Example 1: Restaurant - Long Wait (Shows Business Context + Explanatory Style) */}
           <div className="card" style={{ padding: '0', overflow: 'hidden', border: '1px solid var(--gray-200)', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)' }}>
             <div style={{ background: 'white', padding: '24px', borderBottom: '1px solid var(--gray-100)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
@@ -1849,12 +1849,15 @@ const LandingPage = () => {
                     <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--gray-700)' }}>🍕 RESTAURANT</span>
                   </div>
                   <div style={{ display: 'flex', gap: '2px' }}>
-                    {[1, 2, 3, 4, 5].map(i => <Star key={i} size={16} fill={i <= 1 ? "#f59e0b" : "none"} color="#f59e0b" />)}
+                    {[1, 2, 3, 4, 5].map(i => <Star key={i} size={16} fill={i <= 3 ? "#f59e0b" : "none"} color="#f59e0b" />)}
                   </div>
+                </div>
+                <div style={{ background: 'linear-gradient(135deg, var(--primary), #7c3aed)', padding: '4px 10px', borderRadius: '6px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '700', color: 'white' }}>Business Context ON</span>
                 </div>
               </div>
               <p style={{ fontSize: '16px', color: 'var(--gray-800)', lineHeight: '1.6', fontWeight: '500', fontStyle: 'italic', margin: '0' }}>
-                "Bill was wrong - charged us for items we didn't order. When I pointed it out, the manager got defensive and made us feel like liars. Ruined what was a nice dinner."
+                "Waited 45 minutes for our food on a Friday night. Kids were starving and getting cranky. Food was good but the wait killed the experience."
               </p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', background: 'var(--gray-200)' }}>
@@ -1864,10 +1867,10 @@ const LandingPage = () => {
                   <span style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Typical Response</span>
                 </div>
                 <p style={{ fontSize: '14px', color: 'var(--gray-500)', lineHeight: '1.7', margin: '0' }}>
-                  "We apologize for any billing discrepancies. Please contact our manager during business hours."
+                  "We apologize for the long wait. We hope to serve you better next time."
                 </p>
                 <div style={{ marginTop: '20px', fontSize: '12px', color: 'var(--gray-400)', fontWeight: '600' }}>
-                  Result: Customer feels dismissed
+                  Result: Generic, no context
                 </div>
               </div>
               <div style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)', padding: '28px', position: 'relative' }}>
@@ -1877,76 +1880,33 @@ const LandingPage = () => {
                   <span style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ReviewResponder AI</span>
                 </div>
                 <p style={{ fontSize: '15px', color: 'var(--gray-900)', lineHeight: '1.7', fontWeight: '500', margin: '0' }}>
-                  "A wrong bill AND being made to feel like a liar - I'm genuinely sorry. That's not hospitality. I've pulled your receipt and you're right: two items shouldn't have been there. A refund is on its way. More importantly, I'm addressing how this was handled with our team. You deserved better."
+                  "Friday nights are wild here - we seat 200+ covers, and yes, 45 minutes is too long when you've got hungry kids. That's on us. We make everything fresh to order, which usually means great food but sometimes means longer waits on peak nights. Next time, try our call-ahead seating or come by on a Tuesday - much calmer, same great pizza."
                 </p>
                 <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--secondary)', fontWeight: '700' }}>
-                  <CheckCircle size={14} /> Validates feelings + Takes action + Shows accountability
+                  <CheckCircle size={14} /> Uses business context + Explains why + Offers solution
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Example 2: Hotel - Noise All Night */}
+          {/* Example 2: Auto Shop - Repair Issue (Shows Professional Tone + Actionable) */}
           <div className="card" style={{ padding: '0', overflow: 'hidden', border: '1px solid var(--gray-200)', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)' }}>
             <div style={{ background: 'white', padding: '24px', borderBottom: '1px solid var(--gray-100)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <div style={{ background: 'var(--gray-50)', padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--gray-200)' }}>
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--gray-700)' }}>🏨 HOTEL</span>
-                  </div>
-                  <div style={{ display: 'flex', gap: '2px' }}>
-                    {[1, 2, 3, 4, 5].map(i => <Star key={i} size={16} fill={i <= 1 ? "#f59e0b" : "none"} color="#f59e0b" />)}
-                  </div>
-                </div>
-              </div>
-              <p style={{ fontSize: '16px', color: 'var(--gray-800)', lineHeight: '1.6', fontWeight: '500', fontStyle: 'italic', margin: '0' }}>
-                "Party in the room above us until 3am. Called front desk twice - nothing happened. Paid for a room we couldn't sleep in. Vacation ruined."
-              </p>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', background: 'var(--gray-200)' }}>
-              <div style={{ background: '#fafafa', padding: '28px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: 'var(--danger)' }}>
-                  <AlertCircle size={16} />
-                  <span style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Typical Response</span>
-                </div>
-                <p style={{ fontSize: '14px', color: 'var(--gray-500)', lineHeight: '1.7', margin: '0' }}>
-                  "We're sorry your stay didn't meet expectations. We hope to welcome you back soon."
-                </p>
-                <div style={{ marginTop: '20px', fontSize: '12px', color: 'var(--gray-400)', fontWeight: '600' }}>
-                  Result: Generic, no solution offered
-                </div>
-              </div>
-              <div style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)', padding: '28px', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: '0', left: '0', right: '0', height: '3px', background: 'linear-gradient(to right, var(--primary), var(--secondary))' }}></div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: 'var(--primary)' }}>
-                  <Sparkles size={16} />
-                  <span style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ReviewResponder AI</span>
-                </div>
-                <p style={{ fontSize: '15px', color: 'var(--gray-900)', lineHeight: '1.7', fontWeight: '500', margin: '0' }}>
-                  "Paying for sleep and getting none - that's infuriating, and I'm sorry. Two calls with no action is a failure on our end. I've refunded your night and flagged this with our night manager to ensure faster response going forward. If you're ever back in the area, I'd like to personally make sure you get the rest you paid for."
-                </p>
-                <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--secondary)', fontWeight: '700' }}>
-                  <CheckCircle size={14} /> Acknowledges failure + Offers refund + Personal touch
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Example 3: Dental - Hidden Costs */}
-          <div className="card" style={{ padding: '0', overflow: 'hidden', border: '1px solid var(--gray-200)', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)' }}>
-            <div style={{ background: 'white', padding: '24px', borderBottom: '1px solid var(--gray-100)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ background: 'var(--gray-50)', padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--gray-200)' }}>
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--gray-700)' }}>🦷 DENTAL PRACTICE</span>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--gray-700)' }}>🔧 AUTO SHOP</span>
                   </div>
                   <div style={{ display: 'flex', gap: '2px' }}>
                     {[1, 2, 3, 4, 5].map(i => <Star key={i} size={16} fill={i <= 2 ? "#f59e0b" : "none"} color="#f59e0b" />)}
                   </div>
                 </div>
+                <div style={{ background: 'linear-gradient(135deg, #059669, #10b981)', padding: '4px 10px', borderRadius: '6px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '700', color: 'white' }}>Professional Tone</span>
+                </div>
               </div>
               <p style={{ fontSize: '16px', color: 'var(--gray-800)', lineHeight: '1.6', fontWeight: '500', fontStyle: 'italic', margin: '0' }}>
-                "Was told my cleaning would be covered by insurance. After the appointment, got a $280 bill for 'additional procedures' nobody mentioned. Feels like a bait and switch."
+                "Paid $800 for a brake job and the same squeaking noise came back after 2 weeks. Had to bring it back again. Very frustrating experience."
               </p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', background: 'var(--gray-200)' }}>
@@ -1956,10 +1916,10 @@ const LandingPage = () => {
                   <span style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Typical Response</span>
                 </div>
                 <p style={{ fontSize: '14px', color: 'var(--gray-500)', lineHeight: '1.7', margin: '0' }}>
-                  "Insurance coverage varies by plan. Please contact our billing department for details."
+                  "We stand behind our work. Please bring your vehicle back for inspection."
                 </p>
                 <div style={{ marginTop: '20px', fontSize: '12px', color: 'var(--gray-400)', fontWeight: '600' }}>
-                  Result: Deflects responsibility
+                  Result: Defensive, no accountability
                 </div>
               </div>
               <div style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)', padding: '28px', position: 'relative' }}>
@@ -1969,10 +1929,59 @@ const LandingPage = () => {
                   <span style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ReviewResponder AI</span>
                 </div>
                 <p style={{ fontSize: '15px', color: 'var(--gray-900)', lineHeight: '1.7', fontWeight: '500', margin: '0' }}>
-                  "You came in expecting $0 and left with a $280 surprise - I completely understand the frustration. We should have paused and explained the extras before doing them. The deep cleaning was medically necessary, but the way it was communicated wasn't okay. Let's talk about a payment plan or adjustment. Transparency matters more than any procedure."
+                  "An $800 repair that squeaks after two weeks isn't acceptable. I've pulled your service record - all our brake work carries a 12-month warranty, so the return visit is on us. Our lead tech, Mike, will personally inspect it this time. Call us at (555) 123-4567 to schedule a priority slot. We'll make this right."
                 </p>
                 <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--secondary)', fontWeight: '700' }}>
-                  <CheckCircle size={14} /> Admits communication failure + Offers solution
+                  <CheckCircle size={14} /> Shows warranty policy + Names staff + Clear next step
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Example 3: Salon - Positive Review (Shows Friendly Tone + Brand Building) */}
+          <div className="card" style={{ padding: '0', overflow: 'hidden', border: '1px solid var(--gray-200)', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)' }}>
+            <div style={{ background: 'white', padding: '24px', borderBottom: '1px solid var(--gray-100)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ background: 'var(--gray-50)', padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--gray-200)' }}>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--gray-700)' }}>💇 HAIR SALON</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '2px' }}>
+                    {[1, 2, 3, 4, 5].map(i => <Star key={i} size={16} fill="#f59e0b" color="#f59e0b" />)}
+                  </div>
+                </div>
+                <div style={{ background: 'linear-gradient(135deg, #f59e0b, #ea580c)', padding: '4px 10px', borderRadius: '6px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '700', color: 'white' }}>Friendly Tone</span>
+                </div>
+              </div>
+              <p style={{ fontSize: '16px', color: 'var(--gray-800)', lineHeight: '1.6', fontWeight: '500', fontStyle: 'italic', margin: '0' }}>
+                "Maria is amazing! Finally found someone who understands curly hair. The balayage looks so natural and she gave me great tips for home care. Already booked my next appointment!"
+              </p>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', background: 'var(--gray-200)' }}>
+              <div style={{ background: '#fafafa', padding: '28px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: 'var(--danger)' }}>
+                  <AlertCircle size={16} />
+                  <span style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Typical Response</span>
+                </div>
+                <p style={{ fontSize: '14px', color: 'var(--gray-500)', lineHeight: '1.7', margin: '0' }}>
+                  "Thank you for your kind words! We appreciate your business."
+                </p>
+                <div style={{ marginTop: '20px', fontSize: '12px', color: 'var(--gray-400)', fontWeight: '600' }}>
+                  Result: Missed opportunity to build relationship
+                </div>
+              </div>
+              <div style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)', padding: '28px', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: '0', left: '0', right: '0', height: '3px', background: 'linear-gradient(to right, var(--primary), var(--secondary))' }}></div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: 'var(--primary)' }}>
+                  <Sparkles size={16} />
+                  <span style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ReviewResponder AI</span>
+                </div>
+                <p style={{ fontSize: '15px', color: 'var(--gray-900)', lineHeight: '1.7', fontWeight: '500', margin: '0' }}>
+                  "This made Maria's day! Curly hair is her specialty - she actually trained in the DevaCut method specifically because she knew our neighborhood needed it. Glad those home care tips are working out. Quick reminder: your next appointment includes a free deep conditioning treatment as part of our loyalty program. See you soon!"
+                </p>
+                <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--secondary)', fontWeight: '700' }}>
+                  <CheckCircle size={14} /> Credits staff + Shows expertise + Promotes loyalty program
                 </div>
               </div>
             </div>
@@ -5589,6 +5598,31 @@ Food was amazing, will definitely come back!`}
           </div>
         </div>
       )}
+
+      {/* Feedback Link - always visible */}
+      <div style={{
+        textAlign: 'center',
+        padding: '24px 0',
+        marginTop: '32px',
+        borderTop: '1px solid var(--gray-100)'
+      }}>
+        <button
+          onClick={() => setShowFeedbackPopup(true)}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: 'var(--gray-500)',
+            cursor: 'pointer',
+            fontSize: '14px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          <span>Enjoying ReviewResponder?</span>
+          <span style={{ color: 'var(--primary-600)', fontWeight: '500' }}>Leave us feedback</span>
+        </button>
+      </div>
 
       {/* Feedback Popup */}
       <FeedbackPopup
