@@ -1,0 +1,104 @@
+Test ReviewResponder Full App for Walkthrough Demo Video.
+
+This is the MAIN marketing video that will be on the landing page hero section.
+Thousands of potential customers will see this. Everything must be perfect.
+
+CONTEXT - What ReviewResponder is:
+- SaaS for AI-powered review response generation
+- Chrome Extension for Google Maps, Yelp, TripAdvisor
+- Web Dashboard with Generate, History, Templates, Analytics, Team, Bulk features
+- Plans: Free (20 responses), Starter $29, Pro $49, Unlimited $99
+- Tech: React frontend, Node/Express backend, PostgreSQL, Stripe payments
+
+WHAT TO TEST FOR VIDEO READINESS:
+
+LANDING PAGE at tryreviewresponder.com:
+- Page loads fast under 3 seconds
+- Hero section looks professional
+- All animations smooth
+- CTA buttons work
+- Pricing section shows correct prices
+- Chrome Extension section looks good
+- Mobile responsive
+
+LOGIN/REGISTER FLOW:
+- Register with email works
+- Login works
+- Google Sign-In works
+- Forgot password works
+- No layout shifts during typing
+
+DASHBOARD - GENERATE TAB:
+- Review text input works
+- Business name input works
+- Language dropdown works
+- Tone dropdown shows 4 options: Professional, Friendly, Apologetic, Grateful
+- Generate button works
+- Response appears in under 8 seconds
+- Quality Score badge shows
+- Copy button works with toast notification
+- Smart AI toggle visible for paid plans
+
+DASHBOARD - VARIATIONS:
+- Generate 3 Variations button works
+- A/B/C tabs appear
+- Each tab has different content
+- Can copy from specific tab
+
+DASHBOARD - TEMPLATES TAB:
+- Template library loads
+- Categories visible: Restaurant, Hotel, Retail, Healthcare, etc
+- Can browse templates
+- Can apply template
+- Can save custom template
+
+DASHBOARD - HISTORY TAB:
+- History list loads
+- Shows previous responses
+- Can search/filter
+- Can view details
+- Export buttons work for Starter+
+
+DASHBOARD - ANALYTICS TAB (Pro/Unlimited):
+- Charts render correctly
+- Stats show numbers
+- Date range selector works
+
+DASHBOARD - TEAM TAB (Pro/Unlimited):
+- Team members list shows
+- Invite button works
+- Role management visible
+
+DASHBOARD - BULK TAB:
+- Can input multiple reviews
+- Generate All button works
+- Progress indicator shows
+- Results appear in tabs
+- Copy All works
+
+PROFILE PAGE:
+- Profile info editable
+- Password change works
+- Email change works
+- Subscription info shows
+- Delete account option exists
+
+PRICING PAGE:
+- All 3 plans visible with correct prices
+- Monthly/Yearly toggle works
+- Feature comparison accurate
+- CTA buttons work
+- Discount codes work: EARLY50, SAVE20
+
+UI/UX POLISH:
+- No console errors anywhere
+- All loading states smooth
+- All buttons have hover effects
+- No text overflow or clipping
+- Icons display correctly
+- Colors consistent throughout
+- Responsive on tablet/mobile
+
+Fix any bugs found. This video will represent the product to customers.
+
+Output WALKTHROUGH READY when everything works perfectly for video recording.

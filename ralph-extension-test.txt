@@ -1,0 +1,85 @@
+Test ReviewResponder Chrome Extension for demo video release.
+
+SETUP:
+1. Navigate to Google Maps restaurant with reviews
+2. Ensure extension is loaded and user is logged in
+
+CORE TESTS:
+- Click Respond button on a review
+- Verify panel opens with review text
+- Verify sentiment indicator shows
+- Verify language detected
+- Click Generate Response
+- Verify loading spinner appears
+- Verify response generates in under 8 seconds
+- Verify response is in same language as review
+- Verify quality score badge visible
+- Click Copy button
+- Verify toast notification appears
+- Verify clipboard contains response
+
+TONE TESTS:
+- Test Professional tone generates formal response
+- Test Friendly tone generates warm response
+- Test Apologetic tone generates empathetic response
+- Test Grateful tone generates thankful response
+- Each tone must produce noticeably different style
+
+VARIATIONS TEST:
+- Click 3 Options button
+- Verify three tabs A B C appear
+- Verify each tab has different response text
+- Verify can copy from specific tab
+
+TEMPLATE TEST:
+- Open template library
+- Browse restaurant templates
+- Apply a template
+- Generate with template applied
+- Verify response follows template style
+
+BATCH TEST:
+- Click Batch button
+- Verify shows number of reviews found
+- Click Generate All
+- Verify progress indicator shows
+- Verify can copy all responses
+
+PLATFORM TESTS:
+- Test on Yelp restaurant page
+- Test on TripAdvisor restaurant page
+- Test on Trustpilot company page
+- All platforms must detect reviews and generate responses
+
+LANGUAGE TEST:
+- German review must get German response
+- English review must get English response
+- French review must get French response
+
+EDGE CASES:
+- Very short review handles gracefully
+- Very long review processes without timeout
+- Review with emojis handles correctly
+
+ERROR HANDLING:
+- API errors show clear message
+- Network issues show offline message
+- Rate limits show upgrade prompt
+
+UI POLISH:
+- All buttons have hover states
+- Loading states are smooth
+- No text overflow or clipping
+- Icons display correctly
+- Panel sizes properly
+
+Fix any bugs found immediately. After fixing, re-test the affected feature.
+
+Files to modify if needed:
+- chrome-extension/content.js
+- chrome-extension/popup.html
+- chrome-extension/popup.js
+- chrome-extension/manifest.json
+- chrome-extension/styles.css
+
+Output DEMO READY when all tests pass and extension is polished for demo video.

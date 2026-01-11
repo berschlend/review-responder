@@ -3407,7 +3407,10 @@ function initPanelEvents(panel) {
   });
 
   // Generate button
-  panel.querySelector('.rr-generate-btn').addEventListener('click', () => generateResponse(panel));
+  panel.querySelector('.rr-generate-btn').addEventListener('click', () => {
+    console.log('[RR Debug] Generate button clicked!');
+    generateResponse(panel);
+  });
 
   // Variations button (3 Options)
   panel.querySelector('.rr-variations-btn').addEventListener('click', () => generateVariations(panel));
@@ -3895,7 +3898,25 @@ function saveCurrentSettings(panel) {
 
 // ========== GENERATE RESPONSE ==========
 async function generateResponse(panel) {
+  console.log('[RR Debug] generateResponse called');
+  console.log('[RR Debug] panel:', panel);
+
+  // Defensive check - get panel if not passed or invalid
+  if (!panel || !panel.dataset) {
+    console.log('[RR Debug] Panel missing, trying to find it');
+    panel = document.getElementById('rr-response-panel');
+    if (!panel) {
+      console.error('[RR Debug] FATAL: Cannot find panel!');
+      showToast('⚠️ Panel not found', 'error');
+      return;
+    }
+  }
+
+  console.log('[RR Debug] panel.dataset:', panel.dataset);
+
   const reviewText = panel.dataset.reviewText;
+  console.log('[RR Debug] reviewText:', reviewText ? `"${reviewText.substring(0, 50)}..."` : 'EMPTY/NULL');
+
   const detectedIssues = panel.dataset.detectedIssues ? JSON.parse(panel.dataset.detectedIssues) : [];
   const detectedLanguage = panel.dataset.detectedLanguage || 'en'; // Use stored language
   const tone = panel.querySelector('.rr-tone-select').value;
@@ -3908,9 +3929,12 @@ async function generateResponse(panel) {
   const responseSection = panel.querySelector('.rr-response-section');
 
   if (!reviewText) {
+    console.log('[RR Debug] RETURNING EARLY - no reviewText!');
     showToast('⚠️ No review text found', 'error');
     return;
   }
+
+  console.log('[RR Debug] Proceeding with generation, tone:', tone, 'language:', detectedLanguage);
 
   let stored;
   try {
@@ -4463,6 +4487,10 @@ async function copyResponse(panel) {
 
 // ========== SHOW PANEL ==========
 async function showResponsePanel(reviewText, autoGenerate = false) {
+  console.log('[RR Debug] showResponsePanel called');
+  console.log('[RR Debug] reviewText input:', reviewText ? `"${reviewText.substring(0, 50)}..."` : 'EMPTY/NULL');
+  console.log('[RR Debug] autoGenerate:', autoGenerate);
+
   let panel = document.getElementById('rr-response-panel');
   if (!panel) {
     // Prevent race condition: wait if panel is already being created
@@ -4493,6 +4521,7 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
   // Clean and store review text
   const cleaned = cleanReviewText(reviewText);
   panel.dataset.reviewText = cleaned;
+  console.log('[RR Debug] STORED reviewText on panel:', cleaned ? `"${cleaned.substring(0, 50)}..."` : 'EMPTY/NULL');
 
   // Update review preview
   const preview = cleaned.length > 120 ? cleaned.substring(0, 120) + '...' : cleaned;

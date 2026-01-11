@@ -1557,7 +1557,7 @@ SIGN OFF:
 
       {/* Testimonials with AI Responses */}
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        {testimonials.slice(0, 2).map((testimonial, index) => (
+        {testimonials.map((testimonial, index) => (
           <div
             key={index}
             className="dogfooding-grid"

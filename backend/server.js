@@ -1033,6 +1033,102 @@ app.put('/api/auth/profile', authenticateToken, async (req, res) => {
   }
 });
 
+// ============ AI PERSONALIZATION ============
+
+// Generate Business Context or Response Style with AI
+app.post('/api/personalization/generate-context', authenticateToken, async (req, res) => {
+  try {
+    const { keywords, businessType, businessName, field } = req.body;
+
+    if (!keywords || keywords.trim().length === 0) {
+      return res.status(400).json({ error: 'Keywords are required' });
+    }
+
+    if (!field || !['context', 'style'].includes(field)) {
+      return res.status(400).json({ error: 'Field must be "context" or "style"' });
+    }
+
+    // Check if Anthropic is available
+    if (!anthropic) {
+      return res.status(503).json({ error: 'AI service not available' });
+    }
+
+    // Rate limiting: Max 10 generations per day per user
+    const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    const today = new Date().toISOString().split('T')[0];
+
+    // Reset counter if new day
+    if (user.context_gen_reset_date !== today) {
+      await dbQuery(
+        'UPDATE users SET context_generations_today = 0, context_gen_reset_date = $1 WHERE id = $2',
+        [today, req.user.id]
+      );
+    } else if ((user.context_generations_today || 0) >= 10) {
+      return res.status(429).json({
+        error: 'Daily limit reached (10 generations). Try again tomorrow.',
+        remaining: 0
+      });
+    }
+
+    // Build the prompt based on field type
+    const systemPrompt = field === 'context'
+      ? `Du hilfst einem Unternehmer, eine professionelle Beschreibung seines Unternehmens zu erstellen.
+Diese Beschreibung wird verwendet, um KI-generierte Antworten auf Kundenbewertungen zu personalisieren.
+
+Unternehmenstyp: ${businessType || 'Allgemeines Unternehmen'}
+Unternehmensname: ${businessName || 'das Unternehmen'}
+
+Erstelle basierend auf den Stichwörtern eine professionelle Unternehmensbeschreibung (2-3 Sätze).
+Fokussiere auf: Alleinstellungsmerkmale, Atmosphäre, was das Unternehmen besonders macht.
+Halte es authentisch und nicht zu werblich.
+VERMEIDE Phrasen wie "Wir sind bestrebt" oder "Wir setzen uns ein".
+Schreibe in der ersten Person Plural (wir, unser).
+Antworte NUR mit dem generierten Text, keine Einleitung oder Erklärung.`
+      : `Du hilfst einem Unternehmer, seinen Antwortstil für Kundenbewertungen zu definieren.
+Diese Richtlinien werden verwendet, um KI-generierte Antworten zu personalisieren.
+
+Unternehmenstyp: ${businessType || 'Allgemeines Unternehmen'}
+Unternehmensname: ${businessName || 'das Unternehmen'}
+
+Erstelle basierend auf den Stichwörtern 3-5 kurze Stil-Richtlinien.
+Beispiele: Signatur-Abschlüsse, Tonalität, was immer/nie erwähnt werden soll.
+Halte jeden Punkt kurz und umsetzbar.
+Antworte NUR mit den Richtlinien als Bullet Points, keine Einleitung.`;
+
+    const userMessage = `Stichwörter: ${keywords.trim()}`;
+
+    // Use Claude Sonnet for best quality
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 300,
+      messages: [
+        { role: 'user', content: `${systemPrompt}\n\n${userMessage}` }
+      ]
+    });
+
+    const generated = response.content[0].text.trim();
+
+    // Update daily counter
+    await dbQuery(
+      'UPDATE users SET context_generations_today = COALESCE(context_generations_today, 0) + 1 WHERE id = $1',
+      [req.user.id]
+    );
+
+    // Get remaining generations
+    const remaining = 10 - ((user.context_generations_today || 0) + 1);
+
+    res.json({
+      generated,
+      remaining: Math.max(0, remaining),
+      tokensUsed: response.usage?.input_tokens + response.usage?.output_tokens || 0
+    });
+
+  } catch (error) {
+    console.error('Context generation error:', error);
+    res.status(500).json({ error: 'Failed to generate context. Please try again.' });
+  }
+});
+
 // ============ PROFILE & ACCOUNT MANAGEMENT ============
 
 // Change Password
