@@ -114,7 +114,7 @@ berend.mainz@web.de
 ---
 
 ## ZIP File Location
-`C:\Users\Berend Mainz\Documents\Start-up\ReviewResponder\chrome-extension-v1.5.0.zip`
+`C:\Users\Berend Mainz\Documents\Start-up\ReviewResponder\chrome-extension-v1.5.1.zip`
 
 ---
 
@@ -130,7 +130,7 @@ berend.mainz@web.de
 ### ZIP erstellen (PowerShell):
 ```powershell
 cd "C:\Users\Berend Mainz\Documents\Start-up\ReviewResponder"
-Compress-Archive -Path "chrome-extension\manifest.json", "chrome-extension\background.js", "chrome-extension\content.js", "chrome-extension\content.css", "chrome-extension\popup.html", "chrome-extension\popup.js", "chrome-extension\popup.css", "chrome-extension\templates-library.js", "chrome-extension\icons" -DestinationPath "chrome-extension-v1.5.0.zip" -Force
+Compress-Archive -Path "chrome-extension\manifest.json", "chrome-extension\background.js", "chrome-extension\content.js", "chrome-extension\content.css", "chrome-extension\popup.html", "chrome-extension\popup.js", "chrome-extension\popup.css", "chrome-extension\templates-library.js", "chrome-extension\icons" -DestinationPath "chrome-extension-v1.5.1.zip" -Force
 ```
 
 ### Nach Einreichung:
