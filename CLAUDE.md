@@ -59,13 +59,11 @@ Nutze diese Commands für maximale Effizienz:
 | **Frontend** | https://tryreviewresponder.com |
 | **Backend API** | https://review-responder.onrender.com |
 | **GitHub** | https://github.com/berschlend/review-responder |
-| **Outreach Dashboard** | https://review-responder.onrender.com/api/outreach/dashboard?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U |
+| **Outreach Dashboard** | Siehe `.claude/secrets.local` |
 
-### Admin Plan-Wechsel (berend.mainz@web.de)
-```
-FREE:   /api/admin/set-plan?email=berend.mainz@web.de&plan=free&key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U
-STARTER/PROFESSIONAL/UNLIMITED: ...&plan=starter/professional/unlimited&key=...
-```
+### Admin URLs & Secrets
+**WICHTIG:** Admin-URLs mit Secrets sind in `.claude/secrets.local` gespeichert (lokal, nicht auf GitHub).
+Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 ### Service Dashboards
 

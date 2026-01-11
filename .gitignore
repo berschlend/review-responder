@@ -7,6 +7,9 @@ node_modules/
 .env.local
 .env.production
 
+# Local secrets (Claude can read, but not on GitHub)
+.claude/secrets.local
+
 # Build outputs
 build/
 dist/

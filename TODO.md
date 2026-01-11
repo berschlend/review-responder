@@ -31,7 +31,7 @@
   - [ ] `HUNTER_API_KEY` - ✅ Haben wir (für Outreach)
   - [ ] `ADMIN_SECRET` - Für Dashboard-Zugriff
   - [ ] `CRON_SECRET` - Für automatische Jobs
-- [ ] **Outreach Dashboard checken:** https://review-responder.onrender.com/api/outreach/dashboard?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U
+- [ ] **Outreach Dashboard checken:** Siehe `.claude/secrets.local` für URL mit Admin-Key
 - [ ] **Resend Logs checken:** https://resend.com/emails (gehen Outreach-Mails raus?)
 - [ ] **Cron-Job läuft?** Täglich 10:00 Uhr Berlin → scrapen + emails senden
 
@@ -181,7 +181,7 @@
 |------|-----|
 | **Live App** | https://tryreviewresponder.com |
 | **Backend API** | https://review-responder.onrender.com |
-| **Outreach Dashboard** | https://review-responder.onrender.com/api/outreach/dashboard?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U |
+| **Outreach Dashboard** | Siehe `.claude/secrets.local` |
 | **Render Dashboard** | https://dashboard.render.com |
 | **Stripe Dashboard** | https://dashboard.stripe.com |
 | **Resend Logs** | https://resend.com/emails |
