@@ -1944,65 +1944,57 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Launch Announcement */}
-      <section style={{ background: 'linear-gradient(135deg, var(--primary-50), var(--gray-50))', padding: '40px 0', marginTop: '-40px', position: 'relative', overflow: 'hidden' }}>
-        <div style={{
-          position: 'absolute',
-          top: '10px',
-          right: '20px',
-          background: '#10b981',
-          color: 'white',
-          padding: '6px 16px',
-          borderRadius: '20px',
-          fontSize: '12px',
-          fontWeight: '600',
-          boxShadow: '0 2px 8px rgba(16,185,129,0.3)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px'
-        }}>
-          <Sparkles size={14} />
-          JUST LAUNCHED
-        </div>
 
-        <div className="container" style={{ textAlign: 'center' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px', color: 'var(--gray-900)' }}>
-            🎉 Launch Special: 50% OFF
-          </h2>
-          <p style={{ fontSize: '16px', color: 'var(--gray-600)', marginBottom: '24px' }}>
-            We just launched! Get 50% off your subscription - limited time only.
-          </p>
+      {/* Feature Cards */}
+      <section className="container" style={{ marginTop: '60px' }}>
+        <div className="features-grid">
+          <div className="card feature-card">
+            <div className="feature-icon">
+              <Chrome size={28} />
+            </div>
+            <h3 className="feature-title">Chrome Extension</h3>
+            <p className="feature-description">
+              Works directly on Google Maps, Yelp, TripAdvisor.
+              One click to respond - no copy-paste needed.
+            </p>
+          </div>
 
-          <Link
-            to="/pricing?discount=EARLY50"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '16px 32px',
-              background: 'linear-gradient(135deg, #10b981, #059669)',
-              color: 'white',
-              borderRadius: '12px',
-              boxShadow: '0 4px 16px rgba(16,185,129,0.3)',
-              textDecoration: 'none',
-              fontSize: '18px',
-              fontWeight: '700',
-              transition: 'transform 0.2s, box-shadow 0.2s'
-            }}
-            onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(16,185,129,0.4)'; }}
-            onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(16,185,129,0.3)'; }}
-          >
-            🎁 Claim 50% Discount
-            <ArrowRight size={20} />
-          </Link>
+          <div className="card feature-card">
+            <div className="feature-icon">
+              <Sparkles size={28} />
+            </div>
+            <h3 className="feature-title">Smart AI</h3>
+            <p className="feature-description">
+              Powered by Claude - the best AI for natural, authentic responses.
+              No robotic templates, just human-like replies.
+            </p>
+          </div>
 
-          <p style={{ fontSize: '13px', color: 'var(--gray-500)', marginTop: '16px' }}>
-            Limited time • 30-day money-back guarantee
-          </p>
+          <div className="card feature-card">
+            <div className="feature-icon">
+              <Building size={28} />
+            </div>
+            <h3 className="feature-title">Your Context</h3>
+            <p className="feature-description">
+              AI knows YOUR business. Not generic responses -
+              personalized replies that mention your policies, staff, and services.
+            </p>
+          </div>
+
+          <div className="card feature-card">
+            <div className="feature-icon">
+              <Globe size={28} />
+            </div>
+            <h3 className="feature-title">50+ Languages</h3>
+            <p className="feature-description">
+              Auto-detects and responds in the reviewer's language.
+              German, Spanish, French, Chinese, Arabic - all covered.
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* Demo Video Section */}
+      {/* Demo Video Section - Full Walkthrough */}
       <section className="container" style={{ marginTop: '60px', marginBottom: '60px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
@@ -2099,316 +2091,11 @@ const LandingPage = () => {
         */}
       </section>
 
-      <section className="container" style={{ marginTop: '60px' }}>
-        <div className="features-grid">
-          <div className="card feature-card">
-            <div className="feature-icon">
-              <Zap size={28} />
-            </div>
-            <h3 className="feature-title">Lightning Fast</h3>
-            <p className="feature-description">
-              Generate professional review responses in under 10 seconds.
-              Save hours every week on reputation management.
-            </p>
-          </div>
-
-          <div className="card feature-card">
-            <div className="feature-icon">
-              <Star size={28} />
-            </div>
-            <h3 className="feature-title">Tone Perfect</h3>
-            <p className="feature-description">
-              Choose from professional, friendly, formal, or apologetic tones.
-              Every response matches your brand voice.
-            </p>
-          </div>
-
-          <div className="card feature-card">
-            <div className="feature-icon">
-              <Shield size={28} />
-            </div>
-            <h3 className="feature-title">Review Smart</h3>
-            <p className="feature-description">
-              Handles positive 5-star reviews and negative 1-star complaints equally well.
-              Turn unhappy customers into loyal fans.
-            </p>
-          </div>
-
-          <div className="card feature-card">
-            <div className="feature-icon">
-              <Globe size={28} />
-            </div>
-            <h3 className="feature-title">50+ Languages</h3>
-            <p className="feature-description">
-              Respond to reviews in any language. German, Spanish, French, Chinese, Arabic -
-              our AI detects and responds in the customer's language automatically.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Live Demo Examples - Before/After Comparison */}
-      <section className="container" style={{ marginBottom: '80px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-          <h2 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '16px', letterSpacing: '-0.025em' }}>
-            See the Difference
-          </h2>
-          <p style={{ color: 'var(--gray-600)', fontSize: '18px', maxWidth: '600px', margin: '0 auto' }}>
-            Compare typical copy-paste replies with AI responses that actually win customers back
-          </p>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-          {/* Example 1: Restaurant - Long Wait (Shows Business Context + Explanatory Style) */}
-          <div className="card" style={{ padding: '0', overflow: 'hidden', border: '1px solid var(--gray-200)', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)' }}>
-            <div style={{ background: 'white', padding: '24px', borderBottom: '1px solid var(--gray-100)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ background: 'var(--gray-50)', padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--gray-200)' }}>
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--gray-700)' }}>🍕 RESTAURANT</span>
-                  </div>
-                  <div style={{ display: 'flex', gap: '2px' }}>
-                    {[1, 2, 3, 4, 5].map(i => <Star key={i} size={16} fill={i <= 3 ? "#f59e0b" : "none"} color="#f59e0b" />)}
-                  </div>
-                </div>
-                <div style={{ background: 'linear-gradient(135deg, var(--primary), #7c3aed)', padding: '4px 10px', borderRadius: '6px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: '700', color: 'white' }}>Business Context ON</span>
-                </div>
-              </div>
-              <p style={{ fontSize: '16px', color: 'var(--gray-800)', lineHeight: '1.6', fontWeight: '500', fontStyle: 'italic', margin: '0' }}>
-                "Waited 45 minutes for our food on a Friday night. Kids were starving and getting cranky. Food was good but the wait killed the experience."
-              </p>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', background: 'var(--gray-200)' }}>
-              <div style={{ background: '#fafafa', padding: '28px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: 'var(--danger)' }}>
-                  <AlertCircle size={16} />
-                  <span style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Typical Response</span>
-                </div>
-                <p style={{ fontSize: '14px', color: 'var(--gray-500)', lineHeight: '1.7', margin: '0' }}>
-                  "We apologize for the long wait. We hope to serve you better next time."
-                </p>
-                <div style={{ marginTop: '20px', fontSize: '12px', color: 'var(--gray-400)', fontWeight: '600' }}>
-                  Result: Generic, no context
-                </div>
-              </div>
-              <div style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)', padding: '28px', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: '0', left: '0', right: '0', height: '3px', background: 'linear-gradient(to right, var(--primary), var(--secondary))' }}></div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: 'var(--primary)' }}>
-                  <Sparkles size={16} />
-                  <span style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ReviewResponder AI</span>
-                </div>
-                <p style={{ fontSize: '15px', color: 'var(--gray-900)', lineHeight: '1.7', fontWeight: '500', margin: '0' }}>
-                  "Friday nights are wild here - we seat 200+ covers, and yes, 45 minutes is too long when you've got hungry kids. That's on us. We make everything fresh to order, which usually means great food but sometimes means longer waits on peak nights. Next time, try our call-ahead seating or come by on a Tuesday - much calmer, same great pizza."
-                </p>
-                <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--secondary)', fontWeight: '700' }}>
-                  <CheckCircle size={14} /> Uses business context + Explains why + Offers solution
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Example 2: Auto Shop - Repair Issue (Shows Professional Tone + Actionable) */}
-          <div className="card" style={{ padding: '0', overflow: 'hidden', border: '1px solid var(--gray-200)', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)' }}>
-            <div style={{ background: 'white', padding: '24px', borderBottom: '1px solid var(--gray-100)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ background: 'var(--gray-50)', padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--gray-200)' }}>
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--gray-700)' }}>🔧 AUTO SHOP</span>
-                  </div>
-                  <div style={{ display: 'flex', gap: '2px' }}>
-                    {[1, 2, 3, 4, 5].map(i => <Star key={i} size={16} fill={i <= 2 ? "#f59e0b" : "none"} color="#f59e0b" />)}
-                  </div>
-                </div>
-                <div style={{ background: 'linear-gradient(135deg, #059669, #10b981)', padding: '4px 10px', borderRadius: '6px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: '700', color: 'white' }}>Professional Tone</span>
-                </div>
-              </div>
-              <p style={{ fontSize: '16px', color: 'var(--gray-800)', lineHeight: '1.6', fontWeight: '500', fontStyle: 'italic', margin: '0' }}>
-                "Paid $800 for a brake job and the same squeaking noise came back after 2 weeks. Had to bring it back again. Very frustrating experience."
-              </p>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', background: 'var(--gray-200)' }}>
-              <div style={{ background: '#fafafa', padding: '28px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: 'var(--danger)' }}>
-                  <AlertCircle size={16} />
-                  <span style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Typical Response</span>
-                </div>
-                <p style={{ fontSize: '14px', color: 'var(--gray-500)', lineHeight: '1.7', margin: '0' }}>
-                  "We stand behind our work. Please bring your vehicle back for inspection."
-                </p>
-                <div style={{ marginTop: '20px', fontSize: '12px', color: 'var(--gray-400)', fontWeight: '600' }}>
-                  Result: Defensive, no accountability
-                </div>
-              </div>
-              <div style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)', padding: '28px', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: '0', left: '0', right: '0', height: '3px', background: 'linear-gradient(to right, var(--primary), var(--secondary))' }}></div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: 'var(--primary)' }}>
-                  <Sparkles size={16} />
-                  <span style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ReviewResponder AI</span>
-                </div>
-                <p style={{ fontSize: '15px', color: 'var(--gray-900)', lineHeight: '1.7', fontWeight: '500', margin: '0' }}>
-                  "An $800 repair that squeaks after two weeks isn't acceptable. I've pulled your service record - all our brake work carries a 12-month warranty, so the return visit is on us. Our lead tech, Mike, will personally inspect it this time. Call us at (555) 123-4567 to schedule a priority slot. We'll make this right."
-                </p>
-                <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--secondary)', fontWeight: '700' }}>
-                  <CheckCircle size={14} /> Shows warranty policy + Names staff + Clear next step
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Example 3: Salon - Positive Review (Shows Friendly Tone + Brand Building) */}
-          <div className="card" style={{ padding: '0', overflow: 'hidden', border: '1px solid var(--gray-200)', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)' }}>
-            <div style={{ background: 'white', padding: '24px', borderBottom: '1px solid var(--gray-100)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ background: 'var(--gray-50)', padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--gray-200)' }}>
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--gray-700)' }}>💇 HAIR SALON</span>
-                  </div>
-                  <div style={{ display: 'flex', gap: '2px' }}>
-                    {[1, 2, 3, 4, 5].map(i => <Star key={i} size={16} fill="#f59e0b" color="#f59e0b" />)}
-                  </div>
-                </div>
-                <div style={{ background: 'linear-gradient(135deg, #f59e0b, #ea580c)', padding: '4px 10px', borderRadius: '6px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: '700', color: 'white' }}>Friendly Tone</span>
-                </div>
-              </div>
-              <p style={{ fontSize: '16px', color: 'var(--gray-800)', lineHeight: '1.6', fontWeight: '500', fontStyle: 'italic', margin: '0' }}>
-                "Maria is amazing! Finally found someone who understands curly hair. The balayage looks so natural and she gave me great tips for home care. Already booked my next appointment!"
-              </p>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', background: 'var(--gray-200)' }}>
-              <div style={{ background: '#fafafa', padding: '28px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: 'var(--danger)' }}>
-                  <AlertCircle size={16} />
-                  <span style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Typical Response</span>
-                </div>
-                <p style={{ fontSize: '14px', color: 'var(--gray-500)', lineHeight: '1.7', margin: '0' }}>
-                  "Thank you for your kind words! We appreciate your business."
-                </p>
-                <div style={{ marginTop: '20px', fontSize: '12px', color: 'var(--gray-400)', fontWeight: '600' }}>
-                  Result: Missed opportunity to build relationship
-                </div>
-              </div>
-              <div style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)', padding: '28px', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: '0', left: '0', right: '0', height: '3px', background: 'linear-gradient(to right, var(--primary), var(--secondary))' }}></div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: 'var(--primary)' }}>
-                  <Sparkles size={16} />
-                  <span style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ReviewResponder AI</span>
-                </div>
-                <p style={{ fontSize: '15px', color: 'var(--gray-900)', lineHeight: '1.7', fontWeight: '500', margin: '0' }}>
-                  "This made Maria's day! Curly hair is her specialty - she actually trained in the DevaCut method specifically because she knew our neighborhood needed it. Glad those home care tips are working out. Quick reminder: your next appointment includes a free deep conditioning treatment as part of our loyalty program. See you soon!"
-                </p>
-                <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--secondary)', fontWeight: '700' }}>
-                  <CheckCircle size={14} /> Credits staff + Shows expertise + Promotes loyalty program
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div style={{ textAlign: 'center', marginTop: '48px' }}>
-          <Link to="/register" className="btn btn-primary btn-lg" style={{ padding: '16px 32px', fontSize: '16px' }}>
-            <Sparkles size={20} />
-            Start Writing Better Responses
-          </Link>
-          <p style={{ marginTop: '16px', fontSize: '14px', color: 'var(--gray-500)' }}>
-            20 free responses • No credit card required
-          </p>
-        </div>
-      </section>
-
       {/* Reviews About Us, Answered By Us - Dogfooding Section */}
       {testimonials.filter(t => t.ai_response).length > 0 && (
         <DogfoodingSection testimonials={testimonials.filter(t => t.ai_response)} />
       )}
 
-      {/* Testimonials Section - Real User Feedback */}
-      {testimonials.length > 0 && (
-        <section className="container" style={{ marginBottom: '60px' }}>
-          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
-              What Our Users Say
-            </h2>
-            <p style={{ color: 'var(--gray-600)', maxWidth: '600px', margin: '0 auto' }}>
-              Real feedback from businesses using ReviewResponder
-            </p>
-          </div>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '24px',
-            maxWidth: '900px',
-            margin: '0 auto'
-          }}>
-            {testimonials.map((testimonial) => (
-              <div
-                key={testimonial.id}
-                className="card"
-                style={{
-                  padding: '24px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '16px'
-                }}
-              >
-                <div style={{ display: 'flex', gap: '4px' }}>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      size={18}
-                      fill={star <= testimonial.rating ? '#f59e0b' : 'none'}
-                      color={star <= testimonial.rating ? '#f59e0b' : '#d1d5db'}
-                    />
-                  ))}
-                </div>
-                {testimonial.comment && (
-                  <p style={{
-                    fontSize: '15px',
-                    color: 'var(--gray-700)',
-                    lineHeight: '1.6',
-                    fontStyle: 'italic'
-                  }}>
-                    "{testimonial.comment}"
-                  </p>
-                )}
-                <div style={{
-                  marginTop: 'auto',
-                  paddingTop: '12px',
-                  borderTop: '1px solid var(--gray-100)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px'
-                }}>
-                  <div style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
-                    background: 'var(--primary-100)',
-                    color: 'var(--primary-600)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '14px',
-                    fontWeight: '600'
-                  }}>
-                    {testimonial.user_name ? testimonial.user_name.charAt(0).toUpperCase() : 'U'}
-                  </div>
-                  <div>
-                    <div style={{ fontWeight: '600', fontSize: '14px', color: 'var(--gray-900)' }}>
-                      {testimonial.user_name || 'ReviewResponder User'}
-                    </div>
-                    <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
-                      Verified User
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* Money Back Guarantee */}
       <section className="container" style={{ marginBottom: '60px' }}>
@@ -3290,6 +2977,11 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
   const [generatedContext, setGeneratedContext] = useState('');
   const [generatingContext, setGeneratingContext] = useState(false);
 
+  // Step 3: Sample Response Test
+  const [sampleReview] = useState("Great food and amazing service! The staff was very friendly and the atmosphere was perfect. Will definitely come back!");
+  const [sampleResponse, setSampleResponse] = useState('');
+  const [generatingSample, setGeneratingSample] = useState(false);
+
   const businessTypes = [
     'Restaurant', 'Cafe / Coffee Shop', 'Hotel / Accommodation', 'Bar / Nightclub',
     'Spa / Wellness', 'Hair Salon / Barbershop', 'Dental Practice', 'Medical Practice',
@@ -3362,6 +3054,24 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
       toast.error(error.response?.data?.error || 'Failed to generate');
     } finally {
       setGeneratingContext(false);
+    }
+  };
+
+  const generateSampleResponse = async () => {
+    setGeneratingSample(true);
+    try {
+      const response = await api.post('/generate', {
+        review: sampleReview,
+        tone: 'friendly',
+        businessName: businessName.trim(),
+        businessContext: generatedContext
+      });
+      setSampleResponse(response.data.response);
+    } catch (error) {
+      console.error('Failed to generate sample:', error);
+      toast.error('Failed to generate sample response');
+    } finally {
+      setGeneratingSample(false);
     }
   };
 
@@ -3582,25 +3292,60 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                 </p>
               </div>
 
+              {/* Test Section */}
               <div style={{
-                background: 'var(--gray-50)',
-                border: '1px solid var(--gray-200)',
-                borderRadius: '8px',
-                padding: '16px',
-                marginTop: '16px'
+                borderTop: '1px solid var(--gray-200)',
+                marginTop: '24px',
+                paddingTop: '24px'
               }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                  <Sparkles size={20} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '2px' }} />
-                  <div>
-                    <p style={{ fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>
-                      How this helps
-                    </p>
-                    <p style={{ fontSize: '13px', color: 'var(--gray-600)', margin: 0 }}>
-                      Our AI uses this context to write responses that sound authentic to your business -
-                      mentioning your specialties, history, and unique qualities.
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                  <Sparkles size={18} style={{ color: 'var(--primary)' }} />
+                  <span style={{ fontSize: '14px', fontWeight: '600' }}>See it in action</span>
+                </div>
+
+                <div style={{
+                  background: 'var(--gray-50)',
+                  border: '1px solid var(--gray-200)',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  marginBottom: '12px'
+                }}>
+                  <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginBottom: '4px' }}>Sample Review:</p>
+                  <p style={{ fontSize: '14px', margin: 0, lineHeight: '1.5' }}>"{sampleReview}"</p>
+                </div>
+
+                {!sampleResponse ? (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={generateSampleResponse}
+                    disabled={generatingSample}
+                    style={{ width: '100%', fontSize: '14px' }}
+                  >
+                    {generatingSample ? (
+                      <>
+                        <Loader size={14} className="spin" style={{ marginRight: '8px' }} />
+                        Generating...
+                      </>
+                    ) : (
+                      '✨ Test with Sample Review'
+                    )}
+                  </button>
+                ) : (
+                  <div style={{
+                    background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                    border: '1px solid #86efac',
+                    borderRadius: '8px',
+                    padding: '12px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                      <CheckCircle size={14} style={{ color: '#22c55e' }} />
+                      <span style={{ fontSize: '12px', fontWeight: '600', color: '#15803d' }}>AI Response:</span>
+                    </div>
+                    <p style={{ fontSize: '13px', color: '#166534', margin: 0, lineHeight: '1.5' }}>
+                      {sampleResponse}
                     </p>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           )}
