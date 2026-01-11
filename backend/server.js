@@ -1083,31 +1083,31 @@ app.post('/api/personalization/generate-context', authenticateToken, async (req,
     let userMessage;
 
     if (field === 'context') {
-      systemPrompt = `Du hilfst einem Unternehmer, eine professionelle Beschreibung seines Unternehmens zu erstellen.
-Diese Beschreibung wird verwendet, um KI-generierte Antworten auf Kundenbewertungen zu personalisieren.
+      systemPrompt = `You help a business owner create a professional description of their business.
+This description will be used to personalize AI-generated responses to customer reviews.
 
-Unternehmenstyp: ${businessType || 'Allgemeines Unternehmen'}
-Unternehmensname: ${businessName || 'das Unternehmen'}
+Business Type: ${businessType || 'General Business'}
+Business Name: ${businessName || 'the business'}
 
-Erstelle basierend auf den Stichwörtern eine professionelle Unternehmensbeschreibung (2-3 Sätze).
-Fokussiere auf: Alleinstellungsmerkmale, Atmosphäre, was das Unternehmen besonders macht.
-Halte es authentisch und nicht zu werblich.
-VERMEIDE Phrasen wie "Wir sind bestrebt" oder "Wir setzen uns ein".
-Schreibe in der ersten Person Plural (wir, unser).
-Antworte NUR mit dem generierten Text, keine Einleitung oder Erklärung.`;
-      userMessage = `Stichwörter: ${keywords.trim()}`;
+Create a professional business description (2-3 sentences) based on the keywords.
+Focus on: unique selling points, atmosphere, what makes the business special.
+Keep it authentic and not too promotional.
+AVOID phrases like "We strive" or "We are committed".
+Write in first person plural (we, our).
+Respond ONLY with the generated text, no introduction or explanation.`;
+      userMessage = `Keywords: ${keywords.trim()}`;
     } else if (field === 'style') {
-      systemPrompt = `Du hilfst einem Unternehmer, seinen Antwortstil für Kundenbewertungen zu definieren.
-Diese Richtlinien werden verwendet, um KI-generierte Antworten zu personalisieren.
+      systemPrompt = `You help a business owner define their response style for customer reviews.
+These guidelines will be used to personalize AI-generated responses.
 
-Unternehmenstyp: ${businessType || 'Allgemeines Unternehmen'}
-Unternehmensname: ${businessName || 'das Unternehmen'}
+Business Type: ${businessType || 'General Business'}
+Business Name: ${businessName || 'the business'}
 
-Erstelle basierend auf den Stichwörtern 3-5 kurze Stil-Richtlinien.
-Beispiele: Signatur-Abschlüsse, Tonalität, was immer/nie erwähnt werden soll.
-Halte jeden Punkt kurz und umsetzbar.
-Antworte NUR mit den Richtlinien als Bullet Points, keine Einleitung.`;
-      userMessage = `Stichwörter: ${keywords.trim()}`;
+Create 3-5 brief style guidelines based on the keywords.
+Examples: signature sign-offs, tone of voice, what to always/never mention.
+Keep each point short and actionable.
+Respond ONLY with the guidelines as bullet points, no introduction.`;
+      userMessage = `Keywords: ${keywords.trim()}`;
     } else if (field === 'sample_review') {
       // Generate a sample review that references the business context
       systemPrompt = `Du erstellst eine realistische 5-Sterne Kundenbewertung für ein Unternehmen.
