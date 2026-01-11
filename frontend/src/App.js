@@ -1482,94 +1482,16 @@ const LandingPage = () => {
             </div>
           </div>
 
-          {/* Demo Video Section */}
+          {/* Demo Video Section - Hidden until video is ready
           <div style={{
             marginTop: '48px',
             maxWidth: '800px',
             margin: '48px auto 0',
             position: 'relative'
           }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              marginBottom: '16px',
-              color: 'var(--gray-600)',
-              fontSize: '14px',
-              fontWeight: '500'
-            }}>
-              <Play size={16} style={{ color: 'var(--primary-500)' }} />
-              <span>See it in action</span>
-            </div>
-
-            {/* Video Container */}
-            <div style={{
-              position: 'relative',
-              borderRadius: '16px',
-              overflow: 'hidden',
-              boxShadow: '0 20px 50px rgba(0,0,0,0.15)',
-              border: '1px solid var(--gray-200)',
-              background: 'var(--gray-900)'
-            }}>
-              {/* Browser Chrome Header */}
-              <div style={{
-                background: 'var(--gray-100)',
-                padding: '12px 16px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                borderBottom: '1px solid var(--gray-200)'
-              }}>
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ff5f57' }}></div>
-                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ffbd2e' }}></div>
-                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#28ca41' }}></div>
-                </div>
-                <div style={{
-                  flex: 1,
-                  background: 'white',
-                  borderRadius: '6px',
-                  padding: '6px 12px',
-                  fontSize: '12px',
-                  color: 'var(--gray-500)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}>
-                  <Lock size={12} />
-                  maps.google.com
-                </div>
-              </div>
-
-              {/* Video Embed - Replace YOUTUBE_VIDEO_ID with actual ID */}
-              <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
-                <iframe
-                  src="https://www.youtube.com/embed/YOUR_VIDEO_ID?rel=0&modestbranding=1"
-                  title="ReviewResponder Demo"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%'
-                  }}
-                ></iframe>
-              </div>
-            </div>
-
-            <p style={{
-              marginTop: '16px',
-              color: 'var(--gray-500)',
-              fontSize: '13px',
-              textAlign: 'center'
-            }}>
-              Watch how ReviewResponder generates perfect responses in seconds
-            </p>
+            ... Video content here - uncomment when YouTube video ID is ready ...
           </div>
+          */}
         </div>
       </section>
 
