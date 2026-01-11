@@ -426,9 +426,9 @@
 /* ========== MAIN PANEL ========== */
 #rr-response-panel {
   position: fixed;
-  top: 50%;
+  top: 5vh;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   width: 420px;
   max-width: 95vw;
   max-height: 90vh;
@@ -451,7 +451,7 @@
 
 #rr-response-panel.rr-closing {
   opacity: 0;
-  transform: translate(-50%, -50%) scale(0.9);
+  transform: translateX(-50%) scale(0.9);
 }
 
 /* ========== PANEL HEADER ========== */

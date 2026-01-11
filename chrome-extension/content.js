@@ -92,11 +92,11 @@ function initDraggable(panel) {
           // Reset to default centered position
           chrome.storage.local.remove(['rr_panel_position']);
           panel.style.position = 'fixed';
-          panel.style.top = '50%';
+          panel.style.top = '5vh';
           panel.style.left = '50%';
           panel.style.right = 'auto';
           panel.style.bottom = 'auto';
-          panel.style.transform = 'translate(-50%, -50%)';
+          panel.style.transform = 'translateX(-50%)';
         }
       }, 50);
     }
@@ -4825,11 +4825,11 @@ document.addEventListener('keydown', async (e) => {
     const panel = document.getElementById('rr-response-panel');
     if (panel) {
       panel.style.position = 'fixed';
-      panel.style.top = '50%';
+      panel.style.top = '5vh';
       panel.style.left = '50%';
       panel.style.right = 'auto';
       panel.style.bottom = 'auto';
-      panel.style.transform = 'translate(-50%, -50%)';
+      panel.style.transform = 'translateX(-50%)';
     }
     showToast('📍 Panel position reset to center', 'info');
     return;
