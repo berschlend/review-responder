@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useCallback, createContext, useContext, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
 import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, LogIn, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper, Utensils, CheckCircle, Keyboard, Store, MapPin, Wrench, Scissors, Car, Heart, User, Bell, ChevronDown, Edit3, LayoutDashboard, Play, Video } from 'lucide-react';
@@ -2516,7 +2516,7 @@ const LoginPage = () => {
     }
   };
 
-  const handleGoogleSuccess = async (credential) => {
+  const handleGoogleSuccess = useCallback(async (credential) => {
     setGoogleLoading(true);
     try {
       await loginWithGoogle(credential);
@@ -2527,12 +2527,12 @@ const LoginPage = () => {
     } finally {
       setGoogleLoading(false);
     }
-  };
+  }, [loginWithGoogle, navigate]);
 
-  const handleGoogleError = (error) => {
+  const handleGoogleError = useCallback((error) => {
     console.error('Google Sign-In error:', error);
     toast.error('Google sign-in failed. Please try again.');
-  };
+  }, []);
 
   return (
     <div className="auth-container">
@@ -2630,7 +2630,7 @@ const RegisterPage = () => {
     }
   };
 
-  const handleGoogleSuccess = async (credential) => {
+  const handleGoogleSuccess = useCallback(async (credential) => {
     setGoogleLoading(true);
     try {
       await loginWithGoogle(credential);
@@ -2641,12 +2641,12 @@ const RegisterPage = () => {
     } finally {
       setGoogleLoading(false);
     }
-  };
+  }, [loginWithGoogle, navigate]);
 
-  const handleGoogleError = (error) => {
+  const handleGoogleError = useCallback((error) => {
     console.error('Google Sign-In error:', error);
     toast.error('Google sign-up failed. Please try again.');
-  };
+  }, []);
 
   return (
     <div className="auth-container">
