@@ -67,6 +67,16 @@ FREE:   /api/admin/set-plan?email=berend.mainz@web.de&plan=free&key=rr_admin_7x9
 STARTER/PROFESSIONAL/UNLIMITED: ...&plan=starter/professional/unlimited&key=...
 ```
 
+### Service Dashboards
+
+| Service | URL | Zweck |
+|---------|-----|-------|
+| **Namecheap DNS** | https://ap.www.namecheap.com/Domains/DomainControlPanel/tryreviewresponder.com/advancedns | DNS Records verwalten |
+| **Render Backend** | https://dashboard.render.com/web/srv-d5gh8c6r433s73dm9v6g/events | Logs, Events, Deploys |
+| **ImprovMX** | https://app.improvmx.com/domains/tryreviewresponder.com/aliases | Email-Forwarding |
+| **Resend** | https://resend.com/emails | Email-Logs, Bounces |
+| **Stripe** | https://dashboard.stripe.com | Payments, Subscriptions |
+
 ---
 
 ## CURRENT TASKS
@@ -125,9 +135,8 @@ Keine offenen Bugs.
 | Payments | Stripe (Live) |
 | AI | OpenAI GPT-4o-mini + Claude Sonnet (Hybrid) |
 | Email | Resend.com |
-url namecheap
-email weiterleiten imporvmx
-cold mails cronjob
+| Domain | Namecheap |
+| Email-Forwarding | ImprovMX |
 
 ---
 
