@@ -442,6 +442,17 @@ async function initDatabase() {
       // Columns might already exist
     }
 
+    // Add unsubscribe functionality for marketing emails (CAN-SPAM & GDPR compliance)
+    try {
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_marketing BOOLEAN DEFAULT TRUE`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_product BOOLEAN DEFAULT TRUE`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS unsubscribe_token TEXT UNIQUE`);
+      // Generate tokens for existing users without one
+      await dbQuery(`UPDATE users SET unsubscribe_token = md5(random()::text || clock_timestamp()::text)::uuid WHERE unsubscribe_token IS NULL`);
+    } catch (error) {
+      // Columns might already exist
+    }
+
     // Add email change columns for secure email updates
     try {
       await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_change_token TEXT`);
@@ -456,6 +467,16 @@ async function initDatabase() {
       await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE`);
       await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verification_token TEXT`);
       await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verification_expires_at TIMESTAMP`);
+    } catch (error) {
+      // Columns might already exist
+    }
+
+    // Add unsubscribe tracking for email_captures (exit-intent leads)
+    try {
+      await dbQuery(`ALTER TABLE email_captures ADD COLUMN IF NOT EXISTS unsubscribed BOOLEAN DEFAULT FALSE`);
+      await dbQuery(`ALTER TABLE email_captures ADD COLUMN IF NOT EXISTS unsubscribe_token TEXT UNIQUE`);
+      // Generate tokens for existing leads without one
+      await dbQuery(`UPDATE email_captures SET unsubscribe_token = md5(random()::text || clock_timestamp()::text)::uuid WHERE unsubscribe_token IS NULL`);
     } catch (error) {
       // Columns might already exist
     }
@@ -646,10 +667,13 @@ app.post('/api/auth/register', async (req, res) => {
       metadata: { business_name: businessName || '', referred_by: referrerId || '', affiliate_id: affiliateId || '' }
     });
 
+    // Generate unsubscribe token
+    const unsubscribeToken = crypto.randomBytes(32).toString('hex');
+
     const result = await dbQuery(
-      `INSERT INTO users (email, password, business_name, stripe_customer_id, responses_limit, referral_code, referred_by, affiliate_id, utm_source, utm_medium, utm_campaign, utm_content, utm_term, landing_page)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id`,
-      [email, hashedPassword, businessName || '', customer.id, PLAN_LIMITS.free.responses, newUserReferralCode, referrerId, affiliateId, utmSource || null, utmMedium || null, utmCampaign || null, utmContent || null, utmTerm || null, landingPage || null]
+      `INSERT INTO users (email, password, business_name, stripe_customer_id, responses_limit, referral_code, referred_by, affiliate_id, utm_source, utm_medium, utm_campaign, utm_content, utm_term, landing_page, unsubscribe_token)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id`,
+      [email, hashedPassword, businessName || '', customer.id, PLAN_LIMITS.free.responses, newUserReferralCode, referrerId, affiliateId, utmSource || null, utmMedium || null, utmCampaign || null, utmContent || null, utmTerm || null, landingPage || null, unsubscribeToken]
     );
 
     const userId = result.rows[0].id;
@@ -1023,6 +1047,123 @@ app.put('/api/auth/profile', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Profile update error:', error);
     res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+// ============ UNSUBSCRIBE MANAGEMENT (CAN-SPAM & GDPR Compliance) ============
+
+// Helper function to generate unsubscribe URL
+function getUnsubscribeUrl(token, type = 'user') {
+  const frontendUrl = process.env.FRONTEND_URL || 'https://tryreviewresponder.com';
+  return `${frontendUrl}/unsubscribe?token=${token}&type=${type}`;
+}
+
+// GET /api/unsubscribe - Validate token and get current preferences
+app.get('/api/unsubscribe', async (req, res) => {
+  try {
+    const { token, type = 'user' } = req.query;
+
+    if (!token) {
+      return res.status(400).json({ error: 'Token required' });
+    }
+
+    let entity = null;
+    let entityType = type;
+
+    // Try to find entity by token in different tables
+    if (type === 'user') {
+      entity = await dbGet('SELECT id, email, email_marketing, email_product, email_weekly_summary, email_usage_alerts FROM users WHERE unsubscribe_token = $1', [token]);
+    } else if (type === 'lead') {
+      entity = await dbGet('SELECT id, email, unsubscribed FROM email_captures WHERE unsubscribe_token = $1', [token]);
+    } else if (type === 'outreach') {
+      entity = await dbGet('SELECT id, email, business_name, unsubscribed FROM outreach_leads WHERE unsubscribe_token = $1', [token]);
+    }
+
+    if (!entity) {
+      return res.status(404).json({ error: 'Invalid or expired unsubscribe link' });
+    }
+
+    res.json({
+      success: true,
+      email: entity.email,
+      businessName: entity.business_name || null,
+      type: entityType,
+      preferences: {
+        email_marketing: entity.email_marketing !== false,
+        email_product: entity.email_product !== false,
+        email_weekly_summary: entity.email_weekly_summary !== false,
+        email_usage_alerts: entity.email_usage_alerts !== false,
+        unsubscribed: entity.unsubscribed || false
+      }
+    });
+  } catch (error) {
+    console.error('Unsubscribe GET error:', error);
+    res.status(500).json({ error: 'Failed to load preferences' });
+  }
+});
+
+// POST /api/unsubscribe - Update email preferences or unsubscribe completely
+app.post('/api/unsubscribe', async (req, res) => {
+  try {
+    const { token, type = 'user', preferences, unsubscribeAll } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ error: 'Token required' });
+    }
+
+    // Unsubscribe completely
+    if (unsubscribeAll) {
+      if (type === 'user') {
+        const updated = await dbQuery(
+          'UPDATE users SET email_marketing = FALSE, email_product = FALSE, email_weekly_summary = FALSE, email_usage_alerts = FALSE WHERE unsubscribe_token = $1',
+          [token]
+        );
+        if (updated.rowCount === 0) {
+          return res.status(404).json({ error: 'Invalid token' });
+        }
+      } else if (type === 'lead') {
+        const updated = await dbQuery('UPDATE email_captures SET unsubscribed = TRUE WHERE unsubscribe_token = $1', [token]);
+        if (updated.rowCount === 0) {
+          return res.status(404).json({ error: 'Invalid token' });
+        }
+      } else if (type === 'outreach') {
+        const updated = await dbQuery('UPDATE outreach_leads SET unsubscribed = TRUE WHERE unsubscribe_token = $1', [token]);
+        if (updated.rowCount === 0) {
+          return res.status(404).json({ error: 'Invalid token' });
+        }
+      }
+
+      return res.json({ success: true, message: 'You have been unsubscribed from all emails' });
+    }
+
+    // Update granular preferences (only for registered users)
+    if (type === 'user' && preferences) {
+      const { email_marketing, email_product, email_weekly_summary, email_usage_alerts } = preferences;
+
+      const updated = await dbQuery(
+        `UPDATE users
+         SET email_marketing = $1, email_product = $2, email_weekly_summary = $3, email_usage_alerts = $4
+         WHERE unsubscribe_token = $5`,
+        [
+          email_marketing !== false,
+          email_product !== false,
+          email_weekly_summary !== false,
+          email_usage_alerts !== false,
+          token
+        ]
+      );
+
+      if (updated.rowCount === 0) {
+        return res.status(404).json({ error: 'Invalid token' });
+      }
+
+      return res.json({ success: true, message: 'Email preferences updated successfully' });
+    }
+
+    res.status(400).json({ error: 'Invalid request' });
+  } catch (error) {
+    console.error('Unsubscribe POST error:', error);
+    res.status(500).json({ error: 'Failed to update preferences' });
   }
 });
 
@@ -1471,14 +1612,17 @@ app.post('/api/auth/google', async (req, res) => {
       }
     }
 
+    // Generate unsubscribe token
+    const unsubscribeToken = crypto.randomBytes(32).toString('hex');
+
     // Insert new user (email_verified = true for Google OAuth users)
     const result = await dbQuery(
       `INSERT INTO users (
         email, password, business_name, oauth_provider, oauth_id, profile_picture,
         stripe_customer_id, referral_code, referred_by, affiliate_id,
         utm_source, utm_medium, utm_campaign, utm_content, utm_term, landing_page,
-        email_verified
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *`,
+        email_verified, unsubscribe_token
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING *`,
       [
         email,
         null, // No password for OAuth users
@@ -1496,7 +1640,8 @@ app.post('/api/auth/google', async (req, res) => {
         utmParams?.utm_content || null,
         utmParams?.utm_term || null,
         utmParams?.landing_page || null,
-        true // Google has already verified the email
+        true, // Google has already verified the email
+        unsubscribeToken
       ]
     );
 
@@ -3132,11 +3277,12 @@ app.post('/api/capture-email', async (req, res) => {
       });
     }
     
-    // Insert new email
+    // Insert new email with unsubscribe token
+    const unsubscribeToken = crypto.randomBytes(32).toString('hex');
     await dbQuery(
-      `INSERT INTO email_captures (email, discount_code, source) 
-       VALUES ($1, $2, $3)`,
-      [email.toLowerCase(), discountCode, source]
+      `INSERT INTO email_captures (email, discount_code, source, unsubscribe_token)
+       VALUES ($1, $2, $3, $4)`,
+      [email.toLowerCase(), discountCode, source, unsubscribeToken]
     );
     
     console.log(`✅ Email captured: ${email} (source: ${source})`);
@@ -3185,7 +3331,8 @@ app.post('/api/capture-email', async (req, res) => {
                   <p style="margin-bottom: 0;">Cheers,<br>Berend from ReviewResponder</p>
                 </div>
                 <div style="text-align: center; padding: 20px; color: #9CA3AF; font-size: 12px;">
-                  <p style="margin: 0;">You're receiving this because you signed up at reviewresponder.com</p>
+                  <p style="margin: 0 0 8px 0;">You're receiving this because you signed up at reviewresponder.com</p>
+                  <p style="margin: 0;"><a href="${getUnsubscribeUrl(unsubscribeToken, 'lead')}" style="color: #9CA3AF; text-decoration: underline;">Unsubscribe</a></p>
                 </div>
               </div>
             </body>
@@ -4486,6 +4633,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
               </div>
               <div class="footer">
                 <p>ReviewResponder - AI-Powered Review Responses</p>
+                <p style="margin-top: 12px;"><a href="${getUnsubscribeUrl(user.unsubscribe_token, 'user')}" style="color: #9CA3AF; text-decoration: underline; font-size: 12px;">Unsubscribe</a></p>
               </div>
             </div>
           </body>
@@ -4535,6 +4683,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
               </div>
               <div class="footer">
                 <p>ReviewResponder - AI-Powered Review Responses</p>
+                <p style="margin-top: 12px;"><a href="${getUnsubscribeUrl(user.unsubscribe_token, 'user')}" style="color: #9CA3AF; text-decoration: underline; font-size: 12px;">Unsubscribe</a></p>
               </div>
             </div>
           </body>
@@ -4593,6 +4742,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
               </div>
               <div class="footer">
                 <p>ReviewResponder - AI-Powered Review Responses</p>
+                <p style="margin-top: 12px;"><a href="${getUnsubscribeUrl(user.unsubscribe_token, 'user')}" style="color: #9CA3AF; text-decoration: underline; font-size: 12px;">Unsubscribe</a></p>
               </div>
             </div>
           </body>
@@ -4648,6 +4798,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
               </div>
               <div class="footer">
                 <p>ReviewResponder - AI-Powered Review Responses</p>
+                <p style="margin-top: 12px;"><a href="${getUnsubscribeUrl(user.unsubscribe_token, 'user')}" style="color: #9CA3AF; text-decoration: underline; font-size: 12px;">Unsubscribe</a></p>
               </div>
             </div>
           </body>
@@ -4705,6 +4856,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
               </div>
               <div class="footer">
                 <p>ReviewResponder - AI-Powered Review Responses</p>
+                <p style="margin-top: 12px;"><a href="${getUnsubscribeUrl(user.unsubscribe_token, 'user')}" style="color: #9CA3AF; text-decoration: underline; font-size: 12px;">Unsubscribe</a></p>
               </div>
             </div>
           </body>
@@ -4726,11 +4878,12 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
       // 2. Haven't received this drip email yet
       // 3. Have a valid email
       const eligibleUsers = await dbQuery(`
-        SELECT u.id, u.email, u.business_name, u.created_at
+        SELECT u.id, u.email, u.business_name, u.created_at, u.unsubscribe_token, u.email_marketing
         FROM users u
         WHERE u.created_at <= NOW() - INTERVAL '${day} days'
           AND u.email IS NOT NULL
           AND u.email != ''
+          AND (u.email_marketing IS NULL OR u.email_marketing = TRUE)
           AND NOT EXISTS (
             SELECT 1 FROM drip_emails d
             WHERE d.user_id = u.id AND d.email_day = $1
@@ -5545,6 +5698,16 @@ async function initOutreachTables() {
       ON CONFLICT (name) DO NOTHING
     `);
 
+    // Add unsubscribe tracking for outreach leads (CAN-SPAM compliance for cold emails)
+    try {
+      await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS unsubscribed BOOLEAN DEFAULT FALSE`);
+      await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS unsubscribe_token TEXT UNIQUE`);
+      // Generate tokens for existing leads without one
+      await dbQuery(`UPDATE outreach_leads SET unsubscribe_token = md5(random()::text || clock_timestamp()::text)::uuid WHERE unsubscribe_token IS NULL`);
+    } catch (error) {
+      // Columns might already exist
+    }
+
     console.log('✅ Outreach tables initialized');
   } catch (error) {
     console.error('Error initializing outreach tables:', error);
@@ -5695,6 +5858,12 @@ function fillEmailTemplate(template, lead) {
     body = body.replace(new RegExp(key, 'g'), value);
   }
 
+  // Add unsubscribe link (CAN-SPAM compliance)
+  if (lead.unsubscribe_token) {
+    const unsubscribeUrl = getUnsubscribeUrl(lead.unsubscribe_token, 'outreach');
+    body += `\n\n---\nUnsubscribe: ${unsubscribeUrl}`;
+  }
+
   return { subject, body };
 }
 
@@ -5765,16 +5934,17 @@ app.post('/api/outreach/scrape-leads', async (req, res) => {
 
         // Insert lead (ignore duplicates)
         try {
+          const leadUnsubscribeToken = crypto.randomBytes(32).toString('hex');
           await dbQuery(`
             INSERT INTO outreach_leads
-            (business_name, business_type, address, city, phone, website, google_rating, google_reviews_count, source)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            (business_name, business_type, address, city, phone, website, google_rating, google_reviews_count, source, unsubscribe_token)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             ON CONFLICT (business_name, city) DO UPDATE SET
               google_rating = EXCLUDED.google_rating,
               google_reviews_count = EXCLUDED.google_reviews_count,
               website = COALESCE(EXCLUDED.website, outreach_leads.website)
           `, [lead.business_name, lead.business_type, lead.address, lead.city,
-              lead.phone, lead.website, lead.google_rating, lead.google_reviews_count, lead.source]);
+              lead.phone, lead.website, lead.google_rating, lead.google_reviews_count, lead.source, leadUnsubscribeToken]);
 
           leads.push(lead);
         } catch (dbError) {
@@ -5987,12 +6157,13 @@ app.post('/api/outreach/send-emails', async (req, res) => {
       });
     }
 
-    // Get leads ready for first email (have email, no emails sent yet)
+    // Get leads ready for first email (have email, no emails sent yet, not unsubscribed)
     const newLeads = await dbAll(`
       SELECT l.* FROM outreach_leads l
       LEFT JOIN outreach_emails e ON l.id = e.lead_id
       WHERE l.email IS NOT NULL
         AND l.status = 'new'
+        AND (l.unsubscribed IS NULL OR l.unsubscribed = FALSE)
         AND e.id IS NULL
       ORDER BY l.google_reviews_count DESC NULLS LAST
       LIMIT $1
@@ -6077,7 +6248,7 @@ app.post('/api/outreach/send-followups', async (req, res) => {
   }
 
   try {
-    // Find leads needing follow-up 2 (3 days after sequence 1, no open)
+    // Find leads needing follow-up 2 (3 days after sequence 1, no open, not unsubscribed)
     const needsFollowup2 = await dbAll(`
       SELECT l.*, e.sent_at as last_email_sent
       FROM outreach_leads l
@@ -6086,6 +6257,7 @@ app.post('/api/outreach/send-followups', async (req, res) => {
         AND e.sent_at < NOW() - INTERVAL '3 days'
         AND e.opened_at IS NULL
         AND l.status = 'contacted'
+        AND (l.unsubscribed IS NULL OR l.unsubscribed = FALSE)
         AND NOT EXISTS (
           SELECT 1 FROM outreach_emails e2
           WHERE e2.lead_id = l.id AND e2.sequence_number = 2
@@ -6093,7 +6265,7 @@ app.post('/api/outreach/send-followups', async (req, res) => {
       LIMIT 20
     `);
 
-    // Find leads needing follow-up 3 (7 days after sequence 2, no reply)
+    // Find leads needing follow-up 3 (7 days after sequence 2, no reply, not unsubscribed)
     const needsFollowup3 = await dbAll(`
       SELECT l.*, e.sent_at as last_email_sent
       FROM outreach_leads l
@@ -6102,6 +6274,7 @@ app.post('/api/outreach/send-followups', async (req, res) => {
         AND e.sent_at < NOW() - INTERVAL '4 days'
         AND e.replied_at IS NULL
         AND l.status = 'contacted'
+        AND (l.unsubscribed IS NULL OR l.unsubscribed = FALSE)
         AND NOT EXISTS (
           SELECT 1 FROM outreach_emails e2
           WHERE e2.lead_id = l.id AND e2.sequence_number = 3
@@ -6221,11 +6394,12 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
         if (data.results) {
           for (const place of data.results.slice(0, 10)) {
             try {
+              const leadUnsubscribeToken = crypto.randomBytes(32).toString('hex');
               await dbQuery(`
-                INSERT INTO outreach_leads (business_name, business_type, city, source)
-                VALUES ($1, $2, $3, 'google_places')
+                INSERT INTO outreach_leads (business_name, business_type, city, source, unsubscribe_token)
+                VALUES ($1, $2, $3, 'google_places', $4)
                 ON CONFLICT (business_name, city) DO NOTHING
-              `, [place.name, todayIndustry, todayCity]);
+              `, [place.name, todayIndustry, todayCity, leadUnsubscribeToken]);
               totalScraped++;
             } catch (e) {}
           }
@@ -6271,7 +6445,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
       const newLeads = await dbAll(`
         SELECT l.* FROM outreach_leads l
         LEFT JOIN outreach_emails e ON l.id = e.lead_id
-        WHERE l.email IS NOT NULL AND l.status = 'new' AND e.id IS NULL
+        WHERE l.email IS NOT NULL AND l.status = 'new' AND (l.unsubscribed IS NULL OR l.unsubscribed = FALSE) AND e.id IS NULL
         LIMIT 30
       `);
 
@@ -6304,7 +6478,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
 
       results.sending = { sent: sent };
 
-      // Step 4: Send follow-ups
+      // Step 4: Send follow-ups (only to non-unsubscribed leads)
       const needsFollowup = await dbAll(`
         SELECT l.*, MAX(e.sequence_number) as last_sequence
         FROM outreach_leads l
@@ -6312,6 +6486,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
         WHERE l.status = 'contacted'
           AND e.sent_at < NOW() - INTERVAL '3 days'
           AND e.replied_at IS NULL
+          AND (l.unsubscribed IS NULL OR l.unsubscribed = FALSE)
         GROUP BY l.id
         HAVING MAX(e.sequence_number) < 3
         LIMIT 20

@@ -9273,6 +9273,185 @@ const AdminPage = () => {
   );
 };
 
+// Unsubscribe Page (CAN-SPAM & GDPR Compliance)
+const UnsubscribePage = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [status, setStatus] = useState('loading'); // loading, loaded, success, error
+  const [email, setEmail] = useState('');
+  const [businessName, setBusinessName] = useState('');
+  const [type, setType] = useState('user');
+  const [preferences, setPreferences] = useState({
+    email_marketing: true,
+    email_product: true,
+    email_weekly_summary: true,
+    email_usage_alerts: true
+  });
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const token = searchParams.get('token');
+    const urlType = searchParams.get('type') || 'user';
+    setType(urlType);
+
+    if (!token) {
+      setStatus('error');
+      return;
+    }
+
+    loadPreferences(token, urlType);
+  }, [searchParams]);
+
+  const loadPreferences = async (token, type) => {
+    try {
+      const res = await api.get(`/unsubscribe?token=${token}&type=${type}`);
+      setEmail(res.data.email);
+      setBusinessName(res.data.businessName);
+      setPreferences(res.data.preferences || {});
+      setStatus('loaded');
+    } catch (error) {
+      setStatus('error');
+    }
+  };
+
+  const handleUnsubscribeAll = async () => {
+    const token = searchParams.get('token');
+    if (!token) return;
+
+    setSaving(true);
+    try {
+      await api.post('/unsubscribe', { token, type, unsubscribeAll: true });
+      setStatus('success');
+    } catch (error) {
+      toast.error('Failed to update preferences');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSavePreferences = async () => {
+    const token = searchParams.get('token');
+    if (!token) return;
+
+    setSaving(true);
+    try {
+      await api.post('/unsubscribe', { token, type, preferences });
+      setStatus('success');
+      toast.success('Preferences updated successfully');
+    } catch (error) {
+      toast.error('Failed to update preferences');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="container" style={{ paddingTop: '80px', paddingBottom: '80px', maxWidth: '600px' }}>
+      <div className="card">
+        {status === 'loading' && (
+          <div style={{ textAlign: 'center' }}>
+            <div className="spinner" style={{ margin: '0 auto 20px' }}></div>
+            <h2>Loading Preferences...</h2>
+          </div>
+        )}
+
+        {status === 'error' && (
+          <div style={{ textAlign: 'center' }}>
+            <AlertCircle size={48} style={{ color: 'var(--danger)', marginBottom: '16px', margin: '0 auto' }} />
+            <h2 style={{ marginBottom: '8px' }}>Invalid Link</h2>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
+              This unsubscribe link is invalid or has expired.
+            </p>
+            <button className="btn btn-primary" onClick={() => navigate('/')}>
+              Go to Homepage
+            </button>
+          </div>
+        )}
+
+        {status === 'loaded' && (
+          <>
+            <div style={{ marginBottom: '24px' }}>
+              <Bell size={32} style={{ color: 'var(--primary)', marginBottom: '12px' }} />
+              <h2 style={{ marginBottom: '8px' }}>Email Preferences</h2>
+              <p style={{ color: 'var(--text-muted)' }}>
+                Manage your email preferences for {businessName || email}
+              </p>
+            </div>
+
+            {type === 'user' ? (
+              <div style={{ marginBottom: '24px' }}>
+                <p style={{ marginBottom: '16px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                  Choose which emails you'd like to receive:
+                </p>
+                {[
+                  { key: 'email_marketing', title: 'Marketing Emails', description: 'Product updates, tips, and special offers' },
+                  { key: 'email_product', title: 'Product Updates', description: 'New features and important announcements' },
+                  { key: 'email_weekly_summary', title: 'Weekly Summary', description: 'Summary of your account activity' },
+                  { key: 'email_usage_alerts', title: 'Usage Alerts', description: 'Notifications about usage limits' }
+                ].map(item => (
+                  <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '8px', marginBottom: '12px' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '500', marginBottom: '4px' }}>{item.title}</div>
+                      <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{item.description}</div>
+                    </div>
+                    <label style={{ position: 'relative', display: 'inline-block', width: '48px', height: '26px', flexShrink: 0, marginLeft: '12px' }}>
+                      <input
+                        type="checkbox"
+                        checked={preferences[item.key]}
+                        onChange={(e) => setPreferences(prev => ({ ...prev, [item.key]: e.target.checked }))}
+                        style={{ opacity: 0, width: 0, height: 0 }}
+                      />
+                      <span style={{
+                        position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
+                        background: preferences[item.key] ? 'var(--primary)' : 'var(--gray-300)',
+                        borderRadius: '26px', transition: '0.3s'
+                      }}>
+                        <span style={{
+                          position: 'absolute', height: '20px', width: '20px',
+                          left: preferences[item.key] ? '24px' : '3px', bottom: '3px',
+                          background: 'white', borderRadius: '50%', transition: '0.3s'
+                        }} />
+                      </span>
+                    </label>
+                  </div>
+                ))}
+                <button className="btn btn-primary" onClick={handleSavePreferences} disabled={saving} style={{ marginTop: '12px', marginRight: '12px' }}>
+                  {saving ? 'Saving...' : 'Save Preferences'}
+                </button>
+                <button className="btn btn-secondary" onClick={handleUnsubscribeAll} disabled={saving} style={{ marginTop: '12px' }}>
+                  Unsubscribe from All
+                </button>
+              </div>
+            ) : (
+              <div style={{ marginBottom: '24px' }}>
+                <p style={{ marginBottom: '16px', color: 'var(--text-muted)' }}>
+                  You're currently subscribed to our emails. Click below to unsubscribe.
+                </p>
+                <button className="btn btn-primary" onClick={handleUnsubscribeAll} disabled={saving}>
+                  {saving ? 'Unsubscribing...' : 'Unsubscribe'}
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {status === 'success' && (
+          <div style={{ textAlign: 'center' }}>
+            <CheckCircle size={48} style={{ color: 'var(--secondary)', marginBottom: '16px', margin: '0 auto' }} />
+            <h2 style={{ marginBottom: '8px' }}>Preferences Updated</h2>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
+              Your email preferences have been updated successfully.
+            </p>
+            <button className="btn btn-primary" onClick={() => navigate('/')}>
+              Go to Homepage
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Main App
 function App() {
   return (
@@ -9315,6 +9494,7 @@ function App() {
           />
           <Route path="/confirm-email" element={<ConfirmEmailPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
+          <Route path="/unsubscribe" element={<UnsubscribePage />} />
           <Route
             path="/settings"
             element={
