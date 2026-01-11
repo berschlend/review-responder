@@ -4786,44 +4786,39 @@ const DashboardPage = () => {
               </select>
             </div>
 
-            <div className="form-group" style={{ position: 'relative' }}>
+            <div className="form-group">
               <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 Response Tone
                 <FeatureTooltip text="Professional: Business-appropriate. Friendly: Warm and personal. Formal: Corporate style. Apologetic: For negative reviews.">
                   <Info size={14} style={{ color: 'var(--gray-400)', cursor: 'help' }} />
                 </FeatureTooltip>
-              </label>
-              <div style={{ position: 'relative' }}>
-                <select
-                  className="form-select"
-                  value={tone}
-                  onChange={(e) => {
-                    setTone(e.target.value);
-                    setHasManuallyChangedTone(true);
-                  }}
-                >
-                  <option value="professional">Professional</option>
-                  <option value="friendly">Friendly</option>
-                  <option value="formal">Formal</option>
-                  <option value="apologetic">Apologetic</option>
-                </select>
                 {recommendedTone && tone === recommendedTone && !hasManuallyChangedTone && (
                   <span style={{
-                    position: 'absolute',
-                    top: '-8px',
-                    right: '-8px',
                     background: 'var(--success)',
                     color: 'white',
                     fontSize: '10px',
-                    padding: '2px 6px',
-                    borderRadius: '8px',
+                    padding: '2px 8px',
+                    borderRadius: '10px',
                     fontWeight: '600',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                    marginLeft: 'auto'
                   }}>
-                    Recommended
+                    AI Recommended
                   </span>
                 )}
-              </div>
+              </label>
+              <select
+                className="form-select"
+                value={tone}
+                onChange={(e) => {
+                  setTone(e.target.value);
+                  setHasManuallyChangedTone(true);
+                }}
+              >
+                <option value="professional">Professional</option>
+                <option value="friendly">Friendly</option>
+                <option value="formal">Formal</option>
+                <option value="apologetic">Apologetic</option>
+              </select>
             </div>
           </div>
 
