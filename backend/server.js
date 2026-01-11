@@ -4476,9 +4476,9 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
     const userName = displayName || user.business_name || user.email.split('@')[0];
 
     // Insert feedback - auto-approved for transparency
-    await dbQuery(
+    const insertResult = await dbQuery(
       `INSERT INTO user_feedback (user_id, rating, comment, user_name, approved)
-       VALUES ($1, $2, $3, $4, TRUE)`,
+       VALUES ($1, $2, $3, $4, TRUE) RETURNING id`,
       [req.user.id, rating, comment || null, userName]
     );
 
@@ -4487,6 +4487,14 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
       'UPDATE users SET feedback_submitted = TRUE WHERE id = $1',
       [req.user.id]
     );
+
+    // Auto-generate AI response for dogfooding section (non-blocking)
+    if (comment && insertResult.rows && insertResult.rows[0]) {
+      const testimonialId = insertResult.rows[0].id;
+      generateAIResponseForTestimonial(testimonialId, rating, comment, userName)
+        .then(() => console.log(`🤖 Auto-generated AI response for testimonial ${testimonialId}`))
+        .catch(err => console.error(`Failed to auto-generate AI response:`, err.message));
+    }
 
     res.json({ success: true, message: 'Thank you for your feedback!' });
   } catch (error) {
@@ -4587,25 +4595,13 @@ app.get('/api/admin/testimonials', async (req, res) => {
   }
 });
 
-// Admin: Generate AI response for a testimonial (dogfooding section)
-app.post('/api/admin/testimonials/:id/generate-response', async (req, res) => {
-  const { key } = req.query;
-  if (!process.env.ADMIN_SECRET || !safeCompare(key, process.env.ADMIN_SECRET)) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  try {
-    // Get the testimonial
-    const testimonial = await dbGet('SELECT * FROM user_feedback WHERE id = $1', [req.params.id]);
-    if (!testimonial) {
-      return res.status(404).json({ error: 'Testimonial not found' });
-    }
-
-    // ReviewResponder's own business context (open source)
-    const REVIEWRESPONDER_CONTEXT = {
-      businessName: "ReviewResponder",
-      businessType: "SaaS / AI Software Tool",
-      businessContext: `ReviewResponder helps small business owners respond to customer reviews quickly and professionally.
+// Helper: Generate AI response for a testimonial (used by both auto and admin)
+async function generateAIResponseForTestimonial(testimonialId, rating, comment, userName) {
+  // ReviewResponder's own business context (open source)
+  const REVIEWRESPONDER_CONTEXT = {
+    businessName: "ReviewResponder",
+    businessType: "SaaS / AI Software Tool",
+    businessContext: `ReviewResponder helps small business owners respond to customer reviews quickly and professionally.
 
 WHO WE ARE:
 - Created by Berend in Germany, 2026
@@ -4647,7 +4643,7 @@ CONTACT:
 - support@tryreviewresponder.com
 - I (Berend) personally read and respond to support emails
 - Usually within 24 hours, often faster`,
-      responseStyle: `HOW TO RESPOND (our internal guidelines):
+    responseStyle: `HOW TO RESPOND (our internal guidelines):
 
 BE AUTHENTIC:
 - Sound like a real person, not a corporate entity
@@ -4678,37 +4674,62 @@ NEVER DO:
 SIGN OFF:
 - "Thanks, Berend" or "- The ReviewResponder Team"
 - Keep it natural and direct`
-    };
+  };
 
-    // Generate AI response using Claude (Smart AI)
-    const systemMessage = `You are responding to a customer review for ${REVIEWRESPONDER_CONTEXT.businessName} (${REVIEWRESPONDER_CONTEXT.businessType}).
+  // Generate AI response using Claude (Smart AI)
+  const systemMessage = `You are responding to a customer review for ${REVIEWRESPONDER_CONTEXT.businessName} (${REVIEWRESPONDER_CONTEXT.businessType}).
 
 ${REVIEWRESPONDER_CONTEXT.businessContext}
 
 ${REVIEWRESPONDER_CONTEXT.responseStyle}`;
 
-    const userMessage = `[${testimonial.rating} star review from ${testimonial.user_name || 'a customer'}]
+  const userMessage = `[${rating} star review from ${userName || 'a customer'}]
 
-"${testimonial.comment}"
+"${comment}"
 
 Generate a response following the guidelines above. Keep it concise (2-4 sentences).`;
 
-    // Use Claude (Anthropic) for this special response
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    const completion = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 500,
-      messages: [
-        { role: 'user', content: systemMessage + '\n\n' + userMessage }
-      ]
-    });
+  // Use Claude (Anthropic) for this special response
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const completion = await anthropic.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 500,
+    messages: [
+      { role: 'user', content: systemMessage + '\n\n' + userMessage }
+    ]
+  });
 
-    const aiResponse = completion.content[0].text.trim();
+  const aiResponse = completion.content[0].text.trim();
 
-    // Save the response to the database
-    await dbQuery(
-      'UPDATE user_feedback SET ai_response = $1 WHERE id = $2',
-      [aiResponse, req.params.id]
+  // Save the response to the database
+  await dbQuery(
+    'UPDATE user_feedback SET ai_response = $1 WHERE id = $2',
+    [aiResponse, testimonialId]
+  );
+
+  return aiResponse;
+}
+
+// Admin: Generate AI response for a testimonial (dogfooding section)
+app.post('/api/admin/testimonials/:id/generate-response', async (req, res) => {
+  const { key } = req.query;
+  if (!process.env.ADMIN_SECRET || !safeCompare(key, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Get the testimonial
+    const testimonial = await dbGet('SELECT * FROM user_feedback WHERE id = $1', [req.params.id]);
+    if (!testimonial) {
+      return res.status(404).json({ error: 'Testimonial not found' });
+    }
+
+    // Use the helper function
+    const aiResponse = await generateAIResponseForTestimonial(
+      testimonial.id,
+      testimonial.rating,
+      testimonial.comment,
+      testimonial.user_name
     );
 
     res.json({
