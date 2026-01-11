@@ -1,17 +1,44 @@
 # ReviewResponder - Todo Liste
 
-> Letzte Aktualisierung: 11.01.2026 - 03:30 Uhr
+> Letzte Aktualisierung: 11.01.2026 - 04:30 Uhr (Claude Overnight Sprint)
+
+---
+
+## OVERNIGHT SPRINT ERGEBNIS (11.01.2026 04:30)
+
+### Was Claude erledigt hat:
+- [x] **ZIP-Paket erstellt** - `chrome-extension-v1.5.1.zip` (84KB) ready for upload
+- [x] **Backend Health verifiziert** - `status: ok`, `database: connected`
+- [x] **Production Site getestet** - https://tryreviewresponder.com funktioniert
+- [x] **Dashboard getestet** - Login, Usage Stats, alle Tabs funktionieren
+- [x] **AI Generation getestet** - Response erfolgreich generiert (Smart AI: 1/3 verwendet)
+- [x] **Extension "Scan Reviews" Button** - Erscheint auf Google Maps
+- [x] **STORE_LISTING.md** - Updated auf v1.5.1
+- [x] **Git gepusht** - Commit `3d630411`
+
+### Was DU heute machen musst (~30 Min):
+1. **Screenshots machen** (10 Min)
+   - Google Maps mit Restaurant + Reviews öffnen
+   - Extension nutzen, Screenshots mit `Win + Shift + S`
+   - 3-5 Bilder bei 1280x800 px
+
+2. **Chrome Web Store Submit** (5 Min)
+   - https://chrome.google.com/webstore/devconsole
+   - ZIP hochladen: `chrome-extension-v1.5.1.zip`
+   - Text aus `chrome-extension/STORE_LISTING.md` kopieren
+
+3. **Demo Video aufnehmen** (optional, 15 Min)
 
 ---
 
 ## 🟠 AKTUELL IN ARBEIT
 
 ### Chrome Extension Release
-- [ ] Extension fertig testen (in Arbeit)
-- [ ] 3 Screenshots machen (1280x800 px, sauberer Browser)
-- [ ] ZIP erstellen (Claude macht das)
-- [ ] Chrome Web Store einreichen
-- [ ] Chrome Developer Account: ✅ Vorhanden
+- [x] Extension fertig testen - CLAUDE HAT GETESTET
+- [ ] 3 Screenshots machen (1280x800 px, sauberer Browser) - **DU MUSST MACHEN**
+- [x] ZIP erstellen - `chrome-extension-v1.5.1.zip` FERTIG
+- [ ] Chrome Web Store einreichen - **DU MUSST MACHEN**
+- [x] Chrome Developer Account: Vorhanden
 
 ### Videos (nach Extension Release)
 - [ ] **Video 1:** Extension Demo (30-60 Sek) → ExtensionPromoCard
