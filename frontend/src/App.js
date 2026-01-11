@@ -3058,7 +3058,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
 
       // Step 3: Generate response to that review
       const responseResult = await api.post('/generate', {
-        review: review,
+        reviewText: review,
         tone: 'friendly',
         businessName: businessName.trim(),
         businessContext: context,
@@ -4666,6 +4666,7 @@ const DashboardPage = () => {
               onChange={(e) => setReviewText(e.target.value)}
               placeholder="Paste the customer review here..."
               rows={5}
+              spellCheck={false}
             />
           </div>
 
@@ -5032,6 +5033,7 @@ Terrible experience. Waited 30 minutes and nobody helped me.
 Food was amazing, will definitely come back!`}
                     rows={25}
                     style={{ fontFamily: 'inherit', minHeight: '700px' }}
+                    spellCheck={false}
                   />
                   <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '8px' }}>
                     Supported formats: One review per line, CSV format ("review1","review2"), or separated by ---
