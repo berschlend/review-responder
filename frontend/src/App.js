@@ -1671,6 +1671,7 @@ const LandingPage = () => {
   const [testimonials, setTestimonials] = useState([]);
   const [referralBanner, setReferralBanner] = useState(null);
   const [affiliateBanner, setAffiliateBanner] = useState(null);
+  const [showLandingVideo, setShowLandingVideo] = useState(false);
 
   useEffect(() => {
     const fetchTestimonials = async () => {
@@ -1852,60 +1853,73 @@ const LandingPage = () => {
 
             {/* Extension Demo Video Preview */}
             <div style={{ flex: '0 0 280px', minWidth: '240px' }}>
-              <div style={{
-                background: '#0d0d1a',
-                borderRadius: '12px',
-                overflow: 'hidden',
-                aspectRatio: '16/9',
-                position: 'relative',
-                cursor: 'pointer',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-              className="extension-video-preview"
-              >
-                {/* Play Button */}
-                <div className="play-overlay" style={{
-                  width: '64px',
-                  height: '64px',
-                  background: 'rgba(79, 70, 229, 0.9)',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'transform 0.2s, background 0.2s',
-                  zIndex: 2
-                }}>
-                  <Play size={28} fill="white" style={{ marginLeft: '3px' }} />
-                </div>
-                {/* Duration Badge */}
-                <span style={{
-                  position: 'absolute',
-                  bottom: '8px',
-                  right: '8px',
-                  background: 'rgba(0,0,0,0.7)',
-                  padding: '4px 8px',
-                  borderRadius: '4px',
-                  fontSize: '11px',
-                  fontWeight: '500'
-                }}>
-                  0:45
-                </span>
-                {/* Label */}
+              {showLandingVideo ? (
+                <video
+                  controls
+                  autoPlay
+                  style={{ width: '100%', borderRadius: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}
+                  onEnded={() => setShowLandingVideo(false)}
+                >
+                  <source src="/demo-video.mp4" type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              ) : (
                 <div style={{
-                  position: 'absolute',
-                  bottom: '8px',
-                  left: '8px',
+                  background: '#0d0d1a',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  aspectRatio: '16/9',
+                  position: 'relative',
+                  cursor: 'pointer',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px'
-                }}>
-                  <Video size={14} style={{ opacity: 0.7 }} />
-                  <span style={{ fontSize: '11px', opacity: 0.7 }}>Extension Demo</span>
+                  justifyContent: 'center'
+                }}
+                className="extension-video-preview"
+                onClick={() => setShowLandingVideo(true)}
+                >
+                  {/* Play Button */}
+                  <div className="play-overlay" style={{
+                    width: '64px',
+                    height: '64px',
+                    background: 'rgba(79, 70, 229, 0.9)',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'transform 0.2s, background 0.2s',
+                    zIndex: 2
+                  }}>
+                    <Play size={28} fill="white" style={{ marginLeft: '3px' }} />
+                  </div>
+                  {/* Duration Badge */}
+                  <span style={{
+                    position: 'absolute',
+                    bottom: '8px',
+                    right: '8px',
+                    background: 'rgba(0,0,0,0.7)',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '11px',
+                    fontWeight: '500'
+                  }}>
+                    0:38
+                  </span>
+                  {/* Label */}
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '8px',
+                    left: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}>
+                    <Video size={14} style={{ opacity: 0.7 }} />
+                    <span style={{ fontSize: '11px', opacity: 0.7 }}>Dashboard Demo</span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <div style={{ flex: '0 0 auto' }}>

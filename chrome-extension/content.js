@@ -2252,11 +2252,11 @@ async function createResponsePanel() {
       </div>
     </div>
 
-    <!-- Analytics Widget (collapsible) -->
-    <div class="rr-analytics-widget">
+    <!-- Analytics Widget (collapsed by default for speed) -->
+    <div class="rr-analytics-widget collapsed">
       <div class="rr-analytics-header">
-        <span class="rr-analytics-title">📊 Your Stats</span>
-        <span class="rr-analytics-toggle">▼</span>
+        <span class="rr-analytics-title">📊 Stats</span>
+        <span class="rr-analytics-toggle">▶</span>
       </div>
       <div class="rr-analytics-body">
         <div class="rr-stat-item">
@@ -4485,6 +4485,120 @@ async function copyResponse(panel) {
   }
 }
 
+// ========== TURBO MODE - INSTANT GENERATE ==========
+async function turboGenerate(reviewText) {
+  // Show loading toast
+  showToast('⚡ Generating response...', 'info');
+
+  try {
+    // Check login
+    const stored = await chrome.storage.local.get(['token', 'user']);
+    if (!stored.token) {
+      showToast('🔐 Please login via extension popup first', 'error');
+      return;
+    }
+
+    // Get settings for tone
+    const settings = await getSettings();
+    const tone = settings.defaultTone || 'professional';
+
+    // Detect language
+    const language = detectLanguage(reviewText);
+
+    // Call API directly
+    const response = await fetch(`${API_URL}/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${stored.token}`
+      },
+      body: JSON.stringify({
+        reviewText: reviewText,
+        tone: tone,
+        targetLanguage: language.code
+      })
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        await handleUnauthorized();
+        return;
+      }
+      throw new Error('Generation failed');
+    }
+
+    const data = await response.json();
+    const generatedResponse = data.response;
+
+    // Copy to clipboard automatically
+    await navigator.clipboard.writeText(generatedResponse);
+
+    // Show success with mini-popup
+    showTurboResult(generatedResponse, reviewText);
+
+  } catch (error) {
+    console.error('Turbo generate error:', error);
+    showToast('❌ Generation failed. Try again.', 'error');
+  }
+}
+
+// Mini popup for Turbo Mode result
+function showTurboResult(response, reviewText) {
+  // Remove existing turbo popup
+  const existing = document.getElementById('rr-turbo-popup');
+  if (existing) existing.remove();
+
+  const popup = document.createElement('div');
+  popup.id = 'rr-turbo-popup';
+  popup.innerHTML = `
+    <div class="rr-turbo-header">
+      <span>⚡ Response Ready!</span>
+      <button class="rr-turbo-close">×</button>
+    </div>
+    <div class="rr-turbo-response">${response.substring(0, 150)}${response.length > 150 ? '...' : ''}</div>
+    <div class="rr-turbo-actions">
+      <button class="rr-turbo-copy">📋 Copied!</button>
+      <button class="rr-turbo-expand">📝 Edit</button>
+    </div>
+  `;
+
+  document.body.appendChild(popup);
+
+  // Auto-hide after 5 seconds
+  const autoHide = setTimeout(() => popup.remove(), 5000);
+
+  // Close button
+  popup.querySelector('.rr-turbo-close').addEventListener('click', () => {
+    clearTimeout(autoHide);
+    popup.remove();
+  });
+
+  // Copy again
+  popup.querySelector('.rr-turbo-copy').addEventListener('click', async () => {
+    await navigator.clipboard.writeText(response);
+    showToast('📋 Copied again!', 'success');
+  });
+
+  // Expand to full panel
+  popup.querySelector('.rr-turbo-expand').addEventListener('click', () => {
+    clearTimeout(autoHide);
+    popup.remove();
+    showResponsePanel(reviewText, false);
+    // Pre-fill the response
+    setTimeout(() => {
+      const panel = document.getElementById('rr-response-panel');
+      if (panel) {
+        const textarea = panel.querySelector('.rr-response-textarea');
+        if (textarea) {
+          textarea.value = response;
+          updateCharCounter(panel);
+          panel.querySelector('.rr-response-section').classList.remove('hidden');
+        }
+      }
+    }, 100);
+  });
+}
+
 // ========== SHOW PANEL ==========
 async function showResponsePanel(reviewText, autoGenerate = false) {
   console.log('[RR Debug] showResponsePanel called');
@@ -5005,10 +5119,17 @@ function addInlineButtons() {
       const btn = document.createElement('button');
       btn.className = 'rr-inline-btn';
       btn.innerHTML = '⚡ Respond';
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        showResponsePanel(text, true);
+
+        // Check Turbo Mode - instant generate without full panel
+        const settings = await getSettings();
+        if (settings.turboMode) {
+          turboGenerate(text);
+        } else {
+          showResponsePanel(text, false); // false = don't auto-generate, let user choose
+        }
       });
 
       const target = review.querySelector('.k8MTF, .GBkF3d') || review;
