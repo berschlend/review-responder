@@ -2325,7 +2325,7 @@ const PricingCards = ({ showFree = true }) => {
       monthlyPrice: 0,
       yearlyPrice: 0,
       responses: 20,
-      features: ['✨ 3 Smart AI responses', '⚡ 17 Standard responses', '20 total per month', 'All tone options', '50+ languages'],
+      features: ['✨ 3 Smart AI responses', '⚡ 17 Standard responses', '20 total per month', 'All 4 tone options', '50+ languages', 'Response history'],
       buttonText: 'Get Started',
       plan: 'free'
     },
@@ -2334,16 +2334,16 @@ const PricingCards = ({ showFree = true }) => {
       monthlyPrice: 29,
       yearlyPrice: 23.20, // 20% off
       responses: 300,
-      features: ['✨ 100 Smart AI responses', '⚡ 200 Standard responses', '300 total per month', 'Response history', 'Email support'],
+      features: ['✨ 100 Smart AI responses', '⚡ 200 Standard responses', '300 total per month', 'Response templates', 'CSV/PDF export', 'Email support'],
       buttonText: 'Subscribe',
       plan: 'starter'
     },
     {
-      name: 'Professional',
+      name: 'Pro',
       monthlyPrice: 49,
       yearlyPrice: 39.20, // 20% off
       responses: 800,
-      features: ['✨ 300 Smart AI responses', '⚡ 500 Standard responses', '800 total per month', 'Bulk generation (20 at once)', 'Analytics dashboard', 'Team members (3)'],
+      features: ['✨ 300 Smart AI responses', '⚡ 500 Standard responses', '800 total per month', 'Bulk generation (20 at once)', 'Analytics dashboard', 'Team members (3)', 'Priority support'],
       buttonText: 'Subscribe',
       plan: 'professional',
       popular: true
@@ -2353,7 +2353,7 @@ const PricingCards = ({ showFree = true }) => {
       monthlyPrice: 99,
       yearlyPrice: 79.20, // 20% off
       responses: 'Unlimited',
-      features: ['✨ Unlimited Smart AI', '⚡ Unlimited Standard', 'All premium features', 'Team members (10)', 'API access', 'Priority support'],
+      features: ['✨ Unlimited Smart AI', '⚡ Unlimited Standard', 'All Pro features', 'Team members (10)', 'API access', 'Dedicated support'],
       buttonText: 'Subscribe',
       plan: 'unlimited'
     }
@@ -4988,7 +4988,7 @@ Food was amazing, will definitely come back!`}
               <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>SEO Blog Generator</h2>
               <p style={{ color: 'var(--gray-600)', marginBottom: '24px', maxWidth: '500px', margin: '0 auto 24px' }}>
                 Generate SEO-optimized blog articles about review management to drive organic traffic to your business.
-                Available for Professional and Unlimited plans.
+                Available for Pro and Unlimited plans.
               </p>
               <div style={{ background: 'var(--gray-50)', borderRadius: '12px', padding: '24px', marginBottom: '24px', maxWidth: '400px', margin: '0 auto 24px' }}>
                 <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>What you get:</h3>
@@ -7758,11 +7758,12 @@ const PricingPage = () => {
     { name: '50+ Languages', free: true, starter: true, pro: true, unlimited: true },
     { name: 'Response History', free: true, starter: true, pro: true, unlimited: true },
     { name: 'Response Templates', free: false, starter: true, pro: true, unlimited: true },
-    { name: 'Bulk Generation (20 at once)', free: false, starter: false, pro: true, unlimited: true },
-    { name: 'Analytics Dashboard', free: false, starter: false, pro: true, unlimited: true },
     { name: 'CSV/PDF Export', free: false, starter: true, pro: true, unlimited: true },
-    { name: 'API Access', free: false, starter: false, pro: false, unlimited: true },
+    { name: 'Bulk Generation (20)', free: false, starter: false, pro: true, unlimited: true },
+    { name: 'Analytics Dashboard', free: false, starter: false, pro: true, unlimited: true },
     { name: 'Team Members', free: '-', starter: '-', pro: '3', unlimited: '10' },
+    { name: 'API Access', free: false, starter: false, pro: false, unlimited: true },
+    { name: 'Email Support', free: false, starter: true, pro: true, unlimited: true },
     { name: 'Priority Support', free: false, starter: false, pro: true, unlimited: true }
   ];
 
@@ -7885,7 +7886,7 @@ const PricingPage = () => {
                   }}>
                     MOST POPULAR
                   </div>
-                  Professional
+                  Pro
                 </th>
                 <th style={{ padding: '16px', paddingTop: '32px', textAlign: 'center', fontWeight: '600', verticalAlign: 'bottom' }}>Unlimited</th>
               </tr>
@@ -8100,7 +8101,7 @@ const PricingPage = () => {
               {[
                 { id: 'free', name: 'Free', responses: '20 responses/mo' },
                 { id: 'starter', name: 'Starter', responses: '300 responses/mo' },
-                { id: 'professional', name: 'Professional', responses: '800 responses/mo' },
+                { id: 'professional', name: 'Pro', responses: '800 responses/mo' },
                 { id: 'unlimited', name: 'Unlimited', responses: 'Unlimited' }
               ].map(plan => (
                 <button
@@ -8233,7 +8234,7 @@ const AnalyticsPage = () => {
           }}>
             <p style={{ fontSize: '14px', color: 'var(--primary-700)' }}>
               <Lock size={16} style={{ verticalAlign: 'middle', marginRight: '8px' }} />
-              Available on <strong>Professional</strong> and <strong>Unlimited</strong> plans
+              Available on <strong>Pro</strong> and <strong>Unlimited</strong> plans
             </p>
           </div>
 
@@ -8609,7 +8610,7 @@ const AffiliateLandingPage = () => {
               </tr></thead>
               <tbody>
                 {[{ plan: 'Starter', price: '$29/mo', comm: '$5.80/mo', yearly: '$69.60/year' },
-                  { plan: 'Professional', price: '$49/mo', comm: '$9.80/mo', yearly: '$117.60/year' },
+                  { plan: 'Pro', price: '$49/mo', comm: '$9.80/mo', yearly: '$117.60/year' },
                   { plan: 'Unlimited', price: '$99/mo', comm: '$19.80/mo', yearly: '$237.60/year' }].map((r, i) => (
                   <tr key={r.plan} style={{ borderBottom: i < 2 ? '1px solid var(--gray-100)' : 'none' }}>
                     <td style={{ padding: '16px', fontWeight: '500' }}>{r.plan}</td>
@@ -8621,7 +8622,7 @@ const AffiliateLandingPage = () => {
               </tbody>
             </table>
             <div style={{ padding: '16px', background: 'var(--primary-50)', borderRadius: '8px', marginTop: '16px', textAlign: 'center' }}>
-              <strong>Example:</strong> Refer 10 Professional customers = <strong style={{ color: 'var(--primary-600)' }}>$1,176/year</strong> in passive income!
+              <strong>Example:</strong> Refer 10 Pro customers = <strong style={{ color: 'var(--primary-600)' }}>$1,176/year</strong> in passive income!
             </div>
           </div>
         </div>

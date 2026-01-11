@@ -6,7 +6,7 @@
 ---
 
 ## Short Description (132 chars max)
-Generate professional responses to Google Reviews in seconds. AI-powered, 50+ languages, one-click copy. Save hours every week.
+AI review responses for Google, Yelp & TripAdvisor. 50+ languages, 4 tones, templates, quality scores. Save hours every week.
 
 ---
 
@@ -14,21 +14,24 @@ Generate professional responses to Google Reviews in seconds. AI-powered, 50+ la
 
 **Stop wasting hours writing review responses. Let AI do it in seconds.**
 
-ReviewResponder helps small businesses respond to Google Reviews professionally and quickly. Just click the "Generate Response" button next to any review on Google Maps, and get a perfectly crafted response instantly.
+ReviewResponder helps businesses respond to reviews professionally and quickly on Google Maps, Yelp, TripAdvisor and more. Just click the "Generate Response" button next to any review and get a perfectly crafted response instantly.
 
 **KEY FEATURES:**
 
-🚀 **One-Click Responses** - Generate professional responses directly on Google Maps
-🌍 **50+ Languages** - Automatically responds in the same language as the review
+🚀 **One-Click Responses** - Generate directly on Google Maps, Yelp, TripAdvisor & more
+🌍 **50+ Languages** - Auto-detects and responds in reviewer's language
 🎨 **4 Response Tones** - Professional, Friendly, Formal, or Apologetic
-📋 **Easy Copy & Paste** - One click to copy, ready to post
-⚡ **Lightning Fast** - Get responses in under 3 seconds
+📊 **3 Response Variations** - Get multiple options, pick your favorite
+⭐ **Quality Score** - AI rates your response (Excellent/Good/Needs Work)
+📋 **50+ Industry Templates** - Restaurant, Hotel, Retail, Healthcare & more
+💾 **Auto-Save Drafts** - Never lose your work when closing the panel
+⚡ **Lightning Fast** - Responses in under 3 seconds
 
 **HOW IT WORKS:**
 
-1. Browse reviews on Google Maps
+1. Browse reviews on Google Maps, Yelp, or TripAdvisor
 2. Click "Generate Response" next to any review
-3. Choose your tone (Professional, Friendly, etc.)
+3. Choose your tone and pick from 3 variations
 4. Copy and paste the response
 
 **PERFECT FOR:**
@@ -36,7 +39,7 @@ ReviewResponder helps small businesses respond to Google Reviews professionally 
 - Hotel managers
 - Local business owners
 - Marketing agencies
-- Anyone managing Google Reviews
+- Anyone managing online reviews
 
 **PRICING:**
 - Free: 20 responses/month
@@ -52,21 +55,24 @@ Start responding to reviews in seconds, not hours. Try ReviewResponder free toda
 
 **Hör auf, Stunden mit Review-Antworten zu verschwenden. Lass KI das in Sekunden erledigen.**
 
-ReviewResponder hilft kleinen Unternehmen, professionell und schnell auf Google-Bewertungen zu antworten. Klicke einfach auf "Generate Response" neben einer Bewertung auf Google Maps und erhalte sofort eine perfekt formulierte Antwort.
+ReviewResponder hilft Unternehmen, professionell und schnell auf Bewertungen zu antworten - auf Google Maps, Yelp, TripAdvisor und mehr. Klicke einfach auf "Generate Response" neben einer Bewertung und erhalte sofort eine perfekt formulierte Antwort.
 
 **HAUPTFUNKTIONEN:**
 
-🚀 **Ein-Klick-Antworten** - Generiere professionelle Antworten direkt auf Google Maps
-🌍 **50+ Sprachen** - Antwortet automatisch in der Sprache der Bewertung
+🚀 **Ein-Klick-Antworten** - Direkt auf Google Maps, Yelp, TripAdvisor & mehr
+🌍 **50+ Sprachen** - Erkennt automatisch die Sprache der Bewertung
 🎨 **4 Antwort-Töne** - Professionell, Freundlich, Formell oder Entschuldigend
-📋 **Einfaches Kopieren** - Ein Klick zum Kopieren, bereit zum Posten
+📊 **3 Antwort-Varianten** - Mehrere Optionen, wähle deine Lieblingsantwort
+⭐ **Qualitäts-Score** - KI bewertet deine Antwort (Excellent/Good/Needs Work)
+📋 **50+ Branchen-Templates** - Restaurant, Hotel, Einzelhandel, Gesundheit & mehr
+💾 **Auto-Speichern** - Entwürfe gehen beim Schließen nicht verloren
 ⚡ **Blitzschnell** - Antworten in unter 3 Sekunden
 
 **SO FUNKTIONIERT'S:**
 
-1. Bewertungen auf Google Maps durchsuchen
+1. Bewertungen auf Google Maps, Yelp oder TripAdvisor durchsuchen
 2. "Generate Response" neben einer Bewertung klicken
-3. Ton auswählen (Professionell, Freundlich, etc.)
+3. Ton wählen und aus 3 Varianten auswählen
 4. Antwort kopieren und einfügen
 
 **PERFEKT FÜR:**
@@ -74,7 +80,7 @@ ReviewResponder hilft kleinen Unternehmen, professionell und schnell auf Google-
 - Hotelmanager
 - Lokale Unternehmen
 - Marketing-Agenturen
-- Jeden, der Google-Bewertungen verwaltet
+- Jeden, der Online-Bewertungen verwaltet
 
 ---
 

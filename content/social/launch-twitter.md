@@ -47,12 +47,13 @@ That's it. 10 seconds instead of 10 minutes.
 ```
 Key features:
 
-✅ AI-powered responses using GPT-4o-mini
-✅ 4 different tones to match any situation
+✅ AI-powered responses (GPT-4o + Claude hybrid)
+✅ 4 tones + AI tone recommendation
 ✅ 50+ languages (auto-detected!)
-✅ Chrome Extension for Google Maps
-✅ Business context for personalization
-✅ Response history & templates
+✅ 3 response variations at once
+✅ Quality score for each response
+✅ 50+ industry templates
+✅ Chrome Extension for Google, Yelp, TripAdvisor
 ```
 
 ### Tweet 5
@@ -63,7 +64,7 @@ Key features:
 
 Only valid for the next 24 hours!
 
-Try it free: https://review-responder-frontend.onrender.com
+Try it free: https://tryreviewresponder.com
 ```
 
 ### Tweet 6
@@ -131,11 +132,11 @@ Support your international customers effortlessly.
 ```
 We built a Chrome Extension. 🔌
 
-Now you can respond to Google Maps reviews without ever leaving the page.
+Now you can respond to reviews on Google Maps, Yelp & TripAdvisor without ever leaving the page.
 
 1. Click the extension
 2. Review is auto-captured
-3. Generate response
+3. Pick from 3 variations
 4. Paste directly
 
 Saves even more time.

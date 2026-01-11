@@ -31,7 +31,7 @@
 **[Zeige: ReviewResponder Extension Icon]**
 
 > "ReviewResponder macht das in Sekunden.
-> Eine Chrome Extension, die direkt auf Google Maps funktioniert."
+> Eine Chrome Extension, die auf Google Maps, Yelp und TripAdvisor funktioniert."
 
 ---
 
@@ -66,10 +66,11 @@
 > "ReviewResponder kann noch mehr:"
 
 **[Schnelle Cuts zwischen Features]**
-- "Templates für verschiedene Branchen"
-- "Mehrere Antwort-Varianten auf einmal"
-- "Automatische Spracherkennung - antwortet in der Sprache des Kunden"
-- "Response History für dein Team"
+- "50+ Templates für Restaurants, Hotels, Einzelhandel und mehr"
+- "3 Antwort-Varianten auf einmal - wähle deine Lieblings-Antwort"
+- "Qualitäts-Score für jede Antwort"
+- "Automatische Spracherkennung in 50+ Sprachen"
+- "Auto-Save: Entwürfe gehen nie verloren"
 
 ---
 
@@ -102,18 +103,20 @@
 
 **Beschreibung:**
 ```
-Antworte auf Google Reviews in Sekunden statt Minuten.
+Antworte auf Reviews in Sekunden statt Minuten.
 
-ReviewResponder ist eine Chrome Extension, die KI-generierte Antworten direkt auf Google Maps erstellt.
+ReviewResponder ist eine Chrome Extension, die KI-generierte Antworten direkt auf Google Maps, Yelp und TripAdvisor erstellt.
 
 🔗 Kostenlos testen: https://tryreviewresponder.com
 📦 Chrome Extension: [Chrome Web Store Link]
 
 Features:
 ✅ 20 kostenlose Antworten
-✅ 4 verschiedene Tones
-✅ 50+ Sprachen
-✅ Templates für jede Branche
+✅ 4 verschiedene Tones + AI-Empfehlung
+✅ 3 Antwort-Varianten auf einmal
+✅ Qualitäts-Score für jede Antwort
+✅ 50+ Sprachen (automatisch erkannt)
+✅ 50+ Branchen-Templates
 
 Timestamps:
 0:00 Das Problem
