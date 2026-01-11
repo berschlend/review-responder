@@ -1840,17 +1840,20 @@ const LandingPage = () => {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '24px' }}>
-          {/* Example 1: 5-Star Review */}
+          {/* Example 1: Restaurant */}
           <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
             <div style={{ background: 'var(--gray-50)', padding: '16px 20px', borderBottom: '1px solid var(--gray-200)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--gray-600)' }}>POSITIVE REVIEW</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '16px' }}>🍕</span>
+                  <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--gray-600)' }}>RESTAURANT</span>
+                </div>
                 <div style={{ display: 'flex', gap: '2px' }}>
-                  {[1,2,3,4,5].map(i => <Star key={i} size={14} fill="#f59e0b" color="#f59e0b" />)}
+                  {[1,2,3,4,5].map(i => <Star key={i} size={14} fill={i <= 2 ? "#f59e0b" : "none"} color="#f59e0b" />)}
                 </div>
               </div>
               <p style={{ fontSize: '14px', color: 'var(--gray-700)', lineHeight: '1.5' }}>
-                "Amazing pizza! The crust was perfectly crispy and the toppings were fresh. Service was quick and friendly. Will definitely come back!"
+                "Not worth the hype. Food was okay but nothing special. Way overpriced for what you get. Won't be back."
               </p>
             </div>
             <div style={{ padding: '20px' }}>
@@ -1859,25 +1862,28 @@ const LandingPage = () => {
                 <span style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Generated in 3 seconds</span>
               </div>
               <p style={{ fontSize: '15px', color: 'var(--gray-800)', lineHeight: '1.6' }}>
-                "Really happy the crust worked for you. We let our dough rest 48 hours, and it makes all the difference. See you next time."
+                "Fair point on expectations vs. reality. Our prices reflect local sourcing, but I hear you on value. If you give us another shot, ask for me at the counter - I'd love to show you what we're actually about."
               </p>
               <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-                <span style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--primary-50)', color: 'var(--primary-700)', borderRadius: '12px' }}>Friendly Tone</span>
+                <span style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--primary-50)', color: 'var(--primary-700)', borderRadius: '12px' }}>Professional Tone</span>
               </div>
             </div>
           </div>
 
-          {/* Example 2: Negative Review */}
+          {/* Example 2: Hotel */}
           <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
             <div style={{ background: 'var(--gray-50)', padding: '16px 20px', borderBottom: '1px solid var(--gray-200)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--gray-600)' }}>NEGATIVE REVIEW</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '16px' }}>🏨</span>
+                  <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--gray-600)' }}>HOTEL</span>
+                </div>
                 <div style={{ display: 'flex', gap: '2px' }}>
-                  {[1,2,3,4,5].map(i => <Star key={i} size={14} fill={i <= 2 ? "#f59e0b" : "none"} color="#f59e0b" />)}
+                  {[1,2,3,4,5].map(i => <Star key={i} size={14} fill={i <= 1 ? "#f59e0b" : "none"} color="#f59e0b" />)}
                 </div>
               </div>
               <p style={{ fontSize: '14px', color: 'var(--gray-700)', lineHeight: '1.5' }}>
-                "Waited 45 minutes for our food. When it finally arrived, it was cold. Very disappointed with the service."
+                "Room smelled like smoke, wifi didn't work, and they charged my card twice. Avoid this place."
               </p>
             </div>
             <div style={{ padding: '20px' }}>
@@ -1886,7 +1892,7 @@ const LandingPage = () => {
                 <span style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Generated in 2 seconds</span>
               </div>
               <p style={{ fontSize: '15px', color: 'var(--gray-800)', lineHeight: '1.6' }}>
-                "45 minutes and cold food. That's on us, and we're sorry. Not the experience we want anyone to have. Reach out to us directly and we'll make it right."
+                "This is hard to read because none of it should have happened. I've flagged this with housekeeping and finance - the duplicate charge is being reversed today. I'd welcome the chance to host you again, on us. Please reach out directly."
               </p>
               <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
                 <span style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--error-light)', color: 'var(--error)', borderRadius: '12px' }}>Apologetic Tone</span>
@@ -1894,30 +1900,32 @@ const LandingPage = () => {
             </div>
           </div>
 
-          {/* Example 3: Multi-language */}
+          {/* Example 3: Dental Practice */}
           <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
             <div style={{ background: 'var(--gray-50)', padding: '16px 20px', borderBottom: '1px solid var(--gray-200)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--gray-600)' }}>GERMAN REVIEW</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '16px' }}>🦷</span>
+                  <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--gray-600)' }}>DENTAL PRACTICE</span>
+                </div>
                 <div style={{ display: 'flex', gap: '2px' }}>
-                  {[1,2,3,4,5].map(i => <Star key={i} size={14} fill={i <= 4 ? "#f59e0b" : "none"} color="#f59e0b" />)}
+                  {[1,2,3,4,5].map(i => <Star key={i} size={14} fill={i <= 2 ? "#f59e0b" : "none"} color="#f59e0b" />)}
                 </div>
               </div>
               <p style={{ fontSize: '14px', color: 'var(--gray-700)', lineHeight: '1.5' }}>
-                "Sehr gutes Essen und freundliche Bedienung. Die Portionen könnten etwas größer sein, aber insgesamt empfehlenswert!"
+                "Dr. felt rushed and didn't listen. Told me I need 3 fillings but second opinion said only 1. Lost my trust."
               </p>
             </div>
             <div style={{ padding: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
                 <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--primary-600)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '600' }}>AI</div>
-                <span style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Auto-detected: German</span>
+                <span style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Generated in 2 seconds</span>
               </div>
               <p style={{ fontSize: '15px', color: 'var(--gray-800)', lineHeight: '1.6' }}>
-                "Den Hinweis zu den Portionen nehmen wir uns zu Herzen. Danke für die Ehrlichkeit. Freut uns, dass der Rest gepasst hat."
+                "Feeling rushed or unheard is the opposite of what we aim for. Treatment recommendations can differ between practitioners, and I respect your choice to seek another opinion. Your trust matters more than any procedure."
               </p>
               <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
                 <span style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--primary-50)', color: 'var(--primary-700)', borderRadius: '12px' }}>Professional Tone</span>
-                <span style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--gray-100)', color: 'var(--gray-700)', borderRadius: '12px' }}>🇩🇪 German</span>
               </div>
             </div>
           </div>
@@ -8906,7 +8914,8 @@ const AffiliateDashboardPage = () => {
             <div style={{ fontSize: '14px', color: 'var(--gray-600)' }}>Total Paid Out: <strong style={{ color: 'var(--secondary)' }}>${payouts?.totalPaid?.toFixed(2) || '0.00'}</strong></div>
           </div>
           {payouts?.payouts?.length > 0 ? (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <div className="table-scroll-container">
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '500px' }}>
               <thead><tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
                 <th style={{ padding: '12px', textAlign: 'left', fontWeight: '600' }}>Amount</th>
                 <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>Method</th>
@@ -8928,6 +8937,7 @@ const AffiliateDashboardPage = () => {
                 ))}
               </tbody>
             </table>
+            </div>
           ) : (
             <div style={{ textAlign: 'center', padding: '48px', color: 'var(--gray-400)' }}>No payouts yet. Earn at least $50 in commissions to request your first payout.</div>
           )}

@@ -1557,6 +1557,19 @@ body {
   }
 }
 
+/* Analytics Charts Grid */
+.analytics-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .analytics-charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Table Scroll Container for Mobile */
 .table-scroll-container {
   overflow-x: auto;
