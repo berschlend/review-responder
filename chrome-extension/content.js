@@ -23,6 +23,16 @@ async function checkLoginStatus() {
 // Check login on load
 checkLoginStatus();
 
+// ========== TOKEN EXPIRATION HANDLER ==========
+async function handleUnauthorized() {
+  // Clear cached credentials
+  isLoggedIn = false;
+  cachedToken = null;
+  cachedUser = null;
+  await chrome.storage.local.remove(['token', 'user']);
+  showToast('🔐 Session expired. Please login again via the extension popup.', 'error');
+}
+
 // ========== DRAGGABLE PANEL HANDLER ==========
 let activeDragPanel = null;
 let dragState = { startX: 0, startY: 0, panelX: 0, panelY: 0 };
@@ -3780,6 +3790,11 @@ async function generateResponse(panel) {
     const data = await response.json();
 
     if (!response.ok) {
+      // Handle token expiration
+      if (response.status === 401) {
+        await handleUnauthorized();
+        return;
+      }
       throw new Error(data.error || 'Generation failed');
     }
 
@@ -3932,6 +3947,11 @@ async function generateResponseWithModifier(panel, modifier) {
     const data = await response.json();
 
     if (!response.ok) {
+      // Handle token expiration
+      if (response.status === 401) {
+        await handleUnauthorized();
+        return;
+      }
       throw new Error(data.error || 'Generation failed');
     }
 

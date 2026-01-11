@@ -318,8 +318,8 @@ const ThemeProvider = ({ children }) => {
   );
 };
 
-// Protected Route
-const ProtectedRoute = ({ children }) => {
+// Protected Route with optional admin check
+const ProtectedRoute = ({ children, requireAdmin = false }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -330,7 +330,16 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  return user ? children : <Navigate to="/login" />;
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  // Admin check - only specific email can access admin routes
+  if (requireAdmin && user.email?.toLowerCase() !== 'berend.mainz@web.de') {
+    return <Navigate to="/dashboard" />;
+  }
+
+  return children;
 };
 
 // Navbar Component
@@ -2262,6 +2271,7 @@ const PricingCards = ({ showFree = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [billingCycle, setBillingCycle] = useState('monthly');
+  const [loadingPlan, setLoadingPlan] = useState(null); // Track which plan is loading
 
   // Get discount code from URL parameter (e.g., ?discount=EARLY50)
   const urlParams = new URLSearchParams(location.search);
@@ -2281,6 +2291,7 @@ const PricingCards = ({ showFree = true }) => {
       return;
     }
 
+    setLoadingPlan(plan); // Start loading
     try {
       const checkoutData = {
         plan,
@@ -2296,6 +2307,7 @@ const PricingCards = ({ showFree = true }) => {
       window.location.href = res.data.url;
     } catch (error) {
       toast.error('Failed to start checkout');
+      setLoadingPlan(null); // Stop loading on error
     }
   };
 
@@ -2460,8 +2472,9 @@ const PricingCards = ({ showFree = true }) => {
                   onClick={() => handleSubscribe(plan.plan)}
                   className={`btn ${plan.popular ? 'btn-primary' : 'btn-secondary'}`}
                   style={{ width: '100%' }}
+                  disabled={loadingPlan !== null}
                 >
-                  {plan.buttonText}
+                  {loadingPlan === plan.plan ? 'Processing...' : plan.buttonText}
                 </button>
               )}
             </div>
@@ -9346,7 +9359,9 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminPage /></ProtectedRoute>} />
+          {/* Catch-all route for 404 - redirect to home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AuthProvider>
       </ThemeProvider>

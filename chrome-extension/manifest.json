@@ -12,9 +12,8 @@
     "scripting"
   ],
   "host_permissions": [
-    "https://*/*",
-    "http://*/*",
-    "https://review-responder.onrender.com/*"
+    "https://review-responder.onrender.com/*",
+    "https://*/*"
   ],
   "action": {
     "default_popup": "popup.html",

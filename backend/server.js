@@ -2720,6 +2720,7 @@ async function handleStripeWebhook(req, res) {
     }
   } catch (error) {
     console.error('Webhook processing error:', error);
+    return res.status(500).json({ error: 'Webhook processing failed' });
   }
 
   res.json({ received: true });
@@ -4382,7 +4383,7 @@ app.get('/api/testimonials', async (req, res) => {
 // Admin: Delete testimonial
 app.delete('/api/admin/testimonials/:id', async (req, res) => {
   const { key } = req.query;
-  if (key !== process.env.ADMIN_SECRET && key !== 'rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U') {
+  if (!process.env.ADMIN_SECRET || !safeCompare(key, process.env.ADMIN_SECRET)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -4397,7 +4398,7 @@ app.delete('/api/admin/testimonials/:id', async (req, res) => {
 // Admin: List all testimonials (including non-approved)
 app.get('/api/admin/testimonials', async (req, res) => {
   const { key } = req.query;
-  if (key !== process.env.ADMIN_SECRET && key !== 'rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U') {
+  if (!process.env.ADMIN_SECRET || !safeCompare(key, process.env.ADMIN_SECRET)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -5414,7 +5415,7 @@ app.get('/api/outreach/stats', async (req, res) => {
     const { secret } = req.query;
 
     // Simple secret check for admin access
-    if (secret !== process.env.ADMIN_SECRET && secret !== 'reviewresponder2026') {
+    if (!process.env.ADMIN_SECRET || !safeCompare(secret, process.env.ADMIN_SECRET)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
@@ -5704,7 +5705,7 @@ function fillEmailTemplate(template, lead) {
 // Scrape leads from Google Places API
 app.post('/api/outreach/scrape-leads', async (req, res) => {
   const adminKey = req.headers['x-admin-key'];
-  if (adminKey !== process.env.ADMIN_SECRET) {
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -5804,7 +5805,7 @@ app.post('/api/outreach/scrape-leads', async (req, res) => {
 // Find emails for leads using Hunter.io
 app.post('/api/outreach/find-emails', async (req, res) => {
   const adminKey = req.headers['x-admin-key'];
-  if (adminKey !== process.env.ADMIN_SECRET) {
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -5890,7 +5891,7 @@ app.post('/api/outreach/find-emails', async (req, res) => {
 // Test email endpoint - sends a single test email
 app.post('/api/outreach/test-email', async (req, res) => {
   const adminKey = req.headers['x-admin-key'];
-  if (adminKey !== process.env.ADMIN_SECRET && adminKey !== 'rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U') {
+  if (!process.env.ADMIN_SECRET || !safeCompare(adminKey, process.env.ADMIN_SECRET)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -5939,7 +5940,7 @@ app.post('/api/outreach/test-email', async (req, res) => {
 // Send cold emails to leads
 app.post('/api/outreach/send-emails', async (req, res) => {
   const adminKey = req.headers['x-admin-key'];
-  if (adminKey !== process.env.ADMIN_SECRET) {
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 

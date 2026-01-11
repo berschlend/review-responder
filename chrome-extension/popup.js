@@ -393,18 +393,18 @@ function showMainSection() {
   checkOnboarding();
 }
 
-// Onboarding logic
-function checkOnboarding() {
-  const onboardingSeen = localStorage.getItem('rr_onboarding_seen');
-  if (!onboardingSeen && onboardingCard) {
+// Onboarding logic - use chrome.storage.local for persistence
+async function checkOnboarding() {
+  const stored = await chrome.storage.local.get(['rr_onboarding_seen']);
+  if (!stored.rr_onboarding_seen && onboardingCard) {
     onboardingCard.classList.remove('hidden');
   }
 }
 
 // Dismiss onboarding
 if (dismissOnboarding) {
-  dismissOnboarding.addEventListener('click', () => {
-    localStorage.setItem('rr_onboarding_seen', 'true');
+  dismissOnboarding.addEventListener('click', async () => {
+    await chrome.storage.local.set({ rr_onboarding_seen: true });
     onboardingCard.classList.add('hidden');
   });
 }
