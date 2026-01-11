@@ -2978,9 +2978,31 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
   const [generatingContext, setGeneratingContext] = useState(false);
 
   // Step 3: Sample Response Test
-  const [sampleReview] = useState("Great food and amazing service! The staff was very friendly and the atmosphere was perfect. Will definitely come back!");
   const [sampleResponse, setSampleResponse] = useState('');
   const [generatingSample, setGeneratingSample] = useState(false);
+
+  // Generate dynamic sample review based on business type
+  const getSampleReview = () => {
+    const reviews = {
+      'Restaurant': "Amazing dinner! The pasta was incredible and the staff made us feel so welcome. Perfect atmosphere for a special occasion.",
+      'Cafe / Coffee Shop': "Best coffee in town! The baristas really know their craft and the cozy atmosphere makes it my favorite work spot.",
+      'Hotel / Accommodation': "Wonderful stay! The room was spotless, staff was incredibly helpful, and the location couldn't be better.",
+      'Bar / Nightclub': "Great night out! Amazing cocktails, fun atmosphere, and the DJ was fantastic. Will definitely be back!",
+      'Spa / Wellness': "So relaxing! The massage was exactly what I needed. The therapist was professional and the ambiance was perfect.",
+      'Hair Salon / Barbershop': "Best haircut I've ever had! They really listened to what I wanted and the result exceeded my expectations.",
+      'Dental Practice': "Finally a dentist I'm not scared of! Professional, gentle, and the office is so modern and clean.",
+      'Medical Practice': "Excellent care! The doctor took time to explain everything and the staff was friendly and efficient.",
+      'Auto Repair / Service': "Honest and reliable! They fixed my car quickly and didn't try to upsell me on things I didn't need.",
+      'Gym / Fitness Studio': "Love this gym! Great equipment, clean facilities, and the trainers are really motivating.",
+      'Retail Store': "Wonderful shopping experience! Great selection and the staff was so helpful in finding exactly what I needed.",
+      'E-commerce': "Fast shipping and the product was exactly as described. Customer service was super responsive too!",
+      'Professional Services': "Excellent service! They were professional, responsive, and really understood my needs.",
+      'Real Estate': "Made buying our first home so easy! They guided us through every step of the process.",
+      'Home Services': "Fantastic work! They showed up on time, were professional, and did an amazing job. Highly recommend!",
+      'Other': "Great experience! Professional service and friendly staff. Would definitely recommend to others."
+    };
+    return reviews[businessType] || reviews['Other'];
+  };
 
   const businessTypes = [
     'Restaurant', 'Cafe / Coffee Shop', 'Hotel / Accommodation', 'Bar / Nightclub',
@@ -3061,15 +3083,16 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
     setGeneratingSample(true);
     try {
       const response = await api.post('/generate', {
-        review: sampleReview,
+        review: getSampleReview(),
         tone: 'friendly',
         businessName: businessName.trim(),
-        businessContext: generatedContext
+        businessContext: generatedContext,
+        businessType: businessType
       });
       setSampleResponse(response.data.response);
     } catch (error) {
       console.error('Failed to generate sample:', error);
-      toast.error('Failed to generate sample response');
+      toast.error(error.response?.data?.error || 'Failed to generate sample response');
     } finally {
       setGeneratingSample(false);
     }
@@ -3311,7 +3334,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                   marginBottom: '12px'
                 }}>
                   <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginBottom: '4px' }}>Sample Review:</p>
-                  <p style={{ fontSize: '14px', margin: 0, lineHeight: '1.5' }}>"{sampleReview}"</p>
+                  <p style={{ fontSize: '14px', margin: 0, lineHeight: '1.5' }}>"{getSampleReview()}"</p>
                 </div>
 
                 {!sampleResponse ? (
