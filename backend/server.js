@@ -1116,10 +1116,9 @@ The review should subtly reference the business's unique features.
 Business Type: ${businessType || 'General Business'}
 Business Name: ${businessName || 'the business'}
 
-Create an authentic, positive customer review (2-3 sentences).
-- Mention 1-2 specific details from the business description
-- Sound like a real customer (not too perfect or promotional)
-- Add a personal touch (e.g., "will come back", "recommended to my friends")
+Create an authentic, positive customer review (2 sentences MAX - keep it SHORT).
+- Mention 1 specific detail from the business description
+- Sound like a real customer (natural, not promotional)
 Respond ONLY with the review text, no quotes.`;
       userMessage = `Business description: ${keywords.trim()}`;
     }

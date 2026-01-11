@@ -1860,6 +1860,7 @@ const DEFAULT_SETTINGS = {
 
 async function loadSettings() {
   try {
+    if (!chrome.runtime?.id) return { ...DEFAULT_SETTINGS }; // Extension context invalid
     const stored = await chrome.storage.local.get(['rr_settings']);
     // Merge with defaults to ensure all keys exist and turboMode defaults to false
     const settings = { ...DEFAULT_SETTINGS, ...(stored.rr_settings || {}) };
@@ -1869,15 +1870,21 @@ async function loadSettings() {
     }
     return settings;
   } catch (e) {
+    if (!e.message?.includes('Extension context invalidated')) {
+      console.error('Failed to load settings:', e);
+    }
     return { ...DEFAULT_SETTINGS };
   }
 }
 
 async function saveSettings(settings) {
   try {
+    if (!chrome.runtime?.id) return; // Extension context invalid
     await chrome.storage.local.set({ rr_settings: settings });
   } catch (e) {
-    // Settings save failed silently
+    if (!e.message?.includes('Extension context invalidated')) {
+      console.error('Failed to save settings:', e);
+    }
   }
 }
 
@@ -1890,6 +1897,7 @@ const MAX_TEMPLATES = 10;
 
 async function loadTemplates() {
   try {
+    if (!chrome.runtime?.id) return []; // Extension context invalid
     const stored = await chrome.storage.sync.get(['rr_templates']);
     if (stored.rr_templates && stored.rr_templates.length > 0) {
       return stored.rr_templates;
@@ -1898,25 +1906,35 @@ async function loadTemplates() {
     const local = await chrome.storage.local.get(['rr_templates']);
     return local.rr_templates || [];
   } catch (e) {
-    // Fallback to local storage if sync fails
-    try {
-      const local = await chrome.storage.local.get(['rr_templates']);
-      return local.rr_templates || [];
-    } catch (e2) {
-      return [];
+    if (!e.message?.includes('Extension context invalidated')) {
+      // Fallback to local storage if sync fails
+      try {
+        if (!chrome.runtime?.id) return [];
+        const local = await chrome.storage.local.get(['rr_templates']);
+        return local.rr_templates || [];
+      } catch (e2) {
+        if (!e2.message?.includes('Extension context invalidated')) {
+          console.error('Failed to load templates:', e2);
+        }
+        return [];
+      }
     }
+    return [];
   }
 }
 
 async function saveTemplates(templates) {
   try {
+    if (!chrome.runtime?.id) return; // Extension context invalid
     // Limit to MAX_TEMPLATES
     const limited = templates.slice(0, MAX_TEMPLATES);
     await chrome.storage.sync.set({ rr_templates: limited });
     // Also save to local as backup
     await chrome.storage.local.set({ rr_templates: limited });
   } catch (e) {
-    console.error('Failed to save templates:', e);
+    if (!e.message?.includes('Extension context invalidated')) {
+      console.error('Failed to save templates:', e);
+    }
   }
 }
 
@@ -2025,19 +2043,26 @@ const MAX_DRAFTS = 10;
 
 async function loadDrafts() {
   try {
+    if (!chrome.runtime?.id) return []; // Extension context invalid
     const stored = await chrome.storage.local.get(['rr_drafts']);
     return stored.rr_drafts || [];
   } catch (e) {
+    if (!e.message?.includes('Extension context invalidated')) {
+      console.error('Failed to load drafts:', e);
+    }
     return [];
   }
 }
 
 async function saveDrafts(drafts) {
   try {
+    if (!chrome.runtime?.id) return; // Extension context invalid
     const limited = drafts.slice(0, MAX_DRAFTS);
     await chrome.storage.local.set({ rr_drafts: limited });
   } catch (e) {
-    console.error('Failed to save drafts:', e);
+    if (!e.message?.includes('Extension context invalidated')) {
+      console.error('Failed to save drafts:', e);
+    }
   }
 }
 
@@ -2278,192 +2303,18 @@ async function createResponsePanel() {
       </div>
     </div>
 
-    <!-- Analytics Widget (collapsed by default for speed) -->
-    <div class="rr-analytics-widget collapsed">
-      <div class="rr-analytics-header">
-        <span class="rr-analytics-title">📊 Stats</span>
-        <span class="rr-analytics-toggle">▶</span>
-      </div>
-      <div class="rr-analytics-body">
-        <div class="rr-stat-item">
-          <span class="rr-stat-value rr-stat-week">0</span>
-          <span class="rr-stat-label">This Week</span>
-        </div>
-        <div class="rr-stat-item">
-          <span class="rr-stat-value rr-stat-total">0</span>
-          <span class="rr-stat-label">All Time</span>
-        </div>
-        <div class="rr-stat-item rr-stat-chart">
-          <div class="rr-sparkline"></div>
-          <span class="rr-stat-label">Last 7 Days</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Review Insights Widget (collapsible) -->
-    <div class="rr-insights-widget collapsed">
-      <div class="rr-insights-header">
-        <span class="rr-insights-title">💡 Insights</span>
-        <span class="rr-insights-toggle">▶</span>
-      </div>
-      <div class="rr-insights-body">
-        <div class="rr-insights-section">
-          <div class="rr-insights-label">Top Issues This Month</div>
-          <div class="rr-top-issues">
-            <div class="rr-top-issue-item"><span class="rr-issue-emoji">⏰</span> Slow service <span class="rr-issue-freq">5x</span></div>
-            <div class="rr-top-issue-item"><span class="rr-issue-emoji">🥶</span> Cold food <span class="rr-issue-freq">3x</span></div>
-            <div class="rr-top-issue-item"><span class="rr-issue-emoji">💰</span> Pricing <span class="rr-issue-freq">2x</span></div>
-          </div>
-        </div>
-        <div class="rr-insights-section">
-          <div class="rr-insights-label">Sentiment Distribution</div>
-          <div class="rr-sentiment-bars">
-            <div class="rr-sentiment-bar">
-              <span class="rr-sent-label">😊</span>
-              <div class="rr-sent-fill rr-sent-positive" style="width: 60%"></div>
-              <span class="rr-sent-pct">60%</span>
-            </div>
-            <div class="rr-sentiment-bar">
-              <span class="rr-sent-label">😐</span>
-              <div class="rr-sent-fill rr-sent-neutral" style="width: 25%"></div>
-              <span class="rr-sent-pct">25%</span>
-            </div>
-            <div class="rr-sentiment-bar">
-              <span class="rr-sent-label">😞</span>
-              <div class="rr-sent-fill rr-sent-negative" style="width: 15%"></div>
-              <span class="rr-sent-pct">15%</span>
-            </div>
-          </div>
-        </div>
-        <div class="rr-insights-tip">
-          <strong>💡 Tip:</strong> <span class="rr-tip-text">Use apologetic tone for negative reviews to show empathy.</span>
-        </div>
-      </div>
+    <!-- Business Context Bar -->
+    <div class="rr-context-bar">
+      <button class="rr-context-btn" title="Set up your business context for personalized responses">
+        <span class="rr-context-icon">🏢</span>
+        <span class="rr-context-text">Business Context</span>
+        <span class="rr-context-arrow">→</span>
+      </button>
     </div>
 
     <div class="rr-panel-body">
-      <!-- Review Section -->
-      <div class="rr-review-box">
-        <div class="rr-review-text"></div>
-      </div>
-
-      <!-- Issue Resolution UI (shown when issues detected) -->
-      <div class="rr-issue-resolution hidden">
-        <div class="rr-issue-header">
-          <span class="rr-issue-icon">🔧</span>
-          <span class="rr-issue-title">Issues Detected</span>
-          <span class="rr-issue-count"></span>
-        </div>
-        <div class="rr-issue-list">
-          <!-- Issues dynamically inserted -->
-        </div>
-        <div class="rr-compensation-note hidden">
-          <span>💡 Selected compensations will be included in your response</span>
-        </div>
-      </div>
-
-      <!-- AI Tone Recommendation (One-Shot Perfect Response) -->
-      <div class="rr-ai-recommendation hidden">
-        <div class="rr-ai-rec-header">
-          <span class="rr-ai-rec-icon">🎯</span>
-          <span class="rr-ai-rec-title">AI Recommendation</span>
-          <span class="rr-ai-rec-confidence"></span>
-        </div>
-        <div class="rr-ai-rec-body">
-          <div class="rr-ai-rec-tone">
-            <span class="rr-ai-rec-emoji"></span>
-            <span class="rr-ai-rec-label"></span>
-          </div>
-          <div class="rr-ai-rec-reason"></div>
-        </div>
-        <div class="rr-ai-rec-actions">
-          <button class="rr-ai-rec-use">⚡ Generate with this</button>
-          <button class="rr-ai-rec-other">Choose other</button>
-        </div>
-      </div>
-
-      <!-- Sentiment + Language Row -->
-      <div class="rr-info-row">
-        <div class="rr-sentiment">
-          <span class="rr-sentiment-emoji"></span>
-          <span class="rr-sentiment-label"></span>
-        </div>
-        <div class="rr-language">
-          <span class="rr-language-flag"></span>
-          <span class="rr-language-name"></span>
-        </div>
-      </div>
-
-      <!-- Smart Reply Chips (Gmail-Style) -->
-      <div class="rr-smart-replies">
-        <span class="rr-smart-label">Quick replies:</span>
-        <div class="rr-smart-chips">
-          <!-- Chips are dynamically inserted based on sentiment -->
-        </div>
-      </div>
-
-      <!-- Templates Quick Select -->
-      <div class="rr-templates-row">
-        <select class="rr-template-select">
-          <option value="">💾 Use a saved template...</option>
-        </select>
-      </div>
-
-      <!-- Tone Slider -->
-      <div class="rr-tone-slider-container">
-        <div class="rr-tone-slider-labels">
-          <span class="rr-tone-label-left">🙏 Apologetic</span>
-          <span class="rr-tone-label-right">😊 Friendly</span>
-        </div>
-        <input type="range" class="rr-tone-slider" min="0" max="3" step="1" value="1">
-        <div class="rr-tone-current">
-          <span class="rr-tone-emoji">💼</span>
-          <span class="rr-tone-name">Professional</span>
-        </div>
-      </div>
-
-      <!-- Simple Options Row (dropdown hidden, used for compatibility) -->
-      <div class="rr-options-row">
-        <div class="rr-option" style="display: none;">
-          <label>Tone</label>
-          <select class="rr-tone-select">
-            <option value="professional">💼 Professional</option>
-            <option value="friendly">😊 Friendly</option>
-            <option value="formal">🎩 Formal</option>
-            <option value="apologetic">🙏 Apologetic</option>
-          </select>
-        </div>
-        <button class="rr-settings-toggle" title="More options">⚙️</button>
-      </div>
-
-      <!-- Advanced Settings (hidden by default) -->
-      <div class="rr-advanced hidden">
-        <div class="rr-advanced-row">
-          <label>Length</label>
-          <select class="rr-length-select">
-            <option value="short">Short</option>
-            <option value="medium" selected>Medium</option>
-            <option value="detailed">Detailed</option>
-          </select>
-        </div>
-        <label class="rr-checkbox-label">
-          <input type="checkbox" class="rr-emoji-toggle">
-          <span>Include emojis</span>
-        </label>
-        <div class="rr-speed-options">
-          <label class="rr-checkbox-label">
-            <input type="checkbox" class="rr-autocopy-toggle" checked>
-            <span>Auto-copy after generate</span>
-          </label>
-          <label class="rr-checkbox-label rr-turbo-label">
-            <input type="checkbox" class="rr-turbo-toggle">
-            <span>⚡ Turbo Mode (instant, no panel)</span>
-          </label>
-        </div>
-      </div>
-
-      <!-- Generate Buttons -->
-      <div class="rr-generate-buttons">
+      <!-- Response Section (at top, hidden until generated) -->
+      <div class="rr-response-section hidden">
         <button class="rr-generate-btn">
           <span class="rr-btn-text">✨ Generate Response</span>
           <span class="rr-btn-loading hidden">
