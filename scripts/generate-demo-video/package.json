@@ -1,0 +1,16 @@
+{
+  "name": "reviewresponder-demo-video",
+  "version": "1.0.0",
+  "description": "Automated demo video generator for ReviewResponder Chrome Extension",
+  "main": "index.js",
+  "scripts": {
+    "generate": "node index.js",
+    "dry-run": "node index.js --dry-run",
+    "install-browsers": "npx playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0",
+    "commander": "^11.1.0"
+  },
+  "devDependencies": {}
+}

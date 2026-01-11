@@ -1768,9 +1768,9 @@ const LandingPage = () => {
       <section className="hero">
         <div className="container">
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <Link to="/pricing?discount=EARLY50" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', color: 'white', padding: '6px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '600', textDecoration: 'none', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }} onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(245,158,11,0.4)'; }} onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}>
-              <Zap size={14} />
-              🎁 50% OFF - Click to Claim
+            <Link to="/pricing?discount=EARLY50" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--gray-100)', color: 'var(--gray-700)', padding: '6px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '600', textDecoration: 'none', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s', border: '1px solid var(--gray-200)' }} onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }} onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}>
+              <Sparkles size={14} style={{ color: 'var(--primary)' }} />
+              50% OFF - Limited Time
             </Link>
             <ProductHuntBadge />
           </div>
@@ -2156,20 +2156,21 @@ const LandingPage = () => {
                 gap: '8px',
                 marginTop: '16px',
                 padding: '8px 20px',
-                background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
-                color: 'white',
+                background: 'var(--gray-100)',
+                color: 'var(--gray-700)',
                 borderRadius: '20px',
                 fontSize: '14px',
                 fontWeight: '600',
                 textDecoration: 'none',
                 cursor: 'pointer',
-                transition: 'transform 0.2s, box-shadow 0.2s'
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                border: '1px solid var(--gray-200)'
               }}
-              onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(245,158,11,0.4)'; }}
+              onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }}
               onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
             >
-              🎁 Get 50% OFF
-              <ArrowRight size={14} />
+              <Sparkles size={14} style={{ color: 'var(--primary)' }} />
+              50% OFF - Limited Time
             </Link>
           </div>
           <PricingCards />
@@ -3001,14 +3002,13 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
     }
   }, [isVisible, user?.businessName, user?.businessType]);
 
-  const nextStep = () => {
+  const nextStep = async () => {
     if (currentStep === 1 && businessName.trim()) {
       setCurrentStep(2);
-    } else if (currentStep === 2 && generatedContext) {
-      setCurrentStep(3);
-    } else if (currentStep === 3) {
-      saveBusinessProfile();
-    } else if (currentStep < 4) {
+    } else if (currentStep === 2 && sampleResponse) {
+      // Save profile after seeing demo
+      await saveBusinessProfile();
+    } else if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -3025,7 +3025,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
         businessType,
         businessContext: generatedContext
       });
-      setCurrentStep(4);
+      setCurrentStep(3);
     } catch (error) {
       console.error('Failed to save business profile:', error);
       toast.error('Failed to save profile');
@@ -3040,50 +3040,42 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
 
     setGeneratingContext(true);
     try {
-      const response = await api.post('/personalization/generate-context', {
+      // Step 1: Generate business context
+      const contextResult = await api.post('/personalization/generate-context', {
         keywords: keywords.trim(),
         businessType,
         businessName: businessName.trim(),
         field: 'context'
       });
+      const context = contextResult.data.generated;
+      setGeneratedContext(context);
 
-      setGeneratedContext(response.data.generated);
-      toast.success('Business description generated!');
-    } catch (error) {
-      console.error('Failed to generate context:', error);
-      toast.error(error.response?.data?.error || 'Failed to generate');
-    } finally {
-      setGeneratingContext(false);
-    }
-  };
-
-  const generateSampleResponse = async () => {
-    setGeneratingSample(true);
-    try {
-      // Step 1: Generate a contextual sample review based on the business description
+      // Step 2: Generate sample review based on context
       const reviewResult = await api.post('/personalization/generate-context', {
-        keywords: generatedContext,
+        keywords: context,
         businessType,
         businessName: businessName.trim(),
         field: 'sample_review'
       });
-      const generatedReview = reviewResult.data.generated;
-      setSampleReview(generatedReview);
+      const review = reviewResult.data.generated;
+      setSampleReview(review);
 
-      // Step 2: Generate a response to that review
-      const response = await api.post('/generate', {
-        review: generatedReview,
+      // Step 3: Generate response to that review
+      const responseResult = await api.post('/generate', {
+        review: review,
         tone: 'friendly',
         businessName: businessName.trim(),
-        businessContext: generatedContext,
+        businessContext: context,
         businessType: businessType
       });
-      setSampleResponse(response.data.response);
+      setSampleResponse(responseResult.data.response);
+
+      toast.success('Ready! Check out your personalized AI response below.');
     } catch (error) {
-      console.error('Failed to generate sample:', error);
-      toast.error(error.response?.data?.error || 'Failed to generate sample');
+      console.error('Failed to generate:', error);
+      toast.error(error.response?.data?.error || 'Failed to generate');
     } finally {
-      setGeneratingSample(false);
+      setGeneratingContext(false);
     }
   };
 
@@ -3148,7 +3140,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
             Welcome to ReviewResponder! 🎉
           </h2>
           <p style={{ margin: 0, opacity: 0.9 }}>
-            Let's personalize your AI responses in 4 quick steps
+            Let's personalize your AI in 3 quick steps
           </p>
 
           {/* Progress bar */}
@@ -3158,7 +3150,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
             gap: '8px',
             marginTop: '20px'
           }}>
-            {[1, 2, 3, 4].map((step) => (
+            {[1, 2, 3].map((step) => (
               <div
                 key={step}
                 style={{
@@ -3199,184 +3191,110 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
             </div>
           )}
 
-          {/* Step 2: Business Type + Keywords */}
+          {/* Step 2: Business Type + Keywords + Live Demo */}
           {currentStep === 2 && (
             <div>
-              <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
-                Tell us about your business
-              </h3>
-              <p style={{ color: 'var(--gray-600)', marginBottom: '20px', fontSize: '14px' }}>
-                This helps our AI create perfectly personalized responses
-              </p>
-
-              <div className="form-group">
-                <label className="form-label">Business Type</label>
-                <select
-                  className="form-input"
-                  value={businessType}
-                  onChange={(e) => setBusinessType(e.target.value)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <option value="">Select your business type...</option>
-                  {businessTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Describe your business with keywords</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="e.g., italian, family-owned, since 1985, homemade pasta, cozy atmosphere"
-                  value={keywords}
-                  onChange={(e) => setKeywords(e.target.value)}
-                />
-                <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
-                  Comma-separated keywords that describe your unique business
-                </p>
-              </div>
-
-              {!generatedContext && (
-                <button
-                  className="btn btn-primary"
-                  onClick={generateBusinessContext}
-                  disabled={generatingContext || !keywords.trim()}
-                  style={{ width: '100%' }}
-                >
-                  {generatingContext ? (
-                    <>
-                      <Loader size={16} className="spin" style={{ marginRight: '8px' }} />
-                      Generating...
-                    </>
-                  ) : (
-                    '✨ Generate Business Description'
-                  )}
-                </button>
-              )}
-
-              {generatedContext && (
-                <div style={{
-                  background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-                  border: '1px solid #86efac',
-                  borderRadius: '8px',
-                  padding: '16px',
-                  marginTop: '16px'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <CheckCircle size={18} style={{ color: '#22c55e' }} />
-                    <span style={{ fontWeight: '600', color: '#15803d' }}>Description Generated!</span>
-                  </div>
-                  <p style={{ fontSize: '14px', color: '#166534', margin: 0 }}>
-                    {generatedContext.substring(0, 100)}...
+              {!sampleResponse ? (
+                <>
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+                    Tell us about your business
+                  </h3>
+                  <p style={{ color: 'var(--gray-600)', marginBottom: '16px', fontSize: '14px' }}>
+                    Enter keywords and see your personalized AI in action
                   </p>
-                  <p style={{ fontSize: '12px', color: '#16a34a', marginTop: '8px', marginBottom: 0 }}>
-                    You can review and edit this in the next step
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
 
-          {/* Step 3: Context Review */}
-          {currentStep === 3 && (
-            <div>
-              <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
-                Review your business description
-              </h3>
-              <p style={{ color: 'var(--gray-600)', marginBottom: '20px', fontSize: '14px' }}>
-                This will be used to personalize all your AI-generated responses
-              </p>
-
-              <div className="form-group">
-                <label className="form-label">Business Description</label>
-                <textarea
-                  className="form-textarea"
-                  rows={5}
-                  value={generatedContext}
-                  onChange={(e) => setGeneratedContext(e.target.value)}
-                  placeholder="Your AI-generated business description..."
-                  style={{ lineHeight: '1.6' }}
-                />
-                <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
-                  Feel free to edit or add more details
-                </p>
-              </div>
-
-              {/* Test Section */}
-              <div style={{
-                borderTop: '1px solid var(--gray-200)',
-                marginTop: '24px',
-                paddingTop: '24px'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                  <Sparkles size={18} style={{ color: 'var(--primary)' }} />
-                  <span style={{ fontSize: '14px', fontWeight: '600' }}>See it in action</span>
-                </div>
-
-                {!sampleResponse ? (
-                  <>
-                    <p style={{ fontSize: '13px', color: 'var(--gray-600)', marginBottom: '12px' }}>
-                      Generate a sample review based on your business description and see how the AI responds.
-                    </p>
-                    <button
-                      className="btn btn-secondary"
-                      onClick={generateSampleResponse}
-                      disabled={generatingSample}
-                      style={{ width: '100%', fontSize: '14px' }}
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label className="form-label">Business Type</label>
+                    <select
+                      className="form-input"
+                      value={businessType}
+                      onChange={(e) => setBusinessType(e.target.value)}
+                      style={{ cursor: 'pointer' }}
                     >
-                      {generatingSample ? (
-                        <>
-                          <Loader size={14} className="spin" style={{ marginRight: '8px' }} />
-                          Generating review & response...
-                        </>
-                      ) : (
-                        '✨ Generate Sample Test'
-                      )}
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    {/* Sample Review */}
-                    <div style={{
-                      background: 'var(--gray-50)',
-                      border: '1px solid var(--gray-200)',
-                      borderRadius: '8px',
-                      padding: '12px',
-                      marginBottom: '12px'
-                    }}>
-                      <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginBottom: '4px' }}>
-                        ⭐⭐⭐⭐⭐ Sample Customer Review:
-                      </p>
-                      <p style={{ fontSize: '14px', margin: 0, lineHeight: '1.5', fontStyle: 'italic' }}>
-                        "{sampleReview}"
-                      </p>
-                    </div>
+                      <option value="">Select type...</option>
+                      {businessTypes.map(type => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
+                  </div>
 
-                    {/* AI Response */}
-                    <div style={{
-                      background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-                      border: '1px solid #86efac',
-                      borderRadius: '8px',
-                      padding: '12px'
+                  <div className="form-group" style={{ marginBottom: '16px' }}>
+                    <label className="form-label">Keywords (comma-separated)</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="e.g., italian, family-owned, homemade pasta"
+                      value={keywords}
+                      onChange={(e) => setKeywords(e.target.value)}
+                    />
+                  </div>
+
+                  <button
+                    className="btn btn-primary"
+                    onClick={generateBusinessContext}
+                    disabled={generatingContext || !keywords.trim()}
+                    style={{ width: '100%' }}
+                  >
+                    {generatingContext ? (
+                      <>
+                        <Loader size={16} className="spin" style={{ marginRight: '8px' }} />
+                        Generating preview...
+                      </>
+                    ) : (
+                      '✨ See AI in Action'
+                    )}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px' }}>
+                    Your AI is personalized!
+                  </h3>
+
+                  {/* Sample Review */}
+                  <div style={{ marginBottom: '12px' }}>
+                    <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginBottom: '4px' }}>
+                      ⭐⭐⭐⭐⭐ Sample Customer Review:
+                    </p>
+                    <p style={{
+                      fontSize: '13px',
+                      margin: 0,
+                      padding: '10px',
+                      background: 'var(--gray-50)',
+                      borderRadius: '6px',
+                      fontStyle: 'italic',
+                      lineHeight: '1.4'
                     }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                        <CheckCircle size={14} style={{ color: '#22c55e' }} />
-                        <span style={{ fontSize: '12px', fontWeight: '600', color: '#15803d' }}>Your AI Response:</span>
-                      </div>
-                      <p style={{ fontSize: '13px', color: '#166534', margin: 0, lineHeight: '1.5' }}>
-                        {sampleResponse}
-                      </p>
+                      "{sampleReview}"
+                    </p>
+                  </div>
+
+                  {/* AI Response */}
+                  <div style={{
+                    background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                    border: '1px solid #86efac',
+                    borderRadius: '8px',
+                    padding: '12px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <CheckCircle size={14} style={{ color: '#22c55e' }} />
+                      <span style={{ fontSize: '12px', fontWeight: '600', color: '#15803d' }}>Your AI Response:</span>
                     </div>
-                  </>
-                )}
-              </div>
+                    <p style={{ fontSize: '13px', color: '#166534', margin: 0, lineHeight: '1.4' }}>
+                      {sampleResponse}
+                    </p>
+                  </div>
+
+                  <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '12px', textAlign: 'center' }}>
+                    See how the AI uses your business details? Click Next to continue.
+                  </p>
+                </>
+              )}
             </div>
           )}
 
-          {/* Step 4: Chrome Extension */}
-          {currentStep === 4 && (
+          {/* Step 3: Chrome Extension */}
+          {currentStep === 3 && (
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎉</div>
               <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
