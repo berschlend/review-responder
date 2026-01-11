@@ -2665,10 +2665,12 @@ function initPanelEvents(panel) {
   // Turbo Mode toggle button in header
   const turboBtn = panel.querySelector('.rr-turbo-btn');
   if (turboBtn) turboBtn.addEventListener('click', async () => {
-    const settings = cachedSettings || await loadSettings();
+    // Always load fresh settings
+    const settings = await loadSettings();
     settings.turboMode = !settings.turboMode;
     cachedSettings = settings;
-    saveSettings(settings);
+    await saveSettings(settings);
+    console.log('[RR] Turbo button toggled to:', settings.turboMode);
 
     // Update button icon and checkbox
     turboBtn.textContent = settings.turboMode ? '⚡' : '🐢';
@@ -4244,7 +4246,9 @@ function createFloatingButton() {
 
     // Check if turbo mode is enabled
     // Hold Shift while clicking to FORCE open panel (override turbo mode)
-    const settings = cachedSettings || await loadSettings();
+    // Always load fresh settings to ensure we have the latest turbo mode state
+    const settings = await loadSettings();
+    cachedSettings = settings;
     if (settings.turboMode && !e.shiftKey) {
       hideFloatingButton();
       turboGenerate(selection);
@@ -4371,11 +4375,13 @@ document.addEventListener('keydown', async (e) => {
     e.stopPropagation();
     e.stopImmediatePropagation();
 
-    const settings = cachedSettings || await loadSettings();
+    // Always load fresh settings to ensure accurate toggle
+    const settings = await loadSettings();
     settings.turboMode = !settings.turboMode;
     cachedSettings = settings;
-    saveSettings(settings);
+    await saveSettings(settings);
     showToast(settings.turboMode ? '⚡ Turbo Mode ON' : '🐢 Turbo Mode OFF', 'info');
+    console.log('[RR] Turbo Mode toggled to:', settings.turboMode);
     return;
   }
 
