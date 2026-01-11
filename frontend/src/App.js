@@ -3797,6 +3797,9 @@ const DashboardPage = () => {
     setResponse('');
     setLastAiModel(null);
 
+    // Get template content if a template is selected
+    const activeTemplate = selectedTemplate ? templates.find(t => t.id.toString() === selectedTemplate) : null;
+
     try {
       const res = await api.post('/responses/generate', {
         reviewText,
@@ -3806,7 +3809,8 @@ const DashboardPage = () => {
         outputLanguage,
         aiModel,
         businessName: user.businessName,
-        customInstructions: customInstructions.trim() || undefined
+        customInstructions: customInstructions.trim() || undefined,
+        templateContent: activeTemplate?.content || undefined
       });
 
       setResponse(res.data.response);
@@ -4773,7 +4777,7 @@ Food was amazing, will definitely come back!`}
                 {/* Bulk AI Model Selector */}
                 <div className="form-group" style={{ marginTop: '16px' }}>
                   <label className="form-label">AI Model</label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div className="ai-model-buttons">
                     <button type="button" onClick={() => setBulkAiModel('auto')} style={{
                       flex: 1, padding: '10px', borderRadius: '8px', textAlign: 'center', cursor: 'pointer',
                       border: bulkAiModel === 'auto' ? '2px solid var(--primary-500)' : '2px solid var(--gray-200)',
@@ -6804,7 +6808,7 @@ const SupportPage = () => {
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', maxWidth: '1000px', margin: '0 auto' }}>
+      <div className="faq-contact-grid">
         <div>
           <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <HelpCircle size={20} />
@@ -7847,7 +7851,7 @@ const PricingPage = () => {
         <h2 style={{ textAlign: 'center', fontSize: '28px', fontWeight: '700', marginBottom: '32px' }}>
           Compare All Features
         </h2>
-        <div style={{ overflowX: 'auto' }}>
+        <div className="table-scroll-container">
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
@@ -8321,7 +8325,7 @@ const AnalyticsPage = () => {
       </div>
 
       {/* Charts Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '32px' }}>
+      <div className="analytics-charts-grid" style={{ marginBottom: '32px' }}>
         {/* Responses Over Time */}
         <div className="card">
           <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -8415,7 +8419,7 @@ const AnalyticsPage = () => {
       </div>
 
       {/* Bottom Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+      <div className="analytics-charts-grid">
         {/* Responses by Platform */}
         <div className="card">
           <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -8863,7 +8867,8 @@ const AffiliateDashboardPage = () => {
         <div className="card">
           <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>Recent Conversions</h3>
           {data?.recentConversions?.length > 0 ? (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <div className="table-scroll-container">
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
               <thead><tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
                 <th style={{ padding: '12px', textAlign: 'left', fontWeight: '600' }}>Customer</th>
                 <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>Plan</th>
@@ -8887,6 +8892,7 @@ const AffiliateDashboardPage = () => {
                 ))}
               </tbody>
             </table>
+            </div>
           ) : (
             <div style={{ textAlign: 'center', padding: '48px', color: 'var(--gray-400)' }}>No conversions yet. Keep sharing your affiliate link!</div>
           )}

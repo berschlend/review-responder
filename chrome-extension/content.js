@@ -866,6 +866,9 @@ async function generateVariations(panel) {
     businessName = detectBusinessContext() || await getCachedBusinessName();
   }
 
+  // Get template content if a template was applied (for AI style guide)
+  const templateContent = panel.dataset.selectedTemplateContent || undefined;
+
   try {
     const response = await fetch(`${API_URL}/generate-variations`, {
       method: 'POST',
@@ -879,7 +882,8 @@ async function generateVariations(panel) {
         outputLanguage: detectedLanguage,
         responseLength: length,
         includeEmojis: emojis,
-        businessName
+        businessName,
+        templateContent
       })
     });
 

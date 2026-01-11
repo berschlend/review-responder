@@ -2100,7 +2100,7 @@ LANGUAGE: ${languageInstruction}`;
 // ========== RESPONSE VARIATIONS (3 Options) ==========
 app.post('/api/generate-variations', authenticateToken, async (req, res) => {
   try {
-    const { reviewText, reviewRating, platform, tone, outputLanguage, businessName, responseLength, includeEmojis } = req.body;
+    const { reviewText, reviewRating, platform, tone, outputLanguage, businessName, responseLength, includeEmojis, templateContent } = req.body;
 
     if (!reviewText || reviewText.trim().length === 0) {
       return res.status(400).json({ error: 'Review text is required' });
@@ -2148,9 +2148,12 @@ app.post('/api/generate-variations', authenticateToken, async (req, res) => {
     };
     const toneStyle = toneStyles[tone] || toneStyles.professional;
 
+    // Template style guide if provided
+    const templateGuide = templateContent ? `\nTEMPLATE STYLE GUIDE: Use this template as a style reference. Match its tone, structure, and approach, but adapt the content to the specific review:\n"${templateContent}"` : '';
+
     // Generate all 3 variations in parallel
     const variationPromises = variationStyles.map(async (style, index) => {
-      const systemMessage = `You are responding to a customer review for ${businessName || 'our business'}. Tone: ${toneStyle}. ${style.instruction} ${languageInstruction}`;
+      const systemMessage = `You are responding to a customer review for ${businessName || 'our business'}. Tone: ${toneStyle}. ${style.instruction} ${languageInstruction}${templateGuide}`;
 
       const userMessage = `${reviewRating ? `[${reviewRating} star review] ` : ''}${reviewText}`;
 
