@@ -3081,15 +3081,18 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
       justifyContent: 'center',
       padding: '20px'
     }}>
-      <div 
-        className="card" 
+      <div
+        className="card"
         style={{
           maxWidth: '520px',
           width: '100%',
+          maxHeight: '90vh',
           padding: '0',
           overflow: 'hidden',
           position: 'relative',
-          animation: 'slideIn 0.3s ease-out'
+          animation: 'slideIn 0.3s ease-out',
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
         {/* Header */}
@@ -3097,7 +3100,8 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
           background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
           color: 'white',
           padding: '24px',
-          textAlign: 'center'
+          textAlign: 'center',
+          flexShrink: 0
         }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', margin: '0 0 8px 0' }}>
             Welcome to ReviewResponder! 🎉
@@ -3129,7 +3133,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
         </div>
 
         {/* Content */}
-        <div style={{ padding: '32px' }}>
+        <div style={{ padding: '32px', overflowY: 'auto', flex: 1 }}>
           {/* Step 1: Business Name */}
           {currentStep === 1 && (
             <div>
@@ -3306,7 +3310,8 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
           padding: '20px 32px',
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center'
+          alignItems: 'center',
+          flexShrink: 0
         }}>
           <div style={{ display: 'flex', gap: '8px' }}>
             {currentStep > 1 && (
