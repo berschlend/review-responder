@@ -2691,6 +2691,82 @@ function initPanelEvents(panel) {
     showToast(settings.turboMode ? '⚡ Turbo Mode ON - Panel will skip next time' : '🐢 Turbo Mode OFF - Normal panel mode', 'info');
   });
 
+  // ========== DRAGGABLE PANEL ==========
+  const header = panel.querySelector('.rr-panel-header');
+  let isDragging = false;
+  let dragStartX, dragStartY, panelStartX, panelStartY;
+
+  header.style.cursor = 'grab';
+
+  header.addEventListener('mousedown', (e) => {
+    // Don't drag if clicking buttons
+    if (e.target.closest('button') || e.target.closest('.rr-turbo-btn')) return;
+
+    isDragging = true;
+    header.style.cursor = 'grabbing';
+
+    // Get current panel position
+    const rect = panel.getBoundingClientRect();
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    panelStartX = rect.left;
+    panelStartY = rect.top;
+
+    // Remove default positioning
+    panel.style.position = 'fixed';
+    panel.style.right = 'auto';
+    panel.style.bottom = 'auto';
+    panel.style.left = panelStartX + 'px';
+    panel.style.top = panelStartY + 'px';
+
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+
+    const deltaX = e.clientX - dragStartX;
+    const deltaY = e.clientY - dragStartY;
+
+    let newX = panelStartX + deltaX;
+    let newY = panelStartY + deltaY;
+
+    // Keep panel within viewport bounds
+    const panelWidth = panel.offsetWidth;
+    const panelHeight = panel.offsetHeight;
+    newX = Math.max(0, Math.min(newX, window.innerWidth - panelWidth));
+    newY = Math.max(0, Math.min(newY, window.innerHeight - panelHeight));
+
+    panel.style.left = newX + 'px';
+    panel.style.top = newY + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      header.style.cursor = 'grab';
+
+      // Save position
+      chrome.storage.local.set({
+        rr_panel_position: {
+          left: panel.style.left,
+          top: panel.style.top
+        }
+      });
+    }
+  });
+
+  // Restore saved position
+  chrome.storage.local.get(['rr_panel_position']).then(stored => {
+    if (stored.rr_panel_position) {
+      panel.style.position = 'fixed';
+      panel.style.right = 'auto';
+      panel.style.bottom = 'auto';
+      panel.style.left = stored.rr_panel_position.left;
+      panel.style.top = stored.rr_panel_position.top;
+    }
+  });
+
   // Analytics Widget toggle
   panel.querySelector('.rr-analytics-header').addEventListener('click', () => {
     const widget = panel.querySelector('.rr-analytics-widget');
