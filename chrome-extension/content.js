@@ -3,6 +3,10 @@
 
 const API_URL = 'https://review-responder.onrender.com/api';
 
+// ========== GLOBAL FLAGS ==========
+let globalListenersInitialized = false;
+let isCreatingPanel = false;
+
 // ========== PRE-FLIGHT LOGIN CHECK ==========
 let isLoggedIn = false;
 let cachedUser = null;
@@ -2709,6 +2713,62 @@ async function createResponsePanel() {
         </div>
       </div>
 
+      <!-- Settings Overlay -->
+      <div class="rr-settings-overlay hidden">
+        <div class="rr-settings-content">
+          <div class="rr-settings-header">
+            <h3>⚙️ Settings</h3>
+            <button class="rr-settings-close">×</button>
+          </div>
+
+          <div class="rr-settings-body">
+            <!-- Response Length -->
+            <div class="rr-settings-group">
+              <label class="rr-settings-label">Response Length</label>
+              <div class="rr-settings-length-btns">
+                <button class="rr-length-btn" data-length="short">Short</button>
+                <button class="rr-length-btn active" data-length="medium">Medium</button>
+                <button class="rr-length-btn" data-length="detailed">Detailed</button>
+              </div>
+            </div>
+
+            <!-- Checkboxes -->
+            <div class="rr-settings-group">
+              <label class="rr-settings-checkbox">
+                <input type="checkbox" class="rr-settings-emoji-toggle">
+                <span>😀 Include emojis in response</span>
+              </label>
+              <label class="rr-settings-checkbox">
+                <input type="checkbox" class="rr-settings-autocopy-toggle" checked>
+                <span>📋 Auto-copy after generate</span>
+              </label>
+              <label class="rr-settings-checkbox rr-turbo-highlight">
+                <input type="checkbox" class="rr-settings-turbo-toggle">
+                <span>⚡ Turbo Mode (instant generate, skip panel)</span>
+              </label>
+            </div>
+
+            <!-- Keyboard Shortcuts Reference -->
+            <div class="rr-settings-group rr-shortcuts-ref">
+              <label class="rr-settings-label">Keyboard Shortcuts</label>
+              <div class="rr-shortcut-list">
+                <div class="rr-shortcut-item"><kbd>Alt+R</kbd> Generate from selection</div>
+                <div class="rr-shortcut-item"><kbd>Alt+T</kbd> Toggle Turbo Mode</div>
+                <div class="rr-shortcut-item"><kbd>Alt+C</kbd> Copy response</div>
+                <div class="rr-shortcut-item"><kbd>Alt+P</kbd> Open panel (override turbo)</div>
+                <div class="rr-shortcut-item"><kbd>Shift+Click</kbd> Open panel in Turbo Mode</div>
+                <div class="rr-shortcut-item"><kbd>Esc</kbd> Close panel</div>
+              </div>
+            </div>
+
+            <!-- Debug Section -->
+            <div class="rr-settings-group rr-debug-section">
+              <button class="rr-reset-settings-btn">🔄 Reset All Settings</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Batch Mode Overlay -->
       <div class="rr-batch-overlay hidden">
         <div class="rr-batch-content">
@@ -3004,8 +3064,12 @@ function initPanelEvents(panel) {
     if (copyBtn) {
       const response = copyBtn.dataset.response;
       if (response) {
-        await navigator.clipboard.writeText(response);
-        showToast('✅ Copied to clipboard!', 'success');
+        try {
+          await navigator.clipboard.writeText(response);
+          showToast('✅ Copied to clipboard!', 'success');
+        } catch (error) {
+          showToast('⚠️ Could not copy - please copy manually', 'warning');
+        }
       }
     }
   });
@@ -3030,10 +3094,16 @@ function initPanelEvents(panel) {
     });
   });
 
-  // Close theme dropdown when clicking elsewhere
-  document.addEventListener('click', () => {
-    themeDropdown.classList.add('hidden');
-  });
+  // Close theme dropdown when clicking elsewhere (only add listener once)
+  if (!globalListenersInitialized) {
+    document.addEventListener('click', (e) => {
+      // Find current theme dropdown and close it if click is outside
+      const dropdown = document.querySelector('.rr-theme-dropdown');
+      if (dropdown && !e.target.closest('.rr-theme-toggle') && !e.target.closest('.rr-theme-dropdown')) {
+        dropdown.classList.add('hidden');
+      }
+    });
+  }
 
   // Drafts list - continue and delete buttons (event delegation)
   panel.querySelector('.rr-drafts-list').addEventListener('click', async (e) => {
@@ -3225,9 +3295,117 @@ function initPanelEvents(panel) {
     });
   }
 
-  // Settings toggle
-  panel.querySelector('.rr-settings-toggle').addEventListener('click', () => {
-    panel.querySelector('.rr-advanced').classList.toggle('hidden');
+  // Settings toggle - opens overlay
+  panel.querySelector('.rr-settings-toggle').addEventListener('click', async () => {
+    const overlay = panel.querySelector('.rr-settings-overlay');
+    overlay.classList.remove('hidden');
+
+    // Load current settings into overlay
+    const settings = await loadSettings();
+
+    // Update length buttons
+    panel.querySelectorAll('.rr-length-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.length === settings.length);
+    });
+
+    // Update checkboxes
+    panel.querySelector('.rr-settings-emoji-toggle').checked = settings.emojis || false;
+    panel.querySelector('.rr-settings-autocopy-toggle').checked = settings.autoCopy !== false;
+    panel.querySelector('.rr-settings-turbo-toggle').checked = settings.turboMode || false;
+  });
+
+  // Settings overlay close
+  panel.querySelector('.rr-settings-close').addEventListener('click', () => {
+    panel.querySelector('.rr-settings-overlay').classList.add('hidden');
+  });
+
+  // Settings length buttons
+  panel.querySelectorAll('.rr-length-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const length = btn.dataset.length;
+
+      // Update UI
+      panel.querySelectorAll('.rr-length-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Update hidden select and save
+      panel.querySelector('.rr-length-select').value = length;
+      saveCurrentSettings(panel);
+      showToast(`📏 Length: ${length}`, 'info');
+    });
+  });
+
+  // Settings checkboxes - sync with hidden controls
+  panel.querySelector('.rr-settings-emoji-toggle').addEventListener('change', (e) => {
+    panel.querySelector('.rr-emoji-toggle').checked = e.target.checked;
+    saveCurrentSettings(panel);
+    showToast(e.target.checked ? '😀 Emojis ON' : '📝 Emojis OFF', 'info');
+  });
+
+  panel.querySelector('.rr-settings-autocopy-toggle').addEventListener('change', (e) => {
+    panel.querySelector('.rr-autocopy-toggle').checked = e.target.checked;
+    saveCurrentSettings(panel);
+    showToast(e.target.checked ? '📋 Auto-copy ON' : '📋 Auto-copy OFF', 'info');
+  });
+
+  panel.querySelector('.rr-settings-turbo-toggle').addEventListener('change', async (e) => {
+    const settings = await loadSettings();
+    settings.turboMode = e.target.checked;
+    cachedSettings = settings;
+    await saveSettings(settings);
+
+    // Update hidden checkbox and header button
+    panel.querySelector('.rr-turbo-toggle').checked = e.target.checked;
+    const turboBtn = panel.querySelector('.rr-turbo-btn');
+    if (turboBtn) {
+      turboBtn.textContent = e.target.checked ? '⚡' : '🐢';
+      turboBtn.title = e.target.checked ? 'Turbo Mode ON' : 'Turbo Mode OFF';
+      turboBtn.classList.toggle('rr-turbo-active', e.target.checked);
+    }
+
+    showToast(e.target.checked ? '⚡ Turbo Mode ON' : '🐢 Turbo Mode OFF', 'info');
+  });
+
+  // Reset settings button
+  panel.querySelector('.rr-reset-settings-btn').addEventListener('click', async () => {
+    if (!confirm('Reset all settings to defaults?')) return;
+
+    const defaults = {
+      tone: 'professional',
+      length: 'medium',
+      emojis: false,
+      autoCopy: true,
+      turboMode: false
+    };
+
+    await chrome.storage.local.set({ rr_settings: defaults });
+    cachedSettings = defaults;
+
+    // Update all UI elements
+    setTone(panel, 'professional');
+    panel.querySelector('.rr-length-select').value = 'medium';
+    panel.querySelector('.rr-emoji-toggle').checked = false;
+    panel.querySelector('.rr-autocopy-toggle').checked = true;
+    panel.querySelector('.rr-turbo-toggle').checked = false;
+
+    // Update overlay
+    panel.querySelectorAll('.rr-length-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.length === 'medium');
+    });
+    panel.querySelector('.rr-settings-emoji-toggle').checked = false;
+    panel.querySelector('.rr-settings-autocopy-toggle').checked = true;
+    panel.querySelector('.rr-settings-turbo-toggle').checked = false;
+
+    // Update header turbo button
+    const turboBtn = panel.querySelector('.rr-turbo-btn');
+    if (turboBtn) {
+      turboBtn.textContent = '🐢';
+      turboBtn.title = 'Turbo Mode OFF';
+      turboBtn.classList.remove('rr-turbo-active');
+    }
+
+    showToast('🔄 Settings reset!', 'success');
+    panel.querySelector('.rr-settings-overlay').classList.add('hidden');
   });
 
   // Generate button
@@ -3405,8 +3583,12 @@ function initPanelEvents(panel) {
     const textarea = panel.querySelector('.rr-batch-response-textarea');
     const text = textarea.value;
     if (text) {
-      await navigator.clipboard.writeText(text);
-      showToast('✅ Copied!', 'success');
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('✅ Copied!', 'success');
+      } catch (error) {
+        showToast('⚠️ Could not copy - please copy manually', 'warning');
+      }
     }
   });
 
@@ -3467,15 +3649,23 @@ function initPanelEvents(panel) {
     });
   });
 
-  // Close emoji dropdown when clicking elsewhere
-  document.addEventListener('click', () => {
-    emojiDropdown.classList.add('hidden');
-  });
+  // Close emoji dropdown when clicking elsewhere (only add listener once)
+  if (!globalListenersInitialized) {
+    document.addEventListener('click', (e) => {
+      const dropdown = document.querySelector('.rr-emoji-dropdown');
+      if (dropdown && !e.target.closest('.rr-emoji-btn') && !e.target.closest('.rr-emoji-dropdown')) {
+        dropdown.classList.add('hidden');
+      }
+    });
+  }
 
   // Auto-shorten button
   panel.querySelector('.rr-auto-shorten').addEventListener('click', () => {
     autoShortenForPlatform(panel);
   });
+
+  // Mark global listeners as initialized to prevent duplicates
+  globalListenersInitialized = true;
 }
 
 // ========== INLINE EDITOR HELPER FUNCTIONS ==========
@@ -4218,10 +4408,12 @@ async function turboGenerate(reviewText) {
     updateCharCounter(panel);
 
     // Copy to clipboard
-    await navigator.clipboard.writeText(data.response);
-
-    // Show success toast
-    showToast('✅ Copied! Click panel to expand', 'success');
+    try {
+      await navigator.clipboard.writeText(data.response);
+      showToast('✅ Copied! Click panel to expand', 'success');
+    } catch (clipboardError) {
+      showToast('✨ Generated! Copy manually from panel', 'success');
+    }
 
     // Check if we should show review popup
     checkShowReviewPopup();
