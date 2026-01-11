@@ -3853,6 +3853,97 @@ const DashboardPage = () => {
   const [loadingReferral, setLoadingReferral] = useState(false);
   const [copiedReferralLink, setCopiedReferralLink] = useState(false);
 
+  // Auto-Tone: Multilingual sentiment analysis (instant, hardcoded)
+  const analyzeSentiment = (text, starRating) => {
+    // TIER 1: Star Rating (highest priority - works for ALL languages)
+    if (starRating && starRating > 0) {
+      const stars = parseInt(starRating);
+      if (stars >= 4) return 'positive';
+      if (stars <= 2) return 'negative';
+      return 'neutral';
+    }
+
+    const lowerText = text.toLowerCase();
+
+    // TIER 2: Emoji detection (universal)
+    const positiveEmoji = ['😊', '😃', '😁', '🥰', '❤️', '💕', '👍', '🙌', '⭐', '🌟', '💯', '🔥', '👏', '😍', '🤩'];
+    const negativeEmoji = ['😠', '😡', '😤', '👎', '💔', '😢', '😞', '😒', '🤮', '🤢', '😫', '😩', '☹️', '😔'];
+
+    let emojiPositive = positiveEmoji.filter(e => text.includes(e)).length;
+    let emojiNegative = negativeEmoji.filter(e => text.includes(e)).length;
+
+    if (emojiPositive > emojiNegative + 1) return 'positive';
+    if (emojiNegative > emojiPositive) return 'negative';
+
+    // TIER 3: Multilingual keywords (EN, DE, FR, ES, IT, NL, PT)
+    const positiveWords = [
+      // English
+      'great', 'amazing', 'awesome', 'excellent', 'fantastic', 'wonderful', 'love', 'loved', 'best', 'perfect',
+      'outstanding', 'brilliant', 'superb', 'delicious', 'friendly', 'helpful', 'recommend', 'thank', 'happy',
+      // German
+      'toll', 'super', 'wunderbar', 'perfekt', 'ausgezeichnet', 'lecker', 'freundlich', 'genial', 'klasse', 'hervorragend',
+      // French
+      'magnifique', 'excellent', 'parfait', 'délicieux', 'formidable', 'génial', 'superbe', 'merci', 'adoré',
+      // Spanish
+      'excelente', 'maravilloso', 'perfecto', 'delicioso', 'fantástico', 'increíble', 'genial', 'gracias', 'encantó',
+      // Italian
+      'eccellente', 'fantastico', 'perfetto', 'delizioso', 'meraviglioso', 'ottimo', 'grazie', 'bellissimo',
+      // Dutch
+      'geweldig', 'fantastisch', 'perfect', 'heerlijk', 'uitstekend', 'vriendelijk', 'bedankt', 'top',
+      // Portuguese
+      'excelente', 'maravilhoso', 'perfeito', 'delicioso', 'fantástico', 'obrigado', 'incrível'
+    ];
+
+    const negativeWords = [
+      // English
+      'bad', 'terrible', 'awful', 'horrible', 'worst', 'poor', 'disappointed', 'rude', 'slow', 'cold',
+      'dirty', 'disgusting', 'never', 'waste', 'overpriced', 'avoid', 'angry', 'upset', 'refund',
+      // German
+      'schlecht', 'furchtbar', 'schrecklich', 'enttäuscht', 'langsam', 'kalt', 'dreckig', 'nie wieder', 'teuer',
+      // French
+      'terrible', 'horrible', 'déçu', 'mauvais', 'froid', 'sale', 'lent', 'cher', 'jamais',
+      // Spanish
+      'terrible', 'horrible', 'decepcionado', 'malo', 'frío', 'sucio', 'lento', 'caro', 'nunca',
+      // Italian
+      'terribile', 'orribile', 'deluso', 'cattivo', 'freddo', 'sporco', 'lento', 'caro', 'mai',
+      // Dutch
+      'slecht', 'verschrikkelijk', 'teleurgesteld', 'vies', 'langzaam', 'koud', 'duur', 'nooit',
+      // Portuguese
+      'terrível', 'horrível', 'decepcionado', 'mau', 'frio', 'sujo', 'lento', 'caro', 'nunca'
+    ];
+
+    let positive = 0, negative = 0;
+    positiveWords.forEach(w => { if (lowerText.includes(w)) positive++; });
+    negativeWords.forEach(w => { if (lowerText.includes(w)) negative++; });
+
+    if (positive > negative + 1) return 'positive';
+    if (negative > positive) return 'negative';
+    return 'neutral';
+  };
+
+  const mapSentimentToTone = (sentiment) => {
+    switch(sentiment) {
+      case 'positive': return 'friendly';
+      case 'negative': return 'apologetic';
+      default: return 'professional';
+    }
+  };
+
+  // Auto-Tone useEffect: Automatically select tone based on review sentiment
+  useEffect(() => {
+    if ((reviewText.trim().length > 20 || rating > 0) && !hasManuallyChangedTone) {
+      const sentiment = analyzeSentiment(reviewText, rating);
+      const recommended = mapSentimentToTone(sentiment);
+      setRecommendedTone(recommended);
+      setTone(recommended);
+    }
+
+    if (reviewText.trim().length === 0 && rating === 0) {
+      setRecommendedTone(null);
+      setHasManuallyChangedTone(false);
+    }
+  }, [reviewText, rating, hasManuallyChangedTone]);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -4927,23 +5018,44 @@ const DashboardPage = () => {
               </select>
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ position: 'relative' }}>
               <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 Response Tone
                 <FeatureTooltip text="Professional: Business-appropriate. Friendly: Warm and personal. Formal: Corporate style. Apologetic: For negative reviews.">
                   <Info size={14} style={{ color: 'var(--gray-400)', cursor: 'help' }} />
                 </FeatureTooltip>
               </label>
-              <select
-                className="form-select"
-                value={tone}
-                onChange={(e) => setTone(e.target.value)}
-              >
-                <option value="professional">Professional</option>
-                <option value="friendly">Friendly</option>
-                <option value="formal">Formal</option>
-                <option value="apologetic">Apologetic</option>
-              </select>
+              <div style={{ position: 'relative' }}>
+                <select
+                  className="form-select"
+                  value={tone}
+                  onChange={(e) => {
+                    setTone(e.target.value);
+                    setHasManuallyChangedTone(true);
+                  }}
+                >
+                  <option value="professional">Professional</option>
+                  <option value="friendly">Friendly</option>
+                  <option value="formal">Formal</option>
+                  <option value="apologetic">Apologetic</option>
+                </select>
+                {recommendedTone && tone === recommendedTone && !hasManuallyChangedTone && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '-8px',
+                    right: '-8px',
+                    background: 'var(--success)',
+                    color: 'white',
+                    fontSize: '10px',
+                    padding: '2px 6px',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                  }}>
+                    Recommended
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
