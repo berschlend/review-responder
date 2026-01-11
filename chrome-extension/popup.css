@@ -205,6 +205,14 @@ textarea {
   text-decoration: underline;
 }
 
+.hint-text {
+  text-align: center;
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 8px;
+  font-style: italic;
+}
+
 .error {
   color: #ef4444;
   font-size: 13px;
