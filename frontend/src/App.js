@@ -7715,7 +7715,7 @@ const PricingPage = () => {
     { q: 'Can I switch plans anytime?', a: 'Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately and we prorate the billing.' },
     { q: 'What happens if I exceed my response limit?', a: 'You\'ll receive a notification when you reach 80% of your limit. After reaching your limit, you can upgrade or wait for the next billing cycle.' },
     { q: 'Is there a free trial?', a: 'Yes! The Free plan gives you 20 responses per month forever - no credit card required. Try it out and upgrade when ready.' },
-    { q: 'What payment methods do you accept?', a: 'We accept all major credit cards (Visa, Mastercard, Amex) via our secure Stripe payment processor.' },
+    { q: 'What payment methods do you accept?', a: 'We accept credit cards (Visa, Mastercard, Amex), PayPal, Apple Pay, Google Pay, and Link via our secure Stripe payment processor.' },
     { q: 'Can I cancel anytime?', a: 'Absolutely! No contracts, no hidden fees. Cancel with one click from your dashboard. Plus, we offer a 30-day money-back guarantee.' },
     { q: 'Do you offer refunds?', a: 'Yes! We have a 30-day money-back guarantee. If you\'re not satisfied, contact us for a full refund.' }
   ];
