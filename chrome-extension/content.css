@@ -426,12 +426,13 @@
 /* ========== MAIN PANEL ========== */
 #rr-response-panel {
   position: fixed;
-  top: 5vh;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 420px;
+  top: 20px;
+  right: 20px;
+  left: auto;
+  transform: none;
+  width: 400px;
   max-width: 95vw;
-  max-height: 90vh;
+  max-height: calc(100vh - 40px);
   background: var(--rr-bg);
   border-radius: var(--rr-radius);
   box-shadow: var(--rr-shadow);
@@ -440,6 +441,8 @@
   visibility: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
   transition: all 0.3s ease;
 }
 
@@ -451,7 +454,7 @@
 
 #rr-response-panel.rr-closing {
   opacity: 0;
-  transform: translateX(-50%) scale(0.9);
+  transform: scale(0.95);
 }
 
 /* ========== PANEL HEADER ========== */
@@ -459,19 +462,21 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 18px;
+  padding: 10px 14px;
   background: linear-gradient(135deg, var(--rr-primary), var(--rr-primary-dark));
   color: white;
+  flex-shrink: 0;
 }
 
 .rr-header-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .rr-logo {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: -0.3px;
 }
@@ -488,19 +493,20 @@
 .rr-header-right {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .rr-help-btn,
 .rr-turbo-btn,
 .rr-close-btn {
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   background: rgba(255, 255, 255, 0.15);
   color: white;
-  font-size: 16px;
+  font-size: 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -807,10 +813,11 @@
 
 /* ========== PANEL BODY ========== */
 .rr-panel-body {
-  padding: 18px;
-  max-height: calc(90vh - 60px);
+  padding: 16px;
+  flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  min-height: 0;
 }
 
 /* ========== REVIEW BOX ========== */

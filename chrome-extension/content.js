@@ -89,14 +89,14 @@ function initDraggable(panel) {
           panel.style.top = top + 'px';
           panel.style.transform = 'none'; // Remove centering transform
         } else {
-          // Reset to default centered position
+          // Reset to default right-side position
           chrome.storage.local.remove(['rr_panel_position']);
           panel.style.position = 'fixed';
-          panel.style.top = '5vh';
-          panel.style.left = '50%';
-          panel.style.right = 'auto';
+          panel.style.top = '20px';
+          panel.style.right = '20px';
+          panel.style.left = 'auto';
           panel.style.bottom = 'auto';
-          panel.style.transform = 'translateX(-50%)';
+          panel.style.transform = 'none';
         }
       }, 50);
     }

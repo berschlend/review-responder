@@ -2995,6 +2995,22 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
     }
   };
 
+  // Pre-defined sample reviews for faster demo (no API call needed)
+  const sampleReviewsByType = {
+    'Restaurant': `Had dinner at ${businessName || 'this place'} last night and it was amazing! The food was delicious and the service was excellent. Will definitely be back!`,
+    'Cafe / Coffee Shop': `Best coffee in town! ${businessName || 'This cafe'} has such a cozy atmosphere and the baristas really know their craft. My new favorite spot.`,
+    'Hotel / Accommodation': `Stayed at ${businessName || 'this hotel'} for 3 nights. Clean rooms, friendly staff, great location. Highly recommend!`,
+    'Bar / Nightclub': `Great vibes at ${businessName || 'this place'}! Excellent cocktails, good music, and friendly bartenders. Perfect for a night out.`,
+    'Spa / Wellness': `Such a relaxing experience at ${businessName || 'this spa'}! The massage was incredible and the staff made me feel so welcome.`,
+    'Hair Salon / Barbershop': `Best haircut I've ever had! ${businessName || 'This salon'} really listens to what you want. Love my new look!`,
+    'Dental Practice': `Finally found a dentist I actually like! ${businessName || 'This practice'} is professional, gentle, and explains everything clearly.`,
+    'Medical Practice': `${businessName || 'This clinic'} provides excellent care. Short wait times, attentive staff, and the doctor really listens.`,
+    'Auto Repair / Service': `Honest and reliable! ${businessName || 'This shop'} fixed my car quickly and at a fair price. Trust them completely.`,
+    'Gym / Fitness Studio': `Love working out at ${businessName || 'this gym'}! Great equipment, clean facilities, and motivating trainers.`,
+    'Retail Store': `Amazing selection at ${businessName || 'this store'}! Staff was super helpful and I found exactly what I needed.`,
+    'default': `Great experience at ${businessName || 'this business'}! Professional service and exceeded my expectations. Highly recommend!`
+  };
+
   const generateBusinessContext = async () => {
     if (!keywords.trim()) {
       toast.error('Please enter some keywords');
@@ -3003,27 +3019,15 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
 
     setGeneratingContext(true);
     try {
-      // Step 1: Generate business context
-      const contextResult = await api.post('/personalization/generate-context', {
-        keywords: keywords.trim(),
-        businessType,
-        businessName: businessName.trim(),
-        field: 'context'
-      });
-      const context = contextResult.data.generated;
+      // Use keywords as context (no API call needed)
+      const context = keywords.trim();
       setGeneratedContext(context);
 
-      // Step 2: Generate sample review based on context
-      const reviewResult = await api.post('/personalization/generate-context', {
-        keywords: context,
-        businessType,
-        businessName: businessName.trim(),
-        field: 'sample_review'
-      });
-      const review = reviewResult.data.generated;
+      // Use pre-defined sample review (no API call needed)
+      const review = sampleReviewsByType[businessType] || sampleReviewsByType['default'];
       setSampleReview(review);
 
-      // Step 3: Generate response to that review
+      // Only 1 API call: Generate AI response
       const responseResult = await api.post('/generate', {
         reviewText: review,
         tone: 'friendly',
@@ -3033,7 +3037,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
       });
       setSampleResponse(responseResult.data.response);
 
-      toast.success('Ready! Check out your personalized AI response below.');
+      toast.success('See how AI personalizes responses using your keywords!');
     } catch (error) {
       console.error('Failed to generate:', error);
       toast.error(error.response?.data?.error || 'Failed to generate');
