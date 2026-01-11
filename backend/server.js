@@ -4926,6 +4926,36 @@ app.get('/api/admin/set-plan', async (req, res) => {
   }
 });
 
+// GET /api/admin/verify-email - Manually verify a user's email
+app.get('/api/admin/verify-email', async (req, res) => {
+  const { email, key } = req.query;
+  const adminSecret = process.env.ADMIN_SECRET;
+
+  if (!adminSecret || !safeCompare(key, adminSecret)) {
+    return res.status(401).json({ error: 'Invalid admin key' });
+  }
+
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ error: 'Valid email required' });
+  }
+
+  try {
+    const result = await dbQuery(
+      'UPDATE users SET email_verified = TRUE WHERE LOWER(email) = LOWER($1)',
+      [email]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ success: true, message: `Email ${email} verified` });
+  } catch (error) {
+    console.error('Admin verify-email error:', error);
+    res.status(500).json({ error: 'Failed to verify email' });
+  }
+});
+
 // POST /api/admin/upgrade-user - Upgrade a user to Unlimited plan (legacy)
 app.post('/api/admin/upgrade-user', async (req, res) => {
   const ip = req.ip || req.connection.remoteAddress;
