@@ -5895,7 +5895,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
         [day]
       );
 
-      for (const user of eligibleUsers) {
+      for (const user of eligibleUsers.rows) {
         const emailContent = getDripEmail(day, user);
         if (!emailContent) continue;
 
