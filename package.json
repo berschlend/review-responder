@@ -8,7 +8,13 @@
     "start:backend": "cd backend && npm start",
     "start:frontend": "cd frontend && npm start",
     "build": "cd frontend && npm run build",
-    "setup": "node setup.js"
+    "setup": "node setup.js",
+    "lint": "eslint frontend/src backend --ext .js,.jsx",
+    "lint:fix": "eslint frontend/src backend --ext .js,.jsx --fix",
+    "format": "prettier --write \"frontend/src/**/*.{js,jsx,css}\" \"backend/**/*.js\"",
+    "format:check": "prettier --check \"frontend/src/**/*.{js,jsx,css}\" \"backend/**/*.js\"",
+    "test": "cd frontend && npm test -- --passWithNoTests --watchAll=false",
+    "check": "npm run lint && npm run format:check && npm run build"
   },
   "dependencies": {
     "canvas": "^3.2.0",
@@ -16,7 +22,14 @@
   },
   "devDependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
+    "@eslint/js": "^9.39.2",
     "@mistralai/mistralai": "^1.11.0",
-    "@playwright/test": "^1.57.0"
+    "@playwright/test": "^1.57.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "globals": "^17.0.0",
+    "prettier": "^3.7.4"
   }
 }
