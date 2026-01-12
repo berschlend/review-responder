@@ -5924,12 +5924,8 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
       }
     }
 
-    res.json({
-      success: true,
-      message: `Drip campaign processed`,
-      sent: sentCount,
-      errors: errorCount,
-    });
+    // Return minimal response for cron-job.org (has size limit)
+    res.json({ ok: true, sent: sentCount, err: errorCount });
   } catch (error) {
     console.error('Drip email error:', error);
     res.status(500).json({
@@ -6054,12 +6050,8 @@ app.post('/api/cron/send-weekly-summary', async (req, res) => {
       }
     }
 
-    res.json({
-      success: true,
-      message: 'Weekly summary emails processed',
-      sent: sentCount,
-      errors: errorCount,
-    });
+    // Return minimal response for cron-job.org (has size limit)
+    res.json({ ok: true, sent: sentCount, err: errorCount });
   } catch (error) {
     console.error('Weekly summary error:', error);
     res.status(500).json({ error: 'Failed to process weekly summary emails' });
