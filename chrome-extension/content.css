@@ -390,13 +390,13 @@
 /* ========== FLOATING BUTTON ========== */
 #rr-floating-btn {
   position: fixed;
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--rr-primary), var(--rr-primary-dark));
   color: white;
-  border: 3px solid white;
-  font-size: 26px;
+  border: 4px solid white;
+  font-size: 28px;
   cursor: pointer;
   z-index: 999998;
   display: flex;
@@ -405,7 +405,7 @@
   opacity: 0;
   transform: scale(0);
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5), 0 0 0 4px rgba(102, 126, 234, 0.2);
 }
 
 #rr-floating-btn.rr-visible {
@@ -1970,8 +1970,16 @@
 
 .rr-copy-btn.copied {
   border-color: var(--rr-success);
-  color: var(--rr-success);
-  background: rgba(16, 185, 129, 0.1);
+  color: white;
+  background: linear-gradient(135deg, #10b981, #059669);
+  animation: rr-copy-success 0.4s ease;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+@keyframes rr-copy-success {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
 /* ========== TURBO MODE ROW ========== */
@@ -2841,24 +2849,31 @@
   position: fixed;
   bottom: 20px;
   left: 20px;
-  padding: 12px 18px;
+  padding: 14px 22px;
   background: linear-gradient(135deg, #10b981, #059669);
   color: white;
-  border: none;
-  border-radius: 24px;
-  font-size: 13px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 28px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   z-index: 999997;
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4), 0 0 0 4px rgba(16, 185, 129, 0.15);
   transition: all 0.3s ease;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  animation: rr-scan-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes rr-scan-pulse {
+  0%, 100% { box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4), 0 0 0 4px rgba(16, 185, 129, 0.15); }
+  50% { box-shadow: 0 6px 25px rgba(16, 185, 129, 0.5), 0 0 0 8px rgba(16, 185, 129, 0.1); }
 }
 
 #rr-scan-btn:hover,
 .rr-scan-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5), 0 0 0 6px rgba(16, 185, 129, 0.2);
+  animation: none;
 }
 
 /* Mobile responsive for Queue Panel */
@@ -4462,19 +4477,40 @@
 }
 
 .rr-batch-progress-bar {
-  height: 6px;
+  height: 10px;
   background: var(--rr-border);
-  border-radius: 3px;
+  border-radius: 5px;
   margin: 0 20px 16px;
   overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .rr-batch-progress-fill {
   height: 100%;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 3px;
+  border-radius: 5px;
   transition: width 0.3s ease;
   width: 0%;
+  position: relative;
+  overflow: hidden;
+}
+
+.rr-batch-progress-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  animation: rr-progress-shimmer 1.5s infinite linear;
+}
+
+@keyframes rr-progress-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 .rr-batch-results {
