@@ -2354,7 +2354,7 @@ const PricingCards = ({ showFree = true }) => {
 
   // Discount details for each code
   const discountDetails = {
-    'EARLY50': { percent: 50, label: 'Launch Special' },
+    'EARLY50': { percent: 50, label: 'Early Bird Special' },
     'SAVE20': { percent: 20, label: 'Special Offer' },
     'HUNTLAUNCH': { percent: 60, label: 'Product Hunt Special' }
   };
