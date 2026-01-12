@@ -7054,34 +7054,41 @@ app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
     const users = await dbAll(`
       SELECT id, email, subscription_plan, created_at,
              responses_used_smart, responses_used_standard,
-             stripe_customer_id, stripe_subscription_id,
-             CASE WHEN (
-               email LIKE '%@web.de' OR
-               email LIKE 'test%' OR
-               email LIKE '%test@%' OR
-               email LIKE 'asdf%' OR
-               email LIKE 'qwer%' OR
-               email LIKE 'asd@%' OR
-               email LIKE '%@test.%' OR
-               email LIKE '%@example.%' OR
-               email LIKE 'admin@%' OR
-               email LIKE '%fake%' OR
-               email LIKE 'a@%' OR
-               email LIKE 'aa@%' OR
-               email LIKE 'aaa@%'
-             ) THEN true ELSE false END as is_test_account
+             stripe_customer_id, stripe_subscription_id
       FROM users
       ORDER BY created_at DESC
       LIMIT 100
     `);
 
-    const realUsers = users.filter(u => !u.is_test_account);
-    const testUsers = users.filter(u => u.is_test_account);
+    // Detect test accounts in JS (more reliable than SQL CASE)
+    const testPatterns = [
+      /@web\.de$/i,
+      /^test/i,
+      /test@/i,
+      /^asdf/i,
+      /^qwer/i,
+      /^asd@/i,
+      /@test\./i,
+      /@example\./i,
+      /^admin@/i,
+      /fake/i,
+      /^a@/i,
+      /^aa@/i,
+      /^aaa@/i,
+    ];
+
+    const usersWithFlag = users.map(u => ({
+      ...u,
+      is_test_account: testPatterns.some(p => p.test(u.email))
+    }));
+
+    const realUsers = usersWithFlag.filter(u => !u.is_test_account);
+    const testUsers = usersWithFlag.filter(u => u.is_test_account);
 
     res.json({
-      users,
+      users: usersWithFlag,
       summary: {
-        total: users.length,
+        total: usersWithFlag.length,
         real: realUsers.length,
         test: testUsers.length,
         realPaying: realUsers.filter(u => u.subscription_plan !== 'free').length
@@ -7089,7 +7096,7 @@ app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
     });
   } catch (error) {
     console.error('Admin users error:', error);
-    res.status(500).json({ error: 'Failed to get users' });
+    res.status(500).json({ error: 'Failed to get users', details: error.message });
   }
 });
 
