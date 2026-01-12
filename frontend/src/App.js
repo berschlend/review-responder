@@ -2082,13 +2082,6 @@ const LandingPage = () => {
                     <path d="M8 5v14l11-7z"/>
                   </svg>
                 </div>
-                <p style={{
-                  fontSize: '15px',
-                  fontWeight: '500',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.5)'
-                }}>
-                  Watch Demo (0:38)
-                </p>
               </div>
             </div>
           )}

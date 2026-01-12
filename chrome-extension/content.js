@@ -334,7 +334,7 @@ function showClipboardBanner(panel, clipboardText) {
   banner.querySelector('.rr-clipboard-use').addEventListener('click', () => {
     // Use clipboard text as review
     panel.dataset.reviewText = clipboardText;
-    panel.querySelector('.rr-review-box').textContent = clipboardText.substring(0, 300) + (clipboardText.length > 300 ? '...' : '');
+    panel.querySelector('.rr-review-text').textContent = clipboardText.substring(0, 300) + (clipboardText.length > 300 ? '...' : '');
 
     // Detect language and issues
     const detectedLanguage = detectLanguage(clipboardText);
@@ -2772,11 +2772,11 @@ function initPanelEvents(panel) {
   // ========== DRAGGABLE PANEL ==========
   initDraggable(panel);
 
-  // Business Context Button - opens profile page
+  // Business Context Button - opens settings page
   const contextBtn = panel.querySelector('.rr-context-btn');
   if (contextBtn) {
     contextBtn.addEventListener('click', () => {
-      window.open('https://tryreviewresponder.com/profile', '_blank');
+      window.open('https://tryreviewresponder.com/settings', '_blank');
     });
   }
 
