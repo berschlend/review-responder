@@ -14124,6 +14124,9 @@ const AdminPage = () => {
   const [selectedAffiliate, setSelectedAffiliate] = useState(null);
   const [affiliateDetails, setAffiliateDetails] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [activeAdminTab, setActiveAdminTab] = useState('affiliates');
+  const [outreachData, setOutreachData] = useState(null);
+  const [outreachLoading, setOutreachLoading] = useState(false);
 
   // Use the same API_URL as the rest of the app (already includes /api)
   // Remove /api suffix if present to build admin URLs correctly
@@ -14196,6 +14199,21 @@ const AdminPage = () => {
     }
   };
 
+  const loadOutreachData = async key => {
+    const keyToUse = key || adminKey;
+    if (!keyToUse) return;
+    setOutreachLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/outreach/dashboard?key=${keyToUse}`);
+      setOutreachData(res.data);
+    } catch (err) {
+      console.error('Outreach load error:', err);
+      toast.error('Failed to load outreach data');
+    } finally {
+      setOutreachLoading(false);
+    }
+  };
+
   const updateStatus = async (id, status, note = '') => {
     setActionLoading(true);
     try {
@@ -14249,6 +14267,13 @@ const AdminPage = () => {
   useEffect(() => {
     if (isAuthenticated && adminKey) loadAffiliates();
   }, [filter]);
+
+  // Load outreach data when tab changes
+  useEffect(() => {
+    if (isAuthenticated && adminKey && activeAdminTab === 'outreach' && !outreachData) {
+      loadOutreachData();
+    }
+  }, [activeAdminTab, isAuthenticated, adminKey]);
 
   if (!isAuthenticated) {
     return (
@@ -14317,6 +14342,25 @@ const AdminPage = () => {
         </button>
       </div>
 
+      {/* Admin Tabs */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+        <button
+          className={`btn ${activeAdminTab === 'affiliates' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('affiliates')}
+        >
+          Affiliates
+        </button>
+        <button
+          className={`btn ${activeAdminTab === 'outreach' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('outreach')}
+        >
+          Outreach
+        </button>
+      </div>
+
+      {/* Affiliates Tab */}
+      {activeAdminTab === 'affiliates' && (
+        <>
       {/* Stats Overview */}
       {stats && (
         <div
@@ -14655,6 +14699,183 @@ const AdminPage = () => {
           )}
         </div>
       </div>
+        </>
+      )}
+
+      {/* Outreach Tab */}
+      {activeAdminTab === 'outreach' && (
+        <div>
+          {outreachLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading outreach data...</div>
+          ) : outreachData ? (
+            <>
+              {/* Outreach Stats Cards */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                  gap: '16px',
+                  marginBottom: '24px',
+                }}
+              >
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '32px', fontWeight: '700', color: 'var(--primary)' }}>
+                    {outreachData.stats?.total_leads || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-600)' }}>Total Leads</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '32px', fontWeight: '700', color: '#10B981' }}>
+                    {outreachData.stats?.leads_with_email || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-600)' }}>With Email</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '32px', fontWeight: '700', color: '#F59E0B' }}>
+                    {outreachData.stats?.emails_sent || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-600)' }}>Emails Sent</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '32px', fontWeight: '700', color: '#8B5CF6' }}>
+                    {outreachData.stats?.emails_opened || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-600)' }}>Opened</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '32px', fontWeight: '700', color: '#EC4899' }}>
+                    {outreachData.stats?.open_rate || '0%'}
+                  </div>
+                  <div style={{ color: 'var(--gray-600)' }}>Open Rate</div>
+                </div>
+              </div>
+
+              {/* Status Distribution */}
+              {outreachData.by_status && outreachData.by_status.length > 0 && (
+                <div className="card" style={{ marginBottom: '24px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
+                    Lead Status
+                  </h3>
+                  <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                    {outreachData.by_status.map(s => (
+                      <div
+                        key={s.status}
+                        style={{
+                          padding: '12px 20px',
+                          background: 'var(--gray-50)',
+                          borderRadius: '8px',
+                        }}
+                      >
+                        <span style={{ fontWeight: '600' }}>{s.count}</span>{' '}
+                        <span style={{ color: 'var(--gray-600)', textTransform: 'capitalize' }}>
+                          {s.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Recent Leads & Emails Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                {/* Recent Leads */}
+                <div className="card">
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
+                    Recent Leads
+                  </h3>
+                  {outreachData.recent_leads?.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {outreachData.recent_leads.map(lead => (
+                        <div
+                          key={lead.id}
+                          style={{
+                            padding: '12px',
+                            background: 'var(--gray-50)',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                          }}
+                        >
+                          <div style={{ fontWeight: '600' }}>{lead.business_name}</div>
+                          <div style={{ color: 'var(--gray-500)' }}>
+                            {lead.city} | {lead.business_type}
+                          </div>
+                          <div style={{ color: lead.email ? '#10B981' : 'var(--gray-400)' }}>
+                            {lead.email || 'No email'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ color: 'var(--gray-500)' }}>No leads yet</p>
+                  )}
+                </div>
+
+                {/* Recent Emails */}
+                <div className="card">
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
+                    Recent Emails
+                  </h3>
+                  {outreachData.recent_emails?.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {outreachData.recent_emails.map(email => (
+                        <div
+                          key={email.id}
+                          style={{
+                            padding: '12px',
+                            background: 'var(--gray-50)',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                          }}
+                        >
+                          <div style={{ fontWeight: '600' }}>{email.email}</div>
+                          <div style={{ color: 'var(--gray-500)' }}>
+                            Seq {email.sequence_number} |{' '}
+                            {email.sent_at
+                              ? new Date(email.sent_at).toLocaleDateString()
+                              : 'Not sent'}
+                          </div>
+                          <div
+                            style={{
+                              color: email.opened_at ? '#10B981' : 'var(--gray-400)',
+                              fontWeight: email.opened_at ? '600' : '400',
+                            }}
+                          >
+                            {email.opened_at ? 'Opened' : 'Not opened'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ color: 'var(--gray-500)' }}>No emails sent yet</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Refresh Button */}
+              <div style={{ marginTop: '24px', textAlign: 'center' }}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setOutreachData(null);
+                    loadOutreachData();
+                  }}
+                >
+                  Refresh Data
+                </button>
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+                Could not load outreach data
+              </p>
+              <button className="btn btn-primary" onClick={() => loadOutreachData()}>
+                Retry
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
