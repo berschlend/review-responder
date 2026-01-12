@@ -4749,13 +4749,19 @@ function createFloatingButton() {
     e.stopPropagation();
     e.stopImmediatePropagation();
 
-    // Use stored selection (captured when button was shown or on hover)
-    const selection = lastSelectedText;
+    // Use stored selection, with fallback to current selection (for first-click edge case)
+    let selection = lastSelectedText;
+    if (!selection || selection.length < 10) {
+      // Fallback: try to get current selection (might still be available on first click)
+      selection = window.getSelection().toString().trim();
+    }
     if (!selection || selection.length < 10) {
       showToast('📝 Please select some review text first', 'info');
       hideFloatingButton();
       return;
     }
+    // Update stored selection for consistency
+    lastSelectedText = selection;
 
     // Pre-flight login check
     if (!isLoggedIn) {
