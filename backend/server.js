@@ -6955,6 +6955,23 @@ app.post('/api/admin/affiliates/:id/payout', authenticateAdmin, async (req, res)
 // GET /api/admin/stats - Get overall admin stats
 app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
   try {
+    // Exclude test/fake emails from stats (admin's own accounts + obvious fakes)
+    const excludeEmailsClause = `
+      AND email NOT LIKE '%@web.de'
+      AND email NOT LIKE 'test%'
+      AND email NOT LIKE '%test@%'
+      AND email NOT LIKE 'asdf%'
+      AND email NOT LIKE 'qwer%'
+      AND email NOT LIKE 'asd@%'
+      AND email NOT LIKE '%@test.%'
+      AND email NOT LIKE '%@example.%'
+      AND email NOT LIKE 'admin@%'
+      AND email NOT LIKE '%fake%'
+      AND email NOT LIKE 'a@%'
+      AND email NOT LIKE 'aa@%'
+      AND email NOT LIKE 'aaa@%'
+    `;
+
     // User stats - this should always work
     let userStats = { total_users: 0, paying_users: 0, new_users_week: 0, new_users_month: 0 };
     try {
@@ -6966,6 +6983,7 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
           COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '7 days') as new_users_week,
           COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '30 days') as new_users_month
         FROM users
+        WHERE 1=1 ${excludeEmailsClause}
       `)) || userStats;
     } catch (e) {
       console.error('User stats query error:', e.message);
@@ -7030,21 +7048,105 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
   }
 });
 
-// Admin: List all users
+// Admin: List all users (with fake detection)
 app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
   try {
     const users = await dbAll(`
       SELECT id, email, subscription_plan, created_at,
              responses_used_smart, responses_used_standard,
-             stripe_customer_id, stripe_subscription_id
+             stripe_customer_id, stripe_subscription_id,
+             CASE WHEN (
+               email LIKE '%@web.de' OR
+               email LIKE 'test%' OR
+               email LIKE '%test@%' OR
+               email LIKE 'asdf%' OR
+               email LIKE 'qwer%' OR
+               email LIKE 'asd@%' OR
+               email LIKE '%@test.%' OR
+               email LIKE '%@example.%' OR
+               email LIKE 'admin@%' OR
+               email LIKE '%fake%' OR
+               email LIKE 'a@%' OR
+               email LIKE 'aa@%' OR
+               email LIKE 'aaa@%'
+             ) THEN true ELSE false END as is_test_account
       FROM users
       ORDER BY created_at DESC
       LIMIT 100
     `);
-    res.json({ users });
+
+    const realUsers = users.filter(u => !u.is_test_account);
+    const testUsers = users.filter(u => u.is_test_account);
+
+    res.json({
+      users,
+      summary: {
+        total: users.length,
+        real: realUsers.length,
+        test: testUsers.length,
+        realPaying: realUsers.filter(u => u.subscription_plan !== 'free').length
+      }
+    });
   } catch (error) {
     console.error('Admin users error:', error);
     res.status(500).json({ error: 'Failed to get users' });
+  }
+});
+
+// Admin: Delete obvious fake/test accounts (keyboard spam emails)
+app.delete('/api/admin/cleanup-test-accounts', authenticateAdmin, async (req, res) => {
+  try {
+    // Only delete accounts that match VERY obvious fake patterns
+    // Be conservative - only keyboard spam and obvious test emails
+    const fakePatterns = [
+      "email LIKE 'asdf%'",
+      "email LIKE 'qwer%'",
+      "email LIKE 'asd@%'",
+      "email LIKE 'qwe@%'",
+      "email LIKE 'zxc@%'",
+      "email LIKE 'fgh@%'",
+      "email LIKE 'jkl@%'",
+      "email LIKE 'a@a.%'",
+      "email LIKE 'aa@aa.%'",
+      "email LIKE 'aaa@%'",
+      "email LIKE 'aaaa@%'",
+      "email LIKE 'test@test.%'",
+      "email LIKE '%@example.com'",
+      "email LIKE '%@example.org'",
+      "email LIKE 'sdfg%'",
+      "email LIKE 'dfgh%'",
+      "email LIKE 'xcvb%'",
+      "email LIKE '123@%'",
+      "email LIKE '1234@%'",
+    ];
+
+    // First, get the accounts that would be deleted (for logging)
+    const toDelete = await dbAll(`
+      SELECT id, email, subscription_plan, created_at
+      FROM users
+      WHERE (${fakePatterns.join(' OR ')})
+      AND stripe_subscription_id IS NULL
+    `);
+
+    if (toDelete.length === 0) {
+      return res.json({ message: 'No obvious fake accounts found', deleted: [] });
+    }
+
+    // Delete them (only if they don't have active Stripe subscription)
+    const result = await dbQuery(`
+      DELETE FROM users
+      WHERE (${fakePatterns.join(' OR ')})
+      AND stripe_subscription_id IS NULL
+      RETURNING id, email
+    `);
+
+    res.json({
+      message: `Deleted ${result.rows?.length || 0} fake accounts`,
+      deleted: result.rows || toDelete
+    });
+  } catch (error) {
+    console.error('Cleanup error:', error);
+    res.status(500).json({ error: 'Failed to cleanup accounts' });
   }
 });
 
