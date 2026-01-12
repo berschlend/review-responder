@@ -37,6 +37,12 @@
 
 ## 🟠 AKTUELL IN ARBEIT
 
+### Stripe Zahlungsmethoden Fix
+- [ ] **Stripe Link zeigt nicht alle Zahlungsmethoden** - PayPal, SEPA etc. fehlen im Checkout
+  - Checkout Session prüfen: `payment_method_types` korrekt?
+  - Stripe Dashboard prüfen: Sind alle Methoden aktiviert?
+  - Link (Stripe Wallet) Konfiguration checken
+
 ### Chrome Extension Release v1.5.2
 - [x] Extension fertig testen - CLAUDE HAT GETESTET
 - [x] Google Sign-In hinzugefügt - FERTIG

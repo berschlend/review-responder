@@ -1891,33 +1891,40 @@ const LandingPage = () => {
                 </video>
               ) : (
                 <div style={{
-                  background: '#0d0d1a',
                   borderRadius: '12px',
                   overflow: 'hidden',
-                  aspectRatio: '16/9',
                   position: 'relative',
                   cursor: 'pointer',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.3)'
                 }}
                 className="extension-video-preview"
                 onClick={() => setShowLandingVideo(true)}
                 >
-                  {/* Play Button */}
-                  <div className="play-overlay" style={{
-                    width: '64px',
-                    height: '64px',
-                    background: 'rgba(79, 70, 229, 0.9)',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'transform 0.2s, background 0.2s',
-                    zIndex: 2
+                  {/* Thumbnail */}
+                  <img
+                    src="/extension-demo-thumb.jpg"
+                    alt="Extension Demo Preview"
+                    style={{ width: '100%', display: 'block' }}
+                  />
+                  {/* Play Button Overlay */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)'
                   }}>
-                    <Play size={28} fill="white" style={{ marginLeft: '3px' }} />
+                    <div className="play-overlay" style={{
+                      width: '64px',
+                      height: '64px',
+                      background: 'rgba(79, 70, 229, 0.9)',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'transform 0.2s, background 0.2s'
+                    }}>
+                      <Play size={28} fill="white" style={{ marginLeft: '3px' }} />
+                    </div>
                   </div>
                   {/* Duration Badge */}
                   <span style={{
@@ -1928,22 +1935,11 @@ const LandingPage = () => {
                     padding: '4px 8px',
                     borderRadius: '4px',
                     fontSize: '11px',
-                    fontWeight: '500'
+                    fontWeight: '500',
+                    color: 'white'
                   }}>
-                    0:38
+                    0:44
                   </span>
-                  {/* Label */}
-                  <div style={{
-                    position: 'absolute',
-                    bottom: '8px',
-                    left: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}>
-                    <Video size={14} style={{ opacity: 0.7 }} />
-                    <span style={{ fontSize: '11px', opacity: 0.7 }}>Dashboard Demo</span>
-                  </div>
                 </div>
               )}
             </div>
