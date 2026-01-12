@@ -5882,7 +5882,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
         `
         SELECT u.id, u.email, u.business_name, u.created_at
         FROM users u
-        WHERE u.created_at <= NOW() - ($1 * INTERVAL '1 day')
+        WHERE u.created_at <= NOW() - (INTERVAL '1 day' * $1)
           AND u.email IS NOT NULL
           AND u.email != ''
           AND NOT EXISTS (
