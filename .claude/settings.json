@@ -1,5 +1,11 @@
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "git fetch --all --quiet 2>/dev/null || true"
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
