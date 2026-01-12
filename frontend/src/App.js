@@ -1792,6 +1792,22 @@ const LandingPage = () => {
             20 free responses every month. No credit card required.
           </p>
 
+          {/* Trust Badges */}
+          <div style={{ marginTop: '32px', display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-500)', fontSize: '13px' }}>
+              <Lock size={16} />
+              <span>SSL Secured</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-500)', fontSize: '13px' }}>
+              <CreditCard size={16} />
+              <span>Stripe Payments</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-500)', fontSize: '13px' }}>
+              <Shield size={16} />
+              <span>GDPR Compliant</span>
+            </div>
+          </div>
+
           {/* Demo Video Section - Hidden until video is ready
           <div style={{
             marginTop: '48px',
@@ -1818,7 +1834,7 @@ const LandingPage = () => {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)', fontSize: '14px', fontWeight: '500' }}>
           <Sparkles size={18} style={{ color: 'var(--primary)' }} />
-          <span>Powered by Claude AI</span>
+          <span>Powered by Claude</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)', fontSize: '14px', fontWeight: '500' }}>
           <Globe size={18} style={{ color: 'var(--primary)' }} />
