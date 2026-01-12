@@ -5082,9 +5082,18 @@ let reviewQueue = {
   isActive: false
 };
 
-function scanPageForReviews() {
+async function scanPageForReviews() {
   const reviews = [];
   const platform = detectPlatform();
+
+  // ===== STEP 1: Click all "More" buttons first to expand truncated reviews =====
+  const moreButtonSelectors = '.w8nwRe, .review-more-link, [jsaction*="expand"], button[aria-label*="More"], button[aria-label*="Mehr"], [data-expandable-section] button';
+  document.querySelectorAll(moreButtonSelectors).forEach(btn => {
+    try { btn.click(); } catch (e) { /* ignore */ }
+  });
+
+  // Wait for DOM to update after clicking "More" buttons
+  await new Promise(resolve => setTimeout(resolve, 500));
 
   // Yelp-specific scanning strategy (Yelp uses dynamic CSS classes)
   if (platform.name === 'Yelp') {
@@ -5139,11 +5148,7 @@ function scanPageForReviews() {
 
   platformSelectors.forEach(selector => {
     document.querySelectorAll(selector).forEach(reviewEl => {
-      // First, click "More" / "Mehr" buttons to expand truncated reviews (Google Maps)
-      const moreButtons = reviewEl.querySelectorAll('.w8nwRe, .review-more-link, [jsaction*="expand"], button[aria-label*="More"], button[aria-label*="Mehr"]');
-      moreButtons.forEach(btn => {
-        try { btn.click(); } catch (e) { /* ignore */ }
-      });
+      // Note: "More" buttons already clicked at start of function
 
       // Find review text - try multiple selectors
       const textSelectors = [
@@ -5198,8 +5203,8 @@ function scanPageForReviews() {
 
 // ========== BATCH MODE FUNCTIONS ==========
 
-function initBatchMode(panel) {
-  const reviews = scanPageForReviews();
+async function initBatchMode(panel) {
+  const reviews = await scanPageForReviews();
   const foundCount = panel.querySelector('.rr-batch-found-count');
   const actionsStart = panel.querySelector('.rr-batch-actions-start');
   const emptyState = panel.querySelector('.rr-batch-empty');
@@ -5543,14 +5548,15 @@ function exportBatchAsCSV(panel) {
   showToast(`Exported ${results.length} responses!`, 'success');
 }
 
-function startQueueMode() {
+async function startQueueMode() {
   // Check login first
   if (!isLoggedIn) {
     showToast('🔐 Please login first', 'error');
     return;
   }
 
-  const reviews = scanPageForReviews();
+  showToast('🔍 Scanning for reviews...', 'info');
+  const reviews = await scanPageForReviews();
 
   if (reviews.length === 0) {
     showToast('📝 No reviews found on this page', 'info');
