@@ -5589,6 +5589,42 @@ app.get('/api/admin/set-plan', async (req, res) => {
   }
 });
 
+// GET /api/admin/delete-user - Delete user completely (for testing)
+app.get('/api/admin/delete-user', async (req, res) => {
+  const { email, key } = req.query;
+  const adminSecret = process.env.ADMIN_SECRET;
+
+  if (!adminSecret || !safeCompare(key, adminSecret)) {
+    return res.status(401).json({ error: 'Invalid admin key' });
+  }
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email required' });
+  }
+
+  try {
+    const user = await dbGet('SELECT id, email, oauth_provider FROM users WHERE LOWER(email) = LOWER($1)', [email]);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Delete related data first (foreign key constraints)
+    await dbQuery('DELETE FROM response_templates WHERE user_id = $1', [user.id]);
+    await dbQuery('DELETE FROM responses WHERE user_id = $1', [user.id]);
+    await dbQuery('DELETE FROM api_keys WHERE user_id = $1', [user.id]);
+    await dbQuery('DELETE FROM team_members WHERE user_id = $1 OR team_owner_id = $1', [user.id]);
+
+    // Delete user
+    await dbQuery('DELETE FROM users WHERE id = $1', [user.id]);
+
+    console.log(`✅ Admin deleted user: ${email} (OAuth: ${user.oauth_provider || 'none'})`);
+    res.json({ success: true, message: `User ${email} deleted`, oauth_provider: user.oauth_provider });
+  } catch (error) {
+    console.error('Admin delete-user error:', error);
+    res.status(500).json({ error: 'Failed to delete user' });
+  }
+});
+
 // GET /api/admin/delete-email-capture - Delete email from email_captures (for testing exit-intent)
 app.get('/api/admin/delete-email-capture', async (req, res) => {
   const { email, key } = req.query;
