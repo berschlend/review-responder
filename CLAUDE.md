@@ -26,6 +26,15 @@
 
 ### Custom Slash Commands
 Nutze diese Commands für maximale Effizienz:
+
+**Neue Commands (Boris Style):**
+- `/commit-push-pr` - Commit + Push + PR erstellen (Conventional Commits)
+- `/new-feature` - 5-Phasen Feature Development (Plan → Confirm → Implement → Verify → Commit)
+- `/test-and-lint` - TypeScript + Lint + Tests + Build Pipeline
+- `/simplify-code` - Code Refactoring (nur kürzlich geänderte Files)
+- `/verify-app` - Manuelle App-Testing Checkliste
+
+**Bestehende Commands:**
 - `/test-and-push` - Tests → Manual Check → Git Push (mit Retry)
 - `/feature` - Research → Plan → Code → Test → PR (Boris Method)
 - `/bug-fix` - Reproduce → Diagnose → Plan → Fix → Verify → Push
@@ -49,6 +58,79 @@ Nutze diese Commands für maximale Effizienz:
 - Plan reviewen & verfeinern
 - Dann Auto-Accept Mode
 - Claude "one-shots" die Umsetzung
+
+---
+
+## CODE STYLE REGELN
+
+### TypeScript
+- NIEMALS `any` verwenden - immer spezifische Types
+- NIEMALS `enum` verwenden - stattdessen String Unions:
+  ```typescript
+  // FALSCH
+  enum ReviewType { GOOGLE, YELP }
+
+  // RICHTIG
+  type ReviewType = 'google' | 'yelp' | 'tripadvisor' | 'booking'
+  ```
+- Types mit `type` definieren, nicht `interface` (außer für extending)
+- Alle Funktionen müssen Return-Types haben
+- Keine Type Assertions (`as`) außer wenn absolut nötig
+
+### React
+- Functional Components mit TypeScript
+- Hooks für State Management
+- Keine Class Components
+- Props immer typisieren:
+  ```typescript
+  type ReviewCardProps = {
+    review: Review
+    onRespond: (response: string) => void
+  }
+
+  export function ReviewCard({ review, onRespond }: ReviewCardProps) {
+    // ...
+  }
+  ```
+- Event Handler: `handle` Prefix (`handleClick`, `handleSubmit`)
+- Custom Hooks: `use` Prefix (`useReviews`, `useAIResponse`)
+
+### Tailwind CSS
+- Keine inline Styles - nur Tailwind Classes
+- Responsive Design: Mobile First (`md:`, `lg:` für größere Screens)
+- Keine !important
+
+### Imports
+- Absolute Imports mit `@/` Prefix wenn möglich
+- Sortierung: React → External libs → Internal → Types → Styles
+- Keine barrel exports (index.ts) die alles re-exportieren
+
+### Naming
+- Components: PascalCase (`ReviewCard.tsx`)
+- Hooks: camelCase mit `use` (`useReviewData.ts`)
+- Utils: camelCase (`formatReviewDate.ts`)
+- Constants: SCREAMING_SNAKE_CASE (`MAX_RESPONSE_LENGTH`)
+- Files = Export Name (`ReviewCard.tsx` exportiert `ReviewCard`)
+
+### Verbotene Patterns
+- `console.log` in Production (nutze proper Logger)
+- Inline Styles (nutze Tailwind)
+- Magic Numbers (nutze Constants)
+- Nested Ternary in JSX (extrahiere in Funktionen)
+- `any` Type (immer spezifische Types)
+- `enum` (nutze String Unions)
+- Synchrone `localStorage` Calls in Render (nutze useEffect)
+- Direkte DOM Manipulation (nutze React Refs)
+- API Keys im Frontend Code
+
+### Git Commits (Conventional Commits)
+- `feat:` Neues Feature
+- `fix:` Bugfix
+- `chore:` Maintenance
+- `docs:` Dokumentation
+- `refactor:` Code-Verbesserung ohne Feature-Änderung
+- `test:` Tests hinzufügen/ändern
+- `style:` Formatting, keine Code-Änderung
 
 ---
 
@@ -267,7 +349,13 @@ ReviewResponder/
 ├── content/           # Marketing (outreach/, product-hunt/, social/)
 ├── scripts/           # Automation Scripts
 ├── .claude/
+│   ├── settings.json  # Auto-Lint Hook + Permissions
 │   ├── commands/      # Custom Slash Commands
+│   │   ├── commit-push-pr.md
+│   │   ├── new-feature.md
+│   │   ├── test-and-lint.md
+│   │   ├── simplify-code.md
+│   │   └── verify-app.md
 │   └── TESTING.md     # Testing Workflow Checklist
 ├── CLAUDE.md
 └── Todo.md
