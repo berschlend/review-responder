@@ -7670,6 +7670,125 @@ app.post('/api/outreach/send-emails', async (req, res) => {
   }
 });
 
+// ==========================================
+// ADD LEADS FROM TRIPADVISOR (Claude in Chrome)
+// ==========================================
+app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
+  // Auth via header or query param (for Claude in Chrome)
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { leads, send_emails = false, campaign = 'tripadvisor' } = req.body;
+
+  if (!leads || !Array.isArray(leads) || leads.length === 0) {
+    return res.status(400).json({ error: 'leads array is required' });
+  }
+
+  try {
+    const results = {
+      added: 0,
+      skipped: 0,
+      emails_sent: 0,
+      errors: []
+    };
+
+    for (const lead of leads) {
+      try {
+        // Skip if no email
+        if (!lead.email) {
+          results.skipped++;
+          continue;
+        }
+
+        // Insert or update lead
+        await dbQuery(`
+          INSERT INTO outreach_leads
+            (business_name, business_type, address, city, country, phone, website,
+             google_rating, google_reviews_count, email, source, status)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+          ON CONFLICT (business_name, city)
+          DO UPDATE SET
+            email = COALESCE(EXCLUDED.email, outreach_leads.email),
+            phone = COALESCE(EXCLUDED.phone, outreach_leads.phone),
+            website = COALESCE(EXCLUDED.website, outreach_leads.website),
+            google_rating = COALESCE(EXCLUDED.google_rating, outreach_leads.google_rating),
+            google_reviews_count = COALESCE(EXCLUDED.google_reviews_count, outreach_leads.google_reviews_count)
+        `, [
+          lead.name || lead.business_name,
+          lead.type || lead.business_type || 'restaurant',
+          lead.address,
+          lead.city,
+          lead.country || 'US',
+          lead.phone,
+          lead.website || lead.tripadvisor_url,
+          lead.rating || lead.google_rating,
+          lead.reviews || lead.google_reviews_count,
+          lead.email,
+          'tripadvisor',
+          'new'
+        ]);
+
+        results.added++;
+
+        // Send email immediately if requested
+        if (send_emails && resend && lead.email) {
+          const template = fillEmailTemplate(getTemplateForLead(1, {
+            ...lead,
+            business_name: lead.name || lead.business_name,
+            google_reviews_count: lead.reviews || lead.google_reviews_count
+          }), lead);
+
+          try {
+            await resend.emails.send({
+              from: OUTREACH_FROM_EMAIL,
+              to: lead.email,
+              subject: template.subject,
+              html: template.body.replace(/\n/g, '<br>'),
+              tags: [
+                { name: 'campaign', value: campaign },
+                { name: 'source', value: 'tripadvisor' },
+                { name: 'sequence', value: '1' }
+              ]
+            });
+            results.emails_sent++;
+
+            // Log the sent email
+            const insertedLead = await dbGet(
+              'SELECT id FROM outreach_leads WHERE business_name = $1 AND city = $2',
+              [lead.name || lead.business_name, lead.city]
+            );
+            if (insertedLead) {
+              await dbQuery(`
+                INSERT INTO outreach_emails
+                  (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
+                VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5)
+              `, [insertedLead.id, lead.email, template.subject, template.body, campaign]);
+
+              await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', ['contacted', insertedLead.id]);
+            }
+          } catch (emailError) {
+            results.errors.push(`Email failed for ${lead.name}: ${emailError.message}`);
+          }
+        }
+      } catch (leadError) {
+        results.errors.push(`Failed to add ${lead.name}: ${leadError.message}`);
+      }
+    }
+
+    console.log(`TripAdvisor leads processed: ${results.added} added, ${results.skipped} skipped, ${results.emails_sent} emails sent`);
+
+    res.json({
+      success: true,
+      ...results
+    });
+  } catch (error) {
+    console.error('Add TripAdvisor leads error:', error);
+    res.status(500).json({ error: 'Failed to add leads' });
+  }
+});
+
 // Send follow-up emails (sequence 2 and 3)
 app.post('/api/outreach/send-followups', async (req, res) => {
   const adminKey = req.headers['x-admin-key'];
