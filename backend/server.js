@@ -7053,7 +7053,6 @@ app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
   try {
     const users = await dbAll(`
       SELECT id, email, subscription_plan, created_at,
-             responses_used_smart, responses_used_standard,
              stripe_customer_id, stripe_subscription_id
       FROM users
       ORDER BY created_at DESC
