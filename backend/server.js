@@ -8423,9 +8423,9 @@ app.post('/api/cron/generate-blog-article', async (req, res) => {
       });
     }
 
-    // Generate article using Gemini 2.5 Pro with Google Search grounding
+    // Generate article using Gemini 3 Pro with Google Search grounding
     const model = gemini.getGenerativeModel({
-      model: 'gemini-2.5-pro-preview-06-05',
+      model: 'gemini-3-pro-preview',
       tools: [{ googleSearch: {} }],
     });
 
