@@ -749,12 +749,12 @@ async function autoPasteToReviewField(text, panel, autoSubmit = false) {
       showToast(`✅ Response submitted to ${platform.name}!`, 'success');
       return true;
     } else {
-      showToast('🚀 Pasted! Click Submit manually', 'warning');
+      showToast('✅ Pasted! Click Submit manually', 'warning');
       return false;
     }
   }
 
-  showToast(`🚀 Pasted to ${platform.name}! Ready to submit`, 'success');
+  showToast(`✅ Pasted to ${platform.name}! Ready to submit`, 'success');
   return true;
 }
 
@@ -1631,7 +1631,7 @@ function getSmartReplyChips(sentiment) {
   } else if (sentiment === 'negative') {
     return [
       { id: 'apologize_fix', label: '🙏 Apologize & Fix', modifier: 'Sincerely apologize for the issues. Explain what you will do to fix the problem. Show genuine concern.' },
-      { id: 'offer_solution', label: '🎁 Offer Solution', modifier: 'Apologize and offer a concrete solution like a discount, refund, or free service. Include contact information.' },
+      { id: 'offer_solution', label: '💡 Offer Solution', modifier: 'Apologize and offer a concrete solution like a discount, refund, or free service. Include contact information.' },
       { id: 'request_details', label: '📞 Request Details', modifier: 'Apologize briefly and ask for more details to understand the situation better. Provide contact email/phone.' }
     ];
   } else {
@@ -2302,7 +2302,7 @@ async function createResponsePanel() {
           <button class="rr-copy-btn">📋 Copy</button>
           <button class="rr-done-btn">✅ Copy & Done</button>
           ${isPasteSupported ? `
-            <button class="rr-paste-btn">🚀 Paste</button>
+            <button class="rr-paste-btn">📋 Paste</button>
             <button class="rr-submit-btn">⚡ Paste & Submit</button>
           ` : ''}
           <button class="rr-regenerate-btn">🔄</button>
@@ -4666,7 +4666,7 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
   // Reset response section
   panel.querySelector('.rr-response-section').classList.add('hidden');
   panel.querySelector('.rr-response-textarea').value = '';
-  panel.querySelector('.rr-advanced').classList.add('hidden');
+  // Note: .rr-advanced was removed - Options are now in collapsible .rr-options-details
   panel.querySelector('.rr-help-overlay').classList.add('hidden');
 
   // Reset position for desktop

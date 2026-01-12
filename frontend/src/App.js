@@ -838,7 +838,7 @@ const ExitIntentPopup = () => {
                   fontWeight: '600',
                   marginBottom: '12px'
                 }}>
-                  🎁 Exclusive Offer: Save 50%
+                  Exclusive Offer: Save 50%
                 </div>
                 <p style={{ color: 'var(--gray-600)', fontSize: '14px' }}>
                   Enter your email to unlock this limited-time discount
@@ -903,7 +903,7 @@ const ExitIntentPopup = () => {
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                 onClick={() => setIsVisible(false)}
               >
-                🎁 Claim 50% Discount
+                Claim 50% Discount
                 <ArrowRight size={18} />
               </Link>
             </div>
@@ -3358,7 +3358,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
               onClick={completeOnboarding}
               disabled={loading}
             >
-              {loading ? 'Finishing...' : '🚀 Start Using ReviewResponder'}
+              {loading ? 'Finishing...' : 'Start Using ReviewResponder'}
             </button>
           )}
         </div>
@@ -8304,7 +8304,7 @@ const PricingPage = () => {
                 onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(16,185,129,0.4)'; }}
                 onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
               >
-                🎁 Click to Activate 50% OFF
+                Click to Activate 50% OFF
                 <ArrowRight size={14} />
               </Link>
             )}
