@@ -5000,7 +5000,7 @@ const DashboardPage = () => {
                     className="form-textarea"
                     value={bulkInput}
                     onChange={(e) => setBulkInput(e.target.value)}
-                    placeholder={`Enter multiple reviews, one per line. Example:
+                    placeholder={`Paste your reviews here...
 
 Great service! The staff was very helpful and friendly.
 
@@ -5011,9 +5011,6 @@ Food was amazing, will definitely come back!`}
                     style={{ fontFamily: 'inherit', minHeight: '700px' }}
                     spellCheck={false}
                   />
-                  <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '8px' }}>
-                    Supported formats: One review per line, CSV format ("review1","review2"), or separated by ---
-                  </p>
                 </div>
 
                 <div className="dashboard-form-grid">
