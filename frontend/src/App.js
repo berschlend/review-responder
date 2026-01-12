@@ -2999,13 +2999,14 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
       const review = reviewResult.data.generated;
       setSampleReview(review);
 
-      // Step 3: Generate response to that review
+      // Step 3: Generate response to that review (without counting usage)
       const responseResult = await api.post('/generate', {
         reviewText: review,
         tone: 'friendly',
         businessName: businessName.trim(),
         businessContext: context,
-        businessType: businessType
+        businessType: businessType,
+        isOnboarding: true
       });
       setSampleResponse(responseResult.data.response);
 

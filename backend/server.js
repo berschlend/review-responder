@@ -2153,45 +2153,60 @@ LANGUAGE: ${languageInstruction}`;
       }
     }
 
-    // Save response with AI model info
-    await dbQuery(
-      `INSERT INTO responses (user_id, review_text, review_rating, review_platform, generated_response, tone, ai_model)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [req.user.id, reviewText, reviewRating || null, platform || 'google', generatedResponse, tone || 'professional', useModel]
-    );
+    // Check if this is an onboarding demo request (don't count usage or save to history)
+    const isOnboardingDemo = req.body.isOnboarding === true && user.onboarding_completed === false;
 
-    // Update usage for the account owner (team owner if team member, otherwise self)
+    // Usage owner for tracking
     const usageOwnerId = isTeamMember ? usageOwner.id : req.user.id;
 
-    // Update the correct usage counter
-    if (useModel === 'smart') {
-      await dbQuery('UPDATE users SET smart_responses_used = smart_responses_used + 1, responses_used = responses_used + 1 WHERE id = $1', [usageOwnerId]);
-    } else {
-      await dbQuery('UPDATE users SET standard_responses_used = standard_responses_used + 1, responses_used = responses_used + 1 WHERE id = $1', [usageOwnerId]);
-    }
+    let updatedOwner;
+    let updatedPlanLimits;
+    let totalUsed;
+    let totalLimit;
 
-    const updatedOwner = await dbGet('SELECT * FROM users WHERE id = $1', [usageOwnerId]);
-    const updatedPlanLimits = PLAN_LIMITS[updatedOwner.subscription_plan || 'free'] || PLAN_LIMITS.free;
+    if (!isOnboardingDemo) {
+      // Save response with AI model info
+      await dbQuery(
+        `INSERT INTO responses (user_id, review_text, review_rating, review_platform, generated_response, tone, ai_model)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [req.user.id, reviewText, reviewRating || null, platform || 'google', generatedResponse, tone || 'professional', useModel]
+      );
 
-    // Check if user is approaching limits and send alert email (based on total usage)
-    const totalUsed = (updatedOwner.smart_responses_used || 0) + (updatedOwner.standard_responses_used || 0);
-    const totalLimit = updatedPlanLimits.responses;
-    const usagePercent = Math.round((totalUsed / totalLimit) * 100);
-    const previousTotal = totalUsed - 1;
-    const previousPercent = Math.round((previousTotal / totalLimit) * 100);
-
-    // Send alert if just crossed 80% threshold (send to owner)
-    if (usagePercent >= 80 && previousPercent < 80 && updatedOwner.subscription_plan !== 'unlimited') {
-      const canSendAlert = !updatedOwner.last_usage_alert_sent ||
-        new Date(updatedOwner.last_usage_alert_sent) < new Date(Date.now() - 24 * 60 * 60 * 1000);
-
-      if (canSendAlert && process.env.NODE_ENV === 'production') {
-        sendUsageAlertEmail(updatedOwner).then(sent => {
-          if (sent) {
-            dbQuery('UPDATE users SET last_usage_alert_sent = NOW() WHERE id = $1', [usageOwnerId]);
-          }
-        });
+      // Update the correct usage counter
+      if (useModel === 'smart') {
+        await dbQuery('UPDATE users SET smart_responses_used = smart_responses_used + 1, responses_used = responses_used + 1 WHERE id = $1', [usageOwnerId]);
+      } else {
+        await dbQuery('UPDATE users SET standard_responses_used = standard_responses_used + 1, responses_used = responses_used + 1 WHERE id = $1', [usageOwnerId]);
       }
+
+      updatedOwner = await dbGet('SELECT * FROM users WHERE id = $1', [usageOwnerId]);
+      updatedPlanLimits = PLAN_LIMITS[updatedOwner.subscription_plan || 'free'] || PLAN_LIMITS.free;
+      totalUsed = (updatedOwner.smart_responses_used || 0) + (updatedOwner.standard_responses_used || 0);
+      totalLimit = updatedPlanLimits.responses;
+
+      const usagePercent = Math.round((totalUsed / totalLimit) * 100);
+      const previousTotal = totalUsed - 1;
+      const previousPercent = Math.round((previousTotal / totalLimit) * 100);
+
+      // Send alert if just crossed 80% threshold (send to owner)
+      if (usagePercent >= 80 && previousPercent < 80 && updatedOwner.subscription_plan !== 'unlimited') {
+        const canSendAlert = !updatedOwner.last_usage_alert_sent ||
+          new Date(updatedOwner.last_usage_alert_sent) < new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+        if (canSendAlert && process.env.NODE_ENV === 'production') {
+          sendUsageAlertEmail(updatedOwner).then(sent => {
+            if (sent) {
+              dbQuery('UPDATE users SET last_usage_alert_sent = NOW() WHERE id = $1', [usageOwnerId]);
+            }
+          });
+        }
+      }
+    } else {
+      // Onboarding demo: return current usage without incrementing
+      updatedOwner = usageOwner;
+      updatedPlanLimits = planLimits;
+      totalUsed = (usageOwner.smart_responses_used || 0) + (usageOwner.standard_responses_used || 0);
+      totalLimit = planLimits.responses;
     }
 
     // Evaluate response quality
