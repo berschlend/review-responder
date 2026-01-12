@@ -621,6 +621,133 @@
   opacity: 0.8;
 }
 
+/* ========== BUSINESS CONTEXT BAR ========== */
+.rr-context-bar {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--rr-border);
+  background: var(--rr-bg-light);
+}
+
+.rr-context-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--rr-bg);
+  border: 1px dashed var(--rr-border);
+  border-radius: 10px;
+  color: var(--rr-text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rr-context-btn:hover {
+  border-color: var(--rr-primary);
+  color: var(--rr-primary);
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.rr-context-icon {
+  font-size: 16px;
+}
+
+.rr-context-text {
+  flex: 1;
+  text-align: left;
+}
+
+.rr-context-arrow {
+  opacity: 0.5;
+  font-size: 14px;
+}
+
+/* ========== COLLAPSIBLE SECTIONS ========== */
+.rr-collapsible {
+  border-bottom: 1px solid var(--rr-border);
+}
+
+.rr-collapsible > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--rr-text);
+  list-style: none;
+  transition: background 0.2s;
+}
+
+.rr-collapsible > summary::-webkit-details-marker {
+  display: none;
+}
+
+.rr-collapsible > summary::before {
+  content: '▶';
+  font-size: 10px;
+  color: var(--rr-text-light);
+  transition: transform 0.2s;
+}
+
+.rr-collapsible[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.rr-collapsible > summary:hover {
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.rr-collapsible-content {
+  padding: 0 16px 16px;
+}
+
+/* Review section in collapsible */
+.rr-collapsible .rr-review-box {
+  background: var(--rr-bg-light);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.rr-collapsible .rr-info-row {
+  margin-bottom: 8px;
+}
+
+/* Options section in collapsible */
+.rr-advanced-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.rr-advanced-inline .rr-advanced-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rr-advanced-inline .rr-advanced-row label {
+  font-size: 12px;
+  color: var(--rr-text-light);
+  min-width: 50px;
+}
+
+.rr-advanced-inline .rr-advanced-row select {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--rr-border);
+  border-radius: 6px;
+  font-size: 12px;
+  background: var(--rr-bg);
+  color: var(--rr-text);
+}
+
 /* ========== ACCOUNT SWITCHER ========== */
 .rr-account-switcher {
   position: relative;

@@ -892,7 +892,7 @@ const ExitIntentPopup = () => {
                 <Check size={32} style={{ color: '#10b981' }} />
               </div>
               <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>
-                🎉 50% OFF Unlocked!
+                ✨ 50% OFF Unlocked!
               </h3>
               <p style={{ color: 'var(--gray-600)', marginBottom: '20px' }}>
                 Your exclusive discount is ready. We also sent the link to your email.
@@ -3054,7 +3054,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
     setLoading(true);
     try {
       await api.put('/auth/complete-onboarding');
-      toast.success('Welcome to ReviewResponder! 🎉');
+      toast.success('Welcome to ReviewResponder!');
       onComplete();
     } catch (error) {
       console.error('Failed to complete onboarding:', error);
@@ -3112,7 +3112,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
           flexShrink: 0
         }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', margin: '0 0 8px 0' }}>
-            Welcome to ReviewResponder! 🎉
+            Welcome to ReviewResponder!
           </h2>
           <p style={{ margin: 0, opacity: 0.9 }}>
             Let's personalize your AI in 3 quick steps
@@ -3271,7 +3271,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
           {/* Step 3: Chrome Extension */}
           {currentStep === 3 && (
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎉</div>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>✅</div>
               <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
                 You're all set!
               </h3>
@@ -4088,7 +4088,7 @@ const DashboardPage = () => {
       // Fire confetti on first response!
       if (isFirstResponse) {
         fireConfetti();
-        toast.success('Congratulations on your first response!', { icon: '🎉', duration: 4000 });
+        toast.success('Congratulations on your first response!', { icon: '✅', duration: 4000 });
         setIsFirstResponse(false);
       } else {
         const aiLabel = res.data.aiModel === 'smart' ? 'Smart AI' : 'Standard';

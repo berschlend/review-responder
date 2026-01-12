@@ -739,14 +739,14 @@ async function autoPasteToReviewField(text, panel, autoSubmit = false) {
     const useEnter = PLATFORM_SELECTORS[platform.name]?.useEnter;
     if (useEnter) {
       replyField.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-      showToast(`🎉 Response submitted to ${platform.name}!`, 'success');
+      showToast(`✅ Response submitted to ${platform.name}!`, 'success');
       return true;
     }
 
     const submitBtn = findSubmitButton(platform);
     if (submitBtn) {
       submitBtn.click();
-      showToast(`🎉 Response submitted to ${platform.name}!`, 'success');
+      showToast(`✅ Response submitted to ${platform.name}!`, 'success');
       return true;
     } else {
       showToast('🚀 Pasted! Click Submit manually', 'warning');
@@ -957,9 +957,14 @@ async function loadAnalytics() {
 }
 
 async function updateAnalytics(panel) {
-  const analytics = await loadAnalytics();
+  // Analytics widget removed from UI, but we still track data
+  // This function is kept for backwards compatibility
+  if (!panel) return;
+  const weekEl = panel.querySelector('.rr-stat-week');
+  const totalEl = panel.querySelector('.rr-stat-total');
+  if (!weekEl || !totalEl) return; // Elements no longer exist in new UI
 
-  // Calculate this week's responses
+  const analytics = await loadAnalytics();
   const today = new Date();
   const dayOfWeek = today.getDay();
   const startOfWeek = new Date(today);
@@ -967,35 +972,14 @@ async function updateAnalytics(panel) {
   startOfWeek.setHours(0, 0, 0, 0);
 
   let weekCount = 0;
-  const last7Days = [];
-
-  // Get last 7 days data for sparkline
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(today.getDate() - i);
-    const dateKey = date.toISOString().split('T')[0];
-    const dayData = analytics.daily[dateKey] || { count: 0 };
-    last7Days.push(dayData.count);
-
-    if (date >= startOfWeek) {
-      weekCount += dayData.count;
+  Object.keys(analytics.daily).forEach(dateKey => {
+    if (new Date(dateKey) >= startOfWeek) {
+      weekCount += analytics.daily[dateKey]?.count || 0;
     }
-  }
+  });
 
-  // Update stats
-  panel.querySelector('.rr-stat-week').textContent = weekCount;
-  panel.querySelector('.rr-stat-total').textContent = analytics.total.count || 0;
-
-  // Generate sparkline
-  const sparkline = panel.querySelector('.rr-sparkline');
-  if (sparkline) {
-    const max = Math.max(...last7Days, 1);
-    const bars = last7Days.map(count => {
-      const height = Math.max(4, (count / max) * 24);
-      return `<div class="rr-spark-bar" style="height: ${height}px" title="${count}"></div>`;
-    }).join('');
-    sparkline.innerHTML = bars;
-  }
+  weekEl.textContent = weekCount;
+  totalEl.textContent = analytics.total.count || 0;
 }
 
 async function recordAnalyticsResponse() {
@@ -1073,6 +1057,12 @@ async function recordInsights(issues, sentiment) {
 }
 
 async function updateInsightsWidget(panel) {
+  // Insights widget removed from UI, but we still track data
+  // This function is kept for backwards compatibility
+  if (!panel) return;
+  const topIssuesEl = panel.querySelector('.rr-top-issues');
+  if (!topIssuesEl) return; // Elements no longer exist in new UI
+
   const insights = await loadInsights();
 
   // Calculate top issues
@@ -1097,7 +1087,6 @@ async function updateInsightsWidget(panel) {
     hidden_fees: '💸 Hidden fees',
   };
 
-  const topIssuesEl = panel.querySelector('.rr-top-issues');
   if (issueEntries.length > 0) {
     topIssuesEl.innerHTML = issueEntries.map(([issue, count]) => {
       const label = issueLabels[issue] || issue;
@@ -1106,43 +1095,6 @@ async function updateInsightsWidget(panel) {
   } else {
     topIssuesEl.innerHTML = '<div class="rr-no-data">No issues tracked yet</div>';
   }
-
-  // Calculate sentiment percentages
-  const totalSentiments = insights.sentiments.positive + insights.sentiments.neutral + insights.sentiments.negative;
-  let positivePct = 0, neutralPct = 0, negativePct = 0;
-
-  if (totalSentiments > 0) {
-    positivePct = Math.round((insights.sentiments.positive / totalSentiments) * 100);
-    neutralPct = Math.round((insights.sentiments.neutral / totalSentiments) * 100);
-    negativePct = Math.round((insights.sentiments.negative / totalSentiments) * 100);
-  }
-
-  // Update sentiment bars
-  const sentBars = panel.querySelectorAll('.rr-sentiment-bar');
-  if (sentBars[0]) {
-    sentBars[0].querySelector('.rr-sent-fill').style.width = `${positivePct}%`;
-    sentBars[0].querySelector('.rr-sent-pct').textContent = `${positivePct}%`;
-  }
-  if (sentBars[1]) {
-    sentBars[1].querySelector('.rr-sent-fill').style.width = `${neutralPct}%`;
-    sentBars[1].querySelector('.rr-sent-pct').textContent = `${neutralPct}%`;
-  }
-  if (sentBars[2]) {
-    sentBars[2].querySelector('.rr-sent-fill').style.width = `${negativePct}%`;
-    sentBars[2].querySelector('.rr-sent-pct').textContent = `${negativePct}%`;
-  }
-
-  // Generate dynamic tip
-  const tips = [
-    { condition: negativePct > 30, tip: 'Many negative reviews - focus on apologetic responses and offer compensations.' },
-    { condition: issueEntries.some(([issue]) => issue === 'slow_service'), tip: 'Slow service is common - consider offering priority seating.' },
-    { condition: issueEntries.some(([issue]) => issue === 'cold_food'), tip: 'Cold food complaints - mention your quality standards.' },
-    { condition: positivePct > 60, tip: 'Great positive sentiment! Use friendly tone to maintain relationships.' },
-    { condition: true, tip: 'Personalize responses by using the customer\'s name when available.' },
-  ];
-
-  const tip = tips.find(t => t.condition)?.tip || tips[tips.length - 1].tip;
-  panel.querySelector('.rr-tip-text').textContent = tip;
 }
 
 // ========== TEMPLATE LIBRARY ==========
@@ -2298,7 +2250,7 @@ async function createResponsePanel() {
           </div>
         </div>
         <button class="rr-help-btn" title="How to use">?</button>
-        <button class="rr-turbo-btn" title="Toggle Turbo Mode (Alt+T)">🐢</button>
+        <button class="rr-turbo-btn" title="Toggle Turbo Mode (Alt+T)">⏱️</button>
         <button class="rr-close-btn" title="Close (Esc)">×</button>
       </div>
     </div>
@@ -2314,23 +2266,6 @@ async function createResponsePanel() {
 
     <div class="rr-panel-body">
       <!-- Response Section (at top, hidden until generated) -->
-      <div class="rr-response-section hidden">
-        <button class="rr-generate-btn">
-          <span class="rr-btn-text">✨ Generate Response</span>
-          <span class="rr-btn-loading hidden">
-            <span class="rr-spinner"></span>
-            Generating...
-          </span>
-        </button>
-        <button class="rr-variations-btn" title="Generate 3 different options (uses 3 credits)">
-          <span class="rr-var-text">🎯 3 Options</span>
-          <span class="rr-var-loading hidden">
-            <span class="rr-spinner"></span>
-          </span>
-        </button>
-      </div>
-
-      <!-- Response Section (hidden until generated) -->
       <div class="rr-response-section hidden">
         <!-- Variations Tabs (hidden if single response) -->
         <div class="rr-variations-tabs hidden">
@@ -2348,48 +2283,9 @@ async function createResponsePanel() {
           </button>
         </div>
 
-        <!-- Inline Editor Toolbar -->
-        <div class="rr-editor-toolbar">
-          <div class="rr-editor-group">
-            <button class="rr-editor-btn" data-action="bold" title="Bold text">
-              <strong>B</strong>
-            </button>
-            <button class="rr-editor-btn" data-action="italic" title="Italic text">
-              <em>I</em>
-            </button>
-            <button class="rr-editor-btn" data-action="bullet" title="Add bullet point">
-              •
-            </button>
-          </div>
-          <div class="rr-editor-divider"></div>
-          <div class="rr-emoji-picker">
-            <button class="rr-emoji-btn" title="Insert emoji">😊</button>
-            <div class="rr-emoji-dropdown hidden">
-              <button class="rr-emoji-option" data-emoji="😊">😊</button>
-              <button class="rr-emoji-option" data-emoji="🙏">🙏</button>
-              <button class="rr-emoji-option" data-emoji="⭐">⭐</button>
-              <button class="rr-emoji-option" data-emoji="👍">👍</button>
-              <button class="rr-emoji-option" data-emoji="❤️">❤️</button>
-              <button class="rr-emoji-option" data-emoji="🎉">🎉</button>
-              <button class="rr-emoji-option" data-emoji="💪">💪</button>
-              <button class="rr-emoji-option" data-emoji="✨">✨</button>
-            </div>
-          </div>
-          <div class="rr-editor-divider"></div>
-          <div class="rr-editor-group">
-            <button class="rr-editor-btn rr-auto-shorten" data-action="auto-shorten" title="Auto-shorten for platform">
-              📏 Fit
-            </button>
-          </div>
-          <div class="rr-platform-limit-indicator">
-            <span class="rr-limit-icon">📝</span>
-            <span class="rr-limit-text">4000</span>
-          </div>
-        </div>
+        <textarea class="rr-response-textarea" placeholder="Your response will appear here..."></textarea>
 
-        <textarea class="rr-response-textarea" placeholder="Your response..."></textarea>
-
-        <!-- Quality Score Badge (NEW) -->
+        <!-- Quality Score Badge -->
         <div class="rr-quality-badge hidden">
           <span class="rr-quality-indicator"></span>
           <span class="rr-quality-label"></span>
@@ -2412,7 +2308,7 @@ async function createResponsePanel() {
           <button class="rr-regenerate-btn">🔄</button>
         </div>
 
-        <!-- Quick Tone Switch -->
+        <!-- Quick Tone Switch (after generate) -->
         <div class="rr-quick-tones">
           <span>Try:</span>
           <button class="rr-quick-tone" data-tone="professional">Pro</button>
@@ -2420,24 +2316,111 @@ async function createResponsePanel() {
           <button class="rr-quick-tone" data-tone="formal">Formal</button>
           <button class="rr-quick-tone" data-tone="apologetic">Sorry</button>
         </div>
+      </div>
 
-        <!-- Quick Edit Chips -->
-        <div class="rr-quick-edits">
-          <span class="rr-edit-label">Quick edit:</span>
-          <div class="rr-edit-chips">
-            <button class="rr-edit-chip" data-edit="shorter">📏 Shorter</button>
-            <button class="rr-edit-chip" data-edit="longer">📝 Longer</button>
-            <button class="rr-edit-chip" data-edit="emoji">😊 +Emoji</button>
-            <button class="rr-edit-chip" data-edit="formal">🎩 Formal</button>
-            <button class="rr-edit-chip" data-edit="casual">👋 Casual</button>
+      <!-- Generate Buttons (always visible) -->
+      <div class="rr-generate-buttons">
+        <button class="rr-generate-btn">
+          <span class="rr-btn-text">✨ Generate Response</span>
+          <span class="rr-btn-loading hidden">
+            <span class="rr-spinner"></span>
+            Generating...
+          </span>
+        </button>
+        <button class="rr-variations-btn" title="Generate 3 different options (uses 3 credits)">
+          <span class="rr-var-text">🎯 3 Options</span>
+          <span class="rr-var-loading hidden">
+            <span class="rr-spinner"></span>
+          </span>
+        </button>
+      </div>
+
+      <!-- Review Section (collapsible) -->
+      <details class="rr-collapsible rr-review-details" open>
+        <summary>📝 Review</summary>
+        <div class="rr-collapsible-content">
+          <div class="rr-review-box">
+            <div class="rr-review-text"></div>
+          </div>
+          <!-- Sentiment + Language Row -->
+          <div class="rr-info-row">
+            <div class="rr-sentiment">
+              <span class="rr-sentiment-emoji"></span>
+              <span class="rr-sentiment-label"></span>
+            </div>
+            <div class="rr-language">
+              <span class="rr-language-flag"></span>
+              <span class="rr-language-name"></span>
+            </div>
+          </div>
+          <!-- Issue Resolution UI (shown when issues detected) -->
+          <div class="rr-issue-resolution hidden">
+            <div class="rr-issue-header">
+              <span class="rr-issue-icon">🔧</span>
+              <span class="rr-issue-title">Issues Detected</span>
+              <span class="rr-issue-count"></span>
+            </div>
+            <div class="rr-issue-list"></div>
           </div>
         </div>
+      </details>
 
-        <!-- Save as Template -->
-        <div class="rr-save-template">
-          <button class="rr-save-template-btn">💾 Save as Template</button>
+      <!-- Options Section (collapsible, collapsed by default) -->
+      <details class="rr-collapsible rr-options-details">
+        <summary>⚙️ Options</summary>
+        <div class="rr-collapsible-content">
+          <!-- Tone Slider -->
+          <div class="rr-tone-slider-container">
+            <div class="rr-tone-slider-labels">
+              <span class="rr-tone-label-left">🙏 Apologetic</span>
+              <span class="rr-tone-label-right">😊 Friendly</span>
+            </div>
+            <input type="range" class="rr-tone-slider" min="0" max="3" step="1" value="1">
+            <div class="rr-tone-current">
+              <span class="rr-tone-emoji">💼</span>
+              <span class="rr-tone-name">Professional</span>
+            </div>
+          </div>
+          <!-- Hidden tone select for compatibility -->
+          <div class="rr-option" style="display: none;">
+            <select class="rr-tone-select">
+              <option value="professional">💼 Professional</option>
+              <option value="friendly">😊 Friendly</option>
+              <option value="formal">🎩 Formal</option>
+              <option value="apologetic">🙏 Apologetic</option>
+            </select>
+          </div>
+          <!-- Advanced Settings -->
+          <div class="rr-advanced-inline">
+            <div class="rr-advanced-row">
+              <label>Length</label>
+              <select class="rr-length-select">
+                <option value="short">Short</option>
+                <option value="medium" selected>Medium</option>
+                <option value="detailed">Detailed</option>
+              </select>
+            </div>
+            <label class="rr-checkbox-label">
+              <input type="checkbox" class="rr-emoji-toggle">
+              <span>Include emojis</span>
+            </label>
+            <label class="rr-checkbox-label">
+              <input type="checkbox" class="rr-autocopy-toggle" checked>
+              <span>Auto-copy after generate</span>
+            </label>
+            <label class="rr-checkbox-label rr-turbo-label">
+              <input type="checkbox" class="rr-turbo-toggle">
+              <span>⚡ Turbo Mode</span>
+            </label>
+          </div>
+          <!-- Templates Quick Select -->
+          <div class="rr-templates-row">
+            <select class="rr-template-select">
+              <option value="">💾 Use a saved template...</option>
+            </select>
+          </div>
         </div>
-      </div>
+      </details>
 
       <!-- Keyboard Shortcuts Hint -->
       <div class="rr-shortcuts-hint">
@@ -2727,7 +2710,7 @@ async function createResponsePanel() {
     // Update turbo button in header
     const turboBtn = panel.querySelector('.rr-turbo-btn');
     if (turboBtn) {
-      turboBtn.textContent = settings.turboMode ? '⚡' : '🐢';
+      turboBtn.textContent = settings.turboMode ? '⚡' : '⏱️';
       turboBtn.title = settings.turboMode ? 'Turbo Mode ON (click to disable)' : 'Turbo Mode OFF (click to enable)';
       turboBtn.classList.toggle('rr-turbo-active', settings.turboMode);
     }
@@ -2777,41 +2760,25 @@ function initPanelEvents(panel) {
     await saveSettings(settings);
 
     // Update button icon and all checkboxes (hidden + settings overlay)
-    turboBtn.textContent = settings.turboMode ? '⚡' : '🐢';
+    turboBtn.textContent = settings.turboMode ? '⚡' : '⏱️';
     turboBtn.title = settings.turboMode ? 'Turbo Mode ON (click to disable)' : 'Turbo Mode OFF (click to enable)';
     turboBtn.classList.toggle('rr-turbo-active', settings.turboMode);
     panel.querySelector('.rr-turbo-toggle').checked = settings.turboMode;
     panel.querySelector('.rr-settings-turbo-toggle').checked = settings.turboMode;
 
-    showToast(settings.turboMode ? '⚡ Turbo Mode ON - Panel will skip next time' : '🐢 Turbo Mode OFF - Normal panel mode', 'info');
+    showToast(settings.turboMode ? '⚡ Turbo Mode ON - Panel will skip next time' : '⏱️ Standard Mode - Normal panel mode', 'info');
   });
 
   // ========== DRAGGABLE PANEL ==========
   initDraggable(panel);
 
-  // Analytics Widget toggle
-  panel.querySelector('.rr-analytics-header').addEventListener('click', () => {
-    const widget = panel.querySelector('.rr-analytics-widget');
-    widget.classList.toggle('collapsed');
-    const toggle = panel.querySelector('.rr-analytics-toggle');
-    toggle.textContent = widget.classList.contains('collapsed') ? '▶' : '▼';
-  });
-
-  // Load analytics on panel open
-  updateAnalytics(panel);
-
-  // Insights Widget toggle
-  panel.querySelector('.rr-insights-header').addEventListener('click', () => {
-    const widget = panel.querySelector('.rr-insights-widget');
-    widget.classList.toggle('collapsed');
-    const toggle = panel.querySelector('.rr-insights-toggle');
-    toggle.textContent = widget.classList.contains('collapsed') ? '▶' : '▼';
-
-    // Load insights when opening
-    if (!widget.classList.contains('collapsed')) {
-      updateInsightsWidget(panel);
-    }
-  });
+  // Business Context Button - opens profile page
+  const contextBtn = panel.querySelector('.rr-context-btn');
+  if (contextBtn) {
+    contextBtn.addEventListener('click', () => {
+      window.open('https://tryreviewresponder.com/profile', '_blank');
+    });
+  }
 
   // Account Switcher
   panel.querySelector('.rr-account-current').addEventListener('click', () => {
@@ -3235,12 +3202,12 @@ function initPanelEvents(panel) {
     panel.querySelector('.rr-turbo-toggle').checked = e.target.checked;
     const turboBtn = panel.querySelector('.rr-turbo-btn');
     if (turboBtn) {
-      turboBtn.textContent = e.target.checked ? '⚡' : '🐢';
+      turboBtn.textContent = e.target.checked ? '⚡' : '⏱️';
       turboBtn.title = e.target.checked ? 'Turbo Mode ON' : 'Turbo Mode OFF';
       turboBtn.classList.toggle('rr-turbo-active', e.target.checked);
     }
 
-    showToast(e.target.checked ? '⚡ Turbo Mode ON' : '🐢 Turbo Mode OFF', 'info');
+    showToast(e.target.checked ? '⚡ Turbo Mode ON' : '⏱️ Standard Mode', 'info');
   });
 
   // Reset settings button
@@ -3276,7 +3243,7 @@ function initPanelEvents(panel) {
     // Update header turbo button
     const turboBtn = panel.querySelector('.rr-turbo-btn');
     if (turboBtn) {
-      turboBtn.textContent = '🐢';
+      turboBtn.textContent = '⏱️';
       turboBtn.title = 'Turbo Mode OFF';
       turboBtn.classList.remove('rr-turbo-active');
     }
@@ -3769,7 +3736,7 @@ function saveCurrentSettings(panel) {
   // Update turbo button in header to match checkbox
   const turboBtn = panel.querySelector('.rr-turbo-btn');
   if (turboBtn) {
-    turboBtn.textContent = settings.turboMode ? '⚡' : '🐢';
+    turboBtn.textContent = settings.turboMode ? '⚡' : '⏱️';
     turboBtn.title = settings.turboMode ? 'Turbo Mode ON (click to disable)' : 'Turbo Mode OFF (click to enable)';
     turboBtn.classList.toggle('rr-turbo-active', settings.turboMode);
   }
@@ -3896,6 +3863,17 @@ async function generateResponse(panel) {
     // Show response
     panel.querySelector('.rr-response-textarea').value = data.response;
     responseSection.classList.remove('hidden');
+    responseSection.classList.add('visible');
+
+    // Compact Mode: Auto-collapse Review and Options sections after generation
+    const reviewDetails = panel.querySelector('.rr-review-details');
+    const optionsDetails = panel.querySelector('.rr-options-details');
+    if (reviewDetails) reviewDetails.removeAttribute('open');
+    if (optionsDetails) optionsDetails.removeAttribute('open');
+
+    // Scroll to response textarea
+    const textarea = panel.querySelector('.rr-response-textarea');
+    if (textarea) textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     // Update character counter
     updateCharCounter(panel);
@@ -4057,6 +4035,17 @@ async function generateResponseWithModifier(panel, modifier) {
     // Show response
     panel.querySelector('.rr-response-textarea').value = data.response;
     responseSection.classList.remove('hidden');
+    responseSection.classList.add('visible');
+
+    // Compact Mode: Auto-collapse Review and Options sections after generation
+    const reviewDetails = panel.querySelector('.rr-review-details');
+    const optionsDetails = panel.querySelector('.rr-options-details');
+    if (reviewDetails) reviewDetails.removeAttribute('open');
+    if (optionsDetails) optionsDetails.removeAttribute('open');
+
+    // Scroll to response textarea
+    const textarea = panel.querySelector('.rr-response-textarea');
+    if (textarea) textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     // Update character counter
     updateCharCounter(panel);
@@ -4536,9 +4525,25 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
     sentLabel.style.color = sentimentDisplay.color;
   }
 
-  // Auto-select recommended tone
+  // Auto-select recommended tone (Smart Tone Auto-Select)
   const toneSelectEl = panel.querySelector('.rr-tone-select');
   if (toneSelectEl) toneSelectEl.value = sentimentDisplay.tone;
+
+  // Also update the tone slider to match
+  const toneSlider = panel.querySelector('.rr-tone-slider');
+  if (toneSlider) {
+    const toneSliderValues = { apologetic: 0, professional: 1, formal: 2, friendly: 3 };
+    const sliderValue = toneSliderValues[sentimentDisplay.tone] ?? 1;
+    toneSlider.value = sliderValue;
+
+    // Update the tone display
+    const toneEmojis = ['🙏', '💼', '🎩', '😊'];
+    const toneNames = ['Apologetic', 'Professional', 'Formal', 'Friendly'];
+    const toneEmoji = panel.querySelector('.rr-tone-emoji');
+    const toneName = panel.querySelector('.rr-tone-name');
+    if (toneEmoji) toneEmoji.textContent = toneEmojis[sliderValue];
+    if (toneName) toneName.textContent = toneNames[sliderValue];
+  }
 
   // Populate Smart Reply Chips (if container exists)
   const smartChips = getSmartReplyChips(sentiment);
@@ -4855,7 +4860,7 @@ document.addEventListener('keydown', async (e) => {
     settings.turboMode = !settings.turboMode;
     cachedSettings = settings;
     await saveSettings(settings);
-    showToast(settings.turboMode ? '⚡ Turbo Mode ON' : '🐢 Turbo Mode OFF', 'info');
+    showToast(settings.turboMode ? '⚡ Turbo Mode ON' : '⏱️ Standard Mode', 'info');
     return;
   }
 
@@ -5628,7 +5633,7 @@ function navigateQueue(direction) {
   if (newIndex < 0 || newIndex >= reviewQueue.reviews.length) {
     if (newIndex >= reviewQueue.reviews.length) {
       const processed = reviewQueue.reviews.filter(r => r.processed).length;
-      showToast(`🎉 Queue complete! ${processed}/${reviewQueue.reviews.length} processed`, 'success');
+      showToast(`✅ Queue complete! ${processed}/${reviewQueue.reviews.length} processed`, 'success');
       closeQueueMode();
     }
     return;
@@ -6019,7 +6024,7 @@ function showReviewPopup() {
       });
       submitBtn.disabled = false;
       modal.querySelector('.rr-review-hint').textContent =
-        selectedRating === 5 ? 'Awesome! 🎉' :
+        selectedRating === 5 ? 'Awesome!' :
         selectedRating === 4 ? 'Great!' :
         selectedRating === 3 ? 'Thanks!' :
         selectedRating === 2 ? 'We\'ll improve!' :
