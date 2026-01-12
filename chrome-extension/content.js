@@ -4694,6 +4694,15 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
   // Note: .rr-advanced was removed - Options are now in collapsible .rr-options-details
   panel.querySelector('.rr-help-overlay').classList.add('hidden');
 
+  // === RESET SECTIONS THAT ARE HIDDEN AFTER GENERATION ===
+  // Show Generate buttons again (hidden after generation at line 3971)
+  const generateBtnsSection = panel.querySelector('.rr-generate-buttons');
+  if (generateBtnsSection) generateBtnsSection.classList.remove('hidden');
+
+  // Show Quick Tones again (hidden after generation at line 3962)
+  const quickTonesSection = panel.querySelector('.rr-quick-tones');
+  if (quickTonesSection) quickTonesSection.classList.remove('hidden');
+
   // Reset position for desktop
   if (window.innerWidth > 640) {
     panel.style.left = '';
