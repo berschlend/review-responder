@@ -5088,7 +5088,7 @@ function scanPageForReviews() {
 
   // Yelp-specific scanning strategy (Yelp uses dynamic CSS classes)
   if (platform.name === 'Yelp') {
-    document.querySelectorAll('p[class*="comment__"]').forEach(commentP => {
+    document.querySelectorAll('[class*="comment__"]').forEach(commentP => {
       const text = commentP.textContent.trim();
       if (text.length >= 20) {
         // Find rating by walking up DOM to find star rating element
@@ -5127,6 +5127,7 @@ function scanPageForReviews() {
   // Platform-specific selectors for other platforms
   const selectors = {
     'Google': ['.jftiEf', '[data-review-id]'],
+    'Yelp': ['[class*="comment__"]'],  // Yelp uses dynamic class names
     'TripAdvisor': ['.review-container', '.reviewSelector'],
     'Facebook': ['[data-testid="UFI2Comment"]', '.userContentWrapper'],
     'Trustpilot': ['.review-card', '.styles_reviewCard'],
@@ -5156,11 +5157,18 @@ function scanPageForReviews() {
       ];
 
       let text = '';
-      for (const textSel of textSelectors) {
-        const textEl = reviewEl.querySelector(textSel);
-        if (textEl && textEl.textContent.trim().length > 20) {
-          text = cleanReviewText(textEl.textContent);
-          break;
+      // First check if reviewEl itself contains the text directly (e.g., Yelp comment elements)
+      if (reviewEl.textContent && reviewEl.textContent.trim().length > 20 && !reviewEl.querySelector('[class*="comment__"]')) {
+        text = cleanReviewText(reviewEl.textContent);
+      }
+      // If not, search for text in child elements
+      if (!text) {
+        for (const textSel of textSelectors) {
+          const textEl = reviewEl.querySelector(textSel);
+          if (textEl && textEl.textContent.trim().length > 20) {
+            text = cleanReviewText(textEl.textContent);
+            break;
+          }
         }
       }
 
