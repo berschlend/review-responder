@@ -2920,6 +2920,36 @@ app.post('/api/support/contact', async (req, res) => {
 
     console.log(`📬 New support request from ${email}: ${subject}`);
 
+    // Email-Benachrichtigung an Admin
+    if (resend) {
+      try {
+        await resend.emails.send({
+          from: FROM_EMAIL,
+          replyTo: email, // Antwort geht direkt an den User
+          to: 'berend.jakob.mainz@gmail.com',
+          subject: `[Support] ${subject}`,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #4F46E5;">Neue Support-Anfrage</h2>
+              <p><strong>Von:</strong> ${name}</p>
+              <p><strong>Email:</strong> ${email}</p>
+              <p><strong>Betreff:</strong> ${subject}</p>
+              <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;">
+              <p><strong>Nachricht:</strong></p>
+              <p style="white-space: pre-wrap;">${message}</p>
+              <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;">
+              <p style="color: #6B7280; font-size: 14px;">
+                💡 Antworte direkt auf diese Email - sie geht an ${email}
+              </p>
+            </div>
+          `
+        });
+        console.log(`📧 Support notification sent to admin for: ${email}`);
+      } catch (emailError) {
+        console.error('Failed to send support notification:', emailError);
+      }
+    }
+
     res.json({ success: true, message: 'Message received. We will respond within 24 hours.' });
   } catch (error) {
     console.error('Support error:', error);

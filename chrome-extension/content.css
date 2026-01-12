@@ -1883,143 +1883,104 @@
 }
 
 /* ========== ACTION BUTTONS ========== */
+/* ========== ACTION BUTTONS - Clean Design ========== */
 .rr-action-buttons {
   display: flex;
+  flex-direction: column;
   gap: 10px;
   margin-bottom: 12px;
 }
 
-.rr-copy-btn,
-.rr-regenerate-btn {
+/* Primary row - Big buttons */
+.rr-action-primary {
+  display: flex;
+  gap: 10px;
+}
+
+/* Secondary row - Small buttons */
+.rr-action-secondary {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* ========== PRIMARY BUTTONS (Big) ========== */
+.rr-done-btn,
+.rr-submit-btn {
   flex: 1;
-  padding: 14px;
+  padding: 16px 20px;
   border: none;
-  border-radius: 10px;
-  font-size: 14px;
+  border-radius: 12px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
-}
-
-.rr-copy-btn {
-  background: var(--rr-success);
-  color: white;
-}
-
-.rr-copy-btn:hover {
-  background: #059669;
-  transform: translateY(-1px);
-}
-
-.rr-copy-btn.copied {
-  background: var(--rr-primary);
-}
-
-/* Copy & Done Button */
-.rr-done-btn {
-  flex: 1;
-  padding: 14px;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-  color: white;
-}
-
-.rr-done-btn:hover {
-  background: linear-gradient(135deg, #7c3aed, #6d28d9);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
-}
-
-.rr-regenerate-btn {
-  background: #64748b;
-  color: white;
-}
-
-.rr-regenerate-btn:hover {
-  background: #475569;
-  transform: translateY(-1px);
-}
-
-/* ========== PASTE & REPLY BUTTON ========== */
-.rr-paste-btn {
-  flex: 1.3;
-  padding: 14px;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: linear-gradient(135deg, #f97316, #ea580c);
-  color: white;
   position: relative;
   overflow: hidden;
 }
 
-.rr-paste-btn::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  animation: rr-shine 2s infinite;
+/* Copy & Done - Primary action */
+.rr-done-btn {
+  background: linear-gradient(135deg, var(--rr-primary), var(--rr-primary-dark));
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
+.rr-done-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Paste & Submit - Power action */
+.rr-submit-btn {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.rr-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+}
+
+/* ========== SECONDARY BUTTONS (Small) ========== */
+.rr-copy-btn,
+.rr-paste-btn,
+.rr-regenerate-btn {
+  padding: 8px 14px;
+  border: 1px solid var(--rr-border);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--rr-bg);
+  color: var(--rr-text-light);
+}
+
+.rr-copy-btn:hover,
+.rr-paste-btn:hover,
+.rr-regenerate-btn:hover {
+  border-color: var(--rr-primary);
+  color: var(--rr-primary);
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.rr-copy-btn.copied {
+  border-color: var(--rr-success);
+  color: var(--rr-success);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+/* Remove old animations - cleaner look */
 @keyframes rr-shine {
   0% { left: -100%; }
   50%, 100% { left: 100%; }
 }
 
-.rr-paste-btn:hover {
-  background: linear-gradient(135deg, #ea580c, #c2410c);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
-}
-
-/* ========== SUBMIT BUTTON (THE KILLER) ========== */
-.rr-submit-btn {
-  flex: 1.5;
-  padding: 14px;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  color: white;
-  position: relative;
-  overflow: hidden;
-  animation: rr-glow 2s ease-in-out infinite;
-}
-
 @keyframes rr-glow {
-  0%, 100% { box-shadow: 0 0 5px rgba(34, 197, 94, 0.3); }
-  50% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.6); }
-}
-
-.rr-submit-btn::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  animation: rr-shine 1.5s infinite;
-}
-
-.rr-submit-btn:hover {
-  background: linear-gradient(135deg, #16a34a, #15803d);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.5);
+  0%, 100% { box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); }
+  50% { box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4); }
 }
 
 /* ========== HELP TIP ========== */

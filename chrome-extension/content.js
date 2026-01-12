@@ -1,6 +1,8 @@
 // ReviewResponder - Speed Edition
 // Focus: FAST, Easy, One-Click
 
+console.log('%c[RR] Script loading...', 'color: #667eea; font-weight: bold;');
+
 const API_URL = 'https://review-responder.onrender.com/api';
 
 // ========== GLOBAL FLAGS ==========
@@ -2299,13 +2301,17 @@ async function createResponsePanel() {
         </div>
 
         <div class="rr-action-buttons">
-          <button class="rr-copy-btn">📋 Copy</button>
-          <button class="rr-done-btn">✅ Copy & Done</button>
-          ${isPasteSupported ? `
-            <button class="rr-paste-btn">📋 Paste</button>
-            <button class="rr-submit-btn">⚡ Paste & Submit</button>
-          ` : ''}
-          <button class="rr-regenerate-btn">🔄</button>
+          <!-- Primary row - Big buttons -->
+          <div class="rr-action-primary">
+            <button class="rr-done-btn">✅ Copy & Done</button>
+            ${isPasteSupported ? `<button class="rr-submit-btn">⚡ Paste & Submit</button>` : ''}
+          </div>
+          <!-- Secondary row - Small buttons -->
+          <div class="rr-action-secondary">
+            <button class="rr-copy-btn">📋 Copy</button>
+            ${isPasteSupported ? `<button class="rr-paste-btn">📋 Paste</button>` : ''}
+            <button class="rr-regenerate-btn">🔄</button>
+          </div>
         </div>
 
         <!-- Quick Tone Switch (after generate) -->
@@ -3048,18 +3054,21 @@ function initPanelEvents(panel) {
     }
   });
 
-  // Save as Template button
-  panel.querySelector('.rr-save-template-btn').addEventListener('click', () => {
-    const text = panel.querySelector('.rr-response-textarea').value;
-    if (!text) {
-      showToast('⚠️ No response to save', 'warning');
-      return;
-    }
-    // Show save modal
-    panel.querySelector('.rr-save-modal').classList.remove('hidden');
-    panel.querySelector('.rr-template-name-input').value = '';
-    panel.querySelector('.rr-template-name-input').focus();
-  });
+  // Save as Template button (if exists)
+  const saveTemplateBtn = panel.querySelector('.rr-save-template-btn');
+  if (saveTemplateBtn) {
+    saveTemplateBtn.addEventListener('click', () => {
+      const text = panel.querySelector('.rr-response-textarea').value;
+      if (!text) {
+        showToast('⚠️ No response to save', 'warning');
+        return;
+      }
+      // Show save modal
+      panel.querySelector('.rr-save-modal').classList.remove('hidden');
+      panel.querySelector('.rr-template-name-input').value = '';
+      panel.querySelector('.rr-template-name-input').focus();
+    });
+  }
 
   // Save modal cancel
   panel.querySelector('.rr-save-modal-cancel').addEventListener('click', () => {
@@ -3506,10 +3515,13 @@ function initPanelEvents(panel) {
     });
   }
 
-  // Auto-shorten button
-  panel.querySelector('.rr-auto-shorten').addEventListener('click', () => {
-    autoShortenForPlatform(panel);
-  });
+  // Auto-shorten button (if exists)
+  const autoShortenBtn = panel.querySelector('.rr-auto-shorten');
+  if (autoShortenBtn) {
+    autoShortenBtn.addEventListener('click', () => {
+      autoShortenForPlatform(panel);
+    });
+  }
 
   // Mark global listeners as initialized to prevent duplicates
   globalListenersInitialized = true;
@@ -4367,7 +4379,7 @@ async function turboGenerate(reviewText) {
     }
 
     // Get settings for tone
-    const settings = await getSettings();
+    const settings = await loadSettings();
     const tone = settings.defaultTone || 'professional';
 
     // Detect language
@@ -5014,7 +5026,7 @@ function addInlineButtons() {
         e.stopPropagation();
 
         // Check Turbo Mode - instant generate without full panel
-        const settings = await getSettings();
+        const settings = await loadSettings();
         if (settings.turboMode) {
           turboGenerate(text);
         } else {
@@ -6106,6 +6118,7 @@ async function closeReviewPopup(modal, dismissed) {
 }
 
 // Ready message
+console.log('%c[RR] All initializations complete!', 'color: #10b981; font-weight: bold;');
 console.log('%c⚡ ReviewResponder ready!', 'font-size: 14px; font-weight: bold; color: #667eea;');
 console.log('%cSelect text → Click ⚡ → Magic!', 'font-size: 12px; color: #764ba2;');
 console.log('%cAlt+Q to scan page for reviews', 'font-size: 11px; color: #10b981;');
