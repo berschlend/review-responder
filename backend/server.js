@@ -5618,8 +5618,9 @@ app.get('/api/admin/delete-user', async (req, res) => {
     await dbQuery('DELETE FROM user_feedback WHERE user_id = $1', [user.id]);
     await dbQuery('DELETE FROM drip_emails WHERE user_id = $1', [user.id]);
     await dbQuery('DELETE FROM password_reset_tokens WHERE user_id = $1', [user.id]);
-    await dbQuery('DELETE FROM notification_preferences WHERE user_id = $1', [user.id]);
-    await dbQuery('DELETE FROM affiliate_clicks WHERE user_id = $1', [user.id]);
+    // Only delete from tables that exist - skip notification_preferences if not created yet
+    try { await dbQuery('DELETE FROM notification_preferences WHERE user_id = $1', [user.id]); } catch (e) {}
+    try { await dbQuery('DELETE FROM affiliate_clicks WHERE user_id = $1', [user.id]); } catch (e) {}
     // Update referrals that reference this user
     await dbQuery('UPDATE referrals SET referred_user_id = NULL WHERE referred_user_id = $1', [user.id]);
 
