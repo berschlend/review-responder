@@ -3499,26 +3499,28 @@ function initPanelEvents(panel) {
     });
   });
 
-  // Emoji picker toggle
+  // Emoji picker toggle (only if elements exist)
   const emojiBtn = panel.querySelector('.rr-emoji-btn');
   const emojiDropdown = panel.querySelector('.rr-emoji-dropdown');
 
-  emojiBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    emojiDropdown.classList.toggle('hidden');
-  });
-
-  // Emoji selection
-  panel.querySelectorAll('.rr-emoji-option').forEach(opt => {
-    opt.addEventListener('click', (e) => {
+  if (emojiBtn && emojiDropdown) {
+    emojiBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const emoji = opt.dataset.emoji;
-      const textarea = panel.querySelector('.rr-response-textarea');
-      insertAtCursor(textarea, emoji);
-      emojiDropdown.classList.add('hidden');
-      updateCharCounter(panel);
+      emojiDropdown.classList.toggle('hidden');
     });
-  });
+
+    // Emoji selection
+    panel.querySelectorAll('.rr-emoji-option').forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const emoji = opt.dataset.emoji;
+        const textarea = panel.querySelector('.rr-response-textarea');
+        insertAtCursor(textarea, emoji);
+        emojiDropdown.classList.add('hidden');
+        updateCharCounter(panel);
+      });
+    });
+  }
 
   // Close emoji dropdown when clicking elsewhere (only add listener once)
   if (!globalListenersInitialized) {
