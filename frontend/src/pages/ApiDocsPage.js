@@ -14,18 +14,52 @@ const ApiDocsPage = () => {
   };
 
   const CodeBlock = ({ code, language = 'bash', id }) => (
-    <div style={{ position: 'relative', background: '#1e1e1e', borderRadius: '8px', marginBottom: '16px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 16px', borderBottom: '1px solid #333', color: '#888', fontSize: '12px' }}>
+    <div
+      style={{
+        position: 'relative',
+        background: '#1e1e1e',
+        borderRadius: '8px',
+        marginBottom: '16px',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '8px 16px',
+          borderBottom: '1px solid #333',
+          color: '#888',
+          fontSize: '12px',
+        }}
+      >
         <span>{language}</span>
         <button
           onClick={() => copyToClipboard(code, id)}
-          style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#888',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+          }}
         >
           {copied === id ? <Check size={14} /> : <Copy size={14} />}
           {copied === id ? 'Copied!' : 'Copy'}
         </button>
       </div>
-      <pre style={{ padding: '16px', margin: 0, overflow: 'auto', color: '#d4d4d4', fontSize: '13px', lineHeight: '1.5' }}>
+      <pre
+        style={{
+          padding: '16px',
+          margin: 0,
+          overflow: 'auto',
+          color: '#d4d4d4',
+          fontSize: '13px',
+          lineHeight: '1.5',
+        }}
+      >
         <code>{code}</code>
       </pre>
     </div>
@@ -87,12 +121,34 @@ const data = await response.json();
 console.log(data);`;
 
   return (
-    <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '900px' }}>
+    <div
+      className="container"
+      style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '900px' }}
+    >
       <div style={{ marginBottom: '32px' }}>
-        <Link to="/settings" style={{ color: 'var(--primary-600)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '16px', fontSize: '14px' }}>
+        <Link
+          to="/settings"
+          style={{
+            color: 'var(--primary-600)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            marginBottom: '16px',
+            fontSize: '14px',
+          }}
+        >
           &#8592; Back to Settings
         </Link>
-        <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <h1
+          style={{
+            fontSize: '32px',
+            fontWeight: '700',
+            marginBottom: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+          }}
+        >
           <Code size={32} />
           API Documentation
         </h1>
@@ -104,7 +160,13 @@ console.log(data);`;
       {/* Quick Start */}
       <div className="card" style={{ marginBottom: '24px' }}>
         <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>Quick Start</h2>
-        <div style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+        <div
+          style={{
+            display: 'grid',
+            gap: '16px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
           <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
             <div style={{ background: 'var(--primary-100)', borderRadius: '8px', padding: '8px' }}>
               <Key size={20} style={{ color: 'var(--primary-600)' }} />
@@ -112,7 +174,10 @@ console.log(data);`;
             <div>
               <h3 style={{ fontWeight: '600', marginBottom: '4px' }}>1. Get API Key</h3>
               <p style={{ fontSize: '14px', color: 'var(--gray-600)' }}>
-                Generate an API key in your <Link to="/settings" style={{ color: 'var(--primary-600)' }}>Settings</Link>
+                Generate an API key in your{' '}
+                <Link to="/settings" style={{ color: 'var(--primary-600)' }}>
+                  Settings
+                </Link>
               </p>
             </div>
           </div>
@@ -143,13 +208,28 @@ console.log(data);`;
 
       {/* Authentication */}
       <div className="card" style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>Authentication</h2>
+        <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>
+          Authentication
+        </h2>
         <p style={{ marginBottom: '16px', color: 'var(--gray-600)' }}>
-          All API requests require authentication via the <code style={{ background: 'var(--gray-100)', padding: '2px 6px', borderRadius: '4px' }}>X-API-Key</code> header.
+          All API requests require authentication via the{' '}
+          <code style={{ background: 'var(--gray-100)', padding: '2px 6px', borderRadius: '4px' }}>
+            X-API-Key
+          </code>{' '}
+          header.
         </p>
-        <div style={{ background: 'var(--warning-50)', border: '1px solid var(--warning-200)', borderRadius: '8px', padding: '12px 16px', marginBottom: '16px' }}>
+        <div
+          style={{
+            background: 'var(--warning-50)',
+            border: '1px solid var(--warning-200)',
+            borderRadius: '8px',
+            padding: '12px 16px',
+            marginBottom: '16px',
+          }}
+        >
           <p style={{ color: 'var(--warning-700)', fontSize: '14px' }}>
-            <strong>Important:</strong> Keep your API key secure. Never expose it in client-side code or public repositories.
+            <strong>Important:</strong> Keep your API key secure. Never expose it in client-side
+            code or public repositories.
           </p>
         </div>
         <CodeBlock
@@ -173,42 +253,68 @@ console.log(data);`;
         <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '24px' }}>
           <thead>
             <tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
-              <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>Parameter</th>
+              <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>
+                Parameter
+              </th>
               <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>Type</th>
-              <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>Required</th>
-              <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>Description</th>
+              <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>
+                Required
+              </th>
+              <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>
+                Description
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr style={{ borderBottom: '1px solid var(--gray-100)' }}>
-              <td style={{ padding: '12px 8px' }}><code>review_text</code></td>
+              <td style={{ padding: '12px 8px' }}>
+                <code>review_text</code>
+              </td>
               <td style={{ padding: '12px 8px' }}>string</td>
               <td style={{ padding: '12px 8px' }}>Yes</td>
-              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>The customer review text to respond to</td>
+              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>
+                The customer review text to respond to
+              </td>
             </tr>
             <tr style={{ borderBottom: '1px solid var(--gray-100)' }}>
-              <td style={{ padding: '12px 8px' }}><code>review_rating</code></td>
+              <td style={{ padding: '12px 8px' }}>
+                <code>review_rating</code>
+              </td>
               <td style={{ padding: '12px 8px' }}>number</td>
               <td style={{ padding: '12px 8px' }}>No</td>
-              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>Star rating (1-5) for context</td>
+              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>
+                Star rating (1-5) for context
+              </td>
             </tr>
             <tr style={{ borderBottom: '1px solid var(--gray-100)' }}>
-              <td style={{ padding: '12px 8px' }}><code>tone</code></td>
+              <td style={{ padding: '12px 8px' }}>
+                <code>tone</code>
+              </td>
               <td style={{ padding: '12px 8px' }}>string</td>
               <td style={{ padding: '12px 8px' }}>No</td>
-              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>Response tone: "professional", "friendly", "formal", "apologetic"</td>
+              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>
+                Response tone: "professional", "friendly", "formal", "apologetic"
+              </td>
             </tr>
             <tr style={{ borderBottom: '1px solid var(--gray-100)' }}>
-              <td style={{ padding: '12px 8px' }}><code>language</code></td>
+              <td style={{ padding: '12px 8px' }}>
+                <code>language</code>
+              </td>
               <td style={{ padding: '12px 8px' }}>string</td>
               <td style={{ padding: '12px 8px' }}>No</td>
-              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>Language code (e.g., "en", "de", "es", "fr")</td>
+              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>
+                Language code (e.g., "en", "de", "es", "fr")
+              </td>
             </tr>
             <tr>
-              <td style={{ padding: '12px 8px' }}><code>platform</code></td>
+              <td style={{ padding: '12px 8px' }}>
+                <code>platform</code>
+              </td>
               <td style={{ padding: '12px 8px' }}>string</td>
               <td style={{ padding: '12px 8px' }}>No</td>
-              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>Platform: "google", "yelp", "tripadvisor", etc.</td>
+              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>
+                Platform: "google", "yelp", "tripadvisor", etc.
+              </td>
             </tr>
           </tbody>
         </table>
@@ -239,34 +345,56 @@ console.log(data);`;
             <tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
               <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>Status</th>
               <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>Error</th>
-              <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>Description</th>
+              <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>
+                Description
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr style={{ borderBottom: '1px solid var(--gray-100)' }}>
-              <td style={{ padding: '12px 8px' }}><code>400</code></td>
+              <td style={{ padding: '12px 8px' }}>
+                <code>400</code>
+              </td>
               <td style={{ padding: '12px 8px' }}>Bad Request</td>
-              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>Missing or invalid review_text</td>
+              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>
+                Missing or invalid review_text
+              </td>
             </tr>
             <tr style={{ borderBottom: '1px solid var(--gray-100)' }}>
-              <td style={{ padding: '12px 8px' }}><code>401</code></td>
+              <td style={{ padding: '12px 8px' }}>
+                <code>401</code>
+              </td>
               <td style={{ padding: '12px 8px' }}>Unauthorized</td>
-              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>Missing or invalid API key</td>
+              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>
+                Missing or invalid API key
+              </td>
             </tr>
             <tr style={{ borderBottom: '1px solid var(--gray-100)' }}>
-              <td style={{ padding: '12px 8px' }}><code>403</code></td>
+              <td style={{ padding: '12px 8px' }}>
+                <code>403</code>
+              </td>
               <td style={{ padding: '12px 8px' }}>Forbidden</td>
-              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>API access requires Unlimited plan</td>
+              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>
+                API access requires Unlimited plan
+              </td>
             </tr>
             <tr style={{ borderBottom: '1px solid var(--gray-100)' }}>
-              <td style={{ padding: '12px 8px' }}><code>429</code></td>
+              <td style={{ padding: '12px 8px' }}>
+                <code>429</code>
+              </td>
               <td style={{ padding: '12px 8px' }}>Rate Limited</td>
-              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>Exceeded 100 requests/day limit</td>
+              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>
+                Exceeded 100 requests/day limit
+              </td>
             </tr>
             <tr>
-              <td style={{ padding: '12px 8px' }}><code>500</code></td>
+              <td style={{ padding: '12px 8px' }}>
+                <code>500</code>
+              </td>
               <td style={{ padding: '12px 8px' }}>Server Error</td>
-              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>Internal server error</td>
+              <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>
+                Internal server error
+              </td>
             </tr>
           </tbody>
         </table>
@@ -276,10 +404,19 @@ console.log(data);`;
       <div className="card">
         <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>Rate Limits</h2>
         <ul style={{ color: 'var(--gray-600)', lineHeight: '1.8' }}>
-          <li><strong>100 requests per day</strong> per API key</li>
-          <li>Rate limits reset at <strong>midnight UTC</strong></li>
+          <li>
+            <strong>100 requests per day</strong> per API key
+          </li>
+          <li>
+            Rate limits reset at <strong>midnight UTC</strong>
+          </li>
           <li>Your current usage is shown in the Settings page</li>
-          <li>Need more? Contact us at <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>support@tryreviewresponder.com</a></li>
+          <li>
+            Need more? Contact us at{' '}
+            <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>
+              support@tryreviewresponder.com
+            </a>
+          </li>
         </ul>
       </div>
     </div>

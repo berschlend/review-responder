@@ -25,13 +25,13 @@ if (!process.env.DATABASE_URL) {
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
 // Track database connection status
 let dbConnected = false;
 
-pool.on('error', (err) => {
+pool.on('error', err => {
   console.error('Unexpected PostgreSQL pool error:', err);
   dbConnected = false;
 });
@@ -45,12 +45,17 @@ pool.on('connect', () => {
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-const googleClient = process.env.GOOGLE_CLIENT_ID ? new OAuth2Client(process.env.GOOGLE_CLIENT_ID) : null;
-const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }) : null;
+const googleClient = process.env.GOOGLE_CLIENT_ID
+  ? new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
+  : null;
+const anthropic = process.env.ANTHROPIC_API_KEY
+  ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  : null;
 
 // Email sender addresses (configurable via ENV)
 const FROM_EMAIL = process.env.FROM_EMAIL || 'ReviewResponder <hello@tryreviewresponder.com>';
-const OUTREACH_FROM_EMAIL = process.env.OUTREACH_FROM_EMAIL || 'Berend von ReviewResponder <outreach@tryreviewresponder.com>';
+const OUTREACH_FROM_EMAIL =
+  process.env.OUTREACH_FROM_EMAIL || 'Berend von ReviewResponder <outreach@tryreviewresponder.com>';
 
 // ==========================================
 // EMAIL NOTIFICATION HELPER FUNCTIONS
@@ -67,7 +72,7 @@ async function sendUsageAlertEmail(user) {
     await resend.emails.send({
       from: FROM_EMAIL,
       to: user.email,
-      subject: 'You\'ve used 80% of your monthly responses',
+      subject: "You've used 80% of your monthly responses",
       html: `
         <!DOCTYPE html>
         <html>
@@ -113,7 +118,7 @@ async function sendUsageAlertEmail(user) {
           </div>
         </body>
         </html>
-      `
+      `,
     });
     console.log(`Usage alert email sent to ${user.email}`);
     return true;
@@ -179,7 +184,7 @@ async function sendPlanRenewalEmail(user) {
           </div>
         </body>
         </html>
-      `
+      `,
     });
     console.log(`Plan renewal email sent to ${user.email}`);
     return true;
@@ -194,11 +199,13 @@ app.use(helmet());
 
 // CORS configuration - allow all origins for Chrome extension compatibility
 // Security is handled via JWT tokens, not CORS
-app.use(cors({
-  origin: true, // Allow all origins - extension needs to work on any review site
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Admin-Key', 'X-API-Key']
-}));
+app.use(
+  cors({
+    origin: true, // Allow all origins - extension needs to work on any review site
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Admin-Key', 'X-API-Key'],
+  })
+);
 
 // Stripe webhook needs raw body - must be before express.json()
 app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), handleStripeWebhook);
@@ -209,7 +216,7 @@ app.use(express.json());
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 500,
-  message: { error: 'Too many requests, please try again later.' }
+  message: { error: 'Too many requests, please try again later.' },
 });
 app.use('/api/', limiter);
 
@@ -426,8 +433,12 @@ async function initDatabase() {
     // Add referral columns to users table
     try {
       await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code TEXT UNIQUE`);
-      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by INTEGER REFERENCES users(id)`);
-      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_credits INTEGER DEFAULT 0`);
+      await dbQuery(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by INTEGER REFERENCES users(id)`
+      );
+      await dbQuery(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_credits INTEGER DEFAULT 0`
+      );
     } catch (error) {
       // Columns might already exist
     }
@@ -459,7 +470,9 @@ async function initDatabase() {
     // Add index for faster lookups
     try {
       await dbQuery(`CREATE INDEX IF NOT EXISTS idx_outreach_email ON outreach_tracking(email)`);
-      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_outreach_campaign ON outreach_tracking(campaign)`);
+      await dbQuery(
+        `CREATE INDEX IF NOT EXISTS idx_outreach_campaign ON outreach_tracking(campaign)`
+      );
     } catch (error) {
       // Index might already exist
     }
@@ -535,16 +548,24 @@ async function initDatabase() {
 
     // Add affiliate_id column to users table for tracking who referred them
     try {
-      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS affiliate_id INTEGER REFERENCES affiliates(id)`);
+      await dbQuery(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS affiliate_id INTEGER REFERENCES affiliates(id)`
+      );
     } catch (error) {
       // Column might already exist
     }
 
     // Add indexes for affiliate tables
     try {
-      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_affiliate_clicks ON affiliate_clicks(affiliate_id)`);
-      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_affiliate_conversions ON affiliate_conversions(affiliate_id)`);
-      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_affiliate_payouts ON affiliate_payouts(affiliate_id)`);
+      await dbQuery(
+        `CREATE INDEX IF NOT EXISTS idx_affiliate_clicks ON affiliate_clicks(affiliate_id)`
+      );
+      await dbQuery(
+        `CREATE INDEX IF NOT EXISTS idx_affiliate_conversions ON affiliate_conversions(affiliate_id)`
+      );
+      await dbQuery(
+        `CREATE INDEX IF NOT EXISTS idx_affiliate_payouts ON affiliate_payouts(affiliate_id)`
+      );
     } catch (error) {
       // Indexes might already exist
     }
@@ -561,20 +582,34 @@ async function initDatabase() {
 
     // Add Smart AI / Standard AI usage tracking columns
     try {
-      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS smart_responses_used INTEGER DEFAULT 0`);
-      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS standard_responses_used INTEGER DEFAULT 0`);
-      await dbQuery(`ALTER TABLE responses ADD COLUMN IF NOT EXISTS ai_model VARCHAR(20) DEFAULT 'standard'`);
+      await dbQuery(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS smart_responses_used INTEGER DEFAULT 0`
+      );
+      await dbQuery(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS standard_responses_used INTEGER DEFAULT 0`
+      );
+      await dbQuery(
+        `ALTER TABLE responses ADD COLUMN IF NOT EXISTS ai_model VARCHAR(20) DEFAULT 'standard'`
+      );
       // Migrate existing usage to standard (backward compatibility)
-      await dbQuery(`UPDATE users SET standard_responses_used = responses_used WHERE smart_responses_used = 0 AND standard_responses_used = 0 AND responses_used > 0`);
+      await dbQuery(
+        `UPDATE users SET standard_responses_used = responses_used WHERE smart_responses_used = 0 AND standard_responses_used = 0 AND responses_used > 0`
+      );
     } catch (error) {
       // Columns might already exist
     }
 
     // Add email notification preferences columns
     try {
-      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_weekly_summary BOOLEAN DEFAULT TRUE`);
-      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_usage_alerts BOOLEAN DEFAULT TRUE`);
-      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_billing_updates BOOLEAN DEFAULT TRUE`);
+      await dbQuery(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS email_weekly_summary BOOLEAN DEFAULT TRUE`
+      );
+      await dbQuery(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS email_usage_alerts BOOLEAN DEFAULT TRUE`
+      );
+      await dbQuery(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS email_billing_updates BOOLEAN DEFAULT TRUE`
+      );
     } catch (error) {
       // Columns might already exist
     }
@@ -590,9 +625,13 @@ async function initDatabase() {
 
     // Add email verification columns (optional banner-based verification)
     try {
-      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE`);
+      await dbQuery(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE`
+      );
       await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verification_token TEXT`);
-      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verification_expires_at TIMESTAMP`);
+      await dbQuery(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verification_expires_at TIMESTAMP`
+      );
     } catch (error) {
       // Columns might already exist
     }
@@ -606,7 +645,9 @@ async function initDatabase() {
 
     // Add AI context generation rate limiting columns
     try {
-      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS context_generations_today INTEGER DEFAULT 0`);
+      await dbQuery(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS context_generations_today INTEGER DEFAULT 0`
+      );
       await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS context_gen_reset_date TEXT`);
     } catch (error) {
       // Columns might already exist
@@ -662,15 +703,26 @@ const authenticateApiKey = async (req, res, next) => {
     let requestsToday = keyRecord.requests_today;
 
     if (keyRecord.last_reset_date !== today) {
-      await dbQuery(`UPDATE api_keys SET requests_today = 0, last_reset_date = $1 WHERE id = $2`, [today, keyRecord.id]);
+      await dbQuery(`UPDATE api_keys SET requests_today = 0, last_reset_date = $1 WHERE id = $2`, [
+        today,
+        keyRecord.id,
+      ]);
       requestsToday = 0;
     }
 
     if (requestsToday >= 100) {
-      return res.status(429).json({ error: 'Rate limit exceeded. Maximum 100 requests per day.', reset_at: 'midnight UTC' });
+      return res
+        .status(429)
+        .json({
+          error: 'Rate limit exceeded. Maximum 100 requests per day.',
+          reset_at: 'midnight UTC',
+        });
     }
 
-    await dbQuery(`UPDATE api_keys SET requests_today = requests_today + 1, requests_total = requests_total + 1, last_request_at = NOW() WHERE id = $1`, [keyRecord.id]);
+    await dbQuery(
+      `UPDATE api_keys SET requests_today = requests_today + 1, requests_total = requests_total + 1, last_request_at = NOW() WHERE id = $1`,
+      [keyRecord.id]
+    );
 
     req.apiKeyUser = {
       id: keyRecord.user_id,
@@ -679,7 +731,7 @@ const authenticateApiKey = async (req, res, next) => {
       business_name: keyRecord.business_name,
       business_type: keyRecord.business_type,
       business_context: keyRecord.business_context,
-      response_style: keyRecord.response_style
+      response_style: keyRecord.response_style,
     };
 
     next();
@@ -693,11 +745,11 @@ const authenticateApiKey = async (req, res, next) => {
 // Smart AI = Claude (better quality), Standard = GPT-4o-mini (fast & cheap)
 const PLAN_LIMITS = {
   free: {
-    smartResponses: 3,       // Claude - teaser to show quality
-    standardResponses: 17,   // GPT-4o-mini
-    responses: 20,           // Total (for backward compatibility)
+    smartResponses: 3, // Claude - teaser to show quality
+    standardResponses: 17, // GPT-4o-mini
+    responses: 20, // Total (for backward compatibility)
     price: 0,
-    teamMembers: 0
+    teamMembers: 0,
   },
   starter: {
     smartResponses: 100,
@@ -707,7 +759,7 @@ const PLAN_LIMITS = {
     yearlyPrice: 27840, // 20% off: $29 * 12 * 0.8 = $278.40
     priceId: process.env.STRIPE_STARTER_PRICE_ID,
     yearlyPriceId: process.env.STRIPE_STARTER_YEARLY_PRICE_ID,
-    teamMembers: 0
+    teamMembers: 0,
   },
   professional: {
     smartResponses: 300,
@@ -717,7 +769,7 @@ const PLAN_LIMITS = {
     yearlyPrice: 47040, // 20% off: $49 * 12 * 0.8 = $470.40
     priceId: process.env.STRIPE_PRO_PRICE_ID,
     yearlyPriceId: process.env.STRIPE_PRO_YEARLY_PRICE_ID,
-    teamMembers: 3
+    teamMembers: 3,
   },
   unlimited: {
     smartResponses: 999999,
@@ -727,15 +779,27 @@ const PLAN_LIMITS = {
     yearlyPrice: 95040, // 20% off: $99 * 12 * 0.8 = $950.40
     priceId: process.env.STRIPE_UNLIMITED_PRICE_ID,
     yearlyPriceId: process.env.STRIPE_UNLIMITED_YEARLY_PRICE_ID,
-    teamMembers: 10
-  }
+    teamMembers: 10,
+  },
 };
 
 // ============ AUTH ROUTES ============
 
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { email, password, businessName, referralCode, affiliateCode, utmSource, utmMedium, utmCampaign, utmContent, utmTerm, landingPage } = req.body;
+    const {
+      email,
+      password,
+      businessName,
+      referralCode,
+      affiliateCode,
+      utmSource,
+      utmMedium,
+      utmCampaign,
+      utmContent,
+      utmTerm,
+      landingPage,
+    } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password required' });
@@ -750,7 +814,9 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     // Case-insensitive email check
-    const existingUser = await dbGet('SELECT id FROM users WHERE LOWER(email) = LOWER($1)', [email]);
+    const existingUser = await dbGet('SELECT id FROM users WHERE LOWER(email) = LOWER($1)', [
+      email,
+    ]);
     if (existingUser) {
       return res.status(400).json({ error: 'Email already registered' });
     }
@@ -758,7 +824,9 @@ app.post('/api/auth/register', async (req, res) => {
     // Check for valid referral code
     let referrerId = null;
     if (referralCode) {
-      const referrer = await dbGet('SELECT id FROM users WHERE referral_code = $1', [referralCode.toUpperCase()]);
+      const referrer = await dbGet('SELECT id FROM users WHERE referral_code = $1', [
+        referralCode.toUpperCase(),
+      ]);
       if (referrer) {
         referrerId = referrer.id;
       }
@@ -787,7 +855,9 @@ app.post('/api/auth/register', async (req, res) => {
       for (let i = 0; i < 8; i++) {
         newUserReferralCode += chars.charAt(Math.floor(Math.random() * chars.length));
       }
-      const existing = await dbGet('SELECT id FROM users WHERE referral_code = $1', [newUserReferralCode]);
+      const existing = await dbGet('SELECT id FROM users WHERE referral_code = $1', [
+        newUserReferralCode,
+      ]);
       if (!existing) break;
       attempts++;
     } while (attempts < 10);
@@ -795,13 +865,32 @@ app.post('/api/auth/register', async (req, res) => {
     // Create Stripe customer
     const customer = await stripe.customers.create({
       email,
-      metadata: { business_name: businessName || '', referred_by: referrerId || '', affiliate_id: affiliateId || '' }
+      metadata: {
+        business_name: businessName || '',
+        referred_by: referrerId || '',
+        affiliate_id: affiliateId || '',
+      },
     });
 
     const result = await dbQuery(
       `INSERT INTO users (email, password, business_name, stripe_customer_id, responses_limit, referral_code, referred_by, affiliate_id, utm_source, utm_medium, utm_campaign, utm_content, utm_term, landing_page)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id`,
-      [email, hashedPassword, businessName || '', customer.id, PLAN_LIMITS.free.responses, newUserReferralCode, referrerId, affiliateId, utmSource || null, utmMedium || null, utmCampaign || null, utmContent || null, utmTerm || null, landingPage || null]
+      [
+        email,
+        hashedPassword,
+        businessName || '',
+        customer.id,
+        PLAN_LIMITS.free.responses,
+        newUserReferralCode,
+        referrerId,
+        affiliateId,
+        utmSource || null,
+        utmMedium || null,
+        utmCampaign || null,
+        utmContent || null,
+        utmTerm || null,
+        landingPage || null,
+      ]
     );
 
     const userId = result.rows[0].id;
@@ -856,7 +945,7 @@ app.post('/api/auth/register', async (req, res) => {
                 <p style="font-size: 12px; color: #9ca3af;">You're receiving this email because you signed up for ReviewResponder. If you didn't sign up, you can ignore this email.</p>
               </div>
             </div>
-          `
+          `,
         });
         console.log(`📧 Verification email sent to ${email}`);
       } catch (emailError) {
@@ -878,8 +967,8 @@ app.post('/api/auth/register', async (req, res) => {
         responsesLimit: PLAN_LIMITS.free.responses,
         onboardingCompleted: false,
         referralCode: newUserReferralCode,
-        emailVerified: false
-      }
+        emailVerified: false,
+      },
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -911,7 +1000,9 @@ app.get('/api/auth/verify-email', async (req, res) => {
     }
 
     if (new Date() > new Date(user.email_verification_expires_at)) {
-      return res.status(400).json({ error: 'Verification token has expired. Please request a new one.' });
+      return res
+        .status(400)
+        .json({ error: 'Verification token has expired. Please request a new one.' });
     }
 
     // Mark email as verified and clear token
@@ -931,7 +1022,10 @@ app.get('/api/auth/verify-email', async (req, res) => {
 // Resend verification email
 app.post('/api/auth/resend-verification', authenticateToken, async (req, res) => {
   try {
-    const user = await dbGet('SELECT id, email, email_verified, business_name FROM users WHERE id = $1', [req.user.id]);
+    const user = await dbGet(
+      'SELECT id, email, email_verified, business_name FROM users WHERE id = $1',
+      [req.user.id]
+    );
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -973,7 +1067,7 @@ app.post('/api/auth/resend-verification', authenticateToken, async (req, res) =>
                 <p style="font-size: 14px; color: #6b7280;">This link expires in 24 hours.</p>
               </div>
             </div>
-          `
+          `,
         });
         console.log(`📧 Verification email resent to ${user.email}`);
         res.json({ success: true, message: 'Verification email sent' });
@@ -1031,11 +1125,13 @@ app.post('/api/auth/login', async (req, res) => {
         isTeamMember: true,
         teamOwnerEmail: teamMembership.owner_email,
         teamOwnerBusiness: teamMembership.owner_business,
-        role: teamMembership.role
+        role: teamMembership.role,
       };
     }
 
-    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
+      expiresIn: '7d',
+    });
 
     res.json({
       token,
@@ -1051,8 +1147,8 @@ app.post('/api/auth/login', async (req, res) => {
         ownSubscriptionStatus: user.subscription_status,
         onboardingCompleted: user.onboarding_completed,
         teamInfo: teamInfo,
-        emailVerified: user.email_verified || false
-      }
+        emailVerified: user.email_verified || false,
+      },
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -1089,7 +1185,7 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
         isTeamMember: true,
         teamOwnerEmail: teamMembership.owner_email,
         teamOwnerBusiness: teamMembership.owner_business,
-        role: teamMembership.role
+        role: teamMembership.role,
       };
     }
 
@@ -1125,8 +1221,8 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
         // Team info
         teamInfo: teamInfo,
         // Email verification
-        emailVerified: user.email_verified || false
-      }
+        emailVerified: user.email_verified || false,
+      },
     });
   } catch (error) {
     console.error('Get user error:', error);
@@ -1138,7 +1234,7 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
 app.put('/api/auth/complete-onboarding', authenticateToken, async (req, res) => {
   try {
     await dbQuery('UPDATE users SET onboarding_completed = TRUE WHERE id = $1', [req.user.id]);
-    
+
     res.json({ success: true, message: 'Onboarding completed' });
   } catch (error) {
     console.error('Complete onboarding error:', error);
@@ -1153,7 +1249,13 @@ app.put('/api/auth/profile', authenticateToken, async (req, res) => {
 
     await dbQuery(
       `UPDATE users SET business_name = $1, business_type = $2, business_context = $3, response_style = $4 WHERE id = $5`,
-      [businessName || '', businessType || '', businessContext || '', responseStyle || '', req.user.id]
+      [
+        businessName || '',
+        businessType || '',
+        businessContext || '',
+        responseStyle || '',
+        req.user.id,
+      ]
     );
 
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
@@ -1169,8 +1271,8 @@ app.put('/api/auth/profile', authenticateToken, async (req, res) => {
         responseStyle: user.response_style,
         plan: user.subscription_plan,
         responsesUsed: user.responses_used,
-        responsesLimit: user.responses_limit
-      }
+        responsesLimit: user.responses_limit,
+      },
     });
   } catch (error) {
     console.error('Profile update error:', error);
@@ -1190,7 +1292,9 @@ app.post('/api/personalization/generate-context', authenticateToken, async (req,
     }
 
     if (!field || !['context', 'style', 'sample_review'].includes(field)) {
-      return res.status(400).json({ error: 'Field must be "context", "style", or "sample_review"' });
+      return res
+        .status(400)
+        .json({ error: 'Field must be "context", "style", or "sample_review"' });
     }
 
     // Check if Anthropic is available
@@ -1211,7 +1315,7 @@ app.post('/api/personalization/generate-context', authenticateToken, async (req,
     } else if ((user.context_generations_today || 0) >= 10) {
       return res.status(429).json({
         error: 'Daily limit reached (10 generations). Try again tomorrow.',
-        remaining: 0
+        remaining: 0,
       });
     }
 
@@ -1264,9 +1368,7 @@ Respond ONLY with the review text, no quotes.`;
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 300,
-      messages: [
-        { role: 'user', content: `${systemPrompt}\n\n${userMessage}` }
-      ]
+      messages: [{ role: 'user', content: `${systemPrompt}\n\n${userMessage}` }],
     });
 
     const generated = response.content[0].text.trim();
@@ -1283,9 +1385,8 @@ Respond ONLY with the review text, no quotes.`;
     res.json({
       generated,
       remaining: Math.max(0, remaining),
-      tokensUsed: response.usage?.input_tokens + response.usage?.output_tokens || 0
+      tokensUsed: response.usage?.input_tokens + response.usage?.output_tokens || 0,
     });
-
   } catch (error) {
     console.error('Context generation error:', error);
     res.status(500).json({ error: 'Failed to generate context. Please try again.' });
@@ -1313,7 +1414,10 @@ app.put('/api/auth/change-password', authenticateToken, async (req, res) => {
     if (user.oauth_provider) {
       const hashedPassword = await bcrypt.hash(newPassword, 12);
       await dbQuery('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, req.user.id]);
-      return res.json({ success: true, message: 'Password set successfully! You can now login with email & password.' });
+      return res.json({
+        success: true,
+        message: 'Password set successfully! You can now login with email & password.',
+      });
     }
 
     // Non-OAuth user - require current password
@@ -1399,7 +1503,7 @@ app.post('/api/auth/change-email-request', authenticateToken, async (req, res) =
             <p>Or copy this link: ${confirmUrl}</p>
             <p>This link will expire in 24 hours. If you didn't request this, you can safely ignore this email.</p>
             <p>Best regards,<br>ReviewResponder Team</p>
-          `
+          `,
         });
       } catch (emailError) {
         console.error('Email send error:', emailError);
@@ -1408,7 +1512,7 @@ app.post('/api/auth/change-email-request', authenticateToken, async (req, res) =
 
     res.json({
       success: true,
-      message: `Confirmation email sent to ${newEmail}. Please check your inbox.`
+      message: `Confirmation email sent to ${newEmail}. Please check your inbox.`,
     });
   } catch (error) {
     console.error('Change email request error:', error);
@@ -1440,7 +1544,10 @@ app.post('/api/auth/confirm-email-change', async (req, res) => {
     const newEmail = user.email_change_new_email;
 
     // Check again if email is taken (race condition protection)
-    const existing = await dbGet('SELECT id FROM users WHERE LOWER(email) = LOWER($1) AND id != $2', [newEmail, user.id]);
+    const existing = await dbGet(
+      'SELECT id FROM users WHERE LOWER(email) = LOWER($1) AND id != $2',
+      [newEmail, user.id]
+    );
     if (existing) {
       return res.status(400).json({ error: 'This email is already in use' });
     }
@@ -1470,7 +1577,7 @@ app.post('/api/auth/confirm-email-change', async (req, res) => {
     res.json({
       success: true,
       message: 'Email changed successfully',
-      newEmail
+      newEmail,
     });
   } catch (error) {
     console.error('Confirm email change error:', error);
@@ -1489,7 +1596,7 @@ app.get('/api/settings/notifications', authenticateToken, async (req, res) => {
     res.json({
       emailWeeklySummary: user.email_weekly_summary ?? true,
       emailUsageAlerts: user.email_usage_alerts ?? true,
-      emailBillingUpdates: user.email_billing_updates ?? true
+      emailBillingUpdates: user.email_billing_updates ?? true,
     });
   } catch (error) {
     console.error('Get notification settings error:', error);
@@ -1512,13 +1619,13 @@ app.put('/api/settings/notifications', authenticateToken, async (req, res) => {
         emailWeeklySummary ?? true,
         emailUsageAlerts ?? true,
         emailBillingUpdates ?? true,
-        req.user.id
+        req.user.id,
       ]
     );
 
     res.json({
       success: true,
-      message: 'Notification settings updated'
+      message: 'Notification settings updated',
     });
   } catch (error) {
     console.error('Update notification settings error:', error);
@@ -1534,7 +1641,7 @@ app.delete('/api/auth/delete-account', authenticateToken, async (req, res) => {
     // Require typing DELETE
     if (confirmation !== 'DELETE') {
       return res.status(400).json({
-        error: 'Please type DELETE to confirm account deletion'
+        error: 'Please type DELETE to confirm account deletion',
       });
     }
 
@@ -1557,7 +1664,7 @@ app.delete('/api/auth/delete-account', authenticateToken, async (req, res) => {
         // Cancel all active subscriptions
         const subscriptions = await stripe.subscriptions.list({
           customer: user.stripe_customer_id,
-          status: 'active'
+          status: 'active',
         });
 
         for (const sub of subscriptions.data) {
@@ -1576,7 +1683,9 @@ app.delete('/api/auth/delete-account', authenticateToken, async (req, res) => {
     // Delete all user data
     await dbQuery('DELETE FROM responses WHERE user_id = $1', [req.user.id]);
     await dbQuery('DELETE FROM response_templates WHERE user_id = $1', [req.user.id]);
-    await dbQuery('DELETE FROM team_members WHERE team_owner_id = $1 OR member_user_id = $1', [req.user.id]);
+    await dbQuery('DELETE FROM team_members WHERE team_owner_id = $1 OR member_user_id = $1', [
+      req.user.id,
+    ]);
     await dbQuery('DELETE FROM api_keys WHERE user_id = $1', [req.user.id]);
     await dbQuery('DELETE FROM blog_articles WHERE user_id = $1', [req.user.id]);
     await dbQuery('DELETE FROM referrals WHERE referrer_id = $1', [req.user.id]);
@@ -1590,7 +1699,7 @@ app.delete('/api/auth/delete-account', authenticateToken, async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Account deleted successfully'
+      message: 'Account deleted successfully',
     });
   } catch (error) {
     console.error('Delete account error:', error);
@@ -1608,7 +1717,9 @@ app.post('/api/auth/google', async (req, res) => {
     }
 
     if (!googleClient) {
-      return res.status(500).json({ error: 'Google Sign-In is not configured. Please contact support.' });
+      return res
+        .status(500)
+        .json({ error: 'Google Sign-In is not configured. Please contact support.' });
     }
 
     // Verify the Google ID token
@@ -1616,7 +1727,7 @@ app.post('/api/auth/google', async (req, res) => {
     try {
       ticket = await googleClient.verifyIdToken({
         idToken: credential,
-        audience: process.env.GOOGLE_CLIENT_ID
+        audience: process.env.GOOGLE_CLIENT_ID,
       });
     } catch (verifyError) {
       console.error('Google token verification failed:', verifyError);
@@ -1634,7 +1745,10 @@ app.post('/api/auth/google', async (req, res) => {
     }
 
     // Check if user already exists (by email or Google ID)
-    let user = await dbGet('SELECT * FROM users WHERE LOWER(email) = LOWER($1) OR oauth_id = $2', [email, googleId]);
+    let user = await dbGet('SELECT * FROM users WHERE LOWER(email) = LOWER($1) OR oauth_id = $2', [
+      email,
+      googleId,
+    ]);
 
     if (user) {
       // Existing user - update OAuth info and mark email as verified (Google verified it)
@@ -1645,7 +1759,10 @@ app.post('/api/auth/google', async (req, res) => {
         );
       } else {
         // Update profile picture and ensure email is verified for Google users
-        await dbQuery('UPDATE users SET profile_picture = $1, email_verified = TRUE WHERE id = $2', [picture, user.id]);
+        await dbQuery(
+          'UPDATE users SET profile_picture = $1, email_verified = TRUE WHERE id = $2',
+          [picture, user.id]
+        );
       }
 
       // Check if user is a team member to get effective plan
@@ -1669,16 +1786,14 @@ app.post('/api/auth/google', async (req, res) => {
           isTeamMember: true,
           teamOwnerEmail: teamMembership.owner_email,
           teamOwnerBusiness: teamMembership.owner_business,
-          role: teamMembership.role
+          role: teamMembership.role,
         };
       }
 
       // Generate JWT token
-      const token = jwt.sign(
-        { id: user.id, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: '7d' }
-      );
+      const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
+        expiresIn: '7d',
+      });
 
       return res.json({
         token,
@@ -1699,8 +1814,8 @@ app.post('/api/auth/google', async (req, res) => {
           profilePicture: picture,
           referralCode: user.referral_code,
           teamInfo: teamInfo,
-          emailVerified: true // Google OAuth users are always verified
-        }
+          emailVerified: true, // Google OAuth users are always verified
+        },
       });
     }
 
@@ -1713,7 +1828,7 @@ app.post('/api/auth/google', async (req, res) => {
       const customer = await stripe.customers.create({
         email: email,
         name: name,
-        metadata: { source: 'google_oauth' }
+        metadata: { source: 'google_oauth' },
       });
       stripeCustomerId = customer.id;
     } catch (stripeError) {
@@ -1732,7 +1847,10 @@ app.post('/api/auth/google', async (req, res) => {
     // Handle affiliate
     let affiliateId = null;
     if (affiliateCode) {
-      const affiliate = await dbGet('SELECT id FROM affiliates WHERE code = $1 AND is_active = TRUE', [affiliateCode]);
+      const affiliate = await dbGet(
+        'SELECT id FROM affiliates WHERE code = $1 AND is_active = TRUE',
+        [affiliateCode]
+      );
       if (affiliate) {
         affiliateId = affiliate.id;
         await dbQuery(
@@ -1767,18 +1885,16 @@ app.post('/api/auth/google', async (req, res) => {
         utmParams?.utm_content || null,
         utmParams?.utm_term || null,
         utmParams?.landing_page || null,
-        true // Google has already verified the email
+        true, // Google has already verified the email
       ]
     );
 
     const newUser = result.rows[0];
 
     // Generate JWT token
-    const token = jwt.sign(
-      { id: newUser.id, email: newUser.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    const token = jwt.sign({ id: newUser.id, email: newUser.email }, process.env.JWT_SECRET, {
+      expiresIn: '7d',
+    });
 
     res.status(201).json({
       token,
@@ -1792,8 +1908,8 @@ app.post('/api/auth/google', async (req, res) => {
         onboardingCompleted: false,
         profilePicture: picture,
         referralCode: newReferralCode,
-        emailVerified: true // Google OAuth users are always verified
-      }
+        emailVerified: true, // Google OAuth users are always verified
+      },
     });
   } catch (error) {
     console.error('Google auth error:', error);
@@ -1815,7 +1931,10 @@ app.post('/api/auth/forgot-password', async (req, res) => {
 
     // Always return success to prevent email enumeration
     if (!user) {
-      return res.json({ success: true, message: 'If an account exists, a reset link will be sent.' });
+      return res.json({
+        success: true,
+        message: 'If an account exists, a reset link will be sent.',
+      });
     }
 
     // Delete any existing tokens for this user
@@ -1849,7 +1968,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
             <p>Or copy this link: ${resetUrl}</p>
             <p>This link will expire in 1 hour. If you didn't request this, you can safely ignore this email.</p>
             <p>Best regards,<br>ReviewResponder Team</p>
-          `
+          `,
         });
         console.log(`✅ Password reset email sent to ${email}`);
       } catch (emailError) {
@@ -1893,19 +2012,27 @@ app.post('/api/auth/reset-password', async (req, res) => {
     );
 
     if (!resetToken) {
-      return res.status(400).json({ error: 'Invalid or expired reset link. Please request a new one.' });
+      return res
+        .status(400)
+        .json({ error: 'Invalid or expired reset link. Please request a new one.' });
     }
 
     // Hash new password and update user
     const hashedPassword = await bcrypt.hash(password, 12);
-    await dbQuery('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, resetToken.user_id]);
+    await dbQuery('UPDATE users SET password = $1 WHERE id = $2', [
+      hashedPassword,
+      resetToken.user_id,
+    ]);
 
     // Mark token as used
     await dbQuery('UPDATE password_reset_tokens SET used = TRUE WHERE id = $1', [resetToken.id]);
 
     console.log(`✅ Password reset successful for user ID ${resetToken.user_id}`);
 
-    res.json({ success: true, message: 'Password has been reset successfully. You can now log in.' });
+    res.json({
+      success: true,
+      message: 'Password has been reset successfully. You can now log in.',
+    });
   } catch (error) {
     console.error('Reset password error:', error);
     res.status(500).json({ error: 'Failed to reset password' });
@@ -1918,7 +2045,9 @@ app.post('/api/auth/reset-password', async (req, res) => {
 app.post('/api/generate', authenticateToken, (req, res) => generateResponseHandler(req, res));
 
 // Main response generation endpoint
-app.post('/api/responses/generate', authenticateToken, (req, res) => generateResponseHandler(req, res));
+app.post('/api/responses/generate', authenticateToken, (req, res) =>
+  generateResponseHandler(req, res)
+);
 
 // ========== RESPONSE QUALITY SCORING ==========
 function evaluateResponseQuality(response, reviewText, tone, reviewRating) {
@@ -1940,9 +2069,16 @@ function evaluateResponseQuality(response, reviewText, tone, reviewRating) {
   }
 
   // 2. Personalization (references review content)
-  const reviewWords = reviewText.toLowerCase().split(/\s+/).filter(w => w.length > 4);
+  const reviewWords = reviewText
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(w => w.length > 4);
   const responseWords = response.toLowerCase();
-  const matchedWords = reviewWords.filter(w => responseWords.includes(w) && !['their', 'about', 'would', 'could', 'should', 'which', 'there'].includes(w));
+  const matchedWords = reviewWords.filter(
+    w =>
+      responseWords.includes(w) &&
+      !['their', 'about', 'would', 'could', 'should', 'which', 'there'].includes(w)
+  );
   if (matchedWords.length >= 2) {
     score += 10;
     feedback.push('Personalized response');
@@ -1951,7 +2087,12 @@ function evaluateResponseQuality(response, reviewText, tone, reviewRating) {
   }
 
   // 3. Avoid generic openings
-  const genericStarts = ['dear customer', 'dear valued', 'thank you for your feedback', 'we appreciate your'];
+  const genericStarts = [
+    'dear customer',
+    'dear valued',
+    'thank you for your feedback',
+    'we appreciate your',
+  ];
   const lowerResponse = response.toLowerCase();
   const hasGenericStart = genericStarts.some(g => lowerResponse.startsWith(g));
   if (!hasGenericStart) {
@@ -1961,7 +2102,19 @@ function evaluateResponseQuality(response, reviewText, tone, reviewRating) {
   }
 
   // 4. Call to action / invitation
-  const ctaPhrases = ['visit', 'return', 'come back', 'see you', 'welcome back', 'next time', 'look forward', 'contact', 'reach out', 'call us', 'email'];
+  const ctaPhrases = [
+    'visit',
+    'return',
+    'come back',
+    'see you',
+    'welcome back',
+    'next time',
+    'look forward',
+    'contact',
+    'reach out',
+    'call us',
+    'email',
+  ];
   const hasCTA = ctaPhrases.some(p => lowerResponse.includes(p));
   if (hasCTA) {
     score += 5;
@@ -1970,7 +2123,14 @@ function evaluateResponseQuality(response, reviewText, tone, reviewRating) {
 
   // 5. Appropriate for rating (negative reviews need more empathy)
   if (reviewRating && reviewRating <= 2) {
-    const empathyWords = ['sorry', 'apologize', 'understand', 'concerned', 'disappointing', 'frustrating'];
+    const empathyWords = [
+      'sorry',
+      'apologize',
+      'understand',
+      'concerned',
+      'disappointing',
+      'frustrating',
+    ];
     const hasEmpathy = empathyWords.some(w => lowerResponse.includes(w));
     if (hasEmpathy) {
       score += 5;
@@ -1981,7 +2141,13 @@ function evaluateResponseQuality(response, reviewText, tone, reviewRating) {
   }
 
   // 6. No defensive language
-  const defensiveWords = ['but actually', 'however you', 'that\'s not true', 'you must have', 'impossible'];
+  const defensiveWords = [
+    'but actually',
+    'however you',
+    "that's not true",
+    'you must have',
+    'impossible',
+  ];
   const hasDefensive = defensiveWords.some(w => lowerResponse.includes(w));
   if (hasDefensive) {
     score -= 15;
@@ -2000,13 +2166,25 @@ function evaluateResponseQuality(response, reviewText, tone, reviewRating) {
     score,
     level,
     feedback: feedback.length > 0 ? feedback.join(', ') : 'Solid response',
-    suggestions
+    suggestions,
   };
 }
 
 async function generateResponseHandler(req, res) {
   try {
-    const { reviewText, reviewRating, platform, tone, outputLanguage, businessName, customInstructions, responseLength, includeEmojis, aiModel = 'auto', templateContent } = req.body;
+    const {
+      reviewText,
+      reviewRating,
+      platform,
+      tone,
+      outputLanguage,
+      businessName,
+      customInstructions,
+      responseLength,
+      includeEmojis,
+      aiModel = 'auto',
+      templateContent,
+    } = req.body;
 
     if (!reviewText || reviewText.trim().length === 0) {
       return res.status(400).json({ error: 'Review text is required' });
@@ -2041,7 +2219,7 @@ async function generateResponseHandler(req, res) {
         business_name: teamMembership.owner_business,
         business_type: teamMembership.owner_business_type,
         business_context: teamMembership.owner_context,
-        response_style: teamMembership.owner_style
+        response_style: teamMembership.owner_style,
       };
     }
 
@@ -2062,7 +2240,7 @@ async function generateResponseHandler(req, res) {
           error: 'No Smart AI responses remaining',
           smartRemaining: 0,
           standardRemaining,
-          suggestion: standardRemaining > 0 ? 'Switch to Standard AI' : 'Upgrade your plan'
+          suggestion: standardRemaining > 0 ? 'Switch to Standard AI' : 'Upgrade your plan',
         });
       }
       useModel = 'smart';
@@ -2078,7 +2256,7 @@ async function generateResponseHandler(req, res) {
           upgrade: !isTeamMember,
           message: isTeamMember
             ? 'Your team has reached the monthly response limit. Contact your team owner.'
-            : 'You have reached your monthly response limit. Please upgrade your plan to continue.'
+            : 'You have reached your monthly response limit. Please upgrade your plan to continue.',
         });
       }
     } else {
@@ -2088,7 +2266,7 @@ async function generateResponseHandler(req, res) {
           error: 'No Standard responses remaining',
           smartRemaining,
           standardRemaining: 0,
-          suggestion: smartRemaining > 0 ? 'Switch to Smart AI' : 'Upgrade your plan'
+          suggestion: smartRemaining > 0 ? 'Switch to Smart AI' : 'Upgrade your plan',
         });
       }
     }
@@ -2099,34 +2277,39 @@ async function generateResponseHandler(req, res) {
     const ratingStrategies = {
       5: {
         goal: 'Reinforce positive feelings, encourage return visit',
-        approach: 'Express genuine gratitude, mention something specific from their review, invite them back',
+        approach:
+          'Express genuine gratitude, mention something specific from their review, invite them back',
         length: '2-3 sentences',
-        avoid: 'Being too generic or effusive'
+        avoid: 'Being too generic or effusive',
       },
       4: {
         goal: 'Thank them while subtly showing you care about perfection',
-        approach: 'Appreciate their feedback, acknowledge room for improvement without being defensive',
+        approach:
+          'Appreciate their feedback, acknowledge room for improvement without being defensive',
         length: '2-3 sentences',
-        avoid: 'Ignoring their slight criticism'
+        avoid: 'Ignoring their slight criticism',
       },
       3: {
         goal: 'Show you take feedback seriously',
-        approach: 'Acknowledge their mixed experience, express desire to do better, invite them to give you another chance',
+        approach:
+          'Acknowledge their mixed experience, express desire to do better, invite them to give you another chance',
         length: '3-4 sentences',
-        avoid: 'Being dismissive or overly apologetic'
+        avoid: 'Being dismissive or overly apologetic',
       },
       2: {
         goal: 'Recover the relationship',
-        approach: 'Sincerely acknowledge disappointment, take responsibility, offer concrete resolution',
+        approach:
+          'Sincerely acknowledge disappointment, take responsibility, offer concrete resolution',
         length: '3-4 sentences',
-        avoid: 'Making excuses or being defensive'
+        avoid: 'Making excuses or being defensive',
       },
       1: {
         goal: 'Damage control, show professionalism to future readers',
-        approach: 'Acknowledge frustration, take ownership, apologize specifically, offer direct contact to resolve',
+        approach:
+          'Acknowledge frustration, take ownership, apologize specifically, offer direct contact to resolve',
         length: '4-5 sentences',
-        avoid: 'Arguing, making excuses, passive-aggressive tone'
-      }
+        avoid: 'Arguing, making excuses, passive-aggressive tone',
+      },
     };
 
     // Enhanced tone definitions with examples
@@ -2134,23 +2317,23 @@ async function generateResponseHandler(req, res) {
       professional: {
         description: 'Professional and courteous - polished but warm',
         goodExample: 'We really appreciate you sharing this. Our team takes great pride in...',
-        avoidExample: 'Thank you for your feedback. We value your input.'
+        avoidExample: 'Thank you for your feedback. We value your input.',
       },
       friendly: {
         description: 'Warm and personable - like a friend who runs a great business',
         goodExample: 'You just made our day! We loved having you...',
-        avoidExample: 'Dear valued customer, we appreciate your kind words.'
+        avoidExample: 'Dear valued customer, we appreciate your kind words.',
       },
       formal: {
         description: 'Formal and business-appropriate - for upscale brands',
         goodExample: 'We are honored by your gracious review. Our commitment to excellence...',
-        avoidExample: 'Hey thanks for the review!'
+        avoidExample: 'Hey thanks for the review!',
       },
       apologetic: {
         description: 'Empathetic and solution-focused - takes ownership',
         goodExample: 'We completely understand your frustration, and we take this seriously...',
-        avoidExample: 'We apologize for any inconvenience this may have caused.'
-      }
+        avoidExample: 'We apologize for any inconvenience this may have caused.',
+      },
     };
 
     // ========== PERFECTED PROMPT - CLAUDE STYLE ==========
@@ -2159,7 +2342,7 @@ async function generateResponseHandler(req, res) {
     const lengthInstructions = {
       short: '1-2 sentences. Be concise.',
       medium: '2-3 sentences. Balanced length.',
-      detailed: '4-5 sentences. More thorough.'
+      detailed: '4-5 sentences. More thorough.',
     };
     const lengthInstruction = lengthInstructions[responseLength] || lengthInstructions.medium;
 
@@ -2195,17 +2378,21 @@ EMOJIS: ${emojiInstruction}`;
     // Few-shot examples matching our demo style exactly
     const fewShotExamples = {
       positive: {
-        review: "Amazing pizza! The crust was perfectly crispy and the toppings were fresh. Service was quick and friendly.",
-        goodResponse: "Really happy the crust worked for you. We let our dough rest 48 hours, and it makes all the difference. See you next time."
+        review:
+          'Amazing pizza! The crust was perfectly crispy and the toppings were fresh. Service was quick and friendly.',
+        goodResponse:
+          'Really happy the crust worked for you. We let our dough rest 48 hours, and it makes all the difference. See you next time.',
       },
       negative: {
-        review: "Waited 45 minutes for our food. When it finally arrived, it was cold. Very disappointed.",
-        goodResponse: "45 minutes and cold food. That's on us, and we're sorry. Not the experience we want anyone to have. Reach out to us directly and we'll make it right."
-      }
+        review:
+          'Waited 45 minutes for our food. When it finally arrived, it was cold. Very disappointed.',
+        goodResponse:
+          "45 minutes and cold food. That's on us, and we're sorry. Not the experience we want anyone to have. Reach out to us directly and we'll make it right.",
+      },
     };
 
     // Get rating strategy
-    const getRatingStrategy = (rating) => {
+    const getRatingStrategy = rating => {
       if (!rating) return null;
       return ratingStrategies[rating] || ratingStrategies[3];
     };
@@ -2235,13 +2422,14 @@ EMOJIS: ${emojiInstruction}`;
       sv: 'Swedish',
       da: 'Danish',
       no: 'Norwegian',
-      fi: 'Finnish'
+      fi: 'Finnish',
     };
 
     // Build language instruction
-    const languageInstruction = (!outputLanguage || outputLanguage === 'auto')
-      ? 'You MUST respond in the EXACT SAME language as the review. If the review is in English, respond in English. If German, respond in German. Match the review language exactly.'
-      : `You MUST write the response in ${languageNames[outputLanguage] || 'English'}.`;
+    const languageInstruction =
+      !outputLanguage || outputLanguage === 'auto'
+        ? 'You MUST respond in the EXACT SAME language as the review. If the review is in English, respond in English. If German, respond in German. Match the review language exactly.'
+        : `You MUST write the response in ${languageNames[outputLanguage] || 'English'}.`;
 
     // Build business context section (use team owner's context if team member)
     const contextUser = isTeamMember ? usageOwner : user;
@@ -2272,7 +2460,7 @@ LANGUAGE: ${languageInstruction}`;
         model: 'claude-sonnet-4-20250514',
         max_tokens: 350,
         system: systemMessage,
-        messages: [{ role: 'user', content: userMessage }]
+        messages: [{ role: 'user', content: userMessage }],
       });
       generatedResponse = response.content[0].text.trim();
     } else {
@@ -2281,12 +2469,12 @@ LANGUAGE: ${languageInstruction}`;
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemMessage },
-          { role: 'user', content: userMessage }
+          { role: 'user', content: userMessage },
         ],
         max_tokens: 350,
         temperature: 0.6,
         presence_penalty: 0.1,
-        frequency_penalty: 0.1
+        frequency_penalty: 0.1,
       });
       generatedResponse = completion.choices[0].message.content.trim();
       // If we intended smart but fell back, mark as standard
@@ -2311,19 +2499,34 @@ LANGUAGE: ${languageInstruction}`;
       await dbQuery(
         `INSERT INTO responses (user_id, review_text, review_rating, review_platform, generated_response, tone, ai_model)
          VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [req.user.id, reviewText, reviewRating || null, platform || 'google', generatedResponse, tone || 'professional', useModel]
+        [
+          req.user.id,
+          reviewText,
+          reviewRating || null,
+          platform || 'google',
+          generatedResponse,
+          tone || 'professional',
+          useModel,
+        ]
       );
 
       // Update the correct usage counter
       if (useModel === 'smart') {
-        await dbQuery('UPDATE users SET smart_responses_used = smart_responses_used + 1, responses_used = responses_used + 1 WHERE id = $1', [usageOwnerId]);
+        await dbQuery(
+          'UPDATE users SET smart_responses_used = smart_responses_used + 1, responses_used = responses_used + 1 WHERE id = $1',
+          [usageOwnerId]
+        );
       } else {
-        await dbQuery('UPDATE users SET standard_responses_used = standard_responses_used + 1, responses_used = responses_used + 1 WHERE id = $1', [usageOwnerId]);
+        await dbQuery(
+          'UPDATE users SET standard_responses_used = standard_responses_used + 1, responses_used = responses_used + 1 WHERE id = $1',
+          [usageOwnerId]
+        );
       }
 
       updatedOwner = await dbGet('SELECT * FROM users WHERE id = $1', [usageOwnerId]);
       updatedPlanLimits = PLAN_LIMITS[updatedOwner.subscription_plan || 'free'] || PLAN_LIMITS.free;
-      totalUsed = (updatedOwner.smart_responses_used || 0) + (updatedOwner.standard_responses_used || 0);
+      totalUsed =
+        (updatedOwner.smart_responses_used || 0) + (updatedOwner.standard_responses_used || 0);
       totalLimit = updatedPlanLimits.responses;
 
       const usagePercent = Math.round((totalUsed / totalLimit) * 100);
@@ -2331,14 +2534,21 @@ LANGUAGE: ${languageInstruction}`;
       const previousPercent = Math.round((previousTotal / totalLimit) * 100);
 
       // Send alert if just crossed 80% threshold (send to owner)
-      if (usagePercent >= 80 && previousPercent < 80 && updatedOwner.subscription_plan !== 'unlimited') {
-        const canSendAlert = !updatedOwner.last_usage_alert_sent ||
+      if (
+        usagePercent >= 80 &&
+        previousPercent < 80 &&
+        updatedOwner.subscription_plan !== 'unlimited'
+      ) {
+        const canSendAlert =
+          !updatedOwner.last_usage_alert_sent ||
           new Date(updatedOwner.last_usage_alert_sent) < new Date(Date.now() - 24 * 60 * 60 * 1000);
 
         if (canSendAlert && process.env.NODE_ENV === 'production') {
           sendUsageAlertEmail(updatedOwner).then(sent => {
             if (sent) {
-              dbQuery('UPDATE users SET last_usage_alert_sent = NOW() WHERE id = $1', [usageOwnerId]);
+              dbQuery('UPDATE users SET last_usage_alert_sent = NOW() WHERE id = $1', [
+                usageOwnerId,
+              ]);
             }
           });
         }
@@ -2347,7 +2557,8 @@ LANGUAGE: ${languageInstruction}`;
       // Onboarding demo: return current usage without incrementing
       updatedOwner = usageOwner;
       updatedPlanLimits = planLimits;
-      totalUsed = (usageOwner.smart_responses_used || 0) + (usageOwner.standard_responses_used || 0);
+      totalUsed =
+        (usageOwner.smart_responses_used || 0) + (usageOwner.standard_responses_used || 0);
       totalLimit = planLimits.responses;
     }
 
@@ -2361,21 +2572,21 @@ LANGUAGE: ${languageInstruction}`;
       usage: {
         smart: {
           used: updatedOwner.smart_responses_used || 0,
-          limit: updatedPlanLimits.smartResponses
+          limit: updatedPlanLimits.smartResponses,
         },
         standard: {
           used: updatedOwner.standard_responses_used || 0,
-          limit: updatedPlanLimits.standardResponses
+          limit: updatedPlanLimits.standardResponses,
         },
         total: {
           used: totalUsed,
-          limit: totalLimit
-        }
+          limit: totalLimit,
+        },
       },
       // Backward compatibility
       responsesUsed: totalUsed,
       responsesLimit: totalLimit,
-      isTeamUsage: isTeamMember
+      isTeamUsage: isTeamMember,
     });
   } catch (error) {
     console.error('Generation error:', error);
@@ -2386,7 +2597,17 @@ LANGUAGE: ${languageInstruction}`;
 // ========== RESPONSE VARIATIONS (3 Options) ==========
 app.post('/api/generate-variations', authenticateToken, async (req, res) => {
   try {
-    const { reviewText, reviewRating, platform, tone, outputLanguage, businessName, responseLength, includeEmojis, templateContent } = req.body;
+    const {
+      reviewText,
+      reviewRating,
+      platform,
+      tone,
+      outputLanguage,
+      businessName,
+      responseLength,
+      includeEmojis,
+      templateContent,
+    } = req.body;
 
     if (!reviewText || reviewText.trim().length === 0) {
       return res.status(400).json({ error: 'Review text is required' });
@@ -2403,39 +2624,63 @@ app.post('/api/generate-variations', authenticateToken, async (req, res) => {
       return res.status(403).json({
         error: 'Not enough responses remaining',
         message: `Variations requires 3 response credits. You have ${remaining} remaining.`,
-        upgrade: true
+        upgrade: true,
       });
     }
 
     // Variation styles - each creates a slightly different response
     const variationStyles = [
-      { name: 'concise', instruction: 'Keep the response brief and to the point (2-3 sentences max).', temp: 0.5 },
-      { name: 'detailed', instruction: 'Include specific details and a personal touch. Be warm and conversational.', temp: 0.7 },
-      { name: 'actionable', instruction: 'Focus on solutions and next steps. Include a clear call to action.', temp: 0.6 }
+      {
+        name: 'concise',
+        instruction: 'Keep the response brief and to the point (2-3 sentences max).',
+        temp: 0.5,
+      },
+      {
+        name: 'detailed',
+        instruction: 'Include specific details and a personal touch. Be warm and conversational.',
+        temp: 0.7,
+      },
+      {
+        name: 'actionable',
+        instruction: 'Focus on solutions and next steps. Include a clear call to action.',
+        temp: 0.6,
+      },
     ];
 
     // Language map
     const languageNames = {
-      en: 'English', de: 'German', es: 'Spanish', fr: 'French',
-      it: 'Italian', pt: 'Portuguese', nl: 'Dutch', pl: 'Polish',
-      ru: 'Russian', zh: 'Chinese', ja: 'Japanese', ko: 'Korean'
+      en: 'English',
+      de: 'German',
+      es: 'Spanish',
+      fr: 'French',
+      it: 'Italian',
+      pt: 'Portuguese',
+      nl: 'Dutch',
+      pl: 'Polish',
+      ru: 'Russian',
+      zh: 'Chinese',
+      ja: 'Japanese',
+      ko: 'Korean',
     };
 
-    const languageInstruction = (!outputLanguage || outputLanguage === 'auto')
-      ? 'Respond in the EXACT SAME language as the review.'
-      : `Respond in ${languageNames[outputLanguage] || 'English'}.`;
+    const languageInstruction =
+      !outputLanguage || outputLanguage === 'auto'
+        ? 'Respond in the EXACT SAME language as the review.'
+        : `Respond in ${languageNames[outputLanguage] || 'English'}.`;
 
     // Tone map
     const toneStyles = {
       professional: 'Professional and courteous',
       friendly: 'Warm and friendly',
       formal: 'Formal and polished',
-      apologetic: 'Empathetic and apologetic'
+      apologetic: 'Empathetic and apologetic',
     };
     const toneStyle = toneStyles[tone] || toneStyles.professional;
 
     // Template style guide if provided
-    const templateGuide = templateContent ? `\nTEMPLATE STYLE GUIDE: Use this template as a style reference. Match its tone, structure, and approach, but adapt the content to the specific review:\n"${templateContent}"` : '';
+    const templateGuide = templateContent
+      ? `\nTEMPLATE STYLE GUIDE: Use this template as a style reference. Match its tone, structure, and approach, but adapt the content to the specific review:\n"${templateContent}"`
+      : '';
 
     // Generate all 3 variations in parallel
     const variationPromises = variationStyles.map(async (style, index) => {
@@ -2447,10 +2692,10 @@ app.post('/api/generate-variations', authenticateToken, async (req, res) => {
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemMessage },
-          { role: 'user', content: userMessage }
+          { role: 'user', content: userMessage },
         ],
         max_tokens: 350,
-        temperature: style.temp
+        temperature: style.temp,
       });
 
       const generatedResponse = completion.choices[0].message.content.trim();
@@ -2460,7 +2705,7 @@ app.post('/api/generate-variations', authenticateToken, async (req, res) => {
         id: index + 1,
         style: style.name,
         response: generatedResponse,
-        quality
+        quality,
       };
     });
 
@@ -2470,22 +2715,34 @@ app.post('/api/generate-variations', authenticateToken, async (req, res) => {
     await dbQuery(
       `INSERT INTO responses (user_id, review_text, review_rating, review_platform, generated_response, tone, ai_model)
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [req.user.id, reviewText, reviewRating || null, platform || 'google', variations[0].response, tone || 'professional', 'standard']
+      [
+        req.user.id,
+        reviewText,
+        reviewRating || null,
+        platform || 'google',
+        variations[0].response,
+        tone || 'professional',
+        'standard',
+      ]
     );
 
     // Update usage (count as 3 responses)
-    await dbQuery('UPDATE users SET standard_responses_used = standard_responses_used + 3, responses_used = responses_used + 3 WHERE id = $1', [req.user.id]);
+    await dbQuery(
+      'UPDATE users SET standard_responses_used = standard_responses_used + 3, responses_used = responses_used + 3 WHERE id = $1',
+      [req.user.id]
+    );
 
     const updatedUser = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
-    const updatedTotalUsed = (updatedUser.smart_responses_used || 0) + (updatedUser.standard_responses_used || 0);
+    const updatedTotalUsed =
+      (updatedUser.smart_responses_used || 0) + (updatedUser.standard_responses_used || 0);
 
     res.json({
       variations,
       usage: {
         used: updatedTotalUsed,
         limit: planLimits.responses,
-        creditsUsed: 3
-      }
+        creditsUsed: 3,
+      },
     });
   } catch (error) {
     console.error('Variations generation error:', error);
@@ -2532,7 +2789,7 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
         standard_responses_used: teamMembership.owner_standard_used || 0,
         business_name: teamMembership.owner_business,
         business_type: teamMembership.owner_business_type,
-        business_context: teamMembership.owner_context
+        business_context: teamMembership.owner_context,
       };
       effectivePlan = teamMembership.owner_plan;
     }
@@ -2541,7 +2798,7 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
       return res.status(403).json({
         error: 'Bulk generation is only available for paid plans (Starter, Pro, Unlimited)',
         upgrade: !isTeamMember,
-        requiredPlan: 'starter'
+        requiredPlan: 'starter',
       });
     }
 
@@ -2560,25 +2817,31 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
       if (smartRemaining < reviewCount) {
         return res.status(403).json({
           error: `Not enough Smart AI responses. You need ${reviewCount} but only have ${smartRemaining} left.`,
-          suggestion: standardRemaining >= reviewCount ? 'Switch to Standard AI' : 'Upgrade your plan'
+          suggestion:
+            standardRemaining >= reviewCount ? 'Switch to Standard AI' : 'Upgrade your plan',
         });
       }
       useModel = 'smart';
     } else if (aiModel === 'auto') {
       // For bulk, prefer standard to save smart responses for single generations
-      useModel = standardRemaining >= reviewCount ? 'standard' : (smartRemaining >= reviewCount ? 'smart' : 'standard');
+      useModel =
+        standardRemaining >= reviewCount
+          ? 'standard'
+          : smartRemaining >= reviewCount
+            ? 'smart'
+            : 'standard';
 
       if (standardRemaining < reviewCount && smartRemaining < reviewCount) {
         return res.status(403).json({
           error: `Not enough responses remaining. You need ${reviewCount} but only have ${Math.max(smartRemaining, standardRemaining)} left.`,
-          upgrade: !isTeamMember
+          upgrade: !isTeamMember,
         });
       }
     } else {
       if (standardRemaining < reviewCount) {
         return res.status(403).json({
           error: `Not enough Standard responses. You need ${reviewCount} but only have ${standardRemaining} left.`,
-          suggestion: smartRemaining >= reviewCount ? 'Switch to Smart AI' : 'Upgrade your plan'
+          suggestion: smartRemaining >= reviewCount ? 'Switch to Smart AI' : 'Upgrade your plan',
         });
       }
     }
@@ -2587,18 +2850,47 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
 
     // Reuse optimized prompt components
     const bulkRatingStrategies = {
-      5: { goal: 'Reinforce positive feelings', approach: 'Express genuine gratitude, mention specifics', length: '2-3 sentences' },
-      4: { goal: 'Thank while showing you care', approach: 'Appreciate feedback, acknowledge room for improvement', length: '2-3 sentences' },
-      3: { goal: 'Show you take feedback seriously', approach: 'Acknowledge mixed experience, invite them back', length: '3-4 sentences' },
-      2: { goal: 'Recover the relationship', approach: 'Take responsibility, offer resolution', length: '3-4 sentences' },
-      1: { goal: 'Damage control', approach: 'Acknowledge frustration, offer direct contact', length: '4-5 sentences' }
+      5: {
+        goal: 'Reinforce positive feelings',
+        approach: 'Express genuine gratitude, mention specifics',
+        length: '2-3 sentences',
+      },
+      4: {
+        goal: 'Thank while showing you care',
+        approach: 'Appreciate feedback, acknowledge room for improvement',
+        length: '2-3 sentences',
+      },
+      3: {
+        goal: 'Show you take feedback seriously',
+        approach: 'Acknowledge mixed experience, invite them back',
+        length: '3-4 sentences',
+      },
+      2: {
+        goal: 'Recover the relationship',
+        approach: 'Take responsibility, offer resolution',
+        length: '3-4 sentences',
+      },
+      1: {
+        goal: 'Damage control',
+        approach: 'Acknowledge frustration, offer direct contact',
+        length: '4-5 sentences',
+      },
     };
 
     const bulkToneDefinitions = {
-      professional: { description: 'Professional and courteous - polished but warm', avoid: 'Thank you for your feedback' },
-      friendly: { description: 'Warm and personable - like a friend', avoid: 'Dear valued customer' },
+      professional: {
+        description: 'Professional and courteous - polished but warm',
+        avoid: 'Thank you for your feedback',
+      },
+      friendly: {
+        description: 'Warm and personable - like a friend',
+        avoid: 'Dear valued customer',
+      },
       formal: { description: 'Formal and business-appropriate', avoid: 'Hey thanks!' },
-      apologetic: { description: 'Empathetic and solution-focused', avoid: 'We apologize for any inconvenience' }
+      apologetic: {
+        description: 'Empathetic and solution-focused',
+        avoid: 'We apologize for any inconvenience',
+      },
     };
 
     // Claude-style instructions for bulk (compact version)
@@ -2609,16 +2901,30 @@ NO PHRASES: "Thank you for your feedback", "We appreciate you taking the time", 
 RULES: Use contractions. Short sentences. Max 1 exclamation mark. No em-dashes. Be specific about what they mentioned.`;
 
     const bulkLanguageNames = {
-      en: 'English', de: 'German', es: 'Spanish', fr: 'French',
-      it: 'Italian', pt: 'Portuguese', nl: 'Dutch', pl: 'Polish',
-      ru: 'Russian', zh: 'Chinese', ja: 'Japanese', ko: 'Korean',
-      ar: 'Arabic', tr: 'Turkish', sv: 'Swedish', da: 'Danish',
-      no: 'Norwegian', fi: 'Finnish'
+      en: 'English',
+      de: 'German',
+      es: 'Spanish',
+      fr: 'French',
+      it: 'Italian',
+      pt: 'Portuguese',
+      nl: 'Dutch',
+      pl: 'Polish',
+      ru: 'Russian',
+      zh: 'Chinese',
+      ja: 'Japanese',
+      ko: 'Korean',
+      ar: 'Arabic',
+      tr: 'Turkish',
+      sv: 'Swedish',
+      da: 'Danish',
+      no: 'Norwegian',
+      fi: 'Finnish',
     };
 
-    const bulkLanguageInstruction = (!outputLanguage || outputLanguage === 'auto')
-      ? 'Respond in the SAME language as the review.'
-      : `Respond in ${bulkLanguageNames[outputLanguage] || 'English'}.`;
+    const bulkLanguageInstruction =
+      !outputLanguage || outputLanguage === 'auto'
+        ? 'Respond in the SAME language as the review.'
+        : `Respond in ${bulkLanguageNames[outputLanguage] || 'English'}.`;
 
     const contextUser = isTeamMember ? usageOwner : user;
 
@@ -2649,7 +2955,7 @@ LANGUAGE: ${bulkLanguageInstruction}`;
             model: 'claude-sonnet-4-20250514',
             max_tokens: 350,
             system: bulkSystemMessage,
-            messages: [{ role: 'user', content: bulkUserMessage }]
+            messages: [{ role: 'user', content: bulkUserMessage }],
           });
           generatedResponse = response.content[0].text.trim();
         } else {
@@ -2658,12 +2964,12 @@ LANGUAGE: ${bulkLanguageInstruction}`;
             model: 'gpt-4o-mini',
             messages: [
               { role: 'system', content: bulkSystemMessage },
-              { role: 'user', content: bulkUserMessage }
+              { role: 'user', content: bulkUserMessage },
             ],
             max_tokens: 350,
             temperature: 0.6,
             presence_penalty: 0.1,
-            frequency_penalty: 0.1
+            frequency_penalty: 0.1,
           });
           generatedResponse = completion.choices[0].message.content.trim();
         }
@@ -2672,7 +2978,14 @@ LANGUAGE: ${bulkLanguageInstruction}`;
         await dbQuery(
           `INSERT INTO responses (user_id, review_text, review_platform, generated_response, tone, ai_model)
            VALUES ($1, $2, $3, $4, $5, $6)`,
-          [req.user.id, reviewText, platform || 'google', generatedResponse, tone || 'professional', useModel]
+          [
+            req.user.id,
+            reviewText,
+            platform || 'google',
+            generatedResponse,
+            tone || 'professional',
+            useModel,
+          ]
         );
 
         return {
@@ -2680,7 +2993,7 @@ LANGUAGE: ${bulkLanguageInstruction}`;
           success: true,
           review: reviewText,
           response: generatedResponse,
-          aiModel: useModel
+          aiModel: useModel,
         };
       } catch (error) {
         console.error(`Error generating response for review ${index}:`, error);
@@ -2688,7 +3001,7 @@ LANGUAGE: ${bulkLanguageInstruction}`;
           index,
           success: false,
           review: reviewText,
-          error: 'Failed to generate response'
+          error: 'Failed to generate response',
         };
       }
     };
@@ -2718,7 +3031,8 @@ LANGUAGE: ${bulkLanguageInstruction}`;
     }
 
     const updatedOwner = await dbGet('SELECT * FROM users WHERE id = $1', [usageOwnerId]);
-    const updatedPlanLimits = PLAN_LIMITS[updatedOwner.subscription_plan || 'free'] || PLAN_LIMITS.free;
+    const updatedPlanLimits =
+      PLAN_LIMITS[updatedOwner.subscription_plan || 'free'] || PLAN_LIMITS.free;
 
     res.json({
       isTeamUsage: isTeamMember,
@@ -2727,14 +3041,21 @@ LANGUAGE: ${bulkLanguageInstruction}`;
       summary: {
         total: reviews.length,
         successful: successCount,
-        failed: reviews.length - successCount
+        failed: reviews.length - successCount,
       },
       usage: {
-        smart: { used: updatedOwner.smart_responses_used || 0, limit: updatedPlanLimits.smartResponses },
-        standard: { used: updatedOwner.standard_responses_used || 0, limit: updatedPlanLimits.standardResponses }
+        smart: {
+          used: updatedOwner.smart_responses_used || 0,
+          limit: updatedPlanLimits.smartResponses,
+        },
+        standard: {
+          used: updatedOwner.standard_responses_used || 0,
+          limit: updatedPlanLimits.standardResponses,
+        },
       },
-      responsesUsed: (updatedOwner.smart_responses_used || 0) + (updatedOwner.standard_responses_used || 0),
-      responsesLimit: updatedPlanLimits.responses
+      responsesUsed:
+        (updatedOwner.smart_responses_used || 0) + (updatedOwner.standard_responses_used || 0),
+      responsesLimit: updatedPlanLimits.responses,
     });
   } catch (error) {
     console.error('Bulk generation error:', error);
@@ -2753,7 +3074,9 @@ app.get('/api/responses/history', authenticateToken, async (req, res) => {
       [req.user.id, limit, offset]
     );
 
-    const total = await dbGet('SELECT COUNT(*) as count FROM responses WHERE user_id = $1', [req.user.id]);
+    const total = await dbGet('SELECT COUNT(*) as count FROM responses WHERE user_id = $1', [
+      req.user.id,
+    ]);
 
     res.json({
       responses,
@@ -2761,8 +3084,8 @@ app.get('/api/responses/history', authenticateToken, async (req, res) => {
         page,
         limit,
         total: parseInt(total.count),
-        pages: Math.ceil(parseInt(total.count) / limit)
-      }
+        pages: Math.ceil(parseInt(total.count) / limit),
+      },
     });
   } catch (error) {
     console.error('History error:', error);
@@ -2803,12 +3126,14 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
           id: `EARLY50_${Date.now()}_${user.id}`,
           metadata: {
             campaign: 'early_adopter',
-            user_id: user.id.toString()
-          }
+            user_id: user.id.toString(),
+          },
         });
-        discounts = [{
-          coupon: coupon.id
-        }];
+        discounts = [
+          {
+            coupon: coupon.id,
+          },
+        ];
       } catch (err) {
         console.log('Coupon creation error:', err);
         // Continue without discount if coupon fails
@@ -2820,15 +3145,17 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
           percent_off: 60,
           duration: 'once', // Only first payment
           id: `HUNTLAUNCH_${Date.now()}_${user.id}`,
-          redeem_by: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // Valid for 24 hours
+          redeem_by: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // Valid for 24 hours
           metadata: {
             campaign: 'product_hunt_launch',
-            user_id: user.id.toString()
-          }
+            user_id: user.id.toString(),
+          },
         });
-        discounts = [{
-          coupon: coupon.id
-        }];
+        discounts = [
+          {
+            coupon: coupon.id,
+          },
+        ];
       } catch (err) {
         console.log('HUNTLAUNCH coupon creation error:', err);
         // Continue without discount if coupon fails
@@ -2838,18 +3165,20 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
     const sessionConfig = {
       customer: user.stripe_customer_id,
       payment_method_types: ['card'],
-      line_items: [{
-        price: priceId,
-        quantity: 1
-      }],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
       mode: 'subscription',
       success_url: `${process.env.FRONTEND_URL}/dashboard?success=true`,
       cancel_url: `${process.env.FRONTEND_URL}/pricing?canceled=true`,
       metadata: {
         userId: user.id.toString(),
         plan,
-        billing
-      }
+        billing,
+      },
     };
 
     // Add discounts if available
@@ -2874,13 +3203,13 @@ app.post('/api/billing/portal', authenticateToken, async (req, res) => {
     if (!user.stripe_customer_id) {
       return res.status(400).json({
         error: 'No Stripe subscription',
-        noStripeCustomer: true
+        noStripeCustomer: true,
       });
     }
 
     const session = await stripe.billingPortal.sessions.create({
       customer: user.stripe_customer_id,
-      return_url: `${process.env.FRONTEND_URL}/dashboard`
+      return_url: `${process.env.FRONTEND_URL}/dashboard`,
     });
 
     res.json({ url: session.url });
@@ -2903,7 +3232,8 @@ app.post('/api/admin/self-set-plan', authenticateToken, async (req, res) => {
 
     // Update plan (same logic as admin/set-plan)
     const limits = PLAN_LIMITS[plan];
-    await dbRun(`
+    await pool.query(
+      `
       UPDATE users SET
         subscription_plan = $1,
         subscription_status = $2,
@@ -2912,7 +3242,9 @@ app.post('/api/admin/self-set-plan', authenticateToken, async (req, res) => {
         smart_responses_used = 0,
         standard_responses_used = 0
       WHERE id = $4
-    `, [plan, plan === 'free' ? 'inactive' : 'active', limits.responses, req.user.id]);
+    `,
+      [plan, plan === 'free' ? 'inactive' : 'active', limits.responses, req.user.id]
+    );
 
     console.log(`Self-service plan change: User ${req.user.id} changed to ${plan}`);
     res.json({ success: true, plan });
@@ -2963,7 +3295,9 @@ async function handleStripeWebhook(req, res) {
               `UPDATE users SET referral_credits = referral_credits + 1 WHERE id = $1`,
               [paidUser.referred_by]
             );
-            console.log(`🎉 Referral reward! User ${paidUser.referred_by} earned 1 credit for referring user ${userId}`);
+            console.log(
+              `🎉 Referral reward! User ${paidUser.referred_by} earned 1 credit for referring user ${userId}`
+            );
           }
         }
         break;
@@ -2971,7 +3305,9 @@ async function handleStripeWebhook(req, res) {
 
       case 'customer.subscription.updated': {
         const subscription = event.data.object;
-        const user = await dbGet('SELECT id FROM users WHERE stripe_customer_id = $1', [subscription.customer]);
+        const user = await dbGet('SELECT id FROM users WHERE stripe_customer_id = $1', [
+          subscription.customer,
+        ]);
 
         if (user) {
           const status = subscription.status === 'active' ? 'active' : 'inactive';
@@ -2981,7 +3317,7 @@ async function handleStripeWebhook(req, res) {
               status,
               new Date(subscription.current_period_start * 1000),
               new Date(subscription.current_period_end * 1000),
-              user.id
+              user.id,
             ]
           );
         }
@@ -2990,7 +3326,9 @@ async function handleStripeWebhook(req, res) {
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object;
-        const user = await dbGet('SELECT id FROM users WHERE stripe_customer_id = $1', [subscription.customer]);
+        const user = await dbGet('SELECT id FROM users WHERE stripe_customer_id = $1', [
+          subscription.customer,
+        ]);
 
         if (user) {
           await dbQuery(
@@ -3003,7 +3341,9 @@ async function handleStripeWebhook(req, res) {
 
       case 'invoice.paid': {
         const invoice = event.data.object;
-        const user = await dbGet('SELECT * FROM users WHERE stripe_customer_id = $1', [invoice.customer]);
+        const user = await dbGet('SELECT * FROM users WHERE stripe_customer_id = $1', [
+          invoice.customer,
+        ]);
 
         if (user && user.subscription_plan !== 'free') {
           await dbQuery('UPDATE users SET responses_used = 0 WHERE id = $1', [user.id]);
@@ -3031,7 +3371,15 @@ async function handleStripeWebhook(req, res) {
                 await dbQuery(
                   `INSERT INTO affiliate_conversions (affiliate_id, referred_user_id, subscription_plan, amount_paid, commission_amount, commission_rate, stripe_invoice_id, status)
                    VALUES ($1, $2, $3, $4, $5, $6, $7, 'approved')`,
-                  [affiliate.id, user.id, user.subscription_plan, amountPaid, commissionAmount, commissionRate, invoice.id]
+                  [
+                    affiliate.id,
+                    user.id,
+                    user.subscription_plan,
+                    amountPaid,
+                    commissionAmount,
+                    commissionRate,
+                    invoice.id,
+                  ]
                 );
 
                 // Update affiliate totals
@@ -3040,7 +3388,9 @@ async function handleStripeWebhook(req, res) {
                   [commissionAmount, affiliate.id]
                 );
 
-                console.log(`💰 Affiliate commission: $${commissionAmount.toFixed(2)} for affiliate ${affiliate.affiliate_code} (User ${user.id} paid $${amountPaid.toFixed(2)})`);
+                console.log(
+                  `💰 Affiliate commission: $${commissionAmount.toFixed(2)} for affiliate ${affiliate.affiliate_code} (User ${user.id} paid $${amountPaid.toFixed(2)})`
+                );
               }
             }
           }
@@ -3099,7 +3449,7 @@ app.post('/api/support/contact', async (req, res) => {
                 Antworte direkt auf diese Email - sie geht an ${email}
               </p>
             </div>
-          `
+          `,
         });
         console.log(`📧 Support notification sent to admin for: ${email}`);
       } catch (emailError) {
@@ -3141,7 +3491,7 @@ app.get('/api/stats', authenticateToken, async (req, res) => {
         smart_responses_used: teamMembership.owner_smart_used || 0,
         standard_responses_used: teamMembership.owner_standard_used || 0,
         responses_used: teamMembership.owner_responses_used || 0,
-        responses_limit: teamMembership.owner_responses_limit || 0
+        responses_limit: teamMembership.owner_responses_limit || 0,
       };
     }
 
@@ -3155,7 +3505,10 @@ app.get('/api/stats', authenticateToken, async (req, res) => {
     const totalUsed = smartUsed + standardUsed;
     const totalLimit = planLimits.responses;
 
-    const totalResponses = await dbGet('SELECT COUNT(*) as count FROM responses WHERE user_id = $1', [req.user.id]);
+    const totalResponses = await dbGet(
+      'SELECT COUNT(*) as count FROM responses WHERE user_id = $1',
+      [req.user.id]
+    );
 
     const thisMonth = await dbGet(
       `SELECT COUNT(*) as count FROM responses WHERE user_id = $1 AND created_at >= date_trunc('month', CURRENT_DATE)`,
@@ -3185,39 +3538,39 @@ app.get('/api/stats', authenticateToken, async (req, res) => {
         smart: {
           used: smartUsed,
           limit: planLimits.smartResponses,
-          remaining: Math.max(0, planLimits.smartResponses - smartUsed)
+          remaining: Math.max(0, planLimits.smartResponses - smartUsed),
         },
         standard: {
           used: standardUsed,
           limit: planLimits.standardResponses,
-          remaining: Math.max(0, planLimits.standardResponses - standardUsed)
+          remaining: Math.max(0, planLimits.standardResponses - standardUsed),
         },
         total: {
           used: totalUsed,
           limit: totalLimit,
-          remaining: Math.max(0, totalLimit - totalUsed)
+          remaining: Math.max(0, totalLimit - totalUsed),
         },
         // Backward compatibility
         used: totalUsed,
         limit: totalLimit,
-        remaining: Math.max(0, totalLimit - totalUsed)
+        remaining: Math.max(0, totalLimit - totalUsed),
       },
       stats: {
         totalResponses: parseInt(totalResponses.count),
         thisMonth: parseInt(thisMonth.count),
         byPlatform,
         byRating,
-        byAiModel
+        byAiModel,
       },
       subscription: {
         plan: effectivePlan,
-        status: isTeamMember ? usageOwner.subscription_status : user.subscription_status
+        status: isTeamMember ? usageOwner.subscription_status : user.subscription_status,
       },
       isTeamMember,
       hasSmartAI: !!anthropic,
       // For password management (OAuth users may not have password)
       hasPassword: !!user.password,
-      oauthProvider: user.oauth_provider || null
+      oauthProvider: user.oauth_provider || null,
     });
   } catch (error) {
     console.error('Stats error:', error);
@@ -3261,13 +3614,22 @@ app.post('/api/templates', authenticateToken, async (req, res) => {
     );
 
     if (parseInt(count.count) >= 20) {
-      return res.status(400).json({ error: 'Maximum of 20 templates allowed. Delete some templates to add new ones.' });
+      return res
+        .status(400)
+        .json({ error: 'Maximum of 20 templates allowed. Delete some templates to add new ones.' });
     }
 
     const result = await dbQuery(
       `INSERT INTO response_templates (user_id, name, content, tone, platform, category)
        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [req.user.id, name.trim(), content, tone || 'professional', platform || 'google', category || null]
+      [
+        req.user.id,
+        name.trim(),
+        content,
+        tone || 'professional',
+        platform || 'google',
+        category || null,
+      ]
     );
 
     res.status(201).json({ template: result.rows[0] });
@@ -3300,7 +3662,15 @@ app.put('/api/templates/:id', authenticateToken, async (req, res) => {
     const result = await dbQuery(
       `UPDATE response_templates SET name = $1, content = $2, tone = $3, platform = $4, category = $5
        WHERE id = $6 AND user_id = $7 RETURNING *`,
-      [name.trim(), content, tone || 'professional', platform || 'google', category || null, id, req.user.id]
+      [
+        name.trim(),
+        content,
+        tone || 'professional',
+        platform || 'google',
+        category || null,
+        id,
+        req.user.id,
+      ]
     );
 
     res.json({ template: result.rows[0] });
@@ -3325,7 +3695,10 @@ app.delete('/api/templates/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Template not found' });
     }
 
-    await dbQuery('DELETE FROM response_templates WHERE id = $1 AND user_id = $2', [id, req.user.id]);
+    await dbQuery('DELETE FROM response_templates WHERE id = $1 AND user_id = $2', [
+      id,
+      req.user.id,
+    ]);
 
     res.json({ success: true, message: 'Template deleted' });
   } catch (error) {
@@ -3350,12 +3723,37 @@ app.get('/api/team', authenticateToken, async (req, res) => {
   try {
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
     if (!hasTeamAccess(user.subscription_plan)) {
-      return res.status(403).json({ error: 'Team features are available for Professional and Unlimited plans', upgrade: true, requiredPlan: 'professional' });
+      return res
+        .status(403)
+        .json({
+          error: 'Team features are available for Professional and Unlimited plans',
+          upgrade: true,
+          requiredPlan: 'professional',
+        });
     }
-    const members = await dbAll(`SELECT tm.*, u.email as user_email, u.business_name FROM team_members tm LEFT JOIN users u ON tm.member_user_id = u.id WHERE tm.team_owner_id = $1 ORDER BY tm.invited_at DESC`, [req.user.id]);
+    const members = await dbAll(
+      `SELECT tm.*, u.email as user_email, u.business_name FROM team_members tm LEFT JOIN users u ON tm.member_user_id = u.id WHERE tm.team_owner_id = $1 ORDER BY tm.invited_at DESC`,
+      [req.user.id]
+    );
     const maxMembers = getMaxTeamMembers(user.subscription_plan);
-    res.json({ isTeamOwner: true, members: members.map(m => ({ id: m.id, email: m.member_email, role: m.role, status: m.accepted_at ? 'active' : 'pending', invitedAt: m.invited_at, acceptedAt: m.accepted_at, businessName: m.business_name })), maxMembers, plan: user.subscription_plan });
-  } catch (error) { console.error('Get team error:', error); res.status(500).json({ error: 'Failed to get team members' }); }
+    res.json({
+      isTeamOwner: true,
+      members: members.map(m => ({
+        id: m.id,
+        email: m.member_email,
+        role: m.role,
+        status: m.accepted_at ? 'active' : 'pending',
+        invitedAt: m.invited_at,
+        acceptedAt: m.accepted_at,
+        businessName: m.business_name,
+      })),
+      maxMembers,
+      plan: user.subscription_plan,
+    });
+  } catch (error) {
+    console.error('Get team error:', error);
+    res.status(500).json({ error: 'Failed to get team members' });
+  }
 });
 
 // POST /api/team/invite - Invite a new team member
@@ -3364,41 +3762,93 @@ app.post('/api/team/invite', authenticateToken, async (req, res) => {
     const { email, role = 'member' } = req.body;
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
     if (!hasTeamAccess(user.subscription_plan)) {
-      return res.status(403).json({ error: 'Team features are available for Professional and Unlimited plans', upgrade: true });
+      return res
+        .status(403)
+        .json({
+          error: 'Team features are available for Professional and Unlimited plans',
+          upgrade: true,
+        });
     }
-    if (!email || !validator.isEmail(email)) return res.status(400).json({ error: 'Valid email is required' });
-    if (email.toLowerCase() === user.email.toLowerCase()) return res.status(400).json({ error: 'You cannot invite yourself' });
+    if (!email || !validator.isEmail(email))
+      return res.status(400).json({ error: 'Valid email is required' });
+    if (email.toLowerCase() === user.email.toLowerCase())
+      return res.status(400).json({ error: 'You cannot invite yourself' });
     const validRoles = ['admin', 'member', 'viewer'];
-    if (!validRoles.includes(role)) return res.status(400).json({ error: 'Invalid role. Must be admin, member, or viewer' });
-    const memberCount = await dbGet('SELECT COUNT(*) as count FROM team_members WHERE team_owner_id = $1', [req.user.id]);
+    if (!validRoles.includes(role))
+      return res.status(400).json({ error: 'Invalid role. Must be admin, member, or viewer' });
+    const memberCount = await dbGet(
+      'SELECT COUNT(*) as count FROM team_members WHERE team_owner_id = $1',
+      [req.user.id]
+    );
     const maxMembers = getMaxTeamMembers(user.subscription_plan);
     if (parseInt(memberCount.count) >= maxMembers) {
-      return res.status(400).json({ error: `Maximum ${maxMembers} team members allowed on your plan`, upgrade: user.subscription_plan === 'professional' });
+      return res
+        .status(400)
+        .json({
+          error: `Maximum ${maxMembers} team members allowed on your plan`,
+          upgrade: user.subscription_plan === 'professional',
+        });
     }
-    const existing = await dbGet('SELECT * FROM team_members WHERE team_owner_id = $1 AND LOWER(member_email) = LOWER($2)', [req.user.id, email]);
+    const existing = await dbGet(
+      'SELECT * FROM team_members WHERE team_owner_id = $1 AND LOWER(member_email) = LOWER($2)',
+      [req.user.id, email]
+    );
     if (existing) return res.status(400).json({ error: 'This email has already been invited' });
     const inviteToken = crypto.randomBytes(32).toString('hex');
-    const existingUser = await dbGet('SELECT id FROM users WHERE LOWER(email) = LOWER($1)', [email]);
-    await dbQuery(`INSERT INTO team_members (team_owner_id, member_email, member_user_id, role, invite_token) VALUES ($1, $2, $3, $4, $5)`, [req.user.id, email.toLowerCase(), existingUser?.id || null, role, inviteToken]);
+    const existingUser = await dbGet('SELECT id FROM users WHERE LOWER(email) = LOWER($1)', [
+      email,
+    ]);
+    await dbQuery(
+      `INSERT INTO team_members (team_owner_id, member_email, member_user_id, role, invite_token) VALUES ($1, $2, $3, $4, $5)`,
+      [req.user.id, email.toLowerCase(), existingUser?.id || null, role, inviteToken]
+    );
     if (resend) {
       try {
         const inviteHtml = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;"><div style="background:linear-gradient(135deg,#4F46E5 0%,#7C3AED 100%);padding:30px;text-align:center;"><h1 style="color:white;margin:0;">You're Invited!</h1></div><div style="padding:30px;background:#f9fafb;"><p style="font-size:16px;color:#374151;"><strong>${user.business_name || user.email}</strong> has invited you to join their ReviewResponder team as a <strong>${role}</strong>.</p><p style="font-size:14px;color:#6b7280;">As a team member, you'll be able to generate AI-powered review responses using their subscription.</p><div style="text-align:center;margin:30px 0;"><a href="${process.env.FRONTEND_URL}/join-team?token=${inviteToken}" style="background:#4F46E5;color:white;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:bold;display:inline-block;">Accept Invitation</a></div></div></div>`;
-        await resend.emails.send({ from: FROM_EMAIL, to: email, subject: `${user.business_name || user.email} invited you to their team`, html: inviteHtml });
-      } catch (e) { console.error('Failed to send team invite email:', e); }
+        await resend.emails.send({
+          from: FROM_EMAIL,
+          to: email,
+          subject: `${user.business_name || user.email} invited you to their team`,
+          html: inviteHtml,
+        });
+      } catch (e) {
+        console.error('Failed to send team invite email:', e);
+      }
     }
     // Always return token so frontend can show invite link (useful if email fails)
-    res.status(201).json({ success: true, message: `Invitation sent to ${email}`, inviteToken, inviteUrl: `${process.env.FRONTEND_URL}/join-team?token=${inviteToken}` });
-  } catch (error) { console.error('Invite error:', error); res.status(500).json({ error: 'Failed to invite team member' }); }
+    res
+      .status(201)
+      .json({
+        success: true,
+        message: `Invitation sent to ${email}`,
+        inviteToken,
+        inviteUrl: `${process.env.FRONTEND_URL}/join-team?token=${inviteToken}`,
+      });
+  } catch (error) {
+    console.error('Invite error:', error);
+    res.status(500).json({ error: 'Failed to invite team member' });
+  }
 });
 
 // GET /api/team/invite/:token - Validate invite token (public endpoint)
 app.get('/api/team/invite/:token', async (req, res) => {
   try {
     const { token } = req.params;
-    const invitation = await dbGet(`SELECT tm.*, u.email as owner_email, u.business_name as owner_business FROM team_members tm JOIN users u ON tm.team_owner_id = u.id WHERE tm.invite_token = $1 AND tm.accepted_at IS NULL`, [token]);
+    const invitation = await dbGet(
+      `SELECT tm.*, u.email as owner_email, u.business_name as owner_business FROM team_members tm JOIN users u ON tm.team_owner_id = u.id WHERE tm.invite_token = $1 AND tm.accepted_at IS NULL`,
+      [token]
+    );
     if (!invitation) return res.status(404).json({ error: 'Invalid or expired invitation' });
-    res.json({ valid: true, invitedEmail: invitation.member_email, invitedBy: invitation.owner_business || invitation.owner_email, role: invitation.role });
-  } catch (error) { console.error('Validate invite error:', error); res.status(500).json({ error: 'Failed to validate invitation' }); }
+    res.json({
+      valid: true,
+      invitedEmail: invitation.member_email,
+      invitedBy: invitation.owner_business || invitation.owner_email,
+      role: invitation.role,
+    });
+  } catch (error) {
+    console.error('Validate invite error:', error);
+    res.status(500).json({ error: 'Failed to validate invitation' });
+  }
 });
 
 // POST /api/team/accept - Accept team invitation
@@ -3406,13 +3856,30 @@ app.post('/api/team/accept', authenticateToken, async (req, res) => {
   try {
     const { token } = req.body;
     if (!token) return res.status(400).json({ error: 'Invite token is required' });
-    const invitation = await dbGet(`SELECT tm.*, u.email as owner_email, u.business_name as owner_business FROM team_members tm JOIN users u ON tm.team_owner_id = u.id WHERE tm.invite_token = $1 AND tm.accepted_at IS NULL`, [token]);
+    const invitation = await dbGet(
+      `SELECT tm.*, u.email as owner_email, u.business_name as owner_business FROM team_members tm JOIN users u ON tm.team_owner_id = u.id WHERE tm.invite_token = $1 AND tm.accepted_at IS NULL`,
+      [token]
+    );
     if (!invitation) return res.status(404).json({ error: 'Invalid or expired invitation' });
     const currentUser = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
-    if (currentUser.email.toLowerCase() !== invitation.member_email.toLowerCase()) return res.status(403).json({ error: 'This invitation was sent to a different email address' });
-    await dbQuery(`UPDATE team_members SET accepted_at = CURRENT_TIMESTAMP, member_user_id = $1, invite_token = NULL WHERE id = $2`, [req.user.id, invitation.id]);
-    res.json({ success: true, message: `You've joined ${invitation.owner_business || invitation.owner_email}'s team!`, teamOwner: { email: invitation.owner_email, businessName: invitation.owner_business }, role: invitation.role });
-  } catch (error) { console.error('Accept error:', error); res.status(500).json({ error: 'Failed to accept invitation' }); }
+    if (currentUser.email.toLowerCase() !== invitation.member_email.toLowerCase())
+      return res
+        .status(403)
+        .json({ error: 'This invitation was sent to a different email address' });
+    await dbQuery(
+      `UPDATE team_members SET accepted_at = CURRENT_TIMESTAMP, member_user_id = $1, invite_token = NULL WHERE id = $2`,
+      [req.user.id, invitation.id]
+    );
+    res.json({
+      success: true,
+      message: `You've joined ${invitation.owner_business || invitation.owner_email}'s team!`,
+      teamOwner: { email: invitation.owner_email, businessName: invitation.owner_business },
+      role: invitation.role,
+    });
+  } catch (error) {
+    console.error('Accept error:', error);
+    res.status(500).json({ error: 'Failed to accept invitation' });
+  }
 });
 
 // PUT /api/team/:memberId/role - Update team member role
@@ -3421,14 +3888,24 @@ app.put('/api/team/:memberId/role', authenticateToken, async (req, res) => {
     const { memberId } = req.params;
     const { role } = req.body;
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
-    if (!hasTeamAccess(user.subscription_plan)) return res.status(403).json({ error: 'Team features are available for Professional and Unlimited plans' });
+    if (!hasTeamAccess(user.subscription_plan))
+      return res
+        .status(403)
+        .json({ error: 'Team features are available for Professional and Unlimited plans' });
     const validRoles = ['admin', 'member', 'viewer'];
-    if (!validRoles.includes(role)) return res.status(400).json({ error: 'Invalid role. Must be admin, member, or viewer' });
-    const member = await dbGet('SELECT * FROM team_members WHERE id = $1 AND team_owner_id = $2', [memberId, req.user.id]);
+    if (!validRoles.includes(role))
+      return res.status(400).json({ error: 'Invalid role. Must be admin, member, or viewer' });
+    const member = await dbGet('SELECT * FROM team_members WHERE id = $1 AND team_owner_id = $2', [
+      memberId,
+      req.user.id,
+    ]);
     if (!member) return res.status(404).json({ error: 'Team member not found' });
     await dbQuery('UPDATE team_members SET role = $1 WHERE id = $2', [role, memberId]);
     res.json({ success: true, message: 'Role updated', newRole: role });
-  } catch (error) { console.error('Update role error:', error); res.status(500).json({ error: 'Failed to update role' }); }
+  } catch (error) {
+    console.error('Update role error:', error);
+    res.status(500).json({ error: 'Failed to update role' });
+  }
 });
 
 // DELETE /api/team/:memberId - Remove team member
@@ -3436,12 +3913,21 @@ app.delete('/api/team/:memberId', authenticateToken, async (req, res) => {
   try {
     const { memberId } = req.params;
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
-    if (!hasTeamAccess(user.subscription_plan)) return res.status(403).json({ error: 'Team features are available for Professional and Unlimited plans' });
-    const member = await dbGet('SELECT * FROM team_members WHERE id = $1 AND team_owner_id = $2', [memberId, req.user.id]);
+    if (!hasTeamAccess(user.subscription_plan))
+      return res
+        .status(403)
+        .json({ error: 'Team features are available for Professional and Unlimited plans' });
+    const member = await dbGet('SELECT * FROM team_members WHERE id = $1 AND team_owner_id = $2', [
+      memberId,
+      req.user.id,
+    ]);
     if (!member) return res.status(404).json({ error: 'Team member not found' });
     await dbQuery('DELETE FROM team_members WHERE id = $1', [memberId]);
     res.json({ success: true, message: 'Team member removed' });
-  } catch (error) { console.error('Remove member error:', error); res.status(500).json({ error: 'Failed to remove team member' }); }
+  } catch (error) {
+    console.error('Remove member error:', error);
+    res.status(500).json({ error: 'Failed to remove team member' });
+  }
 });
 
 // GET /api/team/my-team - Get team info for current user (as member or owner)
@@ -3449,23 +3935,49 @@ app.get('/api/team/my-team', authenticateToken, async (req, res) => {
   try {
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
     // Check if user is a team member (belongs to someone else's team)
-    const tm = await dbGet(`SELECT tm.*, u.email as owner_email, u.business_name as owner_business, u.responses_used, u.responses_limit, u.subscription_plan as owner_plan FROM team_members tm JOIN users u ON tm.team_owner_id = u.id WHERE tm.member_user_id = $1 AND tm.accepted_at IS NOT NULL`, [req.user.id]);
+    const tm = await dbGet(
+      `SELECT tm.*, u.email as owner_email, u.business_name as owner_business, u.responses_used, u.responses_limit, u.subscription_plan as owner_plan FROM team_members tm JOIN users u ON tm.team_owner_id = u.id WHERE tm.member_user_id = $1 AND tm.accepted_at IS NOT NULL`,
+      [req.user.id]
+    );
     if (tm) {
-      return res.json({ isTeamMember: true, teamOwner: { email: tm.owner_email, businessName: tm.owner_business }, role: tm.role, teamUsage: { used: tm.responses_used, limit: tm.responses_limit } });
+      return res.json({
+        isTeamMember: true,
+        teamOwner: { email: tm.owner_email, businessName: tm.owner_business },
+        role: tm.role,
+        teamUsage: { used: tm.responses_used, limit: tm.responses_limit },
+      });
     }
-    const c = await dbGet('SELECT COUNT(*) as count FROM team_members WHERE team_owner_id = $1', [req.user.id]);
-    res.json({ isTeamMember: false, isTeamOwner: hasTeamAccess(user.subscription_plan), canHaveTeam: hasTeamAccess(user.subscription_plan), teamMemberCount: parseInt(c.count), maxTeamMembers: getMaxTeamMembers(user.subscription_plan), plan: user.subscription_plan });
-  } catch (error) { console.error('Get my-team error:', error); res.status(500).json({ error: 'Failed to get team info' }); }
+    const c = await dbGet('SELECT COUNT(*) as count FROM team_members WHERE team_owner_id = $1', [
+      req.user.id,
+    ]);
+    res.json({
+      isTeamMember: false,
+      isTeamOwner: hasTeamAccess(user.subscription_plan),
+      canHaveTeam: hasTeamAccess(user.subscription_plan),
+      teamMemberCount: parseInt(c.count),
+      maxTeamMembers: getMaxTeamMembers(user.subscription_plan),
+      plan: user.subscription_plan,
+    });
+  } catch (error) {
+    console.error('Get my-team error:', error);
+    res.status(500).json({ error: 'Failed to get team info' });
+  }
 });
 
 // POST /api/team/leave - Leave a team (for team members)
 app.post('/api/team/leave', authenticateToken, async (req, res) => {
   try {
-    const membership = await dbGet('SELECT * FROM team_members WHERE member_user_id = $1 AND accepted_at IS NOT NULL', [req.user.id]);
+    const membership = await dbGet(
+      'SELECT * FROM team_members WHERE member_user_id = $1 AND accepted_at IS NOT NULL',
+      [req.user.id]
+    );
     if (!membership) return res.status(404).json({ error: 'You are not a member of any team' });
     await dbQuery('DELETE FROM team_members WHERE id = $1', [membership.id]);
     res.json({ success: true, message: 'You have left the team' });
-  } catch (error) { console.error('Leave team error:', error); res.status(500).json({ error: 'Failed to leave team' }); }
+  } catch (error) {
+    console.error('Leave team error:', error);
+    res.status(500).json({ error: 'Failed to leave team' });
+  }
 });
 
 // ============ EMAIL CAPTURE ============
@@ -3479,31 +3991,30 @@ app.post('/api/capture-email', async (req, res) => {
     if (!email || !validator.isEmail(email)) {
       return res.status(400).json({ error: 'Valid email is required' });
     }
-    
+
     // Check if email already exists
-    const existing = await dbGet(
-      'SELECT * FROM email_captures WHERE LOWER(email) = LOWER($1)',
-      [email]
-    );
-    
+    const existing = await dbGet('SELECT * FROM email_captures WHERE LOWER(email) = LOWER($1)', [
+      email,
+    ]);
+
     if (existing) {
       console.log(`📧 Email already captured: ${email}`);
-      return res.json({ 
-        success: true, 
+      return res.json({
+        success: true,
         message: 'Thanks! Check your email for the discount code.',
-        discountCode: existing.discount_code 
+        discountCode: existing.discount_code,
       });
     }
-    
+
     // Insert new email
     await dbQuery(
       `INSERT INTO email_captures (email, discount_code, source) 
        VALUES ($1, $2, $3)`,
       [email.toLowerCase(), discountCode, source]
     );
-    
+
     console.log(`✅ Email captured: ${email} (source: ${source})`);
-    
+
     // Send welcome email if Resend is configured
     if (resend && process.env.NODE_ENV === 'production') {
       try {
@@ -3511,7 +4022,7 @@ app.post('/api/capture-email', async (req, res) => {
           from: FROM_EMAIL,
           replyTo: 'hello@tryreviewresponder.com',
           to: email,
-          subject: "Your 50% discount code inside",
+          subject: 'Your 50% discount code inside',
           html: `
             <!DOCTYPE html>
             <html>
@@ -3553,7 +4064,7 @@ app.post('/api/capture-email', async (req, res) => {
               </div>
             </body>
             </html>
-          `
+          `,
         });
         console.log(`📨 Welcome email sent to ${email}`);
       } catch (emailError) {
@@ -3561,13 +4072,12 @@ app.post('/api/capture-email', async (req, res) => {
         // Don't fail the request if email fails
       }
     }
-    
-    res.json({ 
-      success: true, 
+
+    res.json({
+      success: true,
       message: 'Thanks! Check your email for the discount code.',
-      discountCode 
+      discountCode,
     });
-    
   } catch (error) {
     console.error('Email capture error:', error);
     res.status(500).json({ error: 'Failed to save email' });
@@ -3585,7 +4095,7 @@ app.get('/api/analytics', authenticateToken, async (req, res) => {
       return res.status(403).json({
         error: 'Analytics is only available for Professional and Unlimited plans',
         upgrade: true,
-        requiredPlan: 'professional'
+        requiredPlan: 'professional',
       });
     }
 
@@ -3652,7 +4162,10 @@ app.get('/api/analytics', authenticateToken, async (req, res) => {
     res.json({
       totalResponses: parseInt(totalResponses.count),
       byTone: byTone.map(t => ({ name: t.tone, value: parseInt(t.count) })),
-      byPlatform: byPlatform.map(p => ({ name: p.platform || 'unknown', value: parseInt(p.count) })),
+      byPlatform: byPlatform.map(p => ({
+        name: p.platform || 'unknown',
+        value: parseInt(p.count),
+      })),
       overTime: overTime.map(d => ({ date: d.date, responses: parseInt(d.count) })),
       byRating: byRating.map(r => ({ rating: r.rating, count: parseInt(r.count) })),
       insights: {
@@ -3660,8 +4173,8 @@ app.get('/api/analytics', authenticateToken, async (req, res) => {
         thisWeek: parseInt(thisWeek.count),
         lastWeek: parseInt(lastWeek.count),
         weeklyChange: parseInt(thisWeek.count) - parseInt(lastWeek.count),
-        mostUsedTone
-      }
+        mostUsedTone,
+      },
     });
   } catch (error) {
     console.error('Analytics error:', error);
@@ -3673,18 +4186,66 @@ app.get('/api/analytics', authenticateToken, async (req, res) => {
 
 // Pre-defined SEO topics for review management
 const BLOG_TOPICS = [
-  { id: 'respond-negative', title: 'How to Respond to Negative Reviews', keywords: ['negative reviews', 'customer complaints', 'reputation management'] },
-  { id: 'review-management-basics', title: 'Review Management Best Practices for Small Businesses', keywords: ['review management', 'small business', 'online reputation'] },
-  { id: 'increase-reviews', title: 'How to Get More Customer Reviews', keywords: ['get more reviews', 'customer feedback', 'review generation'] },
-  { id: 'respond-positive', title: 'Why Responding to Positive Reviews Matters', keywords: ['positive reviews', 'customer appreciation', 'brand loyalty'] },
-  { id: 'google-reviews', title: 'The Complete Guide to Google Reviews', keywords: ['Google reviews', 'Google My Business', 'local SEO'] },
-  { id: 'yelp-reviews', title: 'Mastering Yelp Reviews for Your Business', keywords: ['Yelp reviews', 'Yelp business', 'restaurant reviews'] },
-  { id: 'fake-reviews', title: 'How to Handle Fake or Unfair Reviews', keywords: ['fake reviews', 'review removal', 'unfair reviews'] },
-  { id: 'review-response-templates', title: 'Review Response Templates That Actually Work', keywords: ['review templates', 'response examples', 'copy paste reviews'] },
-  { id: 'review-seo', title: 'How Reviews Impact Your Local SEO Rankings', keywords: ['reviews SEO', 'local search', 'Google ranking'] },
-  { id: 'ai-review-responses', title: 'Using AI to Write Professional Review Responses', keywords: ['AI reviews', 'automated responses', 'review automation'] },
-  { id: 'crisis-management', title: 'Review Crisis Management: What to Do When Things Go Wrong', keywords: ['crisis management', 'bad reviews', 'reputation repair'] },
-  { id: 'review-monitoring', title: 'How to Monitor Your Online Reviews Effectively', keywords: ['review monitoring', 'reputation tracking', 'alerts'] }
+  {
+    id: 'respond-negative',
+    title: 'How to Respond to Negative Reviews',
+    keywords: ['negative reviews', 'customer complaints', 'reputation management'],
+  },
+  {
+    id: 'review-management-basics',
+    title: 'Review Management Best Practices for Small Businesses',
+    keywords: ['review management', 'small business', 'online reputation'],
+  },
+  {
+    id: 'increase-reviews',
+    title: 'How to Get More Customer Reviews',
+    keywords: ['get more reviews', 'customer feedback', 'review generation'],
+  },
+  {
+    id: 'respond-positive',
+    title: 'Why Responding to Positive Reviews Matters',
+    keywords: ['positive reviews', 'customer appreciation', 'brand loyalty'],
+  },
+  {
+    id: 'google-reviews',
+    title: 'The Complete Guide to Google Reviews',
+    keywords: ['Google reviews', 'Google My Business', 'local SEO'],
+  },
+  {
+    id: 'yelp-reviews',
+    title: 'Mastering Yelp Reviews for Your Business',
+    keywords: ['Yelp reviews', 'Yelp business', 'restaurant reviews'],
+  },
+  {
+    id: 'fake-reviews',
+    title: 'How to Handle Fake or Unfair Reviews',
+    keywords: ['fake reviews', 'review removal', 'unfair reviews'],
+  },
+  {
+    id: 'review-response-templates',
+    title: 'Review Response Templates That Actually Work',
+    keywords: ['review templates', 'response examples', 'copy paste reviews'],
+  },
+  {
+    id: 'review-seo',
+    title: 'How Reviews Impact Your Local SEO Rankings',
+    keywords: ['reviews SEO', 'local search', 'Google ranking'],
+  },
+  {
+    id: 'ai-review-responses',
+    title: 'Using AI to Write Professional Review Responses',
+    keywords: ['AI reviews', 'automated responses', 'review automation'],
+  },
+  {
+    id: 'crisis-management',
+    title: 'Review Crisis Management: What to Do When Things Go Wrong',
+    keywords: ['crisis management', 'bad reviews', 'reputation repair'],
+  },
+  {
+    id: 'review-monitoring',
+    title: 'How to Monitor Your Online Reviews Effectively',
+    keywords: ['review monitoring', 'reputation tracking', 'alerts'],
+  },
 ];
 
 // GET /api/blog/topics - Get available topic suggestions
@@ -3709,7 +4270,7 @@ app.post('/api/blog/generate', authenticateToken, async (req, res) => {
       return res.status(403).json({
         error: 'Blog Generator is only available for Professional and Unlimited plans',
         upgrade: true,
-        requiredPlan: 'professional'
+        requiredPlan: 'professional',
       });
     }
 
@@ -3719,13 +4280,17 @@ app.post('/api/blog/generate', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Please select or enter a topic' });
     }
 
-    const articleKeywords = keywords?.trim() || BLOG_TOPICS.find(t => t.id === topic)?.keywords?.join(', ') || '';
+    const articleKeywords =
+      keywords?.trim() || BLOG_TOPICS.find(t => t.id === topic)?.keywords?.join(', ') || '';
     const wordCount = Math.min(Math.max(parseInt(length) || 800, 500), 2000);
 
     const toneInstructions = {
-      informative: 'Write in an informative, educational tone. Be helpful and provide actionable advice.',
-      persuasive: 'Write in a persuasive tone. Convince the reader of the value and benefits of proper review management.',
-      casual: 'Write in a casual, friendly tone. Be conversational and approachable while still being professional.'
+      informative:
+        'Write in an informative, educational tone. Be helpful and provide actionable advice.',
+      persuasive:
+        'Write in a persuasive tone. Convince the reader of the value and benefits of proper review management.',
+      casual:
+        'Write in a casual, friendly tone. Be conversational and approachable while still being professional.',
     };
 
     const prompt = `You are an expert SEO content writer specializing in business reputation management and customer review strategies.
@@ -3758,7 +4323,7 @@ Generate the article:`;
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 3000,
-      temperature: 0.7
+      temperature: 0.7,
     });
 
     const fullResponse = completion.choices[0].message.content.trim();
@@ -3776,7 +4341,16 @@ Generate the article:`;
     const result = await dbQuery(
       `INSERT INTO blog_articles (user_id, title, content, meta_description, keywords, topic, tone, word_count)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-      [req.user.id, title, content, metaDescription, articleKeywords, articleTopic, tone || 'informative', actualWordCount]
+      [
+        req.user.id,
+        title,
+        content,
+        metaDescription,
+        articleKeywords,
+        articleTopic,
+        tone || 'informative',
+        actualWordCount,
+      ]
     );
 
     const article = result.rows[0];
@@ -3791,8 +4365,8 @@ Generate the article:`;
         topic: article.topic,
         tone: article.tone,
         wordCount: article.word_count,
-        createdAt: article.created_at
-      }
+        createdAt: article.created_at,
+      },
     });
   } catch (error) {
     console.error('Blog generation error:', error);
@@ -3813,7 +4387,7 @@ app.get('/api/blog/history', authenticateToken, async (req, res) => {
       return res.status(403).json({
         error: 'Blog history is only available for Professional and Unlimited plans',
         upgrade: true,
-        requiredPlan: 'professional'
+        requiredPlan: 'professional',
       });
     }
 
@@ -3823,7 +4397,9 @@ app.get('/api/blog/history', authenticateToken, async (req, res) => {
       [req.user.id, limit, offset]
     );
 
-    const total = await dbGet('SELECT COUNT(*) as count FROM blog_articles WHERE user_id = $1', [req.user.id]);
+    const total = await dbGet('SELECT COUNT(*) as count FROM blog_articles WHERE user_id = $1', [
+      req.user.id,
+    ]);
 
     res.json({
       articles: articles.map(a => ({
@@ -3834,14 +4410,14 @@ app.get('/api/blog/history', authenticateToken, async (req, res) => {
         topic: a.topic,
         tone: a.tone,
         wordCount: a.word_count,
-        createdAt: a.created_at
+        createdAt: a.created_at,
       })),
       pagination: {
         page,
         limit,
         total: parseInt(total.count),
-        pages: Math.ceil(parseInt(total.count) / limit)
-      }
+        pages: Math.ceil(parseInt(total.count) / limit),
+      },
     });
   } catch (error) {
     console.error('Get blog history error:', error);
@@ -3852,10 +4428,10 @@ app.get('/api/blog/history', authenticateToken, async (req, res) => {
 // GET /api/blog/:id - Get single article
 app.get('/api/blog/:id', authenticateToken, async (req, res) => {
   try {
-    const article = await dbGet(
-      `SELECT * FROM blog_articles WHERE id = $1 AND user_id = $2`,
-      [req.params.id, req.user.id]
-    );
+    const article = await dbGet(`SELECT * FROM blog_articles WHERE id = $1 AND user_id = $2`, [
+      req.params.id,
+      req.user.id,
+    ]);
 
     if (!article) {
       return res.status(404).json({ error: 'Article not found' });
@@ -3871,8 +4447,8 @@ app.get('/api/blog/:id', authenticateToken, async (req, res) => {
         topic: article.topic,
         tone: article.tone,
         wordCount: article.word_count,
-        createdAt: article.created_at
-      }
+        createdAt: article.created_at,
+      },
     });
   } catch (error) {
     console.error('Get blog article error:', error);
@@ -3945,7 +4521,7 @@ app.get('/api/referrals', authenticateToken, async (req, res) => {
       totalInvited: referrals.length,
       converted: referrals.filter(r => r.status === 'converted').length,
       pending: referrals.filter(r => r.status === 'pending').length,
-      creditsEarned: user.referral_credits || 0
+      creditsEarned: user.referral_credits || 0,
     };
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
@@ -3960,8 +4536,8 @@ app.get('/api/referrals', authenticateToken, async (req, res) => {
         status: r.status,
         plan: r.subscription_plan || 'free',
         createdAt: r.created_at,
-        convertedAt: r.converted_at
-      }))
+        convertedAt: r.converted_at,
+      })),
     });
   } catch (error) {
     console.error('Get referrals error:', error);
@@ -3990,7 +4566,7 @@ app.get('/api/referrals/validate/:code', async (req, res) => {
     res.json({
       valid: true,
       referrerName: referrer.business_name || referrer.email.split('@')[0],
-      bonus: '1 month free after first paid subscription'
+      bonus: '1 month free after first paid subscription',
     });
   } catch (error) {
     console.error('Validate referral error:', error);
@@ -4016,15 +4592,14 @@ app.post('/api/affiliate/apply', authenticateToken, async (req, res) => {
     const { website, marketingChannels, audienceSize, payoutMethod, payoutEmail } = req.body;
 
     // Check if user already applied
-    const existingAffiliate = await dbGet(
-      'SELECT * FROM affiliates WHERE user_id = $1',
-      [req.user.id]
-    );
+    const existingAffiliate = await dbGet('SELECT * FROM affiliates WHERE user_id = $1', [
+      req.user.id,
+    ]);
 
     if (existingAffiliate) {
       return res.status(400).json({
         error: 'You already have an affiliate application',
-        status: existingAffiliate.status
+        status: existingAffiliate.status,
       });
     }
 
@@ -4033,7 +4608,9 @@ app.post('/api/affiliate/apply', authenticateToken, async (req, res) => {
     let attempts = 0;
     do {
       affiliateCode = generateAffiliateCode();
-      const existing = await dbGet('SELECT id FROM affiliates WHERE affiliate_code = $1', [affiliateCode]);
+      const existing = await dbGet('SELECT id FROM affiliates WHERE affiliate_code = $1', [
+        affiliateCode,
+      ]);
       if (!existing) break;
       attempts++;
     } while (attempts < 10);
@@ -4042,22 +4619,31 @@ app.post('/api/affiliate/apply', authenticateToken, async (req, res) => {
     const result = await dbQuery(
       `INSERT INTO affiliates (user_id, affiliate_code, website, marketing_channels, audience_size, payout_method, payout_email)
        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-      [req.user.id, affiliateCode, website || null, marketingChannels || null, audienceSize || null, payoutMethod || 'paypal', payoutEmail || null]
+      [
+        req.user.id,
+        affiliateCode,
+        website || null,
+        marketingChannels || null,
+        audienceSize || null,
+        payoutMethod || 'paypal',
+        payoutEmail || null,
+      ]
     );
 
     // Auto-approve for now (can add manual review later)
-    await dbQuery(
-      `UPDATE affiliates SET status = 'approved', approved_at = NOW() WHERE id = $1`,
-      [result.rows[0].id]
-    );
+    await dbQuery(`UPDATE affiliates SET status = 'approved', approved_at = NOW() WHERE id = $1`, [
+      result.rows[0].id,
+    ]);
 
-    console.log(`🤝 New affiliate application approved: User ${req.user.id}, Code: ${affiliateCode}`);
+    console.log(
+      `🤝 New affiliate application approved: User ${req.user.id}, Code: ${affiliateCode}`
+    );
 
     res.json({
       success: true,
       message: 'Congratulations! You are now an affiliate partner.',
       affiliateCode,
-      commissionRate: 20
+      commissionRate: 20,
     });
   } catch (error) {
     console.error('Affiliate apply error:', error);
@@ -4068,10 +4654,7 @@ app.post('/api/affiliate/apply', authenticateToken, async (req, res) => {
 // Get affiliate status and stats
 app.get('/api/affiliate/stats', authenticateToken, async (req, res) => {
   try {
-    const affiliate = await dbGet(
-      'SELECT * FROM affiliates WHERE user_id = $1',
-      [req.user.id]
-    );
+    const affiliate = await dbGet('SELECT * FROM affiliates WHERE user_id = $1', [req.user.id]);
 
     if (!affiliate) {
       return res.json({ isAffiliate: false });
@@ -4119,7 +4702,8 @@ app.get('/api/affiliate/stats', authenticateToken, async (req, res) => {
     // Get conversion rate
     const totalClicks = parseInt(clickStats?.total_clicks || 0);
     const totalConversions = parseInt(conversionStats?.total_conversions || 0);
-    const conversionRate = totalClicks > 0 ? ((totalConversions / totalClicks) * 100).toFixed(2) : 0;
+    const conversionRate =
+      totalClicks > 0 ? ((totalConversions / totalClicks) * 100).toFixed(2) : 0;
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
@@ -4132,11 +4716,11 @@ app.get('/api/affiliate/stats', authenticateToken, async (req, res) => {
         payoutMethod: affiliate.payout_method,
         payoutEmail: affiliate.payout_email,
         appliedAt: affiliate.applied_at,
-        approvedAt: affiliate.approved_at
+        approvedAt: affiliate.approved_at,
       },
       links: {
         affiliateLink: `${frontendUrl}?aff=${affiliate.affiliate_code}`,
-        dashboardLink: `${frontendUrl}/affiliate`
+        dashboardLink: `${frontendUrl}/affiliate`,
       },
       stats: {
         totalClicks: totalClicks,
@@ -4144,7 +4728,7 @@ app.get('/api/affiliate/stats', authenticateToken, async (req, res) => {
         conversionRate: parseFloat(conversionRate),
         totalEarned: parseFloat(conversionStats?.total_commission || 0),
         pendingBalance: parseFloat(conversionStats?.pending_commission || 0),
-        paidOut: parseFloat(conversionStats?.paid_commission || 0)
+        paidOut: parseFloat(conversionStats?.paid_commission || 0),
       },
       clicksChart: clicksLast30Days,
       recentConversions: recentConversions.map(c => ({
@@ -4154,8 +4738,8 @@ app.get('/api/affiliate/stats', authenticateToken, async (req, res) => {
         amount: parseFloat(c.amount_paid),
         commission: parseFloat(c.commission_amount),
         status: c.status,
-        createdAt: c.created_at
-      }))
+        createdAt: c.created_at,
+      })),
     });
   } catch (error) {
     console.error('Get affiliate stats error:', error);
@@ -4166,10 +4750,7 @@ app.get('/api/affiliate/stats', authenticateToken, async (req, res) => {
 // Get payout history
 app.get('/api/affiliate/payouts', authenticateToken, async (req, res) => {
   try {
-    const affiliate = await dbGet(
-      'SELECT id FROM affiliates WHERE user_id = $1',
-      [req.user.id]
-    );
+    const affiliate = await dbGet('SELECT id FROM affiliates WHERE user_id = $1', [req.user.id]);
 
     if (!affiliate) {
       return res.status(403).json({ error: 'You are not an affiliate' });
@@ -4198,10 +4779,10 @@ app.get('/api/affiliate/payouts', authenticateToken, async (req, res) => {
         status: p.status,
         transactionId: p.transaction_id,
         requestedAt: p.requested_at,
-        processedAt: p.processed_at
+        processedAt: p.processed_at,
       })),
       totalPaid,
-      pendingPayouts
+      pendingPayouts,
     });
   } catch (error) {
     console.error('Get affiliate payouts error:', error);
@@ -4212,10 +4793,10 @@ app.get('/api/affiliate/payouts', authenticateToken, async (req, res) => {
 // Request a payout
 app.post('/api/affiliate/payout', authenticateToken, async (req, res) => {
   try {
-    const affiliate = await dbGet(
-      'SELECT * FROM affiliates WHERE user_id = $1 AND status = $2',
-      [req.user.id, 'approved']
-    );
+    const affiliate = await dbGet('SELECT * FROM affiliates WHERE user_id = $1 AND status = $2', [
+      req.user.id,
+      'approved',
+    ]);
 
     if (!affiliate) {
       return res.status(403).json({ error: 'You are not an approved affiliate' });
@@ -4233,7 +4814,7 @@ app.post('/api/affiliate/payout', authenticateToken, async (req, res) => {
 
     if (availableBalance < minimumPayout) {
       return res.status(400).json({
-        error: `Minimum payout is $${minimumPayout}. Your available balance is $${availableBalance.toFixed(2)}`
+        error: `Minimum payout is $${minimumPayout}. Your available balance is $${availableBalance.toFixed(2)}`,
       });
     }
 
@@ -4255,12 +4836,14 @@ app.post('/api/affiliate/payout', authenticateToken, async (req, res) => {
       [affiliate.id]
     );
 
-    console.log(`💰 Affiliate payout requested: User ${req.user.id}, Amount: $${availableBalance.toFixed(2)}`);
+    console.log(
+      `💰 Affiliate payout requested: User ${req.user.id}, Amount: $${availableBalance.toFixed(2)}`
+    );
 
     res.json({
       success: true,
       message: `Payout request of $${availableBalance.toFixed(2)} submitted. We will process it within 5 business days.`,
-      amount: availableBalance
+      amount: availableBalance,
     });
   } catch (error) {
     console.error('Request payout error:', error);
@@ -4273,10 +4856,7 @@ app.put('/api/affiliate/settings', authenticateToken, async (req, res) => {
   try {
     const { payoutMethod, payoutEmail } = req.body;
 
-    const affiliate = await dbGet(
-      'SELECT id FROM affiliates WHERE user_id = $1',
-      [req.user.id]
-    );
+    const affiliate = await dbGet('SELECT id FROM affiliates WHERE user_id = $1', [req.user.id]);
 
     if (!affiliate) {
       return res.status(403).json({ error: 'You are not an affiliate' });
@@ -4304,10 +4884,7 @@ app.put('/api/affiliate/settings', authenticateToken, async (req, res) => {
     }
 
     values.push(affiliate.id);
-    await dbQuery(
-      `UPDATE affiliates SET ${updates.join(', ')} WHERE id = $${paramIndex}`,
-      values
-    );
+    await dbQuery(`UPDATE affiliates SET ${updates.join(', ')} WHERE id = $${paramIndex}`, values);
 
     res.json({ success: true, message: 'Affiliate settings updated' });
   } catch (error) {
@@ -4371,7 +4948,7 @@ app.get('/api/affiliate/validate/:code', async (req, res) => {
     res.json({
       valid: true,
       affiliateName: affiliate.business_name || affiliate.email.split('@')[0],
-      commissionRate: parseFloat(affiliate.commission_rate)
+      commissionRate: parseFloat(affiliate.commission_rate),
     });
   } catch (error) {
     console.error('Validate affiliate error:', error);
@@ -4384,10 +4961,15 @@ app.get('/api/affiliate/validate/:code', async (req, res) => {
 // Get user's API keys
 app.get('/api/keys', authenticateToken, async (req, res) => {
   try {
-    const user = await dbGet('SELECT subscription_plan, subscription_status FROM users WHERE id = $1', [req.user.id]);
+    const user = await dbGet(
+      'SELECT subscription_plan, subscription_status FROM users WHERE id = $1',
+      [req.user.id]
+    );
 
     if (user.subscription_plan !== 'unlimited' || user.subscription_status !== 'active') {
-      return res.status(403).json({ error: 'API keys are only available for Unlimited plan subscribers' });
+      return res
+        .status(403)
+        .json({ error: 'API keys are only available for Unlimited plan subscribers' });
     }
 
     const keys = await dbAll(
@@ -4406,16 +4988,25 @@ app.get('/api/keys', authenticateToken, async (req, res) => {
 // Generate new API key
 app.post('/api/keys', authenticateToken, async (req, res) => {
   try {
-    const user = await dbGet('SELECT subscription_plan, subscription_status FROM users WHERE id = $1', [req.user.id]);
+    const user = await dbGet(
+      'SELECT subscription_plan, subscription_status FROM users WHERE id = $1',
+      [req.user.id]
+    );
 
     if (user.subscription_plan !== 'unlimited' || user.subscription_status !== 'active') {
-      return res.status(403).json({ error: 'API keys are only available for Unlimited plan subscribers' });
+      return res
+        .status(403)
+        .json({ error: 'API keys are only available for Unlimited plan subscribers' });
     }
 
     // Check if user already has 5 keys
-    const keyCount = await dbGet('SELECT COUNT(*) as count FROM api_keys WHERE user_id = $1', [req.user.id]);
+    const keyCount = await dbGet('SELECT COUNT(*) as count FROM api_keys WHERE user_id = $1', [
+      req.user.id,
+    ]);
     if (parseInt(keyCount.count) >= 5) {
-      return res.status(400).json({ error: 'Maximum 5 API keys allowed. Please delete an existing key first.' });
+      return res
+        .status(400)
+        .json({ error: 'Maximum 5 API keys allowed. Please delete an existing key first.' });
     }
 
     const { name } = req.body;
@@ -4436,7 +5027,7 @@ app.post('/api/keys', authenticateToken, async (req, res) => {
       key: rawKey,
       prefix: keyPrefix,
       name: keyName,
-      message: 'Save this API key - it will not be shown again!'
+      message: 'Save this API key - it will not be shown again!',
     });
   } catch (error) {
     console.error('Create API key error:', error);
@@ -4451,10 +5042,10 @@ app.put('/api/keys/:id', authenticateToken, async (req, res) => {
     const keyId = req.params.id;
 
     // Check if key exists and belongs to user
-    const existingKey = await dbGet(
-      'SELECT id FROM api_keys WHERE id = $1 AND user_id = $2',
-      [keyId, req.user.id]
-    );
+    const existingKey = await dbGet('SELECT id FROM api_keys WHERE id = $1 AND user_id = $2', [
+      keyId,
+      req.user.id,
+    ]);
 
     if (!existingKey) {
       return res.status(404).json({ error: 'API key not found' });
@@ -4490,8 +5081,8 @@ app.put('/api/keys/:id', authenticateToken, async (req, res) => {
       key: {
         id: result.rows[0].id,
         name: result.rows[0].name,
-        isActive: result.rows[0].is_active
-      }
+        isActive: result.rows[0].is_active,
+      },
     });
   } catch (error) {
     console.error('Update API key error:', error);
@@ -4549,7 +5140,7 @@ app.post('/api/v1/generate', authenticateApiKey, async (req, res) => {
         return res.status(403).json({
           error: 'No Smart AI responses remaining',
           smartRemaining: 0,
-          standardRemaining
+          standardRemaining,
         });
       }
       useModel = 'smart';
@@ -4566,9 +5157,18 @@ app.post('/api/v1/generate', authenticateApiKey, async (req, res) => {
 
     // ========== OPTIMIZED PUBLIC API PROMPT ==========
     const apiLanguageNames = {
-      en: 'English', de: 'German', es: 'Spanish', fr: 'French',
-      it: 'Italian', pt: 'Portuguese', nl: 'Dutch', ja: 'Japanese',
-      zh: 'Chinese', ko: 'Korean', ar: 'Arabic', ru: 'Russian'
+      en: 'English',
+      de: 'German',
+      es: 'Spanish',
+      fr: 'French',
+      it: 'Italian',
+      pt: 'Portuguese',
+      nl: 'Dutch',
+      ja: 'Japanese',
+      zh: 'Chinese',
+      ko: 'Korean',
+      ar: 'Arabic',
+      ru: 'Russian',
     };
 
     const systemPrompt = `You're a small business owner responding to reviews. Not a customer service rep - the actual owner.
@@ -4605,7 +5205,7 @@ LANGUAGE: ${apiLanguageNames[selectedLanguage] || selectedLanguage}`;
         model: 'claude-sonnet-4-20250514',
         max_tokens: 300,
         system: systemPrompt,
-        messages: [{ role: 'user', content: `[Review] ${review_text}` }]
+        messages: [{ role: 'user', content: `[Review] ${review_text}` }],
       });
       generatedResponse = response.content[0].text.trim();
     } else {
@@ -4614,12 +5214,12 @@ LANGUAGE: ${apiLanguageNames[selectedLanguage] || selectedLanguage}`;
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `[Review] ${review_text}` }
+          { role: 'user', content: `[Review] ${review_text}` },
         ],
         max_tokens: 300,
         temperature: 0.6,
         presence_penalty: 0.1,
-        frequency_penalty: 0.1
+        frequency_penalty: 0.1,
       });
       generatedResponse = completion.choices[0].message.content.trim();
       if (useModel === 'smart' && !anthropic) useModel = 'standard';
@@ -4628,17 +5228,34 @@ LANGUAGE: ${apiLanguageNames[selectedLanguage] || selectedLanguage}`;
     // Save to responses table with AI model
     await dbQuery(
       `INSERT INTO responses (user_id, review_text, review_rating, review_platform, generated_response, tone, ai_model) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [user.id, review_text, review_rating || null, selectedPlatform, generatedResponse, selectedTone, useModel]
+      [
+        user.id,
+        review_text,
+        review_rating || null,
+        selectedPlatform,
+        generatedResponse,
+        selectedTone,
+        useModel,
+      ]
     );
 
     // Update correct usage counter
     if (useModel === 'smart') {
-      await dbQuery('UPDATE users SET smart_responses_used = smart_responses_used + 1, responses_used = responses_used + 1 WHERE id = $1', [user.id]);
+      await dbQuery(
+        'UPDATE users SET smart_responses_used = smart_responses_used + 1, responses_used = responses_used + 1 WHERE id = $1',
+        [user.id]
+      );
     } else {
-      await dbQuery('UPDATE users SET standard_responses_used = standard_responses_used + 1, responses_used = responses_used + 1 WHERE id = $1', [user.id]);
+      await dbQuery(
+        'UPDATE users SET standard_responses_used = standard_responses_used + 1, responses_used = responses_used + 1 WHERE id = $1',
+        [user.id]
+      );
     }
 
-    const updatedUser = await dbGet('SELECT smart_responses_used, standard_responses_used FROM users WHERE id = $1', [user.id]);
+    const updatedUser = await dbGet(
+      'SELECT smart_responses_used, standard_responses_used FROM users WHERE id = $1',
+      [user.id]
+    );
 
     res.json({
       success: true,
@@ -4649,8 +5266,11 @@ LANGUAGE: ${apiLanguageNames[selectedLanguage] || selectedLanguage}`;
       platform: selectedPlatform,
       usage: {
         smart: { used: updatedUser.smart_responses_used || 0, limit: planLimits.smartResponses },
-        standard: { used: updatedUser.standard_responses_used || 0, limit: planLimits.standardResponses }
-      }
+        standard: {
+          used: updatedUser.standard_responses_used || 0,
+          limit: planLimits.standardResponses,
+        },
+      },
     });
   } catch (error) {
     console.error('API generate error:', error);
@@ -4670,10 +5290,7 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
     }
 
     // Check if user already submitted feedback
-    const existing = await dbGet(
-      'SELECT id FROM user_feedback WHERE user_id = $1',
-      [req.user.id]
-    );
+    const existing = await dbGet('SELECT id FROM user_feedback WHERE user_id = $1', [req.user.id]);
 
     if (existing) {
       return res.status(400).json({ error: 'You have already submitted feedback' });
@@ -4691,10 +5308,7 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
     );
 
     // Mark user as having submitted feedback
-    await dbQuery(
-      'UPDATE users SET feedback_submitted = TRUE WHERE id = $1',
-      [req.user.id]
-    );
+    await dbQuery('UPDATE users SET feedback_submitted = TRUE WHERE id = $1', [req.user.id]);
 
     // Auto-generate AI response for dogfooding section (non-blocking)
     if (comment && insertResult.rows && insertResult.rows[0]) {
@@ -4714,10 +5328,9 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
 // Check if user should see feedback popup
 app.get('/api/feedback/status', authenticateToken, async (req, res) => {
   try {
-    const user = await dbGet(
-      'SELECT responses_used, feedback_submitted FROM users WHERE id = $1',
-      [req.user.id]
-    );
+    const user = await dbGet('SELECT responses_used, feedback_submitted FROM users WHERE id = $1', [
+      req.user.id,
+    ]);
 
     // Show popup after 3 responses, if not already submitted (farm testimonials early!)
     const shouldShowPopup = user.responses_used >= 3 && !user.feedback_submitted;
@@ -4725,7 +5338,7 @@ app.get('/api/feedback/status', authenticateToken, async (req, res) => {
     res.json({
       shouldShowPopup,
       responsesUsed: user.responses_used,
-      feedbackSubmitted: user.feedback_submitted
+      feedbackSubmitted: user.feedback_submitted,
     });
   } catch (error) {
     console.error('Feedback status error:', error);
@@ -4807,8 +5420,8 @@ app.get('/api/admin/testimonials', async (req, res) => {
 async function generateAIResponseForTestimonial(testimonialId, rating, comment, userName) {
   // ReviewResponder's own business context (open source)
   const REVIEWRESPONDER_CONTEXT = {
-    businessName: "ReviewResponder",
-    businessType: "SaaS / AI Software Tool",
+    businessName: 'ReviewResponder',
+    businessType: 'SaaS / AI Software Tool',
     businessContext: `ReviewResponder helps small business owners respond to customer reviews quickly and professionally.
 
 WHO WE ARE:
@@ -4881,7 +5494,7 @@ NEVER DO:
 
 SIGN OFF:
 - "Thanks, Berend" or "- The ReviewResponder Team"
-- Keep it natural and direct`
+- Keep it natural and direct`,
   };
 
   // Generate AI response using Claude (Smart AI)
@@ -4902,18 +5515,16 @@ Generate a response following the guidelines above. Keep it concise (2-4 sentenc
   const completion = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 500,
-    messages: [
-      { role: 'user', content: systemMessage + '\n\n' + userMessage }
-    ]
+    messages: [{ role: 'user', content: systemMessage + '\n\n' + userMessage }],
   });
 
   const aiResponse = completion.content[0].text.trim();
 
   // Save the response to the database
-  await dbQuery(
-    'UPDATE user_feedback SET ai_response = $1 WHERE id = $2',
-    [aiResponse, testimonialId]
-  );
+  await dbQuery('UPDATE user_feedback SET ai_response = $1 WHERE id = $2', [
+    aiResponse,
+    testimonialId,
+  ]);
 
   return aiResponse;
 }
@@ -4943,7 +5554,7 @@ app.post('/api/admin/testimonials/:id/generate-response', async (req, res) => {
     res.json({
       success: true,
       ai_response: aiResponse,
-      testimonial_id: req.params.id
+      testimonial_id: req.params.id,
     });
   } catch (error) {
     console.error('Generate testimonial response error:', error);
@@ -4956,7 +5567,10 @@ app.post('/api/admin/testimonials/:id/generate-response', async (req, res) => {
 app.post('/api/cron/send-drip-emails', async (req, res) => {
   // Accept both header and query parameter for secret (like daily-outreach)
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -4971,7 +5585,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
   const getDripEmail = (day, user) => {
     const templates = {
       0: {
-        subject: 'Welcome to ReviewResponder! Let\'s get started',
+        subject: "Welcome to ReviewResponder! Let's get started",
         html: `
           <!DOCTYPE html>
           <html>
@@ -5029,7 +5643,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
             </div>
           </body>
           </html>
-        `
+        `,
       },
       2: {
         subject: 'Quick tip: Get better responses with business context',
@@ -5078,10 +5692,10 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
             </div>
           </body>
           </html>
-        `
+        `,
       },
       5: {
-        subject: 'How\'s it going? Here\'s 50% off to upgrade',
+        subject: "How's it going? Here's 50% off to upgrade",
         html: `
           <!DOCTYPE html>
           <html>
@@ -5136,7 +5750,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
             </div>
           </body>
           </html>
-        `
+        `,
       },
       10: {
         subject: 'Did you know? You can respond in 50+ languages',
@@ -5191,10 +5805,10 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
             </div>
           </body>
           </html>
-        `
+        `,
       },
       20: {
-        subject: 'We\'d love your feedback! (Quick 30-second survey)',
+        subject: "We'd love your feedback! (Quick 30-second survey)",
         html: `
           <!DOCTYPE html>
           <html>
@@ -5248,8 +5862,8 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
             </div>
           </body>
           </html>
-        `
-      }
+        `,
+      },
     };
     return templates[day] || null;
   };
@@ -5264,7 +5878,8 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
       // 1. Signed up exactly 'day' days ago (or more, for catch-up)
       // 2. Haven't received this drip email yet
       // 3. Have a valid email
-      const eligibleUsers = await dbQuery(`
+      const eligibleUsers = await dbQuery(
+        `
         SELECT u.id, u.email, u.business_name, u.created_at
         FROM users u
         WHERE u.created_at <= NOW() - INTERVAL '${day} days'
@@ -5276,7 +5891,9 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
           )
         ORDER BY u.created_at DESC
         LIMIT 100
-      `, [day]);
+      `,
+        [day]
+      );
 
       for (const user of eligibleUsers) {
         const emailContent = getDripEmail(day, user);
@@ -5288,7 +5905,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
               from: FROM_EMAIL,
               to: user.email,
               subject: emailContent.subject,
-              html: emailContent.html
+              html: emailContent.html,
             });
           }
 
@@ -5311,7 +5928,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
       success: true,
       message: `Drip campaign processed`,
       sent: sentCount,
-      errors: errorCount
+      errors: errorCount,
     });
   } catch (error) {
     console.error('Drip email error:', error);
@@ -5324,7 +5941,10 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
 app.post('/api/cron/send-weekly-summary', async (req, res) => {
   // Accept both header and query parameter for secret
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -5400,9 +6020,11 @@ app.post('/api/cron/send-weekly-summary', async (req, res) => {
                     </div>
 
                     <div class="tip-box">
-                      <strong>Pro Tip:</strong> ${weeklyResponses > 0
-                        ? 'Great job staying on top of your reviews! Consistent responses help build customer trust and improve your online reputation.'
-                        : 'Don\'t let reviews pile up! Responding quickly shows customers you care about their feedback.'}
+                      <strong>Pro Tip:</strong> ${
+                        weeklyResponses > 0
+                          ? 'Great job staying on top of your reviews! Consistent responses help build customer trust and improve your online reputation.'
+                          : "Don't let reviews pile up! Responding quickly shows customers you care about their feedback."
+                      }
                     </div>
 
                     <p style="text-align: center; margin: 30px 0;">
@@ -5416,7 +6038,7 @@ app.post('/api/cron/send-weekly-summary', async (req, res) => {
                 </div>
               </body>
               </html>
-            `
+            `,
           });
         }
 
@@ -5432,7 +6054,7 @@ app.post('/api/cron/send-weekly-summary', async (req, res) => {
       success: true,
       message: 'Weekly summary emails processed',
       sent: sentCount,
-      errors: errorCount
+      errors: errorCount,
     });
   } catch (error) {
     console.error('Weekly summary error:', error);
@@ -5447,7 +6069,7 @@ const adminRateLimiter = new Map();
 const ADMIN_RATE_LIMIT = 50;
 const ADMIN_RATE_WINDOW = 15 * 60 * 1000; // 15 minutes
 
-const checkAdminRateLimit = (ip) => {
+const checkAdminRateLimit = ip => {
   const now = Date.now();
   const record = adminRateLimiter.get(ip);
 
@@ -5503,16 +6125,21 @@ app.get('/api/admin/set-plan', async (req, res) => {
   // Use PLAN_LIMITS for consistency
   const targetPlan = plan || 'unlimited';
   if (!PLAN_LIMITS[targetPlan]) {
-    return res.status(400).json({ error: 'Invalid plan. Use: free, starter, professional, unlimited' });
+    return res
+      .status(400)
+      .json({ error: 'Invalid plan. Use: free, starter, professional, unlimited' });
   }
 
   const planConfig = {
     status: targetPlan === 'free' ? 'inactive' : 'active',
-    limit: PLAN_LIMITS[targetPlan].responses
+    limit: PLAN_LIMITS[targetPlan].responses,
   };
 
   try {
-    const user = await dbGet('SELECT id, email, subscription_plan FROM users WHERE LOWER(email) = LOWER($1)', [email]);
+    const user = await dbGet(
+      'SELECT id, email, subscription_plan FROM users WHERE LOWER(email) = LOWER($1)',
+      [email]
+    );
 
     if (!user) {
       return res.status(404).json({ error: `User not found: ${email}` });
@@ -5530,11 +6157,18 @@ app.get('/api/admin/set-plan', async (req, res) => {
       [targetPlan, planConfig.status, planConfig.limit, user.id]
     );
 
-    console.log(`✅ Admin set ${email} to ${targetPlan} plan (was: ${user.subscription_plan}), rows affected: ${updateResult.rowCount}`);
+    console.log(
+      `✅ Admin set ${email} to ${targetPlan} plan (was: ${user.subscription_plan}), rows affected: ${updateResult.rowCount}`
+    );
 
     // Verify the update worked
-    const verifyUser = await dbGet('SELECT subscription_plan, responses_limit FROM users WHERE id = $1', [user.id]);
-    console.log(`✅ Verified: plan=${verifyUser?.subscription_plan}, limit=${verifyUser?.responses_limit}`);
+    const verifyUser = await dbGet(
+      'SELECT subscription_plan, responses_limit FROM users WHERE id = $1',
+      [user.id]
+    );
+    console.log(
+      `✅ Verified: plan=${verifyUser?.subscription_plan}, limit=${verifyUser?.responses_limit}`
+    );
 
     // If redirect=1, send HTML page that forces a full page reload
     if (req.query.redirect === '1') {
@@ -5581,7 +6215,7 @@ app.get('/api/admin/set-plan', async (req, res) => {
       responses_limit: planConfig.limit,
       rows_affected: updateResult.rowCount,
       verified_plan: verifyUser?.subscription_plan,
-      verified_limit: verifyUser?.responses_limit
+      verified_limit: verifyUser?.responses_limit,
     });
   } catch (error) {
     console.error('Admin set-plan error:', error);
@@ -5603,7 +6237,10 @@ app.get('/api/admin/delete-user', async (req, res) => {
   }
 
   try {
-    const user = await dbGet('SELECT id, email, oauth_provider FROM users WHERE LOWER(email) = LOWER($1)', [email]);
+    const user = await dbGet(
+      'SELECT id, email, oauth_provider FROM users WHERE LOWER(email) = LOWER($1)',
+      [email]
+    );
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -5611,24 +6248,38 @@ app.get('/api/admin/delete-user', async (req, res) => {
     // Delete related data first (foreign key constraints)
     await dbQuery('DELETE FROM responses WHERE user_id = $1', [user.id]);
     await dbQuery('DELETE FROM response_templates WHERE user_id = $1', [user.id]);
-    await dbQuery('DELETE FROM team_members WHERE team_owner_id = $1 OR member_user_id = $1', [user.id]);
+    await dbQuery('DELETE FROM team_members WHERE team_owner_id = $1 OR member_user_id = $1', [
+      user.id,
+    ]);
     await dbQuery('DELETE FROM api_keys WHERE user_id = $1', [user.id]);
     await dbQuery('DELETE FROM blog_articles WHERE user_id = $1', [user.id]);
-    await dbQuery('DELETE FROM referrals WHERE referrer_id = $1 OR referred_user_id = $1', [user.id]);
+    await dbQuery('DELETE FROM referrals WHERE referrer_id = $1 OR referred_user_id = $1', [
+      user.id,
+    ]);
     await dbQuery('DELETE FROM user_feedback WHERE user_id = $1', [user.id]);
     await dbQuery('DELETE FROM drip_emails WHERE user_id = $1', [user.id]);
     await dbQuery('DELETE FROM password_reset_tokens WHERE user_id = $1', [user.id]);
     // Only delete from tables that exist - skip notification_preferences if not created yet
-    try { await dbQuery('DELETE FROM notification_preferences WHERE user_id = $1', [user.id]); } catch (e) {}
-    try { await dbQuery('DELETE FROM affiliate_clicks WHERE user_id = $1', [user.id]); } catch (e) {}
+    try {
+      await dbQuery('DELETE FROM notification_preferences WHERE user_id = $1', [user.id]);
+    } catch (e) {}
+    try {
+      await dbQuery('DELETE FROM affiliate_clicks WHERE user_id = $1', [user.id]);
+    } catch (e) {}
     // Update referrals that reference this user
-    await dbQuery('UPDATE referrals SET referred_user_id = NULL WHERE referred_user_id = $1', [user.id]);
+    await dbQuery('UPDATE referrals SET referred_user_id = NULL WHERE referred_user_id = $1', [
+      user.id,
+    ]);
 
     // Delete user
     await dbQuery('DELETE FROM users WHERE id = $1', [user.id]);
 
     console.log(`✅ Admin deleted user: ${email} (OAuth: ${user.oauth_provider || 'none'})`);
-    res.json({ success: true, message: `User ${email} deleted`, oauth_provider: user.oauth_provider });
+    res.json({
+      success: true,
+      message: `User ${email} deleted`,
+      oauth_provider: user.oauth_provider,
+    });
   } catch (error) {
     console.error('Admin delete-user error:', error);
     res.status(500).json({ error: 'Failed to delete user', details: error.message });
@@ -5649,14 +6300,13 @@ app.get('/api/admin/delete-email-capture', async (req, res) => {
   }
 
   try {
-    const result = await dbQuery(
-      'DELETE FROM email_captures WHERE LOWER(email) = LOWER($1)',
-      [email]
-    );
+    const result = await dbQuery('DELETE FROM email_captures WHERE LOWER(email) = LOWER($1)', [
+      email,
+    ]);
     res.json({
       success: true,
       message: `Deleted ${result.rowCount} email capture(s) for ${email}`,
-      deleted: result.rowCount
+      deleted: result.rowCount,
     });
   } catch (error) {
     console.error('Delete email capture error:', error);
@@ -5726,7 +6376,10 @@ app.post('/api/admin/upgrade-user', async (req, res) => {
 
   try {
     // Find user
-    const user = await dbGet('SELECT id, email, subscription_plan FROM users WHERE LOWER(email) = LOWER($1)', [email]);
+    const user = await dbGet(
+      'SELECT id, email, subscription_plan FROM users WHERE LOWER(email) = LOWER($1)',
+      [email]
+    );
 
     if (!user) {
       return res.status(404).json({ error: `User not found: ${email}` });
@@ -5748,7 +6401,7 @@ app.post('/api/admin/upgrade-user', async (req, res) => {
       success: true,
       message: `User ${email} upgraded to Unlimited plan`,
       previous_plan: user.subscription_plan,
-      new_plan: 'unlimited'
+      new_plan: 'unlimited',
     });
   } catch (error) {
     console.error('Admin upgrade error:', error);
@@ -5771,11 +6424,15 @@ const authenticateAdmin = (req, res, next) => {
   const adminKey = req.headers['x-admin-key'];
   const adminSecret = process.env.ADMIN_SECRET;
 
-  console.log(`🔐 Admin auth attempt - Key provided: ${adminKey ? 'yes (' + adminKey.substring(0,4) + '...)' : 'no'}, Secret configured: ${adminSecret ? 'yes' : 'no'}`);
+  console.log(
+    `🔐 Admin auth attempt - Key provided: ${adminKey ? 'yes (' + adminKey.substring(0, 4) + '...)' : 'no'}, Secret configured: ${adminSecret ? 'yes' : 'no'}`
+  );
 
   if (!adminSecret) {
     console.log('❌ ADMIN_SECRET not configured in environment');
-    return res.status(500).json({ error: 'ADMIN_SECRET not configured. Add it to Render environment variables.' });
+    return res
+      .status(500)
+      .json({ error: 'ADMIN_SECRET not configured. Add it to Render environment variables.' });
   }
 
   if (!adminKey) {
@@ -5830,8 +6487,8 @@ app.get('/api/admin/affiliates', authenticateAdmin, async (req, res) => {
         approved: parseInt(counts.approved) || 0,
         rejected: parseInt(counts.rejected) || 0,
         suspended: parseInt(counts.suspended) || 0,
-        total: parseInt(counts.total) || 0
-      }
+        total: parseInt(counts.total) || 0,
+      },
     });
   } catch (error) {
     console.error('Admin get affiliates error:', error);
@@ -5842,33 +6499,42 @@ app.get('/api/admin/affiliates', authenticateAdmin, async (req, res) => {
 // GET /api/admin/affiliates/:id - Get single affiliate with details
 app.get('/api/admin/affiliates/:id', authenticateAdmin, async (req, res) => {
   try {
-    const affiliate = await dbGet(`
+    const affiliate = await dbGet(
+      `
       SELECT a.*, u.email, u.business_name, u.created_at as user_created_at
       FROM affiliates a
       JOIN users u ON a.user_id = u.id
       WHERE a.id = $1
-    `, [req.params.id]);
+    `,
+      [req.params.id]
+    );
 
     if (!affiliate) {
       return res.status(404).json({ error: 'Affiliate not found' });
     }
 
     // Get conversions
-    const conversions = await dbAll(`
+    const conversions = await dbAll(
+      `
       SELECT ac.*, u.email as converted_email
       FROM affiliate_conversions ac
       LEFT JOIN users u ON ac.referred_user_id = u.id
       WHERE ac.affiliate_id = $1
       ORDER BY ac.created_at DESC
       LIMIT 50
-    `, [req.params.id]);
+    `,
+      [req.params.id]
+    );
 
     // Get payouts
-    const payouts = await dbAll(`
+    const payouts = await dbAll(
+      `
       SELECT * FROM affiliate_payouts
       WHERE affiliate_id = $1
       ORDER BY created_at DESC
-    `, [req.params.id]);
+    `,
+      [req.params.id]
+    );
 
     res.json({ affiliate, conversions, payouts });
   } catch (error) {
@@ -5902,13 +6568,12 @@ app.put('/api/admin/affiliates/:id/status', authenticateAdmin, async (req, res) 
 
     params.push(id);
 
-    await dbQuery(
-      `UPDATE affiliates SET ${updates.join(', ')} WHERE id = $${paramIndex}`,
-      params
-    );
+    await dbQuery(`UPDATE affiliates SET ${updates.join(', ')} WHERE id = $${paramIndex}`, params);
 
     // Get user email for notification
-    const user = await dbGet('SELECT email, business_name FROM users WHERE id = $1', [affiliate.user_id]);
+    const user = await dbGet('SELECT email, business_name FROM users WHERE id = $1', [
+      affiliate.user_id,
+    ]);
 
     // Send email notification if Resend is configured
     if (resend && user) {
@@ -5952,7 +6617,7 @@ app.put('/api/admin/affiliates/:id/status', authenticateAdmin, async (req, res) 
             from: FROM_EMAIL,
             to: user.email,
             subject,
-            html
+            html,
           });
         }
       } catch (emailError) {
@@ -5965,7 +6630,7 @@ app.put('/api/admin/affiliates/:id/status', authenticateAdmin, async (req, res) 
     res.json({
       success: true,
       message: `Affiliate ${status === 'approved' ? 'approved' : status === 'rejected' ? 'rejected' : 'updated'}`,
-      affiliate_code: affiliate.affiliate_code
+      affiliate_code: affiliate.affiliate_code,
     });
   } catch (error) {
     console.error('Admin update affiliate status error:', error);
@@ -5983,10 +6648,7 @@ app.put('/api/admin/affiliates/:id/commission', authenticateAdmin, async (req, r
       return res.status(400).json({ error: 'Commission rate must be between 0 and 50%' });
     }
 
-    await dbQuery(
-      'UPDATE affiliates SET commission_rate = $1 WHERE id = $2',
-      [commissionRate, id]
-    );
+    await dbQuery('UPDATE affiliates SET commission_rate = $1 WHERE id = $2', [commissionRate, id]);
 
     console.log(`✅ Admin updated affiliate ${id} commission to ${commissionRate}%`);
 
@@ -6013,17 +6675,23 @@ app.post('/api/admin/affiliates/:id/payout', authenticateAdmin, async (req, res)
     }
 
     // Create payout record
-    await dbQuery(`
+    await dbQuery(
+      `
       INSERT INTO affiliate_payouts (affiliate_id, amount, method, transaction_id, status, note, processed_at)
       VALUES ($1, $2, $3, $4, 'completed', $5, NOW())
-    `, [id, amount, method || affiliate.payout_method, transactionId, note]);
+    `,
+      [id, amount, method || affiliate.payout_method, transactionId, note]
+    );
 
     // Update affiliate totals
-    await dbQuery(`
+    await dbQuery(
+      `
       UPDATE affiliates
       SET total_paid = total_paid + $1, pending_balance = pending_balance - $1
       WHERE id = $2
-    `, [amount, id]);
+    `,
+      [amount, id]
+    );
 
     console.log(`✅ Admin processed payout of $${amount} for affiliate ${id}`);
 
@@ -6040,57 +6708,71 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
     // User stats - this should always work
     let userStats = { total_users: 0, paying_users: 0, new_users_week: 0, new_users_month: 0 };
     try {
-      userStats = await dbGet(`
+      userStats =
+        (await dbGet(`
         SELECT
           COUNT(*) as total_users,
           COUNT(*) FILTER (WHERE subscription_plan != 'free') as paying_users,
           COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '7 days') as new_users_week,
           COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '30 days') as new_users_month
         FROM users
-      `) || userStats;
-    } catch (e) { console.error('User stats query error:', e.message); }
+      `)) || userStats;
+    } catch (e) {
+      console.error('User stats query error:', e.message);
+    }
 
     // Revenue stats - might fail if table doesn't exist
     let revenueStats = { total_commissions: 0, total_conversions: 0 };
     try {
-      revenueStats = await dbGet(`
+      revenueStats =
+        (await dbGet(`
         SELECT
           COALESCE(SUM(commission_amount), 0) as total_commissions,
           COUNT(DISTINCT referred_user_id) as total_conversions
         FROM affiliate_conversions
-      `) || revenueStats;
-    } catch (e) { console.error('Revenue stats query error:', e.message); }
+      `)) || revenueStats;
+    } catch (e) {
+      console.error('Revenue stats query error:', e.message);
+    }
 
     // Affiliate stats - might fail if table doesn't exist
-    let affiliateStats = { pending_affiliates: 0, active_affiliates: 0, total_affiliate_earnings: 0, total_pending_payouts: 0 };
+    let affiliateStats = {
+      pending_affiliates: 0,
+      active_affiliates: 0,
+      total_affiliate_earnings: 0,
+      total_pending_payouts: 0,
+    };
     try {
-      affiliateStats = await dbGet(`
+      affiliateStats =
+        (await dbGet(`
         SELECT
           COUNT(*) FILTER (WHERE status = 'pending') as pending_affiliates,
           COUNT(*) FILTER (WHERE status = 'approved') as active_affiliates,
           COALESCE(SUM(total_earned), 0) as total_affiliate_earnings,
           COALESCE(SUM(pending_balance), 0) as total_pending_payouts
         FROM affiliates
-      `) || affiliateStats;
-    } catch (e) { console.error('Affiliate stats query error:', e.message); }
+      `)) || affiliateStats;
+    } catch (e) {
+      console.error('Affiliate stats query error:', e.message);
+    }
 
     res.json({
       users: {
         total: parseInt(userStats.total_users) || 0,
         paying: parseInt(userStats.paying_users) || 0,
         newThisWeek: parseInt(userStats.new_users_week) || 0,
-        newThisMonth: parseInt(userStats.new_users_month) || 0
+        newThisMonth: parseInt(userStats.new_users_month) || 0,
       },
       affiliates: {
         pending: parseInt(affiliateStats.pending_affiliates) || 0,
         active: parseInt(affiliateStats.active_affiliates) || 0,
         totalEarnings: parseFloat(affiliateStats.total_affiliate_earnings) || 0,
-        pendingPayouts: parseFloat(affiliateStats.total_pending_payouts) || 0
+        pendingPayouts: parseFloat(affiliateStats.total_pending_payouts) || 0,
       },
       conversions: {
         total: parseInt(revenueStats.total_conversions) || 0,
-        totalCommissions: parseFloat(revenueStats.total_commissions) || 0
-      }
+        totalCommissions: parseFloat(revenueStats.total_commissions) || 0,
+      },
     });
   } catch (error) {
     console.error('Admin stats error:', error);
@@ -6128,17 +6810,14 @@ app.get('/api/outreach/track-open', async (req, res) => {
   }
 
   // Return 1x1 transparent GIF
-  const pixel = Buffer.from(
-    'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
-    'base64'
-  );
+  const pixel = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
 
   res.set({
     'Content-Type': 'image/gif',
     'Content-Length': pixel.length,
     'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-    'Pragma': 'no-cache',
-    'Expires': '0'
+    Pragma: 'no-cache',
+    Expires: '0',
   });
 
   res.send(pixel);
@@ -6155,14 +6834,10 @@ app.get('/api/outreach/stats', async (req, res) => {
     }
 
     // Get overall stats
-    const totalOpens = await dbGet(
-      `SELECT COUNT(*) as count FROM outreach_tracking`
-    );
+    const totalOpens = await dbGet(`SELECT COUNT(*) as count FROM outreach_tracking`);
 
     // Get unique opens (by email)
-    const uniqueOpens = await dbGet(
-      `SELECT COUNT(DISTINCT email) as count FROM outreach_tracking`
-    );
+    const uniqueOpens = await dbGet(`SELECT COUNT(DISTINCT email) as count FROM outreach_tracking`);
 
     // Get opens by campaign
     const byCampaign = await dbAll(
@@ -6196,7 +6871,7 @@ app.get('/api/outreach/stats', async (req, res) => {
       unique_opens: parseInt(uniqueOpens?.count || 0),
       by_campaign: byCampaign,
       recent_opens: recentOpens,
-      by_day: byDay
+      by_day: byDay,
     });
   } catch (error) {
     console.error('Outreach stats error:', error);
@@ -6290,7 +6965,26 @@ async function initOutreachTables() {
 initOutreachTables();
 
 // German-speaking cities for language detection
-const GERMAN_CITIES = ['Berlin', 'München', 'Munich', 'Hamburg', 'Frankfurt', 'Köln', 'Cologne', 'Stuttgart', 'Düsseldorf', 'Wien', 'Vienna', 'Zürich', 'Zurich', 'Salzburg', 'Graz', 'Innsbruck', 'Bern', 'Basel'];
+const GERMAN_CITIES = [
+  'Berlin',
+  'München',
+  'Munich',
+  'Hamburg',
+  'Frankfurt',
+  'Köln',
+  'Cologne',
+  'Stuttgart',
+  'Düsseldorf',
+  'Wien',
+  'Vienna',
+  'Zürich',
+  'Zurich',
+  'Salzburg',
+  'Graz',
+  'Innsbruck',
+  'Bern',
+  'Basel',
+];
 
 // Helper: Detect language based on city
 function detectLanguage(city) {
@@ -6315,7 +7009,7 @@ If you're interested: https://tryreviewresponder.com
 Cheers,
 Berend
 
-P.S. I'm the founder, feel free to reply if you have any questions.`
+P.S. I'm the founder, feel free to reply if you have any questions.`,
   },
   sequence2: {
     subject: 'Re: {business_name}',
@@ -6328,7 +7022,7 @@ Businesses that respond to reviews get higher ratings and up to 9% more revenue 
 If you have 2 minutes: https://tryreviewresponder.com
 
 Cheers,
-Berend`
+Berend`,
   },
   sequence3: {
     subject: '{business_name}',
@@ -6342,8 +7036,8 @@ But if you ever find reviews piling up: https://tryreviewresponder.com is there.
 
 Wishing you continued success!
 
-Berend`
-  }
+Berend`,
+  },
 };
 
 // Email templates for cold outreach - GERMAN
@@ -6363,7 +7057,7 @@ Falls interessant: https://tryreviewresponder.com
 Grüße,
 Berend
 
-P.S. Bin der Gründer, bei Fragen einfach antworten.`
+P.S. Bin der Gründer, bei Fragen einfach antworten.`,
   },
   sequence2: {
     subject: 'Re: {business_name}',
@@ -6376,7 +7070,7 @@ Wer auf Reviews antwortet bekommt bessere Bewertungen und bis zu 9% mehr Umsatz 
 Falls du mal 2 Minuten hast: https://tryreviewresponder.com
 
 Grüße,
-Berend`
+Berend`,
   },
   sequence3: {
     subject: '{business_name}',
@@ -6390,8 +7084,8 @@ Aber falls Reviews mal liegen bleiben: https://tryreviewresponder.com ist da.
 
 Viel Erfolg weiterhin!
 
-Berend`
-  }
+Berend`,
+  },
 };
 
 // Combined templates with language selection
@@ -6401,7 +7095,7 @@ const EMAIL_TEMPLATES = {
   sequence3: EMAIL_TEMPLATES_EN.sequence3,
   sequence1_de: EMAIL_TEMPLATES_DE.sequence1,
   sequence2_de: EMAIL_TEMPLATES_DE.sequence2,
-  sequence3_de: EMAIL_TEMPLATES_DE.sequence3
+  sequence3_de: EMAIL_TEMPLATES_DE.sequence3,
 };
 
 // Helper: Get template based on language
@@ -6422,7 +7116,7 @@ function fillEmailTemplate(template, lead) {
     '{review_count}': lead.google_reviews_count || '50',
     '{email}': encodeURIComponent(lead.email || ''),
     '{city}': lead.city || '',
-    '{contact_name}': lead.contact_name || 'there'
+    '{contact_name}': lead.contact_name || 'there',
   };
 
   for (const [key, value] of Object.entries(replacements)) {
@@ -6444,18 +7138,14 @@ app.post('/api/outreach/scrape-leads', async (req, res) => {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const {
-    query = 'restaurant',
-    city = 'New York',
-    limit = 20
-  } = req.body;
+  const { query = 'restaurant', city = 'New York', limit = 20 } = req.body;
 
   const GOOGLE_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 
   if (!GOOGLE_API_KEY) {
     return res.status(500).json({
       error: 'GOOGLE_PLACES_API_KEY not configured',
-      setup: 'Add GOOGLE_PLACES_API_KEY to Render environment variables'
+      setup: 'Add GOOGLE_PLACES_API_KEY to Render environment variables',
     });
   }
 
@@ -6495,12 +7185,13 @@ app.post('/api/outreach/scrape-leads', async (req, res) => {
           website: result.website,
           google_rating: result.rating,
           google_reviews_count: result.user_ratings_total,
-          source: 'google_places'
+          source: 'google_places',
         };
 
         // Insert lead (ignore duplicates)
         try {
-          await dbQuery(`
+          await dbQuery(
+            `
             INSERT INTO outreach_leads
             (business_name, business_type, address, city, phone, website, google_rating, google_reviews_count, source)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -6508,8 +7199,19 @@ app.post('/api/outreach/scrape-leads', async (req, res) => {
               google_rating = EXCLUDED.google_rating,
               google_reviews_count = EXCLUDED.google_reviews_count,
               website = COALESCE(EXCLUDED.website, outreach_leads.website)
-          `, [lead.business_name, lead.business_type, lead.address, lead.city,
-              lead.phone, lead.website, lead.google_rating, lead.google_reviews_count, lead.source]);
+          `,
+            [
+              lead.business_name,
+              lead.business_type,
+              lead.address,
+              lead.city,
+              lead.phone,
+              lead.website,
+              lead.google_rating,
+              lead.google_reviews_count,
+              lead.source,
+            ]
+          );
 
           leads.push(lead);
         } catch (dbError) {
@@ -6525,7 +7227,7 @@ app.post('/api/outreach/scrape-leads', async (req, res) => {
       success: true,
       leads_found: leads.length,
       query: searchQuery,
-      leads: leads
+      leads: leads,
     });
   } catch (error) {
     console.error('Lead scraping error:', error);
@@ -6549,7 +7251,7 @@ app.post('/api/outreach/find-emails', async (req, res) => {
   if (!HUNTER_API_KEY) {
     return res.status(500).json({
       error: 'HUNTER_API_KEY not configured',
-      setup: 'Get free API key from hunter.io and add to Render'
+      setup: 'Get free API key from hunter.io and add to Render',
     });
   }
 
@@ -6574,7 +7276,10 @@ app.post('/api/outreach/find-emails', async (req, res) => {
       try {
         // Extract domain from website
         let domain = lead.website;
-        domain = domain.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+        domain = domain
+          .replace(/^https?:\/\//, '')
+          .replace(/^www\./, '')
+          .split('/')[0];
 
         // Use Hunter.io Domain Search
         const hunterUrl = `https://api.hunter.io/v2/domain-search?domain=${domain}&api_key=${HUNTER_API_KEY}`;
@@ -6583,19 +7288,26 @@ app.post('/api/outreach/find-emails', async (req, res) => {
 
         if (data.data?.emails?.length > 0) {
           // Get the most relevant email (usually first one with highest confidence)
-          const bestEmail = data.data.emails
-            .sort((a, b) => (b.confidence || 0) - (a.confidence || 0))[0];
+          const bestEmail = data.data.emails.sort(
+            (a, b) => (b.confidence || 0) - (a.confidence || 0)
+          )[0];
 
-          await dbQuery(`
+          await dbQuery(
+            `
             UPDATE outreach_leads
             SET email = $1,
                 email_verified = $2,
                 email_source = 'hunter.io',
                 contact_name = $3
             WHERE id = $4
-          `, [bestEmail.value, bestEmail.verification?.status === 'valid',
+          `,
+            [
+              bestEmail.value,
+              bestEmail.verification?.status === 'valid',
               `${bestEmail.first_name || ''} ${bestEmail.last_name || ''}`.trim(),
-              lead.id]);
+              lead.id,
+            ]
+          );
 
           found++;
           console.log(`📧 Found email for ${lead.business_name}: ${bestEmail.value}`);
@@ -6611,7 +7323,7 @@ app.post('/api/outreach/find-emails', async (req, res) => {
     res.json({
       success: true,
       leads_checked: leads.length,
-      emails_found: found
+      emails_found: found,
     });
   } catch (error) {
     console.error('Email finder error:', error);
@@ -6645,7 +7357,7 @@ app.post('/api/outreach/test-email', async (req, res) => {
       business_type: 'restaurant',
       city: city || 'New York', // Default to English, use 'Berlin' for German
       email: email,
-      google_reviews_count: 100
+      google_reviews_count: 100,
     };
 
     const template = fillEmailTemplate(getTemplateForLead(1, testLead), testLead);
@@ -6655,7 +7367,7 @@ app.post('/api/outreach/test-email', async (req, res) => {
       from: OUTREACH_FROM_EMAIL,
       to: email,
       subject: `[TEST] ${template.subject}`,
-      html: template.body.replace(/\n/g, '<br>')
+      html: template.body.replace(/\n/g, '<br>'),
     });
 
     res.json({
@@ -6664,7 +7376,7 @@ app.post('/api/outreach/test-email', async (req, res) => {
       from: OUTREACH_FROM_EMAIL,
       language: language,
       city: testLead.city,
-      resend_id: result.id
+      resend_id: result.id,
     });
   } catch (err) {
     console.error('Test email error:', err);
@@ -6682,7 +7394,7 @@ app.post('/api/outreach/send-emails', async (req, res) => {
   if (!resend) {
     return res.status(500).json({
       error: 'RESEND_API_KEY not configured',
-      setup: 'Add RESEND_API_KEY to Render environment variables'
+      setup: 'Add RESEND_API_KEY to Render environment variables',
     });
   }
 
@@ -6690,10 +7402,9 @@ app.post('/api/outreach/send-emails', async (req, res) => {
 
   try {
     // Check daily limit
-    const campaignConfig = await dbGet(
-      'SELECT * FROM outreach_campaigns WHERE name = $1',
-      [campaign]
-    );
+    const campaignConfig = await dbGet('SELECT * FROM outreach_campaigns WHERE name = $1', [
+      campaign,
+    ]);
 
     if (!campaignConfig) {
       return res.status(400).json({ error: 'Campaign not found' });
@@ -6718,12 +7429,13 @@ app.post('/api/outreach/send-emails', async (req, res) => {
         success: true,
         message: 'Daily limit reached',
         sent: 0,
-        daily_limit: campaignConfig.daily_limit
+        daily_limit: campaignConfig.daily_limit,
       });
     }
 
     // Get leads ready for first email (have email, no emails sent yet)
-    const newLeads = await dbAll(`
+    const newLeads = await dbAll(
+      `
       SELECT l.* FROM outreach_leads l
       LEFT JOIN outreach_emails e ON l.id = e.lead_id
       WHERE l.email IS NOT NULL
@@ -6731,7 +7443,9 @@ app.post('/api/outreach/send-emails', async (req, res) => {
         AND e.id IS NULL
       ORDER BY l.google_reviews_count DESC NULLS LAST
       LIMIT $1
-    `, [toSend]);
+    `,
+      [toSend]
+    );
 
     let sent = 0;
 
@@ -6747,22 +7461,25 @@ app.post('/api/outreach/send-emails', async (req, res) => {
           html: template.body.replace(/\n/g, '<br>'),
           tags: [
             { name: 'campaign', value: campaign },
-            { name: 'sequence', value: '1' }
-          ]
+            { name: 'sequence', value: '1' },
+          ],
         });
 
         // Log the email
-        await dbQuery(`
+        await dbQuery(
+          `
           INSERT INTO outreach_emails
           (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
           VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5)
-        `, [lead.id, lead.email, template.subject, template.body, campaign]);
+        `,
+          [lead.id, lead.email, template.subject, template.body, campaign]
+        );
 
         // Update lead status
-        await dbQuery(
-          'UPDATE outreach_leads SET status = $1 WHERE id = $2',
-          ['contacted', lead.id]
-        );
+        await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', [
+          'contacted',
+          lead.id,
+        ]);
 
         sent++;
         console.log(`✉️ Sent to ${lead.email} (${lead.business_name})`);
@@ -6774,25 +7491,25 @@ app.post('/api/outreach/send-emails', async (req, res) => {
 
         // Mark as bounced if email error
         if (err.message?.includes('bounce') || err.message?.includes('invalid')) {
-          await dbQuery(
-            'UPDATE outreach_leads SET status = $1 WHERE id = $2',
-            ['bounced', lead.id]
-          );
+          await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', [
+            'bounced',
+            lead.id,
+          ]);
         }
       }
     }
 
     // Update daily counter
-    await dbQuery(
-      'UPDATE outreach_campaigns SET sent_today = sent_today + $1 WHERE name = $2',
-      [sent, campaign]
-    );
+    await dbQuery('UPDATE outreach_campaigns SET sent_today = sent_today + $1 WHERE name = $2', [
+      sent,
+      campaign,
+    ]);
 
     res.json({
       success: true,
       sent: sent,
       remaining_today: remainingToday - sent,
-      daily_limit: campaignConfig.daily_limit
+      daily_limit: campaignConfig.daily_limit,
     });
   } catch (error) {
     console.error('Send emails error:', error);
@@ -6844,7 +7561,8 @@ app.post('/api/outreach/send-followups', async (req, res) => {
       LIMIT 20
     `);
 
-    let sent2 = 0, sent3 = 0;
+    let sent2 = 0,
+      sent3 = 0;
 
     // Send sequence 2
     for (const lead of needsFollowup2) {
@@ -6855,14 +7573,17 @@ app.post('/api/outreach/send-followups', async (req, res) => {
           from: OUTREACH_FROM_EMAIL,
           to: lead.email,
           subject: template.subject,
-          html: template.body.replace(/\n/g, '<br>')
+          html: template.body.replace(/\n/g, '<br>'),
         });
 
-        await dbQuery(`
+        await dbQuery(
+          `
           INSERT INTO outreach_emails
           (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
           VALUES ($1, $2, 2, $3, $4, 'sent', NOW(), 'main')
-        `, [lead.id, lead.email, template.subject, template.body]);
+        `,
+          [lead.id, lead.email, template.subject, template.body]
+        );
 
         sent2++;
         await new Promise(r => setTimeout(r, 500));
@@ -6880,20 +7601,23 @@ app.post('/api/outreach/send-followups', async (req, res) => {
           from: OUTREACH_FROM_EMAIL,
           to: lead.email,
           subject: template.subject,
-          html: template.body.replace(/\n/g, '<br>')
+          html: template.body.replace(/\n/g, '<br>'),
         });
 
-        await dbQuery(`
+        await dbQuery(
+          `
           INSERT INTO outreach_emails
           (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
           VALUES ($1, $2, 3, $3, $4, 'sent', NOW(), 'main')
-        `, [lead.id, lead.email, template.subject, template.body]);
+        `,
+          [lead.id, lead.email, template.subject, template.body]
+        );
 
         // Mark as completed sequence
-        await dbQuery(
-          'UPDATE outreach_leads SET status = $1 WHERE id = $2',
-          ['sequence_completed', lead.id]
-        );
+        await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', [
+          'sequence_completed',
+          lead.id,
+        ]);
 
         sent3++;
         await new Promise(r => setTimeout(r, 500));
@@ -6906,7 +7630,7 @@ app.post('/api/outreach/send-followups', async (req, res) => {
       success: true,
       followup2_sent: sent2,
       followup3_sent: sent3,
-      total_sent: sent2 + sent3
+      total_sent: sent2 + sent3,
     });
   } catch (error) {
     console.error('Follow-up error:', error);
@@ -6922,7 +7646,10 @@ app.post('/api/outreach/send-followups', async (req, res) => {
 // Set up as Render Cron Job: 0 9 * * * (9 AM UTC daily)
 app.post('/api/cron/daily-outreach', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -6932,7 +7659,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
     scraping: null,
     email_finding: null,
     sending: null,
-    followups: null
+    followups: null,
   };
 
   try {
@@ -6956,11 +7683,14 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
         if (data.results) {
           for (const place of data.results.slice(0, 10)) {
             try {
-              await dbQuery(`
+              await dbQuery(
+                `
                 INSERT INTO outreach_leads (business_name, business_type, city, source)
                 VALUES ($1, $2, $3, 'google_places')
                 ON CONFLICT (business_name, city) DO NOTHING
-              `, [place.name, todayIndustry, todayCity]);
+              `,
+                [place.name, todayIndustry, todayCity]
+              );
               totalScraped++;
             } catch (e) {}
           }
@@ -6984,14 +7714,20 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
 
       for (const lead of leadsNeedingEmail) {
         try {
-          const domain = lead.website.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+          const domain = lead.website
+            .replace(/^https?:\/\//, '')
+            .replace(/^www\./, '')
+            .split('/')[0];
           const hunterUrl = `https://api.hunter.io/v2/domain-search?domain=${domain}&api_key=${process.env.HUNTER_API_KEY}`;
           const response = await fetch(hunterUrl);
           const data = await response.json();
 
           if (data.data?.emails?.[0]) {
-            await dbQuery('UPDATE outreach_leads SET email = $1, email_source = $2 WHERE id = $3',
-              [data.data.emails[0].value, 'hunter.io', lead.id]);
+            await dbQuery('UPDATE outreach_leads SET email = $1, email_source = $2 WHERE id = $3', [
+              data.data.emails[0].value,
+              'hunter.io',
+              lead.id,
+            ]);
             emailsFound++;
           }
           await new Promise(r => setTimeout(r, 1000));
@@ -7020,15 +7756,21 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
             from: OUTREACH_FROM_EMAIL,
             to: lead.email,
             subject: template.subject,
-            html: template.body.replace(/\n/g, '<br>')
+            html: template.body.replace(/\n/g, '<br>'),
           });
 
-          await dbQuery(`
+          await dbQuery(
+            `
             INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
             VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), 'main')
-          `, [lead.id, lead.email, template.subject, template.body]);
+          `,
+            [lead.id, lead.email, template.subject, template.body]
+          );
 
-          await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', ['contacted', lead.id]);
+          await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', [
+            'contacted',
+            lead.id,
+          ]);
           sent++;
 
           await new Promise(r => setTimeout(r, 500));
@@ -7065,16 +7807,22 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
               from: OUTREACH_FROM_EMAIL,
               to: lead.email,
               subject: template.subject,
-              html: template.body.replace(/\n/g, '<br>')
+              html: template.body.replace(/\n/g, '<br>'),
             });
 
-            await dbQuery(`
+            await dbQuery(
+              `
               INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
               VALUES ($1, $2, $3, $4, $5, 'sent', NOW(), 'main')
-            `, [lead.id, lead.email, nextSequence, template.subject, template.body]);
+            `,
+              [lead.id, lead.email, nextSequence, template.subject, template.body]
+            );
 
             if (nextSequence === 3) {
-              await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', ['sequence_completed', lead.id]);
+              await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', [
+                'sequence_completed',
+                lead.id,
+              ]);
             }
 
             followupsSent++;
@@ -7091,7 +7839,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
     res.json({
       success: true,
       timestamp: new Date().toISOString(),
-      results: results
+      results: results,
     });
   } catch (error) {
     console.error('Daily outreach error:', error);
@@ -7108,9 +7856,16 @@ app.get('/api/outreach/dashboard', async (req, res) => {
 
   try {
     const totalLeads = await dbGet('SELECT COUNT(*) as count FROM outreach_leads');
-    const leadsWithEmail = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE email IS NOT NULL');
-    const emailsSent = await dbGet('SELECT COUNT(*) as count FROM outreach_emails WHERE status = $1', ['sent']);
-    const emailsOpened = await dbGet('SELECT COUNT(*) as count FROM outreach_emails WHERE opened_at IS NOT NULL');
+    const leadsWithEmail = await dbGet(
+      'SELECT COUNT(*) as count FROM outreach_leads WHERE email IS NOT NULL'
+    );
+    const emailsSent = await dbGet(
+      'SELECT COUNT(*) as count FROM outreach_emails WHERE status = $1',
+      ['sent']
+    );
+    const emailsOpened = await dbGet(
+      'SELECT COUNT(*) as count FROM outreach_emails WHERE opened_at IS NOT NULL'
+    );
 
     const byStatus = await dbAll(`
       SELECT status, COUNT(*) as count
@@ -7141,14 +7896,15 @@ app.get('/api/outreach/dashboard', async (req, res) => {
         leads_with_email: parseInt(leadsWithEmail?.count || 0),
         emails_sent: parseInt(emailsSent?.count || 0),
         emails_opened: parseInt(emailsOpened?.count || 0),
-        open_rate: emailsSent?.count > 0
-          ? ((emailsOpened?.count / emailsSent?.count) * 100).toFixed(1) + '%'
-          : '0%'
+        open_rate:
+          emailsSent?.count > 0
+            ? ((emailsOpened?.count / emailsSent?.count) * 100).toFixed(1) + '%'
+            : '0%',
       },
       by_status: byStatus,
       recent_leads: recentLeads,
       recent_emails: recentEmails,
-      campaign: campaign
+      campaign: campaign,
     });
   } catch (error) {
     console.error('Dashboard error:', error);
@@ -7173,16 +7929,18 @@ app.get('/api/health', async (req, res) => {
     status: dbStatus === 'connected' ? 'ok' : 'degraded',
     database: dbStatus,
     databaseUrl: process.env.DATABASE_URL ? 'configured' : 'MISSING',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
 // Start server
-initDatabase().then(() => {
-  app.listen(PORT, () => {
-    console.log(`✅ Server running on port ${PORT}`);
+initDatabase()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
+    });
+  })
+  .catch(err => {
+    console.error('Failed to initialize database:', err);
+    process.exit(1);
   });
-}).catch(err => {
-  console.error('Failed to initialize database:', err);
-  process.exit(1);
-});

@@ -1,13 +1,110 @@
-import React, { useState, useEffect, useCallback, createContext, useContext, Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  createContext,
+  useContext,
+  Suspense,
+  lazy,
+} from 'react';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Link,
+  useNavigate,
+  useLocation,
+  useSearchParams,
+} from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { MessageSquare, Star, Zap, Shield, Copy, Check, LogOut, LogIn, Menu, X, ChevronRight, Sparkles, Globe, Mail, Send, HelpCircle, Settings, Building, Save, Chrome, Download, RefreshCw, Users, Lock, CreditCard, Award, Layers, FileText, Clock, AlertCircle, BookOpen, Trash2, BarChart2, TrendingUp, TrendingDown, PieChart, Key, Eye, EyeOff, ExternalLink, Code, Sun, Moon, Calendar, Filter, Info, ArrowRight, PartyPopper, Utensils, CheckCircle, Keyboard, Store, MapPin, Wrench, Scissors, Car, Heart, User, Bell, ChevronDown, Edit3, LayoutDashboard, Play, Video, Loader } from 'lucide-react';
+import {
+  MessageSquare,
+  Star,
+  Zap,
+  Shield,
+  Copy,
+  Check,
+  LogOut,
+  LogIn,
+  Menu,
+  X,
+  ChevronRight,
+  Sparkles,
+  Globe,
+  Mail,
+  Send,
+  HelpCircle,
+  Settings,
+  Building,
+  Save,
+  Chrome,
+  Download,
+  RefreshCw,
+  Users,
+  Lock,
+  CreditCard,
+  Award,
+  Layers,
+  FileText,
+  Clock,
+  AlertCircle,
+  BookOpen,
+  Trash2,
+  BarChart2,
+  TrendingUp,
+  TrendingDown,
+  PieChart,
+  Key,
+  Eye,
+  EyeOff,
+  ExternalLink,
+  Code,
+  Sun,
+  Moon,
+  Calendar,
+  Filter,
+  Info,
+  ArrowRight,
+  PartyPopper,
+  Utensils,
+  CheckCircle,
+  Keyboard,
+  Store,
+  MapPin,
+  Wrench,
+  Scissors,
+  Car,
+  Heart,
+  User,
+  Bell,
+  ChevronDown,
+  Edit3,
+  LayoutDashboard,
+  Play,
+  Video,
+  Loader,
+} from 'lucide-react';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import Papa from 'papaparse';
-import { PieChart as RechartsPieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import {
+  PieChart as RechartsPieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Legend,
+} from 'recharts';
 
 // Lazy loaded components for code splitting
 const LazyApiDocsPage = lazy(() => import('./pages/ApiDocsPage'));
@@ -22,7 +119,9 @@ const LoadingSpinner = () => (
 );
 
 // Google Sign-In Client ID (set in environment or hardcode for production)
-const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '395576602784-inhppfo12c9o26okl6g3dgnb2cslqdv1.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID =
+  process.env.REACT_APP_GOOGLE_CLIENT_ID ||
+  '395576602784-inhppfo12c9o26okl6g3dgnb2cslqdv1.apps.googleusercontent.com';
 
 // Confetti celebration function
 const fireConfetti = () => {
@@ -38,15 +137,39 @@ const fireConfetti = () => {
   fire(0.1, { spread: 120, startVelocity: 45 });
 };
 
-
 // Tooltip Component
 const FeatureTooltip = ({ children, text, position = 'top' }) => {
   const [show, setShow] = useState(false);
-  const positions = { top: { bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '8px' }, bottom: { top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: '8px' } };
+  const positions = {
+    top: { bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '8px' },
+    bottom: { top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: '8px' },
+  };
   return (
-    <div style={{ position: 'relative', display: 'inline-block' }} onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
+    <div
+      style={{ position: 'relative', display: 'inline-block' }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
       {children}
-      {show && <div style={{ position: 'absolute', ...positions[position], background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', fontSize: '13px', color: 'var(--text-primary)', whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1000 }}>{text}</div>}
+      {show && (
+        <div
+          style={{
+            position: 'absolute',
+            ...positions[position],
+            background: 'var(--bg-primary)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '8px',
+            padding: '8px 12px',
+            fontSize: '13px',
+            color: 'var(--text-primary)',
+            whiteSpace: 'nowrap',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            zIndex: 1000,
+          }}
+        >
+          {text}
+        </div>
+      )}
     </div>
   );
 };
@@ -86,7 +209,7 @@ const GoogleSignInButton = ({ onSuccess, onError, text = 'Sign in with Google' }
     try {
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
-        callback: (response) => {
+        callback: response => {
           if (response.credential) {
             onSuccess(response.credential);
           } else {
@@ -94,7 +217,7 @@ const GoogleSignInButton = ({ onSuccess, onError, text = 'Sign in with Google' }
           }
         },
         auto_select: false,
-        cancel_on_tap_outside: true
+        cancel_on_tap_outside: true,
       });
 
       // Responsive width: use container width or max 280px
@@ -107,7 +230,7 @@ const GoogleSignInButton = ({ onSuccess, onError, text = 'Sign in with Google' }
         size: 'large',
         text: text === 'Sign up with Google' ? 'signup_with' : 'signin_with',
         shape: 'rectangular',
-        width: buttonWidth
+        width: buttonWidth,
       });
     } catch (error) {
       console.error('Google Sign-In initialization error:', error);
@@ -130,7 +253,7 @@ const GoogleSignInButton = ({ onSuccess, onError, text = 'Sign in with Google' }
 const API_URL = process.env.REACT_APP_API_URL || 'https://review-responder.onrender.com/api';
 const api = axios.create({ baseURL: API_URL });
 
-api.interceptors.request.use((config) => {
+api.interceptors.request.use(config => {
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -150,7 +273,8 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      api.get('/auth/me')
+      api
+        .get('/auth/me')
         .then(res => setUser(res.data.user))
         .catch(() => localStorage.removeItem('token'))
         .finally(() => setLoading(false));
@@ -193,7 +317,7 @@ const AuthProvider = ({ children }) => {
       utmCampaign: utmParams.utm_campaign,
       utmContent: utmParams.utm_content,
       utmTerm: utmParams.utm_term,
-      landingPage: utmParams.landing_page
+      landingPage: utmParams.landing_page,
     });
     localStorage.setItem('token', res.data.token);
     // Clear codes after successful registration
@@ -205,7 +329,7 @@ const AuthProvider = ({ children }) => {
     return res.data;
   };
 
-  const loginWithGoogle = async (credential) => {
+  const loginWithGoogle = async credential => {
     // Get referral/affiliate codes from localStorage
     const referralCode = localStorage.getItem('referralCode');
     const affiliateCode = localStorage.getItem('affiliateCode');
@@ -225,7 +349,7 @@ const AuthProvider = ({ children }) => {
       credential,
       referralCode,
       affiliateCode,
-      utmParams
+      utmParams,
     });
 
     localStorage.setItem('token', res.data.token);
@@ -242,7 +366,7 @@ const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  const updateUser = (updates) => {
+  const updateUser = updates => {
     setUser(prev => ({ ...prev, ...updates }));
   };
 
@@ -262,7 +386,9 @@ const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, loginWithGoogle, logout, loading, updateUser, refreshUser }}>
+    <AuthContext.Provider
+      value={{ user, login, register, loginWithGoogle, logout, loading, updateUser, refreshUser }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -295,7 +421,7 @@ const ThemeProvider = ({ children }) => {
   useEffect(() => {
     // Listen for system preference changes
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e) => {
+    const handleChange = e => {
       // Only auto-switch if user hasn't manually set a preference
       const savedTheme = localStorage.getItem('theme');
       if (!savedTheme) {
@@ -308,14 +434,10 @@ const ThemeProvider = ({ children }) => {
   }, []);
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
   };
 
-  return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;
 };
 
 // Protected Route with optional admin check
@@ -353,7 +475,7 @@ const ProfileMenu = () => {
 
   // Close on click outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = event => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsOpen(false);
       }
@@ -372,7 +494,12 @@ const ProfileMenu = () => {
   // Get user initials
   const getInitials = () => {
     if (user?.businessName) {
-      return user.businessName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      return user.businessName
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
     }
     return user?.email?.charAt(0).toUpperCase() || 'U';
   };
@@ -390,7 +517,7 @@ const ProfileMenu = () => {
           borderRadius: '24px',
           padding: '4px 12px 4px 4px',
           cursor: 'pointer',
-          transition: 'all 0.2s'
+          transition: 'all 0.2s',
         }}
       >
         {user?.profilePicture ? (
@@ -401,22 +528,24 @@ const ProfileMenu = () => {
               width: '32px',
               height: '32px',
               borderRadius: '50%',
-              objectFit: 'cover'
+              objectFit: 'cover',
             }}
           />
         ) : (
-          <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '50%',
-            background: 'var(--primary)',
-            color: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '13px',
-            fontWeight: '600'
-          }}>
+          <div
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: 'var(--primary)',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '13px',
+              fontWeight: '600',
+            }}
+          >
             {getInitials()}
           </div>
         )}
@@ -425,39 +554,45 @@ const ProfileMenu = () => {
           style={{
             transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
             transition: 'transform 0.2s',
-            color: 'var(--text-secondary)'
+            color: 'var(--text-secondary)',
           }}
         />
       </button>
 
       {isOpen && (
-        <div style={{
-          position: 'absolute',
-          top: '100%',
-          right: 0,
-          marginTop: '8px',
-          background: 'var(--card-bg)',
-          border: '1px solid var(--border-color)',
-          borderRadius: '12px',
-          boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
-          minWidth: '240px',
-          zIndex: 1000,
-          overflow: 'hidden'
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: '100%',
+            right: 0,
+            marginTop: '8px',
+            background: 'var(--card-bg)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '12px',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+            minWidth: '240px',
+            zIndex: 1000,
+            overflow: 'hidden',
+          }}
+        >
           {/* User Info Header */}
-          <div style={{
-            padding: '16px',
-            borderBottom: '1px solid var(--border-color)',
-            background: 'var(--bg-tertiary)'
-          }}>
+          <div
+            style={{
+              padding: '16px',
+              borderBottom: '1px solid var(--border-color)',
+              background: 'var(--bg-tertiary)',
+            }}
+          >
             <div style={{ fontWeight: '600', fontSize: '14px', color: 'var(--text-primary)' }}>
               {user?.businessName || 'Your Account'}
             </div>
-            <div style={{
-              fontSize: '12px',
-              color: 'var(--text-muted)',
-              marginTop: '2px'
-            }}>
+            <div
+              style={{
+                fontSize: '12px',
+                color: 'var(--text-muted)',
+                marginTop: '2px',
+              }}
+            >
               {user?.email}
             </div>
             <span
@@ -482,10 +617,10 @@ const ProfileMenu = () => {
                 color: 'var(--text-primary)',
                 textDecoration: 'none',
                 fontSize: '14px',
-                transition: 'background 0.2s'
+                transition: 'background 0.2s',
               }}
-              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-tertiary)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-tertiary)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
               <User size={16} />
               Account Settings
@@ -503,10 +638,10 @@ const ProfileMenu = () => {
                 color: 'var(--text-primary)',
                 textDecoration: 'none',
                 fontSize: '14px',
-                transition: 'background 0.2s'
+                transition: 'background 0.2s',
               }}
-              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-tertiary)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-tertiary)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
               <Building size={16} />
               Business Settings
@@ -527,10 +662,10 @@ const ProfileMenu = () => {
                 textAlign: 'left',
                 fontSize: '14px',
                 cursor: 'pointer',
-                transition: 'background 0.2s'
+                transition: 'background 0.2s',
               }}
-              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-tertiary)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-tertiary)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
               {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
               {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
@@ -538,10 +673,12 @@ const ProfileMenu = () => {
           </div>
 
           {/* Logout */}
-          <div style={{
-            padding: '8px',
-            borderTop: '1px solid var(--border-color)'
-          }}>
+          <div
+            style={{
+              padding: '8px',
+              borderTop: '1px solid var(--border-color)',
+            }}
+          >
             <button
               onClick={handleLogout}
               style={{
@@ -557,10 +694,10 @@ const ProfileMenu = () => {
                 textAlign: 'left',
                 fontSize: '14px',
                 cursor: 'pointer',
-                transition: 'background 0.2s'
+                transition: 'background 0.2s',
               }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.1)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
               <LogOut size={16} />
               Sign Out
@@ -599,15 +736,25 @@ const Navbar = () => {
           <div className="navbar-menu">
             {user ? (
               <>
-                <Link to="/dashboard" className="navbar-link">Dashboard</Link>
-                <Link to="/pricing" className="navbar-link">Upgrade</Link>
+                <Link to="/dashboard" className="navbar-link">
+                  Dashboard
+                </Link>
+                <Link to="/pricing" className="navbar-link">
+                  Upgrade
+                </Link>
                 <ProfileMenu />
               </>
             ) : (
               <>
-                <Link to="/pricing" className="navbar-link">Pricing</Link>
-                <Link to="/support" className="navbar-link">Support</Link>
-                <Link to="/login" className="navbar-link">Login</Link>
+                <Link to="/pricing" className="navbar-link">
+                  Pricing
+                </Link>
+                <Link to="/support" className="navbar-link">
+                  Support
+                </Link>
+                <Link to="/login" className="navbar-link">
+                  Login
+                </Link>
                 <button
                   onClick={toggleTheme}
                   className="theme-toggle"
@@ -678,7 +825,11 @@ const Navbar = () => {
               {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
               {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
             </button>
-            <Link to="/register" onClick={closeMobileMenu} style={{ background: 'var(--primary)', color: 'white' }}>
+            <Link
+              to="/register"
+              onClick={closeMobileMenu}
+              style={{ background: 'var(--primary)', color: 'white' }}
+            >
               <Sparkles size={20} />
               Get Started Free
             </Link>
@@ -701,7 +852,7 @@ const ExitIntentPopup = () => {
     const popupShown = sessionStorage.getItem('exitIntentShown');
     if (popupShown) return;
 
-    const handleMouseLeave = (e) => {
+    const handleMouseLeave = e => {
       // Double-check: Prevent multiple triggers
       if (sessionStorage.getItem('exitIntentShown')) return;
 
@@ -727,17 +878,17 @@ const ExitIntentPopup = () => {
     };
   }, []);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const response = await api.post('/capture-email', {
         email,
         discountCode: 'EARLY50',
-        source: 'exit_intent'
+        source: 'exit_intent',
       });
-      
+
       if (response.data.success) {
         setSubmitted(true);
         console.log('✅ Email captured:', email);
@@ -753,30 +904,33 @@ const ExitIntentPopup = () => {
   if (!isVisible) return null;
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.6)',
-      zIndex: 9999,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px'
-    }} onClick={() => setIsVisible(false)}>
-      <div 
-        className="card" 
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0, 0, 0, 0.6)',
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+      }}
+      onClick={() => setIsVisible(false)}
+    >
+      <div
+        className="card"
         style={{
           maxWidth: '480px',
           width: '100%',
           padding: '0',
           overflow: 'hidden',
           position: 'relative',
-          animation: 'slideIn 0.3s ease-out'
+          animation: 'slideIn 0.3s ease-out',
         }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         {/* Close button */}
         <button
@@ -790,29 +944,33 @@ const ExitIntentPopup = () => {
             cursor: 'pointer',
             padding: '4px',
             color: 'var(--gray-400)',
-            zIndex: 1
+            zIndex: 1,
           }}
         >
           <X size={20} />
         </button>
 
         {/* Header with gradient */}
-        <div style={{
-          background: 'linear-gradient(135deg, var(--primary-600), var(--primary-700))',
-          padding: '32px',
-          textAlign: 'center',
-          color: 'white'
-        }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '64px',
-            height: '64px',
-            background: 'rgba(255,255,255,0.2)',
-            borderRadius: '50%',
-            marginBottom: '16px'
-          }}>
+        <div
+          style={{
+            background: 'linear-gradient(135deg, var(--primary-600), var(--primary-700))',
+            padding: '32px',
+            textAlign: 'center',
+            color: 'white',
+          }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '64px',
+              height: '64px',
+              background: 'rgba(255,255,255,0.2)',
+              borderRadius: '50%',
+              marginBottom: '16px',
+            }}
+          >
             <Sparkles size={32} />
           </div>
           <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
@@ -828,16 +986,18 @@ const ExitIntentPopup = () => {
           {!submitted ? (
             <>
               <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                <div style={{
-                  display: 'inline-block',
-                  padding: '8px 20px',
-                  background: 'linear-gradient(135deg, #10b981, #059669)',
-                  color: 'white',
-                  borderRadius: '20px',
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  marginBottom: '12px'
-                }}>
+                <div
+                  style={{
+                    display: 'inline-block',
+                    padding: '8px 20px',
+                    background: 'linear-gradient(135deg, #10b981, #059669)',
+                    color: 'white',
+                    borderRadius: '20px',
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    marginBottom: '12px',
+                  }}
+                >
                   Exclusive Offer: Save 50%
                 </div>
                 <p style={{ color: 'var(--gray-600)', fontSize: '14px' }}>
@@ -852,7 +1012,7 @@ const ExitIntentPopup = () => {
                     className="form-input"
                     placeholder="your@email.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={e => setEmail(e.target.value)}
                     required
                     style={{ fontSize: '16px', padding: '12px 16px' }}
                   />
@@ -868,27 +1028,31 @@ const ExitIntentPopup = () => {
                 </button>
               </form>
 
-              <p style={{
-                textAlign: 'center',
-                fontSize: '12px',
-                color: 'var(--gray-500)',
-                marginTop: '16px'
-              }}>
+              <p
+                style={{
+                  textAlign: 'center',
+                  fontSize: '12px',
+                  color: 'var(--gray-500)',
+                  marginTop: '16px',
+                }}
+              >
                 No spam, unsubscribe anytime. Discount valid for 7 days.
               </p>
             </>
           ) : (
             <div style={{ textAlign: 'center' }}>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '64px',
-                height: '64px',
-                background: '#d1fae5',
-                borderRadius: '50%',
-                marginBottom: '16px'
-              }}>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '64px',
+                  height: '64px',
+                  background: '#d1fae5',
+                  borderRadius: '50%',
+                  marginBottom: '16px',
+                }}
+              >
                 <Check size={32} style={{ color: '#10b981' }} />
               </div>
               <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>
@@ -945,22 +1109,34 @@ const ProductHuntBadge = ({ style = {} }) => {
         textDecoration: 'none',
         boxShadow: '0 4px 12px rgba(218, 85, 47, 0.3)',
         transition: 'transform 0.2s, box-shadow 0.2s',
-        ...style
+        ...style,
       }}
-      onMouseEnter={(e) => {
+      onMouseEnter={e => {
         e.currentTarget.style.transform = 'translateY(-2px)';
         e.currentTarget.style.boxShadow = '0 6px 16px rgba(218, 85, 47, 0.4)';
       }}
-      onMouseLeave={(e) => {
+      onMouseLeave={e => {
         e.currentTarget.style.transform = 'translateY(0)';
         e.currentTarget.style.boxShadow = '0 4px 12px rgba(218, 85, 47, 0.3)';
       }}
     >
-      <svg width="20" height="20" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M20 40C31.0457 40 40 31.0457 40 20C40 8.95431 31.0457 0 20 0C8.95431 0 0 8.95431 0 20C0 31.0457 8.95431 40 20 40Z" fill="white"/>
-        <path d="M22.5 20H17.5V12.5H22.5C24.575 12.5 26.25 14.175 26.25 16.25C26.25 18.325 24.575 20 22.5 20Z" fill="#DA552F"/>
-        <path d="M17.5 12.5H15V27.5H17.5V12.5Z" fill="#DA552F"/>
-        <path d="M22.5 22.5H17.5V27.5H22.5V22.5Z" fill="#DA552F"/>
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 40 40"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M20 40C31.0457 40 40 31.0457 40 20C40 8.95431 31.0457 0 20 0C8.95431 0 0 8.95431 0 20C0 31.0457 8.95431 40 20 40Z"
+          fill="white"
+        />
+        <path
+          d="M22.5 20H17.5V12.5H22.5C24.575 12.5 26.25 14.175 26.25 16.25C26.25 18.325 24.575 20 22.5 20Z"
+          fill="#DA552F"
+        />
+        <path d="M17.5 12.5H15V27.5H17.5V12.5Z" fill="#DA552F" />
+        <path d="M22.5 22.5H17.5V27.5H22.5V22.5Z" fill="#DA552F" />
       </svg>
       Featured on Product Hunt
     </a>
@@ -989,7 +1165,7 @@ const CountdownTimer = ({ endTime, onExpire }) => {
         hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
         minutes: Math.floor((difference / (1000 * 60)) % 60),
         seconds: Math.floor((difference / 1000) % 60),
-        expired: false
+        expired: false,
       });
     };
 
@@ -1003,15 +1179,17 @@ const CountdownTimer = ({ endTime, onExpire }) => {
 
   const TimeBlock = ({ value, label }) => (
     <div style={{ textAlign: 'center' }}>
-      <div style={{
-        background: 'rgba(255, 255, 255, 0.2)',
-        borderRadius: '8px',
-        padding: '8px 12px',
-        minWidth: '50px',
-        fontSize: '24px',
-        fontWeight: '700',
-        fontFamily: 'monospace'
-      }}>
+      <div
+        style={{
+          background: 'rgba(255, 255, 255, 0.2)',
+          borderRadius: '8px',
+          padding: '8px 12px',
+          minWidth: '50px',
+          fontSize: '24px',
+          fontWeight: '700',
+          fontFamily: 'monospace',
+        }}
+      >
         {String(value).padStart(2, '0')}
       </div>
       <div style={{ fontSize: '11px', marginTop: '4px', opacity: 0.9 }}>{label}</div>
@@ -1037,25 +1215,31 @@ const ProductHuntLaunchBanner = () => {
 
   // Check URL for Product Hunt launch mode
   const urlParams = new URLSearchParams(window.location.search);
-  const isFromProductHunt = urlParams.get('ref') === 'producthunt' || PRODUCT_HUNT_CONFIG.isLaunched;
+  const isFromProductHunt =
+    urlParams.get('ref') === 'producthunt' || PRODUCT_HUNT_CONFIG.isLaunched;
 
   if (!isFromProductHunt || !isVisible || isExpired) return null;
 
   return (
-    <div style={{
-      background: 'linear-gradient(135deg, #DA552F 0%, #FF6154 100%)',
-      color: 'white',
-      padding: '12px 20px',
-      position: 'relative',
-      zIndex: 1000
-    }}>
-      <div className="container" style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '24px',
-        flexWrap: 'wrap'
-      }}>
+    <div
+      style={{
+        background: 'linear-gradient(135deg, #DA552F 0%, #FF6154 100%)',
+        color: 'white',
+        padding: '12px 20px',
+        position: 'relative',
+        zIndex: 1000,
+      }}
+    >
+      <div
+        className="container"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '24px',
+          flexWrap: 'wrap',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <PartyPopper size={24} />
           <span style={{ fontSize: '16px', fontWeight: '600' }}>
@@ -1071,14 +1255,16 @@ const ProductHuntLaunchBanner = () => {
         )}
 
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <code style={{
-            background: 'rgba(255,255,255,0.2)',
-            padding: '6px 12px',
-            borderRadius: '6px',
-            fontFamily: 'monospace',
-            fontSize: '16px',
-            fontWeight: '700'
-          }}>
+          <code
+            style={{
+              background: 'rgba(255,255,255,0.2)',
+              padding: '6px 12px',
+              borderRadius: '6px',
+              fontFamily: 'monospace',
+              fontSize: '16px',
+              fontWeight: '700',
+            }}
+          >
             HUNTLAUNCH
           </code>
           <button
@@ -1093,7 +1279,7 @@ const ProductHuntLaunchBanner = () => {
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px'
+              gap: '6px',
             }}
           >
             Claim Offer <ArrowRight size={16} />
@@ -1112,7 +1298,7 @@ const ProductHuntLaunchBanner = () => {
             color: 'white',
             cursor: 'pointer',
             padding: '4px',
-            opacity: 0.7
+            opacity: 0.7,
           }}
         >
           <X size={18} />
@@ -1133,7 +1319,7 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     if (rating === 0) {
       toast.error('Please select a rating');
@@ -1145,7 +1331,7 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
       await api.post('/feedback', {
         rating,
         comment: comment.trim() || null,
-        displayName: displayName.trim() || null
+        displayName: displayName.trim() || null,
       });
       setSubmitted(true);
       toast.success('Thank you for your feedback!');
@@ -1163,19 +1349,22 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
   if (!isVisible) return null;
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.6)',
-      zIndex: 9999,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px'
-    }} onClick={onClose}>
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0, 0, 0, 0.6)',
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+      }}
+      onClick={onClose}
+    >
       <div
         className="card"
         style={{
@@ -1184,9 +1373,9 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
           padding: '0',
           overflow: 'hidden',
           position: 'relative',
-          animation: 'slideIn 0.3s ease-out'
+          animation: 'slideIn 0.3s ease-out',
         }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         {/* Close button */}
         <button
@@ -1200,27 +1389,27 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
             cursor: 'pointer',
             padding: '4px',
             color: 'var(--gray-400)',
-            zIndex: 1
+            zIndex: 1,
           }}
         >
           <X size={20} />
         </button>
 
         {/* Header */}
-        <div style={{
-          background: 'linear-gradient(135deg, var(--primary-600), var(--primary-700))',
-          padding: '32px 24px',
-          textAlign: 'center',
-          color: 'white'
-        }}>
+        <div
+          style={{
+            background: 'linear-gradient(135deg, var(--primary-600), var(--primary-700))',
+            padding: '32px 24px',
+            textAlign: 'center',
+            color: 'white',
+          }}
+        >
           <MessageSquare size={40} style={{ marginBottom: '12px' }} />
           <h2 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '8px' }}>
             {submitted ? 'Thank You!' : 'How do you like ReviewResponder?'}
           </h2>
           <p style={{ opacity: 0.9, fontSize: '14px' }}>
-            {submitted
-              ? 'Your feedback helps us improve!'
-              : 'We\'d love to hear your thoughts!'}
+            {submitted ? 'Your feedback helps us improve!' : "We'd love to hear your thoughts!"}
           </p>
         </div>
 
@@ -1228,16 +1417,18 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
         <div style={{ padding: '24px' }}>
           {submitted ? (
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
-              <div style={{
-                width: '64px',
-                height: '64px',
-                borderRadius: '50%',
-                background: 'var(--success)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 16px'
-              }}>
+              <div
+                style={{
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '50%',
+                  background: 'var(--success)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 16px',
+                }}
+              >
                 <Check size={32} color="white" />
               </div>
               <p style={{ color: 'var(--gray-600)' }}>Your feedback has been submitted!</p>
@@ -1250,7 +1441,7 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
                   Rate your experience
                 </p>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
-                  {[1, 2, 3, 4, 5].map((star) => (
+                  {[1, 2, 3, 4, 5].map(star => (
                     <button
                       key={star}
                       type="button"
@@ -1262,7 +1453,7 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
                         border: 'none',
                         cursor: 'pointer',
                         padding: '4px',
-                        transition: 'transform 0.1s'
+                        transition: 'transform 0.1s',
                       }}
                     >
                       <Star
@@ -1275,22 +1466,35 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
                   ))}
                 </div>
                 {rating > 0 && (
-                  <p style={{ fontSize: '13px', color: 'var(--primary-600)', marginTop: '8px', fontWeight: '500' }}>
-                    {rating === 5 ? 'Excellent!' : rating === 4 ? 'Great!' : rating === 3 ? 'Good' : rating === 2 ? 'Fair' : 'Poor'}
+                  <p
+                    style={{
+                      fontSize: '13px',
+                      color: 'var(--primary-600)',
+                      marginTop: '8px',
+                      fontWeight: '500',
+                    }}
+                  >
+                    {rating === 5
+                      ? 'Excellent!'
+                      : rating === 4
+                        ? 'Great!'
+                        : rating === 3
+                          ? 'Good'
+                          : rating === 2
+                            ? 'Fair'
+                            : 'Poor'}
                   </p>
                 )}
               </div>
 
               {/* Comment (optional) */}
               <div className="form-group">
-                <label className="form-label">
-                  Tell us more (optional)
-                </label>
+                <label className="form-label">Tell us more (optional)</label>
                 <textarea
                   className="form-input"
                   placeholder="What do you like? What could be better?"
                   value={comment}
-                  onChange={(e) => setComment(e.target.value)}
+                  onChange={e => setComment(e.target.value)}
                   rows={3}
                   maxLength={500}
                   style={{ resize: 'vertical' }}
@@ -1299,15 +1503,13 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
 
               {/* Display Name (optional) */}
               <div className="form-group">
-                <label className="form-label">
-                  Your name (optional, for testimonial)
-                </label>
+                <label className="form-label">Your name (optional, for testimonial)</label>
                 <input
                   type="text"
                   className="form-input"
                   placeholder="e.g., John from ABC Restaurant"
                   value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
+                  onChange={e => setDisplayName(e.target.value)}
                   maxLength={100}
                 />
                 <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
@@ -1336,7 +1538,7 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
                   border: 'none',
                   color: 'var(--gray-500)',
                   cursor: 'pointer',
-                  fontSize: '14px'
+                  fontSize: '14px',
                 }}
               >
                 Maybe later
@@ -1355,8 +1557,8 @@ const DogfoodingSection = ({ testimonials }) => {
 
   // ReviewResponder's business context (open source - exactly what we give the AI)
   const REVIEWRESPONDER_CONTEXT = {
-    businessName: "ReviewResponder",
-    businessType: "SaaS / AI Software Tool",
+    businessName: 'ReviewResponder',
+    businessType: 'SaaS / AI Software Tool',
     businessContext: `ReviewResponder helps small business owners respond to customer reviews quickly and professionally.
 
 WHO WE ARE:
@@ -1431,10 +1633,10 @@ SIGN OFF:
 - "Thanks, Berend" or "- The ReviewResponder Team"
 - Keep it natural and direct`,
     generationSettings: {
-      tone: "Friendly",
-      ai: "Smart AI",
-      emojis: "Off"
-    }
+      tone: 'Friendly',
+      ai: 'Smart AI',
+      emojis: 'Off',
+    },
   };
 
   return (
@@ -1449,13 +1651,15 @@ SIGN OFF:
       </div>
 
       {/* Collapsible Context Box */}
-      <div style={{
-        maxWidth: '800px',
-        margin: '0 auto 32px auto',
-        border: '1px solid var(--gray-200)',
-        borderRadius: '12px',
-        overflow: 'hidden'
-      }}>
+      <div
+        style={{
+          maxWidth: '800px',
+          margin: '0 auto 32px auto',
+          border: '1px solid var(--gray-200)',
+          borderRadius: '12px',
+          overflow: 'hidden',
+        }}
+      >
         <button
           onClick={() => setIsContextExpanded(!isContextExpanded)}
           style={{
@@ -1469,7 +1673,7 @@ SIGN OFF:
             justifyContent: 'space-between',
             fontSize: '15px',
             fontWeight: '600',
-            color: 'var(--gray-700)'
+            color: 'var(--gray-700)',
           }}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1480,7 +1684,7 @@ SIGN OFF:
             size={20}
             style={{
               transform: isContextExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s'
+              transition: 'transform 0.2s',
             }}
           />
         </button>
@@ -1488,67 +1692,87 @@ SIGN OFF:
         {isContextExpanded && (
           <div style={{ padding: '20px', borderTop: '1px solid var(--gray-200)' }}>
             <div style={{ marginBottom: '20px' }}>
-              <div style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '4px' }}>Business Name</div>
+              <div style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '4px' }}>
+                Business Name
+              </div>
               <div style={{ fontWeight: '600' }}>{REVIEWRESPONDER_CONTEXT.businessName}</div>
             </div>
 
             <div style={{ marginBottom: '20px' }}>
-              <div style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '4px' }}>Business Type</div>
+              <div style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '4px' }}>
+                Business Type
+              </div>
               <div style={{ fontWeight: '600' }}>{REVIEWRESPONDER_CONTEXT.businessType}</div>
             </div>
 
             <div style={{ marginBottom: '20px' }}>
-              <div style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '8px' }}>About our business</div>
-              <div style={{
-                background: 'var(--gray-50)',
-                padding: '12px',
-                borderRadius: '8px',
-                fontSize: '13px',
-                lineHeight: '1.6',
-                whiteSpace: 'pre-wrap',
-                maxHeight: '200px',
-                overflow: 'auto',
-                fontFamily: 'monospace'
-              }}>
+              <div style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '8px' }}>
+                About our business
+              </div>
+              <div
+                style={{
+                  background: 'var(--gray-50)',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  lineHeight: '1.6',
+                  whiteSpace: 'pre-wrap',
+                  maxHeight: '200px',
+                  overflow: 'auto',
+                  fontFamily: 'monospace',
+                }}
+              >
                 {REVIEWRESPONDER_CONTEXT.businessContext}
               </div>
             </div>
 
             <div style={{ marginBottom: '20px' }}>
-              <div style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '8px' }}>Response style</div>
-              <div style={{
-                background: 'var(--gray-50)',
-                padding: '12px',
-                borderRadius: '8px',
-                fontSize: '13px',
-                lineHeight: '1.6',
-                whiteSpace: 'pre-wrap',
-                maxHeight: '200px',
-                overflow: 'auto',
-                fontFamily: 'monospace'
-              }}>
+              <div style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '8px' }}>
+                Response style
+              </div>
+              <div
+                style={{
+                  background: 'var(--gray-50)',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  lineHeight: '1.6',
+                  whiteSpace: 'pre-wrap',
+                  maxHeight: '200px',
+                  overflow: 'auto',
+                  fontFamily: 'monospace',
+                }}
+              >
                 {REVIEWRESPONDER_CONTEXT.responseStyle}
               </div>
             </div>
 
-            <div style={{
-              display: 'flex',
-              gap: '16px',
-              flexWrap: 'wrap',
-              paddingTop: '12px',
-              borderTop: '1px solid var(--gray-200)'
-            }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: '16px',
+                flexWrap: 'wrap',
+                paddingTop: '12px',
+                borderTop: '1px solid var(--gray-200)',
+              }}
+            >
               <div style={{ fontSize: '13px' }}>
                 <span style={{ color: 'var(--gray-500)' }}>Tone:</span>{' '}
-                <span style={{ fontWeight: '600' }}>{REVIEWRESPONDER_CONTEXT.generationSettings.tone}</span>
+                <span style={{ fontWeight: '600' }}>
+                  {REVIEWRESPONDER_CONTEXT.generationSettings.tone}
+                </span>
               </div>
               <div style={{ fontSize: '13px' }}>
                 <span style={{ color: 'var(--gray-500)' }}>AI:</span>{' '}
-                <span style={{ fontWeight: '600' }}>{REVIEWRESPONDER_CONTEXT.generationSettings.ai}</span>
+                <span style={{ fontWeight: '600' }}>
+                  {REVIEWRESPONDER_CONTEXT.generationSettings.ai}
+                </span>
               </div>
               <div style={{ fontSize: '13px' }}>
                 <span style={{ color: 'var(--gray-500)' }}>Emojis:</span>{' '}
-                <span style={{ fontWeight: '600' }}>{REVIEWRESPONDER_CONTEXT.generationSettings.emojis}</span>
+                <span style={{ fontWeight: '600' }}>
+                  {REVIEWRESPONDER_CONTEXT.generationSettings.emojis}
+                </span>
               </div>
             </div>
           </div>
@@ -1566,26 +1790,30 @@ SIGN OFF:
               gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
               gap: '24px',
               marginBottom: '32px',
-              alignItems: 'start'
+              alignItems: 'start',
             }}
           >
             {/* The Review */}
-            <div style={{
-              background: 'white',
-              border: '1px solid var(--gray-200)',
-              borderRadius: '12px',
-              padding: '20px'
-            }}>
-              <div style={{
-                fontSize: '12px',
-                fontWeight: '600',
-                color: 'var(--gray-500)',
-                marginBottom: '12px'
-              }}>
+            <div
+              style={{
+                background: 'white',
+                border: '1px solid var(--gray-200)',
+                borderRadius: '12px',
+                padding: '20px',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: 'var(--gray-500)',
+                  marginBottom: '12px',
+                }}
+              >
                 THE REVIEW
               </div>
               <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
-                {[1, 2, 3, 4, 5].map((star) => (
+                {[1, 2, 3, 4, 5].map(star => (
                   <Star
                     key={star}
                     size={16}
@@ -1594,48 +1822,58 @@ SIGN OFF:
                   />
                 ))}
               </div>
-              <p style={{
-                fontSize: '15px',
-                lineHeight: '1.6',
-                color: 'var(--gray-700)',
-                fontStyle: 'italic',
-                marginBottom: '12px'
-              }}>
+              <p
+                style={{
+                  fontSize: '15px',
+                  lineHeight: '1.6',
+                  color: 'var(--gray-700)',
+                  fontStyle: 'italic',
+                  marginBottom: '12px',
+                }}
+              >
                 "{testimonial.comment}"
               </p>
-              <div style={{
-                fontSize: '13px',
-                color: 'var(--gray-500)',
-                fontWeight: '500'
-              }}>
+              <div
+                style={{
+                  fontSize: '13px',
+                  color: 'var(--gray-500)',
+                  fontWeight: '500',
+                }}
+              >
                 — {testimonial.user_name || 'Verified User'}
               </div>
             </div>
 
             {/* Our AI Response */}
-            <div style={{
-              background: 'linear-gradient(135deg, var(--primary-50) 0%, white 100%)',
-              border: '1px solid var(--primary-200)',
-              borderRadius: '12px',
-              padding: '20px'
-            }}>
-              <div style={{
-                fontSize: '12px',
-                fontWeight: '600',
-                color: 'var(--primary-600)',
-                marginBottom: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}>
+            <div
+              style={{
+                background: 'linear-gradient(135deg, var(--primary-50) 0%, white 100%)',
+                border: '1px solid var(--primary-200)',
+                borderRadius: '12px',
+                padding: '20px',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: 'var(--primary-600)',
+                  marginBottom: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
                 <Sparkles size={14} />
                 OUR AI RESPONSE
               </div>
-              <p style={{
-                fontSize: '15px',
-                lineHeight: '1.6',
-                color: 'var(--gray-700)'
-              }}>
+              <p
+                style={{
+                  fontSize: '15px',
+                  lineHeight: '1.6',
+                  color: 'var(--gray-700)',
+                }}
+              >
                 {testimonial.ai_response}
               </p>
             </div>
@@ -1645,18 +1883,16 @@ SIGN OFF:
 
       {/* CTA */}
       <div style={{ textAlign: 'center', marginTop: '32px' }}>
-        <p style={{
-          fontSize: '14px',
-          color: 'var(--gray-600)',
-          marginBottom: '16px'
-        }}>
+        <p
+          style={{
+            fontSize: '14px',
+            color: 'var(--gray-600)',
+            marginBottom: '16px',
+          }}
+        >
           Set up your own business context in Settings and get responses like these
         </p>
-        <Link
-          to="/register"
-          className="btn btn-primary"
-          style={{ padding: '12px 24px' }}
-        >
+        <Link to="/register" className="btn btn-primary" style={{ padding: '12px 24px' }}>
           Try It Free
         </Link>
       </div>
@@ -1692,12 +1928,13 @@ const LandingPage = () => {
     const refCode = params.get('ref');
     if (refCode) {
       // Validate referral code
-      api.get(`/referrals/validate/${refCode}`)
+      api
+        .get(`/referrals/validate/${refCode}`)
         .then(res => {
           if (res.data.valid) {
             setReferralBanner({
               referrerName: res.data.referrerName,
-              bonus: res.data.bonus
+              bonus: res.data.bonus,
             });
             // Store referral code for registration
             localStorage.setItem('referralCode', refCode.toUpperCase());
@@ -1715,11 +1952,12 @@ const LandingPage = () => {
     const affCode = params.get('aff');
     if (affCode) {
       // Validate affiliate code
-      api.get(`/affiliate/validate/${affCode}`)
+      api
+        .get(`/affiliate/validate/${affCode}`)
         .then(res => {
           if (res.data.valid) {
             setAffiliateBanner({
-              affiliateName: res.data.affiliateName
+              affiliateName: res.data.affiliateName,
             });
             // Store affiliate code for registration
             localStorage.setItem('affiliateCode', affCode.toUpperCase());
@@ -1738,49 +1976,91 @@ const LandingPage = () => {
 
       {/* Referral Banner */}
       {referralBanner && (
-        <div style={{
-          background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-          color: 'white',
-          padding: '12px 20px',
-          textAlign: 'center',
-          fontSize: '15px'
-        }}>
-          <span style={{ fontWeight: '600' }}>{referralBanner.referrerName}</span> invited you!
-          Sign up now and get <span style={{ fontWeight: '600' }}>{referralBanner.bonus}</span>
+        <div
+          style={{
+            background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+            color: 'white',
+            padding: '12px 20px',
+            textAlign: 'center',
+            fontSize: '15px',
+          }}
+        >
+          <span style={{ fontWeight: '600' }}>{referralBanner.referrerName}</span> invited you! Sign
+          up now and get <span style={{ fontWeight: '600' }}>{referralBanner.bonus}</span>
         </div>
       )}
 
       {/* Affiliate Banner */}
       {affiliateBanner && !referralBanner && (
-        <div style={{
-          background: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)',
-          color: 'white',
-          padding: '12px 20px',
-          textAlign: 'center',
-          fontSize: '15px'
-        }}>
+        <div
+          style={{
+            background: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)',
+            color: 'white',
+            padding: '12px 20px',
+            textAlign: 'center',
+            fontSize: '15px',
+          }}
+        >
           Recommended by <span style={{ fontWeight: '600' }}>{affiliateBanner.affiliateName}</span>!
           Sign up now to get started.
         </div>
       )}
       <section className="hero">
         <div className="container">
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <Link to="/pricing?discount=EARLY50" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--gray-100)', color: 'var(--gray-700)', padding: '6px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '600', textDecoration: 'none', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s', border: '1px solid var(--gray-200)' }} onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }} onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '12px',
+              marginBottom: '16px',
+            }}
+          >
+            <Link
+              to="/pricing?discount=EARLY50"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'var(--gray-100)',
+                color: 'var(--gray-700)',
+                padding: '6px 16px',
+                borderRadius: '20px',
+                fontSize: '13px',
+                fontWeight: '600',
+                textDecoration: 'none',
+                cursor: 'pointer',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                border: '1px solid var(--gray-200)',
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.transform = 'scale(1.05)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
               <Sparkles size={14} style={{ color: 'var(--primary)' }} />
               50% OFF - Limited Time
             </Link>
             <ProductHuntBadge />
           </div>
           <h1 className="hero-title">
-            Respond to Reviews<br />in Seconds, Not Hours
+            Respond to Reviews
+            <br />
+            in Seconds, Not Hours
           </h1>
           <p className="hero-subtitle">
             AI-powered review responses for busy business owners. Generate professional,
             personalized replies to Google, Yelp, and other platform reviews instantly.
           </p>
-          <div className="hero-buttons" style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
-            <Link to={user ? "/dashboard" : "/register"} className="btn btn-primary btn-lg">
+          <div
+            className="hero-buttons"
+            style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}
+          >
+            <Link to={user ? '/dashboard' : '/register'} className="btn btn-primary btn-lg">
               <Sparkles size={20} />
               Get Started Free
             </Link>
@@ -1793,16 +2073,48 @@ const LandingPage = () => {
           </p>
 
           {/* Trust Badges */}
-          <div style={{ marginTop: '32px', display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-500)', fontSize: '13px' }}>
+          <div
+            style={{
+              marginTop: '32px',
+              display: 'flex',
+              gap: '24px',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                color: 'var(--gray-500)',
+                fontSize: '13px',
+              }}
+            >
               <Lock size={16} />
               <span>SSL Secured</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-500)', fontSize: '13px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                color: 'var(--gray-500)',
+                fontSize: '13px',
+              }}
+            >
               <CreditCard size={16} />
               <span>Stripe Payments</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-500)', fontSize: '13px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                color: 'var(--gray-500)',
+                fontSize: '13px',
+              }}
+            >
               <Shield size={16} />
               <span>GDPR Compliant</span>
             </div>
@@ -1822,25 +2134,54 @@ const LandingPage = () => {
       </section>
 
       {/* Feature Highlights */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: '32px',
-        padding: '20px 24px',
-        background: 'var(--gray-50)',
-        borderBottom: '1px solid var(--gray-200)',
-        flexWrap: 'wrap'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)', fontSize: '14px', fontWeight: '500' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '32px',
+          padding: '20px 24px',
+          background: 'var(--gray-50)',
+          borderBottom: '1px solid var(--gray-200)',
+          flexWrap: 'wrap',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: 'var(--gray-600)',
+            fontSize: '14px',
+            fontWeight: '500',
+          }}
+        >
           <Sparkles size={18} style={{ color: 'var(--primary)' }} />
           <span>Powered by Claude</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)', fontSize: '14px', fontWeight: '500' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: 'var(--gray-600)',
+            fontSize: '14px',
+            fontWeight: '500',
+          }}
+        >
           <Globe size={18} style={{ color: 'var(--primary)' }} />
           <span>50+ Languages</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)', fontSize: '14px', fontWeight: '500' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: 'var(--gray-600)',
+            fontSize: '14px',
+            fontWeight: '500',
+          }}
+        >
           <Chrome size={18} style={{ color: 'var(--primary)' }} />
           <span>Chrome Extension</span>
         </div>
@@ -1848,30 +2189,62 @@ const LandingPage = () => {
 
       {/* Chrome Extension Section - Key Selling Point */}
       <section className="container" style={{ marginBottom: '60px', marginTop: '60px' }}>
-        <div className="card" style={{ padding: '40px', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', color: 'white' }}>
+        <div
+          className="card"
+          style={{
+            padding: '40px',
+            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+            color: 'white',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '40px', flexWrap: 'wrap' }}>
             <div style={{ flex: '1', minWidth: '300px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}
+              >
                 <Chrome size={32} />
-                <span style={{ background: '#4285f4', padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: '600' }}>NEW</span>
+                <span
+                  style={{
+                    background: '#4285f4',
+                    padding: '4px 12px',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                  }}
+                >
+                  NEW
+                </span>
               </div>
               <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
                 Chrome Extension Available
               </h2>
-              <p style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '24px', lineHeight: '1.6' }}>
-                Respond to Google Reviews without leaving the page. Our Chrome extension adds a "Generate Response"
-                button directly to each review. One click generates a professional response.
+              <p
+                style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '24px', lineHeight: '1.6' }}
+              >
+                Respond to Google Reviews without leaving the page. Our Chrome extension adds a
+                "Generate Response" button directly to each review. One click generates a
+                professional response.
               </p>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 <Link
                   to="/extension"
                   className="btn"
-                  style={{ background: 'white', color: '#1a1a2e', display: 'flex', alignItems: 'center', gap: '8px' }}
+                  style={{
+                    background: 'white',
+                    color: '#1a1a2e',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
                 >
                   <Download size={18} />
                   Get Extension
                 </Link>
-                <Link to="/register" className="btn" style={{ background: 'transparent', border: '2px solid white', color: 'white' }}>
+                <Link
+                  to="/register"
+                  className="btn"
+                  style={{ background: 'transparent', border: '2px solid white', color: 'white' }}
+                >
                   Create Free Account First
                 </Link>
               </div>
@@ -1883,64 +2256,76 @@ const LandingPage = () => {
                 <video
                   controls
                   autoPlay
-                  style={{ width: '100%', borderRadius: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}
+                  style={{
+                    width: '100%',
+                    borderRadius: '12px',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+                  }}
                   onEnded={() => setShowLandingVideo(false)}
                 >
                   <source src="/demo-video.mp4" type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
               ) : (
-                <div style={{
-                  background: '#0d0d1a',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  aspectRatio: '16/9',
-                  position: 'relative',
-                  cursor: 'pointer',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-                className="extension-video-preview"
-                onClick={() => setShowLandingVideo(true)}
-                >
-                  {/* Play Button */}
-                  <div className="play-overlay" style={{
-                    width: '64px',
-                    height: '64px',
-                    background: 'rgba(79, 70, 229, 0.9)',
-                    borderRadius: '50%',
+                <div
+                  style={{
+                    background: '#0d0d1a',
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    aspectRatio: '16/9',
+                    position: 'relative',
+                    cursor: 'pointer',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    transition: 'transform 0.2s, background 0.2s',
-                    zIndex: 2
-                  }}>
+                  }}
+                  className="extension-video-preview"
+                  onClick={() => setShowLandingVideo(true)}
+                >
+                  {/* Play Button */}
+                  <div
+                    className="play-overlay"
+                    style={{
+                      width: '64px',
+                      height: '64px',
+                      background: 'rgba(79, 70, 229, 0.9)',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'transform 0.2s, background 0.2s',
+                      zIndex: 2,
+                    }}
+                  >
                     <Play size={28} fill="white" style={{ marginLeft: '3px' }} />
                   </div>
                   {/* Duration Badge */}
-                  <span style={{
-                    position: 'absolute',
-                    bottom: '8px',
-                    right: '8px',
-                    background: 'rgba(0,0,0,0.7)',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    fontSize: '11px',
-                    fontWeight: '500'
-                  }}>
+                  <span
+                    style={{
+                      position: 'absolute',
+                      bottom: '8px',
+                      right: '8px',
+                      background: 'rgba(0,0,0,0.7)',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                      fontWeight: '500',
+                    }}
+                  >
                     0:38
                   </span>
                   {/* Label */}
-                  <div style={{
-                    position: 'absolute',
-                    bottom: '8px',
-                    left: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: '8px',
+                      left: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                  >
                     <Video size={14} style={{ opacity: 0.7 }} />
                     <span style={{ fontSize: '11px', opacity: 0.7 }}>Dashboard Demo</span>
                   </div>
@@ -1949,28 +2334,109 @@ const LandingPage = () => {
             </div>
 
             <div style={{ flex: '0 0 auto' }}>
-              <div style={{
-                background: 'white',
-                borderRadius: '12px',
-                padding: '20px',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.3)'
-              }}>
+              <div
+                style={{
+                  background: 'white',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+                }}
+              >
                 <div style={{ color: '#333', fontSize: '14px' }}>
-                  <div style={{ fontWeight: '600', marginBottom: '8px', color: '#1a1a2e' }}>How it works:</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                    <span style={{ background: 'var(--primary-600)', color: 'white', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }}>1</span>
+                  <div style={{ fontWeight: '600', marginBottom: '8px', color: '#1a1a2e' }}>
+                    How it works:
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '6px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        background: 'var(--primary-600)',
+                        color: 'white',
+                        borderRadius: '50%',
+                        width: '20px',
+                        height: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '11px',
+                      }}
+                    >
+                      1
+                    </span>
                     <span>Install extension</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                    <span style={{ background: 'var(--primary-600)', color: 'white', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }}>2</span>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '6px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        background: 'var(--primary-600)',
+                        color: 'white',
+                        borderRadius: '50%',
+                        width: '20px',
+                        height: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '11px',
+                      }}
+                    >
+                      2
+                    </span>
                     <span>Login with your account</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                    <span style={{ background: 'var(--primary-600)', color: 'white', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }}>3</span>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '6px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        background: 'var(--primary-600)',
+                        color: 'white',
+                        borderRadius: '50%',
+                        width: '20px',
+                        height: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '11px',
+                      }}
+                    >
+                      3
+                    </span>
                     <span>Click button on any review</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ background: '#10b981', color: 'white', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }}><Check size={12} /></span>
+                    <span
+                      style={{
+                        background: '#10b981',
+                        color: 'white',
+                        borderRadius: '50%',
+                        width: '20px',
+                        height: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '11px',
+                      }}
+                    >
+                      <Check size={12} />
+                    </span>
                     <span>Copy & paste response</span>
                   </div>
                 </div>
@@ -1992,15 +2458,17 @@ const LandingPage = () => {
         </div>
 
         {/* Demo Video Section */}
-        <div style={{
-          maxWidth: '800px',
-          margin: '0 auto',
-          borderRadius: '16px',
-          overflow: 'hidden',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
-          position: 'relative',
-          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
-        }}>
+        <div
+          style={{
+            maxWidth: '800px',
+            margin: '0 auto',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+            position: 'relative',
+            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+          }}
+        >
           {showDemoVideo ? (
             <video
               controls
@@ -2012,13 +2480,15 @@ const LandingPage = () => {
               Your browser does not support the video tag.
             </video>
           ) : (
-            <div style={{
-              aspectRatio: '16/9',
-              position: 'relative',
-              backgroundImage: 'url(/demo-thumbnail.jpg)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
-            }}>
+            <div
+              style={{
+                aspectRatio: '16/9',
+                position: 'relative',
+                backgroundImage: 'url(/demo-thumbnail.jpg)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            >
               {/* Dark Overlay + Play Button */}
               <div
                 style={{
@@ -2031,11 +2501,11 @@ const LandingPage = () => {
                   justifyContent: 'center',
                   color: 'white',
                   cursor: 'pointer',
-                  transition: 'background 0.2s'
+                  transition: 'background 0.2s',
                 }}
                 onClick={() => setShowDemoVideo(true)}
-                onMouseOver={(e) => e.currentTarget.style.background = 'rgba(0, 0, 0, 0.3)'}
-                onMouseOut={(e) => e.currentTarget.style.background = 'rgba(0, 0, 0, 0.45)'}
+                onMouseOver={e => (e.currentTarget.style.background = 'rgba(0, 0, 0, 0.3)')}
+                onMouseOut={e => (e.currentTarget.style.background = 'rgba(0, 0, 0, 0.45)')}
               >
                 {/* Play Button */}
                 <div
@@ -2050,11 +2520,11 @@ const LandingPage = () => {
                     justifyContent: 'center',
                     boxShadow: '0 8px 32px rgba(79, 70, 229, 0.5)',
                     transition: 'transform 0.2s, box-shadow 0.2s',
-                    marginBottom: '16px'
+                    marginBottom: '16px',
                   }}
                 >
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
-                    <path d="M8 5v14l11-7z"/>
+                    <path d="M8 5v14l11-7z" />
                   </svg>
                 </div>
               </div>
@@ -2089,10 +2559,16 @@ const LandingPage = () => {
                 textDecoration: 'none',
                 cursor: 'pointer',
                 transition: 'transform 0.2s, box-shadow 0.2s',
-                border: '1px solid var(--gray-200)'
+                border: '1px solid var(--gray-200)',
               }}
-              onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }}
-              onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
+              onMouseOver={e => {
+                e.currentTarget.style.transform = 'scale(1.05)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
             >
               <Sparkles size={14} style={{ color: 'var(--primary)' }} />
               50% OFF - Limited Time
@@ -2108,29 +2584,41 @@ const LandingPage = () => {
             <div>
               <div className="footer-brand">ReviewResponder</div>
               <p className="footer-description">
-                AI-powered review response generator helping businesses
-                maintain their online reputation effortlessly.
+                AI-powered review response generator helping businesses maintain their online
+                reputation effortlessly.
               </p>
             </div>
             <div>
               <div className="footer-title">Product</div>
               <ul className="footer-links">
-                <li><Link to="/pricing">Pricing</Link></li>
-                <li><Link to="/register">Get Started</Link></li>
+                <li>
+                  <Link to="/pricing">Pricing</Link>
+                </li>
+                <li>
+                  <Link to="/register">Get Started</Link>
+                </li>
               </ul>
             </div>
             <div>
               <div className="footer-title">Support</div>
               <ul className="footer-links">
-                <li><Link to="/support">Help Center</Link></li>
-                <li><a href="mailto:support@tryreviewresponder.com">Contact</a></li>
+                <li>
+                  <Link to="/support">Help Center</Link>
+                </li>
+                <li>
+                  <a href="mailto:support@tryreviewresponder.com">Contact</a>
+                </li>
               </ul>
             </div>
             <div>
               <div className="footer-title">Legal</div>
               <ul className="footer-links">
-                <li><Link to="/privacy">Privacy Policy</Link></li>
-                <li><Link to="/terms">Terms of Service</Link></li>
+                <li>
+                  <Link to="/privacy">Privacy Policy</Link>
+                </li>
+                <li>
+                  <Link to="/terms">Terms of Service</Link>
+                </li>
               </ul>
             </div>
           </div>
@@ -2150,15 +2638,27 @@ const PrivacyPage = () => (
     <p style={{ color: 'var(--gray-500)', marginBottom: '32px' }}>Last updated: January 9, 2026</p>
 
     <div style={{ lineHeight: '1.8', color: 'var(--gray-700)' }}>
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>1. Information We Collect</h2>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
+        1. Information We Collect
+      </h2>
       <p>When you use ReviewResponder, we collect:</p>
       <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
-        <li><strong>Account Information:</strong> Email address, business name, and password (encrypted)</li>
-        <li><strong>Usage Data:</strong> Review texts you submit and generated responses</li>
-        <li><strong>Payment Information:</strong> Processed securely by Stripe - we never store your card details</li>
+        <li>
+          <strong>Account Information:</strong> Email address, business name, and password
+          (encrypted)
+        </li>
+        <li>
+          <strong>Usage Data:</strong> Review texts you submit and generated responses
+        </li>
+        <li>
+          <strong>Payment Information:</strong> Processed securely by Stripe - we never store your
+          card details
+        </li>
       </ul>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>2. How We Use Your Data</h2>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
+        2. How We Use Your Data
+      </h2>
       <p>We use your information to:</p>
       <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
         <li>Provide and improve our AI response generation service</li>
@@ -2167,7 +2667,9 @@ const PrivacyPage = () => (
         <li>Respond to support requests</li>
       </ul>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>3. Data Storage & Security</h2>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
+        3. Data Storage & Security
+      </h2>
       <p>Your data is stored securely on servers in the EU/US (Render.com). We use:</p>
       <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
         <li>HTTPS encryption for all data transfers</li>
@@ -2175,39 +2677,88 @@ const PrivacyPage = () => (
         <li>Secure PostgreSQL database</li>
       </ul>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>4. Third-Party Services</h2>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
+        4. Third-Party Services
+      </h2>
       <p>We use the following services:</p>
       <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
-        <li><strong>OpenAI:</strong> To generate review responses (your review text is sent to their API)</li>
-        <li><strong>Stripe:</strong> For payment processing</li>
-        <li><strong>Resend:</strong> For transactional emails</li>
+        <li>
+          <strong>OpenAI:</strong> To generate review responses (your review text is sent to their
+          API)
+        </li>
+        <li>
+          <strong>Stripe:</strong> For payment processing
+        </li>
+        <li>
+          <strong>Resend:</strong> For transactional emails
+        </li>
       </ul>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>5. Your Rights (GDPR)</h2>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
+        5. Your Rights (GDPR)
+      </h2>
       <p>You have the right to:</p>
       <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
-        <li><strong>Access:</strong> Request a copy of your data</li>
-        <li><strong>Rectification:</strong> Correct inaccurate data</li>
-        <li><strong>Erasure:</strong> Request deletion of your account and data</li>
-        <li><strong>Portability:</strong> Export your data</li>
+        <li>
+          <strong>Access:</strong> Request a copy of your data
+        </li>
+        <li>
+          <strong>Rectification:</strong> Correct inaccurate data
+        </li>
+        <li>
+          <strong>Erasure:</strong> Request deletion of your account and data
+        </li>
+        <li>
+          <strong>Portability:</strong> Export your data
+        </li>
       </ul>
-      <p style={{ marginTop: '12px' }}>To exercise these rights, email us at <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>support@tryreviewresponder.com</a></p>
+      <p style={{ marginTop: '12px' }}>
+        To exercise these rights, email us at{' '}
+        <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>
+          support@tryreviewresponder.com
+        </a>
+      </p>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>6. Chrome Extension</h2>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
+        6. Chrome Extension
+      </h2>
       <p>Our Chrome Extension requires specific permissions to function:</p>
       <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
-        <li><strong>activeTab:</strong> To detect reviews on Google Maps pages you visit</li>
-        <li><strong>storage:</strong> To save your login session locally</li>
-        <li><strong>clipboardWrite:</strong> To copy generated responses to your clipboard</li>
-        <li><strong>host_permissions:</strong> To communicate with Google Maps and our API</li>
+        <li>
+          <strong>activeTab:</strong> To detect reviews on Google Maps pages you visit
+        </li>
+        <li>
+          <strong>storage:</strong> To save your login session locally
+        </li>
+        <li>
+          <strong>clipboardWrite:</strong> To copy generated responses to your clipboard
+        </li>
+        <li>
+          <strong>host_permissions:</strong> To communicate with Google Maps and our API
+        </li>
       </ul>
-      <p style={{ marginTop: '12px' }}>The extension does NOT collect browsing history, personal data from other sites, or any data when you're not actively using it.</p>
+      <p style={{ marginTop: '12px' }}>
+        The extension does NOT collect browsing history, personal data from other sites, or any data
+        when you're not actively using it.
+      </p>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>7. Data Retention</h2>
-      <p>We retain your data for as long as your account is active. Upon account deletion, we remove your personal data within 30 days.</p>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
+        7. Data Retention
+      </h2>
+      <p>
+        We retain your data for as long as your account is active. Upon account deletion, we remove
+        your personal data within 30 days.
+      </p>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>8. Contact</h2>
-      <p>Questions about this policy? Contact us at <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>support@tryreviewresponder.com</a></p>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
+        8. Contact
+      </h2>
+      <p>
+        Questions about this policy? Contact us at{' '}
+        <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>
+          support@tryreviewresponder.com
+        </a>
+      </p>
     </div>
   </div>
 );
@@ -2219,10 +2770,17 @@ const TermsPage = () => (
     <p style={{ color: 'var(--gray-500)', marginBottom: '32px' }}>Last updated: January 9, 2026</p>
 
     <div style={{ lineHeight: '1.8', color: 'var(--gray-700)' }}>
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>1. Service Description</h2>
-      <p>ReviewResponder provides AI-powered review response generation for businesses. We use artificial intelligence to help you craft professional responses to customer reviews.</p>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
+        1. Service Description
+      </h2>
+      <p>
+        ReviewResponder provides AI-powered review response generation for businesses. We use
+        artificial intelligence to help you craft professional responses to customer reviews.
+      </p>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>2. Account Terms</h2>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
+        2. Account Terms
+      </h2>
       <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
         <li>You must be 18 years or older to use this service</li>
         <li>You are responsible for maintaining the security of your account</li>
@@ -2230,7 +2788,9 @@ const TermsPage = () => (
         <li>One person or business per account</li>
       </ul>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>3. Acceptable Use</h2>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
+        3. Acceptable Use
+      </h2>
       <p>You agree NOT to use ReviewResponder to:</p>
       <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
         <li>Generate fake reviews or misleading content</li>
@@ -2239,15 +2799,22 @@ const TermsPage = () => (
         <li>Infringe on intellectual property rights</li>
       </ul>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>4. Payment & Refunds</h2>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
+        4. Payment & Refunds
+      </h2>
       <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
         <li>Free tier: 20 responses per month, no payment required</li>
         <li>Paid plans: Billed monthly or yearly via Stripe</li>
-        <li><strong>30-Day Money Back Guarantee:</strong> If you're not satisfied within 30 days, contact us for a full refund</li>
+        <li>
+          <strong>30-Day Money Back Guarantee:</strong> If you're not satisfied within 30 days,
+          contact us for a full refund
+        </li>
         <li>Cancel anytime - no long-term contracts</li>
       </ul>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>5. AI-Generated Content</h2>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
+        5. AI-Generated Content
+      </h2>
       <p>Responses generated by our AI are suggestions only. You are responsible for:</p>
       <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
         <li>Reviewing and editing responses before posting</li>
@@ -2255,14 +2822,28 @@ const TermsPage = () => (
         <li>The final content you publish</li>
       </ul>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>6. Limitation of Liability</h2>
-      <p>ReviewResponder is provided "as is" without warranties. We are not liable for any damages arising from your use of the service or AI-generated content.</p>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
+        6. Limitation of Liability
+      </h2>
+      <p>
+        ReviewResponder is provided "as is" without warranties. We are not liable for any damages
+        arising from your use of the service or AI-generated content.
+      </p>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>7. Changes to Terms</h2>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
+        7. Changes to Terms
+      </h2>
       <p>We may update these terms. Continued use after changes constitutes acceptance.</p>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>8. Contact</h2>
-      <p>Questions? Email us at <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>support@tryreviewresponder.com</a></p>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
+        8. Contact
+      </h2>
+      <p>
+        Questions? Email us at{' '}
+        <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>
+          support@tryreviewresponder.com
+        </a>
+      </p>
     </div>
   </div>
 );
@@ -2285,7 +2866,7 @@ const PricingCards = ({ showFree = true }) => {
     ? discountFromUrl.toUpperCase()
     : null;
 
-  const handleSubscribe = async (plan) => {
+  const handleSubscribe = async plan => {
     if (!user) {
       // Preserve discount code when redirecting to register
       const registerUrl = activeDiscount ? `/register?discount=${activeDiscount}` : '/register';
@@ -2297,7 +2878,7 @@ const PricingCards = ({ showFree = true }) => {
     try {
       const checkoutData = {
         plan,
-        billing: billingCycle
+        billing: billingCycle,
       };
 
       // Only add discount code if valid one is present in URL
@@ -2319,38 +2900,67 @@ const PricingCards = ({ showFree = true }) => {
       monthlyPrice: 0,
       yearlyPrice: 0,
       responses: 20,
-      features: ['✨ 3 Smart AI responses', '⚡ 17 Standard responses', '20 total per month', 'All 4 tone options', '50+ languages', 'Response history'],
+      features: [
+        '✨ 3 Smart AI responses',
+        '⚡ 17 Standard responses',
+        '20 total per month',
+        'All 4 tone options',
+        '50+ languages',
+        'Response history',
+      ],
       buttonText: 'Get Started',
-      plan: 'free'
+      plan: 'free',
     },
     {
       name: 'Starter',
       monthlyPrice: 29,
-      yearlyPrice: 23.20, // 20% off
+      yearlyPrice: 23.2, // 20% off
       responses: 300,
-      features: ['✨ 100 Smart AI responses', '⚡ 200 Standard responses', '300 total per month', 'Response templates', 'CSV/PDF export', 'Email support'],
+      features: [
+        '✨ 100 Smart AI responses',
+        '⚡ 200 Standard responses',
+        '300 total per month',
+        'Response templates',
+        'CSV/PDF export',
+        'Email support',
+      ],
       buttonText: 'Subscribe',
-      plan: 'starter'
+      plan: 'starter',
     },
     {
       name: 'Pro',
       monthlyPrice: 49,
-      yearlyPrice: 39.20, // 20% off
+      yearlyPrice: 39.2, // 20% off
       responses: 800,
-      features: ['✨ 300 Smart AI responses', '⚡ 500 Standard responses', '800 total per month', 'Bulk generation (20 at once)', 'Analytics dashboard', 'Team members (3)', 'Priority support'],
+      features: [
+        '✨ 300 Smart AI responses',
+        '⚡ 500 Standard responses',
+        '800 total per month',
+        'Bulk generation (20 at once)',
+        'Analytics dashboard',
+        'Team members (3)',
+        'Priority support',
+      ],
       buttonText: 'Subscribe',
       plan: 'professional',
-      popular: true
+      popular: true,
     },
     {
       name: 'Unlimited',
       monthlyPrice: 99,
-      yearlyPrice: 79.20, // 20% off
+      yearlyPrice: 79.2, // 20% off
       responses: 'Unlimited',
-      features: ['✨ Unlimited Smart AI', '⚡ Unlimited Standard', 'All Pro features', 'Team members (10)', 'API access', 'Dedicated support'],
+      features: [
+        '✨ Unlimited Smart AI',
+        '⚡ Unlimited Standard',
+        'All Pro features',
+        'Team members (10)',
+        'API access',
+        'Dedicated support',
+      ],
       buttonText: 'Subscribe',
-      plan: 'unlimited'
-    }
+      plan: 'unlimited',
+    },
   ];
 
   const displayPlans = showFree ? plans : plans.filter(p => p.plan !== 'free');
@@ -2358,9 +2968,9 @@ const PricingCards = ({ showFree = true }) => {
 
   // Discount details for each code
   const discountDetails = {
-    'EARLY50': { percent: 50, label: 'Launch Special' },
-    'SAVE20': { percent: 20, label: 'Special Offer' },
-    'HUNTLAUNCH': { percent: 60, label: 'Product Hunt Special' }
+    EARLY50: { percent: 50, label: 'Launch Special' },
+    SAVE20: { percent: 20, label: 'Special Offer' },
+    HUNTLAUNCH: { percent: 60, label: 'Product Hunt Special' },
   };
   const currentDiscount = activeDiscount ? discountDetails[activeDiscount] : null;
 
@@ -2368,31 +2978,47 @@ const PricingCards = ({ showFree = true }) => {
     <div>
       {/* Active Discount Banner - only shown when discount code is in URL */}
       {currentDiscount && (
-        <div style={{
-          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-          color: 'white',
-          padding: '16px 24px',
-          borderRadius: '12px',
-          marginBottom: '24px',
-          textAlign: 'center',
-          boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
-        }}>
+        <div
+          style={{
+            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            color: 'white',
+            padding: '16px 24px',
+            borderRadius: '12px',
+            marginBottom: '24px',
+            textAlign: 'center',
+            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+          }}
+        >
           <div style={{ fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>
             ✨ {currentDiscount.percent}% OFF Applied!
           </div>
           <div style={{ fontSize: '14px', opacity: 0.9 }}>
-            {currentDiscount.label} - Code <strong>{activeDiscount}</strong> will be applied at checkout
+            {currentDiscount.label} - Code <strong>{activeDiscount}</strong> will be applied at
+            checkout
           </div>
         </div>
       )}
 
       {/* Billing Toggle */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px', gap: '8px', alignItems: 'center' }}>
-        <span style={{ fontWeight: billingCycle === 'monthly' ? '600' : '400', color: billingCycle === 'monthly' ? 'var(--gray-900)' : 'var(--gray-500)' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          marginBottom: '32px',
+          gap: '8px',
+          alignItems: 'center',
+        }}
+      >
+        <span
+          style={{
+            fontWeight: billingCycle === 'monthly' ? '600' : '400',
+            color: billingCycle === 'monthly' ? 'var(--gray-900)' : 'var(--gray-500)',
+          }}
+        >
           Monthly
         </span>
         <button
-          onClick={() => setBillingCycle(prev => prev === 'monthly' ? 'yearly' : 'monthly')}
+          onClick={() => setBillingCycle(prev => (prev === 'monthly' ? 'yearly' : 'monthly'))}
           style={{
             width: '56px',
             height: '28px',
@@ -2401,61 +3027,88 @@ const PricingCards = ({ showFree = true }) => {
             border: 'none',
             cursor: 'pointer',
             position: 'relative',
-            transition: 'background 0.2s'
+            transition: 'background 0.2s',
           }}
         >
-          <span style={{
-            position: 'absolute',
-            top: '2px',
-            left: isYearly ? '30px' : '2px',
-            width: '24px',
-            height: '24px',
-            borderRadius: '50%',
-            background: 'white',
-            transition: 'left 0.2s',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-          }} />
+          <span
+            style={{
+              position: 'absolute',
+              top: '2px',
+              left: isYearly ? '30px' : '2px',
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              background: 'white',
+              transition: 'left 0.2s',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+            }}
+          />
         </button>
-        <span style={{ fontWeight: billingCycle === 'yearly' ? '600' : '400', color: billingCycle === 'yearly' ? 'var(--gray-900)' : 'var(--gray-500)' }}>
+        <span
+          style={{
+            fontWeight: billingCycle === 'yearly' ? '600' : '400',
+            color: billingCycle === 'yearly' ? 'var(--gray-900)' : 'var(--gray-500)',
+          }}
+        >
           Yearly
         </span>
-        <span style={{
-          background: 'var(--success)',
-          color: 'white',
-          padding: '4px 10px',
-          borderRadius: '12px',
-          fontSize: '12px',
-          fontWeight: '600',
-          marginLeft: '8px'
-        }}>
+        <span
+          style={{
+            background: 'var(--success)',
+            color: 'white',
+            padding: '4px 10px',
+            borderRadius: '12px',
+            fontSize: '12px',
+            fontWeight: '600',
+            marginLeft: '8px',
+          }}
+        >
           Save 20%
         </span>
       </div>
 
       <div className="pricing-grid">
-        {displayPlans.map((plan) => {
+        {displayPlans.map(plan => {
           const displayPrice = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
-          const savings = plan.monthlyPrice > 0 ? Math.round((plan.monthlyPrice - plan.yearlyPrice) * 12) : 0;
+          const savings =
+            plan.monthlyPrice > 0 ? Math.round((plan.monthlyPrice - plan.yearlyPrice) * 12) : 0;
 
           return (
             <div key={plan.name} className={`pricing-card ${plan.popular ? 'popular' : ''}`}>
               {plan.popular && <span className="pricing-badge">Most Popular</span>}
               <h3 className="pricing-plan">{plan.name}</h3>
               <div className="pricing-price">
-                ${displayPrice.toFixed(2).replace('.00', '')}<span>/mo</span>
+                ${displayPrice.toFixed(2).replace('.00', '')}
+                <span>/mo</span>
               </div>
               {isYearly && plan.monthlyPrice > 0 && (
-                <p style={{ color: 'var(--success)', fontSize: '13px', fontWeight: '600', marginTop: '4px' }}>
+                <p
+                  style={{
+                    color: 'var(--success)',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    marginTop: '4px',
+                  }}
+                >
                   Save ${savings}/year
                 </p>
               )}
               {isYearly && plan.monthlyPrice > 0 && (
-                <p style={{ color: 'var(--gray-400)', fontSize: '12px', textDecoration: 'line-through', marginTop: '2px' }}>
+                <p
+                  style={{
+                    color: 'var(--gray-400)',
+                    fontSize: '12px',
+                    textDecoration: 'line-through',
+                    marginTop: '2px',
+                  }}
+                >
                   ${plan.monthlyPrice}/mo
                 </p>
               )}
               <p style={{ color: 'var(--gray-500)', marginTop: '8px' }}>
-                {typeof plan.responses === 'number' ? `${plan.responses} responses` : plan.responses}
+                {typeof plan.responses === 'number'
+                  ? `${plan.responses} responses`
+                  : plan.responses}
               </p>
               <ul className="pricing-features">
                 {plan.features.map((feature, i) => (
@@ -2479,15 +3132,17 @@ const PricingCards = ({ showFree = true }) => {
                   >
                     {loadingPlan === plan.plan ? 'Processing...' : plan.buttonText}
                   </button>
-                  <p style={{
-                    fontSize: '12px',
-                    color: 'var(--gray-500)',
-                    marginTop: '12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px'
-                  }}>
+                  <p
+                    style={{
+                      fontSize: '12px',
+                      color: 'var(--gray-500)',
+                      marginTop: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                    }}
+                  >
                     <Check size={12} />
                     30-day money-back guarantee
                   </p>
@@ -2510,7 +3165,7 @@ const LoginPage = () => {
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
     try {
@@ -2524,20 +3179,23 @@ const LoginPage = () => {
     }
   };
 
-  const handleGoogleSuccess = useCallback(async (credential) => {
-    setGoogleLoading(true);
-    try {
-      await loginWithGoogle(credential);
-      toast.success('Welcome back!');
-      navigate('/dashboard');
-    } catch (error) {
-      toast.error(error.response?.data?.error || 'Google sign-in failed');
-    } finally {
-      setGoogleLoading(false);
-    }
-  }, [loginWithGoogle, navigate]);
+  const handleGoogleSuccess = useCallback(
+    async credential => {
+      setGoogleLoading(true);
+      try {
+        await loginWithGoogle(credential);
+        toast.success('Welcome back!');
+        navigate('/dashboard');
+      } catch (error) {
+        toast.error(error.response?.data?.error || 'Google sign-in failed');
+      } finally {
+        setGoogleLoading(false);
+      }
+    },
+    [loginWithGoogle, navigate]
+  );
 
-  const handleGoogleError = useCallback((error) => {
+  const handleGoogleError = useCallback(error => {
     console.error('Google Sign-In error:', error);
     toast.error('Google sign-in failed. Please try again.');
   }, []);
@@ -2556,7 +3214,9 @@ const LoginPage = () => {
         />
 
         {googleLoading && (
-          <div style={{ textAlign: 'center', marginBottom: '16px', color: 'var(--text-secondary)' }}>
+          <div
+            style={{ textAlign: 'center', marginBottom: '16px', color: 'var(--text-secondary)' }}
+          >
             Signing in with Google...
           </div>
         )}
@@ -2565,7 +3225,9 @@ const LoginPage = () => {
         {GOOGLE_CLIENT_ID && (
           <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0' }}>
             <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }}></div>
-            <span style={{ padding: '0 16px', color: 'var(--text-secondary)', fontSize: '14px' }}>or continue with email</span>
+            <span style={{ padding: '0 16px', color: 'var(--text-secondary)', fontSize: '14px' }}>
+              or continue with email
+            </span>
             <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }}></div>
           </div>
         )}
@@ -2577,7 +3239,7 @@ const LoginPage = () => {
               type="email"
               className="form-input"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
             />
@@ -2589,13 +3251,18 @@ const LoginPage = () => {
               type="password"
               className="form-input"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               placeholder="Enter your password"
               required
             />
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            style={{ width: '100%' }}
+            disabled={loading}
+          >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
@@ -2624,7 +3291,7 @@ const RegisterPage = () => {
   const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
     try {
@@ -2638,20 +3305,23 @@ const RegisterPage = () => {
     }
   };
 
-  const handleGoogleSuccess = useCallback(async (credential) => {
-    setGoogleLoading(true);
-    try {
-      await loginWithGoogle(credential);
-      toast.success('Account created! You have 20 free responses.');
-      navigate('/dashboard');
-    } catch (error) {
-      toast.error(error.response?.data?.error || 'Google sign-up failed');
-    } finally {
-      setGoogleLoading(false);
-    }
-  }, [loginWithGoogle, navigate]);
+  const handleGoogleSuccess = useCallback(
+    async credential => {
+      setGoogleLoading(true);
+      try {
+        await loginWithGoogle(credential);
+        toast.success('Account created! You have 20 free responses.');
+        navigate('/dashboard');
+      } catch (error) {
+        toast.error(error.response?.data?.error || 'Google sign-up failed');
+      } finally {
+        setGoogleLoading(false);
+      }
+    },
+    [loginWithGoogle, navigate]
+  );
 
-  const handleGoogleError = useCallback((error) => {
+  const handleGoogleError = useCallback(error => {
     console.error('Google Sign-In error:', error);
     toast.error('Google sign-up failed. Please try again.');
   }, []);
@@ -2670,7 +3340,9 @@ const RegisterPage = () => {
         />
 
         {googleLoading && (
-          <div style={{ textAlign: 'center', marginBottom: '16px', color: 'var(--text-secondary)' }}>
+          <div
+            style={{ textAlign: 'center', marginBottom: '16px', color: 'var(--text-secondary)' }}
+          >
             Creating account with Google...
           </div>
         )}
@@ -2679,7 +3351,9 @@ const RegisterPage = () => {
         {GOOGLE_CLIENT_ID && (
           <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0' }}>
             <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }}></div>
-            <span style={{ padding: '0 16px', color: 'var(--text-secondary)', fontSize: '14px' }}>or sign up with email</span>
+            <span style={{ padding: '0 16px', color: 'var(--text-secondary)', fontSize: '14px' }}>
+              or sign up with email
+            </span>
             <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }}></div>
           </div>
         )}
@@ -2691,7 +3365,7 @@ const RegisterPage = () => {
               type="email"
               className="form-input"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
             />
@@ -2703,14 +3377,19 @@ const RegisterPage = () => {
               type="password"
               className="form-input"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               placeholder="At least 8 characters"
               minLength={8}
               required
             />
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            style={{ width: '100%' }}
+            disabled={loading}
+          >
             {loading ? 'Creating account...' : 'Create Free Account'}
           </button>
         </form>
@@ -2729,7 +3408,7 @@ const ForgotPasswordPage = () => {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
     try {
@@ -2775,13 +3454,18 @@ const ForgotPasswordPage = () => {
               type="email"
               className="form-input"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
             />
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            style={{ width: '100%' }}
+            disabled={loading}
+          >
             {loading ? 'Sending...' : 'Send Reset Link'}
           </button>
         </form>
@@ -2805,7 +3489,7 @@ const ResetPasswordPage = () => {
 
   const token = new URLSearchParams(location.search).get('token');
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
@@ -2873,7 +3557,7 @@ const ResetPasswordPage = () => {
               type="password"
               className="form-input"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               placeholder="At least 8 characters"
               minLength={8}
               required
@@ -2886,14 +3570,19 @@ const ResetPasswordPage = () => {
               type="password"
               className="form-input"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={e => setConfirmPassword(e.target.value)}
               placeholder="Confirm your password"
               minLength={8}
               required
             />
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            style={{ width: '100%' }}
+            disabled={loading}
+          >
             {loading ? 'Resetting...' : 'Reset Password'}
           </button>
         </form>
@@ -2923,10 +3612,22 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
   const [generatingSample, setGeneratingSample] = useState(false);
 
   const businessTypes = [
-    'Restaurant', 'Cafe / Coffee Shop', 'Hotel / Accommodation', 'Bar / Nightclub',
-    'Spa / Wellness', 'Hair Salon / Barbershop', 'Dental Practice', 'Medical Practice',
-    'Auto Repair / Service', 'Gym / Fitness Studio', 'Retail Store', 'E-commerce',
-    'Professional Services', 'Real Estate', 'Home Services', 'Other'
+    'Restaurant',
+    'Cafe / Coffee Shop',
+    'Hotel / Accommodation',
+    'Bar / Nightclub',
+    'Spa / Wellness',
+    'Hair Salon / Barbershop',
+    'Dental Practice',
+    'Medical Practice',
+    'Auto Repair / Service',
+    'Gym / Fitness Studio',
+    'Retail Store',
+    'E-commerce',
+    'Professional Services',
+    'Real Estate',
+    'Home Services',
+    'Other',
   ];
 
   // Sync user data when modal opens
@@ -2957,12 +3658,12 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
       await api.put('/auth/profile', {
         businessName: businessName.trim(),
         businessType,
-        businessContext: generatedContext
+        businessContext: generatedContext,
       });
       updateUser({
         businessName: businessName.trim(),
         businessType,
-        businessContext: generatedContext
+        businessContext: generatedContext,
       });
       setCurrentStep(3);
     } catch (error) {
@@ -2984,7 +3685,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
         keywords: keywords.trim(),
         businessType,
         businessName: businessName.trim(),
-        field: 'context'
+        field: 'context',
       });
       const context = contextResult.data.generated;
       setGeneratedContext(context);
@@ -2994,7 +3695,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
         keywords: context,
         businessType,
         businessName: businessName.trim(),
-        field: 'sample_review'
+        field: 'sample_review',
       });
       const review = reviewResult.data.generated;
       setSampleReview(review);
@@ -3006,7 +3707,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
         businessName: businessName.trim(),
         businessContext: context,
         businessType: businessType,
-        isOnboarding: true
+        isOnboarding: true,
       });
       setSampleResponse(responseResult.data.response);
 
@@ -3045,19 +3746,21 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
   if (!isVisible) return null;
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.7)',
-      zIndex: 10000,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px'
-    }}>
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0, 0, 0, 0.7)',
+        zIndex: 10000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+      }}
+    >
       <div
         className="card"
         style={{
@@ -3069,32 +3772,34 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
           position: 'relative',
           animation: 'slideIn 0.3s ease-out',
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
         }}
       >
         {/* Header */}
-        <div style={{
-          background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
-          color: 'white',
-          padding: '24px',
-          textAlign: 'center',
-          flexShrink: 0
-        }}>
+        <div
+          style={{
+            background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
+            color: 'white',
+            padding: '24px',
+            textAlign: 'center',
+            flexShrink: 0,
+          }}
+        >
           <h2 style={{ fontSize: '24px', fontWeight: '700', margin: '0 0 8px 0' }}>
             Welcome to ReviewResponder!
           </h2>
-          <p style={{ margin: 0, opacity: 0.9 }}>
-            Let's personalize your AI in 3 quick steps
-          </p>
+          <p style={{ margin: 0, opacity: 0.9 }}>Let's personalize your AI in 3 quick steps</p>
 
           {/* Progress bar */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '8px',
-            marginTop: '20px'
-          }}>
-            {[1, 2, 3].map((step) => (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '8px',
+              marginTop: '20px',
+            }}
+          >
+            {[1, 2, 3].map(step => (
               <div
                 key={step}
                 style={{
@@ -3102,7 +3807,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                   height: '4px',
                   borderRadius: '2px',
                   background: step <= currentStep ? 'white' : 'rgba(255, 255, 255, 0.3)',
-                  transition: 'all 0.3s ease'
+                  transition: 'all 0.3s ease',
                 }}
               />
             ))}
@@ -3120,15 +3825,15 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
               <p style={{ color: 'var(--gray-600)', marginBottom: '20px', fontSize: '14px' }}>
                 This helps us personalize your review responses
               </p>
-              
+
               <div className="form-group">
                 <input
                   type="text"
                   className="form-input"
                   placeholder="e.g., Tony's Pizza, Smith & Co Law Firm"
                   value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && businessName.trim() && nextStep()}
+                  onChange={e => setBusinessName(e.target.value)}
+                  onKeyPress={e => e.key === 'Enter' && businessName.trim() && nextStep()}
                   autoFocus
                 />
               </div>
@@ -3152,12 +3857,14 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                     <select
                       className="form-input"
                       value={businessType}
-                      onChange={(e) => setBusinessType(e.target.value)}
+                      onChange={e => setBusinessType(e.target.value)}
                       style={{ cursor: 'pointer' }}
                     >
                       <option value="">Select type...</option>
                       {businessTypes.map(type => (
-                        <option key={type} value={type}>{type}</option>
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -3169,7 +3876,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                       className="form-input"
                       placeholder="e.g., italian, family-owned, homemade pasta"
                       value={keywords}
-                      onChange={(e) => setKeywords(e.target.value)}
+                      onChange={e => setKeywords(e.target.value)}
                     />
                   </div>
 
@@ -3200,36 +3907,56 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                     <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginBottom: '4px' }}>
                       ⭐⭐⭐⭐⭐ Sample Customer Review:
                     </p>
-                    <p style={{
-                      fontSize: '13px',
-                      margin: 0,
-                      padding: '10px',
-                      background: 'var(--gray-50)',
-                      borderRadius: '6px',
-                      fontStyle: 'italic',
-                      lineHeight: '1.4'
-                    }}>
+                    <p
+                      style={{
+                        fontSize: '13px',
+                        margin: 0,
+                        padding: '10px',
+                        background: 'var(--gray-50)',
+                        borderRadius: '6px',
+                        fontStyle: 'italic',
+                        lineHeight: '1.4',
+                      }}
+                    >
                       "{sampleReview}"
                     </p>
                   </div>
 
                   {/* AI Response */}
-                  <div style={{
-                    background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-                    border: '1px solid #86efac',
-                    borderRadius: '8px',
-                    padding: '12px'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                  <div
+                    style={{
+                      background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                      border: '1px solid #86efac',
+                      borderRadius: '8px',
+                      padding: '12px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        marginBottom: '6px',
+                      }}
+                    >
                       <CheckCircle size={14} style={{ color: '#22c55e' }} />
-                      <span style={{ fontSize: '12px', fontWeight: '600', color: '#15803d' }}>Your AI Response:</span>
+                      <span style={{ fontSize: '12px', fontWeight: '600', color: '#15803d' }}>
+                        Your AI Response:
+                      </span>
                     </div>
                     <p style={{ fontSize: '13px', color: '#166534', margin: 0, lineHeight: '1.4' }}>
                       {sampleResponse}
                     </p>
                   </div>
 
-                  <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '12px', textAlign: 'center' }}>
+                  <p
+                    style={{
+                      fontSize: '12px',
+                      color: 'var(--gray-500)',
+                      marginTop: '12px',
+                      textAlign: 'center',
+                    }}
+                  >
                     See how the AI uses your business details? Click Next to continue.
                   </p>
                 </>
@@ -3245,16 +3972,19 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                 You're all set!
               </h3>
               <p style={{ color: 'var(--gray-600)', marginBottom: '24px', fontSize: '14px' }}>
-                Want to make responding even faster? Install our Chrome extension to respond directly from Google Reviews, Yelp, and more.
+                Want to make responding even faster? Install our Chrome extension to respond
+                directly from Google Reviews, Yelp, and more.
               </p>
 
-              <div style={{
-                background: 'var(--gray-50)',
-                border: '1px solid var(--gray-200)',
-                borderRadius: '12px',
-                padding: '20px',
-                marginBottom: '24px'
-              }}>
+              <div
+                style={{
+                  background: 'var(--gray-50)',
+                  border: '1px solid var(--gray-200)',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  marginBottom: '24px',
+                }}
+              >
                 <Chrome size={32} style={{ color: 'var(--primary)', marginBottom: '12px' }} />
                 <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>
                   Chrome Extension
@@ -3282,14 +4012,16 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
         </div>
 
         {/* Footer */}
-        <div style={{
-          borderTop: '1px solid var(--gray-200)',
-          padding: '20px 32px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexShrink: 0
-        }}>
+        <div
+          style={{
+            borderTop: '1px solid var(--gray-200)',
+            padding: '20px 32px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexShrink: 0,
+          }}
+        >
           <div style={{ display: 'flex', gap: '8px' }}>
             {currentStep > 1 && (
               <button
@@ -3322,11 +4054,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
               {currentStep === 1 ? 'Continue' : 'Save & Continue'}
             </button>
           ) : (
-            <button
-              className="btn btn-primary"
-              onClick={completeOnboarding}
-              disabled={loading}
-            >
+            <button className="btn btn-primary" onClick={completeOnboarding} disabled={loading}>
               {loading ? 'Finishing...' : 'Start Using ReviewResponder'}
             </button>
           )}
@@ -3365,7 +4093,7 @@ const ExtensionPromoCard = () => {
               <img
                 src="/extension-preview.png"
                 alt="Chrome Extension Preview"
-                onError={(e) => {
+                onError={e => {
                   e.target.style.display = 'none';
                   e.target.nextSibling.style.display = 'flex';
                 }}
@@ -3384,13 +4112,23 @@ const ExtensionPromoCard = () => {
         <div className="extension-benefits">
           <h4>Respond to Reviews 10x Faster</h4>
           <ul>
-            <li><CheckCircle size={16} /> One-click responses on Google Maps</li>
-            <li><CheckCircle size={16} /> Works on Yelp, TripAdvisor & more</li>
-            <li><CheckCircle size={16} /> Auto-detects review language</li>
+            <li>
+              <CheckCircle size={16} /> One-click responses on Google Maps
+            </li>
+            <li>
+              <CheckCircle size={16} /> Works on Yelp, TripAdvisor & more
+            </li>
+            <li>
+              <CheckCircle size={16} /> Auto-detects review language
+            </li>
           </ul>
 
           <div className="extension-ctas">
-            <Link to="/extension" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <Link
+              to="/extension"
+              className="btn btn-primary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+            >
               <Download size={18} />
               Get Chrome Extension
             </Link>
@@ -3502,8 +4240,39 @@ const DashboardPage = () => {
     const lowerText = text.toLowerCase();
 
     // TIER 2: Emoji detection (universal)
-    const positiveEmoji = ['😊', '😃', '😁', '🥰', '❤️', '💕', '👍', '🙌', '⭐', '🌟', '💯', '🔥', '👏', '😍', '🤩'];
-    const negativeEmoji = ['😠', '😡', '😤', '👎', '💔', '😢', '😞', '😒', '🤮', '🤢', '😫', '😩', '☹️', '😔'];
+    const positiveEmoji = [
+      '😊',
+      '😃',
+      '😁',
+      '🥰',
+      '❤️',
+      '💕',
+      '👍',
+      '🙌',
+      '⭐',
+      '🌟',
+      '💯',
+      '🔥',
+      '👏',
+      '😍',
+      '🤩',
+    ];
+    const negativeEmoji = [
+      '😠',
+      '😡',
+      '😤',
+      '👎',
+      '💔',
+      '😢',
+      '😞',
+      '😒',
+      '🤮',
+      '🤢',
+      '😫',
+      '😩',
+      '☹️',
+      '😔',
+    ];
 
     let emojiPositive = positiveEmoji.filter(e => text.includes(e)).length;
     let emojiNegative = negativeEmoji.filter(e => text.includes(e)).length;
@@ -3514,54 +4283,188 @@ const DashboardPage = () => {
     // TIER 3: Multilingual keywords (EN, DE, FR, ES, IT, NL, PT)
     const positiveWords = [
       // English
-      'great', 'amazing', 'awesome', 'excellent', 'fantastic', 'wonderful', 'love', 'loved', 'best', 'perfect',
-      'outstanding', 'brilliant', 'superb', 'delicious', 'friendly', 'helpful', 'recommend', 'thank', 'happy',
+      'great',
+      'amazing',
+      'awesome',
+      'excellent',
+      'fantastic',
+      'wonderful',
+      'love',
+      'loved',
+      'best',
+      'perfect',
+      'outstanding',
+      'brilliant',
+      'superb',
+      'delicious',
+      'friendly',
+      'helpful',
+      'recommend',
+      'thank',
+      'happy',
       // German
-      'toll', 'super', 'wunderbar', 'perfekt', 'ausgezeichnet', 'lecker', 'freundlich', 'genial', 'klasse', 'hervorragend',
+      'toll',
+      'super',
+      'wunderbar',
+      'perfekt',
+      'ausgezeichnet',
+      'lecker',
+      'freundlich',
+      'genial',
+      'klasse',
+      'hervorragend',
       // French
-      'magnifique', 'excellent', 'parfait', 'délicieux', 'formidable', 'génial', 'superbe', 'merci', 'adoré',
+      'magnifique',
+      'excellent',
+      'parfait',
+      'délicieux',
+      'formidable',
+      'génial',
+      'superbe',
+      'merci',
+      'adoré',
       // Spanish
-      'excelente', 'maravilloso', 'perfecto', 'delicioso', 'fantástico', 'increíble', 'genial', 'gracias', 'encantó',
+      'excelente',
+      'maravilloso',
+      'perfecto',
+      'delicioso',
+      'fantástico',
+      'increíble',
+      'genial',
+      'gracias',
+      'encantó',
       // Italian
-      'eccellente', 'fantastico', 'perfetto', 'delizioso', 'meraviglioso', 'ottimo', 'grazie', 'bellissimo',
+      'eccellente',
+      'fantastico',
+      'perfetto',
+      'delizioso',
+      'meraviglioso',
+      'ottimo',
+      'grazie',
+      'bellissimo',
       // Dutch
-      'geweldig', 'fantastisch', 'perfect', 'heerlijk', 'uitstekend', 'vriendelijk', 'bedankt', 'top',
+      'geweldig',
+      'fantastisch',
+      'perfect',
+      'heerlijk',
+      'uitstekend',
+      'vriendelijk',
+      'bedankt',
+      'top',
       // Portuguese
-      'excelente', 'maravilhoso', 'perfeito', 'delicioso', 'fantástico', 'obrigado', 'incrível'
+      'excelente',
+      'maravilhoso',
+      'perfeito',
+      'delicioso',
+      'fantástico',
+      'obrigado',
+      'incrível',
     ];
 
     const negativeWords = [
       // English
-      'bad', 'terrible', 'awful', 'horrible', 'worst', 'poor', 'disappointed', 'rude', 'slow', 'cold',
-      'dirty', 'disgusting', 'never', 'waste', 'overpriced', 'avoid', 'angry', 'upset', 'refund',
+      'bad',
+      'terrible',
+      'awful',
+      'horrible',
+      'worst',
+      'poor',
+      'disappointed',
+      'rude',
+      'slow',
+      'cold',
+      'dirty',
+      'disgusting',
+      'never',
+      'waste',
+      'overpriced',
+      'avoid',
+      'angry',
+      'upset',
+      'refund',
       // German
-      'schlecht', 'furchtbar', 'schrecklich', 'enttäuscht', 'langsam', 'kalt', 'dreckig', 'nie wieder', 'teuer',
+      'schlecht',
+      'furchtbar',
+      'schrecklich',
+      'enttäuscht',
+      'langsam',
+      'kalt',
+      'dreckig',
+      'nie wieder',
+      'teuer',
       // French
-      'terrible', 'horrible', 'déçu', 'mauvais', 'froid', 'sale', 'lent', 'cher', 'jamais',
+      'terrible',
+      'horrible',
+      'déçu',
+      'mauvais',
+      'froid',
+      'sale',
+      'lent',
+      'cher',
+      'jamais',
       // Spanish
-      'terrible', 'horrible', 'decepcionado', 'malo', 'frío', 'sucio', 'lento', 'caro', 'nunca',
+      'terrible',
+      'horrible',
+      'decepcionado',
+      'malo',
+      'frío',
+      'sucio',
+      'lento',
+      'caro',
+      'nunca',
       // Italian
-      'terribile', 'orribile', 'deluso', 'cattivo', 'freddo', 'sporco', 'lento', 'caro', 'mai',
+      'terribile',
+      'orribile',
+      'deluso',
+      'cattivo',
+      'freddo',
+      'sporco',
+      'lento',
+      'caro',
+      'mai',
       // Dutch
-      'slecht', 'verschrikkelijk', 'teleurgesteld', 'vies', 'langzaam', 'koud', 'duur', 'nooit',
+      'slecht',
+      'verschrikkelijk',
+      'teleurgesteld',
+      'vies',
+      'langzaam',
+      'koud',
+      'duur',
+      'nooit',
       // Portuguese
-      'terrível', 'horrível', 'decepcionado', 'mau', 'frio', 'sujo', 'lento', 'caro', 'nunca'
+      'terrível',
+      'horrível',
+      'decepcionado',
+      'mau',
+      'frio',
+      'sujo',
+      'lento',
+      'caro',
+      'nunca',
     ];
 
-    let positive = 0, negative = 0;
-    positiveWords.forEach(w => { if (lowerText.includes(w)) positive++; });
-    negativeWords.forEach(w => { if (lowerText.includes(w)) negative++; });
+    let positive = 0,
+      negative = 0;
+    positiveWords.forEach(w => {
+      if (lowerText.includes(w)) positive++;
+    });
+    negativeWords.forEach(w => {
+      if (lowerText.includes(w)) negative++;
+    });
 
     if (positive > negative + 1) return 'positive';
     if (negative > positive) return 'negative';
     return 'neutral';
   };
 
-  const mapSentimentToTone = (sentiment) => {
-    switch(sentiment) {
-      case 'positive': return 'friendly';
-      case 'negative': return 'apologetic';
-      default: return 'professional';
+  const mapSentimentToTone = sentiment => {
+    switch (sentiment) {
+      case 'positive':
+        return 'friendly';
+      case 'negative':
+        return 'apologetic';
+      default:
+        return 'professional';
     }
   };
 
@@ -3582,10 +4485,14 @@ const DashboardPage = () => {
 
   // Keyboard shortcuts
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = e => {
       // Check if user is typing in an input/textarea
       const activeEl = document.activeElement;
-      const isTyping = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable);
+      const isTyping =
+        activeEl &&
+        (activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          activeEl.isContentEditable);
 
       const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
       const ctrlOrCmd = isMac ? e.metaKey : e.ctrlKey;
@@ -3626,7 +4533,9 @@ const DashboardPage = () => {
         e.preventDefault();
         const toneIndex = parseInt(e.key) - 1;
         setTone(tones[toneIndex]);
-        toast.success(`Tone: ${tones[toneIndex].charAt(0).toUpperCase() + tones[toneIndex].slice(1)}`);
+        toast.success(
+          `Tone: ${tones[toneIndex].charAt(0).toUpperCase() + tones[toneIndex].slice(1)}`
+        );
         return;
       }
 
@@ -3666,7 +4575,9 @@ const DashboardPage = () => {
         await Promise.all([fetchStats(), fetchHistory(), fetchTemplates(), fetchAllHistory()]);
       } catch (error) {
         console.error('Dashboard load error:', error);
-        setDashboardError('Failed to load dashboard data. Please check your connection and try again.');
+        setDashboardError(
+          'Failed to load dashboard data. Please check your connection and try again.'
+        );
       } finally {
         setIsLoadingDashboard(false);
       }
@@ -3797,7 +4708,7 @@ const DashboardPage = () => {
         customTopic,
         keywords: blogKeywords,
         length: blogLength,
-        tone: blogTone
+        tone: blogTone,
       });
 
       setGeneratedArticle(res.data.article);
@@ -3814,7 +4725,7 @@ const DashboardPage = () => {
     }
   };
 
-  const loadArticle = async (articleId) => {
+  const loadArticle = async articleId => {
     try {
       const res = await api.get(`/blog/${articleId}`);
       setSelectedArticle(res.data.article);
@@ -3824,7 +4735,7 @@ const DashboardPage = () => {
     }
   };
 
-  const deleteBlogArticle = async (articleId) => {
+  const deleteBlogArticle = async articleId => {
     if (!window.confirm('Delete this article?')) return;
 
     try {
@@ -3894,7 +4805,7 @@ const DashboardPage = () => {
   };
 
   // Submit feedback
-  const submitFeedback = async (e) => {
+  const submitFeedback = async e => {
     e.preventDefault();
     if (feedbackRating === 0) {
       toast.error('Please select a rating');
@@ -3905,7 +4816,7 @@ const DashboardPage = () => {
       await api.post('/feedback', {
         rating: feedbackRating,
         comment: feedbackComment.trim() || null,
-        displayName: feedbackDisplayName.trim() || null
+        displayName: feedbackDisplayName.trim() || null,
       });
       toast.success('Thank you for your feedback!');
       setShowFeedbackPopup(false);
@@ -3919,11 +4830,92 @@ const DashboardPage = () => {
     }
   };
 
-  const getFilteredHistory = () => { let f = allHistory; if (exportDateFrom) f = f.filter(i => new Date(i.created_at) >= new Date(exportDateFrom)); if (exportDateTo) { const e = new Date(exportDateTo); e.setHours(23,59,59,999); f = f.filter(i => new Date(i.created_at) <= e); } return f; };
+  const getFilteredHistory = () => {
+    let f = allHistory;
+    if (exportDateFrom) f = f.filter(i => new Date(i.created_at) >= new Date(exportDateFrom));
+    if (exportDateTo) {
+      const e = new Date(exportDateTo);
+      e.setHours(23, 59, 59, 999);
+      f = f.filter(i => new Date(i.created_at) <= e);
+    }
+    return f;
+  };
 
-  const exportToCSV = () => { if (!canExport) { toast.info('Upgrade to Starter to export your responses'); return; } setExporting(true); try { const f = getFilteredHistory(); if (f.length === 0) { toast.error('No responses'); setExporting(false); return; } const d = f.map(i => ({ Date: new Date(i.created_at).toLocaleDateString(), Platform: i.review_platform||'N/A', Rating: i.review_rating||'N/A', Tone: i.tone||'professional', Review: i.review_text, Response: i.generated_response })); const csv = Papa.unparse(d); const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `responses-${new Date().toISOString().split('T')[0]}.csv`; link.click(); toast.success(`Exported ${f.length} to CSV`); } catch (e) { toast.error('Export failed'); } finally { setExporting(false); } };
+  const exportToCSV = () => {
+    if (!canExport) {
+      toast.info('Upgrade to Starter to export your responses');
+      return;
+    }
+    setExporting(true);
+    try {
+      const f = getFilteredHistory();
+      if (f.length === 0) {
+        toast.error('No responses');
+        setExporting(false);
+        return;
+      }
+      const d = f.map(i => ({
+        Date: new Date(i.created_at).toLocaleDateString(),
+        Platform: i.review_platform || 'N/A',
+        Rating: i.review_rating || 'N/A',
+        Tone: i.tone || 'professional',
+        Review: i.review_text,
+        Response: i.generated_response,
+      }));
+      const csv = Papa.unparse(d);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `responses-${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+      toast.success(`Exported ${f.length} to CSV`);
+    } catch (e) {
+      toast.error('Export failed');
+    } finally {
+      setExporting(false);
+    }
+  };
 
-  const exportToPDF = () => { if (!canExport) { toast.info('Upgrade to Starter to export your responses'); return; } setExporting(true); try { const f = getFilteredHistory(); if (f.length === 0) { toast.error('No responses'); setExporting(false); return; } const doc = new jsPDF(); doc.setFontSize(18); doc.text('Response History', 14, 20); doc.setFontSize(10); doc.text(`${new Date().toLocaleDateString()} | ${f.length} responses`, 14, 28); const t = f.map(i => [new Date(i.created_at).toLocaleDateString(), i.review_platform||'-', i.review_rating||'-', i.review_text.substring(0,40)+'...', i.generated_response.substring(0,50)+'...']); doc.autoTable({ startY: 35, head: [['Date','Platform','Rating','Review','Response']], body: t, styles: { fontSize: 7 }, headStyles: { fillColor: [79,70,229] } }); doc.save(`responses-${new Date().toISOString().split('T')[0]}.pdf`); toast.success(`Exported ${f.length} to PDF`); } catch (e) { toast.error('Export failed'); } finally { setExporting(false); } };
+  const exportToPDF = () => {
+    if (!canExport) {
+      toast.info('Upgrade to Starter to export your responses');
+      return;
+    }
+    setExporting(true);
+    try {
+      const f = getFilteredHistory();
+      if (f.length === 0) {
+        toast.error('No responses');
+        setExporting(false);
+        return;
+      }
+      const doc = new jsPDF();
+      doc.setFontSize(18);
+      doc.text('Response History', 14, 20);
+      doc.setFontSize(10);
+      doc.text(`${new Date().toLocaleDateString()} | ${f.length} responses`, 14, 28);
+      const t = f.map(i => [
+        new Date(i.created_at).toLocaleDateString(),
+        i.review_platform || '-',
+        i.review_rating || '-',
+        i.review_text.substring(0, 40) + '...',
+        i.generated_response.substring(0, 50) + '...',
+      ]);
+      doc.autoTable({
+        startY: 35,
+        head: [['Date', 'Platform', 'Rating', 'Review', 'Response']],
+        body: t,
+        styles: { fontSize: 7 },
+        headStyles: { fillColor: [79, 70, 229] },
+      });
+      doc.save(`responses-${new Date().toISOString().split('T')[0]}.pdf`);
+      toast.success(`Exported ${f.length} to PDF`);
+    } catch (e) {
+      toast.error('Export failed');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const saveAsTemplate = async () => {
     if (!templateName.trim()) {
@@ -3937,7 +4929,7 @@ const DashboardPage = () => {
         name: templateName.trim(),
         content: response,
         tone,
-        platform
+        platform,
       });
       toast.success('Template saved!');
       setShowSaveTemplateModal(false);
@@ -3950,7 +4942,7 @@ const DashboardPage = () => {
     }
   };
 
-  const deleteTemplate = async (templateId) => {
+  const deleteTemplate = async templateId => {
     if (!window.confirm('Delete this template?')) return;
 
     try {
@@ -3965,7 +4957,7 @@ const DashboardPage = () => {
     }
   };
 
-  const openEditTemplateModal = (templateId) => {
+  const openEditTemplateModal = templateId => {
     const template = templates.find(t => t.id.toString() === templateId);
     if (template) {
       setEditingTemplate(template);
@@ -3989,7 +4981,7 @@ const DashboardPage = () => {
     try {
       await api.put(`/templates/${editingTemplate.id}`, {
         name: editTemplateName.trim(),
-        content: editTemplateContent.trim()
+        content: editTemplateContent.trim(),
       });
       toast.success('Template updated!');
       setShowEditTemplateModal(false);
@@ -4004,7 +4996,7 @@ const DashboardPage = () => {
     }
   };
 
-  const applyTemplate = (templateId) => {
+  const applyTemplate = templateId => {
     const template = templates.find(t => t.id.toString() === templateId);
     if (template) {
       setResponse(template.content);
@@ -4030,7 +5022,9 @@ const DashboardPage = () => {
     setLastAiModel(null);
 
     // Get template content if a template is selected
-    const activeTemplate = selectedTemplate ? templates.find(t => t.id.toString() === selectedTemplate) : null;
+    const activeTemplate = selectedTemplate
+      ? templates.find(t => t.id.toString() === selectedTemplate)
+      : null;
 
     try {
       const res = await api.post('/responses/generate', {
@@ -4042,14 +5036,14 @@ const DashboardPage = () => {
         aiModel,
         businessName: user.businessName,
         customInstructions: customInstructions.trim() || undefined,
-        templateContent: activeTemplate?.content || undefined
+        templateContent: activeTemplate?.content || undefined,
       });
 
       setResponse(res.data.response);
       setLastAiModel(res.data.aiModel || 'standard');
       updateUser({
         responsesUsed: res.data.responsesUsed,
-        responsesLimit: res.data.responsesLimit
+        responsesLimit: res.data.responsesLimit,
       });
       fetchStats(); // Refresh smart/standard usage
       fetchHistory();
@@ -4081,7 +5075,6 @@ const DashboardPage = () => {
     }
   };
 
-
   const copyToClipboard = () => {
     navigator.clipboard.writeText(response);
     setCopied(true);
@@ -4090,7 +5083,7 @@ const DashboardPage = () => {
   };
 
   // Parse bulk input (supports multiple formats)
-  const parseBulkInput = (input) => {
+  const parseBulkInput = input => {
     if (!input) return [];
     // Try to detect CSV format (quoted strings with commas)
     if (input.includes('","') || input.startsWith('"')) {
@@ -4101,7 +5094,10 @@ const DashboardPage = () => {
     }
     // Try separator format: ---
     if (input.includes('---')) {
-      return input.split('---').map(r => r.trim()).filter(r => r.length > 0);
+      return input
+        .split('---')
+        .map(r => r.trim())
+        .filter(r => r.length > 0);
     }
     // Try numbered format: "1.", "2.", etc. at start of line
     const numberedPattern = /^\d+\.\s/m;
@@ -4128,13 +5124,19 @@ const DashboardPage = () => {
     }
     // Try double-newline separated (paragraphs)
     if (input.includes('\n\n')) {
-      const paragraphs = input.split(/\n\n+/).map(p => p.replace(/\n/g, ' ').trim()).filter(p => p.length > 0);
+      const paragraphs = input
+        .split(/\n\n+/)
+        .map(p => p.replace(/\n/g, ' ').trim())
+        .filter(p => p.length > 0);
       if (paragraphs.length > 1) {
         return paragraphs;
       }
     }
     // Fallback: single-line separated
-    const lines = input.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    const lines = input
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
     if (lines.length > 1) {
       return lines;
     }
@@ -4160,12 +5162,12 @@ const DashboardPage = () => {
         platform: bulkPlatform,
         tone: bulkTone,
         outputLanguage: bulkOutputLanguage,
-        aiModel: bulkAiModel
+        aiModel: bulkAiModel,
       });
       setBulkResults(res.data);
       updateUser({
         responsesUsed: res.data.responsesUsed,
-        responsesLimit: res.data.responsesLimit
+        responsesLimit: res.data.responsesLimit,
       });
       fetchStats(); // Refresh smart/standard usage
       fetchHistory();
@@ -4219,7 +5221,9 @@ const DashboardPage = () => {
   // Calculate usage percentages from stats
   const usagePercent = stats?.usage?.total?.limit
     ? (stats.usage.total.used / stats.usage.total.limit) * 100
-    : (user ? (user.responsesUsed / user.responsesLimit) * 100 : 0);
+    : user
+      ? (user.responsesUsed / user.responsesLimit) * 100
+      : 0;
   const smartRemaining = stats?.usage?.smart?.remaining ?? 0;
   const standardRemaining = stats?.usage?.standard?.remaining ?? 0;
 
@@ -4237,22 +5241,26 @@ const DashboardPage = () => {
 
       {/* Dashboard Error Banner */}
       {dashboardError && (
-        <div style={{
-          background: 'linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%)',
-          border: '1px solid #F87171',
-          borderRadius: '12px',
-          padding: '16px 20px',
-          marginBottom: '24px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '16px'
-        }}>
+        <div
+          style={{
+            background: 'linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%)',
+            border: '1px solid #F87171',
+            borderRadius: '12px',
+            padding: '16px 20px',
+            marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '16px',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span style={{ fontSize: '20px' }}>⚠️</span>
             <div>
               <p style={{ margin: 0, fontWeight: '600', color: '#B91C1C' }}>Connection Error</p>
-              <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#DC2626' }}>{dashboardError}</p>
+              <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#DC2626' }}>
+                {dashboardError}
+              </p>
             </div>
           </div>
           <button
@@ -4267,25 +5275,43 @@ const DashboardPage = () => {
 
       {/* Loading State */}
       {isLoadingDashboard && !dashboardError && (
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          padding: '60px 0',
-          flexDirection: 'column',
-          gap: '16px'
-        }}>
-          <div className="spinner" style={{ width: '40px', height: '40px', border: '4px solid #E5E7EB', borderTop: '4px solid #4F46E5', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '60px 0',
+            flexDirection: 'column',
+            gap: '16px',
+          }}
+        >
+          <div
+            className="spinner"
+            style={{
+              width: '40px',
+              height: '40px',
+              border: '4px solid #E5E7EB',
+              borderTop: '4px solid #4F46E5',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+            }}
+          ></div>
           <p style={{ color: 'var(--gray-500)' }}>Loading dashboard...</p>
         </div>
       )}
 
-      <div className="dashboard-header" style={{ display: isLoadingDashboard && !dashboardError ? 'none' : undefined }}>
+      <div
+        className="dashboard-header"
+        style={{ display: isLoadingDashboard && !dashboardError ? 'none' : undefined }}
+      >
         <div>
           <h1 className="dashboard-title">Welcome, {user?.businessName || 'there'}!</h1>
           <p style={{ color: 'var(--gray-500)' }}>Generate professional review responses</p>
         </div>
-        <div className="dashboard-header-actions" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div
+          className="dashboard-header-actions"
+          style={{ display: 'flex', gap: '12px', alignItems: 'center' }}
+        >
           <button
             onClick={() => setShowKeyboardHelp(true)}
             className="btn btn-secondary"
@@ -4298,14 +5324,38 @@ const DashboardPage = () => {
             <BarChart2 size={16} />
             Analytics
             {!['professional', 'unlimited'].includes(effectivePlan) && (
-              <span style={{ background: 'var(--primary-600)', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: '600', marginLeft: '4px' }}>PRO</span>
+              <span
+                style={{
+                  background: 'var(--primary-600)',
+                  color: 'white',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  fontSize: '9px',
+                  fontWeight: '600',
+                  marginLeft: '4px',
+                }}
+              >
+                PRO
+              </span>
             )}
           </Link>
           <Link to="/team" className="btn btn-secondary" style={{ padding: '8px 16px' }}>
             <Users size={16} />
             Team
             {!['professional', 'unlimited'].includes(effectivePlan) && !isTeamMember && (
-              <span style={{ background: 'var(--primary-600)', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: '600', marginLeft: '4px' }}>PRO</span>
+              <span
+                style={{
+                  background: 'var(--primary-600)',
+                  color: 'white',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  fontSize: '9px',
+                  fontWeight: '600',
+                  marginLeft: '4px',
+                }}
+              >
+                PRO
+              </span>
             )}
           </Link>
           <Link to="/settings" className="btn btn-secondary" style={{ padding: '8px 16px' }}>
@@ -4313,7 +5363,9 @@ const DashboardPage = () => {
             Settings
           </Link>
           <span className={`badge ${effectivePlan === 'free' ? 'badge-warning' : 'badge-success'}`}>
-            {isTeamMember ? `TEAM (${effectivePlan?.toUpperCase()})` : `${effectivePlan?.toUpperCase()} Plan`}
+            {isTeamMember
+              ? `TEAM (${effectivePlan?.toUpperCase()})`
+              : `${effectivePlan?.toUpperCase()} Plan`}
           </span>
           {effectivePlan === 'free' && !isTeamMember && (
             <Link to="/pricing" className="btn btn-primary" style={{ padding: '8px 16px' }}>
@@ -4324,11 +5376,20 @@ const DashboardPage = () => {
       </div>
 
       {!user?.businessContext && (
-        <div className="card" style={{ marginBottom: '24px', background: 'linear-gradient(135deg, var(--primary-50), var(--gray-50))', border: '1px solid var(--primary-200)' }}>
+        <div
+          className="card"
+          style={{
+            marginBottom: '24px',
+            background: 'linear-gradient(135deg, var(--primary-50), var(--gray-50))',
+            border: '1px solid var(--primary-200)',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Building size={24} style={{ color: 'var(--primary-600)' }} />
             <div style={{ flex: 1 }}>
-              <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>Improve Your Responses</h3>
+              <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>
+                Improve Your Responses
+              </h3>
               <p style={{ fontSize: '14px', color: 'var(--gray-600)' }}>
                 Add information about your business to get more personalized AI responses.
               </p>
@@ -4342,7 +5403,13 @@ const DashboardPage = () => {
 
       <div className="stats-grid">
         {/* Smart AI Usage */}
-        <div className="stat-card" style={{ background: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)', border: '1px solid var(--primary-200)' }}>
+        <div
+          className="stat-card"
+          style={{
+            background: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)',
+            border: '1px solid var(--primary-200)',
+          }}
+        >
           <div className="stat-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ fontSize: '16px' }}>✨</span> Smart AI
           </div>
@@ -4357,7 +5424,7 @@ const DashboardPage = () => {
               className="usage-fill"
               style={{
                 width: `${stats?.usage?.smart?.limit ? Math.min((stats.usage.smart.used / stats.usage.smart.limit) * 100, 100) : 0}%`,
-                background: 'linear-gradient(90deg, var(--primary-500), var(--primary-600))'
+                background: 'linear-gradient(90deg, var(--primary-500), var(--primary-600))',
               }}
             />
           </div>
@@ -4382,7 +5449,7 @@ const DashboardPage = () => {
               className="usage-fill"
               style={{
                 width: `${stats?.usage?.standard?.limit ? Math.min((stats.usage.standard.used / stats.usage.standard.limit) * 100, 100) : 0}%`,
-                background: 'var(--gray-400)'
+                background: 'var(--gray-400)',
               }}
             />
           </div>
@@ -4407,7 +5474,8 @@ const DashboardPage = () => {
             />
           </div>
           <p className="mt-1" style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
-            {stats?.usage?.total?.remaining ?? (user?.responsesLimit - user?.responsesUsed) ?? 0} remaining
+            {(stats?.usage?.total?.remaining ?? user?.responsesLimit - user?.responsesUsed) || 0}{' '}
+            remaining
           </p>
         </div>
       </div>
@@ -4417,10 +5485,34 @@ const DashboardPage = () => {
 
       {/* Referral Widget */}
       {referralData && (
-        <div style={{ background: 'linear-gradient(135deg, var(--primary-50) 0%, #EDE9FE 100%)', borderRadius: '12px', padding: '20px', marginBottom: '24px', border: '1px solid var(--primary-200)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+        <div
+          style={{
+            background: 'linear-gradient(135deg, var(--primary-50) 0%, #EDE9FE 100%)',
+            borderRadius: '12px',
+            padding: '20px',
+            marginBottom: '24px',
+            border: '1px solid var(--primary-200)',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              flexWrap: 'wrap',
+              gap: '16px',
+            }}
+          >
             <div>
-              <h3 style={{ margin: '0 0 8px 0', color: 'var(--primary-700)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h3
+                style={{
+                  margin: '0 0 8px 0',
+                  color: 'var(--primary-700)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
                 <Users size={20} />
                 Invite Friends, Get 1 Month Free
               </h3>
@@ -4428,7 +5520,16 @@ const DashboardPage = () => {
                 Share your referral link. When friends subscribe, you both get rewarded!
               </p>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <code style={{ background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '6px', fontSize: '13px', color: 'var(--primary-600)', border: '1px solid var(--primary-200)' }}>
+                <code
+                  style={{
+                    background: 'var(--bg-secondary)',
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    fontSize: '13px',
+                    color: 'var(--primary-600)',
+                    border: '1px solid var(--primary-200)',
+                  }}
+                >
                   {referralData.referralLink}
                 </code>
                 <button
@@ -4448,15 +5549,21 @@ const DashboardPage = () => {
             </div>
             <div style={{ display: 'flex', gap: '24px', textAlign: 'center' }}>
               <div>
-                <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--primary-600)' }}>{referralData.stats?.totalInvited || 0}</div>
+                <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--primary-600)' }}>
+                  {referralData.stats?.totalInvited || 0}
+                </div>
                 <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Invited</div>
               </div>
               <div>
-                <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--green-600)' }}>{referralData.stats?.converted || 0}</div>
+                <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--green-600)' }}>
+                  {referralData.stats?.converted || 0}
+                </div>
                 <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Converted</div>
               </div>
               <div>
-                <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--purple-600)' }}>{referralData.stats?.creditsEarned || 0}</div>
+                <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--purple-600)' }}>
+                  {referralData.stats?.creditsEarned || 0}
+                </div>
                 <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Credits</div>
               </div>
             </div>
@@ -4465,7 +5572,16 @@ const DashboardPage = () => {
       )}
 
       {/* Tab Navigation */}
-      <div className="dashboard-tabs" style={{ display: 'flex', gap: '8px', marginBottom: '24px', borderBottom: '1px solid var(--gray-200)', paddingBottom: '0' }}>
+      <div
+        className="dashboard-tabs"
+        style={{
+          display: 'flex',
+          gap: '8px',
+          marginBottom: '24px',
+          borderBottom: '1px solid var(--gray-200)',
+          paddingBottom: '0',
+        }}
+      >
         <button
           className="dashboard-tab"
           onClick={() => setActiveTab('single')}
@@ -4473,7 +5589,8 @@ const DashboardPage = () => {
             padding: '12px 20px',
             background: activeTab === 'single' ? 'var(--primary-50)' : 'transparent',
             border: 'none',
-            borderBottom: activeTab === 'single' ? '2px solid var(--primary-600)' : '2px solid transparent',
+            borderBottom:
+              activeTab === 'single' ? '2px solid var(--primary-600)' : '2px solid transparent',
             color: activeTab === 'single' ? 'var(--primary-600)' : 'var(--gray-600)',
             fontWeight: activeTab === 'single' ? '600' : '500',
             cursor: 'pointer',
@@ -4481,7 +5598,7 @@ const DashboardPage = () => {
             alignItems: 'center',
             gap: '8px',
             fontSize: '14px',
-            marginBottom: '-1px'
+            marginBottom: '-1px',
           }}
         >
           <FileText size={18} />
@@ -4494,7 +5611,8 @@ const DashboardPage = () => {
             padding: '12px 20px',
             background: activeTab === 'bulk' ? 'var(--primary-50)' : 'transparent',
             border: 'none',
-            borderBottom: activeTab === 'bulk' ? '2px solid var(--primary-600)' : '2px solid transparent',
+            borderBottom:
+              activeTab === 'bulk' ? '2px solid var(--primary-600)' : '2px solid transparent',
             color: activeTab === 'bulk' ? 'var(--primary-600)' : 'var(--gray-600)',
             fontWeight: activeTab === 'bulk' ? '600' : '500',
             cursor: 'pointer',
@@ -4502,20 +5620,24 @@ const DashboardPage = () => {
             alignItems: 'center',
             gap: '8px',
             fontSize: '14px',
-            marginBottom: '-1px'
+            marginBottom: '-1px',
           }}
         >
           <Layers size={18} />
           Bulk Generate
           {!canUseBulk && (
-            <span style={{
-              background: 'var(--primary-600)',
-              color: 'white',
-              padding: '2px 6px',
-              borderRadius: '4px',
-              fontSize: '10px',
-              fontWeight: '600'
-            }}>PAID</span>
+            <span
+              style={{
+                background: 'var(--primary-600)',
+                color: 'white',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                fontSize: '10px',
+                fontWeight: '600',
+              }}
+            >
+              PAID
+            </span>
           )}
         </button>
         <button
@@ -4525,7 +5647,8 @@ const DashboardPage = () => {
             padding: '12px 20px',
             background: activeTab === 'history' ? 'var(--primary-50)' : 'transparent',
             border: 'none',
-            borderBottom: activeTab === 'history' ? '2px solid var(--primary-600)' : '2px solid transparent',
+            borderBottom:
+              activeTab === 'history' ? '2px solid var(--primary-600)' : '2px solid transparent',
             color: activeTab === 'history' ? 'var(--primary-600)' : 'var(--gray-600)',
             fontWeight: activeTab === 'history' ? '600' : '500',
             cursor: 'pointer',
@@ -4533,7 +5656,7 @@ const DashboardPage = () => {
             alignItems: 'center',
             gap: '8px',
             fontSize: '14px',
-            marginBottom: '-1px'
+            marginBottom: '-1px',
           }}
         >
           <Clock size={18} />
@@ -4546,7 +5669,8 @@ const DashboardPage = () => {
             padding: '12px 20px',
             background: activeTab === 'blog' ? 'var(--primary-50)' : 'transparent',
             border: 'none',
-            borderBottom: activeTab === 'blog' ? '2px solid var(--primary-600)' : '2px solid transparent',
+            borderBottom:
+              activeTab === 'blog' ? '2px solid var(--primary-600)' : '2px solid transparent',
             color: activeTab === 'blog' ? 'var(--primary-600)' : 'var(--gray-600)',
             fontWeight: activeTab === 'blog' ? '600' : '500',
             cursor: 'pointer',
@@ -4554,20 +5678,24 @@ const DashboardPage = () => {
             alignItems: 'center',
             gap: '8px',
             fontSize: '14px',
-            marginBottom: '-1px'
+            marginBottom: '-1px',
           }}
         >
           <BookOpen size={18} />
           Blog Generator
           {!canUseBlog && (
-            <span style={{
-              background: 'var(--primary-600)',
-              color: 'white',
-              padding: '2px 6px',
-              borderRadius: '4px',
-              fontSize: '10px',
-              fontWeight: '600'
-            }}>PRO</span>
+            <span
+              style={{
+                background: 'var(--primary-600)',
+                color: 'white',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                fontSize: '10px',
+                fontWeight: '600',
+              }}
+            >
+              PRO
+            </span>
           )}
         </button>
         <button
@@ -4577,7 +5705,8 @@ const DashboardPage = () => {
             padding: '12px 20px',
             background: activeTab === 'api' ? 'var(--primary-50)' : 'transparent',
             border: 'none',
-            borderBottom: activeTab === 'api' ? '2px solid var(--primary-600)' : '2px solid transparent',
+            borderBottom:
+              activeTab === 'api' ? '2px solid var(--primary-600)' : '2px solid transparent',
             color: activeTab === 'api' ? 'var(--primary-600)' : 'var(--gray-600)',
             fontWeight: activeTab === 'api' ? '600' : '500',
             cursor: 'pointer',
@@ -4585,357 +5714,426 @@ const DashboardPage = () => {
             alignItems: 'center',
             gap: '8px',
             fontSize: '14px',
-            marginBottom: '-1px'
+            marginBottom: '-1px',
           }}
         >
           <Code size={18} />
           API
           {!canUseApi && (
-            <span style={{
-              background: 'var(--primary-600)',
-              color: 'white',
-              padding: '2px 6px',
-              borderRadius: '4px',
-              fontSize: '10px',
-              fontWeight: '600'
-            }}>UNLIMITED</span>
+            <span
+              style={{
+                background: 'var(--primary-600)',
+                color: 'white',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                fontSize: '10px',
+                fontWeight: '600',
+              }}
+            >
+              UNLIMITED
+            </span>
           )}
         </button>
       </div>
 
       {/* Single Response Tab */}
       {activeTab === 'single' && (
-      <div className="generator-section">
-        <div className="card">
-          <h2 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600' }}>
-            Paste Your Review
-          </h2>
-
-          <div className="form-group">
-            <label className="form-label">Customer Review</label>
-            <textarea
-              className="form-textarea"
-              value={reviewText}
-              onChange={(e) => setReviewText(e.target.value)}
-              placeholder="Paste the customer review here..."
-              rows={5}
-              spellCheck={false}
-            />
-          </div>
-
-          {/* Generate Button - prominently placed right after textarea */}
-          <button
-            className="btn btn-primary"
-            onClick={() => generateResponse()}
-            disabled={generating || !reviewText.trim()}
-            style={{ width: '100%', marginBottom: '20px' }}
-            data-action="generate"
-          >
-            {generating ? (
-              <>Generating...</>
-            ) : (
-              <>
-                <Sparkles size={18} />
-                Generate Response
-              </>
-            )}
-          </button>
-
-          {/* Collapsible Options Section */}
-          <details style={{ marginBottom: '8px' }}>
-            <summary style={{
-              cursor: 'pointer',
-              padding: '12px 0',
-              fontSize: '14px',
-              fontWeight: '500',
-              color: 'var(--gray-600)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              borderTop: '1px solid var(--gray-200)',
-              listStyle: 'none'
-            }}>
-              <ChevronDown size={16} style={{ transition: 'transform 0.2s' }} />
-              Options (Tone, Rating, AI Model...)
-            </summary>
-            <div style={{ paddingTop: '16px' }}>
-
-          <div className="form-group">
-            <label className="form-label">Star Rating (optional)</label>
-            <div className="rating-select">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  className={`rating-star ${star <= rating ? 'active' : ''}`}
-                  onClick={() => setRating(rating === star ? 0 : star)}
-                >
-                  <Star size={24} fill={star <= rating ? 'currentColor' : 'none'} />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="dashboard-form-grid">
-            <div className="form-group">
-              <label className="form-label">Platform</label>
-              <select
-                className="form-select"
-                value={platform}
-                onChange={(e) => setPlatform(e.target.value)}
-              >
-                <option value="google">Google Reviews</option>
-                <option value="yelp">Yelp</option>
-                <option value="facebook">Facebook</option>
-                <option value="tripadvisor">TripAdvisor</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                Response Tone
-                <FeatureTooltip text="Professional: Business-appropriate. Friendly: Warm and personal. Formal: Corporate style. Apologetic: For negative reviews.">
-                  <Info size={14} style={{ color: 'var(--gray-400)', cursor: 'help' }} />
-                </FeatureTooltip>
-                {recommendedTone && tone === recommendedTone && !hasManuallyChangedTone && (
-                  <span style={{
-                    background: 'var(--success)',
-                    color: 'white',
-                    fontSize: '10px',
-                    padding: '2px 8px',
-                    borderRadius: '10px',
-                    fontWeight: '600',
-                    marginLeft: 'auto'
-                  }}>
-                    Automatic
-                  </span>
-                )}
-              </label>
-              <select
-                className="form-select"
-                value={tone}
-                onChange={(e) => {
-                  setTone(e.target.value);
-                  setHasManuallyChangedTone(true);
-                }}
-              >
-                <option value="professional">Professional</option>
-                <option value="friendly">Friendly</option>
-                <option value="formal">Formal</option>
-                <option value="apologetic">Apologetic</option>
-              </select>
-            </div>
-          </div>
-
-          {/* AI Model Selector */}
-          <div className="form-group" style={{ marginTop: '16px' }}>
-            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              AI Model
-              <FeatureTooltip text="Auto: Uses Smart AI first, then Standard. Smart AI: Best quality. Standard: Fast and reliable.">
-                <Info size={14} style={{ color: 'var(--gray-400)', cursor: 'help' }} />
-              </FeatureTooltip>
-            </label>
-            <div className="ai-model-buttons">
-              <button
-                type="button"
-                onClick={() => setAiModel('auto')}
-                style={{
-                  flex: 1, padding: '12px', borderRadius: '8px', cursor: 'pointer', textAlign: 'center',
-                  border: aiModel === 'auto' ? '2px solid var(--primary-500)' : '2px solid var(--gray-200)',
-                  background: aiModel === 'auto' ? 'var(--primary-50)' : 'var(--bg-secondary)'
-                }}
-              >
-                <div style={{ fontSize: '20px', marginBottom: '4px' }}>🔄</div>
-                <div style={{ fontWeight: '600', fontSize: '13px' }}>Auto</div>
-                <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>Best available</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => smartRemaining > 0 && setAiModel('smart')}
-                disabled={smartRemaining <= 0}
-                style={{
-                  flex: 1, padding: '12px', borderRadius: '8px', textAlign: 'center',
-                  border: aiModel === 'smart' ? '2px solid var(--primary-500)' : '2px solid var(--gray-200)',
-                  background: aiModel === 'smart' ? 'var(--hero-gradient)' : 'var(--bg-secondary)',
-                  cursor: smartRemaining > 0 ? 'pointer' : 'not-allowed',
-                  opacity: smartRemaining <= 0 ? 0.5 : 1
-                }}
-              >
-                <div style={{ fontSize: '20px', marginBottom: '4px' }}>✨</div>
-                <div style={{ fontWeight: '600', fontSize: '13px' }}>Smart AI</div>
-                <div style={{ fontSize: '11px', color: smartRemaining > 0 ? 'var(--primary-600)' : 'var(--gray-400)' }}>{smartRemaining} left</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => standardRemaining > 0 && setAiModel('standard')}
-                disabled={standardRemaining <= 0}
-                style={{
-                  flex: 1, padding: '12px', borderRadius: '8px', textAlign: 'center',
-                  border: aiModel === 'standard' ? '2px solid var(--gray-500)' : '2px solid var(--gray-200)',
-                  background: aiModel === 'standard' ? 'var(--gray-100)' : 'var(--bg-secondary)',
-                  cursor: standardRemaining > 0 ? 'pointer' : 'not-allowed',
-                  opacity: standardRemaining <= 0 ? 0.5 : 1
-                }}
-              >
-                <div style={{ fontSize: '20px', marginBottom: '4px' }}>⚡</div>
-                <div style={{ fontWeight: '600', fontSize: '13px' }}>Standard</div>
-                <div style={{ fontSize: '11px', color: standardRemaining > 0 ? 'var(--gray-600)' : 'var(--gray-400)' }}>{standardRemaining} left</div>
-              </button>
-            </div>
-          </div>
-
-          {templates.length > 0 && (
-            <div className="form-group" style={{ marginTop: '16px' }}>
-              <label className="form-label">
-                <BookOpen size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
-                Use Template as Starting Point (optional)
-              </label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <select
-                  className="form-select"
-                  value={selectedTemplate}
-                  onChange={(e) => setSelectedTemplate(e.target.value)}
-                  style={{ flex: 1 }}
-                >
-                  <option value="">-- Select a template --</option>
-                  {templates.map((t) => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
-                  ))}
-                </select>
-                {selectedTemplate && (
-                  <>
-                    <button
-                      className="btn btn-secondary"
-                      onClick={() => applyTemplate(selectedTemplate)}
-                      style={{ padding: '8px 12px' }}
-                      title="Use this template"
-                    >
-                      <Check size={16} />
-                    </button>
-                    <button
-                      className="btn btn-secondary"
-                      onClick={() => openEditTemplateModal(selectedTemplate)}
-                      style={{ padding: '8px 12px' }}
-                      title="Edit template"
-                    >
-                      <Edit3 size={16} />
-                    </button>
-                    <button
-                      className="btn btn-secondary"
-                      onClick={() => deleteTemplate(parseInt(selectedTemplate))}
-                      style={{ padding: '8px 12px', color: 'var(--error)' }}
-                      title="Delete template"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </>
-                )}
-              </div>
-              <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
-                Select a saved template to use as a starting point, then generate to customize it
-              </p>
-            </div>
-          )}
-
-          <div className="form-group" style={{ marginTop: '16px' }}>
-            <label className="form-label">
-              <Edit3 size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
-              Custom Instructions (optional)
-            </label>
-            <textarea
-              className="form-textarea"
-              value={customInstructions}
-              onChange={(e) => setCustomInstructions(e.target.value)}
-              placeholder="Add specific instructions for the AI, e.g.: 'Always mention our 24/7 support' or 'Include a discount code SAVE10'"
-              rows={2}
-              style={{ resize: 'vertical', minHeight: '60px' }}
-            />
-            <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
-              Guide the AI with specific requirements for your response
-            </p>
-          </div>
-
-            </div>
-          </details>
-        </div>
-
-        <div className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>
-              Generated Response
+        <div className="generator-section">
+          <div className="card">
+            <h2 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600' }}>
+              Paste Your Review
             </h2>
-            {lastAiModel && (
-              <span style={{
-                padding: '4px 10px',
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontWeight: '600',
-                background: lastAiModel === 'smart'
-                  ? 'linear-gradient(135deg, var(--primary-100), var(--primary-200))'
-                  : 'var(--gray-100)',
-                color: lastAiModel === 'smart' ? 'var(--primary-700)' : 'var(--gray-600)'
-              }}>
-                {lastAiModel === 'smart' ? '✨ Smart AI' : '⚡ Standard'}
-              </span>
-            )}
-          </div>
 
-          <div className="response-output">
-            {response || 'Your AI-generated response will appear here...'}
-          </div>
+            <div className="form-group">
+              <label className="form-label">Customer Review</label>
+              <textarea
+                className="form-textarea"
+                value={reviewText}
+                onChange={e => setReviewText(e.target.value)}
+                placeholder="Paste the customer review here..."
+                rows={5}
+                spellCheck={false}
+              />
+            </div>
 
-          {response && (
-            <>
-              <div className="response-actions">
-                <button className="btn btn-success" onClick={copyToClipboard}>
-                  {copied ? <Check size={16} /> : <Copy size={16} />}
-                  {copied ? 'Copied!' : 'Copy Response'}
-                </button>
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setShowSaveTemplateModal(true)}
-                  title="Save as template for future use"
-                >
-                  <BookOpen size={16} />
-                  Save as Template
-                </button>
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    setResponse('');
-                    setReviewText('');
-                    setRating(0);
-                  }}
-                >
-                  Clear
-                </button>
-              </div>
+            {/* Generate Button - prominently placed right after textarea */}
+            <button
+              className="btn btn-primary"
+              onClick={() => generateResponse()}
+              disabled={generating || !reviewText.trim()}
+              style={{ width: '100%', marginBottom: '20px' }}
+              data-action="generate"
+            >
+              {generating ? (
+                <>Generating...</>
+              ) : (
+                <>
+                  <Sparkles size={18} />
+                  Generate Response
+                </>
+              )}
+            </button>
 
-              {/* Regenerate with different tone */}
-              <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--gray-200)' }}>
-                <p style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '8px' }}>
-                  <RefreshCw size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
-                  Try a different tone:
-                </p>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {['professional', 'friendly', 'formal', 'apologetic'].filter(t => t !== tone).map((newTone) => (
-                    <button
-                      key={newTone}
-                      className="btn btn-secondary"
-                      style={{ padding: '6px 12px', fontSize: '13px' }}
-                      onClick={() => generateResponse(newTone)}
-                      disabled={generating}
+            {/* Collapsible Options Section */}
+            <details style={{ marginBottom: '8px' }}>
+              <summary
+                style={{
+                  cursor: 'pointer',
+                  padding: '12px 0',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: 'var(--gray-600)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  borderTop: '1px solid var(--gray-200)',
+                  listStyle: 'none',
+                }}
+              >
+                <ChevronDown size={16} style={{ transition: 'transform 0.2s' }} />
+                Options (Tone, Rating, AI Model...)
+              </summary>
+              <div style={{ paddingTop: '16px' }}>
+                <div className="form-group">
+                  <label className="form-label">Star Rating (optional)</label>
+                  <div className="rating-select">
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <button
+                        key={star}
+                        type="button"
+                        className={`rating-star ${star <= rating ? 'active' : ''}`}
+                        onClick={() => setRating(rating === star ? 0 : star)}
+                      >
+                        <Star size={24} fill={star <= rating ? 'currentColor' : 'none'} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="dashboard-form-grid">
+                  <div className="form-group">
+                    <label className="form-label">Platform</label>
+                    <select
+                      className="form-select"
+                      value={platform}
+                      onChange={e => setPlatform(e.target.value)}
                     >
-                      {newTone.charAt(0).toUpperCase() + newTone.slice(1)}
+                      <option value="google">Google Reviews</option>
+                      <option value="yelp">Yelp</option>
+                      <option value="facebook">Facebook</option>
+                      <option value="tripadvisor">TripAdvisor</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label
+                      className="form-label"
+                      style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      Response Tone
+                      <FeatureTooltip text="Professional: Business-appropriate. Friendly: Warm and personal. Formal: Corporate style. Apologetic: For negative reviews.">
+                        <Info size={14} style={{ color: 'var(--gray-400)', cursor: 'help' }} />
+                      </FeatureTooltip>
+                      {recommendedTone && tone === recommendedTone && !hasManuallyChangedTone && (
+                        <span
+                          style={{
+                            background: 'var(--success)',
+                            color: 'white',
+                            fontSize: '10px',
+                            padding: '2px 8px',
+                            borderRadius: '10px',
+                            fontWeight: '600',
+                            marginLeft: 'auto',
+                          }}
+                        >
+                          Automatic
+                        </span>
+                      )}
+                    </label>
+                    <select
+                      className="form-select"
+                      value={tone}
+                      onChange={e => {
+                        setTone(e.target.value);
+                        setHasManuallyChangedTone(true);
+                      }}
+                    >
+                      <option value="professional">Professional</option>
+                      <option value="friendly">Friendly</option>
+                      <option value="formal">Formal</option>
+                      <option value="apologetic">Apologetic</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* AI Model Selector */}
+                <div className="form-group" style={{ marginTop: '16px' }}>
+                  <label
+                    className="form-label"
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    AI Model
+                    <FeatureTooltip text="Auto: Uses Smart AI first, then Standard. Smart AI: Best quality. Standard: Fast and reliable.">
+                      <Info size={14} style={{ color: 'var(--gray-400)', cursor: 'help' }} />
+                    </FeatureTooltip>
+                  </label>
+                  <div className="ai-model-buttons">
+                    <button
+                      type="button"
+                      onClick={() => setAiModel('auto')}
+                      style={{
+                        flex: 1,
+                        padding: '12px',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        border:
+                          aiModel === 'auto'
+                            ? '2px solid var(--primary-500)'
+                            : '2px solid var(--gray-200)',
+                        background:
+                          aiModel === 'auto' ? 'var(--primary-50)' : 'var(--bg-secondary)',
+                      }}
+                    >
+                      <div style={{ fontSize: '20px', marginBottom: '4px' }}>🔄</div>
+                      <div style={{ fontWeight: '600', fontSize: '13px' }}>Auto</div>
+                      <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
+                        Best available
+                      </div>
                     </button>
-                  ))}
+                    <button
+                      type="button"
+                      onClick={() => smartRemaining > 0 && setAiModel('smart')}
+                      disabled={smartRemaining <= 0}
+                      style={{
+                        flex: 1,
+                        padding: '12px',
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                        border:
+                          aiModel === 'smart'
+                            ? '2px solid var(--primary-500)'
+                            : '2px solid var(--gray-200)',
+                        background:
+                          aiModel === 'smart' ? 'var(--hero-gradient)' : 'var(--bg-secondary)',
+                        cursor: smartRemaining > 0 ? 'pointer' : 'not-allowed',
+                        opacity: smartRemaining <= 0 ? 0.5 : 1,
+                      }}
+                    >
+                      <div style={{ fontSize: '20px', marginBottom: '4px' }}>✨</div>
+                      <div style={{ fontWeight: '600', fontSize: '13px' }}>Smart AI</div>
+                      <div
+                        style={{
+                          fontSize: '11px',
+                          color: smartRemaining > 0 ? 'var(--primary-600)' : 'var(--gray-400)',
+                        }}
+                      >
+                        {smartRemaining} left
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => standardRemaining > 0 && setAiModel('standard')}
+                      disabled={standardRemaining <= 0}
+                      style={{
+                        flex: 1,
+                        padding: '12px',
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                        border:
+                          aiModel === 'standard'
+                            ? '2px solid var(--gray-500)'
+                            : '2px solid var(--gray-200)',
+                        background:
+                          aiModel === 'standard' ? 'var(--gray-100)' : 'var(--bg-secondary)',
+                        cursor: standardRemaining > 0 ? 'pointer' : 'not-allowed',
+                        opacity: standardRemaining <= 0 ? 0.5 : 1,
+                      }}
+                    >
+                      <div style={{ fontSize: '20px', marginBottom: '4px' }}>⚡</div>
+                      <div style={{ fontWeight: '600', fontSize: '13px' }}>Standard</div>
+                      <div
+                        style={{
+                          fontSize: '11px',
+                          color: standardRemaining > 0 ? 'var(--gray-600)' : 'var(--gray-400)',
+                        }}
+                      >
+                        {standardRemaining} left
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {templates.length > 0 && (
+                  <div className="form-group" style={{ marginTop: '16px' }}>
+                    <label className="form-label">
+                      <BookOpen size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+                      Use Template as Starting Point (optional)
+                    </label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <select
+                        className="form-select"
+                        value={selectedTemplate}
+                        onChange={e => setSelectedTemplate(e.target.value)}
+                        style={{ flex: 1 }}
+                      >
+                        <option value="">-- Select a template --</option>
+                        {templates.map(t => (
+                          <option key={t.id} value={t.id}>
+                            {t.name}
+                          </option>
+                        ))}
+                      </select>
+                      {selectedTemplate && (
+                        <>
+                          <button
+                            className="btn btn-secondary"
+                            onClick={() => applyTemplate(selectedTemplate)}
+                            style={{ padding: '8px 12px' }}
+                            title="Use this template"
+                          >
+                            <Check size={16} />
+                          </button>
+                          <button
+                            className="btn btn-secondary"
+                            onClick={() => openEditTemplateModal(selectedTemplate)}
+                            style={{ padding: '8px 12px' }}
+                            title="Edit template"
+                          >
+                            <Edit3 size={16} />
+                          </button>
+                          <button
+                            className="btn btn-secondary"
+                            onClick={() => deleteTemplate(parseInt(selectedTemplate))}
+                            style={{ padding: '8px 12px', color: 'var(--error)' }}
+                            title="Delete template"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                    <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
+                      Select a saved template to use as a starting point, then generate to customize
+                      it
+                    </p>
+                  </div>
+                )}
+
+                <div className="form-group" style={{ marginTop: '16px' }}>
+                  <label className="form-label">
+                    <Edit3 size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+                    Custom Instructions (optional)
+                  </label>
+                  <textarea
+                    className="form-textarea"
+                    value={customInstructions}
+                    onChange={e => setCustomInstructions(e.target.value)}
+                    placeholder="Add specific instructions for the AI, e.g.: 'Always mention our 24/7 support' or 'Include a discount code SAVE10'"
+                    rows={2}
+                    style={{ resize: 'vertical', minHeight: '60px' }}
+                  />
+                  <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
+                    Guide the AI with specific requirements for your response
+                  </p>
                 </div>
               </div>
-            </>
-          )}
+            </details>
+          </div>
+
+          <div className="card">
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>Generated Response</h2>
+              {lastAiModel && (
+                <span
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    background:
+                      lastAiModel === 'smart'
+                        ? 'linear-gradient(135deg, var(--primary-100), var(--primary-200))'
+                        : 'var(--gray-100)',
+                    color: lastAiModel === 'smart' ? 'var(--primary-700)' : 'var(--gray-600)',
+                  }}
+                >
+                  {lastAiModel === 'smart' ? '✨ Smart AI' : '⚡ Standard'}
+                </span>
+              )}
+            </div>
+
+            <div className="response-output">
+              {response || 'Your AI-generated response will appear here...'}
+            </div>
+
+            {response && (
+              <>
+                <div className="response-actions">
+                  <button className="btn btn-success" onClick={copyToClipboard}>
+                    {copied ? <Check size={16} /> : <Copy size={16} />}
+                    {copied ? 'Copied!' : 'Copy Response'}
+                  </button>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => setShowSaveTemplateModal(true)}
+                    title="Save as template for future use"
+                  >
+                    <BookOpen size={16} />
+                    Save as Template
+                  </button>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      setResponse('');
+                      setReviewText('');
+                      setRating(0);
+                    }}
+                  >
+                    Clear
+                  </button>
+                </div>
+
+                {/* Regenerate with different tone */}
+                <div
+                  style={{
+                    marginTop: '16px',
+                    paddingTop: '16px',
+                    borderTop: '1px solid var(--gray-200)',
+                  }}
+                >
+                  <p style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '8px' }}>
+                    <RefreshCw size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+                    Try a different tone:
+                  </p>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {['professional', 'friendly', 'formal', 'apologetic']
+                      .filter(t => t !== tone)
+                      .map(newTone => (
+                        <button
+                          key={newTone}
+                          className="btn btn-secondary"
+                          style={{ padding: '6px 12px', fontSize: '13px' }}
+                          onClick={() => generateResponse(newTone)}
+                          disabled={generating}
+                        >
+                          {newTone.charAt(0).toUpperCase() + newTone.slice(1)}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
       )}
 
       {/* Bulk Generate Tab */}
@@ -4943,24 +6141,33 @@ const DashboardPage = () => {
         <div>
           {!canUseBulk ? (
             <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
-              <div style={{
-                width: '80px',
-                height: '80px',
-                background: 'var(--primary-50)',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 24px'
-              }}>
+              <div
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  background: 'var(--primary-50)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 24px',
+                }}
+              >
                 <Layers size={40} style={{ color: 'var(--primary-600)' }} />
               </div>
               <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>
                 Bulk Generation is a Paid Feature
               </h2>
-              <p style={{ color: 'var(--gray-600)', marginBottom: '24px', maxWidth: '500px', margin: '0 auto 24px' }}>
-                Generate responses for up to 20 reviews at once with any paid plan.
-                Perfect for businesses with high review volume.
+              <p
+                style={{
+                  color: 'var(--gray-600)',
+                  marginBottom: '24px',
+                  maxWidth: '500px',
+                  margin: '0 auto 24px',
+                }}
+              >
+                Generate responses for up to 20 reviews at once with any paid plan. Perfect for
+                businesses with high review volume.
               </p>
               <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
                 <Link to="/pricing" className="btn btn-primary" style={{ padding: '12px 24px' }}>
@@ -4968,17 +6175,33 @@ const DashboardPage = () => {
                   View Plans
                 </Link>
               </div>
-              <div style={{ marginTop: '32px', display: 'flex', gap: '32px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <div
+                style={{
+                  marginTop: '32px',
+                  display: 'flex',
+                  gap: '32px',
+                  justifyContent: 'center',
+                  flexWrap: 'wrap',
+                }}
+              >
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--primary-600)' }}>20</div>
-                  <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Reviews per batch</div>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--primary-600)' }}>
+                    20
+                  </div>
+                  <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>
+                    Reviews per batch
+                  </div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--primary-600)' }}>Parallel</div>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--primary-600)' }}>
+                    Parallel
+                  </div>
                   <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Processing</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--primary-600)' }}>CSV</div>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--primary-600)' }}>
+                    CSV
+                  </div>
                   <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Import support</div>
                 </div>
               </div>
@@ -4991,7 +6214,8 @@ const DashboardPage = () => {
                   Bulk Generate Responses
                 </h2>
                 <p style={{ color: 'var(--gray-500)', fontSize: '14px', marginBottom: '20px' }}>
-                  Enter multiple reviews to generate responses for all of them at once. Maximum 20 per batch.
+                  Enter multiple reviews to generate responses for all of them at once. Maximum 20
+                  per batch.
                 </p>
 
                 <div className="form-group">
@@ -4999,7 +6223,7 @@ const DashboardPage = () => {
                   <textarea
                     className="form-textarea"
                     value={bulkInput}
-                    onChange={(e) => setBulkInput(e.target.value)}
+                    onChange={e => setBulkInput(e.target.value)}
                     placeholder={`Paste your reviews here...
 
 Great service! The staff was very helpful and friendly.
@@ -5019,7 +6243,7 @@ Food was amazing, will definitely come back!`}
                     <select
                       className="form-select"
                       value={bulkPlatform}
-                      onChange={(e) => setBulkPlatform(e.target.value)}
+                      onChange={e => setBulkPlatform(e.target.value)}
                     >
                       <option value="google">Google Reviews</option>
                       <option value="yelp">Yelp</option>
@@ -5034,7 +6258,7 @@ Food was amazing, will definitely come back!`}
                     <select
                       className="form-select"
                       value={bulkTone}
-                      onChange={(e) => setBulkTone(e.target.value)}
+                      onChange={e => setBulkTone(e.target.value)}
                     >
                       <option value="professional">Professional</option>
                       <option value="friendly">Friendly</option>
@@ -5048,31 +6272,73 @@ Food was amazing, will definitely come back!`}
                 <div className="form-group" style={{ marginTop: '16px' }}>
                   <label className="form-label">AI Model</label>
                   <div className="ai-model-buttons">
-                    <button type="button" onClick={() => setBulkAiModel('auto')} style={{
-                      flex: 1, padding: '10px', borderRadius: '8px', textAlign: 'center', cursor: 'pointer',
-                      border: bulkAiModel === 'auto' ? '2px solid var(--primary-500)' : '2px solid var(--gray-200)',
-                      background: bulkAiModel === 'auto' ? 'var(--primary-50)' : 'var(--bg-secondary)'
-                    }}>
+                    <button
+                      type="button"
+                      onClick={() => setBulkAiModel('auto')}
+                      style={{
+                        flex: 1,
+                        padding: '10px',
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        border:
+                          bulkAiModel === 'auto'
+                            ? '2px solid var(--primary-500)'
+                            : '2px solid var(--gray-200)',
+                        background:
+                          bulkAiModel === 'auto' ? 'var(--primary-50)' : 'var(--bg-secondary)',
+                      }}
+                    >
                       <span style={{ marginRight: '6px' }}>🔄</span>
                       <span style={{ fontWeight: '600', fontSize: '13px' }}>Auto</span>
                     </button>
-                    <button type="button" onClick={() => smartRemaining > 0 && setBulkAiModel('smart')} disabled={smartRemaining <= 0} style={{
-                      flex: 1, padding: '10px', borderRadius: '8px', textAlign: 'center',
-                      border: bulkAiModel === 'smart' ? '2px solid var(--primary-500)' : '2px solid var(--gray-200)',
-                      background: bulkAiModel === 'smart' ? 'var(--hero-gradient)' : 'var(--bg-secondary)',
-                      cursor: smartRemaining > 0 ? 'pointer' : 'not-allowed', opacity: smartRemaining <= 0 ? 0.5 : 1
-                    }}>
+                    <button
+                      type="button"
+                      onClick={() => smartRemaining > 0 && setBulkAiModel('smart')}
+                      disabled={smartRemaining <= 0}
+                      style={{
+                        flex: 1,
+                        padding: '10px',
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                        border:
+                          bulkAiModel === 'smart'
+                            ? '2px solid var(--primary-500)'
+                            : '2px solid var(--gray-200)',
+                        background:
+                          bulkAiModel === 'smart' ? 'var(--hero-gradient)' : 'var(--bg-secondary)',
+                        cursor: smartRemaining > 0 ? 'pointer' : 'not-allowed',
+                        opacity: smartRemaining <= 0 ? 0.5 : 1,
+                      }}
+                    >
                       <span style={{ marginRight: '6px' }}>✨</span>
-                      <span style={{ fontWeight: '600', fontSize: '13px' }}>Smart ({smartRemaining})</span>
+                      <span style={{ fontWeight: '600', fontSize: '13px' }}>
+                        Smart ({smartRemaining})
+                      </span>
                     </button>
-                    <button type="button" onClick={() => standardRemaining > 0 && setBulkAiModel('standard')} disabled={standardRemaining <= 0} style={{
-                      flex: 1, padding: '10px', borderRadius: '8px', textAlign: 'center',
-                      border: bulkAiModel === 'standard' ? '2px solid var(--gray-500)' : '2px solid var(--gray-200)',
-                      background: bulkAiModel === 'standard' ? 'var(--gray-100)' : 'var(--bg-secondary)',
-                      cursor: standardRemaining > 0 ? 'pointer' : 'not-allowed', opacity: standardRemaining <= 0 ? 0.5 : 1
-                    }}>
+                    <button
+                      type="button"
+                      onClick={() => standardRemaining > 0 && setBulkAiModel('standard')}
+                      disabled={standardRemaining <= 0}
+                      style={{
+                        flex: 1,
+                        padding: '10px',
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                        border:
+                          bulkAiModel === 'standard'
+                            ? '2px solid var(--gray-500)'
+                            : '2px solid var(--gray-200)',
+                        background:
+                          bulkAiModel === 'standard' ? 'var(--gray-100)' : 'var(--bg-secondary)',
+                        cursor: standardRemaining > 0 ? 'pointer' : 'not-allowed',
+                        opacity: standardRemaining <= 0 ? 0.5 : 1,
+                      }}
+                    >
                       <span style={{ marginRight: '6px' }}>⚡</span>
-                      <span style={{ fontWeight: '600', fontSize: '13px' }}>Standard ({standardRemaining})</span>
+                      <span style={{ fontWeight: '600', fontSize: '13px' }}>
+                        Standard ({standardRemaining})
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -5102,13 +6368,21 @@ Food was amazing, will definitely come back!`}
               {/* Bulk Results */}
               {bulkResults && (
                 <div className="card">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '20px',
+                    }}
+                  >
                     <div>
                       <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '4px' }}>
                         Generated Responses
                       </h2>
                       <p style={{ fontSize: '14px', color: 'var(--gray-500)' }}>
-                        {bulkResults.summary.successful} of {bulkResults.summary.total} responses generated
+                        {bulkResults.summary.successful} of {bulkResults.summary.total} responses
+                        generated
                       </p>
                     </div>
                     <button
@@ -5129,18 +6403,29 @@ Food was amazing, will definitely come back!`}
                           padding: '16px',
                           background: result.success ? 'var(--gray-50)' : 'var(--danger-light)',
                           borderRadius: '8px',
-                          border: result.success ? '1px solid var(--gray-200)' : '1px solid var(--danger)'
+                          border: result.success
+                            ? '1px solid var(--gray-200)'
+                            : '1px solid var(--danger)',
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                          <span style={{
-                            background: result.success ? 'var(--primary-100)' : 'var(--danger)',
-                            color: result.success ? 'var(--primary-700)' : 'white',
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            fontWeight: '600'
-                          }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start',
+                            marginBottom: '12px',
+                          }}
+                        >
+                          <span
+                            style={{
+                              background: result.success ? 'var(--primary-100)' : 'var(--danger)',
+                              color: result.success ? 'var(--primary-700)' : 'white',
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              fontSize: '12px',
+                              fontWeight: '600',
+                            }}
+                          >
                             Review #{index + 1}
                           </span>
                           {result.success && (
@@ -5156,25 +6441,56 @@ Food was amazing, will definitely come back!`}
                         </div>
 
                         <div style={{ marginBottom: '12px' }}>
-                          <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--gray-500)', marginBottom: '4px' }}>
+                          <div
+                            style={{
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              color: 'var(--gray-500)',
+                              marginBottom: '4px',
+                            }}
+                          >
                             REVIEW:
                           </div>
                           <div style={{ fontSize: '14px', color: 'var(--gray-700)' }}>
-                            {result.review?.substring(0, 200)}{result.review?.length > 200 ? '...' : ''}
+                            {result.review?.substring(0, 200)}
+                            {result.review?.length > 200 ? '...' : ''}
                           </div>
                         </div>
 
                         {result.success ? (
                           <div>
-                            <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--gray-500)', marginBottom: '4px' }}>
+                            <div
+                              style={{
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                color: 'var(--gray-500)',
+                                marginBottom: '4px',
+                              }}
+                            >
                               RESPONSE:
                             </div>
-                            <div style={{ fontSize: '14px', color: 'var(--text-primary)', background: 'var(--bg-secondary)', padding: '12px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                            <div
+                              style={{
+                                fontSize: '14px',
+                                color: 'var(--text-primary)',
+                                background: 'var(--bg-secondary)',
+                                padding: '12px',
+                                borderRadius: '6px',
+                                border: '1px solid var(--border-color)',
+                              }}
+                            >
                               {result.response}
                             </div>
                           </div>
                         ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--danger)' }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              color: 'var(--danger)',
+                            }}
+                          >
                             <AlertCircle size={16} />
                             <span style={{ fontSize: '14px' }}>{result.error}</span>
                           </div>
@@ -5192,17 +6508,67 @@ Food was amazing, will definitely come back!`}
       {/* History Tab */}
       {activeTab === 'history' && (
         <div className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}><Clock size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} />Response History</h2>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '16px',
+              flexWrap: 'wrap',
+              gap: '12px',
+            }}
+          >
+            <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>
+              <Clock size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+              Response History
+            </h2>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <input type="date" value={exportDateFrom} onChange={(e) => setExportDateFrom(e.target.value)} style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--gray-300)', fontSize: '13px' }} />
+              <input
+                type="date"
+                value={exportDateFrom}
+                onChange={e => setExportDateFrom(e.target.value)}
+                style={{
+                  padding: '6px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--gray-300)',
+                  fontSize: '13px',
+                }}
+              />
               <span style={{ color: 'var(--gray-400)' }}>to</span>
-              <input type="date" value={exportDateTo} onChange={(e) => setExportDateTo(e.target.value)} style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--gray-300)', fontSize: '13px' }} />
-              <button onClick={exportToCSV} disabled={exporting || allHistory.length === 0} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '13px' }}><Download size={14} /> CSV</button>
-              <button onClick={exportToPDF} disabled={exporting || allHistory.length === 0} className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '13px' }}><Download size={14} /> PDF</button>
+              <input
+                type="date"
+                value={exportDateTo}
+                onChange={e => setExportDateTo(e.target.value)}
+                style={{
+                  padding: '6px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--gray-300)',
+                  fontSize: '13px',
+                }}
+              />
+              <button
+                onClick={exportToCSV}
+                disabled={exporting || allHistory.length === 0}
+                className="btn btn-secondary"
+                style={{ padding: '6px 12px', fontSize: '13px' }}
+              >
+                <Download size={14} /> CSV
+              </button>
+              <button
+                onClick={exportToPDF}
+                disabled={exporting || allHistory.length === 0}
+                className="btn btn-primary"
+                style={{ padding: '6px 12px', fontSize: '13px' }}
+              >
+                <Download size={14} /> PDF
+              </button>
             </div>
           </div>
-          {allHistory.length > 0 && <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginBottom: '16px' }}>{allHistory.length} responses available for export</p>}
+          {allHistory.length > 0 && (
+            <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginBottom: '16px' }}>
+              {allHistory.length} responses available for export
+            </p>
+          )}
 
           {history.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--gray-500)' }}>
@@ -5210,7 +6576,7 @@ Food was amazing, will definitely come back!`}
               <p>No responses generated yet. Start by generating your first response!</p>
             </div>
           ) : (
-            history.map((item) => (
+            history.map(item => (
               <div key={item.id} className="history-item">
                 <div className="history-review">
                   <strong>Review:</strong> {item.review_text.substring(0, 150)}
@@ -5235,40 +6601,93 @@ Food was amazing, will definitely come back!`}
         <div>
           {!canUseBlog ? (
             <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
-              <div style={{
-                width: '80px',
-                height: '80px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, var(--primary-100), var(--primary-50))',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 24px'
-              }}>
+              <div
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, var(--primary-100), var(--primary-50))',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 24px',
+                }}
+              >
                 <BookOpen size={40} style={{ color: 'var(--primary-600)' }} />
               </div>
-              <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>SEO Blog Generator</h2>
-              <p style={{ color: 'var(--gray-600)', marginBottom: '24px', maxWidth: '500px', margin: '0 auto 24px' }}>
-                Generate SEO-optimized blog articles about review management to drive organic traffic to your business.
-                Available for Pro and Unlimited plans.
+              <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>
+                SEO Blog Generator
+              </h2>
+              <p
+                style={{
+                  color: 'var(--gray-600)',
+                  marginBottom: '24px',
+                  maxWidth: '500px',
+                  margin: '0 auto 24px',
+                }}
+              >
+                Generate SEO-optimized blog articles about review management to drive organic
+                traffic to your business. Available for Pro and Unlimited plans.
               </p>
-              <div style={{ background: 'var(--gray-50)', borderRadius: '12px', padding: '24px', marginBottom: '24px', maxWidth: '400px', margin: '0 auto 24px' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>What you get:</h3>
+              <div
+                style={{
+                  background: 'var(--gray-50)',
+                  borderRadius: '12px',
+                  padding: '24px',
+                  marginBottom: '24px',
+                  maxWidth: '400px',
+                  margin: '0 auto 24px',
+                }}
+              >
+                <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
+                  What you get:
+                </h3>
                 <ul style={{ textAlign: 'left', listStyle: 'none', padding: 0, margin: 0 }}>
-                  <li style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <Check size={16} style={{ color: 'var(--success)' }} /> AI-generated SEO articles
+                  <li
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    <Check size={16} style={{ color: 'var(--success)' }} /> AI-generated SEO
+                    articles
                   </li>
-                  <li style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <li
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '8px',
+                    }}
+                  >
                     <Check size={16} style={{ color: 'var(--success)' }} /> 12+ pre-defined topics
                   </li>
-                  <li style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <li
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '8px',
+                    }}
+                  >
                     <Check size={16} style={{ color: 'var(--success)' }} /> Custom keyword targeting
                   </li>
-                  <li style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <Check size={16} style={{ color: 'var(--success)' }} /> Meta descriptions included
+                  <li
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    <Check size={16} style={{ color: 'var(--success)' }} /> Meta descriptions
+                    included
                   </li>
                   <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Check size={16} style={{ color: 'var(--success)' }} /> Export as Markdown or Text
+                    <Check size={16} style={{ color: 'var(--success)' }} /> Export as Markdown or
+                    Text
                   </li>
                 </ul>
               </div>
@@ -5280,7 +6699,16 @@ Food was amazing, will definitely come back!`}
             <div className="blog-generator-grid">
               {/* Left Column - Generator Form */}
               <div className="card">
-                <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h2
+                  style={{
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    marginBottom: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
                   <BookOpen size={20} />
                   Generate Blog Article
                 </h2>
@@ -5290,7 +6718,7 @@ Food was amazing, will definitely come back!`}
                   <select
                     className="form-select"
                     value={blogTopic}
-                    onChange={(e) => {
+                    onChange={e => {
                       setBlogTopic(e.target.value);
                       if (e.target.value) {
                         const topic = blogTopics.find(t => t.id === e.target.value);
@@ -5303,7 +6731,9 @@ Food was amazing, will definitely come back!`}
                   >
                     <option value="">-- Select a topic --</option>
                     {blogTopics.map(topic => (
-                      <option key={topic.id} value={topic.id}>{topic.title}</option>
+                      <option key={topic.id} value={topic.id}>
+                        {topic.title}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -5315,7 +6745,7 @@ Food was amazing, will definitely come back!`}
                     className="form-input"
                     placeholder="e.g., How to Respond to Restaurant Reviews"
                     value={blogCustomTopic}
-                    onChange={(e) => {
+                    onChange={e => {
                       setBlogCustomTopic(e.target.value);
                       if (e.target.value) setBlogTopic('');
                     }}
@@ -5329,7 +6759,7 @@ Food was amazing, will definitely come back!`}
                     className="form-input"
                     placeholder="review management, customer feedback, online reputation"
                     value={blogKeywords}
-                    onChange={(e) => setBlogKeywords(e.target.value)}
+                    onChange={e => setBlogKeywords(e.target.value)}
                   />
                 </div>
 
@@ -5341,10 +6771,17 @@ Food was amazing, will definitely come back!`}
                     max="2000"
                     step="100"
                     value={blogLength}
-                    onChange={(e) => setBlogLength(parseInt(e.target.value))}
+                    onChange={e => setBlogLength(parseInt(e.target.value))}
                     style={{ width: '100%' }}
                   />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--gray-500)' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      fontSize: '12px',
+                      color: 'var(--gray-500)',
+                    }}
+                  >
                     <span>500 (Short)</span>
                     <span>1000 (Medium)</span>
                     <span>2000 (Long)</span>
@@ -5356,7 +6793,7 @@ Food was amazing, will definitely come back!`}
                   <select
                     className="form-select"
                     value={blogTone}
-                    onChange={(e) => setBlogTone(e.target.value)}
+                    onChange={e => setBlogTone(e.target.value)}
                   >
                     <option value="informative">Informative (Educational)</option>
                     <option value="persuasive">Persuasive (Marketing)</option>
@@ -5372,7 +6809,10 @@ Food was amazing, will definitely come back!`}
                 >
                   {generatingBlog ? (
                     <>
-                      <div className="spinner" style={{ width: '16px', height: '16px', marginRight: '8px' }}></div>
+                      <div
+                        className="spinner"
+                        style={{ width: '16px', height: '16px', marginRight: '8px' }}
+                      ></div>
                       Generating Article...
                     </>
                   ) : (
@@ -5385,8 +6825,21 @@ Food was amazing, will definitely come back!`}
 
                 {/* Article History */}
                 {blogHistory.length > 0 && (
-                  <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--gray-200)' }}>
-                    <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: 'var(--gray-700)' }}>
+                  <div
+                    style={{
+                      marginTop: '24px',
+                      paddingTop: '24px',
+                      borderTop: '1px solid var(--gray-200)',
+                    }}
+                  >
+                    <h3
+                      style={{
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        marginBottom: '12px',
+                        color: 'var(--gray-700)',
+                      }}
+                    >
                       Recent Articles
                     </h3>
                     <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
@@ -5400,14 +6853,32 @@ Food was amazing, will definitely come back!`}
                             marginBottom: '8px',
                             cursor: 'pointer',
                             transition: 'all 0.2s',
-                            background: generatedArticle?.id === article.id ? 'var(--primary-50)' : 'transparent'
+                            background:
+                              generatedArticle?.id === article.id
+                                ? 'var(--primary-50)'
+                                : 'transparent',
                           }}
                           onClick={() => loadArticle(article.id)}
                         >
-                          <div style={{ fontSize: '14px', fontWeight: '500', marginBottom: '4px', color: 'var(--gray-900)' }}>
-                            {article.title.substring(0, 50)}{article.title.length > 50 ? '...' : ''}
+                          <div
+                            style={{
+                              fontSize: '14px',
+                              fontWeight: '500',
+                              marginBottom: '4px',
+                              color: 'var(--gray-900)',
+                            }}
+                          >
+                            {article.title.substring(0, 50)}
+                            {article.title.length > 50 ? '...' : ''}
                           </div>
-                          <div style={{ display: 'flex', gap: '12px', fontSize: '12px', color: 'var(--gray-500)' }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              gap: '12px',
+                              fontSize: '12px',
+                              color: 'var(--gray-500)',
+                            }}
+                          >
                             <span>{article.wordCount} words</span>
                             <span>{new Date(article.createdAt).toLocaleDateString()}</span>
                           </div>
@@ -5420,7 +6891,16 @@ Food was amazing, will definitely come back!`}
 
               {/* Right Column - Article Preview */}
               <div className="card" style={{ height: 'fit-content' }}>
-                <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h2
+                  style={{
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    marginBottom: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
                   <FileText size={20} />
                   Article Preview
                 </h2>
@@ -5428,26 +6908,63 @@ Food was amazing, will definitely come back!`}
                 {generatedArticle ? (
                   <>
                     {/* Article Actions */}
-                    <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-                      <button className="btn btn-secondary" onClick={copyBlogContent} style={{ padding: '8px 12px', fontSize: '13px' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '8px',
+                        marginBottom: '16px',
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      <button
+                        className="btn btn-secondary"
+                        onClick={copyBlogContent}
+                        style={{ padding: '8px 12px', fontSize: '13px' }}
+                      >
                         {copiedBlog ? <Check size={14} /> : <Copy size={14} />}
                         {copiedBlog ? 'Copied!' : 'Copy'}
                       </button>
-                      <button className="btn btn-secondary" onClick={downloadBlogAsMarkdown} style={{ padding: '8px 12px', fontSize: '13px' }}>
+                      <button
+                        className="btn btn-secondary"
+                        onClick={downloadBlogAsMarkdown}
+                        style={{ padding: '8px 12px', fontSize: '13px' }}
+                      >
                         <Download size={14} /> .md
                       </button>
-                      <button className="btn btn-secondary" onClick={downloadBlogAsText} style={{ padding: '8px 12px', fontSize: '13px' }}>
+                      <button
+                        className="btn btn-secondary"
+                        onClick={downloadBlogAsText}
+                        style={{ padding: '8px 12px', fontSize: '13px' }}
+                      >
                         <Download size={14} /> .txt
                       </button>
-                      <button className="btn btn-danger" onClick={() => deleteBlogArticle(generatedArticle.id)} style={{ padding: '8px 12px', fontSize: '13px', marginLeft: 'auto' }}>
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => deleteBlogArticle(generatedArticle.id)}
+                        style={{ padding: '8px 12px', fontSize: '13px', marginLeft: 'auto' }}
+                      >
                         <Trash2 size={14} /> Delete
                       </button>
                     </div>
 
                     {/* Meta Description */}
                     {generatedArticle.metaDescription && (
-                      <div style={{ background: 'var(--gray-50)', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
-                        <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--gray-600)', marginBottom: '4px' }}>
+                      <div
+                        style={{
+                          background: 'var(--gray-50)',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          marginBottom: '16px',
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            color: 'var(--gray-600)',
+                            marginBottom: '4px',
+                          }}
+                        >
                           META DESCRIPTION
                         </div>
                         <div style={{ fontSize: '14px', color: 'var(--gray-700)' }}>
@@ -5457,15 +6974,38 @@ Food was amazing, will definitely come back!`}
                     )}
 
                     {/* Article Stats */}
-                    <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', fontSize: '13px', color: 'var(--gray-500)' }}>
-                      <span><strong>{generatedArticle.wordCount}</strong> words</span>
-                      <span>Tone: <strong>{generatedArticle.tone}</strong></span>
-                      {generatedArticle.keywords && <span>Keywords: {generatedArticle.keywords.split(',').slice(0, 3).join(', ')}</span>}
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '16px',
+                        marginBottom: '16px',
+                        fontSize: '13px',
+                        color: 'var(--gray-500)',
+                      }}
+                    >
+                      <span>
+                        <strong>{generatedArticle.wordCount}</strong> words
+                      </span>
+                      <span>
+                        Tone: <strong>{generatedArticle.tone}</strong>
+                      </span>
+                      {generatedArticle.keywords && (
+                        <span>
+                          Keywords: {generatedArticle.keywords.split(',').slice(0, 3).join(', ')}
+                        </span>
+                      )}
                     </div>
 
                     {/* Article Content */}
                     <div style={{ borderTop: '1px solid var(--gray-200)', paddingTop: '16px' }}>
-                      <h1 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px', color: 'var(--gray-900)' }}>
+                      <h1
+                        style={{
+                          fontSize: '24px',
+                          fontWeight: '700',
+                          marginBottom: '16px',
+                          color: 'var(--gray-900)',
+                        }}
+                      >
                         {generatedArticle.title}
                       </h1>
                       <div
@@ -5474,12 +7014,12 @@ Food was amazing, will definitely come back!`}
                           lineHeight: '1.7',
                           color: 'var(--gray-700)',
                           maxHeight: '500px',
-                          overflowY: 'auto'
+                          overflowY: 'auto',
                         }}
                         className="blog-content"
                       >
                         {(() => {
-                          const parseBold = (text) => {
+                          const parseBold = text => {
                             const parts = text.split(/(\*\*[^*]+\*\*)/g);
                             return parts.map((part, j) => {
                               if (part.startsWith('**') && part.endsWith('**')) {
@@ -5490,15 +7030,60 @@ Food was amazing, will definitely come back!`}
                           };
                           return generatedArticle.content.split('\n').map((line, i) => {
                             if (line.startsWith('## ')) {
-                              return <h2 key={i} style={{ fontSize: '20px', fontWeight: '600', marginTop: '24px', marginBottom: '12px', color: 'var(--gray-900)' }}>{parseBold(line.replace('## ', ''))}</h2>;
+                              return (
+                                <h2
+                                  key={i}
+                                  style={{
+                                    fontSize: '20px',
+                                    fontWeight: '600',
+                                    marginTop: '24px',
+                                    marginBottom: '12px',
+                                    color: 'var(--gray-900)',
+                                  }}
+                                >
+                                  {parseBold(line.replace('## ', ''))}
+                                </h2>
+                              );
                             } else if (line.startsWith('### ')) {
-                              return <h3 key={i} style={{ fontSize: '16px', fontWeight: '600', marginTop: '20px', marginBottom: '8px', color: 'var(--gray-800)' }}>{parseBold(line.replace('### ', ''))}</h3>;
+                              return (
+                                <h3
+                                  key={i}
+                                  style={{
+                                    fontSize: '16px',
+                                    fontWeight: '600',
+                                    marginTop: '20px',
+                                    marginBottom: '8px',
+                                    color: 'var(--gray-800)',
+                                  }}
+                                >
+                                  {parseBold(line.replace('### ', ''))}
+                                </h3>
+                              );
                             } else if (line.startsWith('- ')) {
-                              return <li key={i} style={{ marginLeft: '20px', marginBottom: '4px' }}>{parseBold(line.replace('- ', ''))}</li>;
+                              return (
+                                <li key={i} style={{ marginLeft: '20px', marginBottom: '4px' }}>
+                                  {parseBold(line.replace('- ', ''))}
+                                </li>
+                              );
                             } else if (line.startsWith('* ')) {
-                              return <li key={i} style={{ marginLeft: '20px', marginBottom: '4px' }}>{parseBold(line.replace('* ', ''))}</li>;
+                              return (
+                                <li key={i} style={{ marginLeft: '20px', marginBottom: '4px' }}>
+                                  {parseBold(line.replace('* ', ''))}
+                                </li>
+                              );
                             } else if (line.match(/^\d+\. /)) {
-                              return <li key={i} style={{ marginLeft: '20px', marginBottom: '4px', listStyleType: 'decimal' }}>{parseBold(line.replace(/^\d+\. /, ''))}</li>;
+                              return (
+                                <li
+                                  key={i}
+                                  style={{
+                                    marginLeft: '20px',
+                                    marginBottom: '4px',
+                                    listStyleType: 'decimal',
+                                  }}
+                                >
+                                  {parseBold(line.replace(/^\d+\. /, ''))}
+                                </li>
+                              );
                             } else if (line.trim() === '') {
                               return <br key={i} />;
                             } else {
@@ -5514,7 +7099,9 @@ Food was amazing, will definitely come back!`}
                     </div>
                   </>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--gray-500)' }}>
+                  <div
+                    style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--gray-500)' }}
+                  >
                     <FileText size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
                     <p>Select a topic and generate an article to see the preview here.</p>
                   </div>
@@ -5526,38 +7113,53 @@ Food was amazing, will definitely come back!`}
       )}
 
       {/* API Tab */}
-      {activeTab === 'api' && <ApiTab user={user} api={api} effectivePlan={effectivePlan} isTeamMember={isTeamMember} />}
+      {activeTab === 'api' && (
+        <ApiTab user={user} api={api} effectivePlan={effectivePlan} isTeamMember={isTeamMember} />
+      )}
 
       {/* Save Template Modal */}
       {showSaveTemplateModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)',
-          zIndex: 9999,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '20px'
-        }} onClick={() => setShowSaveTemplateModal(false)}>
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+          }}
+          onClick={() => setShowSaveTemplateModal(false)}
+        >
           <div
             className="card"
             style={{
               maxWidth: '400px',
               width: '100%',
-              padding: '24px'
+              padding: '24px',
             }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
-            <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h2
+              style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
               <BookOpen size={20} />
               Save as Template
             </h2>
             <p style={{ fontSize: '14px', color: 'var(--gray-600)', marginBottom: '16px' }}>
-              Save this response as a template to quickly use it as a starting point for future reviews.
+              Save this response as a template to quickly use it as a starting point for future
+              reviews.
             </p>
 
             <div className="form-group">
@@ -5567,7 +7169,7 @@ Food was amazing, will definitely come back!`}
                 className="form-input"
                 placeholder="e.g., Positive 5-star response"
                 value={templateName}
-                onChange={(e) => setTemplateName(e.target.value)}
+                onChange={e => setTemplateName(e.target.value)}
                 maxLength={100}
                 autoFocus
               />
@@ -5599,19 +7201,22 @@ Food was amazing, will definitely come back!`}
 
       {/* Edit Template Modal */}
       {showEditTemplateModal && editingTemplate && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)',
-          zIndex: 9999,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '20px'
-        }} onClick={() => setShowEditTemplateModal(false)}>
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+          }}
+          onClick={() => setShowEditTemplateModal(false)}
+        >
           <div
             className="card"
             style={{
@@ -5619,11 +7224,20 @@ Food was amazing, will definitely come back!`}
               width: '100%',
               padding: '24px',
               maxHeight: '80vh',
-              overflow: 'auto'
+              overflow: 'auto',
             }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
-            <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h2
+              style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
               <Edit3 size={20} />
               Edit Template
             </h2>
@@ -5635,7 +7249,7 @@ Food was amazing, will definitely come back!`}
                 className="form-input"
                 placeholder="e.g., Positive 5-star response"
                 value={editTemplateName}
-                onChange={(e) => setEditTemplateName(e.target.value)}
+                onChange={e => setEditTemplateName(e.target.value)}
                 maxLength={100}
                 autoFocus
               />
@@ -5647,7 +7261,7 @@ Food was amazing, will definitely come back!`}
                 className="form-textarea"
                 placeholder="Template response content..."
                 value={editTemplateContent}
-                onChange={(e) => setEditTemplateContent(e.target.value)}
+                onChange={e => setEditTemplateContent(e.target.value)}
                 rows={8}
                 style={{ resize: 'vertical', minHeight: '150px' }}
               />
@@ -5669,7 +7283,9 @@ Food was amazing, will definitely come back!`}
               <button
                 className="btn btn-primary"
                 onClick={updateTemplate}
-                disabled={updatingTemplate || !editTemplateName.trim() || !editTemplateContent.trim()}
+                disabled={
+                  updatingTemplate || !editTemplateName.trim() || !editTemplateContent.trim()
+                }
                 style={{ flex: 1 }}
               >
                 {updatingTemplate ? 'Saving...' : 'Save Changes'}
@@ -5681,30 +7297,48 @@ Food was amazing, will definitely come back!`}
 
       {/* Keyboard Shortcuts Help Modal */}
       {showKeyboardHelp && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)',
-          zIndex: 9999,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '20px'
-        }} onClick={() => setShowKeyboardHelp(false)}>
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+          }}
+          onClick={() => setShowKeyboardHelp(false)}
+        >
           <div
             className="card"
             style={{
               maxWidth: '480px',
               width: '100%',
-              padding: '24px'
+              padding: '24px',
             }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '20px',
+              }}
+            >
+              <h2
+                style={{
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
                 <Keyboard size={20} />
                 Keyboard Shortcuts
               </h2>
@@ -5715,7 +7349,7 @@ Food was amazing, will definitely come back!`}
                   border: 'none',
                   cursor: 'pointer',
                   padding: '4px',
-                  color: 'var(--gray-400)'
+                  color: 'var(--gray-400)',
                 }}
               >
                 <X size={20} />
@@ -5723,53 +7357,166 @@ Food was amazing, will definitely come back!`}
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--gray-100)' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '8px 0',
+                  borderBottom: '1px solid var(--gray-100)',
+                }}
+              >
                 <span style={{ color: 'var(--gray-700)' }}>Generate / New Response</span>
-                <kbd style={{ background: 'var(--gray-100)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace' }}>
+                <kbd
+                  style={{
+                    background: 'var(--gray-100)',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    fontFamily: 'monospace',
+                  }}
+                >
                   {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} + Enter
                 </kbd>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--gray-100)' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '8px 0',
+                  borderBottom: '1px solid var(--gray-100)',
+                }}
+              >
                 <span style={{ color: 'var(--gray-700)' }}>Copy Response</span>
-                <kbd style={{ background: 'var(--gray-100)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace' }}>
+                <kbd
+                  style={{
+                    background: 'var(--gray-100)',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    fontFamily: 'monospace',
+                  }}
+                >
                   {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} + Shift + C
                 </kbd>
               </div>
 
-              <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--gray-200)' }}>
-                <p style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '8px' }}>Change Tone:</p>
+              <div
+                style={{
+                  marginTop: '8px',
+                  paddingTop: '8px',
+                  borderTop: '1px solid var(--gray-200)',
+                }}
+              >
+                <p style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '8px' }}>
+                  Change Tone:
+                </p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
                     <span style={{ color: 'var(--gray-600)', fontSize: '13px' }}>Professional</span>
-                    <kbd style={{ background: 'var(--gray-100)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontFamily: 'monospace' }}>
+                    <kbd
+                      style={{
+                        background: 'var(--gray-100)',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        fontSize: '11px',
+                        fontFamily: 'monospace',
+                      }}
+                    >
                       {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} + 1
                     </kbd>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
                     <span style={{ color: 'var(--gray-600)', fontSize: '13px' }}>Friendly</span>
-                    <kbd style={{ background: 'var(--gray-100)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontFamily: 'monospace' }}>
+                    <kbd
+                      style={{
+                        background: 'var(--gray-100)',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        fontSize: '11px',
+                        fontFamily: 'monospace',
+                      }}
+                    >
                       {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} + 2
                     </kbd>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
                     <span style={{ color: 'var(--gray-600)', fontSize: '13px' }}>Formal</span>
-                    <kbd style={{ background: 'var(--gray-100)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontFamily: 'monospace' }}>
+                    <kbd
+                      style={{
+                        background: 'var(--gray-100)',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        fontSize: '11px',
+                        fontFamily: 'monospace',
+                      }}
+                    >
                       {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} + 3
                     </kbd>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
                     <span style={{ color: 'var(--gray-600)', fontSize: '13px' }}>Apologetic</span>
-                    <kbd style={{ background: 'var(--gray-100)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontFamily: 'monospace' }}>
+                    <kbd
+                      style={{
+                        background: 'var(--gray-100)',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        fontSize: '11px',
+                        fontFamily: 'monospace',
+                      }}
+                    >
                       {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} + 4
                     </kbd>
                   </div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', marginTop: '8px', borderTop: '1px solid var(--gray-200)' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '8px 0',
+                  marginTop: '8px',
+                  borderTop: '1px solid var(--gray-200)',
+                }}
+              >
                 <span style={{ color: 'var(--gray-700)' }}>Show This Help</span>
-                <kbd style={{ background: 'var(--gray-100)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace' }}>
+                <kbd
+                  style={{
+                    background: 'var(--gray-100)',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    fontFamily: 'monospace',
+                  }}
+                >
                   {navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘' : 'Ctrl'} + /
                 </kbd>
               </div>
@@ -5787,12 +7534,14 @@ Food was amazing, will definitely come back!`}
       )}
 
       {/* Feedback Link - always visible */}
-      <div style={{
-        textAlign: 'center',
-        padding: '24px 0',
-        marginTop: '32px',
-        borderTop: '1px solid var(--gray-100)'
-      }}>
+      <div
+        style={{
+          textAlign: 'center',
+          padding: '24px 0',
+          marginTop: '32px',
+          borderTop: '1px solid var(--gray-100)',
+        }}
+      >
         <button
           onClick={() => setShowFeedbackPopup(true)}
           style={{
@@ -5803,7 +7552,7 @@ Food was amazing, will definitely come back!`}
             fontSize: '14px',
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '6px'
+            gap: '6px',
           }}
         >
           <span>Enjoying ReviewResponder?</span>
@@ -5826,7 +7575,7 @@ Food was amazing, will definitely come back!`}
 
 // Profile / Account Settings Page
 const ProfilePage = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const navigate = useNavigate();
 
   // Tab state
@@ -5848,7 +7597,7 @@ const ProfilePage = () => {
   const [notifications, setNotifications] = useState({
     emailWeeklySummary: true,
     emailUsageAlerts: true,
-    emailBillingUpdates: true
+    emailBillingUpdates: true,
   });
   const [loadingNotifications, setLoadingNotifications] = useState(true);
   const [savingNotifications, setSavingNotifications] = useState(false);
@@ -5876,7 +7625,7 @@ const ProfilePage = () => {
   };
 
   // Handle password change
-  const handleChangePassword = async (e) => {
+  const handleChangePassword = async e => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
       return toast.error('Passwords do not match');
@@ -5887,16 +7636,17 @@ const ProfilePage = () => {
     setChangingPassword(true);
     try {
       // OAuth users can always set password without current; non-OAuth users with password need current
-      const payload = (user?.oauthProvider || !user?.hasPassword)
-        ? { newPassword }
-        : { currentPassword, newPassword };
+      const payload =
+        user?.oauthProvider || !user?.hasPassword
+          ? { newPassword }
+          : { currentPassword, newPassword };
       const response = await api.put('/auth/change-password', payload);
       toast.success(response.data.message || 'Password updated successfully');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
       // Refresh user data to update hasPassword status
-      fetchStats();
+      refreshUser();
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to update password');
     } finally {
@@ -5905,7 +7655,7 @@ const ProfilePage = () => {
   };
 
   // Handle email change request
-  const handleChangeEmail = async (e) => {
+  const handleChangeEmail = async e => {
     e.preventDefault();
     if (!newEmail) {
       return toast.error('Please enter a new email address');
@@ -5944,7 +7694,7 @@ const ProfilePage = () => {
     setDeleting(true);
     try {
       await api.delete('/auth/delete-account', {
-        data: { password: deletePassword, confirmation: deleteConfirmation }
+        data: { password: deletePassword, confirmation: deleteConfirmation },
       });
       toast.success('Account deleted successfully');
       logout();
@@ -5957,12 +7707,12 @@ const ProfilePage = () => {
   };
 
   // Format join date
-  const formatJoinDate = (dateStr) => {
+  const formatJoinDate = dateStr => {
     if (!dateStr) return 'Unknown';
     return new Date(dateStr).toLocaleDateString('en-US', {
       month: 'long',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
@@ -5970,22 +7720,50 @@ const ProfilePage = () => {
     { id: 'account', label: 'Account', icon: User },
     { id: 'security', label: 'Security', icon: Lock },
     { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'danger', label: 'Danger Zone', icon: AlertCircle }
+    { id: 'danger', label: 'Danger Zone', icon: AlertCircle },
   ];
 
   return (
-    <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '900px' }}>
+    <div
+      className="container"
+      style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '900px' }}
+    >
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
-        <Link to="/dashboard" style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '16px', fontSize: '14px', textDecoration: 'none' }}>
+        <Link
+          to="/dashboard"
+          style={{
+            color: 'var(--primary)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            marginBottom: '16px',
+            fontSize: '14px',
+            textDecoration: 'none',
+          }}
+        >
           <ChevronRight size={16} style={{ transform: 'rotate(180deg)' }} /> Back to Dashboard
         </Link>
-        <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>Account Settings</h1>
-        <p style={{ color: 'var(--text-muted)' }}>Manage your account, security, and notification preferences</p>
+        <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
+          Account Settings
+        </h1>
+        <p style={{ color: 'var(--text-muted)' }}>
+          Manage your account, security, and notification preferences
+        </p>
       </div>
 
       {/* Tab Navigation */}
-      <div style={{ display: 'flex', gap: '4px', marginBottom: '24px', background: 'var(--bg-tertiary)', padding: '4px', borderRadius: '12px', flexWrap: 'wrap' }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: '4px',
+          marginBottom: '24px',
+          background: 'var(--bg-tertiary)',
+          padding: '4px',
+          borderRadius: '12px',
+          flexWrap: 'wrap',
+        }}
+      >
         {tabs.map(tab => (
           <button
             key={tab.id}
@@ -6005,7 +7783,7 @@ const ProfilePage = () => {
               fontSize: '14px',
               cursor: 'pointer',
               transition: 'all 0.2s',
-              boxShadow: activeTab === tab.id ? '0 2px 8px rgba(0,0,0,0.1)' : 'none'
+              boxShadow: activeTab === tab.id ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
             }}
           >
             <tab.icon size={16} />
@@ -6017,25 +7795,74 @@ const ProfilePage = () => {
       {/* Account Tab */}
       {activeTab === 'account' && (
         <div className="card">
-          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h2
+            style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
             <User size={20} /> Account Information
           </h2>
 
           <div style={{ display: 'grid', gap: '16px' }}>
             {/* Profile Avatar Section */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '12px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                padding: '16px',
+                background: 'var(--bg-tertiary)',
+                borderRadius: '12px',
+              }}
+            >
               {user?.profilePicture ? (
-                <img src={user.profilePicture} alt="Profile" style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover' }} />
+                <img
+                  src={user.profilePicture}
+                  alt="Profile"
+                  style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover' }}
+                />
               ) : (
-                <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: '600' }}>
+                <div
+                  style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '50%',
+                    background: 'var(--primary)',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '24px',
+                    fontWeight: '600',
+                  }}
+                >
                   {user?.email?.charAt(0).toUpperCase()}
                 </div>
               )}
               <div>
-                <div style={{ fontWeight: '600', fontSize: '16px' }}>{user?.businessName || 'No business name set'}</div>
+                <div style={{ fontWeight: '600', fontSize: '16px' }}>
+                  {user?.businessName || 'No business name set'}
+                </div>
                 <div style={{ color: 'var(--text-muted)', fontSize: '14px' }}>{user?.email}</div>
                 {user?.oauthProvider && (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '4px', padding: '2px 8px', background: 'var(--bg-secondary)', borderRadius: '4px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      marginTop: '4px',
+                      padding: '2px 8px',
+                      background: 'var(--bg-secondary)',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      color: 'var(--text-muted)',
+                    }}
+                  >
                     Signed in with {user.oauthProvider}
                   </span>
                 )}
@@ -6043,20 +7870,40 @@ const ProfilePage = () => {
             </div>
 
             {/* Account Details Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-              <div style={{ padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '8px' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Email</div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '16px',
+              }}
+            >
+              <div
+                style={{ padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '8px' }}
+              >
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                  Email
+                </div>
                 <div style={{ fontWeight: '500' }}>{user?.email}</div>
               </div>
-              <div style={{ padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '8px' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Member Since</div>
+              <div
+                style={{ padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '8px' }}
+              >
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                  Member Since
+                </div>
                 <div style={{ fontWeight: '500' }}>{formatJoinDate(user?.createdAt)}</div>
               </div>
-              <div style={{ padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '8px' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Current Plan</div>
+              <div
+                style={{ padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '8px' }}
+              >
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                  Current Plan
+                </div>
                 <div style={{ fontWeight: '500' }}>
                   {user?.plan?.charAt(0).toUpperCase() + user?.plan?.slice(1)}
-                  {user?.subscriptionStatus === 'active' && <span style={{ color: 'var(--secondary)', marginLeft: '8px' }}>Active</span>}
+                  {user?.subscriptionStatus === 'active' && (
+                    <span style={{ color: 'var(--secondary)', marginLeft: '8px' }}>Active</span>
+                  )}
                   {user?.teamInfo?.isTeamMember && (
                     <div style={{ fontSize: '12px', color: 'var(--primary)', marginTop: '4px' }}>
                       via {user.teamInfo.teamOwnerBusiness || user.teamInfo.teamOwnerEmail}'s Team
@@ -6064,9 +7911,16 @@ const ProfilePage = () => {
                   )}
                 </div>
               </div>
-              <div style={{ padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '8px' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Responses Used</div>
-                <div style={{ fontWeight: '500' }}>{user?.responsesUsed || 0} / {user?.responsesLimit === 999999 ? '∞' : user?.responsesLimit}</div>
+              <div
+                style={{ padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '8px' }}
+              >
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                  Responses Used
+                </div>
+                <div style={{ fontWeight: '500' }}>
+                  {user?.responsesUsed || 0} /{' '}
+                  {user?.responsesLimit === 999999 ? '∞' : user?.responsesLimit}
+                </div>
               </div>
             </div>
 
@@ -6092,20 +7946,45 @@ const ProfilePage = () => {
             )}
 
             {/* Change Email Section */}
-            <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Change Email Address</h3>
+            <div
+              style={{
+                marginTop: '16px',
+                paddingTop: '16px',
+                borderTop: '1px solid var(--border-color)',
+              }}
+            >
+              <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>
+                Change Email Address
+              </h3>
               <form onSubmit={handleChangeEmail} style={{ display: 'grid', gap: '12px' }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label">New Email Address</label>
-                  <input type="email" className="form-input" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Enter new email address" />
+                  <input
+                    type="email"
+                    className="form-input"
+                    value={newEmail}
+                    onChange={e => setNewEmail(e.target.value)}
+                    placeholder="Enter new email address"
+                  />
                 </div>
                 {user?.hasPassword && (
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label className="form-label">Current Password</label>
-                    <input type="password" className="form-input" value={emailPassword} onChange={(e) => setEmailPassword(e.target.value)} placeholder="Enter your password to confirm" />
+                    <input
+                      type="password"
+                      className="form-input"
+                      value={emailPassword}
+                      onChange={e => setEmailPassword(e.target.value)}
+                      placeholder="Enter your password to confirm"
+                    />
                   </div>
                 )}
-                <button type="submit" className="btn btn-primary" disabled={changingEmail || !newEmail} style={{ width: 'fit-content' }}>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={changingEmail || !newEmail}
+                  style={{ width: 'fit-content' }}
+                >
                   {changingEmail ? 'Sending...' : 'Send Confirmation Email'}
                 </button>
               </form>
@@ -6117,18 +7996,42 @@ const ProfilePage = () => {
       {/* Security Tab */}
       {activeTab === 'security' && (
         <div className="card">
-          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h2
+            style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
             <Lock size={20} /> Security
           </h2>
 
           {/* OAuth user - can set password for Chrome Extension */}
           {user?.oauthProvider && (
-            <div style={{ padding: '16px', background: '#fef3c7', borderRadius: '8px', marginBottom: '20px', border: '1px solid #fcd34d' }}>
+            <div
+              style={{
+                padding: '16px',
+                background: '#fef3c7',
+                borderRadius: '8px',
+                marginBottom: '20px',
+                border: '1px solid #fcd34d',
+              }}
+            >
               <p style={{ color: '#92400e', margin: 0, fontSize: '14px' }}>
-                {user?.hasPassword
-                  ? <><strong>Update your password</strong> for the Chrome Extension. Your Google login remains your primary sign-in method.</>
-                  : <><strong>Set a password</strong> to login to the Chrome Extension. Google Sign-In for the extension is coming soon!</>
-                }
+                {user?.hasPassword ? (
+                  <>
+                    <strong>Update your password</strong> for the Chrome Extension. Your Google
+                    login remains your primary sign-in method.
+                  </>
+                ) : (
+                  <>
+                    <strong>Set a password</strong> to login to the Chrome Extension. Google Sign-In
+                    for the extension is coming soon!
+                  </>
+                )}
               </p>
             </div>
           )}
@@ -6138,26 +8041,75 @@ const ProfilePage = () => {
             {!user?.oauthProvider && user?.hasPassword && (
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Current Password</label>
-                <input type={showPasswords ? 'text' : 'password'} className="form-input" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Enter current password" />
+                <input
+                  type={showPasswords ? 'text' : 'password'}
+                  className="form-input"
+                  value={currentPassword}
+                  onChange={e => setCurrentPassword(e.target.value)}
+                  placeholder="Enter current password"
+                />
               </div>
             )}
             <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label">{!user?.oauthProvider && user?.hasPassword ? 'New Password' : 'Password'}</label>
-              <input type={showPasswords ? 'text' : 'password'} className="form-input" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={!user?.oauthProvider && user?.hasPassword ? 'Enter new password (min 8 characters)' : 'Choose a password (min 8 characters)'} />
+              <label className="form-label">
+                {!user?.oauthProvider && user?.hasPassword ? 'New Password' : 'Password'}
+              </label>
+              <input
+                type={showPasswords ? 'text' : 'password'}
+                className="form-input"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                placeholder={
+                  !user?.oauthProvider && user?.hasPassword
+                    ? 'Enter new password (min 8 characters)'
+                    : 'Choose a password (min 8 characters)'
+                }
+              />
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Confirm Password</label>
-              <input type={showPasswords ? 'text' : 'password'} className="form-input" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm password" />
+              <input
+                type={showPasswords ? 'text' : 'password'}
+                className="form-input"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                placeholder="Confirm password"
+              />
             </div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
-              <input type="checkbox" checked={showPasswords} onChange={(e) => setShowPasswords(e.target.checked)} />
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={showPasswords}
+                onChange={e => setShowPasswords(e.target.checked)}
+              />
               Show passwords
             </label>
-            <button type="submit" className="btn btn-primary" disabled={changingPassword || (!user?.oauthProvider && user?.hasPassword && !currentPassword) || !newPassword || !confirmPassword} style={{ width: 'fit-content' }}>
-              {changingPassword
-                ? (user?.oauthProvider || !user?.hasPassword ? 'Setting...' : 'Changing...')
-                : (user?.oauthProvider || !user?.hasPassword ? 'Set Password' : 'Change Password')
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={
+                changingPassword ||
+                (!user?.oauthProvider && user?.hasPassword && !currentPassword) ||
+                !newPassword ||
+                !confirmPassword
               }
+              style={{ width: 'fit-content' }}
+            >
+              {changingPassword
+                ? user?.oauthProvider || !user?.hasPassword
+                  ? 'Setting...'
+                  : 'Changing...'
+                : user?.oauthProvider || !user?.hasPassword
+                  ? 'Set Password'
+                  : 'Change Password'}
             </button>
           </form>
         </div>
@@ -6166,46 +8118,113 @@ const ProfilePage = () => {
       {/* Notifications Tab */}
       {activeTab === 'notifications' && (
         <div className="card">
-          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h2
+            style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
             <Bell size={20} /> Email Notifications
           </h2>
 
           {loadingNotifications ? (
-            <div className="loading"><div className="spinner"></div></div>
+            <div className="loading">
+              <div className="spinner"></div>
+            </div>
           ) : (
             <div style={{ display: 'grid', gap: '16px' }}>
               {[
-                { key: 'emailWeeklySummary', title: 'Weekly Summary', description: 'Get a weekly email with your response stats and tips' },
-                { key: 'emailUsageAlerts', title: 'Usage Alerts', description: 'Get notified when you reach 80% of your monthly limit' },
-                { key: 'emailBillingUpdates', title: 'Billing Updates', description: 'Receive emails about subscription renewals and invoices' }
+                {
+                  key: 'emailWeeklySummary',
+                  title: 'Weekly Summary',
+                  description: 'Get a weekly email with your response stats and tips',
+                },
+                {
+                  key: 'emailUsageAlerts',
+                  title: 'Usage Alerts',
+                  description: 'Get notified when you reach 80% of your monthly limit',
+                },
+                {
+                  key: 'emailBillingUpdates',
+                  title: 'Billing Updates',
+                  description: 'Receive emails about subscription renewals and invoices',
+                },
               ].map(item => (
-                <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'var(--bg-tertiary)', borderRadius: '8px', flexWrap: 'wrap', gap: '12px' }}>
+                <div
+                  key={item.key}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '16px',
+                    background: 'var(--bg-tertiary)',
+                    borderRadius: '8px',
+                    flexWrap: 'wrap',
+                    gap: '12px',
+                  }}
+                >
                   <div style={{ flex: 1, minWidth: '200px' }}>
                     <div style={{ fontWeight: '500', marginBottom: '4px' }}>{item.title}</div>
-                    <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{item.description}</div>
+                    <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                      {item.description}
+                    </div>
                   </div>
-                  <label style={{ position: 'relative', display: 'inline-block', width: '48px', height: '26px', flexShrink: 0 }}>
+                  <label
+                    style={{
+                      position: 'relative',
+                      display: 'inline-block',
+                      width: '48px',
+                      height: '26px',
+                      flexShrink: 0,
+                    }}
+                  >
                     <input
                       type="checkbox"
                       checked={notifications[item.key]}
-                      onChange={(e) => setNotifications(prev => ({ ...prev, [item.key]: e.target.checked }))}
+                      onChange={e =>
+                        setNotifications(prev => ({ ...prev, [item.key]: e.target.checked }))
+                      }
                       style={{ opacity: 0, width: 0, height: 0 }}
                     />
-                    <span style={{
-                      position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
-                      background: notifications[item.key] ? 'var(--primary)' : 'var(--gray-300)',
-                      borderRadius: '26px', transition: '0.3s'
-                    }}>
-                      <span style={{
-                        position: 'absolute', height: '20px', width: '20px',
-                        left: notifications[item.key] ? '24px' : '3px', bottom: '3px',
-                        background: 'white', borderRadius: '50%', transition: '0.3s'
-                      }} />
+                    <span
+                      style={{
+                        position: 'absolute',
+                        cursor: 'pointer',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: notifications[item.key] ? 'var(--primary)' : 'var(--gray-300)',
+                        borderRadius: '26px',
+                        transition: '0.3s',
+                      }}
+                    >
+                      <span
+                        style={{
+                          position: 'absolute',
+                          height: '20px',
+                          width: '20px',
+                          left: notifications[item.key] ? '24px' : '3px',
+                          bottom: '3px',
+                          background: 'white',
+                          borderRadius: '50%',
+                          transition: '0.3s',
+                        }}
+                      />
                     </span>
                   </label>
                 </div>
               ))}
-              <button className="btn btn-primary" onClick={handleSaveNotifications} disabled={savingNotifications} style={{ width: 'fit-content', marginTop: '8px' }}>
+              <button
+                className="btn btn-primary"
+                onClick={handleSaveNotifications}
+                disabled={savingNotifications}
+                style={{ width: 'fit-content', marginTop: '8px' }}
+              >
                 {savingNotifications ? 'Saving...' : 'Save Preferences'}
               </button>
             </div>
@@ -6216,18 +8235,41 @@ const ProfilePage = () => {
       {/* Danger Zone Tab */}
       {activeTab === 'danger' && (
         <div className="card" style={{ border: '1px solid var(--danger)' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--danger)' }}>
+          <h2
+            style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              marginBottom: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: 'var(--danger)',
+            }}
+          >
             <AlertCircle size={20} /> Danger Zone
           </h2>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>These actions are irreversible. Please proceed with caution.</p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>
+            These actions are irreversible. Please proceed with caution.
+          </p>
 
-          <div style={{ padding: '20px', background: 'rgba(239,68,68,0.05)', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.2)' }}>
+          <div
+            style={{
+              padding: '20px',
+              background: 'rgba(239,68,68,0.05)',
+              borderRadius: '8px',
+              border: '1px solid rgba(239,68,68,0.2)',
+            }}
+          >
             <h3 style={{ fontWeight: '600', marginBottom: '8px' }}>Delete Account</h3>
             <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '16px' }}>
               Permanently delete your account and all associated data. This action cannot be undone.
               Your subscription will be cancelled and you will lose access immediately.
             </p>
-            <button className="btn" onClick={() => setShowDeleteModal(true)} style={{ background: 'var(--danger)', color: 'white' }}>
+            <button
+              className="btn"
+              onClick={() => setShowDeleteModal(true)}
+              style={{ background: 'var(--danger)', color: 'white' }}
+            >
               <Trash2 size={16} /> Delete My Account
             </button>
           </div>
@@ -6236,13 +8278,52 @@ const ProfilePage = () => {
 
       {/* Delete Account Modal */}
       {showDeleteModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
-          <div style={{ background: 'var(--card-bg)', borderRadius: '16px', padding: '24px', maxWidth: '450px', width: '100%' }}>
-            <h2 style={{ color: 'var(--danger)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px',
+          }}
+        >
+          <div
+            style={{
+              background: 'var(--card-bg)',
+              borderRadius: '16px',
+              padding: '24px',
+              maxWidth: '450px',
+              width: '100%',
+            }}
+          >
+            <h2
+              style={{
+                color: 'var(--danger)',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
               <AlertCircle size={24} /> Delete Account
             </h2>
-            <p style={{ marginBottom: '16px', color: 'var(--text-secondary)' }}>This will permanently delete:</p>
-            <ul style={{ marginBottom: '20px', paddingLeft: '20px', color: 'var(--text-muted)', fontSize: '14px' }}>
+            <p style={{ marginBottom: '16px', color: 'var(--text-secondary)' }}>
+              This will permanently delete:
+            </p>
+            <ul
+              style={{
+                marginBottom: '20px',
+                paddingLeft: '20px',
+                color: 'var(--text-muted)',
+                fontSize: '14px',
+              }}
+            >
               <li>All your generated responses</li>
               <li>Your saved templates</li>
               <li>Your team members</li>
@@ -6253,20 +8334,45 @@ const ProfilePage = () => {
             {user?.hasPassword && (
               <div className="form-group">
                 <label className="form-label">Enter your password</label>
-                <input type="password" className="form-input" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} placeholder="Your password" />
+                <input
+                  type="password"
+                  className="form-input"
+                  value={deletePassword}
+                  onChange={e => setDeletePassword(e.target.value)}
+                  placeholder="Your password"
+                />
               </div>
             )}
 
             <div className="form-group">
               <label className="form-label">Type DELETE to confirm</label>
-              <input type="text" className="form-input" value={deleteConfirmation} onChange={(e) => setDeleteConfirmation(e.target.value)} placeholder="DELETE" />
+              <input
+                type="text"
+                className="form-input"
+                value={deleteConfirmation}
+                onChange={e => setDeleteConfirmation(e.target.value)}
+                placeholder="DELETE"
+              />
             </div>
 
             <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-              <button className="btn btn-secondary" onClick={() => { setShowDeleteModal(false); setDeletePassword(''); setDeleteConfirmation(''); }} style={{ flex: 1 }}>
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeletePassword('');
+                  setDeleteConfirmation('');
+                }}
+                style={{ flex: 1 }}
+              >
                 Cancel
               </button>
-              <button className="btn" onClick={handleDeleteAccount} disabled={deleting || deleteConfirmation !== 'DELETE'} style={{ flex: 1, background: 'var(--danger)', color: 'white' }}>
+              <button
+                className="btn"
+                onClick={handleDeleteAccount}
+                disabled={deleting || deleteConfirmation !== 'DELETE'}
+                style={{ flex: 1, background: 'var(--danger)', color: 'white' }}
+              >
                 {deleting ? 'Deleting...' : 'Delete Forever'}
               </button>
             </div>
@@ -6295,7 +8401,7 @@ const VerifyEmailPage = () => {
     verifyEmail(token);
   }, [searchParams]);
 
-  const verifyEmail = async (token) => {
+  const verifyEmail = async token => {
     try {
       const res = await api.get(`/auth/verify-email?token=${token}`);
       setStatus('success');
@@ -6309,7 +8415,10 @@ const VerifyEmailPage = () => {
   };
 
   return (
-    <div className="container" style={{ paddingTop: '80px', paddingBottom: '80px', maxWidth: '500px', textAlign: 'center' }}>
+    <div
+      className="container"
+      style={{ paddingTop: '80px', paddingBottom: '80px', maxWidth: '500px', textAlign: 'center' }}
+    >
       <div className="card">
         {status === 'loading' && (
           <>
@@ -6370,26 +8479,30 @@ const EmailVerificationBanner = () => {
   };
 
   return (
-    <div style={{
-      background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-      color: '#78350f',
-      padding: '12px 20px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '12px',
-      fontSize: '14px',
-      fontWeight: '500'
-    }}>
+    <div
+      style={{
+        background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+        color: '#78350f',
+        padding: '12px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '12px',
+        fontSize: '14px',
+        fontWeight: '500',
+      }}
+    >
       <Mail size={18} />
       <span>Please verify your email address. Check your inbox for the verification link.</span>
       {resent ? (
-        <span style={{
-          background: 'rgba(255,255,255,0.3)',
-          padding: '4px 12px',
-          borderRadius: '4px',
-          fontSize: '13px'
-        }}>
+        <span
+          style={{
+            background: 'rgba(255,255,255,0.3)',
+            padding: '4px 12px',
+            borderRadius: '4px',
+            fontSize: '13px',
+          }}
+        >
           <CheckCircle size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
           Email sent!
         </span>
@@ -6408,12 +8521,15 @@ const EmailVerificationBanner = () => {
             fontSize: '13px',
             display: 'flex',
             alignItems: 'center',
-            gap: '4px'
+            gap: '4px',
           }}
         >
           {resending ? (
             <>
-              <div className="spinner" style={{ width: '14px', height: '14px', borderWidth: '2px' }}></div>
+              <div
+                className="spinner"
+                style={{ width: '14px', height: '14px', borderWidth: '2px' }}
+              ></div>
               Sending...
             </>
           ) : (
@@ -6446,7 +8562,7 @@ const ConfirmEmailPage = () => {
     confirmEmailChange(token);
   }, [searchParams]);
 
-  const confirmEmailChange = async (token) => {
+  const confirmEmailChange = async token => {
     try {
       const res = await api.post('/auth/confirm-email-change', { token });
       setStatus('success');
@@ -6459,7 +8575,10 @@ const ConfirmEmailPage = () => {
   };
 
   return (
-    <div className="container" style={{ paddingTop: '80px', paddingBottom: '80px', maxWidth: '500px', textAlign: 'center' }}>
+    <div
+      className="container"
+      style={{ paddingTop: '80px', paddingBottom: '80px', maxWidth: '500px', textAlign: 'center' }}
+    >
       <div className="card">
         {status === 'loading' && (
           <>
@@ -6516,7 +8635,7 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
         keywords: keywords.trim(),
         businessType,
         businessName,
-        field
+        field,
       });
       setGenerated(res.data.generated);
       setRemaining(res.data.remaining);
@@ -6552,7 +8671,7 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
           fontSize: '13px',
           color: 'var(--primary-700)',
           marginBottom: '12px',
-          transition: 'all 0.2s'
+          transition: 'all 0.2s',
         }}
       >
         <Sparkles size={14} />
@@ -6562,15 +8681,33 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
   }
 
   return (
-    <div style={{
-      background: 'linear-gradient(135deg, var(--primary-50), #f0f7ff)',
-      border: '1px solid var(--primary-200)',
-      borderRadius: '12px',
-      padding: '16px',
-      marginBottom: '16px'
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <span style={{ fontWeight: '600', fontSize: '14px', color: 'var(--primary-700)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+    <div
+      style={{
+        background: 'linear-gradient(135deg, var(--primary-50), #f0f7ff)',
+        border: '1px solid var(--primary-200)',
+        borderRadius: '12px',
+        padding: '16px',
+        marginBottom: '16px',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '12px',
+        }}
+      >
+        <span
+          style={{
+            fontWeight: '600',
+            fontSize: '14px',
+            color: 'var(--primary-700)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+        >
           <Sparkles size={16} />
           {field === 'context' ? 'Business Context generieren' : 'Response Style generieren'}
         </span>
@@ -6584,17 +8721,26 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
       </div>
 
       <div style={{ marginBottom: '12px' }}>
-        <label style={{ fontSize: '13px', color: 'var(--gray-600)', marginBottom: '6px', display: 'block' }}>
+        <label
+          style={{
+            fontSize: '13px',
+            color: 'var(--gray-600)',
+            marginBottom: '6px',
+            display: 'block',
+          }}
+        >
           Stichwörter eingeben (kommagetrennt):
         </label>
         <input
           type="text"
           className="form-input"
           value={keywords}
-          onChange={(e) => setKeywords(e.target.value)}
-          placeholder={field === 'context'
-            ? 'z.B. italienisch, familiengeführt, 1985, hausgemachte Pasta, Terrasse'
-            : 'z.B. freundlich, kurz, mit Grußformel, locker'}
+          onChange={e => setKeywords(e.target.value)}
+          placeholder={
+            field === 'context'
+              ? 'z.B. italienisch, familiengeführt, 1985, hausgemachte Pasta, Terrasse'
+              : 'z.B. freundlich, kurz, mit Grußformel, locker'
+          }
           style={{ fontSize: '14px' }}
         />
       </div>
@@ -6626,17 +8772,33 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
       )}
 
       {generated && (
-        <div style={{
-          background: 'white',
-          border: '1px solid var(--primary-200)',
-          borderRadius: '8px',
-          padding: '12px',
-          marginTop: '12px'
-        }}>
-          <label style={{ fontSize: '12px', color: 'var(--gray-500)', marginBottom: '6px', display: 'block' }}>
+        <div
+          style={{
+            background: 'white',
+            border: '1px solid var(--primary-200)',
+            borderRadius: '8px',
+            padding: '12px',
+            marginTop: '12px',
+          }}
+        >
+          <label
+            style={{
+              fontSize: '12px',
+              color: 'var(--gray-500)',
+              marginBottom: '6px',
+              display: 'block',
+            }}
+          >
             Generierter Text:
           </label>
-          <p style={{ fontSize: '14px', color: 'var(--gray-800)', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+          <p
+            style={{
+              fontSize: '14px',
+              color: 'var(--gray-800)',
+              lineHeight: '1.6',
+              whiteSpace: 'pre-wrap',
+            }}
+          >
             {generated}
           </p>
           <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
@@ -6650,11 +8812,7 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
               <RefreshCw size={14} style={{ marginRight: '4px' }} />
               Neu generieren
             </button>
-            <button
-              type="button"
-              onClick={handleAccept}
-              className="btn btn-primary btn-sm"
-            >
+            <button type="button" onClick={handleAccept} className="btn btn-primary btn-sm">
               <Check size={14} style={{ marginRight: '4px' }} />
               Übernehmen
             </button>
@@ -6678,10 +8836,44 @@ const SettingsPage = () => {
   const [newKeyName, setNewKeyName] = useState('');
   const [generatedKey, setGeneratedKey] = useState(null);
   const [creatingKey, setCreatingKey] = useState(false);
-  const loadApiKeys = async () => { setLoadingKeys(true); try { const res = await api.get('/keys'); setApiKeys(res.data.keys || []); } catch (e) {} finally { setLoadingKeys(false); } };
-  const createApiKey = async () => { setCreatingKey(true); try { const res = await api.post('/keys', { name: newKeyName || 'API Key' }); setGeneratedKey(res.data.key); setNewKeyName(''); loadApiKeys(); toast.success('API key created!'); } catch (e) { toast.error(e.response?.data?.error || 'Failed'); } finally { setCreatingKey(false); } };
-  const deleteApiKey = async (keyId) => { if (!window.confirm('Delete?')) return; try { await api.delete(`/keys/${keyId}`); setApiKeys(apiKeys.filter(k => k.id !== keyId)); toast.success('Deleted'); } catch (e) { toast.error('Failed'); } };
-  const copyToClipboard = (text) => { navigator.clipboard.writeText(text); toast.success('Copied!'); };
+  const loadApiKeys = async () => {
+    setLoadingKeys(true);
+    try {
+      const res = await api.get('/keys');
+      setApiKeys(res.data.keys || []);
+    } catch (e) {
+    } finally {
+      setLoadingKeys(false);
+    }
+  };
+  const createApiKey = async () => {
+    setCreatingKey(true);
+    try {
+      const res = await api.post('/keys', { name: newKeyName || 'API Key' });
+      setGeneratedKey(res.data.key);
+      setNewKeyName('');
+      loadApiKeys();
+      toast.success('API key created!');
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'Failed');
+    } finally {
+      setCreatingKey(false);
+    }
+  };
+  const deleteApiKey = async keyId => {
+    if (!window.confirm('Delete?')) return;
+    try {
+      await api.delete(`/keys/${keyId}`);
+      setApiKeys(apiKeys.filter(k => k.id !== keyId));
+      toast.success('Deleted');
+    } catch (e) {
+      toast.error('Failed');
+    }
+  };
+  const copyToClipboard = text => {
+    navigator.clipboard.writeText(text);
+    toast.success('Copied!');
+  };
 
   useEffect(() => {
     if (user) {
@@ -6693,7 +8885,7 @@ const SettingsPage = () => {
     }
   }, [user]);
 
-  const handleSave = async (e) => {
+  const handleSave = async e => {
     e.preventDefault();
     setSaving(true);
 
@@ -6702,7 +8894,7 @@ const SettingsPage = () => {
         businessName,
         businessType,
         businessContext,
-        responseStyle
+        responseStyle,
       });
       updateUser(res.data.user);
       toast.success('Settings saved! Your responses will now be more personalized.');
@@ -6729,13 +8921,26 @@ const SettingsPage = () => {
     'Professional Services',
     'Real Estate',
     'Home Services',
-    'Other'
+    'Other',
   ];
 
   return (
-    <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}>
+    <div
+      className="container"
+      style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}
+    >
       <div style={{ marginBottom: '32px' }}>
-        <Link to="/dashboard" style={{ color: 'var(--primary-600)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '16px', fontSize: '14px' }}>
+        <Link
+          to="/dashboard"
+          style={{
+            color: 'var(--primary-600)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            marginBottom: '16px',
+            fontSize: '14px',
+          }}
+        >
           ← Back to Dashboard
         </Link>
         <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
@@ -6749,7 +8954,16 @@ const SettingsPage = () => {
 
       <form onSubmit={handleSave}>
         <div className="card" style={{ marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h2
+            style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
             <Building size={20} />
             Basic Information
           </h2>
@@ -6760,7 +8974,7 @@ const SettingsPage = () => {
               type="text"
               className="form-input"
               value={businessName}
-              onChange={(e) => setBusinessName(e.target.value)}
+              onChange={e => setBusinessName(e.target.value)}
               placeholder="e.g., Mario's Italian Restaurant"
             />
           </div>
@@ -6770,11 +8984,13 @@ const SettingsPage = () => {
             <select
               className="form-select"
               value={businessType}
-              onChange={(e) => setBusinessType(e.target.value)}
+              onChange={e => setBusinessType(e.target.value)}
             >
               <option value="">Select your business type</option>
               {businessTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
+                <option key={type} value={type}>
+                  {type}
+                </option>
               ))}
             </select>
           </div>
@@ -6793,7 +9009,7 @@ const SettingsPage = () => {
             businessType={businessType}
             businessName={businessName}
             currentValue={businessContext}
-            onGenerated={(text) => setBusinessContext(text)}
+            onGenerated={text => setBusinessContext(text)}
           />
 
           <div className="form-group">
@@ -6801,7 +9017,7 @@ const SettingsPage = () => {
             <textarea
               className="form-textarea"
               value={businessContext}
-              onChange={(e) => setBusinessContext(e.target.value)}
+              onChange={e => setBusinessContext(e.target.value)}
               placeholder={`Examples:
 • We're a family-owned Italian restaurant since 1985
 • Our signature dishes are homemade pasta and wood-fired pizza
@@ -6830,7 +9046,7 @@ const SettingsPage = () => {
             businessType={businessType}
             businessName={businessName}
             currentValue={responseStyle}
-            onGenerated={(text) => setResponseStyle(text)}
+            onGenerated={text => setResponseStyle(text)}
           />
 
           <div className="form-group">
@@ -6838,7 +9054,7 @@ const SettingsPage = () => {
             <textarea
               className="form-textarea"
               value={responseStyle}
-              onChange={(e) => setResponseStyle(e.target.value)}
+              onChange={e => setResponseStyle(e.target.value)}
               placeholder={`Examples:
 • Always sign off with "The [Business Name] Team"
 • Use casual language, we're a beach bar
@@ -6850,50 +9066,152 @@ const SettingsPage = () => {
           </div>
         </div>
 
-        <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={saving}>
-          {saving ? 'Saving...' : (<><Save size={18} /> Save Settings</>)}
+        <button
+          type="submit"
+          className="btn btn-primary btn-lg"
+          style={{ width: '100%' }}
+          disabled={saving}
+        >
+          {saving ? (
+            'Saving...'
+          ) : (
+            <>
+              <Save size={18} /> Save Settings
+            </>
+          )}
         </button>
       </form>
 
       {/* API Key Management - Only for Unlimited Plan */}
       {user?.plan === 'unlimited' && user?.subscriptionStatus === 'active' && (
         <div className="card" style={{ marginTop: '24px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h2
+            style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              marginBottom: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
             <Key size={20} />
             API Access
           </h2>
           <p style={{ fontSize: '14px', color: 'var(--gray-500)', marginBottom: '16px' }}>
-            Generate API keys to integrate ReviewResponder with your applications. <Link to="/api-docs" style={{ color: 'var(--primary-600)' }}>View API Documentation</Link>
+            Generate API keys to integrate ReviewResponder with your applications.{' '}
+            <Link to="/api-docs" style={{ color: 'var(--primary-600)' }}>
+              View API Documentation
+            </Link>
           </p>
 
           {generatedKey && (
-            <div style={{ background: 'var(--success-50)', border: '1px solid var(--success-200)', borderRadius: '8px', padding: '16px', marginBottom: '16px' }}>
-              <p style={{ fontWeight: '600', color: 'var(--success-700)', marginBottom: '8px' }}>New API Key Created!</p>
-              <p style={{ fontSize: '12px', color: 'var(--success-600)', marginBottom: '8px' }}>Copy this key now. It won't be shown again.</p>
+            <div
+              style={{
+                background: 'var(--success-50)',
+                border: '1px solid var(--success-200)',
+                borderRadius: '8px',
+                padding: '16px',
+                marginBottom: '16px',
+              }}
+            >
+              <p style={{ fontWeight: '600', color: 'var(--success-700)', marginBottom: '8px' }}>
+                New API Key Created!
+              </p>
+              <p style={{ fontSize: '12px', color: 'var(--success-600)', marginBottom: '8px' }}>
+                Copy this key now. It won't be shown again.
+              </p>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <code style={{ flex: 1, background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: '4px', fontSize: '12px', wordBreak: 'break-all', color: 'var(--text-primary)' }}>{generatedKey}</code>
-                <button onClick={() => copyToClipboard(generatedKey)} className="btn btn-sm" style={{ whiteSpace: 'nowrap' }}><Copy size={14} /> Copy</button>
+                <code
+                  style={{
+                    flex: 1,
+                    background: 'var(--bg-secondary)',
+                    padding: '8px 12px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    wordBreak: 'break-all',
+                    color: 'var(--text-primary)',
+                  }}
+                >
+                  {generatedKey}
+                </code>
+                <button
+                  onClick={() => copyToClipboard(generatedKey)}
+                  className="btn btn-sm"
+                  style={{ whiteSpace: 'nowrap' }}
+                >
+                  <Copy size={14} /> Copy
+                </button>
               </div>
-              <button onClick={() => setGeneratedKey(null)} style={{ marginTop: '8px', fontSize: '12px', color: 'var(--success-600)', background: 'none', border: 'none', cursor: 'pointer' }}>Dismiss</button>
+              <button
+                onClick={() => setGeneratedKey(null)}
+                style={{
+                  marginTop: '8px',
+                  fontSize: '12px',
+                  color: 'var(--success-600)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                Dismiss
+              </button>
             </div>
           )}
 
           <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-            <input type="text" className="form-input" placeholder="Key name (optional)" value={newKeyName} onChange={(e) => setNewKeyName(e.target.value)} style={{ flex: 1 }} />
-            <button onClick={createApiKey} className="btn btn-primary" disabled={creatingKey}>{creatingKey ? 'Creating...' : 'Generate Key'}</button>
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Key name (optional)"
+              value={newKeyName}
+              onChange={e => setNewKeyName(e.target.value)}
+              style={{ flex: 1 }}
+            />
+            <button onClick={createApiKey} className="btn btn-primary" disabled={creatingKey}>
+              {creatingKey ? 'Creating...' : 'Generate Key'}
+            </button>
           </div>
 
-          {loadingKeys ? <p>Loading keys...</p> : apiKeys.length === 0 ? (
-            <p style={{ color: 'var(--gray-500)', fontSize: '14px' }}>No API keys yet. Generate one to get started.</p>
+          {loadingKeys ? (
+            <p>Loading keys...</p>
+          ) : apiKeys.length === 0 ? (
+            <p style={{ color: 'var(--gray-500)', fontSize: '14px' }}>
+              No API keys yet. Generate one to get started.
+            </p>
           ) : (
-            <div style={{ border: '1px solid var(--gray-200)', borderRadius: '8px', overflow: 'hidden' }}>
+            <div
+              style={{
+                border: '1px solid var(--gray-200)',
+                borderRadius: '8px',
+                overflow: 'hidden',
+              }}
+            >
               {apiKeys.map((key, idx) => (
-                <div key={key.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: idx < apiKeys.length - 1 ? '1px solid var(--gray-200)' : 'none' }}>
+                <div
+                  key={key.id}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '12px 16px',
+                    borderBottom: idx < apiKeys.length - 1 ? '1px solid var(--gray-200)' : 'none',
+                  }}
+                >
                   <div>
                     <div style={{ fontWeight: '500' }}>{key.name}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{key.key_prefix}... | {key.requests_today}/100 today | {key.requests_total} total</div>
+                    <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
+                      {key.key_prefix}... | {key.requests_today}/100 today | {key.requests_total}{' '}
+                      total
+                    </div>
                   </div>
-                  <button onClick={() => deleteApiKey(key.id)} className="btn btn-sm" style={{ color: 'var(--error-600)' }}><Trash2 size={14} /></button>
+                  <button
+                    onClick={() => deleteApiKey(key.id)}
+                    className="btn btn-sm"
+                    style={{ color: 'var(--error-600)' }}
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               ))}
             </div>
@@ -6920,7 +9238,7 @@ const TeamPage = () => {
     try {
       const [teamRes, myTeamRes] = await Promise.all([
         api.get('/team').catch(() => null),
-        api.get('/team/my-team').catch(() => null)
+        api.get('/team/my-team').catch(() => null),
       ]);
       setTeamData(teamRes?.data || null);
       setMyTeam(myTeamRes?.data || null);
@@ -6931,11 +9249,13 @@ const TeamPage = () => {
     }
   };
 
-  useEffect(() => { loadTeamData(); }, []);
+  useEffect(() => {
+    loadTeamData();
+  }, []);
 
   const [lastInviteUrl, setLastInviteUrl] = useState(null);
 
-  const handleInvite = async (e) => {
+  const handleInvite = async e => {
     e.preventDefault();
     if (!inviteEmail) return;
     setInviting(true);
@@ -6955,7 +9275,7 @@ const TeamPage = () => {
     }
   };
 
-  const handleRemove = async (memberId) => {
+  const handleRemove = async memberId => {
     if (!window.confirm('Remove this team member?')) return;
     try {
       await api.delete(`/team/${memberId}`);
@@ -6977,7 +9297,8 @@ const TeamPage = () => {
   };
 
   const handleLeave = async () => {
-    if (!window.confirm('Leave this team? You will lose access to the shared subscription.')) return;
+    if (!window.confirm('Leave this team? You will lose access to the shared subscription.'))
+      return;
     setLeaving(true);
     try {
       await api.post('/team/leave');
@@ -6991,7 +9312,7 @@ const TeamPage = () => {
   };
 
   const canManageTeam = ['professional', 'unlimited'].includes(user?.plan);
-  const maxMembers = user?.plan === 'unlimited' ? 10 : (user?.plan === 'professional' ? 3 : 0);
+  const maxMembers = user?.plan === 'unlimited' ? 10 : user?.plan === 'professional' ? 3 : 0;
 
   if (loading) {
     return (
@@ -7005,8 +9326,21 @@ const TeamPage = () => {
   // User is a team member (belongs to someone else's team)
   if (myTeam?.isTeamMember) {
     return (
-      <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}>
-        <Link to="/dashboard" style={{ color: 'var(--primary-600)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '16px', fontSize: '14px' }}>
+      <div
+        className="container"
+        style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}
+      >
+        <Link
+          to="/dashboard"
+          style={{
+            color: 'var(--primary-600)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            marginBottom: '16px',
+            fontSize: '14px',
+          }}
+        >
           ← Back to Dashboard
         </Link>
         <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
@@ -7015,25 +9349,51 @@ const TeamPage = () => {
         </h1>
         <div className="card" style={{ marginTop: '24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--primary-100)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div
+              style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '50%',
+                background: 'var(--primary-100)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               <Users size={28} style={{ color: 'var(--primary-600)' }} />
             </div>
             <div>
-              <h3 style={{ fontSize: '18px', fontWeight: '600' }}>{myTeam.teamOwner.businessName || myTeam.teamOwner.email}</h3>
+              <h3 style={{ fontSize: '18px', fontWeight: '600' }}>
+                {myTeam.teamOwner.businessName || myTeam.teamOwner.email}
+              </h3>
               <p style={{ color: 'var(--gray-500)', fontSize: '14px' }}>Your team owner</p>
             </div>
           </div>
-          <div style={{ padding: '16px', background: 'var(--gray-50)', borderRadius: '8px', marginBottom: '20px' }}>
+          <div
+            style={{
+              padding: '16px',
+              background: 'var(--gray-50)',
+              borderRadius: '8px',
+              marginBottom: '20px',
+            }}
+          >
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
               <span style={{ color: 'var(--gray-600)' }}>Your Role</span>
               <span style={{ fontWeight: '500', textTransform: 'capitalize' }}>{myTeam.role}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--gray-600)' }}>Team Usage</span>
-              <span style={{ fontWeight: '500' }}>{myTeam.teamUsage?.used || 0} / {myTeam.teamUsage?.limit || 0}</span>
+              <span style={{ fontWeight: '500' }}>
+                {myTeam.teamUsage?.used || 0} / {myTeam.teamUsage?.limit || 0}
+              </span>
             </div>
           </div>
-          <button onClick={handleLeave} disabled={leaving} className="btn btn-secondary" style={{ color: 'var(--error-600)' }}>
+          <button
+            onClick={handleLeave}
+            disabled={leaving}
+            className="btn btn-secondary"
+            style={{ color: 'var(--error-600)' }}
+          >
             {leaving ? 'Leaving...' : 'Leave Team'}
           </button>
         </div>
@@ -7044,17 +9404,42 @@ const TeamPage = () => {
   // User is not on a Pro/Unlimited plan - show upgrade prompt
   if (!canManageTeam) {
     return (
-      <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}>
-        <Link to="/dashboard" style={{ color: 'var(--primary-600)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '16px', fontSize: '14px' }}>
+      <div
+        className="container"
+        style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}
+      >
+        <Link
+          to="/dashboard"
+          style={{
+            color: 'var(--primary-600)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            marginBottom: '16px',
+            fontSize: '14px',
+          }}
+        >
           ← Back to Dashboard
         </Link>
         <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
           <Users size={48} style={{ color: 'var(--gray-400)', marginBottom: '16px' }} />
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>Team Features</h2>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '24px', maxWidth: '400px', margin: '0 auto 24px' }}>
-            Invite team members to share your subscription. Pro plan allows 3 members, Unlimited allows 10.
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>
+            Team Features
+          </h2>
+          <p
+            style={{
+              color: 'var(--gray-600)',
+              marginBottom: '24px',
+              maxWidth: '400px',
+              margin: '0 auto 24px',
+            }}
+          >
+            Invite team members to share your subscription. Pro plan allows 3 members, Unlimited
+            allows 10.
           </p>
-          <Link to="/pricing" className="btn btn-primary">Upgrade to Pro</Link>
+          <Link to="/pricing" className="btn btn-primary">
+            Upgrade to Pro
+          </Link>
         </div>
       </div>
     );
@@ -7062,8 +9447,21 @@ const TeamPage = () => {
 
   // User can manage team (Pro or Unlimited)
   return (
-    <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}>
-      <Link to="/dashboard" style={{ color: 'var(--primary-600)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '16px', fontSize: '14px' }}>
+    <div
+      className="container"
+      style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}
+    >
+      <Link
+        to="/dashboard"
+        style={{
+          color: 'var(--primary-600)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          marginBottom: '16px',
+          fontSize: '14px',
+        }}
+      >
         ← Back to Dashboard
       </Link>
       <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
@@ -7076,20 +9474,57 @@ const TeamPage = () => {
 
       {/* Invite Form */}
       <div className="card" style={{ marginBottom: '24px' }}>
-        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Invite Team Member</h3>
+        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
+          Invite Team Member
+        </h3>
         <form onSubmit={handleInvite} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <input type="email" placeholder="Email address" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="form-input" style={{ flex: '1', minWidth: '200px' }} required />
-          <button type="submit" className="btn btn-primary" disabled={inviting || (teamData?.members?.length >= maxMembers)}>
+          <input
+            type="email"
+            placeholder="Email address"
+            value={inviteEmail}
+            onChange={e => setInviteEmail(e.target.value)}
+            className="form-input"
+            style={{ flex: '1', minWidth: '200px' }}
+            required
+          />
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={inviting || teamData?.members?.length >= maxMembers}
+          >
             {inviting ? 'Inviting...' : 'Invite'}
           </button>
         </form>
         <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '12px' }}>
           {teamData?.members?.length || 0} / {maxMembers} team members used
-          {user?.plan === 'professional' && <span> · <Link to="/pricing" style={{ color: 'var(--primary-600)' }}>Upgrade for more</Link></span>}
+          {user?.plan === 'professional' && (
+            <span>
+              {' '}
+              ·{' '}
+              <Link to="/pricing" style={{ color: 'var(--primary-600)' }}>
+                Upgrade for more
+              </Link>
+            </span>
+          )}
         </p>
         {lastInviteUrl && (
-          <div style={{ marginTop: '16px', padding: '12px', background: 'var(--primary-50)', border: '1px solid var(--primary-200)', borderRadius: '8px' }}>
-            <p style={{ fontSize: '13px', fontWeight: '500', color: 'var(--primary-700)', marginBottom: '8px' }}>
+          <div
+            style={{
+              marginTop: '16px',
+              padding: '12px',
+              background: 'var(--primary-50)',
+              border: '1px solid var(--primary-200)',
+              borderRadius: '8px',
+            }}
+          >
+            <p
+              style={{
+                fontSize: '13px',
+                fontWeight: '500',
+                color: 'var(--primary-700)',
+                marginBottom: '8px',
+              }}
+            >
               📧 Email not arriving? Share this invite link directly:
             </p>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -7099,7 +9534,7 @@ const TeamPage = () => {
                 readOnly
                 className="form-input"
                 style={{ flex: '1', fontSize: '12px', fontFamily: 'monospace' }}
-                onClick={(e) => e.target.select()}
+                onClick={e => e.target.select()}
               />
               <button
                 type="button"
@@ -7115,7 +9550,13 @@ const TeamPage = () => {
               <button
                 type="button"
                 onClick={() => setLastInviteUrl(null)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: 'var(--gray-400)' }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  color: 'var(--gray-400)',
+                }}
               >
                 ✕
               </button>
@@ -7128,25 +9569,75 @@ const TeamPage = () => {
       <div className="card">
         <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Team Members</h3>
         {!teamData?.members?.length ? (
-          <p style={{ color: 'var(--gray-500)', fontSize: '14px' }}>No team members yet. Invite someone to get started!</p>
+          <p style={{ color: 'var(--gray-500)', fontSize: '14px' }}>
+            No team members yet. Invite someone to get started!
+          </p>
         ) : (
-          <div style={{ border: '1px solid var(--gray-200)', borderRadius: '8px', overflow: 'hidden' }}>
+          <div
+            style={{ border: '1px solid var(--gray-200)', borderRadius: '8px', overflow: 'hidden' }}
+          >
             {teamData.members.map((member, idx) => (
-              <div key={member.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderBottom: idx < teamData.members.length - 1 ? '1px solid var(--gray-200)' : 'none', background: member.status === 'pending' ? 'var(--gray-50)' : 'var(--bg-secondary)' }}>
+              <div
+                key={member.id}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '16px',
+                  borderBottom:
+                    idx < teamData.members.length - 1 ? '1px solid var(--gray-200)' : 'none',
+                  background:
+                    member.status === 'pending' ? 'var(--gray-50)' : 'var(--bg-secondary)',
+                }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: member.status === 'active' ? 'var(--primary-100)' : 'var(--gray-200)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Users size={18} style={{ color: member.status === 'active' ? 'var(--primary-600)' : 'var(--gray-400)' }} />
+                  <div
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      background:
+                        member.status === 'active' ? 'var(--primary-100)' : 'var(--gray-200)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Users
+                      size={18}
+                      style={{
+                        color:
+                          member.status === 'active' ? 'var(--primary-600)' : 'var(--gray-400)',
+                      }}
+                    />
                   </div>
                   <div>
                     <div style={{ fontWeight: '500' }}>{member.email}</div>
                     <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
-                      {member.status === 'pending' ? 'Invitation pending...' : `Joined ${new Date(member.acceptedAt).toLocaleDateString()}`}
+                      {member.status === 'pending'
+                        ? 'Invitation pending...'
+                        : `Joined ${new Date(member.acceptedAt).toLocaleDateString()}`}
                     </div>
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span style={{ fontSize: '13px', color: 'var(--gray-600)', background: 'var(--gray-100)', padding: '4px 10px', borderRadius: '4px' }}>Member</span>
-                  <button onClick={() => handleRemove(member.id)} className="btn btn-sm" style={{ color: 'var(--error-600)', padding: '6px' }} title="Remove member">
+                  <span
+                    style={{
+                      fontSize: '13px',
+                      color: 'var(--gray-600)',
+                      background: 'var(--gray-100)',
+                      padding: '4px 10px',
+                      borderRadius: '4px',
+                    }}
+                  >
+                    Member
+                  </span>
+                  <button
+                    onClick={() => handleRemove(member.id)}
+                    className="btn btn-sm"
+                    style={{ color: 'var(--error-600)', padding: '6px' }}
+                    title="Remove member"
+                  >
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -7172,7 +9663,11 @@ const JoinTeamPage = () => {
 
   useEffect(() => {
     const validateToken = async () => {
-      if (!token) { setError('No invitation token provided'); setLoading(false); return; }
+      if (!token) {
+        setError('No invitation token provided');
+        setLoading(false);
+        return;
+      }
       try {
         const res = await api.get(`/team/invite/${token}`);
         setInvitation(res.data);
@@ -7208,40 +9703,101 @@ const JoinTeamPage = () => {
     const pendingToken = sessionStorage.getItem('pendingTeamInvite');
     if (user && pendingToken) {
       sessionStorage.removeItem('pendingTeamInvite');
-      api.post('/team/accept', { token: pendingToken })
-        .then(res => { toast.success(res.data.message); navigate('/team'); })
+      api
+        .post('/team/accept', { token: pendingToken })
+        .then(res => {
+          toast.success(res.data.message);
+          navigate('/team');
+        })
         .catch(e => toast.error(e.response?.data?.error || 'Failed to accept invitation'));
     }
   }, [user, navigate]);
 
-  if (loading) return <div className="auth-container"><div className="card auth-card" style={{ textAlign: 'center' }}><div className="spinner" style={{ margin: '0 auto 16px' }} /><p>Validating invitation...</p></div></div>;
-  if (error) return <div className="auth-container"><div className="card auth-card" style={{ textAlign: 'center' }}><AlertCircle size={48} style={{ color: 'var(--error-600)', marginBottom: '16px' }} /><h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>Invalid Invitation</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>{error}</p><Link to="/" className="btn btn-primary">Go Home</Link></div></div>;
+  if (loading)
+    return (
+      <div className="auth-container">
+        <div className="card auth-card" style={{ textAlign: 'center' }}>
+          <div className="spinner" style={{ margin: '0 auto 16px' }} />
+          <p>Validating invitation...</p>
+        </div>
+      </div>
+    );
+  if (error)
+    return (
+      <div className="auth-container">
+        <div className="card auth-card" style={{ textAlign: 'center' }}>
+          <AlertCircle size={48} style={{ color: 'var(--error-600)', marginBottom: '16px' }} />
+          <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>
+            Invalid Invitation
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>{error}</p>
+          <Link to="/" className="btn btn-primary">
+            Go Home
+          </Link>
+        </div>
+      </div>
+    );
 
   return (
     <div className="auth-container">
       <div className="card auth-card" style={{ textAlign: 'center' }}>
-        <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--primary-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+        <div
+          style={{
+            width: '64px',
+            height: '64px',
+            borderRadius: '50%',
+            background: 'var(--primary-100)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 20px',
+          }}
+        >
           <Users size={32} style={{ color: 'var(--primary-600)' }} />
         </div>
-        <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '8px' }}>Team Invitation</h2>
+        <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '8px' }}>
+          Team Invitation
+        </h2>
         <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-          <strong>{invitation?.invitedBy}</strong> invited you to join their ReviewResponder team as a <strong style={{ textTransform: 'capitalize' }}>{invitation?.role}</strong>.
+          <strong>{invitation?.invitedBy}</strong> invited you to join their ReviewResponder team as
+          a <strong style={{ textTransform: 'capitalize' }}>{invitation?.role}</strong>.
         </p>
         {user ? (
           user.email.toLowerCase() === invitation?.invitedEmail?.toLowerCase() ? (
-            <button onClick={handleAccept} disabled={accepting} className="btn btn-primary" style={{ width: '100%' }}>
+            <button
+              onClick={handleAccept}
+              disabled={accepting}
+              className="btn btn-primary"
+              style={{ width: '100%' }}
+            >
               {accepting ? 'Accepting...' : 'Accept Invitation'}
             </button>
           ) : (
             <div>
-              <p style={{ color: 'var(--error-600)', marginBottom: '16px' }}>This invitation was sent to {invitation?.invitedEmail}. You are logged in as {user.email}.</p>
-              <button onClick={() => { localStorage.removeItem('token'); window.location.reload(); }} className="btn btn-secondary" style={{ width: '100%' }}>Log out and try again</button>
+              <p style={{ color: 'var(--error-600)', marginBottom: '16px' }}>
+                This invitation was sent to {invitation?.invitedEmail}. You are logged in as{' '}
+                {user.email}.
+              </p>
+              <button
+                onClick={() => {
+                  localStorage.removeItem('token');
+                  window.location.reload();
+                }}
+                className="btn btn-secondary"
+                style={{ width: '100%' }}
+              >
+                Log out and try again
+              </button>
             </div>
           )
         ) : (
           <div>
-            <p style={{ fontSize: '14px', color: 'var(--gray-500)', marginBottom: '16px' }}>Log in with <strong>{invitation?.invitedEmail}</strong> to accept</p>
-            <button onClick={handleAccept} className="btn btn-primary" style={{ width: '100%' }}>Log In to Accept</button>
+            <p style={{ fontSize: '14px', color: 'var(--gray-500)', marginBottom: '16px' }}>
+              Log in with <strong>{invitation?.invitedEmail}</strong> to accept
+            </p>
+            <button onClick={handleAccept} className="btn btn-primary" style={{ width: '100%' }}>
+              Log In to Accept
+            </button>
           </div>
         )}
       </div>
@@ -7258,14 +9814,14 @@ const SupportPage = () => {
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setSending(true);
 
     try {
       await api.post('/support/contact', { name, email, subject, message });
       setSent(true);
-      toast.success('Message sent! We\'ll get back to you soon.');
+      toast.success("Message sent! We'll get back to you soon.");
     } catch (error) {
       toast.error('Failed to send message. Please email us directly.');
     } finally {
@@ -7276,28 +9832,28 @@ const SupportPage = () => {
   const faqs = [
     {
       q: 'How many languages are supported?',
-      a: 'Our AI supports over 50 languages including German, Spanish, French, Chinese, Japanese, Arabic, and many more. It automatically detects the review language and responds accordingly.'
+      a: 'Our AI supports over 50 languages including German, Spanish, French, Chinese, Japanese, Arabic, and many more. It automatically detects the review language and responds accordingly.',
     },
     {
       q: 'How does the free trial work?',
-      a: 'You get 20 free response generations when you sign up. No credit card required. Use them to test the quality of our AI responses.'
+      a: 'You get 20 free response generations when you sign up. No credit card required. Use them to test the quality of our AI responses.',
     },
     {
       q: 'Can I cancel my subscription anytime?',
-      a: 'Yes! You can cancel your subscription at any time from your dashboard. No questions asked, no hidden fees.'
+      a: 'Yes! You can cancel your subscription at any time from your dashboard. No questions asked, no hidden fees.',
     },
     {
       q: 'How fast are the responses generated?',
-      a: 'Most responses are generated in under 10 seconds. Our AI analyzes your review and generates a contextual, personalized response instantly.'
+      a: 'Most responses are generated in under 10 seconds. Our AI analyzes your review and generates a contextual, personalized response instantly.',
     },
     {
       q: 'Do you store my review data?',
-      a: 'We store your response history so you can access it later. We never share your data with third parties and you can delete your data anytime.'
+      a: 'We store your response history so you can access it later. We never share your data with third parties and you can delete your data anytime.',
     },
     {
       q: 'Which platforms are supported?',
-      a: 'Our responses work for Google Reviews, Yelp, TripAdvisor, Facebook, and any other review platform. Just paste the review and we generate the perfect response.'
-    }
+      a: 'Our responses work for Google Reviews, Yelp, TripAdvisor, Facebook, and any other review platform. Just paste the review and we generate the perfect response.',
+    },
   ];
 
   if (sent) {
@@ -7321,21 +9877,35 @@ const SupportPage = () => {
         <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '12px' }}>
           How can we help?
         </h1>
-        <p style={{ color: 'var(--gray-600)' }}>
-          Check our FAQ or send us a message
-        </p>
+        <p style={{ color: 'var(--gray-600)' }}>Check our FAQ or send us a message</p>
       </div>
 
       <div className="faq-contact-grid">
         <div>
-          <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h2
+            style={{
+              fontSize: '20px',
+              fontWeight: '600',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
             <HelpCircle size={20} />
             Frequently Asked Questions
           </h2>
 
           {faqs.map((faq, i) => (
             <div key={i} className="card" style={{ marginBottom: '12px', padding: '16px' }}>
-              <h3 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '8px', color: 'var(--gray-800)' }}>
+              <h3
+                style={{
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  marginBottom: '8px',
+                  color: 'var(--gray-800)',
+                }}
+              >
                 {faq.q}
               </h3>
               <p style={{ fontSize: '14px', color: 'var(--gray-600)', lineHeight: '1.6' }}>
@@ -7346,7 +9916,16 @@ const SupportPage = () => {
         </div>
 
         <div>
-          <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h2
+            style={{
+              fontSize: '20px',
+              fontWeight: '600',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
             <Mail size={20} />
             Contact Us
           </h2>
@@ -7359,7 +9938,7 @@ const SupportPage = () => {
                   type="text"
                   className="form-input"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={e => setName(e.target.value)}
                   placeholder="Your name"
                   required
                 />
@@ -7371,7 +9950,7 @@ const SupportPage = () => {
                   type="email"
                   className="form-input"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
                 />
@@ -7382,7 +9961,7 @@ const SupportPage = () => {
                 <select
                   className="form-select"
                   value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
+                  onChange={e => setSubject(e.target.value)}
                   required
                 >
                   <option value="">Select a topic</option>
@@ -7399,15 +9978,22 @@ const SupportPage = () => {
                 <textarea
                   className="form-textarea"
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={e => setMessage(e.target.value)}
                   placeholder="How can we help you?"
                   rows={5}
                   required
                 />
               </div>
 
-              <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={sending}>
-                {sending ? 'Sending...' : (
+              <button
+                type="submit"
+                className="btn btn-primary"
+                style={{ width: '100%' }}
+                disabled={sending}
+              >
+                {sending ? (
+                  'Sending...'
+                ) : (
                   <>
                     <Send size={16} />
                     Send Message
@@ -7416,10 +10002,21 @@ const SupportPage = () => {
               </button>
             </form>
 
-            <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--gray-200)', textAlign: 'center' }}>
+            <div
+              style={{
+                marginTop: '20px',
+                paddingTop: '20px',
+                borderTop: '1px solid var(--gray-200)',
+                textAlign: 'center',
+              }}
+            >
               <p style={{ fontSize: '14px', color: 'var(--gray-500)' }}>
-                Or email us directly at<br />
-                <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)', fontWeight: '500' }}>
+                Or email us directly at
+                <br />
+                <a
+                  href="mailto:support@tryreviewresponder.com"
+                  style={{ color: 'var(--primary-600)', fontWeight: '500' }}
+                >
                   support@tryreviewresponder.com
                 </a>
               </p>
@@ -7444,7 +10041,7 @@ const GoogleReviewPage = () => {
       utm_campaign: params.get('utm_campaign'),
       utm_content: params.get('utm_content'),
       utm_term: params.get('utm_term'),
-      landing_page: '/google-review-response-generator'
+      landing_page: '/google-review-response-generator',
     };
     if (utmParams.utm_source) {
       sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
@@ -7452,89 +10049,160 @@ const GoogleReviewPage = () => {
 
     document.title = 'Google Review Response Generator | AI-Powered Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Google review responses in seconds with AI. Reply to Google Maps reviews instantly with our free tool. Try now!');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional Google review responses in seconds with AI. Reply to Google Maps reviews instantly with our free tool. Try now!'
+      );
 
     // Add Schema.org structured data
     const script = document.createElement('script');
     script.type = 'application/ld+json';
     script.text = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "ReviewResponder - Google Review Response Generator",
-      "description": "AI-powered tool to generate professional responses to Google reviews",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD",
-        "description": "Free trial with 20 responses"
-      }
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Google Review Response Generator',
+      description: 'AI-powered tool to generate professional responses to Google reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'USD',
+        description: 'Free trial with 20 responses',
+      },
     });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
 
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #4285f4 0%, #34a853 100%)', padding: '80px 0', color: 'white' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #4285f4 0%, #34a853 100%)',
+          padding: '80px 0',
+          color: 'white',
+        }}
+      >
         <div className="container" style={{ textAlign: 'center', maxWidth: '800px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '20px', marginBottom: '24px' }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.2)',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              marginBottom: '24px',
+            }}
+          >
             <Star size={16} fill="white" />
             <span style={{ fontSize: '14px', fontWeight: '600' }}>Google Maps Integration</span>
           </div>
-          <h1 style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}>
+          <h1
+            style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}
+          >
             Google Review Response Generator
           </h1>
           <p style={{ fontSize: '20px', opacity: 0.95, marginBottom: '32px', lineHeight: '1.6' }}>
-            Respond to Google reviews in seconds with AI. Generate professional, personalized replies
-            that improve your business reputation and show customers you care.
+            Respond to Google reviews in seconds with AI. Generate professional, personalized
+            replies that improve your business reputation and show customers you care.
           </p>
-          <Link to="/register" className="btn btn-lg" style={{ background: 'white', color: '#4285f4', fontWeight: '600', padding: '16px 32px' }}>
+          <Link
+            to="/register"
+            className="btn btn-lg"
+            style={{
+              background: 'white',
+              color: '#4285f4',
+              fontWeight: '600',
+              padding: '16px 32px',
+            }}
+          >
             <Sparkles size={20} />
             Generate Free Responses
           </Link>
-          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>20 free responses • No credit card required</p>
+          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>
+            20 free responses • No credit card required
+          </p>
         </div>
       </section>
 
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
           Why Use an AI Google Review Response Generator?
         </h2>
 
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
           <div className="card" style={{ padding: '24px' }}>
             <Clock size={32} style={{ color: 'var(--primary-600)', marginBottom: '16px' }} />
-            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Save Hours Weekly</h3>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Save Hours Weekly
+            </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Stop spending 10-15 minutes per review. Generate thoughtful Google review responses in under 30 seconds.
+              Stop spending 10-15 minutes per review. Generate thoughtful Google review responses in
+              under 30 seconds.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
             <Shield size={32} style={{ color: '#34a853', marginBottom: '16px' }} />
-            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Protect Your Reputation</h3>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Protect Your Reputation
+            </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Respond to negative Google reviews quickly and professionally to show potential customers you care.
+              Respond to negative Google reviews quickly and professionally to show potential
+              customers you care.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
             <TrendingUp size={32} style={{ color: '#4285f4', marginBottom: '16px' }} />
-            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Boost Local SEO</h3>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Boost Local SEO
+            </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Active review responses signal to Google that your business is engaged, improving local search rankings.
+              Active review responses signal to Google that your business is engaged, improving
+              local search rankings.
             </p>
           </div>
         </div>
 
-        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>How to Respond to Google Reviews with AI</h2>
+        <div
+          style={{
+            marginTop: '60px',
+            background: 'var(--gray-50)',
+            borderRadius: '16px',
+            padding: '40px',
+          }}
+        >
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
+            How to Respond to Google Reviews with AI
+          </h2>
           <ol style={{ lineHeight: '2', color: 'var(--gray-700)' }}>
-            <li><strong>Copy the review</strong> from your Google Business Profile</li>
-            <li><strong>Paste it</strong> into ReviewResponder</li>
-            <li><strong>Select your tone</strong> (Professional, Friendly, Formal, or Apologetic)</li>
-            <li><strong>Click Generate</strong> and get your personalized response instantly</li>
-            <li><strong>Copy & paste</strong> the response back to Google</li>
+            <li>
+              <strong>Copy the review</strong> from your Google Business Profile
+            </li>
+            <li>
+              <strong>Paste it</strong> into ReviewResponder
+            </li>
+            <li>
+              <strong>Select your tone</strong> (Professional, Friendly, Formal, or Apologetic)
+            </li>
+            <li>
+              <strong>Click Generate</strong> and get your personalized response instantly
+            </li>
+            <li>
+              <strong>Copy & paste</strong> the response back to Google
+            </li>
           </ol>
         </div>
 
@@ -7551,12 +10219,34 @@ const GoogleReviewPage = () => {
           </Link>
         </div>
 
-        <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}>
+        <div
+          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
+        >
           <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>ReviewResponder</Link> •
-            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Yelp Reviews</Link> •
-            <Link to="/restaurant-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Restaurant Reviews</Link> •
-            <Link to="/hotel-review-management" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Hotel Reviews</Link>
+            <Link to="/" style={{ color: 'var(--primary-600)' }}>
+              ReviewResponder
+            </Link>{' '}
+            •
+            <Link
+              to="/yelp-review-reply-tool"
+              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
+            >
+              Yelp Reviews
+            </Link>{' '}
+            •
+            <Link
+              to="/restaurant-review-responses"
+              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
+            >
+              Restaurant Reviews
+            </Link>{' '}
+            •
+            <Link
+              to="/hotel-review-management"
+              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
+            >
+              Hotel Reviews
+            </Link>
           </p>
         </div>
       </section>
@@ -7577,7 +10267,7 @@ const YelpReviewPage = () => {
       utm_campaign: params.get('utm_campaign'),
       utm_content: params.get('utm_content'),
       utm_term: params.get('utm_term'),
-      landing_page: '/yelp-review-reply-tool'
+      landing_page: '/yelp-review-reply-tool',
     };
     if (utmParams.utm_source) {
       sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
@@ -7585,77 +10275,138 @@ const YelpReviewPage = () => {
 
     document.title = 'Yelp Review Reply Tool | AI Response Generator | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Yelp review responses instantly. AI-powered tool to reply to Yelp reviews quickly and professionally. Free trial available.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional Yelp review responses instantly. AI-powered tool to reply to Yelp reviews quickly and professionally. Free trial available.'
+      );
 
     const script = document.createElement('script');
     script.type = 'application/ld+json';
     script.text = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "ReviewResponder - Yelp Review Reply Tool",
-      "description": "AI-powered tool to generate professional responses to Yelp reviews",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web",
-      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Yelp Review Reply Tool',
+      description: 'AI-powered tool to generate professional responses to Yelp reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
     });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
 
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #d32323 0%, #ff5a5f 100%)', padding: '80px 0', color: 'white' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #d32323 0%, #ff5a5f 100%)',
+          padding: '80px 0',
+          color: 'white',
+        }}
+      >
         <div className="container" style={{ textAlign: 'center', maxWidth: '800px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '20px', marginBottom: '24px' }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.2)',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              marginBottom: '24px',
+            }}
+          >
             <Star size={16} fill="white" />
             <span style={{ fontSize: '14px', fontWeight: '600' }}>Yelp Business Owners</span>
           </div>
-          <h1 style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}>
+          <h1
+            style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}
+          >
             Yelp Review Reply Tool
           </h1>
           <p style={{ fontSize: '20px', opacity: 0.95, marginBottom: '32px', lineHeight: '1.6' }}>
-            Never let a Yelp review go unanswered. Generate professional, thoughtful responses
-            to all your Yelp reviews with AI - from 5-star praise to 1-star complaints.
+            Never let a Yelp review go unanswered. Generate professional, thoughtful responses to
+            all your Yelp reviews with AI - from 5-star praise to 1-star complaints.
           </p>
-          <Link to="/register" className="btn btn-lg" style={{ background: 'white', color: '#d32323', fontWeight: '600', padding: '16px 32px' }}>
+          <Link
+            to="/register"
+            className="btn btn-lg"
+            style={{
+              background: 'white',
+              color: '#d32323',
+              fontWeight: '600',
+              padding: '16px 32px',
+            }}
+          >
             <Sparkles size={20} />
             Reply to Yelp Reviews Free
           </Link>
-          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>20 free responses • Works with any Yelp review</p>
+          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>
+            20 free responses • Works with any Yelp review
+          </p>
         </div>
       </section>
 
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
           Why Responding to Yelp Reviews Matters
         </h2>
 
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
           <div className="card" style={{ padding: '24px' }}>
             <Users size={32} style={{ color: '#d32323', marginBottom: '16px' }} />
-            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>97% Read Responses</h3>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              97% Read Responses
+            </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Studies show 97% of consumers who read reviews also read business responses. Make yours count.
+              Studies show 97% of consumers who read reviews also read business responses. Make
+              yours count.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
             <MessageSquare size={32} style={{ color: '#d32323', marginBottom: '16px' }} />
-            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Turn Negatives Positive</h3>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Turn Negatives Positive
+            </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              A thoughtful response to a negative Yelp review can convert critics into loyal customers.
+              A thoughtful response to a negative Yelp review can convert critics into loyal
+              customers.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
             <Clock size={32} style={{ color: '#d32323', marginBottom: '16px' }} />
-            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Respond in 30 Seconds</h3>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Respond in 30 Seconds
+            </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Stop agonizing over the perfect response. Our AI crafts professional Yelp replies instantly.
+              Stop agonizing over the perfect response. Our AI crafts professional Yelp replies
+              instantly.
             </p>
           </div>
         </div>
 
-        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>Perfect Responses for Every Yelp Review Type</h2>
+        <div
+          style={{
+            marginTop: '60px',
+            background: 'var(--gray-50)',
+            borderRadius: '16px',
+            padding: '40px',
+          }}
+        >
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
+            Perfect Responses for Every Yelp Review Type
+          </h2>
           <div style={{ display: 'grid', gap: '16px' }}>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
@@ -7666,13 +10417,15 @@ const YelpReviewPage = () => {
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
               <div>
-                <strong>3-4 Star Reviews:</strong> Acknowledge feedback and show commitment to improvement
+                <strong>3-4 Star Reviews:</strong> Acknowledge feedback and show commitment to
+                improvement
               </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
               <div>
-                <strong>1-2 Star Reviews:</strong> Apologize professionally and offer to make things right
+                <strong>1-2 Star Reviews:</strong> Apologize professionally and offer to make things
+                right
               </div>
             </div>
           </div>
@@ -7688,12 +10441,34 @@ const YelpReviewPage = () => {
           </Link>
         </div>
 
-        <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}>
+        <div
+          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
+        >
           <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>ReviewResponder</Link> •
-            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Google Reviews</Link> •
-            <Link to="/restaurant-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Restaurant Reviews</Link> •
-            <Link to="/hotel-review-management" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Hotel Reviews</Link>
+            <Link to="/" style={{ color: 'var(--primary-600)' }}>
+              ReviewResponder
+            </Link>{' '}
+            •
+            <Link
+              to="/google-review-response-generator"
+              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
+            >
+              Google Reviews
+            </Link>{' '}
+            •
+            <Link
+              to="/restaurant-review-responses"
+              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
+            >
+              Restaurant Reviews
+            </Link>{' '}
+            •
+            <Link
+              to="/hotel-review-management"
+              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
+            >
+              Hotel Reviews
+            </Link>
           </p>
         </div>
       </section>
@@ -7714,7 +10489,7 @@ const RestaurantReviewPage = () => {
       utm_campaign: params.get('utm_campaign'),
       utm_content: params.get('utm_content'),
       utm_term: params.get('utm_term'),
-      landing_page: '/restaurant-review-responses'
+      landing_page: '/restaurant-review-responses',
     };
     if (utmParams.utm_source) {
       sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
@@ -7722,93 +10497,163 @@ const RestaurantReviewPage = () => {
 
     document.title = 'Restaurant Review Response Generator | AI Reply Tool | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'AI-powered review response generator for restaurants. Reply to Google, Yelp, TripAdvisor reviews professionally. Save time and boost your restaurant reputation.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'AI-powered review response generator for restaurants. Reply to Google, Yelp, TripAdvisor reviews professionally. Save time and boost your restaurant reputation.'
+      );
 
     const script = document.createElement('script');
     script.type = 'application/ld+json';
     script.text = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "ReviewResponder - Restaurant Review Response Generator",
-      "description": "AI tool for restaurants to respond to customer reviews professionally",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web",
-      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Restaurant Review Response Generator',
+      description: 'AI tool for restaurants to respond to customer reviews professionally',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
     });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
 
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)', padding: '80px 0', color: 'white' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
+          padding: '80px 0',
+          color: 'white',
+        }}
+      >
         <div className="container" style={{ textAlign: 'center', maxWidth: '800px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '20px', marginBottom: '24px' }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.2)',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              marginBottom: '24px',
+            }}
+          >
             <Utensils size={16} />
             <span style={{ fontSize: '14px', fontWeight: '600' }}>For Restaurant Owners</span>
           </div>
-          <h1 style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}>
+          <h1
+            style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}
+          >
             Restaurant Review Response Generator
           </h1>
           <p style={{ fontSize: '20px', opacity: 0.95, marginBottom: '32px', lineHeight: '1.6' }}>
             Running a restaurant is hard enough. Let AI handle your review responses so you can
             focus on what matters - great food and happy customers.
           </p>
-          <Link to="/register" className="btn btn-lg" style={{ background: 'white', color: '#ef4444', fontWeight: '600', padding: '16px 32px' }}>
+          <Link
+            to="/register"
+            className="btn btn-lg"
+            style={{
+              background: 'white',
+              color: '#ef4444',
+              fontWeight: '600',
+              padding: '16px 32px',
+            }}
+          >
             <Sparkles size={20} />
             Try Free for Restaurants
           </Link>
-          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>Perfect for Google, Yelp, TripAdvisor & more</p>
+          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>
+            Perfect for Google, Yelp, TripAdvisor & more
+          </p>
         </div>
       </section>
 
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
           Why Restaurants Need AI Review Responses
         </h2>
 
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
           <div className="card" style={{ padding: '24px' }}>
             <Clock size={32} style={{ color: '#f59e0b', marginBottom: '16px' }} />
-            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>You're Too Busy</h3>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              You're Too Busy
+            </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Between managing staff, inventory, and customers, who has time to write thoughtful review responses?
+              Between managing staff, inventory, and customers, who has time to write thoughtful
+              review responses?
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
             <Star size={32} style={{ color: '#f59e0b', marginBottom: '16px' }} />
-            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Reviews Make or Break You</h3>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Reviews Make or Break You
+            </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              94% of diners choose restaurants based on online reviews. Your responses show you care.
+              94% of diners choose restaurants based on online reviews. Your responses show you
+              care.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
             <MessageSquare size={32} style={{ color: '#f59e0b', marginBottom: '16px' }} />
-            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Every Platform Covered</h3>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Every Platform Covered
+            </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Google, Yelp, TripAdvisor, OpenTable, Uber Eats - respond to reviews from any platform.
+              Google, Yelp, TripAdvisor, OpenTable, Uber Eats - respond to reviews from any
+              platform.
             </p>
           </div>
         </div>
 
-        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>Common Restaurant Review Scenarios We Handle</h2>
+        <div
+          style={{
+            marginTop: '60px',
+            background: 'var(--gray-50)',
+            borderRadius: '16px',
+            padding: '40px',
+          }}
+        >
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
+            Common Restaurant Review Scenarios We Handle
+          </h2>
           <div style={{ display: 'grid', gap: '16px' }}>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
-              <div><strong>"The food was amazing!"</strong> - Thank them and invite them back</div>
+              <div>
+                <strong>"The food was amazing!"</strong> - Thank them and invite them back
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
-              <div><strong>"Service was slow"</strong> - Apologize and explain how you'll improve</div>
+              <div>
+                <strong>"Service was slow"</strong> - Apologize and explain how you'll improve
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
-              <div><strong>"Food was cold"</strong> - Show genuine concern and offer to make it right</div>
+              <div>
+                <strong>"Food was cold"</strong> - Show genuine concern and offer to make it right
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
-              <div><strong>"Loved the atmosphere"</strong> - Highlight what makes your restaurant special</div>
+              <div>
+                <strong>"Loved the atmosphere"</strong> - Highlight what makes your restaurant
+                special
+              </div>
             </div>
           </div>
         </div>
@@ -7826,12 +10671,34 @@ const RestaurantReviewPage = () => {
           </Link>
         </div>
 
-        <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}>
+        <div
+          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
+        >
           <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>ReviewResponder</Link> •
-            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Google Reviews</Link> •
-            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Yelp Reviews</Link> •
-            <Link to="/hotel-review-management" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Hotel Reviews</Link>
+            <Link to="/" style={{ color: 'var(--primary-600)' }}>
+              ReviewResponder
+            </Link>{' '}
+            •
+            <Link
+              to="/google-review-response-generator"
+              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
+            >
+              Google Reviews
+            </Link>{' '}
+            •
+            <Link
+              to="/yelp-review-reply-tool"
+              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
+            >
+              Yelp Reviews
+            </Link>{' '}
+            •
+            <Link
+              to="/hotel-review-management"
+              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
+            >
+              Hotel Reviews
+            </Link>
           </p>
         </div>
       </section>
@@ -7852,7 +10719,7 @@ const HotelReviewPage = () => {
       utm_campaign: params.get('utm_campaign'),
       utm_content: params.get('utm_content'),
       utm_term: params.get('utm_term'),
-      landing_page: '/hotel-review-management'
+      landing_page: '/hotel-review-management',
     };
     if (utmParams.utm_source) {
       sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
@@ -7860,93 +10727,163 @@ const HotelReviewPage = () => {
 
     document.title = 'Hotel Review Management Tool | AI Response Generator | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'AI-powered hotel review response tool. Manage reviews on Booking.com, TripAdvisor, Google, and more. Professional responses in seconds for hotels and B&Bs.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'AI-powered hotel review response tool. Manage reviews on Booking.com, TripAdvisor, Google, and more. Professional responses in seconds for hotels and B&Bs.'
+      );
 
     const script = document.createElement('script');
     script.type = 'application/ld+json';
     script.text = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "ReviewResponder - Hotel Review Management Tool",
-      "description": "AI tool for hotels to respond to guest reviews professionally",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web",
-      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Hotel Review Management Tool',
+      description: 'AI tool for hotels to respond to guest reviews professionally',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
     });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
 
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)', padding: '80px 0', color: 'white' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)',
+          padding: '80px 0',
+          color: 'white',
+        }}
+      >
         <div className="container" style={{ textAlign: 'center', maxWidth: '800px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '20px', marginBottom: '24px' }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.2)',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              marginBottom: '24px',
+            }}
+          >
             <Building size={16} />
             <span style={{ fontSize: '14px', fontWeight: '600' }}>For Hotels & B&Bs</span>
           </div>
-          <h1 style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}>
+          <h1
+            style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}
+          >
             Hotel Review Management Tool
           </h1>
           <p style={{ fontSize: '20px', opacity: 0.95, marginBottom: '32px', lineHeight: '1.6' }}>
             Manage guest reviews across all platforms with AI. From Booking.com to TripAdvisor,
             respond professionally to every review and boost your hotel's reputation.
           </p>
-          <Link to="/register" className="btn btn-lg" style={{ background: 'white', color: '#6366f1', fontWeight: '600', padding: '16px 32px' }}>
+          <Link
+            to="/register"
+            className="btn btn-lg"
+            style={{
+              background: 'white',
+              color: '#6366f1',
+              fontWeight: '600',
+              padding: '16px 32px',
+            }}
+          >
             <Sparkles size={20} />
             Try Free for Hotels
           </Link>
-          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>Works with Booking.com, TripAdvisor, Expedia, Google & more</p>
+          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>
+            Works with Booking.com, TripAdvisor, Expedia, Google & more
+          </p>
         </div>
       </section>
 
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
           Why Hotels Choose AI for Review Management
         </h2>
 
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
           <div className="card" style={{ padding: '24px' }}>
             <Globe size={32} style={{ color: '#0ea5e9', marginBottom: '16px' }} />
-            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Multi-Language Support</h3>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Multi-Language Support
+            </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Respond to international guests in their language. Our AI auto-detects and replies in 50+ languages.
+              Respond to international guests in their language. Our AI auto-detects and replies in
+              50+ languages.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
             <Clock size={32} style={{ color: '#0ea5e9', marginBottom: '16px' }} />
-            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>24/7 Response Ready</h3>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              24/7 Response Ready
+            </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
               Late-night review? Generate a response anytime. Never let a guest review wait.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
             <TrendingUp size={32} style={{ color: '#0ea5e9', marginBottom: '16px' }} />
-            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Improve OTA Rankings</h3>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Improve OTA Rankings
+            </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
               Active review responses improve your ranking on Booking.com and other OTAs.
             </p>
           </div>
         </div>
 
-        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>Hospitality-Specific Response Styles</h2>
+        <div
+          style={{
+            marginTop: '60px',
+            background: 'var(--gray-50)',
+            borderRadius: '16px',
+            padding: '40px',
+          }}
+        >
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
+            Hospitality-Specific Response Styles
+          </h2>
           <div style={{ display: 'grid', gap: '16px' }}>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
-              <div><strong>Warm & Welcoming:</strong> Perfect for positive reviews - thank guests and invite them back</div>
+              <div>
+                <strong>Warm & Welcoming:</strong> Perfect for positive reviews - thank guests and
+                invite them back
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
-              <div><strong>Professional & Apologetic:</strong> Address complaints about rooms, service, or amenities</div>
+              <div>
+                <strong>Professional & Apologetic:</strong> Address complaints about rooms, service,
+                or amenities
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
-              <div><strong>Constructive:</strong> Acknowledge mixed reviews and highlight improvements</div>
+              <div>
+                <strong>Constructive:</strong> Acknowledge mixed reviews and highlight improvements
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
-              <div><strong>Multi-language:</strong> Respond to German, French, Spanish, Chinese guests in their language</div>
+              <div>
+                <strong>Multi-language:</strong> Respond to German, French, Spanish, Chinese guests
+                in their language
+              </div>
             </div>
           </div>
         </div>
@@ -7964,12 +10901,34 @@ const HotelReviewPage = () => {
           </Link>
         </div>
 
-        <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}>
+        <div
+          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
+        >
           <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>ReviewResponder</Link> •
-            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Google Reviews</Link> •
-            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Yelp Reviews</Link> •
-            <Link to="/restaurant-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Restaurant Reviews</Link>
+            <Link to="/" style={{ color: 'var(--primary-600)' }}>
+              ReviewResponder
+            </Link>{' '}
+            •
+            <Link
+              to="/google-review-response-generator"
+              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
+            >
+              Google Reviews
+            </Link>{' '}
+            •
+            <Link
+              to="/yelp-review-reply-tool"
+              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
+            >
+              Yelp Reviews
+            </Link>{' '}
+            •
+            <Link
+              to="/restaurant-review-responses"
+              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
+            >
+              Restaurant Reviews
+            </Link>
           </p>
         </div>
       </section>
@@ -7990,7 +10949,7 @@ const LocalBusinessReviewPage = () => {
       utm_campaign: params.get('utm_campaign'),
       utm_content: params.get('utm_content'),
       utm_term: params.get('utm_term'),
-      landing_page: '/local-business-reviews'
+      landing_page: '/local-business-reviews',
     };
     if (utmParams.utm_source) {
       sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
@@ -7998,116 +10957,241 @@ const LocalBusinessReviewPage = () => {
 
     document.title = 'AI Review Responses for Local Businesses | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'AI-powered review response generator for local businesses. Respond to Google, Yelp, Facebook reviews professionally. Perfect for plumbers, salons, dentists, auto shops & more.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'AI-powered review response generator for local businesses. Respond to Google, Yelp, Facebook reviews professionally. Perfect for plumbers, salons, dentists, auto shops & more.'
+      );
 
     const script = document.createElement('script');
     script.type = 'application/ld+json';
     script.text = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "ReviewResponder - Local Business Review Response Tool",
-      "description": "AI tool for local businesses to respond to customer reviews professionally",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web",
-      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Local Business Review Response Tool',
+      description: 'AI tool for local businesses to respond to customer reviews professionally',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
     });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
 
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', padding: '80px 0', color: 'white' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          padding: '80px 0',
+          color: 'white',
+        }}
+      >
         <div className="container" style={{ textAlign: 'center', maxWidth: '800px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '20px', marginBottom: '24px' }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.2)',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              marginBottom: '24px',
+            }}
+          >
             <Store size={16} />
             <span style={{ fontSize: '14px', fontWeight: '600' }}>For Local Businesses</span>
           </div>
-          <h1 style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}>
+          <h1
+            style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}
+          >
             AI Review Responses for Local Businesses
           </h1>
           <p style={{ fontSize: '20px', opacity: 0.95, marginBottom: '32px', lineHeight: '1.6' }}>
             You're busy running your business. Let AI write professional, personalized responses to
             every review - from glowing 5-stars to tough complaints.
           </p>
-          <Link to="/register" className="btn btn-lg" style={{ background: 'white', color: '#059669', fontWeight: '600', padding: '16px 32px' }}>
+          <Link
+            to="/register"
+            className="btn btn-lg"
+            style={{
+              background: 'white',
+              color: '#059669',
+              fontWeight: '600',
+              padding: '16px 32px',
+            }}
+          >
             <Sparkles size={20} />
             Try Free - 20 Responses
           </Link>
-          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>Works with Google, Yelp, Facebook, and more</p>
+          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>
+            Works with Google, Yelp, Facebook, and more
+          </p>
         </div>
       </section>
 
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
           Perfect for Every Local Business
         </h2>
 
-        <div style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', marginBottom: '48px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '16px', background: 'var(--gray-50)', borderRadius: '12px' }}>
+        <div
+          style={{
+            display: 'grid',
+            gap: '16px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+            marginBottom: '48px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '16px',
+              background: 'var(--gray-50)',
+              borderRadius: '12px',
+            }}
+          >
             <Wrench size={24} style={{ color: '#10b981' }} />
             <span style={{ fontWeight: '500' }}>Plumbers</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '16px', background: 'var(--gray-50)', borderRadius: '12px' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '16px',
+              background: 'var(--gray-50)',
+              borderRadius: '12px',
+            }}
+          >
             <Scissors size={24} style={{ color: '#10b981' }} />
             <span style={{ fontWeight: '500' }}>Salons</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '16px', background: 'var(--gray-50)', borderRadius: '12px' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '16px',
+              background: 'var(--gray-50)',
+              borderRadius: '12px',
+            }}
+          >
             <Heart size={24} style={{ color: '#10b981' }} />
             <span style={{ fontWeight: '500' }}>Dentists</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '16px', background: 'var(--gray-50)', borderRadius: '12px' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '16px',
+              background: 'var(--gray-50)',
+              borderRadius: '12px',
+            }}
+          >
             <Car size={24} style={{ color: '#10b981' }} />
             <span style={{ fontWeight: '500' }}>Auto Shops</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '16px', background: 'var(--gray-50)', borderRadius: '12px' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '16px',
+              background: 'var(--gray-50)',
+              borderRadius: '12px',
+            }}
+          >
             <MapPin size={24} style={{ color: '#10b981' }} />
             <span style={{ fontWeight: '500' }}>Any Local Biz</span>
           </div>
         </div>
 
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
           <div className="card" style={{ padding: '24px' }}>
             <Clock size={32} style={{ color: '#10b981', marginBottom: '16px' }} />
-            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>30 Seconds Per Review</h3>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              30 Seconds Per Review
+            </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Stop spending 10+ minutes crafting the perfect response. Our AI generates professional replies instantly.
+              Stop spending 10+ minutes crafting the perfect response. Our AI generates professional
+              replies instantly.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
             <Star size={32} style={{ color: '#10b981', marginBottom: '16px' }} />
-            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Boost Your Rating</h3>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Boost Your Rating
+            </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Businesses that respond to reviews see 12% higher ratings on average. Show customers you care.
+              Businesses that respond to reviews see 12% higher ratings on average. Show customers
+              you care.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
             <Shield size={32} style={{ color: '#10b981', marginBottom: '16px' }} />
-            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Handle Complaints Like a Pro</h3>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Handle Complaints Like a Pro
+            </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Turn angry reviewers into loyal customers with thoughtful, apologetic responses that address their concerns.
+              Turn angry reviewers into loyal customers with thoughtful, apologetic responses that
+              address their concerns.
             </p>
           </div>
         </div>
 
-        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>Common Local Business Review Scenarios</h2>
+        <div
+          style={{
+            marginTop: '60px',
+            background: 'var(--gray-50)',
+            borderRadius: '16px',
+            padding: '40px',
+          }}
+        >
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
+            Common Local Business Review Scenarios
+          </h2>
           <div style={{ display: 'grid', gap: '16px' }}>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
-              <div><strong>"Great service, highly recommend!"</strong> - Thank them warmly, mention your team's dedication</div>
+              <div>
+                <strong>"Great service, highly recommend!"</strong> - Thank them warmly, mention
+                your team's dedication
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
-              <div><strong>"Had to wait too long"</strong> - Apologize sincerely, explain improvements you're making</div>
+              <div>
+                <strong>"Had to wait too long"</strong> - Apologize sincerely, explain improvements
+                you're making
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
-              <div><strong>"Price was too high"</strong> - Highlight the value and quality they received</div>
+              <div>
+                <strong>"Price was too high"</strong> - Highlight the value and quality they
+                received
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#10b981', marginTop: '2px' }} />
-              <div><strong>"Problem wasn't fixed properly"</strong> - Offer to make it right, provide contact info</div>
+              <div>
+                <strong>"Problem wasn't fixed properly"</strong> - Offer to make it right, provide
+                contact info
+              </div>
             </div>
           </div>
         </div>
@@ -8125,12 +11209,34 @@ const LocalBusinessReviewPage = () => {
           </Link>
         </div>
 
-        <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}>
+        <div
+          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
+        >
           <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>ReviewResponder</Link> •
-            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Google Reviews</Link> •
-            <Link to="/restaurant-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Restaurants</Link> •
-            <Link to="/hotel-review-management" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Hotels</Link>
+            <Link to="/" style={{ color: 'var(--primary-600)' }}>
+              ReviewResponder
+            </Link>{' '}
+            •
+            <Link
+              to="/google-review-response-generator"
+              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
+            >
+              Google Reviews
+            </Link>{' '}
+            •
+            <Link
+              to="/restaurant-review-responses"
+              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
+            >
+              Restaurants
+            </Link>{' '}
+            •
+            <Link
+              to="/hotel-review-management"
+              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
+            >
+              Hotels
+            </Link>
           </p>
         </div>
       </section>
@@ -8141,20 +11247,44 @@ const LocalBusinessReviewPage = () => {
 // Extension Page
 const ExtensionPage = () => {
   return (
-    <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}>
+    <div
+      className="container"
+      style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}
+    >
       <div style={{ textAlign: 'center', marginBottom: '40px' }}>
         <Chrome size={48} style={{ color: 'var(--primary-600)', marginBottom: '16px' }} />
         <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '12px' }}>
           Install Chrome Extension
         </h1>
-        <p style={{ color: 'var(--gray-600)' }}>
-          3 simple steps - takes less than 1 minute
-        </p>
+        <p style={{ color: 'var(--gray-600)' }}>3 simple steps - takes less than 1 minute</p>
       </div>
 
       <div className="card" style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ background: 'var(--primary-600)', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>1</span>
+        <h2
+          style={{
+            fontSize: '18px',
+            fontWeight: '600',
+            marginBottom: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+          }}
+        >
+          <span
+            style={{
+              background: 'var(--primary-600)',
+              color: 'white',
+              borderRadius: '50%',
+              width: '28px',
+              height: '28px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '14px',
+            }}
+          >
+            1
+          </span>
           Download & Unzip
         </h2>
         <p style={{ color: 'var(--gray-600)', marginBottom: '16px' }}>
@@ -8172,24 +11302,110 @@ const ExtensionPage = () => {
       </div>
 
       <div className="card" style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ background: 'var(--primary-600)', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>2</span>
+        <h2
+          style={{
+            fontSize: '18px',
+            fontWeight: '600',
+            marginBottom: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+          }}
+        >
+          <span
+            style={{
+              background: 'var(--primary-600)',
+              color: 'white',
+              borderRadius: '50%',
+              width: '28px',
+              height: '28px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '14px',
+            }}
+          >
+            2
+          </span>
           Add to Chrome
         </h2>
-        <ol style={{ color: 'var(--gray-600)', paddingLeft: '20px', lineHeight: '2.2', marginBottom: '16px' }}>
-          <li>Type <code style={{ background: 'var(--gray-100)', padding: '4px 10px', borderRadius: '4px', fontWeight: '600' }}>chrome://extensions</code> in your address bar</li>
-          <li>Turn on <strong>Developer mode</strong> (top-right toggle)</li>
-          <li>Click <strong>Load unpacked</strong></li>
+        <ol
+          style={{
+            color: 'var(--gray-600)',
+            paddingLeft: '20px',
+            lineHeight: '2.2',
+            marginBottom: '16px',
+          }}
+        >
+          <li>
+            Type{' '}
+            <code
+              style={{
+                background: 'var(--gray-100)',
+                padding: '4px 10px',
+                borderRadius: '4px',
+                fontWeight: '600',
+              }}
+            >
+              chrome://extensions
+            </code>{' '}
+            in your address bar
+          </li>
+          <li>
+            Turn on <strong>Developer mode</strong> (top-right toggle)
+          </li>
+          <li>
+            Click <strong>Load unpacked</strong>
+          </li>
           <li>Select the extracted folder</li>
         </ol>
-        <div style={{ background: 'var(--gray-50)', padding: '12px', borderRadius: '8px', fontSize: '13px', color: 'var(--gray-600)' }}>
-          <strong>Tip:</strong> The extension icon will appear in your Chrome toolbar (puzzle piece icon)
+        <div
+          style={{
+            background: 'var(--gray-50)',
+            padding: '12px',
+            borderRadius: '8px',
+            fontSize: '13px',
+            color: 'var(--gray-600)',
+          }}
+        >
+          <strong>Tip:</strong> The extension icon will appear in your Chrome toolbar (puzzle piece
+          icon)
         </div>
       </div>
 
-      <div className="card" style={{ marginBottom: '24px', background: 'linear-gradient(135deg, var(--primary-50), var(--gray-50))', border: '1px solid var(--primary-200)' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ background: '#10b981', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>3</span>
+      <div
+        className="card"
+        style={{
+          marginBottom: '24px',
+          background: 'linear-gradient(135deg, var(--primary-50), var(--gray-50))',
+          border: '1px solid var(--primary-200)',
+        }}
+      >
+        <h2
+          style={{
+            fontSize: '18px',
+            fontWeight: '600',
+            marginBottom: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+          }}
+        >
+          <span
+            style={{
+              background: '#10b981',
+              color: 'white',
+              borderRadius: '50%',
+              width: '28px',
+              height: '28px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '14px',
+            }}
+          >
+            3
+          </span>
           Login & Go!
         </h2>
         <p style={{ color: 'var(--gray-600)', marginBottom: '16px' }}>
@@ -8201,7 +11417,10 @@ const ExtensionPage = () => {
       </div>
 
       <div style={{ textAlign: 'center', color: 'var(--gray-500)', fontSize: '14px' }}>
-        Need help? <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>Contact support</a>
+        Need help?{' '}
+        <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>
+          Contact support
+        </a>
       </div>
     </div>
   );
@@ -8220,7 +11439,10 @@ const PricingPage = () => {
 
   useEffect(() => {
     // Fetch testimonials
-    api.get('/testimonials').then(res => setTestimonials(res.data.testimonials || [])).catch(() => {});
+    api
+      .get('/testimonials')
+      .then(res => setTestimonials(res.data.testimonials || []))
+      .catch(() => {});
   }, []);
 
   const openBillingPortal = async () => {
@@ -8234,12 +11456,30 @@ const PricingPage = () => {
 
   // FAQ data
   const faqs = [
-    { q: 'Can I switch plans anytime?', a: 'Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately and we prorate the billing.' },
-    { q: 'What happens if I exceed my response limit?', a: 'You\'ll receive a notification when you reach 80% of your limit. After reaching your limit, you can upgrade or wait for the next billing cycle.' },
-    { q: 'Is there a free trial?', a: 'Yes! The Free plan gives you 20 responses per month forever - no credit card required. Try it out and upgrade when ready.' },
-    { q: 'What payment methods do you accept?', a: 'We accept credit cards (Visa, Mastercard, Amex), PayPal, Apple Pay, Google Pay, and Link via our secure Stripe payment processor.' },
-    { q: 'Can I cancel anytime?', a: 'Absolutely! No contracts, no hidden fees. Cancel with one click from your dashboard. Plus, we offer a 30-day money-back guarantee.' },
-    { q: 'Do you offer refunds?', a: 'Yes! We have a 30-day money-back guarantee. If you\'re not satisfied, contact us for a full refund.' }
+    {
+      q: 'Can I switch plans anytime?',
+      a: 'Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately and we prorate the billing.',
+    },
+    {
+      q: 'What happens if I exceed my response limit?',
+      a: "You'll receive a notification when you reach 80% of your limit. After reaching your limit, you can upgrade or wait for the next billing cycle.",
+    },
+    {
+      q: 'Is there a free trial?',
+      a: 'Yes! The Free plan gives you 20 responses per month forever - no credit card required. Try it out and upgrade when ready.',
+    },
+    {
+      q: 'What payment methods do you accept?',
+      a: 'We accept credit cards (Visa, Mastercard, Amex), PayPal, Apple Pay, Google Pay, and Link via our secure Stripe payment processor.',
+    },
+    {
+      q: 'Can I cancel anytime?',
+      a: 'Absolutely! No contracts, no hidden fees. Cancel with one click from your dashboard. Plus, we offer a 30-day money-back guarantee.',
+    },
+    {
+      q: 'Do you offer refunds?',
+      a: "Yes! We have a 30-day money-back guarantee. If you're not satisfied, contact us for a full refund.",
+    },
   ];
 
   // Feature comparison data - Updated with Hybrid AI limits (Smart + Standard)
@@ -8257,7 +11497,7 @@ const PricingPage = () => {
     { name: 'Team Members', free: '-', starter: '-', pro: '3', unlimited: '10' },
     { name: 'API Access', free: false, starter: false, pro: false, unlimited: true },
     { name: 'Email Support', free: false, starter: true, pro: true, unlimited: true },
-    { name: 'Priority Support', free: false, starter: false, pro: true, unlimited: true }
+    { name: 'Priority Support', free: false, starter: false, pro: true, unlimited: true },
   ];
 
   return (
@@ -8282,10 +11522,16 @@ const PricingPage = () => {
                   marginBottom: '16px',
                   textDecoration: 'none',
                   cursor: 'pointer',
-                  transition: 'transform 0.2s, box-shadow 0.2s'
+                  transition: 'transform 0.2s, box-shadow 0.2s',
                 }}
-                onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(16,185,129,0.4)'; }}
-                onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
+                onMouseOver={e => {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(16,185,129,0.4)';
+                }}
+                onMouseOut={e => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
               >
                 Click to Activate 50% OFF
                 <ArrowRight size={14} />
@@ -8311,29 +11557,39 @@ const PricingPage = () => {
 
       {/* Trust Badges */}
       <div className="container" style={{ marginTop: '40px', marginBottom: '60px' }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-          gap: '32px',
-          alignItems: 'center',
-          padding: '24px',
-          background: 'var(--gray-50)',
-          borderRadius: '12px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '32px',
+            alignItems: 'center',
+            padding: '24px',
+            background: 'var(--gray-50)',
+            borderRadius: '12px',
+          }}
+        >
+          <div
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)' }}
+          >
             <Shield size={20} style={{ color: 'var(--success)' }} />
             <span style={{ fontSize: '14px', fontWeight: '500' }}>SSL Secured</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)' }}>
+          <div
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)' }}
+          >
             <CreditCard size={20} style={{ color: 'var(--primary-600)' }} />
             <span style={{ fontSize: '14px', fontWeight: '500' }}>Powered by Stripe</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)' }}>
+          <div
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)' }}
+          >
             <RefreshCw size={20} style={{ color: 'var(--warning)' }} />
             <span style={{ fontSize: '14px', fontWeight: '500' }}>30-Day Money Back</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)' }}>
+          <div
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)' }}
+          >
             <Check size={20} style={{ color: 'var(--success)' }} />
             <span style={{ fontSize: '14px', fontWeight: '500' }}>Cancel Anytime</span>
           </div>
@@ -8342,38 +11598,92 @@ const PricingPage = () => {
 
       {/* Feature Comparison Table */}
       <div className="container" style={{ marginBottom: '60px' }}>
-        <h2 style={{ textAlign: 'center', fontSize: '28px', fontWeight: '700', marginBottom: '32px' }}>
+        <h2
+          style={{ textAlign: 'center', fontSize: '28px', fontWeight: '700', marginBottom: '32px' }}
+        >
           Compare All Features
         </h2>
         <div className="table-scroll-container">
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
-                <th style={{ padding: '16px', paddingTop: '32px', textAlign: 'left', fontWeight: '600', verticalAlign: 'bottom' }}>Feature</th>
-                <th style={{ padding: '16px', paddingTop: '32px', textAlign: 'center', fontWeight: '600', verticalAlign: 'bottom' }}>Free</th>
-                <th style={{ padding: '16px', paddingTop: '32px', textAlign: 'center', fontWeight: '600', verticalAlign: 'bottom' }}>Starter</th>
-                <th style={{ padding: '16px', paddingTop: '32px', textAlign: 'center', fontWeight: '600', background: 'var(--primary-50)', position: 'relative', verticalAlign: 'bottom' }}>
-                  <div style={{
-                    position: 'absolute',
-                    top: '4px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    background: 'linear-gradient(135deg, var(--primary-600), var(--primary-700))',
-                    color: 'white',
-                    padding: '5px 14px',
-                    borderRadius: '20px',
-                    fontSize: '10px',
-                    fontWeight: '700',
-                    letterSpacing: '0.5px',
-                    boxShadow: '0 2px 8px rgba(99, 102, 241, 0.3)',
-                    whiteSpace: 'nowrap',
-                    textTransform: 'uppercase'
-                  }}>
+                <th
+                  style={{
+                    padding: '16px',
+                    paddingTop: '32px',
+                    textAlign: 'left',
+                    fontWeight: '600',
+                    verticalAlign: 'bottom',
+                  }}
+                >
+                  Feature
+                </th>
+                <th
+                  style={{
+                    padding: '16px',
+                    paddingTop: '32px',
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    verticalAlign: 'bottom',
+                  }}
+                >
+                  Free
+                </th>
+                <th
+                  style={{
+                    padding: '16px',
+                    paddingTop: '32px',
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    verticalAlign: 'bottom',
+                  }}
+                >
+                  Starter
+                </th>
+                <th
+                  style={{
+                    padding: '16px',
+                    paddingTop: '32px',
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    background: 'var(--primary-50)',
+                    position: 'relative',
+                    verticalAlign: 'bottom',
+                  }}
+                >
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '4px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      background: 'linear-gradient(135deg, var(--primary-600), var(--primary-700))',
+                      color: 'white',
+                      padding: '5px 14px',
+                      borderRadius: '20px',
+                      fontSize: '10px',
+                      fontWeight: '700',
+                      letterSpacing: '0.5px',
+                      boxShadow: '0 2px 8px rgba(99, 102, 241, 0.3)',
+                      whiteSpace: 'nowrap',
+                      textTransform: 'uppercase',
+                    }}
+                  >
                     MOST POPULAR
                   </div>
                   Pro
                 </th>
-                <th style={{ padding: '16px', paddingTop: '32px', textAlign: 'center', fontWeight: '600', verticalAlign: 'bottom' }}>Unlimited</th>
+                <th
+                  style={{
+                    padding: '16px',
+                    paddingTop: '32px',
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    verticalAlign: 'bottom',
+                  }}
+                >
+                  Unlimited
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -8382,23 +11692,53 @@ const PricingPage = () => {
                   <td style={{ padding: '14px 16px', color: 'var(--gray-700)' }}>{feature.name}</td>
                   <td style={{ padding: '14px 16px', textAlign: 'center' }}>
                     {typeof feature.free === 'boolean' ? (
-                      feature.free ? <Check size={18} style={{ color: 'var(--success)' }} /> : <X size={18} style={{ color: 'var(--gray-300)' }} />
-                    ) : <span style={{ fontWeight: '500' }}>{feature.free}</span>}
+                      feature.free ? (
+                        <Check size={18} style={{ color: 'var(--success)' }} />
+                      ) : (
+                        <X size={18} style={{ color: 'var(--gray-300)' }} />
+                      )
+                    ) : (
+                      <span style={{ fontWeight: '500' }}>{feature.free}</span>
+                    )}
                   </td>
                   <td style={{ padding: '14px 16px', textAlign: 'center' }}>
                     {typeof feature.starter === 'boolean' ? (
-                      feature.starter ? <Check size={18} style={{ color: 'var(--success)' }} /> : <X size={18} style={{ color: 'var(--gray-300)' }} />
-                    ) : <span style={{ fontWeight: '500' }}>{feature.starter}</span>}
+                      feature.starter ? (
+                        <Check size={18} style={{ color: 'var(--success)' }} />
+                      ) : (
+                        <X size={18} style={{ color: 'var(--gray-300)' }} />
+                      )
+                    ) : (
+                      <span style={{ fontWeight: '500' }}>{feature.starter}</span>
+                    )}
                   </td>
-                  <td style={{ padding: '14px 16px', textAlign: 'center', background: 'var(--primary-50)' }}>
+                  <td
+                    style={{
+                      padding: '14px 16px',
+                      textAlign: 'center',
+                      background: 'var(--primary-50)',
+                    }}
+                  >
                     {typeof feature.pro === 'boolean' ? (
-                      feature.pro ? <Check size={18} style={{ color: 'var(--success)' }} /> : <X size={18} style={{ color: 'var(--gray-300)' }} />
-                    ) : <span style={{ fontWeight: '500' }}>{feature.pro}</span>}
+                      feature.pro ? (
+                        <Check size={18} style={{ color: 'var(--success)' }} />
+                      ) : (
+                        <X size={18} style={{ color: 'var(--gray-300)' }} />
+                      )
+                    ) : (
+                      <span style={{ fontWeight: '500' }}>{feature.pro}</span>
+                    )}
                   </td>
                   <td style={{ padding: '14px 16px', textAlign: 'center' }}>
                     {typeof feature.unlimited === 'boolean' ? (
-                      feature.unlimited ? <Check size={18} style={{ color: 'var(--success)' }} /> : <X size={18} style={{ color: 'var(--gray-300)' }} />
-                    ) : <span style={{ fontWeight: '500' }}>{feature.unlimited}</span>}
+                      feature.unlimited ? (
+                        <Check size={18} style={{ color: 'var(--success)' }} />
+                      ) : (
+                        <X size={18} style={{ color: 'var(--gray-300)' }} />
+                      )
+                    ) : (
+                      <span style={{ fontWeight: '500' }}>{feature.unlimited}</span>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -8410,43 +11750,72 @@ const PricingPage = () => {
       {/* Testimonials Section */}
       {testimonials.length > 0 && (
         <div className="container" style={{ marginBottom: '60px' }}>
-          <h2 style={{ textAlign: 'center', fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
+          <h2
+            style={{
+              textAlign: 'center',
+              fontSize: '28px',
+              fontWeight: '700',
+              marginBottom: '12px',
+            }}
+          >
             Loved by Businesses
           </h2>
           <p style={{ textAlign: 'center', color: 'var(--gray-600)', marginBottom: '32px' }}>
             See what our customers have to say
           </p>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '24px',
-            maxWidth: '900px',
-            margin: '0 auto'
-          }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '24px',
+              maxWidth: '900px',
+              margin: '0 auto',
+            }}
+          >
             {testimonials.slice(0, 3).map((t, idx) => (
               <div key={idx} className="card" style={{ padding: '24px' }}>
                 <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
-                  {[1,2,3,4,5].map(s => (
-                    <Star key={s} size={16} fill={s <= t.rating ? '#f59e0b' : 'none'} color={s <= t.rating ? '#f59e0b' : '#d1d5db'} />
+                  {[1, 2, 3, 4, 5].map(s => (
+                    <Star
+                      key={s}
+                      size={16}
+                      fill={s <= t.rating ? '#f59e0b' : 'none'}
+                      color={s <= t.rating ? '#f59e0b' : '#d1d5db'}
+                    />
                   ))}
                 </div>
-                {t.comment && <p style={{ color: 'var(--gray-700)', fontStyle: 'italic', marginBottom: '16px', lineHeight: '1.6' }}>"{t.comment}"</p>}
+                {t.comment && (
+                  <p
+                    style={{
+                      color: 'var(--gray-700)',
+                      fontStyle: 'italic',
+                      marginBottom: '16px',
+                      lineHeight: '1.6',
+                    }}
+                  >
+                    "{t.comment}"
+                  </p>
+                )}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    background: 'var(--primary-100)',
-                    color: 'var(--primary-600)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '14px',
-                    fontWeight: '600'
-                  }}>
+                  <div
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: 'var(--primary-100)',
+                      color: 'var(--primary-600)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                    }}
+                  >
                     {(t.user_name || 'U').charAt(0).toUpperCase()}
                   </div>
-                  <span style={{ fontWeight: '500', fontSize: '14px' }}>{t.user_name || 'Verified User'}</span>
+                  <span style={{ fontWeight: '500', fontSize: '14px' }}>
+                    {t.user_name || 'Verified User'}
+                  </span>
                 </div>
               </div>
             ))}
@@ -8456,7 +11825,9 @@ const PricingPage = () => {
 
       {/* FAQ Section */}
       <div className="container" style={{ marginBottom: '60px' }}>
-        <h2 style={{ textAlign: 'center', fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
+        <h2
+          style={{ textAlign: 'center', fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}
+        >
           Frequently Asked Questions
         </h2>
         <p style={{ textAlign: 'center', color: 'var(--gray-600)', marginBottom: '32px' }}>
@@ -8471,35 +11842,39 @@ const PricingPage = () => {
                 marginBottom: '12px',
                 padding: '0',
                 overflow: 'hidden',
-                cursor: 'pointer'
+                cursor: 'pointer',
               }}
               onClick={() => setExpandedFaq(expandedFaq === idx ? null : idx)}
             >
-              <div style={{
-                padding: '18px 20px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                fontWeight: '500'
-              }}>
+              <div
+                style={{
+                  padding: '18px 20px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  fontWeight: '500',
+                }}
+              >
                 <span>{faq.q}</span>
                 <ChevronRight
                   size={20}
                   style={{
                     color: 'var(--gray-400)',
                     transform: expandedFaq === idx ? 'rotate(90deg)' : 'none',
-                    transition: 'transform 0.2s'
+                    transition: 'transform 0.2s',
                   }}
                 />
               </div>
               {expandedFaq === idx && (
-                <div style={{
-                  padding: '0 20px 18px',
-                  color: 'var(--gray-600)',
-                  lineHeight: '1.6',
-                  borderTop: '1px solid var(--gray-100)',
-                  paddingTop: '16px'
-                }}>
+                <div
+                  style={{
+                    padding: '0 20px 18px',
+                    color: 'var(--gray-600)',
+                    lineHeight: '1.6',
+                    borderTop: '1px solid var(--gray-100)',
+                    paddingTop: '16px',
+                  }}
+                >
                   {faq.a}
                 </div>
               )}
@@ -8510,48 +11885,76 @@ const PricingPage = () => {
 
       {/* Final CTA */}
       <div className="container">
-        <div className="card" style={{
-          background: 'linear-gradient(135deg, var(--primary-600), var(--primary-700))',
-          textAlign: 'center',
-          padding: '48px 24px'
-        }}>
+        <div
+          className="card"
+          style={{
+            background: 'linear-gradient(135deg, var(--primary-600), var(--primary-700))',
+            textAlign: 'center',
+            padding: '48px 24px',
+          }}
+        >
           <h2 style={{ color: 'white', fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
             Ready to Save Hours on Review Responses?
           </h2>
-          <p style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '24px', maxWidth: '500px', margin: '0 auto 24px' }}>
+          <p
+            style={{
+              color: 'rgba(255,255,255,0.9)',
+              marginBottom: '24px',
+              maxWidth: '500px',
+              margin: '0 auto 24px',
+            }}
+          >
             Join businesses who respond to reviews in seconds, not hours.
           </p>
-          <Link to="/register" className="btn" style={{
-            background: 'white',
-            color: 'var(--primary-600)',
-            fontWeight: '600',
-            padding: '14px 32px',
-            fontSize: '16px'
-          }}>
+          <Link
+            to="/register"
+            className="btn"
+            style={{
+              background: 'white',
+              color: 'var(--primary-600)',
+              fontWeight: '600',
+              padding: '14px 32px',
+              fontSize: '16px',
+            }}
+          >
             Start Free Trial →
           </Link>
         </div>
       </div>
 
       {/* Sticky Mobile CTA */}
-      <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        background: 'white',
-        borderTop: '1px solid var(--gray-200)',
-        padding: '12px 16px',
-        display: 'none',
-        zIndex: 1000,
-        boxShadow: '0 -4px 12px rgba(0,0,0,0.1)'
-      }} className="mobile-sticky-cta">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: 'white',
+          borderTop: '1px solid var(--gray-200)',
+          padding: '12px 16px',
+          display: 'none',
+          zIndex: 1000,
+          boxShadow: '0 -4px 12px rgba(0,0,0,0.1)',
+        }}
+        className="mobile-sticky-cta"
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+          }}
+        >
           <div>
             <div style={{ fontWeight: '600', fontSize: '14px' }}>Start Free</div>
             <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>20 responses/month</div>
           </div>
-          <Link to="/register" className="btn btn-primary" style={{ padding: '10px 24px', fontSize: '14px' }}>
+          <Link
+            to="/register"
+            className="btn btn-primary"
+            style={{ padding: '10px 24px', fontSize: '14px' }}
+          >
             Get Started
           </Link>
         </div>
@@ -8566,7 +11969,6 @@ const PricingPage = () => {
           }
         `}
       </style>
-
     </div>
   );
 };
@@ -8584,7 +11986,7 @@ const AnalyticsPage = () => {
     professional: '#4F46E5',
     friendly: '#10B981',
     formal: '#6366F1',
-    apologetic: '#F59E0B'
+    apologetic: '#F59E0B',
   };
 
   const PLATFORM_COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
@@ -8616,42 +12018,58 @@ const AnalyticsPage = () => {
     return (
       <div className="container" style={{ marginTop: '40px', textAlign: 'center' }}>
         <div className="card" style={{ maxWidth: '600px', margin: '0 auto', padding: '60px 40px' }}>
-          <div style={{
-            width: '80px',
-            height: '80px',
-            background: 'linear-gradient(135deg, var(--primary-100), var(--primary-200))',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 24px'
-          }}>
+          <div
+            style={{
+              width: '80px',
+              height: '80px',
+              background: 'linear-gradient(135deg, var(--primary-100), var(--primary-200))',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 24px',
+            }}
+          >
             <BarChart2 size={40} style={{ color: 'var(--primary-600)' }} />
           </div>
           <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
             Analytics Dashboard
           </h1>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px', fontSize: '16px' }}>
-            Get detailed insights into your review response patterns with beautiful charts and statistics.
+            Get detailed insights into your review response patterns with beautiful charts and
+            statistics.
           </p>
 
-          <div style={{
-            background: 'var(--gray-50)',
-            borderRadius: '12px',
-            padding: '24px',
-            marginBottom: '24px',
-            textAlign: 'left'
-          }}>
-            <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>What you'll get:</h3>
+          <div
+            style={{
+              background: 'var(--gray-50)',
+              borderRadius: '12px',
+              padding: '24px',
+              marginBottom: '24px',
+              textAlign: 'left',
+            }}
+          >
+            <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
+              What you'll get:
+            </h3>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
               {[
                 'Total responses over time (line chart)',
                 'Responses by tone distribution (pie chart)',
                 'Platform breakdown',
                 'Weekly comparison insights',
-                'Average responses per day'
+                'Average responses per day',
               ].map((feature, i) => (
-                <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px', color: 'var(--gray-700)' }}>
+                <li
+                  key={i}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    marginBottom: '12px',
+                    color: 'var(--gray-700)',
+                  }}
+                >
                   <Check size={18} style={{ color: 'var(--secondary)' }} />
                   {feature}
                 </li>
@@ -8659,12 +12077,14 @@ const AnalyticsPage = () => {
             </ul>
           </div>
 
-          <div style={{
-            background: 'linear-gradient(135deg, var(--primary-50), var(--primary-100))',
-            borderRadius: '8px',
-            padding: '16px',
-            marginBottom: '24px'
-          }}>
+          <div
+            style={{
+              background: 'linear-gradient(135deg, var(--primary-50), var(--primary-100))',
+              borderRadius: '8px',
+              padding: '16px',
+              marginBottom: '24px',
+            }}
+          >
             <p style={{ fontSize: '14px', color: 'var(--primary-700)' }}>
               <Lock size={16} style={{ verticalAlign: 'middle', marginRight: '8px' }} />
               Available on <strong>Pro</strong> and <strong>Unlimited</strong> plans
@@ -8674,7 +12094,10 @@ const AnalyticsPage = () => {
           <Link to="/pricing" className="btn btn-primary btn-lg" style={{ width: '100%' }}>
             Upgrade to Unlock Analytics
           </Link>
-          <Link to="/dashboard" style={{ display: 'block', marginTop: '16px', color: 'var(--gray-500)' }}>
+          <Link
+            to="/dashboard"
+            style={{ display: 'block', marginTop: '16px', color: 'var(--gray-500)' }}
+          >
             ← Back to Dashboard
           </Link>
         </div>
@@ -8708,24 +12131,36 @@ const AnalyticsPage = () => {
   }
 
   // Format date for display
-  const formatDate = (dateStr) => {
+  const formatDate = dateStr => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   // Capitalize first letter
-  const capitalize = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+  const capitalize = str => (str ? str.charAt(0).toUpperCase() + str.slice(1) : '');
 
   return (
     <div className="container" style={{ marginTop: '40px', marginBottom: '60px' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '32px',
+        }}
+      >
         <div>
           <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
-            <BarChart2 size={28} style={{ verticalAlign: 'middle', marginRight: '12px', color: 'var(--primary-600)' }} />
+            <BarChart2
+              size={28}
+              style={{ verticalAlign: 'middle', marginRight: '12px', color: 'var(--primary-600)' }}
+            />
             Analytics Dashboard
           </h1>
-          <p style={{ color: 'var(--gray-500)' }}>Track your review response patterns and insights</p>
+          <p style={{ color: 'var(--gray-500)' }}>
+            Track your review response patterns and insights
+          </p>
         </div>
         <Link to="/dashboard" className="btn btn-secondary">
           ← Back to Dashboard
@@ -8741,22 +12176,30 @@ const AnalyticsPage = () => {
         <div className="stat-card">
           <div className="stat-label">This Week</div>
           <div className="stat-value">{analytics?.insights?.thisWeek || 0}</div>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            marginTop: '8px',
-            color: analytics?.insights?.weeklyChange >= 0 ? 'var(--secondary)' : 'var(--danger)',
-            fontSize: '13px'
-          }}>
-            {analytics?.insights?.weeklyChange >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              marginTop: '8px',
+              color: analytics?.insights?.weeklyChange >= 0 ? 'var(--secondary)' : 'var(--danger)',
+              fontSize: '13px',
+            }}
+          >
+            {analytics?.insights?.weeklyChange >= 0 ? (
+              <TrendingUp size={16} />
+            ) : (
+              <TrendingDown size={16} />
+            )}
             {Math.abs(analytics?.insights?.weeklyChange || 0)} vs last week
           </div>
         </div>
         <div className="stat-card">
           <div className="stat-label">Avg per Day</div>
           <div className="stat-value">{analytics?.insights?.avgPerDay || '0'}</div>
-          <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '8px' }}>Last 30 days</p>
+          <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '8px' }}>
+            Last 30 days
+          </p>
         </div>
         <div className="stat-card">
           <div className="stat-label">Most Used Tone</div>
@@ -8770,7 +12213,16 @@ const AnalyticsPage = () => {
       <div className="analytics-charts-grid" style={{ marginBottom: '32px' }}>
         {/* Responses Over Time */}
         <div className="card">
-          <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h3
+            style={{
+              fontSize: '16px',
+              fontWeight: '600',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
             <TrendingUp size={20} style={{ color: 'var(--primary-600)' }} />
             Responses Over Time
           </h3>
@@ -8783,10 +12235,7 @@ const AnalyticsPage = () => {
                   tickFormatter={formatDate}
                   tick={{ fontSize: 12, fill: '#6B7280' }}
                 />
-                <YAxis
-                  tick={{ fontSize: 12, fill: '#6B7280' }}
-                  allowDecimals={false}
-                />
+                <YAxis tick={{ fontSize: 12, fill: '#6B7280' }} allowDecimals={false} />
                 <Tooltip
                   labelFormatter={formatDate}
                   contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }}
@@ -8802,7 +12251,15 @@ const AnalyticsPage = () => {
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div style={{ height: '250px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gray-400)' }}>
+            <div
+              style={{
+                height: '250px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--gray-400)',
+              }}
+            >
               No data available yet
             </div>
           )}
@@ -8810,7 +12267,16 @@ const AnalyticsPage = () => {
 
         {/* Responses by Tone */}
         <div className="card">
-          <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h3
+            style={{
+              fontSize: '16px',
+              fontWeight: '600',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
             <PieChart size={20} style={{ color: 'var(--primary-600)' }} />
             Responses by Tone
           </h3>
@@ -8830,7 +12296,9 @@ const AnalyticsPage = () => {
                     {analytics.byTone.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
-                        fill={TONE_COLORS[entry.name] || PLATFORM_COLORS[index % PLATFORM_COLORS.length]}
+                        fill={
+                          TONE_COLORS[entry.name] || PLATFORM_COLORS[index % PLATFORM_COLORS.length]
+                        }
                       />
                     ))}
                   </Pie>
@@ -8839,21 +12307,47 @@ const AnalyticsPage = () => {
               </ResponsiveContainer>
               <div style={{ flex: 1 }}>
                 {analytics.byTone.map((entry, index) => (
-                  <div key={entry.name} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <div style={{
-                      width: '12px',
-                      height: '12px',
-                      borderRadius: '3px',
-                      background: TONE_COLORS[entry.name] || PLATFORM_COLORS[index % PLATFORM_COLORS.length]
-                    }} />
-                    <span style={{ fontSize: '14px', textTransform: 'capitalize' }}>{entry.name}</span>
-                    <span style={{ fontSize: '14px', color: 'var(--gray-500)', marginLeft: 'auto' }}>{entry.value}</span>
+                  <div
+                    key={entry.name}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '3px',
+                        background:
+                          TONE_COLORS[entry.name] ||
+                          PLATFORM_COLORS[index % PLATFORM_COLORS.length],
+                      }}
+                    />
+                    <span style={{ fontSize: '14px', textTransform: 'capitalize' }}>
+                      {entry.name}
+                    </span>
+                    <span
+                      style={{ fontSize: '14px', color: 'var(--gray-500)', marginLeft: 'auto' }}
+                    >
+                      {entry.value}
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
           ) : (
-            <div style={{ height: '250px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gray-400)' }}>
+            <div
+              style={{
+                height: '250px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--gray-400)',
+              }}
+            >
               No data available yet
             </div>
           )}
@@ -8864,7 +12358,16 @@ const AnalyticsPage = () => {
       <div className="analytics-charts-grid">
         {/* Responses by Platform */}
         <div className="card">
-          <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h3
+            style={{
+              fontSize: '16px',
+              fontWeight: '600',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
             <Globe size={20} style={{ color: 'var(--primary-600)' }} />
             Responses by Platform
           </h3>
@@ -8885,7 +12388,15 @@ const AnalyticsPage = () => {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gray-400)' }}>
+            <div
+              style={{
+                height: '200px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--gray-400)',
+              }}
+            >
               No data available yet
             </div>
           )}
@@ -8893,7 +12404,16 @@ const AnalyticsPage = () => {
 
         {/* Responses by Rating */}
         <div className="card">
-          <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h3
+            style={{
+              fontSize: '16px',
+              fontWeight: '600',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
             <Star size={20} style={{ color: 'var(--primary-600)' }} />
             Responses by Review Rating
           </h3>
@@ -8904,18 +12424,26 @@ const AnalyticsPage = () => {
                 <XAxis
                   dataKey="rating"
                   tick={{ fontSize: 12, fill: '#6B7280' }}
-                  tickFormatter={(v) => `${v} ★`}
+                  tickFormatter={v => `${v} ★`}
                 />
                 <YAxis tick={{ fontSize: 12, fill: '#6B7280' }} allowDecimals={false} />
                 <Tooltip
-                  labelFormatter={(v) => `${v} Star Reviews`}
+                  labelFormatter={v => `${v} Star Reviews`}
                   contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }}
                 />
                 <Bar dataKey="count" fill="#F59E0B" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gray-400)' }}>
+            <div
+              style={{
+                height: '200px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--gray-400)',
+              }}
+            >
               No rating data available
             </div>
           )}
@@ -8936,12 +12464,13 @@ const AffiliateLandingPage = () => {
     marketingChannels: '',
     audienceSize: '',
     payoutMethod: 'paypal',
-    payoutEmail: ''
+    payoutEmail: '',
   });
 
   useEffect(() => {
     if (user) {
-      api.get('/affiliate/stats')
+      api
+        .get('/affiliate/stats')
         .then(res => {
           if (res.data.isAffiliate) {
             setAffiliateStatus(res.data);
@@ -8951,7 +12480,7 @@ const AffiliateLandingPage = () => {
     }
   }, [user]);
 
-  const handleApply = async (e) => {
+  const handleApply = async e => {
     e.preventDefault();
     setLoading(true);
     try {
@@ -8968,14 +12497,21 @@ const AffiliateLandingPage = () => {
 
   if (affiliateStatus?.isAffiliate) {
     return (
-      <div className="container" style={{ paddingTop: '60px', paddingBottom: '60px', textAlign: 'center' }}>
+      <div
+        className="container"
+        style={{ paddingTop: '60px', paddingBottom: '60px', textAlign: 'center' }}
+      >
         <div className="card" style={{ maxWidth: '600px', margin: '0 auto', padding: '48px' }}>
           <Award size={56} style={{ color: 'var(--primary-600)', marginBottom: '20px' }} />
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>You're Already an Affiliate!</h2>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>
+            You're Already an Affiliate!
+          </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
             Welcome back! Check your dashboard to see your earnings and stats.
           </p>
-          <Link to="/affiliate/dashboard" className="btn btn-primary">Go to Affiliate Dashboard</Link>
+          <Link to="/affiliate/dashboard" className="btn btn-primary">
+            Go to Affiliate Dashboard
+          </Link>
         </div>
       </div>
     );
@@ -8983,29 +12519,92 @@ const AffiliateLandingPage = () => {
 
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #8B5CF6 100%)', color: 'white', padding: '80px 0', textAlign: 'center' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #8B5CF6 100%)',
+          color: 'white',
+          padding: '80px 0',
+          textAlign: 'center',
+        }}
+      >
         <div className="container">
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '20px', fontSize: '14px', fontWeight: '600', marginBottom: '24px' }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.2)',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              fontSize: '14px',
+              fontWeight: '600',
+              marginBottom: '24px',
+            }}
+          >
             <Award size={18} /> Affiliate Partner Program
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '20px', lineHeight: '1.2' }}>Earn 20% Recurring<br />Commission</h1>
+          <h1
+            style={{ fontSize: '48px', fontWeight: '800', marginBottom: '20px', lineHeight: '1.2' }}
+          >
+            Earn 20% Recurring
+            <br />
+            Commission
+          </h1>
           <p style={{ fontSize: '20px', opacity: '0.9', maxWidth: '600px', margin: '0 auto 32px' }}>
-            Join our affiliate program and earn 20% on every payment from customers you refer. Not just once - on every single payment, forever.
+            Join our affiliate program and earn 20% on every payment from customers you refer. Not
+            just once - on every single payment, forever.
           </p>
           {user ? (
-            <a href="#apply" className="btn btn-primary" style={{ background: 'white', color: '#4F46E5', padding: '16px 32px', fontSize: '18px' }}>Apply Now</a>
+            <a
+              href="#apply"
+              className="btn btn-primary"
+              style={{
+                background: 'white',
+                color: '#4F46E5',
+                padding: '16px 32px',
+                fontSize: '18px',
+              }}
+            >
+              Apply Now
+            </a>
           ) : (
-            <Link to="/register" className="btn btn-primary" style={{ background: 'white', color: '#4F46E5', padding: '16px 32px', fontSize: '18px' }}>Sign Up to Become an Affiliate</Link>
+            <Link
+              to="/register"
+              className="btn btn-primary"
+              style={{
+                background: 'white',
+                color: '#4F46E5',
+                padding: '16px 32px',
+                fontSize: '18px',
+              }}
+            >
+              Sign Up to Become an Affiliate
+            </Link>
           )}
         </div>
       </section>
 
       <section style={{ padding: '60px 0', background: 'var(--gray-50)' }}>
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', maxWidth: '900px', margin: '0 auto' }}>
-            {[{ value: '20%', label: 'Commission Rate' }, { value: 'Recurring', label: 'Lifetime Earnings' }, { value: '$50', label: 'Min. Payout' }, { value: '30 Days', label: 'Cookie Duration' }].map(s => (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '24px',
+              maxWidth: '900px',
+              margin: '0 auto',
+            }}
+          >
+            {[
+              { value: '20%', label: 'Commission Rate' },
+              { value: 'Recurring', label: 'Lifetime Earnings' },
+              { value: '$50', label: 'Min. Payout' },
+              { value: '30 Days', label: 'Cookie Duration' },
+            ].map(s => (
               <div key={s.label} className="card" style={{ textAlign: 'center', padding: '24px' }}>
-                <div style={{ fontSize: '36px', fontWeight: '800', color: 'var(--primary-600)' }}>{s.value}</div>
+                <div style={{ fontSize: '36px', fontWeight: '800', color: 'var(--primary-600)' }}>
+                  {s.value}
+                </div>
                 <div style={{ color: 'var(--gray-600)', fontSize: '14px' }}>{s.label}</div>
               </div>
             ))}
@@ -9015,14 +12614,55 @@ const AffiliateLandingPage = () => {
 
       <section style={{ padding: '80px 0' }}>
         <div className="container" style={{ maxWidth: '900px' }}>
-          <h2 style={{ fontSize: '32px', fontWeight: '700', textAlign: 'center', marginBottom: '48px' }}>How It Works</h2>
+          <h2
+            style={{
+              fontSize: '32px',
+              fontWeight: '700',
+              textAlign: 'center',
+              marginBottom: '48px',
+            }}
+          >
+            How It Works
+          </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '32px' }}>
-            {[{ num: '1', title: 'Sign Up', desc: 'Create a free account and apply to our affiliate program. Approval is instant!' },
-              { num: '2', title: 'Share Your Link', desc: 'Get your unique affiliate link and share it with your audience via blog, social media, or email.' },
-              { num: '3', title: 'Earn Commission', desc: 'Earn 20% of every payment made by customers you refer - recurring, for life!' }].map(s => (
+            {[
+              {
+                num: '1',
+                title: 'Sign Up',
+                desc: 'Create a free account and apply to our affiliate program. Approval is instant!',
+              },
+              {
+                num: '2',
+                title: 'Share Your Link',
+                desc: 'Get your unique affiliate link and share it with your audience via blog, social media, or email.',
+              },
+              {
+                num: '3',
+                title: 'Earn Commission',
+                desc: 'Earn 20% of every payment made by customers you refer - recurring, for life!',
+              },
+            ].map(s => (
               <div key={s.num} style={{ textAlign: 'center' }}>
-                <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--primary-100)', color: 'var(--primary-600)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: '700', margin: '0 auto 16px' }}>{s.num}</div>
-                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>{s.title}</h3>
+                <div
+                  style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '50%',
+                    background: 'var(--primary-100)',
+                    color: 'var(--primary-600)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '24px',
+                    fontWeight: '700',
+                    margin: '0 auto 16px',
+                  }}
+                >
+                  {s.num}
+                </div>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+                  {s.title}
+                </h3>
                 <p style={{ color: 'var(--gray-600)', fontSize: '14px' }}>{s.desc}</p>
               </div>
             ))}
@@ -9032,30 +12672,80 @@ const AffiliateLandingPage = () => {
 
       <section style={{ padding: '60px 0', background: 'var(--gray-50)' }}>
         <div className="container" style={{ maxWidth: '800px' }}>
-          <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '32px' }}>Potential Earnings</h2>
+          <h2
+            style={{
+              fontSize: '28px',
+              fontWeight: '700',
+              textAlign: 'center',
+              marginBottom: '32px',
+            }}
+          >
+            Potential Earnings
+          </h2>
           <div className="card">
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead><tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
-                <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600' }}>Plan</th>
-                <th style={{ padding: '16px', textAlign: 'center', fontWeight: '600' }}>Monthly Price</th>
-                <th style={{ padding: '16px', textAlign: 'center', fontWeight: '600' }}>Your Commission</th>
-                <th style={{ padding: '16px', textAlign: 'center', fontWeight: '600' }}>Yearly Earnings</th>
-              </tr></thead>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
+                  <th style={{ padding: '16px', textAlign: 'left', fontWeight: '600' }}>Plan</th>
+                  <th style={{ padding: '16px', textAlign: 'center', fontWeight: '600' }}>
+                    Monthly Price
+                  </th>
+                  <th style={{ padding: '16px', textAlign: 'center', fontWeight: '600' }}>
+                    Your Commission
+                  </th>
+                  <th style={{ padding: '16px', textAlign: 'center', fontWeight: '600' }}>
+                    Yearly Earnings
+                  </th>
+                </tr>
+              </thead>
               <tbody>
-                {[{ plan: 'Starter', price: '$29/mo', comm: '$5.80/mo', yearly: '$69.60/year' },
+                {[
+                  { plan: 'Starter', price: '$29/mo', comm: '$5.80/mo', yearly: '$69.60/year' },
                   { plan: 'Pro', price: '$49/mo', comm: '$9.80/mo', yearly: '$117.60/year' },
-                  { plan: 'Unlimited', price: '$99/mo', comm: '$19.80/mo', yearly: '$237.60/year' }].map((r, i) => (
-                  <tr key={r.plan} style={{ borderBottom: i < 2 ? '1px solid var(--gray-100)' : 'none' }}>
+                  { plan: 'Unlimited', price: '$99/mo', comm: '$19.80/mo', yearly: '$237.60/year' },
+                ].map((r, i) => (
+                  <tr
+                    key={r.plan}
+                    style={{ borderBottom: i < 2 ? '1px solid var(--gray-100)' : 'none' }}
+                  >
                     <td style={{ padding: '16px', fontWeight: '500' }}>{r.plan}</td>
                     <td style={{ padding: '16px', textAlign: 'center' }}>{r.price}</td>
-                    <td style={{ padding: '16px', textAlign: 'center', color: 'var(--primary-600)', fontWeight: '600' }}>{r.comm}</td>
-                    <td style={{ padding: '16px', textAlign: 'center', color: 'var(--secondary)', fontWeight: '700' }}>{r.yearly}</td>
+                    <td
+                      style={{
+                        padding: '16px',
+                        textAlign: 'center',
+                        color: 'var(--primary-600)',
+                        fontWeight: '600',
+                      }}
+                    >
+                      {r.comm}
+                    </td>
+                    <td
+                      style={{
+                        padding: '16px',
+                        textAlign: 'center',
+                        color: 'var(--secondary)',
+                        fontWeight: '700',
+                      }}
+                    >
+                      {r.yearly}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <div style={{ padding: '16px', background: 'var(--primary-50)', borderRadius: '8px', marginTop: '16px', textAlign: 'center' }}>
-              <strong>Example:</strong> Refer 10 Pro customers = <strong style={{ color: 'var(--primary-600)' }}>$1,176/year</strong> in passive income!
+            <div
+              style={{
+                padding: '16px',
+                background: 'var(--primary-50)',
+                borderRadius: '8px',
+                marginTop: '16px',
+                textAlign: 'center',
+              }}
+            >
+              <strong>Example:</strong> Refer 10 Pro customers ={' '}
+              <strong style={{ color: 'var(--primary-600)' }}>$1,176/year</strong> in passive
+              income!
             </div>
           </div>
         </div>
@@ -9064,17 +12754,39 @@ const AffiliateLandingPage = () => {
       {user && (
         <section id="apply" style={{ padding: '80px 0' }}>
           <div className="container" style={{ maxWidth: '600px' }}>
-            <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '8px' }}>Apply to Become an Affiliate</h2>
-            <p style={{ color: 'var(--gray-600)', textAlign: 'center', marginBottom: '32px' }}>Fill out the form below. Approval is typically instant!</p>
+            <h2
+              style={{
+                fontSize: '28px',
+                fontWeight: '700',
+                textAlign: 'center',
+                marginBottom: '8px',
+              }}
+            >
+              Apply to Become an Affiliate
+            </h2>
+            <p style={{ color: 'var(--gray-600)', textAlign: 'center', marginBottom: '32px' }}>
+              Fill out the form below. Approval is typically instant!
+            </p>
             <div className="card">
               <form onSubmit={handleApply}>
                 <div className="form-group">
                   <label className="form-label">Website URL (Optional)</label>
-                  <input type="url" className="form-input" value={formData.website} onChange={(e) => setFormData({...formData, website: e.target.value})} placeholder="https://yourwebsite.com" />
+                  <input
+                    type="url"
+                    className="form-input"
+                    value={formData.website}
+                    onChange={e => setFormData({ ...formData, website: e.target.value })}
+                    placeholder="https://yourwebsite.com"
+                  />
                 </div>
                 <div className="form-group">
                   <label className="form-label">How will you promote ReviewResponder?</label>
-                  <select className="form-input" value={formData.marketingChannels} onChange={(e) => setFormData({...formData, marketingChannels: e.target.value})} required>
+                  <select
+                    className="form-input"
+                    value={formData.marketingChannels}
+                    onChange={e => setFormData({ ...formData, marketingChannels: e.target.value })}
+                    required
+                  >
                     <option value="">Select...</option>
                     <option value="blog">Blog / Website</option>
                     <option value="social">Social Media</option>
@@ -9086,7 +12798,12 @@ const AffiliateLandingPage = () => {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Estimated Audience Size</label>
-                  <select className="form-input" value={formData.audienceSize} onChange={(e) => setFormData({...formData, audienceSize: e.target.value})} required>
+                  <select
+                    className="form-input"
+                    value={formData.audienceSize}
+                    onChange={e => setFormData({ ...formData, audienceSize: e.target.value })}
+                    required
+                  >
                     <option value="">Select...</option>
                     <option value="small">Small (Under 1,000)</option>
                     <option value="medium">Medium (1,000 - 10,000)</option>
@@ -9096,16 +12813,33 @@ const AffiliateLandingPage = () => {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Preferred Payout Method</label>
-                  <select className="form-input" value={formData.payoutMethod} onChange={(e) => setFormData({...formData, payoutMethod: e.target.value})} required>
+                  <select
+                    className="form-input"
+                    value={formData.payoutMethod}
+                    onChange={e => setFormData({ ...formData, payoutMethod: e.target.value })}
+                    required
+                  >
                     <option value="paypal">PayPal</option>
                     <option value="bank">Bank Transfer</option>
                   </select>
                 </div>
                 <div className="form-group">
                   <label className="form-label">Payout Email</label>
-                  <input type="email" className="form-input" value={formData.payoutEmail} onChange={(e) => setFormData({...formData, payoutEmail: e.target.value})} placeholder="payments@youremail.com" required />
+                  <input
+                    type="email"
+                    className="form-input"
+                    value={formData.payoutEmail}
+                    onChange={e => setFormData({ ...formData, payoutEmail: e.target.value })}
+                    placeholder="payments@youremail.com"
+                    required
+                  />
                 </div>
-                <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '14px' }} disabled={loading}>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{ width: '100%', padding: '14px' }}
+                  disabled={loading}
+                >
                   {loading ? 'Processing...' : 'Submit Application'}
                 </button>
               </form>
@@ -9115,11 +12849,33 @@ const AffiliateLandingPage = () => {
       )}
 
       {!user && (
-        <section style={{ padding: '80px 0', background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)', color: 'white', textAlign: 'center' }}>
+        <section
+          style={{
+            padding: '80px 0',
+            background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
+            color: 'white',
+            textAlign: 'center',
+          }}
+        >
           <div className="container">
-            <h2 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '16px' }}>Ready to Start Earning?</h2>
-            <p style={{ fontSize: '18px', opacity: '0.9', marginBottom: '24px' }}>Create a free account to apply for our affiliate program.</p>
-            <Link to="/register" className="btn btn-primary" style={{ background: 'white', color: '#4F46E5', padding: '16px 32px', fontSize: '18px' }}>Sign Up Now</Link>
+            <h2 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '16px' }}>
+              Ready to Start Earning?
+            </h2>
+            <p style={{ fontSize: '18px', opacity: '0.9', marginBottom: '24px' }}>
+              Create a free account to apply for our affiliate program.
+            </p>
+            <Link
+              to="/register"
+              className="btn btn-primary"
+              style={{
+                background: 'white',
+                color: '#4F46E5',
+                padding: '16px 32px',
+                fontSize: '18px',
+              }}
+            >
+              Sign Up Now
+            </Link>
           </div>
         </section>
       )}
@@ -9142,12 +12898,15 @@ const AffiliateDashboardPage = () => {
     try {
       const [statsRes, payoutsRes] = await Promise.all([
         api.get('/affiliate/stats'),
-        api.get('/affiliate/payouts')
+        api.get('/affiliate/payouts'),
       ]);
       setData(statsRes.data);
       setPayouts(payoutsRes.data);
       if (statsRes.data.affiliate) {
-        setSettingsForm({ payoutMethod: statsRes.data.affiliate.payoutMethod || 'paypal', payoutEmail: statsRes.data.affiliate.payoutEmail || '' });
+        setSettingsForm({
+          payoutMethod: statsRes.data.affiliate.payoutMethod || 'paypal',
+          payoutEmail: statsRes.data.affiliate.payoutEmail || '',
+        });
       }
     } catch (error) {
       console.error('Load affiliate data error:', error);
@@ -9156,7 +12915,9 @@ const AffiliateDashboardPage = () => {
     }
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const handleCopyLink = () => {
     if (data?.links?.affiliateLink) {
@@ -9180,7 +12941,7 @@ const AffiliateDashboardPage = () => {
     }
   };
 
-  const handleUpdateSettings = async (e) => {
+  const handleUpdateSettings = async e => {
     e.preventDefault();
     setUpdatingSettings(true);
     try {
@@ -9194,16 +12955,22 @@ const AffiliateDashboardPage = () => {
     }
   };
 
-  const chartData = data?.clicksChart?.slice(0, 30).reverse().map(d => ({
-    date: new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    clicks: parseInt(d.clicks)
-  })) || [];
+  const chartData =
+    data?.clicksChart
+      ?.slice(0, 30)
+      .reverse()
+      .map(d => ({
+        date: new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        clicks: parseInt(d.clicks),
+      })) || [];
 
   if (loading) {
     return (
       <div className="container" style={{ paddingTop: '60px', textAlign: 'center' }}>
         <div className="spinner" />
-        <p style={{ color: 'var(--gray-500)', marginTop: '16px' }}>Loading affiliate dashboard...</p>
+        <p style={{ color: 'var(--gray-500)', marginTop: '16px' }}>
+          Loading affiliate dashboard...
+        </p>
       </div>
     );
   }
@@ -9213,9 +12980,16 @@ const AffiliateDashboardPage = () => {
       <div className="container" style={{ paddingTop: '60px', textAlign: 'center' }}>
         <div className="card" style={{ maxWidth: '500px', margin: '0 auto', padding: '48px' }}>
           <Award size={48} style={{ color: 'var(--gray-400)', marginBottom: '16px' }} />
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>Not an Affiliate Yet</h2>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Apply to our affiliate program and start earning 20% recurring commission on every referral.</p>
-          <Link to="/affiliate" className="btn btn-primary">Apply Now</Link>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>
+            Not an Affiliate Yet
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Apply to our affiliate program and start earning 20% recurring commission on every
+            referral.
+          </p>
+          <Link to="/affiliate" className="btn btn-primary">
+            Apply Now
+          </Link>
         </div>
       </div>
     );
@@ -9223,30 +12997,70 @@ const AffiliateDashboardPage = () => {
 
   return (
     <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '32px',
+        }}
+      >
         <div>
           <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
-            <Award size={28} style={{ verticalAlign: 'middle', marginRight: '12px', color: 'var(--primary-600)' }} />
+            <Award
+              size={28}
+              style={{ verticalAlign: 'middle', marginRight: '12px', color: 'var(--primary-600)' }}
+            />
             Affiliate Dashboard
           </h1>
           <p style={{ color: 'var(--gray-500)' }}>Track your earnings, clicks, and conversions</p>
         </div>
-        <Link to="/dashboard" className="btn btn-secondary">← Back to Dashboard</Link>
+        <Link to="/dashboard" className="btn btn-secondary">
+          ← Back to Dashboard
+        </Link>
       </div>
 
-      <div className="card" style={{ marginBottom: '24px', background: 'linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%)' }}>
+      <div
+        className="card"
+        style={{
+          marginBottom: '24px',
+          background: 'linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%)',
+        }}
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--primary-600)', marginBottom: '4px' }}>Your Affiliate Link</div>
-            <div style={{ fontSize: '16px', fontFamily: 'monospace', color: 'var(--gray-700)' }}>{data?.links?.affiliateLink}</div>
+            <div
+              style={{
+                fontSize: '14px',
+                fontWeight: '600',
+                color: 'var(--primary-600)',
+                marginBottom: '4px',
+              }}
+            >
+              Your Affiliate Link
+            </div>
+            <div style={{ fontSize: '16px', fontFamily: 'monospace', color: 'var(--gray-700)' }}>
+              {data?.links?.affiliateLink}
+            </div>
           </div>
-          <button onClick={handleCopyLink} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            onClick={handleCopyLink}
+            className="btn btn-primary"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
             {copied ? <Check size={18} /> : <Copy size={18} />}
             {copied ? 'Copied!' : 'Copy Link'}
           </button>
         </div>
         <div style={{ marginTop: '12px', fontSize: '13px', color: 'var(--gray-600)' }}>
-          Affiliate Code: <strong>{data?.affiliate?.code}</strong> | Status: <strong style={{ color: data?.affiliate?.status === 'approved' ? 'var(--secondary)' : 'var(--warning)' }}>{data?.affiliate?.status}</strong>
+          Affiliate Code: <strong>{data?.affiliate?.code}</strong> | Status:{' '}
+          <strong
+            style={{
+              color: data?.affiliate?.status === 'approved' ? 'var(--secondary)' : 'var(--warning)',
+            }}
+          >
+            {data?.affiliate?.status}
+          </strong>
         </div>
       </div>
 
@@ -9258,27 +13072,70 @@ const AffiliateDashboardPage = () => {
         <div className="stat-card">
           <div className="stat-label">Conversions</div>
           <div className="stat-value">{data?.stats?.totalConversions || 0}</div>
-          <div style={{ fontSize: '13px', color: 'var(--gray-500)', marginTop: '4px' }}>{data?.stats?.conversionRate || 0}% rate</div>
+          <div style={{ fontSize: '13px', color: 'var(--gray-500)', marginTop: '4px' }}>
+            {data?.stats?.conversionRate || 0}% rate
+          </div>
         </div>
         <div className="stat-card">
           <div className="stat-label">Total Earned</div>
-          <div className="stat-value" style={{ color: 'var(--secondary)' }}>${data?.stats?.totalEarned?.toFixed(2) || '0.00'}</div>
+          <div className="stat-value" style={{ color: 'var(--secondary)' }}>
+            ${data?.stats?.totalEarned?.toFixed(2) || '0.00'}
+          </div>
         </div>
         <div className="stat-card">
           <div className="stat-label">Pending Balance</div>
           <div className="stat-value">${data?.stats?.pendingBalance?.toFixed(2) || '0.00'}</div>
           {(data?.stats?.pendingBalance || 0) >= 50 && (
-            <button onClick={handleRequestPayout} disabled={requestingPayout} className="btn btn-primary" style={{ marginTop: '12px', fontSize: '13px', padding: '8px 16px' }}>
+            <button
+              onClick={handleRequestPayout}
+              disabled={requestingPayout}
+              className="btn btn-primary"
+              style={{ marginTop: '12px', fontSize: '13px', padding: '8px 16px' }}
+            >
               {requestingPayout ? 'Processing...' : 'Request Payout'}
             </button>
           )}
-          {(data?.stats?.pendingBalance || 0) < 50 && <div style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '8px' }}>Min. $50 for payout</div>}
+          {(data?.stats?.pendingBalance || 0) < 50 && (
+            <div style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '8px' }}>
+              Min. $50 for payout
+            </div>
+          )}
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', borderBottom: '1px solid var(--gray-200)', paddingBottom: '8px' }}>
-        {[{ id: 'overview', label: 'Overview', icon: TrendingUp }, { id: 'conversions', label: 'Conversions', icon: Users }, { id: 'payouts', label: 'Payouts', icon: CreditCard }, { id: 'materials', label: 'Marketing Materials', icon: Download }, { id: 'settings', label: 'Settings', icon: Settings }].map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 16px', borderRadius: '8px', background: activeTab === tab.id ? 'var(--primary-100)' : 'transparent', color: activeTab === tab.id ? 'var(--primary-700)' : 'var(--gray-600)', border: 'none', cursor: 'pointer', fontWeight: '500', fontSize: '14px' }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: '8px',
+          marginBottom: '24px',
+          borderBottom: '1px solid var(--gray-200)',
+          paddingBottom: '8px',
+        }}
+      >
+        {[
+          { id: 'overview', label: 'Overview', icon: TrendingUp },
+          { id: 'conversions', label: 'Conversions', icon: Users },
+          { id: 'payouts', label: 'Payouts', icon: CreditCard },
+          { id: 'materials', label: 'Marketing Materials', icon: Download },
+          { id: 'settings', label: 'Settings', icon: Settings },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '10px 16px',
+              borderRadius: '8px',
+              background: activeTab === tab.id ? 'var(--primary-100)' : 'transparent',
+              color: activeTab === tab.id ? 'var(--primary-700)' : 'var(--gray-600)',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: '500',
+              fontSize: '14px',
+            }}
+          >
             <tab.icon size={16} /> {tab.label}
           </button>
         ))}
@@ -9286,8 +13143,18 @@ const AffiliateDashboardPage = () => {
 
       {activeTab === 'overview' && (
         <div className="card">
-          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <TrendingUp size={20} style={{ color: 'var(--primary-600)' }} /> Clicks Over Time (Last 30 Days)
+          <h3
+            style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
+            <TrendingUp size={20} style={{ color: 'var(--primary-600)' }} /> Clicks Over Time (Last
+            30 Days)
           </h3>
           {chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
@@ -9300,99 +13167,253 @@ const AffiliateDashboardPage = () => {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gray-400)' }}>No click data yet. Share your affiliate link to get started!</div>
+            <div
+              style={{
+                height: '200px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--gray-400)',
+              }}
+            >
+              No click data yet. Share your affiliate link to get started!
+            </div>
           )}
         </div>
       )}
 
       {activeTab === 'conversions' && (
         <div className="card">
-          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>Recent Conversions</h3>
+          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
+            Recent Conversions
+          </h3>
           {data?.recentConversions?.length > 0 ? (
             <div className="table-scroll-container">
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
-              <thead><tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
-                <th style={{ padding: '12px', textAlign: 'left', fontWeight: '600' }}>Customer</th>
-                <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>Plan</th>
-                <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>Payment</th>
-                <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>Commission</th>
-                <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>Status</th>
-                <th style={{ padding: '12px', textAlign: 'right', fontWeight: '600' }}>Date</th>
-              </tr></thead>
-              <tbody>
-                {data.recentConversions.map(c => (
-                  <tr key={c.id} style={{ borderBottom: '1px solid var(--gray-100)' }}>
-                    <td style={{ padding: '12px' }}>{c.email}</td>
-                    <td style={{ padding: '12px', textAlign: 'center', textTransform: 'capitalize' }}>{c.plan}</td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>${c.amount?.toFixed(2)}</td>
-                    <td style={{ padding: '12px', textAlign: 'center', color: 'var(--secondary)', fontWeight: '600' }}>${c.commission?.toFixed(2)}</td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>
-                      <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: '500', background: c.status === 'paid' ? 'var(--secondary-light)' : (c.status === 'approved' ? 'var(--primary-100)' : 'var(--gray-100)'), color: c.status === 'paid' ? 'var(--secondary)' : (c.status === 'approved' ? 'var(--primary-700)' : 'var(--gray-600)') }}>{c.status}</span>
-                    </td>
-                    <td style={{ padding: '12px', textAlign: 'right', color: 'var(--gray-500)' }}>{new Date(c.createdAt).toLocaleDateString()}</td>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
+                    <th style={{ padding: '12px', textAlign: 'left', fontWeight: '600' }}>
+                      Customer
+                    </th>
+                    <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>
+                      Plan
+                    </th>
+                    <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>
+                      Payment
+                    </th>
+                    <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>
+                      Commission
+                    </th>
+                    <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>
+                      Status
+                    </th>
+                    <th style={{ padding: '12px', textAlign: 'right', fontWeight: '600' }}>Date</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.recentConversions.map(c => (
+                    <tr key={c.id} style={{ borderBottom: '1px solid var(--gray-100)' }}>
+                      <td style={{ padding: '12px' }}>{c.email}</td>
+                      <td
+                        style={{
+                          padding: '12px',
+                          textAlign: 'center',
+                          textTransform: 'capitalize',
+                        }}
+                      >
+                        {c.plan}
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'center' }}>
+                        ${c.amount?.toFixed(2)}
+                      </td>
+                      <td
+                        style={{
+                          padding: '12px',
+                          textAlign: 'center',
+                          color: 'var(--secondary)',
+                          fontWeight: '600',
+                        }}
+                      >
+                        ${c.commission?.toFixed(2)}
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'center' }}>
+                        <span
+                          style={{
+                            padding: '4px 8px',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            background:
+                              c.status === 'paid'
+                                ? 'var(--secondary-light)'
+                                : c.status === 'approved'
+                                  ? 'var(--primary-100)'
+                                  : 'var(--gray-100)',
+                            color:
+                              c.status === 'paid'
+                                ? 'var(--secondary)'
+                                : c.status === 'approved'
+                                  ? 'var(--primary-700)'
+                                  : 'var(--gray-600)',
+                          }}
+                        >
+                          {c.status}
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'right', color: 'var(--gray-500)' }}>
+                        {new Date(c.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '48px', color: 'var(--gray-400)' }}>No conversions yet. Keep sharing your affiliate link!</div>
+            <div style={{ textAlign: 'center', padding: '48px', color: 'var(--gray-400)' }}>
+              No conversions yet. Keep sharing your affiliate link!
+            </div>
           )}
         </div>
       )}
 
       {activeTab === 'payouts' && (
         <div className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '20px',
+            }}
+          >
             <h3 style={{ fontSize: '18px', fontWeight: '600' }}>Payout History</h3>
-            <div style={{ fontSize: '14px', color: 'var(--gray-600)' }}>Total Paid Out: <strong style={{ color: 'var(--secondary)' }}>${payouts?.totalPaid?.toFixed(2) || '0.00'}</strong></div>
+            <div style={{ fontSize: '14px', color: 'var(--gray-600)' }}>
+              Total Paid Out:{' '}
+              <strong style={{ color: 'var(--secondary)' }}>
+                ${payouts?.totalPaid?.toFixed(2) || '0.00'}
+              </strong>
+            </div>
           </div>
           {payouts?.payouts?.length > 0 ? (
             <div className="table-scroll-container">
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '500px' }}>
-              <thead><tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
-                <th style={{ padding: '12px', textAlign: 'left', fontWeight: '600' }}>Amount</th>
-                <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>Method</th>
-                <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>Status</th>
-                <th style={{ padding: '12px', textAlign: 'right', fontWeight: '600' }}>Requested</th>
-                <th style={{ padding: '12px', textAlign: 'right', fontWeight: '600' }}>Processed</th>
-              </tr></thead>
-              <tbody>
-                {payouts.payouts.map(p => (
-                  <tr key={p.id} style={{ borderBottom: '1px solid var(--gray-100)' }}>
-                    <td style={{ padding: '12px', fontWeight: '600' }}>${p.amount?.toFixed(2)}</td>
-                    <td style={{ padding: '12px', textAlign: 'center', textTransform: 'capitalize' }}>{p.method}</td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>
-                      <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: '500', background: p.status === 'completed' ? 'var(--secondary-light)' : (p.status === 'processing' ? 'var(--warning-light)' : 'var(--gray-100)'), color: p.status === 'completed' ? 'var(--secondary)' : (p.status === 'processing' ? 'var(--warning)' : 'var(--gray-600)') }}>{p.status}</span>
-                    </td>
-                    <td style={{ padding: '12px', textAlign: 'right', color: 'var(--gray-500)' }}>{new Date(p.requestedAt).toLocaleDateString()}</td>
-                    <td style={{ padding: '12px', textAlign: 'right', color: 'var(--gray-500)' }}>{p.processedAt ? new Date(p.processedAt).toLocaleDateString() : '-'}</td>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '500px' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
+                    <th style={{ padding: '12px', textAlign: 'left', fontWeight: '600' }}>
+                      Amount
+                    </th>
+                    <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>
+                      Method
+                    </th>
+                    <th style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>
+                      Status
+                    </th>
+                    <th style={{ padding: '12px', textAlign: 'right', fontWeight: '600' }}>
+                      Requested
+                    </th>
+                    <th style={{ padding: '12px', textAlign: 'right', fontWeight: '600' }}>
+                      Processed
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {payouts.payouts.map(p => (
+                    <tr key={p.id} style={{ borderBottom: '1px solid var(--gray-100)' }}>
+                      <td style={{ padding: '12px', fontWeight: '600' }}>
+                        ${p.amount?.toFixed(2)}
+                      </td>
+                      <td
+                        style={{
+                          padding: '12px',
+                          textAlign: 'center',
+                          textTransform: 'capitalize',
+                        }}
+                      >
+                        {p.method}
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'center' }}>
+                        <span
+                          style={{
+                            padding: '4px 8px',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            background:
+                              p.status === 'completed'
+                                ? 'var(--secondary-light)'
+                                : p.status === 'processing'
+                                  ? 'var(--warning-light)'
+                                  : 'var(--gray-100)',
+                            color:
+                              p.status === 'completed'
+                                ? 'var(--secondary)'
+                                : p.status === 'processing'
+                                  ? 'var(--warning)'
+                                  : 'var(--gray-600)',
+                          }}
+                        >
+                          {p.status}
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'right', color: 'var(--gray-500)' }}>
+                        {new Date(p.requestedAt).toLocaleDateString()}
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'right', color: 'var(--gray-500)' }}>
+                        {p.processedAt ? new Date(p.processedAt).toLocaleDateString() : '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '48px', color: 'var(--gray-400)' }}>No payouts yet. Earn at least $50 in commissions to request your first payout.</div>
+            <div style={{ textAlign: 'center', padding: '48px', color: 'var(--gray-400)' }}>
+              No payouts yet. Earn at least $50 in commissions to request your first payout.
+            </div>
           )}
         </div>
       )}
 
       {activeTab === 'materials' && (
         <div className="card">
-          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>Marketing Materials</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Use these resources to promote ReviewResponder to your audience.</p>
+          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
+            Marketing Materials
+          </h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Use these resources to promote ReviewResponder to your audience.
+          </p>
           <div style={{ marginBottom: '32px' }}>
-            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Your Affiliate Link</h4>
+            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>
+              Your Affiliate Link
+            </h4>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-              <input type="text" className="form-input" value={data?.links?.affiliateLink || ''} readOnly style={{ fontFamily: 'monospace', flex: 1 }} />
-              <button onClick={handleCopyLink} className="btn btn-primary">{copied ? 'Copied!' : 'Copy'}</button>
+              <input
+                type="text"
+                className="form-input"
+                value={data?.links?.affiliateLink || ''}
+                readOnly
+                style={{ fontFamily: 'monospace', flex: 1 }}
+              />
+              <button onClick={handleCopyLink} className="btn btn-primary">
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
             </div>
           </div>
           <div style={{ marginBottom: '32px' }}>
-            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Email Template</h4>
-            <div style={{ background: 'var(--gray-50)', padding: '16px', borderRadius: '8px', fontFamily: 'monospace', fontSize: '13px', whiteSpace: 'pre-wrap' }}>
-{`Subject: Save Hours on Review Responses with AI
+            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>
+              Email Template
+            </h4>
+            <div
+              style={{
+                background: 'var(--gray-50)',
+                padding: '16px',
+                borderRadius: '8px',
+                fontFamily: 'monospace',
+                fontSize: '13px',
+                whiteSpace: 'pre-wrap',
+              }}
+            >
+              {`Subject: Save Hours on Review Responses with AI
 
 Hi [Name],
 
@@ -9405,22 +13426,64 @@ Check it out here: ${data?.links?.affiliateLink}
 Best,
 [Your Name]`}
             </div>
-            <button onClick={() => { navigator.clipboard.writeText(`Subject: Save Hours on Review Responses with AI\n\nHi [Name],\n\nI wanted to share a tool that's been a game-changer for managing customer reviews: ReviewResponder.\n\nIt uses AI to generate professional, personalized responses to customer reviews in seconds.\n\nCheck it out here: ${data?.links?.affiliateLink}\n\nBest,\n[Your Name]`); toast.success('Email template copied!'); }} className="btn btn-secondary" style={{ marginTop: '12px' }}><Copy size={16} /> Copy Email Template</button>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(
+                  `Subject: Save Hours on Review Responses with AI\n\nHi [Name],\n\nI wanted to share a tool that's been a game-changer for managing customer reviews: ReviewResponder.\n\nIt uses AI to generate professional, personalized responses to customer reviews in seconds.\n\nCheck it out here: ${data?.links?.affiliateLink}\n\nBest,\n[Your Name]`
+                );
+                toast.success('Email template copied!');
+              }}
+              className="btn btn-secondary"
+              style={{ marginTop: '12px' }}
+            >
+              <Copy size={16} /> Copy Email Template
+            </button>
           </div>
           <div style={{ marginBottom: '32px' }}>
-            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Social Media Post</h4>
-            <div style={{ background: 'var(--gray-50)', padding: '16px', borderRadius: '8px', fontFamily: 'monospace', fontSize: '13px' }}>
+            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>
+              Social Media Post
+            </h4>
+            <div
+              style={{
+                background: 'var(--gray-50)',
+                padding: '16px',
+                borderRadius: '8px',
+                fontFamily: 'monospace',
+                fontSize: '13px',
+              }}
+            >
               {`Struggling to respond to customer reviews? Check out ReviewResponder - AI that generates professional review responses in seconds. ${data?.links?.affiliateLink}`}
             </div>
-            <button onClick={() => { navigator.clipboard.writeText(`Struggling to respond to customer reviews? Check out ReviewResponder - AI that generates professional review responses in seconds. ${data?.links?.affiliateLink}`); toast.success('Social post copied!'); }} className="btn btn-secondary" style={{ marginTop: '12px' }}><Copy size={16} /> Copy Social Post</button>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(
+                  `Struggling to respond to customer reviews? Check out ReviewResponder - AI that generates professional review responses in seconds. ${data?.links?.affiliateLink}`
+                );
+                toast.success('Social post copied!');
+              }}
+              className="btn btn-secondary"
+              style={{ marginTop: '12px' }}
+            >
+              <Copy size={16} /> Copy Social Post
+            </button>
           </div>
           <div>
-            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Key Selling Points</h4>
+            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>
+              Key Selling Points
+            </h4>
             <ul style={{ paddingLeft: '20px', color: 'var(--gray-600)' }}>
-              <li style={{ marginBottom: '8px' }}>AI-powered responses save hours of manual work</li>
-              <li style={{ marginBottom: '8px' }}>Supports 50+ languages with automatic detection</li>
-              <li style={{ marginBottom: '8px' }}>4 tone options: Professional, Friendly, Formal, Apologetic</li>
-              <li style={{ marginBottom: '8px' }}>Works with Google, Yelp, TripAdvisor, and more</li>
+              <li style={{ marginBottom: '8px' }}>
+                AI-powered responses save hours of manual work
+              </li>
+              <li style={{ marginBottom: '8px' }}>
+                Supports 50+ languages with automatic detection
+              </li>
+              <li style={{ marginBottom: '8px' }}>
+                4 tone options: Professional, Friendly, Formal, Apologetic
+              </li>
+              <li style={{ marginBottom: '8px' }}>
+                Works with Google, Yelp, TripAdvisor, and more
+              </li>
               <li style={{ marginBottom: '8px' }}>Chrome extension for one-click responses</li>
               <li style={{ marginBottom: '8px' }}>Free plan with 20 responses to try</li>
             </ul>
@@ -9430,20 +13493,34 @@ Best,
 
       {activeTab === 'settings' && (
         <div className="card" style={{ maxWidth: '500px' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>Payout Settings</h3>
+          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
+            Payout Settings
+          </h3>
           <form onSubmit={handleUpdateSettings}>
             <div className="form-group">
               <label className="form-label">Payout Method</label>
-              <select className="form-input" value={settingsForm.payoutMethod} onChange={(e) => setSettingsForm({...settingsForm, payoutMethod: e.target.value})}>
+              <select
+                className="form-input"
+                value={settingsForm.payoutMethod}
+                onChange={e => setSettingsForm({ ...settingsForm, payoutMethod: e.target.value })}
+              >
                 <option value="paypal">PayPal</option>
                 <option value="bank">Bank Transfer</option>
               </select>
             </div>
             <div className="form-group">
               <label className="form-label">Payout Email</label>
-              <input type="email" className="form-input" value={settingsForm.payoutEmail} onChange={(e) => setSettingsForm({...settingsForm, payoutEmail: e.target.value})} placeholder="payments@youremail.com" />
+              <input
+                type="email"
+                className="form-input"
+                value={settingsForm.payoutEmail}
+                onChange={e => setSettingsForm({ ...settingsForm, payoutEmail: e.target.value })}
+                placeholder="payments@youremail.com"
+              />
             </div>
-            <button type="submit" className="btn btn-primary" disabled={updatingSettings}>{updatingSettings ? 'Saving...' : 'Save Settings'}</button>
+            <button type="submit" className="btn btn-primary" disabled={updatingSettings}>
+              {updatingSettings ? 'Saving...' : 'Save Settings'}
+            </button>
           </form>
         </div>
       )}
@@ -9458,7 +13535,13 @@ const AdminPage = () => {
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState(null);
   const [affiliates, setAffiliates] = useState([]);
-  const [counts, setCounts] = useState({ pending: 0, approved: 0, rejected: 0, suspended: 0, total: 0 });
+  const [counts, setCounts] = useState({
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    suspended: 0,
+    total: 0,
+  });
   const [filter, setFilter] = useState('all');
   const [selectedAffiliate, setSelectedAffiliate] = useState(null);
   const [affiliateDetails, setAffiliateDetails] = useState(null);
@@ -9468,7 +13551,7 @@ const AdminPage = () => {
   // Remove /api suffix if present to build admin URLs correctly
   const API_BASE = API_URL.replace(/\/api$/, '');
 
-  const authenticate = async (keyToUse) => {
+  const authenticate = async keyToUse => {
     const key = keyToUse || adminKey;
     if (!key || !key.trim()) {
       toast.error('Please enter an admin key');
@@ -9478,7 +13561,7 @@ const AdminPage = () => {
     try {
       console.log('Authenticating with key:', key.substring(0, 8) + '...');
       const res = await axios.get(`${API_BASE}/api/admin/stats`, {
-        headers: { 'X-Admin-Key': key }
+        headers: { 'X-Admin-Key': key },
       });
       setStats(res.data);
       setIsAuthenticated(true);
@@ -9498,9 +13581,11 @@ const AdminPage = () => {
 
   const getHeaders = () => ({ 'X-Admin-Key': adminKey });
 
-  const loadAffiliatesWithKey = async (key) => {
+  const loadAffiliatesWithKey = async key => {
     try {
-      const res = await axios.get(`${API_BASE}/api/admin/affiliates`, { headers: { 'X-Admin-Key': key } });
+      const res = await axios.get(`${API_BASE}/api/admin/affiliates`, {
+        headers: { 'X-Admin-Key': key },
+      });
       setAffiliates(res.data.affiliates);
       setCounts(res.data.counts);
     } catch (err) {
@@ -9511,7 +13596,8 @@ const AdminPage = () => {
   const loadAffiliates = async () => {
     if (!adminKey) return;
     try {
-      const url = filter === 'all' ? '/api/admin/affiliates' : `/api/admin/affiliates?status=${filter}`;
+      const url =
+        filter === 'all' ? '/api/admin/affiliates' : `/api/admin/affiliates?status=${filter}`;
       const res = await axios.get(`${API_BASE}${url}`, { headers: getHeaders() });
       setAffiliates(res.data.affiliates);
       setCounts(res.data.counts);
@@ -9520,9 +13606,11 @@ const AdminPage = () => {
     }
   };
 
-  const loadAffiliateDetails = async (id) => {
+  const loadAffiliateDetails = async id => {
     try {
-      const res = await axios.get(`${API_BASE}/api/admin/affiliates/${id}`, { headers: getHeaders() });
+      const res = await axios.get(`${API_BASE}/api/admin/affiliates/${id}`, {
+        headers: getHeaders(),
+      });
       setAffiliateDetails(res.data);
       setSelectedAffiliate(id);
     } catch (err) {
@@ -9533,7 +13621,11 @@ const AdminPage = () => {
   const updateStatus = async (id, status, note = '') => {
     setActionLoading(true);
     try {
-      await axios.put(`${API_BASE}/api/admin/affiliates/${id}/status`, { status, note }, { headers: getHeaders() });
+      await axios.put(
+        `${API_BASE}/api/admin/affiliates/${id}/status`,
+        { status, note },
+        { headers: getHeaders() }
+      );
       toast.success(`Affiliate ${status}`);
       loadAffiliates();
       if (selectedAffiliate === id) loadAffiliateDetails(id);
@@ -9551,7 +13643,11 @@ const AdminPage = () => {
     }
     setActionLoading(true);
     try {
-      await axios.post(`${API_BASE}/api/admin/affiliates/${id}/payout`, { amount: parseFloat(amount) }, { headers: getHeaders() });
+      await axios.post(
+        `${API_BASE}/api/admin/affiliates/${id}/payout`,
+        { amount: parseFloat(amount) },
+        { headers: getHeaders() }
+      );
       toast.success('Payout processed');
       loadAffiliateDetails(id);
       loadAffiliates();
@@ -9578,21 +13674,38 @@ const AdminPage = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="page-container" style={{ maxWidth: '400px', margin: '100px auto', padding: '20px' }}>
+      <div
+        className="page-container"
+        style={{ maxWidth: '400px', margin: '100px auto', padding: '20px' }}
+      >
         <div className="card">
-          <h1 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px', textAlign: 'center' }}>Admin Login</h1>
+          <h1
+            style={{
+              fontSize: '24px',
+              fontWeight: '700',
+              marginBottom: '24px',
+              textAlign: 'center',
+            }}
+          >
+            Admin Login
+          </h1>
           <div className="form-group">
             <label className="form-label">Admin Key</label>
             <input
               type="password"
               className="form-input"
               value={adminKey}
-              onChange={(e) => setAdminKey(e.target.value)}
+              onChange={e => setAdminKey(e.target.value)}
               placeholder="Enter admin secret key"
-              onKeyDown={(e) => e.key === 'Enter' && authenticate(adminKey)}
+              onKeyDown={e => e.key === 'Enter' && authenticate(adminKey)}
             />
           </div>
-          <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => authenticate(adminKey)} disabled={loading}>
+          <button
+            className="btn btn-primary"
+            style={{ width: '100%' }}
+            onClick={() => authenticate(adminKey)}
+            disabled={loading}
+          >
             {loading ? 'Authenticating...' : 'Login'}
           </button>
         </div>
@@ -9601,35 +13714,69 @@ const AdminPage = () => {
   }
 
   return (
-    <div className="page-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+    <div
+      className="page-container"
+      style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '32px',
+        }}
+      >
         <h1 style={{ fontSize: '28px', fontWeight: '700' }}>Admin Dashboard</h1>
-        <button className="btn btn-secondary" onClick={() => { localStorage.removeItem('adminKey'); setIsAuthenticated(false); setAdminKey(''); }}>
+        <button
+          className="btn btn-secondary"
+          onClick={() => {
+            localStorage.removeItem('adminKey');
+            setIsAuthenticated(false);
+            setAdminKey('');
+          }}
+        >
           <LogOut size={16} /> Logout
         </button>
       </div>
 
       {/* Stats Overview */}
       {stats && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '16px',
+            marginBottom: '32px',
+          }}
+        >
           <div className="card" style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', fontWeight: '700', color: 'var(--primary)' }}>{stats.users?.total || 0}</div>
+            <div style={{ fontSize: '32px', fontWeight: '700', color: 'var(--primary)' }}>
+              {stats.users?.total || 0}
+            </div>
             <div style={{ color: 'var(--gray-600)' }}>Total Users</div>
           </div>
           <div className="card" style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', fontWeight: '700', color: '#10B981' }}>{stats.users?.paying || 0}</div>
+            <div style={{ fontSize: '32px', fontWeight: '700', color: '#10B981' }}>
+              {stats.users?.paying || 0}
+            </div>
             <div style={{ color: 'var(--gray-600)' }}>Paying Users</div>
           </div>
           <div className="card" style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', fontWeight: '700', color: '#F59E0B' }}>{counts.pending}</div>
+            <div style={{ fontSize: '32px', fontWeight: '700', color: '#F59E0B' }}>
+              {counts.pending}
+            </div>
             <div style={{ color: 'var(--gray-600)' }}>Pending Affiliates</div>
           </div>
           <div className="card" style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', fontWeight: '700', color: '#8B5CF6' }}>{counts.approved}</div>
+            <div style={{ fontSize: '32px', fontWeight: '700', color: '#8B5CF6' }}>
+              {counts.approved}
+            </div>
             <div style={{ color: 'var(--gray-600)' }}>Active Affiliates</div>
           </div>
           <div className="card" style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', fontWeight: '700', color: '#10B981' }}>${stats.affiliates?.totalEarnings?.toFixed(2) || '0.00'}</div>
+            <div style={{ fontSize: '32px', fontWeight: '700', color: '#10B981' }}>
+              ${stats.affiliates?.totalEarnings?.toFixed(2) || '0.00'}
+            </div>
             <div style={{ color: 'var(--gray-600)' }}>Total Affiliate Earnings</div>
           </div>
         </div>
@@ -9637,7 +13784,14 @@ const AdminPage = () => {
 
       {/* Affiliate Management */}
       <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '24px',
+          }}
+        >
           <h2 style={{ fontSize: '20px', fontWeight: '600' }}>Affiliate Applications</h2>
           <div style={{ display: 'flex', gap: '8px' }}>
             {['all', 'pending', 'approved', 'rejected', 'suspended'].map(f => (
@@ -9653,11 +13807,19 @@ const AdminPage = () => {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: selectedAffiliate ? '1fr 1fr' : '1fr', gap: '24px' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: selectedAffiliate ? '1fr 1fr' : '1fr',
+            gap: '24px',
+          }}
+        >
           {/* Affiliates List */}
           <div>
             {affiliates.length === 0 ? (
-              <p style={{ color: 'var(--gray-500)', textAlign: 'center', padding: '40px' }}>No affiliates found</p>
+              <p style={{ color: 'var(--gray-500)', textAlign: 'center', padding: '40px' }}>
+                No affiliates found
+              </p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {affiliates.map(aff => (
@@ -9666,25 +13828,53 @@ const AdminPage = () => {
                     onClick={() => loadAffiliateDetails(aff.id)}
                     style={{
                       padding: '16px',
-                      border: selectedAffiliate === aff.id ? '2px solid var(--primary)' : '1px solid var(--border-color)',
+                      border:
+                        selectedAffiliate === aff.id
+                          ? '2px solid var(--primary)'
+                          : '1px solid var(--border-color)',
                       borderRadius: '8px',
                       cursor: 'pointer',
-                      background: selectedAffiliate === aff.id ? 'var(--primary-light)' : 'transparent'
+                      background:
+                        selectedAffiliate === aff.id ? 'var(--primary-light)' : 'transparent',
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
                       <div>
                         <div style={{ fontWeight: '600' }}>{aff.email}</div>
-                        <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>{aff.affiliate_code}</div>
+                        <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>
+                          {aff.affiliate_code}
+                        </div>
                       </div>
-                      <span style={{
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        background: aff.status === 'approved' ? '#D1FAE5' : aff.status === 'pending' ? '#FEF3C7' : aff.status === 'rejected' ? '#FEE2E2' : '#E5E7EB',
-                        color: aff.status === 'approved' ? '#065F46' : aff.status === 'pending' ? '#92400E' : aff.status === 'rejected' ? '#991B1B' : '#374151'
-                      }}>
+                      <span
+                        style={{
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          background:
+                            aff.status === 'approved'
+                              ? '#D1FAE5'
+                              : aff.status === 'pending'
+                                ? '#FEF3C7'
+                                : aff.status === 'rejected'
+                                  ? '#FEE2E2'
+                                  : '#E5E7EB',
+                          color:
+                            aff.status === 'approved'
+                              ? '#065F46'
+                              : aff.status === 'pending'
+                                ? '#92400E'
+                                : aff.status === 'rejected'
+                                  ? '#991B1B'
+                                  : '#374151',
+                        }}
+                      >
                         {aff.status}
                       </span>
                     </div>
@@ -9692,7 +13882,8 @@ const AdminPage = () => {
                       Website: {aff.website || 'N/A'} | Audience: {aff.audience_size || 'N/A'}
                     </div>
                     <div style={{ marginTop: '4px', fontSize: '12px', color: 'var(--gray-500)' }}>
-                      Applied: {new Date(aff.applied_at).toLocaleDateString()} | Earned: ${parseFloat(aff.total_earned || 0).toFixed(2)}
+                      Applied: {new Date(aff.applied_at).toLocaleDateString()} | Earned: $
+                      {parseFloat(aff.total_earned || 0).toFixed(2)}
                     </div>
                   </div>
                 ))}
@@ -9703,95 +13894,184 @@ const AdminPage = () => {
           {/* Affiliate Details Panel */}
           {selectedAffiliate && affiliateDetails && (
             <div style={{ borderLeft: '1px solid var(--border-color)', paddingLeft: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '16px',
+                }}
+              >
                 <h3 style={{ fontSize: '18px', fontWeight: '600' }}>Details</h3>
-                <button onClick={() => { setSelectedAffiliate(null); setAffiliateDetails(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                <button
+                  onClick={() => {
+                    setSelectedAffiliate(null);
+                    setAffiliateDetails(null);
+                  }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                >
                   <X size={20} />
                 </button>
               </div>
 
               <div style={{ marginBottom: '20px' }}>
-                <p><strong>Email:</strong> {affiliateDetails.affiliate?.email}</p>
-                <p><strong>Business:</strong> {affiliateDetails.affiliate?.business_name || 'N/A'}</p>
-                <p><strong>Code:</strong> {affiliateDetails.affiliate?.affiliate_code}</p>
-                <p><strong>Commission:</strong> {affiliateDetails.affiliate?.commission_rate}%</p>
-                <p><strong>Website:</strong> {affiliateDetails.affiliate?.website || 'N/A'}</p>
-                <p><strong>Marketing:</strong> {affiliateDetails.affiliate?.marketing_channels || 'N/A'}</p>
-                <p><strong>Audience:</strong> {affiliateDetails.affiliate?.audience_size || 'N/A'}</p>
-                <p><strong>Total Earned:</strong> ${parseFloat(affiliateDetails.affiliate?.total_earned || 0).toFixed(2)}</p>
-                <p><strong>Pending Balance:</strong> ${parseFloat(affiliateDetails.affiliate?.pending_balance || 0).toFixed(2)}</p>
-                <p><strong>Payout Method:</strong> {affiliateDetails.affiliate?.payout_method} ({affiliateDetails.affiliate?.payout_email || 'Not set'})</p>
+                <p>
+                  <strong>Email:</strong> {affiliateDetails.affiliate?.email}
+                </p>
+                <p>
+                  <strong>Business:</strong> {affiliateDetails.affiliate?.business_name || 'N/A'}
+                </p>
+                <p>
+                  <strong>Code:</strong> {affiliateDetails.affiliate?.affiliate_code}
+                </p>
+                <p>
+                  <strong>Commission:</strong> {affiliateDetails.affiliate?.commission_rate}%
+                </p>
+                <p>
+                  <strong>Website:</strong> {affiliateDetails.affiliate?.website || 'N/A'}
+                </p>
+                <p>
+                  <strong>Marketing:</strong>{' '}
+                  {affiliateDetails.affiliate?.marketing_channels || 'N/A'}
+                </p>
+                <p>
+                  <strong>Audience:</strong> {affiliateDetails.affiliate?.audience_size || 'N/A'}
+                </p>
+                <p>
+                  <strong>Total Earned:</strong> $
+                  {parseFloat(affiliateDetails.affiliate?.total_earned || 0).toFixed(2)}
+                </p>
+                <p>
+                  <strong>Pending Balance:</strong> $
+                  {parseFloat(affiliateDetails.affiliate?.pending_balance || 0).toFixed(2)}
+                </p>
+                <p>
+                  <strong>Payout Method:</strong> {affiliateDetails.affiliate?.payout_method} (
+                  {affiliateDetails.affiliate?.payout_email || 'Not set'})
+                </p>
               </div>
 
               {/* Actions */}
               <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
                 {affiliateDetails.affiliate?.status !== 'approved' && (
-                  <button className="btn btn-primary" onClick={() => updateStatus(selectedAffiliate, 'approved')} disabled={actionLoading}>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => updateStatus(selectedAffiliate, 'approved')}
+                    disabled={actionLoading}
+                  >
                     <Check size={16} /> Approve
                   </button>
                 )}
                 {affiliateDetails.affiliate?.status !== 'rejected' && (
-                  <button className="btn btn-secondary" style={{ background: '#FEE2E2', color: '#991B1B' }} onClick={() => updateStatus(selectedAffiliate, 'rejected')} disabled={actionLoading}>
+                  <button
+                    className="btn btn-secondary"
+                    style={{ background: '#FEE2E2', color: '#991B1B' }}
+                    onClick={() => updateStatus(selectedAffiliate, 'rejected')}
+                    disabled={actionLoading}
+                  >
                     <X size={16} /> Reject
                   </button>
                 )}
                 {affiliateDetails.affiliate?.status === 'approved' && (
-                  <button className="btn btn-secondary" onClick={() => updateStatus(selectedAffiliate, 'suspended')} disabled={actionLoading}>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => updateStatus(selectedAffiliate, 'suspended')}
+                    disabled={actionLoading}
+                  >
                     Suspend
                   </button>
                 )}
               </div>
 
               {/* Payout Form */}
-              {affiliateDetails.affiliate?.status === 'approved' && parseFloat(affiliateDetails.affiliate?.pending_balance || 0) > 0 && (
-                <div style={{ background: 'var(--gray-50)', padding: '16px', borderRadius: '8px', marginBottom: '20px' }}>
-                  <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Process Payout</h4>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <input
-                      type="number"
-                      id={`payout-${selectedAffiliate}`}
-                      className="form-input"
-                      placeholder="Amount"
-                      defaultValue={affiliateDetails.affiliate?.pending_balance}
-                      style={{ width: '120px' }}
-                    />
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => processPayout(selectedAffiliate, document.getElementById(`payout-${selectedAffiliate}`).value)}
-                      disabled={actionLoading}
-                    >
-                      Pay Out
-                    </button>
+              {affiliateDetails.affiliate?.status === 'approved' &&
+                parseFloat(affiliateDetails.affiliate?.pending_balance || 0) > 0 && (
+                  <div
+                    style={{
+                      background: 'var(--gray-50)',
+                      padding: '16px',
+                      borderRadius: '8px',
+                      marginBottom: '20px',
+                    }}
+                  >
+                    <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>
+                      Process Payout
+                    </h4>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input
+                        type="number"
+                        id={`payout-${selectedAffiliate}`}
+                        className="form-input"
+                        placeholder="Amount"
+                        defaultValue={affiliateDetails.affiliate?.pending_balance}
+                        style={{ width: '120px' }}
+                      />
+                      <button
+                        className="btn btn-primary"
+                        onClick={() =>
+                          processPayout(
+                            selectedAffiliate,
+                            document.getElementById(`payout-${selectedAffiliate}`).value
+                          )
+                        }
+                        disabled={actionLoading}
+                      >
+                        Pay Out
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* Conversions */}
               <div style={{ marginBottom: '20px' }}>
-                <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>Conversions ({affiliateDetails.conversions?.length || 0})</h4>
+                <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>
+                  Conversions ({affiliateDetails.conversions?.length || 0})
+                </h4>
                 {affiliateDetails.conversions?.length > 0 ? (
                   <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
                     {affiliateDetails.conversions.map(c => (
-                      <div key={c.id} style={{ fontSize: '13px', padding: '8px', borderBottom: '1px solid var(--border-color)' }}>
-                        {c.converted_email} - ${parseFloat(c.commission_amount || 0).toFixed(2)} - {new Date(c.created_at).toLocaleDateString()}
+                      <div
+                        key={c.id}
+                        style={{
+                          fontSize: '13px',
+                          padding: '8px',
+                          borderBottom: '1px solid var(--border-color)',
+                        }}
+                      >
+                        {c.converted_email} - ${parseFloat(c.commission_amount || 0).toFixed(2)} -{' '}
+                        {new Date(c.created_at).toLocaleDateString()}
                       </div>
                     ))}
                   </div>
-                ) : <p style={{ fontSize: '13px', color: 'var(--gray-500)' }}>No conversions yet</p>}
+                ) : (
+                  <p style={{ fontSize: '13px', color: 'var(--gray-500)' }}>No conversions yet</p>
+                )}
               </div>
 
               {/* Payouts */}
               <div>
-                <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>Payouts ({affiliateDetails.payouts?.length || 0})</h4>
+                <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>
+                  Payouts ({affiliateDetails.payouts?.length || 0})
+                </h4>
                 {affiliateDetails.payouts?.length > 0 ? (
                   <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
                     {affiliateDetails.payouts.map(p => (
-                      <div key={p.id} style={{ fontSize: '13px', padding: '8px', borderBottom: '1px solid var(--border-color)' }}>
-                        ${parseFloat(p.amount || 0).toFixed(2)} via {p.method} - {p.status} - {new Date(p.created_at).toLocaleDateString()}
+                      <div
+                        key={p.id}
+                        style={{
+                          fontSize: '13px',
+                          padding: '8px',
+                          borderBottom: '1px solid var(--border-color)',
+                        }}
+                      >
+                        ${parseFloat(p.amount || 0).toFixed(2)} via {p.method} - {p.status} -{' '}
+                        {new Date(p.created_at).toLocaleDateString()}
                       </div>
                     ))}
                   </div>
-                ) : <p style={{ fontSize: '13px', color: 'var(--gray-500)' }}>No payouts yet</p>}
+                ) : (
+                  <p style={{ fontSize: '13px', color: 'var(--gray-500)' }}>No payouts yet</p>
+                )}
               </div>
             </div>
           )}
@@ -9808,88 +14088,95 @@ function App() {
       <ThemeProvider>
         <AuthProvider>
           <Toaster position="top-right" />
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/pricing" element={<PricingPage />} />
-          <Route path="/support" element={<SupportPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/extension" element={<ExtensionPage />} />
-          <Route path="/google-review-response-generator" element={<GoogleReviewPage />} />
-          <Route path="/yelp-review-reply-tool" element={<YelpReviewPage />} />
-          <Route path="/restaurant-review-responses" element={<RestaurantReviewPage />} />
-          <Route path="/hotel-review-management" element={<HotelReviewPage />} />
-          <Route path="/local-business-reviews" element={<LocalBusinessReviewPage />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <ProfilePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/confirm-email" element={<ConfirmEmailPage />} />
-          <Route path="/verify-email" element={<VerifyEmailPage />} />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <SettingsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/analytics"
-            element={
-              <ProtectedRoute>
-                <AnalyticsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/team"
-            element={
-              <ProtectedRoute>
-                <TeamPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/join-team" element={<JoinTeamPage />} />
-          <Route path="/affiliate" element={<AffiliateLandingPage />} />
-          <Route
-            path="/affiliate/dashboard"
-            element={
-              <ProtectedRoute>
-                <AffiliateDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/api-docs"
-            element={
-              <ProtectedRoute>
-                <Suspense fallback={<LoadingSpinner />}>
-                  <LazyApiDocsPage />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminPage /></ProtectedRoute>} />
-          {/* Catch-all route for 404 - redirect to home */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/support" element={<SupportPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/extension" element={<ExtensionPage />} />
+            <Route path="/google-review-response-generator" element={<GoogleReviewPage />} />
+            <Route path="/yelp-review-reply-tool" element={<YelpReviewPage />} />
+            <Route path="/restaurant-review-responses" element={<RestaurantReviewPage />} />
+            <Route path="/hotel-review-management" element={<HotelReviewPage />} />
+            <Route path="/local-business-reviews" element={<LocalBusinessReviewPage />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/confirm-email" element={<ConfirmEmailPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <SettingsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/analytics"
+              element={
+                <ProtectedRoute>
+                  <AnalyticsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/team"
+              element={
+                <ProtectedRoute>
+                  <TeamPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/join-team" element={<JoinTeamPage />} />
+            <Route path="/affiliate" element={<AffiliateLandingPage />} />
+            <Route
+              path="/affiliate/dashboard"
+              element={
+                <ProtectedRoute>
+                  <AffiliateDashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/api-docs"
+              element={
+                <ProtectedRoute>
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <LazyApiDocsPage />
+                  </Suspense>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AdminPage />
+                </ProtectedRoute>
+              }
+            />
+            {/* Catch-all route for 404 - redirect to home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AuthProvider>
       </ThemeProvider>
