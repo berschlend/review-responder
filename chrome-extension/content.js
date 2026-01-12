@@ -2324,6 +2324,18 @@ async function createResponsePanel() {
         </div>
       </div>
 
+      <!-- Turbo Mode Toggle (prominent) -->
+      <div class="rr-turbo-banner">
+        <label class="rr-turbo-switch">
+          <input type="checkbox" class="rr-turbo-toggle">
+          <span class="rr-turbo-slider"></span>
+        </label>
+        <div class="rr-turbo-info">
+          <span class="rr-turbo-title">⚡ Turbo Mode</span>
+          <span class="rr-turbo-desc">Skip this panel - generate & copy instantly</span>
+        </div>
+      </div>
+
       <!-- Generate Buttons (always visible) -->
       <div class="rr-generate-buttons">
         <button class="rr-generate-btn">
@@ -2333,7 +2345,7 @@ async function createResponsePanel() {
             Generating...
           </span>
         </button>
-        <button class="rr-variations-btn" title="Generate 3 different options (uses 3 credits)">
+        <button class="rr-variations-btn hidden" title="Generate 3 different options (uses 3 credits)">
           <span class="rr-var-text">🎯 3 Options</span>
           <span class="rr-var-loading hidden">
             <span class="rr-spinner"></span>
@@ -2414,9 +2426,9 @@ async function createResponsePanel() {
               <input type="checkbox" class="rr-autocopy-toggle" checked>
               <span>Auto-copy after generate</span>
             </label>
-            <label class="rr-checkbox-label rr-turbo-label">
-              <input type="checkbox" class="rr-turbo-toggle">
-              <span>⚡ Turbo Mode</span>
+            <label class="rr-checkbox-label">
+              <input type="checkbox" class="rr-variations-toggle">
+              <span>🎯 Show "3 Options" button</span>
             </label>
           </div>
           <!-- Templates Quick Select -->
@@ -2713,12 +2725,28 @@ async function createResponsePanel() {
     panel.querySelector('.rr-autocopy-toggle').checked = settings.autoCopy !== false;
     panel.querySelector('.rr-turbo-toggle').checked = settings.turboMode || false;
 
+    // Update turbo banner style
+    const turboBanner = panel.querySelector('.rr-turbo-banner');
+    if (turboBanner) {
+      turboBanner.classList.toggle('active', settings.turboMode || false);
+    }
+
     // Update turbo button in header
     const turboBtn = panel.querySelector('.rr-turbo-btn');
     if (turboBtn) {
       turboBtn.textContent = settings.turboMode ? '⚡' : '⏱️';
       turboBtn.title = settings.turboMode ? 'Turbo Mode ON (click to disable)' : 'Turbo Mode OFF (click to enable)';
       turboBtn.classList.toggle('rr-turbo-active', settings.turboMode);
+    }
+
+    // Update variations toggle and button visibility
+    const variationsToggle = panel.querySelector('.rr-variations-toggle');
+    const variationsBtn = panel.querySelector('.rr-variations-btn');
+    if (variationsToggle) {
+      variationsToggle.checked = settings.showVariations || false;
+    }
+    if (variationsBtn) {
+      variationsBtn.classList.toggle('hidden', !settings.showVariations);
     }
 
     cachedSettings = settings;
@@ -3228,7 +3256,8 @@ function initPanelEvents(panel) {
       length: 'medium',
       emojis: false,
       autoCopy: true,
-      turboMode: false
+      turboMode: false,
+      showVariations: false
     };
 
     await chrome.storage.local.set({ rr_settings: defaults });
@@ -3240,6 +3269,16 @@ function initPanelEvents(panel) {
     panel.querySelector('.rr-emoji-toggle').checked = false;
     panel.querySelector('.rr-autocopy-toggle').checked = true;
     panel.querySelector('.rr-turbo-toggle').checked = false;
+
+    // Reset variations toggle and hide button
+    const variationsToggle = panel.querySelector('.rr-variations-toggle');
+    const variationsBtn = panel.querySelector('.rr-variations-btn');
+    if (variationsToggle) variationsToggle.checked = false;
+    if (variationsBtn) variationsBtn.classList.add('hidden');
+
+    // Reset turbo banner
+    const turboBanner = panel.querySelector('.rr-turbo-banner');
+    if (turboBanner) turboBanner.classList.remove('active');
 
     // Update overlay
     panel.querySelectorAll('.rr-length-btn').forEach(btn => {
@@ -3398,7 +3437,26 @@ function initPanelEvents(panel) {
   panel.querySelector('.rr-length-select').addEventListener('change', () => saveCurrentSettings(panel));
   panel.querySelector('.rr-emoji-toggle').addEventListener('change', () => saveCurrentSettings(panel));
   panel.querySelector('.rr-autocopy-toggle').addEventListener('change', () => saveCurrentSettings(panel));
-  panel.querySelector('.rr-turbo-toggle').addEventListener('change', () => saveCurrentSettings(panel));
+  panel.querySelector('.rr-turbo-toggle').addEventListener('change', (e) => {
+    // Update turbo banner style
+    const banner = panel.querySelector('.rr-turbo-banner');
+    if (banner) {
+      banner.classList.toggle('active', e.target.checked);
+    }
+    saveCurrentSettings(panel);
+  });
+
+  // Variations toggle - show/hide 3 Options button
+  const variationsToggle = panel.querySelector('.rr-variations-toggle');
+  if (variationsToggle) {
+    variationsToggle.addEventListener('change', (e) => {
+      const variationsBtn = panel.querySelector('.rr-variations-btn');
+      if (variationsBtn) {
+        variationsBtn.classList.toggle('hidden', !e.target.checked);
+      }
+      saveCurrentSettings(panel);
+    });
+  }
 
   // ========== BATCH MODE EVENTS ==========
 
@@ -3735,12 +3793,14 @@ async function closePanel(panel) {
 }
 
 function saveCurrentSettings(panel) {
+  const variationsToggle = panel.querySelector('.rr-variations-toggle');
   const settings = {
     tone: panel.querySelector('.rr-tone-select').value,
     length: panel.querySelector('.rr-length-select').value,
     emojis: panel.querySelector('.rr-emoji-toggle').checked,
     autoCopy: panel.querySelector('.rr-autocopy-toggle').checked,
-    turboMode: panel.querySelector('.rr-turbo-toggle').checked
+    turboMode: panel.querySelector('.rr-turbo-toggle').checked,
+    showVariations: variationsToggle ? variationsToggle.checked : false
   };
   cachedSettings = settings;
   saveSettings(settings);
@@ -3751,6 +3811,12 @@ function saveCurrentSettings(panel) {
     turboBtn.textContent = settings.turboMode ? '⚡' : '⏱️';
     turboBtn.title = settings.turboMode ? 'Turbo Mode ON (click to disable)' : 'Turbo Mode OFF (click to enable)';
     turboBtn.classList.toggle('rr-turbo-active', settings.turboMode);
+  }
+
+  // Update turbo banner style
+  const turboBanner = panel.querySelector('.rr-turbo-banner');
+  if (turboBanner) {
+    turboBanner.classList.toggle('active', settings.turboMode);
   }
 }
 

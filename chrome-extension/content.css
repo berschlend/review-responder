@@ -426,12 +426,12 @@
 /* ========== MAIN PANEL ========== */
 #rr-response-panel {
   position: fixed;
-  top: 5vh;
+  top: 2vh;
   left: 50%;
   transform: translateX(-50%);
   width: 420px;
   max-width: 95vw;
-  max-height: 90vh;
+  max-height: 96vh;
   background: var(--rr-bg);
   border-radius: var(--rr-radius);
   box-shadow: var(--rr-shadow);
@@ -934,8 +934,9 @@
 
 /* ========== PANEL BODY ========== */
 .rr-panel-body {
-  padding: 18px;
-  max-height: calc(90vh - 60px);
+  padding: 16px;
+  padding-bottom: 20px;
+  max-height: calc(95vh - 140px);
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -1526,12 +1527,12 @@
 
 .rr-generate-btn {
   flex: 1;
-  padding: 16px;
+  padding: 12px;
   background: linear-gradient(135deg, var(--rr-primary), var(--rr-primary-dark));
   color: white;
   border: none;
-  border-radius: 12px;
-  font-size: 16px;
+  border-radius: 10px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s;
@@ -1551,12 +1552,12 @@
 
 /* Variations Button (3 Options) */
 .rr-variations-btn {
-  padding: 16px 14px;
+  padding: 12px 12px;
   background: var(--rr-bg);
   color: var(--rr-primary);
   border: 2px solid var(--rr-primary);
-  border-radius: 12px;
-  font-size: 13px;
+  border-radius: 10px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s;
@@ -1907,10 +1908,10 @@
 .rr-done-btn,
 .rr-submit-btn {
   flex: 1;
-  padding: 16px 20px;
+  padding: 12px 16px;
   border: none;
-  border-radius: 12px;
-  font-size: 15px;
+  border-radius: 10px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
@@ -1971,15 +1972,89 @@
   background: rgba(16, 185, 129, 0.1);
 }
 
-/* Remove old animations - cleaner look */
-@keyframes rr-shine {
-  0% { left: -100%; }
-  50%, 100% { left: 100%; }
+/* ========== TURBO MODE BANNER ========== */
+.rr-turbo-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  margin-bottom: 10px;
 }
 
-@keyframes rr-glow {
-  0%, 100% { box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); }
-  50% { box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4); }
+.rr-turbo-banner.active {
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  border-color: #22c55e;
+}
+
+.rr-turbo-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.rr-turbo-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.rr-turbo-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: #cbd5e1;
+  border-radius: 24px;
+  transition: all 0.3s;
+}
+
+.rr-turbo-slider::before {
+  content: '';
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: all 0.3s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.rr-turbo-switch input:checked + .rr-turbo-slider {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.rr-turbo-switch input:checked + .rr-turbo-slider::before {
+  transform: translateX(20px);
+}
+
+.rr-turbo-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rr-turbo-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #92400e;
+}
+
+.rr-turbo-banner.active .rr-turbo-title {
+  color: #166534;
+}
+
+.rr-turbo-desc {
+  font-size: 11px;
+  color: #b45309;
+}
+
+.rr-turbo-banner.active .rr-turbo-desc {
+  color: #15803d;
 }
 
 /* ========== HELP TIP ========== */

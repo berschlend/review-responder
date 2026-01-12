@@ -3395,7 +3395,7 @@ app.post('/api/capture-email', async (req, res) => {
                   <p>This discount won't last forever - it's only for our first 50 customers.</p>
 
                   <div style="text-align: center; margin: 32px 0;">
-                    <a href="${process.env.FRONTEND_URL}/pricing?discount=${discountCode}" style="display: inline-block; background: #10b981; color: white; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px;">🎁 Claim 50% Discount</a>
+                    <a href="${process.env.FRONTEND_URL}/pricing?discount=${discountCode}" style="display: inline-block; background: #10b981; color: white; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px;">Claim 50% Discount</a>
                   </div>
 
                   <p style="color: #6B7280; font-size: 14px;">Questions? Just reply to this email.</p>
@@ -3403,7 +3403,7 @@ app.post('/api/capture-email', async (req, res) => {
                   <p style="margin-bottom: 0;">Cheers,<br>Berend from ReviewResponder</p>
                 </div>
                 <div style="text-align: center; padding: 20px; color: #9CA3AF; font-size: 12px;">
-                  <p style="margin: 0;">You're receiving this because you signed up at reviewresponder.com</p>
+                  <p style="margin: 0;">You're receiving this because you signed up at tryreviewresponder.com</p>
                 </div>
               </div>
             </body>
