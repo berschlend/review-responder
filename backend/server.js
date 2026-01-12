@@ -7388,6 +7388,155 @@ app.post('/api/outreach/test-email', async (req, res) => {
   }
 });
 
+// Test Usage Alert Email
+app.post('/api/admin/test-usage-alert', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (!process.env.ADMIN_SECRET || !safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'Resend not configured' });
+  }
+
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Email required' });
+  }
+
+  try {
+    const testUser = {
+      email: email,
+      business_name: 'Test Business',
+      subscription_plan: 'starter',
+      email_usage_alerts: true,
+    };
+
+    const sent = await sendUsageAlertEmail(testUser);
+    if (sent) {
+      res.json({ success: true, message: `Usage alert test email sent to ${email}` });
+    } else {
+      res.status(500).json({ error: 'Failed to send email' });
+    }
+  } catch (err) {
+    console.error('Test usage alert error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Test Plan Renewal Email
+app.post('/api/admin/test-plan-renewal', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (!process.env.ADMIN_SECRET || !safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'Resend not configured' });
+  }
+
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Email required' });
+  }
+
+  try {
+    const testUser = {
+      email: email,
+      business_name: 'Test Business',
+      subscription_plan: 'professional',
+      email_billing_updates: true,
+    };
+
+    const sent = await sendPlanRenewalEmail(testUser);
+    if (sent) {
+      res.json({ success: true, message: `Plan renewal test email sent to ${email}` });
+    } else {
+      res.status(500).json({ error: 'Failed to send email' });
+    }
+  } catch (err) {
+    console.error('Test plan renewal error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Test Affiliate Status Email (Approved/Rejected)
+app.post('/api/admin/test-affiliate-email', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (!process.env.ADMIN_SECRET || !safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'Resend not configured' });
+  }
+
+  const { email, status = 'approved', note } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Email required' });
+  }
+  if (!['approved', 'rejected'].includes(status)) {
+    return res.status(400).json({ error: 'Status must be approved or rejected' });
+  }
+
+  try {
+    const testUser = {
+      email: email,
+      business_name: 'Test Affiliate',
+    };
+    const testAffiliate = {
+      affiliate_code: 'TEST123',
+      commission_rate: 20,
+    };
+
+    let subject, html;
+
+    if (status === 'approved') {
+      subject = '[TEST] Your Affiliate Application is Approved!';
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h1 style="color: #10B981;">Congratulations! You're Now a ReviewResponder Affiliate</h1>
+          <p>Hi ${testUser.business_name},</p>
+          <p>Great news! Your affiliate application has been approved.</p>
+          <p><strong>Your Affiliate Code:</strong> ${testAffiliate.affiliate_code}</p>
+          <p><strong>Commission Rate:</strong> ${testAffiliate.commission_rate}% recurring</p>
+          <p>You can now start earning by sharing your unique affiliate link:</p>
+          <p style="background: #F3F4F6; padding: 15px; border-radius: 8px; font-family: monospace;">
+            https://tryreviewresponder.com/?aff=${testAffiliate.affiliate_code}
+          </p>
+          <p>Visit your <a href="https://tryreviewresponder.com/affiliate/dashboard">Affiliate Dashboard</a> to track your earnings and get marketing materials.</p>
+          <p>Best,<br>The ReviewResponder Team</p>
+        </div>
+      `;
+    } else {
+      subject = '[TEST] Update on Your Affiliate Application';
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h1 style="color: #6B7280;">Affiliate Application Update</h1>
+          <p>Hi ${testUser.business_name},</p>
+          <p>Thank you for your interest in the ReviewResponder affiliate program.</p>
+          <p>After reviewing your application, we've decided not to move forward at this time.</p>
+          ${note ? `<p><strong>Note:</strong> ${note}</p>` : ''}
+          <p>You're welcome to reapply in the future if your circumstances change.</p>
+          <p>Best,<br>The ReviewResponder Team</p>
+        </div>
+      `;
+    }
+
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      subject,
+      html,
+    });
+
+    res.json({ success: true, message: `Affiliate ${status} test email sent to ${email}` });
+  } catch (err) {
+    console.error('Test affiliate email error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Send cold emails to leads
 app.post('/api/outreach/send-emails', async (req, res) => {
   const adminKey = req.headers['x-admin-key'];
