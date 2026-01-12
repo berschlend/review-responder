@@ -432,7 +432,7 @@
   transform: none;
   width: 380px;
   max-width: calc(100vw - 40px);
-  max-height: calc(100vh - 20px);
+  max-height: calc(100vh - 30px);
   background: var(--rr-bg);
   border-radius: var(--rr-radius);
   box-shadow: var(--rr-shadow);
@@ -440,7 +440,8 @@
   opacity: 0;
   visibility: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   transition: all 0.3s ease;
 }
 
@@ -936,9 +937,7 @@
 /* ========== PANEL BODY ========== */
 .rr-panel-body {
   padding: 14px;
-  padding-bottom: 16px;
-  max-height: calc(100vh - 160px);
-  overflow-y: auto;
+  padding-bottom: 20px;
   overflow-x: hidden;
 }
 

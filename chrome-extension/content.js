@@ -4008,6 +4008,21 @@ async function generateResponse(panel) {
       await markOnboardingSeen();
     }
 
+    // === CLEAN UP PANEL AFTER GENERATE ===
+    // Hide tone buttons section (user already chose)
+    const toneSection = panel.querySelector('.rr-quick-tones');
+    if (toneSection) toneSection.classList.add('hidden');
+
+    // Collapse Review and Options sections
+    const reviewDetails = panel.querySelector('.rr-review-details');
+    const optionsDetails = panel.querySelector('.rr-options-details');
+    if (reviewDetails) reviewDetails.removeAttribute('open');
+    if (optionsDetails) optionsDetails.removeAttribute('open');
+
+    // Hide Generate button section (use small 🔄 button for regenerate)
+    const generateBtnsSection = panel.querySelector('.rr-generate-buttons');
+    if (generateBtnsSection) generateBtnsSection.classList.add('hidden');
+
   } catch (error) {
     showToast(`❌ ${error.message}`, 'error');
   } finally {

@@ -5049,7 +5049,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
         `
       },
       20: {
-        subject: 'We\'d love your feedback! (Quick 30-second survey) 📝',
+        subject: 'We\'d love your feedback! (Quick 30-second survey)',
         html: `
           <!DOCTYPE html>
           <html>
@@ -5067,7 +5067,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
           <body>
             <div class="container">
               <div class="header">
-                <h1>How Are We Doing? 📝</h1>
+                <h1>How Are We Doing?</h1>
                 <p>Your feedback helps us improve!</p>
               </div>
               <div class="content">
