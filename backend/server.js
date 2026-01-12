@@ -4809,9 +4809,9 @@ app.post('/api/admin/testimonials/:id/generate-response', async (req, res) => {
 // Drip Email Campaign - Send scheduled emails based on user signup date
 // Call this endpoint via cron job (e.g., daily at 9am)
 app.post('/api/cron/send-drip-emails', async (req, res) => {
-  // Optional: Add a secret key check for security
-  const cronSecret = req.headers['x-cron-secret'];
-  if (process.env.CRON_SECRET && cronSecret !== process.env.CRON_SECRET) {
+  // Accept both header and query parameter for secret (like daily-outreach)
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 

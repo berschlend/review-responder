@@ -5372,9 +5372,9 @@
 
 /* ========== MINIMIZED PANEL (Turbo Mode) ========== */
 #rr-response-panel.rr-minimized {
-  width: 320px !important;
+  width: 380px !important;
   height: auto !important;
-  max-height: 200px !important;
+  max-height: 500px !important;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -5392,31 +5392,32 @@
 #rr-response-panel.rr-minimized .rr-response-section {
   display: block !important;
   padding: 12px;
-  max-height: 120px;
-  overflow: hidden;
+  max-height: 400px;
+  overflow: visible;
   position: relative;
 }
 
 #rr-response-panel.rr-minimized .rr-response-section::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 50px;
-  background: linear-gradient(transparent, var(--rr-bg));
-  pointer-events: none;
+  display: none;
 }
 
 #rr-response-panel.rr-minimized .rr-response-textarea {
-  max-height: 70px;
-  min-height: 70px;
-  font-size: 12px;
+  max-height: 300px;
+  min-height: 150px;
+  font-size: 13px;
   resize: none;
-  pointer-events: none;
+  pointer-events: auto;
+  overflow-y: auto !important;
+  cursor: text;
 }
 
-#rr-response-panel.rr-minimized .rr-response-actions,
+#rr-response-panel.rr-minimized .rr-response-actions {
+  display: flex !important;
+  gap: 8px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--rr-border);
+}
+
 #rr-response-panel.rr-minimized .rr-char-counter,
 #rr-response-panel.rr-minimized .rr-quality-badge {
   display: none !important;
@@ -5424,27 +5425,24 @@
 
 #rr-response-panel.rr-minimized .rr-panel-header {
   padding: 10px 14px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
 }
 
 #rr-response-panel.rr-minimized .rr-panel-header h3 {
   font-size: 13px;
+  color: white;
 }
 
-/* Click to expand hint */
+#rr-response-panel.rr-minimized .rr-panel-header h3::after {
+  content: ' - Click header for full panel';
+  font-size: 10px;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+/* Click to expand hint - hidden since full response is shown */
 #rr-response-panel.rr-minimized .rr-response-section::before {
-  content: '⚡ Click to expand';
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 11px;
-  color: var(--rr-primary);
-  font-weight: 600;
-  z-index: 10;
-  background: var(--rr-bg);
-  padding: 4px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--rr-border);
+  display: none;
 }
 
 /* ========== TURBO MODE POPUP ========== */
@@ -5452,7 +5450,8 @@
   position: fixed;
   top: 20px;
   right: 20px;
-  width: 320px;
+  width: 400px;
+  max-width: calc(100vw - 40px);
   background: var(--rr-bg);
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
@@ -5491,11 +5490,21 @@
 }
 
 .rr-turbo-response {
-  padding: 14px 16px;
+  display: block;
+  width: calc(100% - 32px);
+  margin: 12px 16px;
+  padding: 12px;
+  min-height: 120px;
+  max-height: 250px;
   font-size: 13px;
   color: var(--rr-text);
-  line-height: 1.5;
-  border-bottom: 1px solid var(--rr-border);
+  line-height: 1.6;
+  background: var(--rr-bg-light);
+  border: 1px solid var(--rr-border);
+  border-radius: 8px;
+  resize: vertical;
+  overflow-y: auto;
+  font-family: inherit;
 }
 
 .rr-turbo-actions {

@@ -336,7 +336,7 @@ function showClipboardBanner(panel, clipboardText) {
   banner.querySelector('.rr-clipboard-use').addEventListener('click', () => {
     // Use clipboard text as review
     panel.dataset.reviewText = clipboardText;
-    panel.querySelector('.rr-review-text').textContent = clipboardText.substring(0, 300) + (clipboardText.length > 300 ? '...' : '');
+    panel.querySelector('.rr-review-text').textContent = clipboardText; // Show full text (scrollable)
 
     // Detect language and issues
     const detectedLanguage = detectLanguage(clipboardText);
@@ -4497,42 +4497,44 @@ function showTurboResult(response, reviewText) {
       <span>⚡ Response Ready!</span>
       <button class="rr-turbo-close">×</button>
     </div>
-    <div class="rr-turbo-response">${response.substring(0, 150)}${response.length > 150 ? '...' : ''}</div>
+    <textarea class="rr-turbo-response" spellcheck="false">${response}</textarea>
     <div class="rr-turbo-actions">
-      <button class="rr-turbo-copy">📋 Copied!</button>
-      <button class="rr-turbo-expand">📝 Edit</button>
+      <button class="rr-turbo-copy">📋 Copy</button>
+      <button class="rr-turbo-expand">📝 Full Panel</button>
     </div>
   `;
 
   document.body.appendChild(popup);
 
-  // Auto-hide after 5 seconds
-  const autoHide = setTimeout(() => popup.remove(), 5000);
+  // Focus on textarea for immediate editing
+  const textarea = popup.querySelector('.rr-turbo-response');
+  textarea.focus();
+  textarea.setSelectionRange(0, 0); // Cursor at start
 
   // Close button
   popup.querySelector('.rr-turbo-close').addEventListener('click', () => {
-    clearTimeout(autoHide);
     popup.remove();
   });
 
-  // Copy again
+  // Copy current textarea content (may have been edited)
   popup.querySelector('.rr-turbo-copy').addEventListener('click', async () => {
-    await navigator.clipboard.writeText(response);
-    showToast('📋 Copied again!', 'success');
+    const textarea = popup.querySelector('.rr-turbo-response');
+    await navigator.clipboard.writeText(textarea.value);
+    showToast('📋 Copied!', 'success');
   });
 
   // Expand to full panel
   popup.querySelector('.rr-turbo-expand').addEventListener('click', () => {
-    clearTimeout(autoHide);
+    const currentText = popup.querySelector('.rr-turbo-response').value;
     popup.remove();
     showResponsePanel(reviewText, false);
-    // Pre-fill the response
+    // Pre-fill with the (possibly edited) response
     setTimeout(() => {
       const panel = document.getElementById('rr-response-panel');
       if (panel) {
         const textarea = panel.querySelector('.rr-response-textarea');
         if (textarea) {
-          textarea.value = response;
+          textarea.value = currentText;
           updateCharCounter(panel);
           panel.querySelector('.rr-response-section').classList.remove('hidden');
         }
@@ -4579,9 +4581,8 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
   panel.dataset.reviewText = cleaned;
   console.log('[RR Debug] STORED reviewText on panel:', cleaned ? `"${cleaned.substring(0, 50)}..."` : 'EMPTY/NULL');
 
-  // Update review preview
-  const preview = cleaned.length > 120 ? cleaned.substring(0, 120) + '...' : cleaned;
-  panel.querySelector('.rr-review-text').textContent = preview;
+  // Update review text (full text, scrollable via CSS)
+  panel.querySelector('.rr-review-text').textContent = cleaned;
 
   // Analyze sentiment
   const sentiment = analyzeSentiment(cleaned);
