@@ -4743,14 +4743,24 @@ function createFloatingButton() {
   floatingBtn.innerHTML = '⚡';
   floatingBtn.title = 'Generate response (Alt+R)';
 
-  // Use mousedown instead of click to capture before selection disappears
-  floatingBtn.addEventListener('mousedown', async (e) => {
+  // Re-capture selection when hovering over button (backup)
+  floatingBtn.addEventListener('mouseenter', () => {
+    const sel = window.getSelection().toString().trim();
+    if (sel.length >= 10) {
+      lastSelectedText = sel;
+    }
+  });
+
+  // Use pointerdown (fires before mousedown) to capture before selection disappears
+  floatingBtn.addEventListener('pointerdown', async (e) => {
     e.preventDefault();
     e.stopPropagation();
+    e.stopImmediatePropagation();
 
-    // Use stored selection (captured when button was shown)
-    const selection = lastSelectedText || window.getSelection().toString().trim();
+    // Use stored selection (captured when button was shown or on hover)
+    const selection = lastSelectedText;
     if (!selection || selection.length < 10) {
+      showToast('📝 Please select some review text first', 'info');
       hideFloatingButton();
       return;
     }
@@ -4762,17 +4772,18 @@ function createFloatingButton() {
       return;
     }
 
+    // Hide button immediately to prevent double-clicks
+    hideFloatingButton();
+
     // Check if turbo mode is enabled
     // Hold Shift while clicking to FORCE open panel (override turbo mode)
     // Always load fresh settings to ensure we have the latest turbo mode state
     const settings = await loadSettings();
     cachedSettings = settings;
     if (settings.turboMode && !e.shiftKey) {
-      hideFloatingButton();
       turboGenerate(selection);
     } else {
       showResponsePanel(selection, false);  // FALSE = let user choose tone first!
-      hideFloatingButton();
     }
   });
 
