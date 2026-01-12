@@ -8022,8 +8022,20 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
 
   try {
     // Step 1: Scrape new leads from multiple cities/industries
-    const cities = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Miami'];
-    const industries = ['restaurant', 'hotel', 'dental office', 'law firm'];
+    const cities = [
+      // US Cities (20)
+      'New York', 'Los Angeles', 'Chicago', 'Houston', 'Miami',
+      'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas',
+      'San Jose', 'Austin', 'Jacksonville', 'San Francisco', 'Seattle',
+      'Denver', 'Boston', 'Las Vegas', 'Portland', 'Atlanta',
+      // EU Cities (5)
+      'London', 'Berlin', 'Amsterdam', 'Dublin', 'Vienna'
+    ];
+    const industries = [
+      'restaurant', 'hotel', 'dental office', 'law firm',
+      'auto repair shop', 'hair salon', 'gym', 'real estate agency',
+      'medical clinic', 'retail store'
+    ];
 
     let totalScraped = 0;
 
@@ -8039,7 +8051,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
         const data = await response.json();
 
         if (data.results) {
-          for (const place of data.results.slice(0, 10)) {
+          for (const place of data.results.slice(0, 50)) {
             try {
               await dbQuery(
                 `
@@ -8065,7 +8077,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
       const leadsNeedingEmail = await dbAll(`
         SELECT id, business_name, website FROM outreach_leads
         WHERE email IS NULL AND website IS NOT NULL
-        LIMIT 10
+        LIMIT 25
       `);
 
       let emailsFound = 0;
@@ -8101,7 +8113,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
         SELECT l.* FROM outreach_leads l
         LEFT JOIN outreach_emails e ON l.id = e.lead_id
         WHERE l.email IS NOT NULL AND l.status = 'new' AND e.id IS NULL
-        LIMIT 30
+        LIMIT 100
       `);
 
       let sent = 0;
@@ -8149,7 +8161,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
           AND e.replied_at IS NULL
         GROUP BY l.id
         HAVING MAX(e.sequence_number) < 3
-        LIMIT 20
+        LIMIT 50
       `);
 
       let followupsSent = 0;
