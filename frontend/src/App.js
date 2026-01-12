@@ -5481,34 +5481,38 @@ Food was amazing, will definitely come back!`}
                         }}
                         className="blog-content"
                       >
-                        {generatedArticle.content.split('\n').map((line, i) => {
-                          if (line.startsWith('## ')) {
-                            return <h2 key={i} style={{ fontSize: '20px', fontWeight: '600', marginTop: '24px', marginBottom: '12px', color: 'var(--gray-900)' }}>{line.replace('## ', '')}</h2>;
-                          } else if (line.startsWith('### ')) {
-                            return <h3 key={i} style={{ fontSize: '16px', fontWeight: '600', marginTop: '20px', marginBottom: '8px', color: 'var(--gray-800)' }}>{line.replace('### ', '')}</h3>;
-                          } else if (line.startsWith('- ')) {
-                            return <li key={i} style={{ marginLeft: '20px', marginBottom: '4px' }}>{line.replace('- ', '')}</li>;
-                          } else if (line.startsWith('* ')) {
-                            return <li key={i} style={{ marginLeft: '20px', marginBottom: '4px' }}>{line.replace('* ', '')}</li>;
-                          } else if (line.match(/^\d+\. /)) {
-                            return <li key={i} style={{ marginLeft: '20px', marginBottom: '4px', listStyleType: 'decimal' }}>{line.replace(/^\d+\. /, '')}</li>;
-                          } else if (line.trim() === '') {
-                            return <br key={i} />;
-                          } else {
-                            // Handle bold text
-                            const parts = line.split(/(\*\*[^*]+\*\*)/g);
-                            return (
-                              <p key={i} style={{ marginBottom: '12px' }}>
-                                {parts.map((part, j) => {
-                                  if (part.startsWith('**') && part.endsWith('**')) {
-                                    return <strong key={j}>{part.slice(2, -2)}</strong>;
-                                  }
-                                  return part;
-                                })}
-                              </p>
-                            );
-                          }
-                        })}
+                        {(() => {
+                          const parseBold = (text) => {
+                            const parts = text.split(/(\*\*[^*]+\*\*)/g);
+                            return parts.map((part, j) => {
+                              if (part.startsWith('**') && part.endsWith('**')) {
+                                return <strong key={j}>{part.slice(2, -2)}</strong>;
+                              }
+                              return part;
+                            });
+                          };
+                          return generatedArticle.content.split('\n').map((line, i) => {
+                            if (line.startsWith('## ')) {
+                              return <h2 key={i} style={{ fontSize: '20px', fontWeight: '600', marginTop: '24px', marginBottom: '12px', color: 'var(--gray-900)' }}>{parseBold(line.replace('## ', ''))}</h2>;
+                            } else if (line.startsWith('### ')) {
+                              return <h3 key={i} style={{ fontSize: '16px', fontWeight: '600', marginTop: '20px', marginBottom: '8px', color: 'var(--gray-800)' }}>{parseBold(line.replace('### ', ''))}</h3>;
+                            } else if (line.startsWith('- ')) {
+                              return <li key={i} style={{ marginLeft: '20px', marginBottom: '4px' }}>{parseBold(line.replace('- ', ''))}</li>;
+                            } else if (line.startsWith('* ')) {
+                              return <li key={i} style={{ marginLeft: '20px', marginBottom: '4px' }}>{parseBold(line.replace('* ', ''))}</li>;
+                            } else if (line.match(/^\d+\. /)) {
+                              return <li key={i} style={{ marginLeft: '20px', marginBottom: '4px', listStyleType: 'decimal' }}>{parseBold(line.replace(/^\d+\. /, ''))}</li>;
+                            } else if (line.trim() === '') {
+                              return <br key={i} />;
+                            } else {
+                              return (
+                                <p key={i} style={{ marginBottom: '12px' }}>
+                                  {parseBold(line)}
+                                </p>
+                              );
+                            }
+                          });
+                        })()}
                       </div>
                     </div>
                   </>
