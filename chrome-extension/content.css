@@ -426,12 +426,13 @@
 /* ========== MAIN PANEL ========== */
 #rr-response-panel {
   position: fixed;
-  top: 2vh;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 420px;
-  max-width: 95vw;
-  max-height: 96vh;
+  top: 10px;
+  right: 20px;
+  left: auto;
+  transform: none;
+  width: 380px;
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 20px);
   background: var(--rr-bg);
   border-radius: var(--rr-radius);
   box-shadow: var(--rr-shadow);
@@ -451,7 +452,7 @@
 
 #rr-response-panel.rr-closing {
   opacity: 0;
-  transform: translateX(-50%) scale(0.9);
+  transform: scale(0.95);
 }
 
 /* ========== PANEL HEADER ========== */
@@ -934,9 +935,9 @@
 
 /* ========== PANEL BODY ========== */
 .rr-panel-body {
-  padding: 16px;
-  padding-bottom: 20px;
-  max-height: calc(95vh - 140px);
+  padding: 14px;
+  padding-bottom: 16px;
+  max-height: calc(100vh - 160px);
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -954,8 +955,10 @@
   font-size: 13px;
   line-height: 1.6;
   color: var(--rr-text);
-  max-height: 80px;
+  max-height: 200px;
   overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* ========== ISSUE DETECTION ========== */
@@ -1972,16 +1975,51 @@
   background: rgba(16, 185, 129, 0.1);
 }
 
-/* ========== TURBO MODE BANNER ========== */
-.rr-turbo-banner {
+/* ========== TURBO MODE ROW ========== */
+.rr-turbo-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: 8px 12px;
-  background: linear-gradient(135deg, #fef3c7, #fde68a);
-  border: 1px solid #f59e0b;
+  margin: 10px 0;
+  background: var(--rr-bg-light);
+  border: 1px solid var(--rr-border);
   border-radius: 8px;
-  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rr-turbo-row:hover {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.rr-turbo-row:has(input:checked) {
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  border-color: #22c55e;
+}
+
+.rr-turbo-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #22c55e;
+  cursor: pointer;
+}
+
+.rr-turbo-icon {
+  font-size: 14px;
+}
+
+.rr-turbo-text {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--rr-text);
+}
+
+.rr-turbo-hint {
+  font-size: 11px;
+  color: var(--rr-text-light);
+  margin-left: auto;
 }
 
 .rr-turbo-banner.active {

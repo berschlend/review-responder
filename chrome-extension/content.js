@@ -2324,18 +2324,6 @@ async function createResponsePanel() {
         </div>
       </div>
 
-      <!-- Turbo Mode Toggle (prominent) -->
-      <div class="rr-turbo-banner">
-        <label class="rr-turbo-switch">
-          <input type="checkbox" class="rr-turbo-toggle">
-          <span class="rr-turbo-slider"></span>
-        </label>
-        <div class="rr-turbo-info">
-          <span class="rr-turbo-title">⚡ Turbo Mode</span>
-          <span class="rr-turbo-desc">Skip this panel - generate & copy instantly</span>
-        </div>
-      </div>
-
       <!-- Generate Buttons (always visible) -->
       <div class="rr-generate-buttons">
         <button class="rr-generate-btn">
@@ -2352,6 +2340,14 @@ async function createResponsePanel() {
           </span>
         </button>
       </div>
+
+      <!-- Turbo Mode (always visible) -->
+      <label class="rr-turbo-row">
+        <input type="checkbox" class="rr-turbo-toggle">
+        <span class="rr-turbo-icon">⚡</span>
+        <span class="rr-turbo-text">Turbo Mode</span>
+        <span class="rr-turbo-hint">skip panel next time</span>
+      </label>
 
       <!-- Review Section (collapsible) -->
       <details class="rr-collapsible rr-review-details" open>
@@ -5081,7 +5077,8 @@ function addInlineButtons() {
       const textEl = review.querySelector('.wiI7pd, .MyEned');
       if (!textEl) return;
 
-      const text = cleanReviewText(textEl.textContent);
+      // Get initial text (may be truncated)
+      let text = cleanReviewText(textEl.textContent);
       if (!text || text.length < 10) return;
 
       const btn = document.createElement('button');
@@ -5091,12 +5088,24 @@ function addInlineButtons() {
         e.preventDefault();
         e.stopPropagation();
 
+        // First, expand the review if truncated (click "More" / "Mehr" button)
+        const moreBtn = review.querySelector('.w8nwRe, [jsaction*="expand"], button[aria-expanded="false"]');
+        if (moreBtn) {
+          moreBtn.click();
+          // Wait for expansion
+          await new Promise(r => setTimeout(r, 300));
+        }
+
+        // Now get the full text
+        const fullTextEl = review.querySelector('.wiI7pd, .MyEned');
+        const fullText = fullTextEl ? cleanReviewText(fullTextEl.textContent) : text;
+
         // Check Turbo Mode - instant generate without full panel
         const settings = await loadSettings();
         if (settings.turboMode) {
-          turboGenerate(text);
+          turboGenerate(fullText);
         } else {
-          showResponsePanel(text, false); // false = don't auto-generate, let user choose
+          showResponsePanel(fullText, false); // false = don't auto-generate, let user choose
         }
       });
 
@@ -5178,6 +5187,12 @@ function scanPageForReviews() {
 
   platformSelectors.forEach(selector => {
     document.querySelectorAll(selector).forEach(reviewEl => {
+      // First, click "More" / "Mehr" buttons to expand truncated reviews (Google Maps)
+      const moreButtons = reviewEl.querySelectorAll('.w8nwRe, .review-more-link, [jsaction*="expand"], button[aria-label*="More"], button[aria-label*="Mehr"]');
+      moreButtons.forEach(btn => {
+        try { btn.click(); } catch (e) { /* ignore */ }
+      });
+
       // Find review text - try multiple selectors
       const textSelectors = [
         '.wiI7pd', '.MyEned',  // Google Maps

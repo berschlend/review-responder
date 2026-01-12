@@ -2954,7 +2954,7 @@ app.post('/api/support/contact', async (req, res) => {
               <p style="white-space: pre-wrap;">${message}</p>
               <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;">
               <p style="color: #6B7280; font-size: 14px;">
-                💡 Antworte direkt auf diese Email - sie geht an ${email}
+                Antworte direkt auf diese Email - sie geht an ${email}
               </p>
             </div>
           `
@@ -4820,13 +4820,13 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
   }
 
   const DRIP_SCHEDULE = [0, 2, 5, 10, 20]; // Days after signup
-  const FRONTEND_URL = process.env.FRONTEND_URL || 'https://review-responder-frontend.onrender.com';
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'https://tryreviewresponder.com';
 
   // Email templates for each day
   const getDripEmail = (day, user) => {
     const templates = {
       0: {
-        subject: 'Welcome to ReviewResponder! Let\'s get started 🚀',
+        subject: 'Welcome to ReviewResponder! Let\'s get started',
         html: `
           <!DOCTYPE html>
           <html>
@@ -4845,7 +4845,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
           <body>
             <div class="container">
               <div class="header">
-                <h1>Welcome to ReviewResponder! 🎉</h1>
+                <h1>Welcome to ReviewResponder!</h1>
                 <p>You're about to save hours on review management</p>
               </div>
               <div class="content">
@@ -4887,7 +4887,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
         `
       },
       2: {
-        subject: 'Quick tip: Get better responses with business context 💡',
+        subject: 'Quick tip: Get better responses with business context',
         html: `
           <!DOCTYPE html>
           <html>
@@ -4905,7 +4905,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
           <body>
             <div class="container">
               <div class="header">
-                <h1>Pro Tip: Personalize Your Responses 💡</h1>
+                <h1>Pro Tip: Personalize Your Responses</h1>
               </div>
               <div class="content">
                 <p>Hi${user.business_name ? ' ' + user.business_name : ''}!</p>
@@ -4936,7 +4936,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
         `
       },
       5: {
-        subject: 'How\'s it going? Here\'s 50% off to upgrade 🎁',
+        subject: 'How\'s it going? Here\'s 50% off to upgrade',
         html: `
           <!DOCTYPE html>
           <html>
@@ -4955,7 +4955,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
           <body>
             <div class="container">
               <div class="header">
-                <h1>Exclusive Offer Just For You! 🎁</h1>
+                <h1>Exclusive Offer Just For You!</h1>
               </div>
               <div class="content">
                 <p>Hi${user.business_name ? ' ' + user.business_name : ''}!</p>
@@ -4994,7 +4994,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
         `
       },
       10: {
-        subject: 'Did you know? You can respond in 50+ languages 🌍',
+        subject: 'Did you know? You can respond in 50+ languages',
         html: `
           <!DOCTYPE html>
           <html>
@@ -5012,7 +5012,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
           <body>
             <div class="container">
               <div class="header">
-                <h1>Feature Spotlight: Multi-Language Support 🌍</h1>
+                <h1>Feature Spotlight: Multi-Language Support</h1>
               </div>
               <div class="content">
                 <p>Hi${user.business_name ? ' ' + user.business_name : ''}!</p>
@@ -5272,7 +5272,7 @@ app.get('/api/admin/set-plan', async (req, res) => {
 
     // If redirect=1, send HTML page that forces a full page reload
     if (req.query.redirect === '1') {
-      const frontendUrl = process.env.FRONTEND_URL || 'https://review-responder-frontend.onrender.com';
+      const frontendUrl = process.env.FRONTEND_URL || 'https://tryreviewresponder.com';
       const redirectUrl = `${frontendUrl}/dashboard?plan=${targetPlan}&_t=${Date.now()}`;
       // Send HTML that forces a hard refresh to ensure React remounts
       // Using both meta refresh AND JavaScript for maximum compatibility
@@ -5604,7 +5604,7 @@ app.put('/api/admin/affiliates/:id/status', authenticateAdmin, async (req, res) 
         let subject, html;
 
         if (status === 'approved') {
-          subject = '🎉 Your Affiliate Application is Approved!';
+          subject = 'Your Affiliate Application is Approved!';
           html = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <h1 style="color: #10B981;">Congratulations! You're Now a ReviewResponder Affiliate</h1>
@@ -5614,9 +5614,9 @@ app.put('/api/admin/affiliates/:id/status', authenticateAdmin, async (req, res) 
               <p><strong>Commission Rate:</strong> ${affiliate.commission_rate}% recurring</p>
               <p>You can now start earning by sharing your unique affiliate link:</p>
               <p style="background: #F3F4F6; padding: 15px; border-radius: 8px; font-family: monospace;">
-                https://review-responder-frontend.onrender.com/?aff=${affiliate.affiliate_code}
+                https://tryreviewresponder.com/?aff=${affiliate.affiliate_code}
               </p>
-              <p>Visit your <a href="https://review-responder-frontend.onrender.com/affiliate/dashboard">Affiliate Dashboard</a> to track your earnings and get marketing materials.</p>
+              <p>Visit your <a href="https://tryreviewresponder.com/affiliate/dashboard">Affiliate Dashboard</a> to track your earnings and get marketing materials.</p>
               <p>Best,<br>The ReviewResponder Team</p>
             </div>
           `;
