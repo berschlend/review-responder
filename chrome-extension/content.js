@@ -1820,11 +1820,13 @@ async function loadSettings() {
   if (typeof settings.turboMode !== 'boolean') {
     settings.turboMode = false;
   }
+
   return settings;
 }
 
 async function saveSettings(settings) {
   if (!isExtensionContextValid()) return;
+
   await safeStorageSet({ rr_settings: settings });
 }
 
@@ -3249,7 +3251,7 @@ function initPanelEvents(panel) {
 
   // Generate button
   panel.querySelector('.rr-generate-btn').addEventListener('click', () => {
-    console.log('[RR Debug] Generate button clicked!');
+
     generateResponse(panel);
   });
 
@@ -3765,12 +3767,12 @@ function saveCurrentSettings(panel) {
 
 // ========== GENERATE RESPONSE ==========
 async function generateResponse(panel) {
-  console.log('[RR Debug] generateResponse called');
-  console.log('[RR Debug] panel:', panel);
+
+
 
   // Defensive check - get panel if not passed or invalid
   if (!panel || !panel.dataset) {
-    console.log('[RR Debug] Panel missing, trying to find it');
+
     panel = document.getElementById('rr-response-panel');
     if (!panel) {
       console.error('[RR Debug] FATAL: Cannot find panel!');
@@ -3779,10 +3781,10 @@ async function generateResponse(panel) {
     }
   }
 
-  console.log('[RR Debug] panel.dataset:', panel.dataset);
+
 
   const reviewText = panel.dataset.reviewText;
-  console.log('[RR Debug] reviewText:', reviewText ? `"${reviewText.substring(0, 50)}..."` : 'EMPTY/NULL');
+
 
   const detectedIssues = panel.dataset.detectedIssues ? JSON.parse(panel.dataset.detectedIssues) : [];
   const detectedLanguage = panel.dataset.detectedLanguage || 'en'; // Use stored language
@@ -3796,12 +3798,12 @@ async function generateResponse(panel) {
   const responseSection = panel.querySelector('.rr-response-section');
 
   if (!reviewText) {
-    console.log('[RR Debug] RETURNING EARLY - no reviewText!');
+
     showToast('⚠️ No review text found', 'error');
     return;
   }
 
-  console.log('[RR Debug] Proceeding with generation, tone:', tone, 'language:', detectedLanguage);
+
 
   const stored = await safeStorageGet(['token', 'user']);
 
@@ -3915,9 +3917,10 @@ async function generateResponse(panel) {
       btn.classList.toggle('active', btn.dataset.tone === tone);
     });
 
-    // Auto-copy if enabled
-    const settings = cachedSettings || await loadSettings();
-    if (settings.autoCopy) {
+    // Auto-copy if enabled - always load fresh settings
+    const autoCopySettings = await loadSettings();
+    cachedSettings = autoCopySettings;
+    if (autoCopySettings.autoCopy) {
       try {
         await navigator.clipboard.writeText(data.response);
         showToast('✨ Generated & copied!', 'success');
@@ -4090,9 +4093,10 @@ async function generateResponseWithModifier(panel, modifier) {
     panel.querySelector('.rr-undo-btn').classList.add('hidden');
     panel.dataset.previousResponse = '';
 
-    // Auto-copy if enabled
-    const settings = cachedSettings || await loadSettings();
-    if (settings.autoCopy) {
+    // Auto-copy if enabled - always load fresh settings
+    const autoCopySettings = await loadSettings();
+    cachedSettings = autoCopySettings;
+    if (autoCopySettings.autoCopy) {
       try {
         await navigator.clipboard.writeText(data.response);
         showToast('✨ Generated & copied!', 'success');
@@ -4206,9 +4210,10 @@ async function editExistingResponse(panel, editType, currentResponse) {
     // Show undo button
     panel.querySelector('.rr-undo-btn').classList.remove('hidden');
 
-    // Auto-copy if enabled
-    const settings = cachedSettings || await loadSettings();
-    if (settings.autoCopy) {
+    // Auto-copy if enabled - always load fresh settings
+    const autoCopySettings = await loadSettings();
+    cachedSettings = autoCopySettings;
+    if (autoCopySettings.autoCopy) {
       try {
         await navigator.clipboard.writeText(data.response);
         showToast(`✨ ${editType.charAt(0).toUpperCase() + editType.slice(1)} & copied!`, 'success');
@@ -4239,9 +4244,12 @@ async function editExistingResponse(panel, editType, currentResponse) {
   }
 }
 
-// ========== TURBO MODE: Generate and show minimized panel ==========
+// ========== TURBO MODE: Instant generate WITHOUT panel ==========
 async function turboGenerate(reviewText) {
-  // Pre-flight checks
+
+
+  // Pre-flight checks - always refresh login status
+  await checkLoginStatus();
   if (!isLoggedIn) {
     showToast('🔐 Please login first (click extension icon)', 'error');
     return;
@@ -4253,20 +4261,8 @@ async function turboGenerate(reviewText) {
     return;
   }
 
-  // Show the panel but minimized - this way user can expand if needed
-  const panel = await showResponsePanel(cleaned, false); // false = don't animate focus
-  if (!panel) return;
-
-  // Minimize the panel immediately
-  panel.classList.add('rr-minimized');
-
-  // Show loading state
-  const generateBtn = panel.querySelector('.rr-generate-btn');
-  const btnText = generateBtn?.querySelector('.rr-btn-text');
-  const btnLoading = generateBtn?.querySelector('.rr-btn-loading');
-  if (generateBtn) generateBtn.disabled = true;
-  if (btnText) btnText.classList.add('hidden');
-  if (btnLoading) btnLoading.classList.remove('hidden');
+  // Show loading toast
+  showToast('⚡ Generating...', 'info');
 
   try {
     const settings = cachedSettings || await loadSettings();
@@ -4314,32 +4310,105 @@ async function turboGenerate(reviewText) {
       throw new Error(data.error || 'Generation failed');
     }
 
-    // Fill response in panel
-    const responseSection = panel.querySelector('.rr-response-section');
-    panel.querySelector('.rr-response-textarea').value = data.response;
-    if (responseSection) responseSection.classList.remove('hidden');
-
-    // Update character counter
-    updateCharCounter(panel);
-
     // Copy to clipboard
-    try {
-      await navigator.clipboard.writeText(data.response);
-      showToast('✅ Copied! Click panel to expand', 'success');
-    } catch (clipboardError) {
-      showToast('✨ Generated! Copy manually from panel', 'success');
-    }
+    await navigator.clipboard.writeText(data.response);
+
+    // Store for potential panel expansion later
+    lastSelectedText = cleaned;
+    lastGeneratedResponse = data.response;
+
+    // Show turbo popup with response
+    showTurboPopup(data.response, cleaned);
 
     // Check if we should show review popup
     checkShowReviewPopup();
 
   } catch (error) {
+    console.error('[RR Debug] turboGenerate error:', error);
     showToast(`❌ ${error.message}`, 'error');
-  } finally {
-    if (generateBtn) generateBtn.disabled = false;
-    if (btnText) btnText.classList.remove('hidden');
-    if (btnLoading) btnLoading.classList.add('hidden');
   }
+}
+
+// Store last generated response for panel expansion
+let lastGeneratedResponse = '';
+
+// ========== TURBO POPUP ==========
+function showTurboPopup(response, reviewText) {
+  // Remove existing popup
+  const existing = document.getElementById('rr-turbo-popup');
+  if (existing) existing.remove();
+
+  const popup = document.createElement('div');
+  popup.id = 'rr-turbo-popup';
+  popup.className = 'rr-turbo-popup';
+
+  // Apply dark mode if active
+  const effectiveTheme = currentTheme === 'auto' ? getSystemTheme() : currentTheme;
+  if (effectiveTheme === 'dark') {
+    popup.classList.add('rr-dark');
+  }
+
+  popup.innerHTML = `
+    <div class="rr-turbo-header">
+      <span>⚡ Response Ready!</span>
+      <button class="rr-turbo-close">×</button>
+    </div>
+    <textarea class="rr-turbo-response" spellcheck="false">${response}</textarea>
+    <div class="rr-turbo-actions">
+      <button class="rr-turbo-copy">📋 Copy</button>
+      <button class="rr-turbo-expand">📝 Full Panel</button>
+    </div>
+  `;
+
+  document.body.appendChild(popup);
+
+  // Animate in
+  setTimeout(() => popup.classList.add('rr-visible'), 10);
+
+  // Focus on textarea for immediate editing
+  const textarea = popup.querySelector('.rr-turbo-response');
+  textarea.focus();
+  textarea.setSelectionRange(0, 0);
+
+  // Close button
+  popup.querySelector('.rr-turbo-close').addEventListener('click', () => {
+    popup.classList.remove('rr-visible');
+    setTimeout(() => popup.remove(), 200);
+  });
+
+  // Copy button
+  popup.querySelector('.rr-turbo-copy').addEventListener('click', async () => {
+    const text = popup.querySelector('.rr-turbo-response').value;
+    await navigator.clipboard.writeText(text);
+    showToast('📋 Copied!', 'success');
+  });
+
+  // Expand to full panel
+  popup.querySelector('.rr-turbo-expand').addEventListener('click', () => {
+    const currentText = popup.querySelector('.rr-turbo-response').value;
+    popup.remove();
+    showResponsePanel(reviewText, false);
+    // Pre-fill with the response
+    setTimeout(() => {
+      const panel = document.getElementById('rr-response-panel');
+      if (panel) {
+        const ta = panel.querySelector('.rr-response-textarea');
+        if (ta) {
+          ta.value = currentText;
+          updateCharCounter(panel);
+          panel.querySelector('.rr-response-section').classList.remove('hidden');
+        }
+      }
+    }, 100);
+  });
+
+  // Auto-close after 30 seconds
+  setTimeout(() => {
+    if (document.getElementById('rr-turbo-popup')) {
+      popup.classList.remove('rr-visible');
+      setTimeout(() => popup.remove(), 200);
+    }
+  }, 30000);
 }
 
 // ========== COPY RESPONSE ==========
@@ -4370,127 +4439,28 @@ async function copyResponse(panel) {
   }
 }
 
-// ========== TURBO MODE - INSTANT GENERATE ==========
-async function turboGenerate(reviewText) {
-  // Show loading toast
-  showToast('⚡ Generating response...', 'info');
-
-  try {
-    // Check login
-    const stored = await safeStorageGet(['token', 'user']);
-    if (!stored.token) {
-      showToast('🔐 Please login via extension popup first', 'error');
-      return;
-    }
-
-    // Get settings for tone
-    const settings = await loadSettings();
-    const tone = settings.defaultTone || 'professional';
-
-    // Detect language
-    const language = detectLanguage(reviewText);
-
-    // Call API directly
-    const response = await fetch(`${API_URL}/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${stored.token}`
-      },
-      body: JSON.stringify({
-        reviewText: reviewText,
-        tone: tone,
-        targetLanguage: language.code
-      })
-    });
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        await handleUnauthorized();
-        return;
+// Expand to full panel from turbo result
+function expandTurboToPanel(currentText, reviewText) {
+  showResponsePanel(reviewText, false);
+  // Pre-fill with the (possibly edited) response
+  setTimeout(() => {
+    const panel = document.getElementById('rr-response-panel');
+    if (panel) {
+      const textarea = panel.querySelector('.rr-response-textarea');
+      if (textarea) {
+        textarea.value = currentText;
+        updateCharCounter(panel);
+        panel.querySelector('.rr-response-section').classList.remove('hidden');
       }
-      throw new Error('Generation failed');
     }
-
-    const data = await response.json();
-    const generatedResponse = data.response;
-
-    // Copy to clipboard automatically
-    await navigator.clipboard.writeText(generatedResponse);
-
-    // Show success with mini-popup
-    showTurboResult(generatedResponse, reviewText);
-
-  } catch (error) {
-    console.error('Turbo generate error:', error);
-    showToast('❌ Generation failed. Try again.', 'error');
-  }
-}
-
-// Mini popup for Turbo Mode result
-function showTurboResult(response, reviewText) {
-  // Remove existing turbo popup
-  const existing = document.getElementById('rr-turbo-popup');
-  if (existing) existing.remove();
-
-  const popup = document.createElement('div');
-  popup.id = 'rr-turbo-popup';
-  popup.innerHTML = `
-    <div class="rr-turbo-header">
-      <span>⚡ Response Ready!</span>
-      <button class="rr-turbo-close">×</button>
-    </div>
-    <textarea class="rr-turbo-response" spellcheck="false">${response}</textarea>
-    <div class="rr-turbo-actions">
-      <button class="rr-turbo-copy">📋 Copy</button>
-      <button class="rr-turbo-expand">📝 Full Panel</button>
-    </div>
-  `;
-
-  document.body.appendChild(popup);
-
-  // Focus on textarea for immediate editing
-  const textarea = popup.querySelector('.rr-turbo-response');
-  textarea.focus();
-  textarea.setSelectionRange(0, 0); // Cursor at start
-
-  // Close button
-  popup.querySelector('.rr-turbo-close').addEventListener('click', () => {
-    popup.remove();
-  });
-
-  // Copy current textarea content (may have been edited)
-  popup.querySelector('.rr-turbo-copy').addEventListener('click', async () => {
-    const textarea = popup.querySelector('.rr-turbo-response');
-    await navigator.clipboard.writeText(textarea.value);
-    showToast('📋 Copied!', 'success');
-  });
-
-  // Expand to full panel
-  popup.querySelector('.rr-turbo-expand').addEventListener('click', () => {
-    const currentText = popup.querySelector('.rr-turbo-response').value;
-    popup.remove();
-    showResponsePanel(reviewText, false);
-    // Pre-fill with the (possibly edited) response
-    setTimeout(() => {
-      const panel = document.getElementById('rr-response-panel');
-      if (panel) {
-        const textarea = panel.querySelector('.rr-response-textarea');
-        if (textarea) {
-          textarea.value = currentText;
-          updateCharCounter(panel);
-          panel.querySelector('.rr-response-section').classList.remove('hidden');
-        }
-      }
-    }, 100);
-  });
+  }, 100);
 }
 
 // ========== SHOW PANEL ==========
 async function showResponsePanel(reviewText, autoGenerate = false) {
-  console.log('[RR Debug] showResponsePanel called');
-  console.log('[RR Debug] reviewText input:', reviewText ? `"${reviewText.substring(0, 50)}..."` : 'EMPTY/NULL');
-  console.log('[RR Debug] autoGenerate:', autoGenerate);
+
+
+
 
   let panel = document.getElementById('rr-response-panel');
   if (!panel) {
@@ -4522,7 +4492,7 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
   // Clean and store review text
   const cleaned = cleanReviewText(reviewText);
   panel.dataset.reviewText = cleaned;
-  console.log('[RR Debug] STORED reviewText on panel:', cleaned ? `"${cleaned.substring(0, 50)}..."` : 'EMPTY/NULL');
+
 
   // Update review text (full text, scrollable via CSS)
   panel.querySelector('.rr-review-text').textContent = cleaned;
@@ -4763,7 +4733,8 @@ function createFloatingButton() {
     // Update stored selection for consistency
     lastSelectedText = selection;
 
-    // Pre-flight login check
+    // Pre-flight login check - ALWAYS refresh from storage
+    await checkLoginStatus();
     if (!isLoggedIn) {
       showToast('🔐 Please login first (click extension icon)', 'error');
       hideFloatingButton();
@@ -4778,9 +4749,12 @@ function createFloatingButton() {
     // Always load fresh settings to ensure we have the latest turbo mode state
     const settings = await loadSettings();
     cachedSettings = settings;
+
     if (settings.turboMode && !e.shiftKey) {
+
       turboGenerate(selection);
     } else {
+
       showResponsePanel(selection, false);  // FALSE = let user choose tone first!
     }
   });
@@ -4858,6 +4832,7 @@ document.addEventListener('dblclick', async (e) => {
   const settings = cachedSettings || await loadSettings();
 
   if (settings.turboMode || e.altKey) {
+    await checkLoginStatus();
     if (!isLoggedIn) {
       showToast('🔐 Please login first', 'error');
       return;
@@ -4885,6 +4860,7 @@ document.addEventListener('keydown', async (e) => {
       return;
     }
 
+    await checkLoginStatus();
     if (!isLoggedIn) {
       showToast('🔐 Please login first', 'error');
       return;
@@ -4941,6 +4917,7 @@ document.addEventListener('keydown', async (e) => {
     e.stopImmediatePropagation();
 
     const selection = window.getSelection().toString().trim();
+    await checkLoginStatus();
     if (!isLoggedIn) {
       showToast('🔐 Please login first', 'error');
       return;
@@ -5958,6 +5935,171 @@ function createScanButton() {
 
 // Initialize scan button
 setTimeout(createScanButton, 1000);
+
+// ========== AUTO-INJECT RESPOND BUTTONS ==========
+
+// Track which review elements already have buttons injected
+const injectedReviews = new WeakSet();
+
+// Inject "Respond" buttons next to each review on the page
+function injectRespondButtons() {
+  const platform = detectPlatform();
+
+  // Only inject on supported platforms
+  if (!['Google', 'Yelp', 'TripAdvisor', 'Booking', 'Trustpilot'].includes(platform.name)) {
+    return;
+  }
+
+  // Platform-specific review container selectors
+  const reviewSelectors = {
+    'Google': ['.jftiEf', '[data-review-id]'],
+    'Yelp': ['[class*="comment__"]', '.review'],
+    'TripAdvisor': ['[data-automation="reviewCard"]', '[data-test-target="HR_CC_CARD"]', '.review-container'],
+    'Trustpilot': ['.review-card', '.styles_reviewCard__hcAvl', '[class*="styles_cardWrapper"]'],
+    'Booking': ['.review_item', '.c-review', '[data-testid="review-card"]']
+  };
+
+  // Text content selectors to extract review text
+  const textSelectors = {
+    'Google': ['.wiI7pd', '.MyEned'],
+    'Yelp': ['[class*="comment__"]', '[class*="raw__"]', 'p'],
+    'TripAdvisor': ['.JguWG', '._T.FKffI', '.biGQs._P', '.partial_entry'],
+    'Trustpilot': ['.review-content__text', '[data-service-review-text-typography]'],
+    'Booking': ['.review_item_review_content', '.c-review__body']
+  };
+
+  const selectors = reviewSelectors[platform.name] || [];
+  const textSels = textSelectors[platform.name] || ['p', '.review-text'];
+
+  let injectedCount = 0;
+
+  selectors.forEach(selector => {
+    document.querySelectorAll(selector).forEach(reviewEl => {
+      // Skip if already injected
+      if (injectedReviews.has(reviewEl)) return;
+
+      // Find review text
+      let reviewText = '';
+      for (const textSel of textSels) {
+        const textEl = reviewEl.querySelector(textSel);
+        if (textEl && textEl.textContent.trim().length > 20) {
+          reviewText = textEl.textContent.trim();
+          break;
+        }
+      }
+
+      // Fallback: try reviewEl's own text content
+      if (!reviewText && reviewEl.textContent.trim().length > 20) {
+        reviewText = reviewEl.textContent.trim();
+      }
+
+      // Skip if no valid text found
+      if (!reviewText || reviewText.length < 20) return;
+
+      // Clean the text (remove excess whitespace)
+      reviewText = reviewText.replace(/\s+/g, ' ').trim();
+
+      // Create the respond button
+      const btn = document.createElement('button');
+      btn.className = 'rr-inline-respond-btn';
+      btn.innerHTML = '✨ Respond';
+      btn.title = 'Generate AI response for this review';
+
+      // Store the review text on the button
+      btn.dataset.reviewText = reviewText;
+
+      // Click handler
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const text = btn.dataset.reviewText;
+        if (!text) {
+          showToast('Could not extract review text', 'error');
+          return;
+        }
+
+        // Check login status
+        await checkLoginStatus();
+        if (!isLoggedIn) {
+          showToast('🔐 Please login first (click extension icon)', 'error');
+          return;
+        }
+
+        // Check Turbo Mode - same as floating button
+        const settings = await loadSettings();
+        cachedSettings = settings;
+
+
+        lastSelectedText = text;
+
+        if (settings.turboMode && !e.shiftKey) {
+
+          turboGenerate(text);
+        } else {
+
+          showResponsePanel(text);
+        }
+      });
+
+      // Find the best place to insert the button
+      // Try to find action buttons, footer, or just append to review
+      const actionAreas = reviewEl.querySelectorAll('[class*="action"], [class*="button"], [class*="footer"], [class*="helpful"]');
+
+      if (actionAreas.length > 0) {
+        // Insert after the first action area
+        const insertPoint = actionAreas[0];
+        insertPoint.parentNode.insertBefore(btn, insertPoint.nextSibling);
+      } else {
+        // Append to review element
+        reviewEl.appendChild(btn);
+      }
+
+      // Mark as injected
+      injectedReviews.add(reviewEl);
+      injectedCount++;
+    });
+  });
+
+  if (injectedCount > 0) {
+    console.log(`[ReviewResponder] Injected ${injectedCount} Respond buttons`);
+  }
+}
+
+// MutationObserver to inject buttons on dynamically loaded reviews
+let injectButtonsObserver = null;
+let injectButtonsTimeout = null;
+
+function setupRespondButtonObserver() {
+  // Debounced injection function
+  const debouncedInject = () => {
+    if (injectButtonsTimeout) clearTimeout(injectButtonsTimeout);
+    injectButtonsTimeout = setTimeout(() => {
+      injectRespondButtons();
+    }, 500);
+  };
+
+  // Create observer
+  injectButtonsObserver = new MutationObserver((mutations) => {
+    // Check if any mutation added nodes that could be reviews
+    const hasNewNodes = mutations.some(m => m.addedNodes.length > 0);
+    if (hasNewNodes) {
+      debouncedInject();
+    }
+  });
+
+  // Observe the body for changes
+  injectButtonsObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+}
+
+// Initialize respond button injection
+setTimeout(() => {
+  injectRespondButtons();
+  setupRespondButtonObserver();
+}, 1500);
 
 // ========== REVIEW POPUP ==========
 

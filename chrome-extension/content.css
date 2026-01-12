@@ -5625,3 +5625,45 @@
 .rr-section-collapsible.collapsed .rr-section-content {
   max-height: 0;
 }
+
+/* ========== INLINE RESPOND BUTTONS ========== */
+
+.rr-inline-respond-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  margin: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #fff;
+  background: linear-gradient(135deg, var(--rr-primary), var(--rr-primary-dark));
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  z-index: 1000;
+  white-space: nowrap;
+}
+
+.rr-inline-respond-btn:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.rr-inline-respond-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Ensure button is visible on any background */
+.rr-inline-respond-btn::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: white;
+  border-radius: 18px;
+  z-index: -1;
+  opacity: 0;
+}
