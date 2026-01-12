@@ -7101,6 +7101,72 @@ function getTemplateForLead(sequenceNum, lead) {
   return EMAIL_TEMPLATES[key];
 }
 
+// Helper: Scrape email from website (free fallback when Hunter.io fails)
+async function scrapeEmailFromWebsite(websiteUrl) {
+  try {
+    // Normalize URL
+    let url = websiteUrl;
+    if (!url.startsWith('http')) {
+      url = 'https://' + url;
+    }
+
+    // Pages to check for contact emails
+    const pagesToCheck = [
+      url,
+      url.replace(/\/$/, '') + '/contact',
+      url.replace(/\/$/, '') + '/about',
+      url.replace(/\/$/, '') + '/kontakt',
+      url.replace(/\/$/, '') + '/impressum',
+    ];
+
+    // Email regex pattern
+    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+
+    // Blacklist common non-business emails
+    const blacklist = ['example.com', 'email.com', 'domain.com', 'yoursite.com', 'website.com', 'sentry.io', 'wixpress.com'];
+
+    for (const pageUrl of pagesToCheck) {
+      try {
+        const response = await fetch(pageUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          },
+          timeout: 5000,
+        });
+
+        if (!response.ok) continue;
+
+        const html = await response.text();
+        const emails = html.match(emailRegex) || [];
+
+        // Filter and prioritize emails
+        const validEmails = emails
+          .map(e => e.toLowerCase())
+          .filter(e => !blacklist.some(b => e.includes(b)))
+          .filter(e => !e.includes('png') && !e.includes('jpg') && !e.includes('gif')); // Filter image filenames
+
+        // Prioritize contact/info emails
+        const priorityPrefixes = ['contact', 'info', 'hello', 'support', 'team', 'sales', 'mail', 'office'];
+        const priorityEmail = validEmails.find(e => priorityPrefixes.some(p => e.startsWith(p + '@')));
+
+        if (priorityEmail) return priorityEmail;
+        if (validEmails.length > 0) return validEmails[0];
+
+        // Small delay between page requests
+        await new Promise(r => setTimeout(r, 300));
+      } catch (e) {
+        // Page not found or error, try next
+        continue;
+      }
+    }
+
+    return null;
+  } catch (e) {
+    console.error('Website scrape error:', e.message);
+    return null;
+  }
+}
+
 // Helper: Fill email template with lead data
 function fillEmailTemplate(template, lead) {
   let subject = template.subject;
@@ -8072,17 +8138,22 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
 
     results.scraping = { leads_added: totalScraped, city: todayCity, industry: todayIndustry };
 
-    // Step 2: Find emails for leads without them
-    if (process.env.HUNTER_API_KEY) {
-      const leadsNeedingEmail = await dbAll(`
-        SELECT id, business_name, website FROM outreach_leads
-        WHERE email IS NULL AND website IS NOT NULL
-        LIMIT 25
-      `);
+    // Step 2: Find emails for leads without them (Hunter.io + Website Scraper fallback)
+    const leadsNeedingEmail = await dbAll(`
+      SELECT id, business_name, website FROM outreach_leads
+      WHERE email IS NULL AND website IS NOT NULL
+      LIMIT 25
+    `);
 
-      let emailsFound = 0;
+    let hunterFound = 0;
+    let scraperFound = 0;
 
-      for (const lead of leadsNeedingEmail) {
+    for (const lead of leadsNeedingEmail) {
+      let emailFound = null;
+      let source = null;
+
+      // Try Hunter.io first (if API key available)
+      if (process.env.HUNTER_API_KEY && !emailFound) {
         try {
           const domain = lead.website
             .replace(/^https?:\/\//, '')
@@ -8093,19 +8164,42 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
           const data = await response.json();
 
           if (data.data?.emails?.[0]) {
-            await dbQuery('UPDATE outreach_leads SET email = $1, email_source = $2 WHERE id = $3', [
-              data.data.emails[0].value,
-              'hunter.io',
-              lead.id,
-            ]);
-            emailsFound++;
+            emailFound = data.data.emails[0].value;
+            source = 'hunter.io';
+            hunterFound++;
           }
-          await new Promise(r => setTimeout(r, 1000));
+          await new Promise(r => setTimeout(r, 500));
         } catch (e) {}
       }
 
-      results.email_finding = { checked: leadsNeedingEmail.length, found: emailsFound };
+      // Fallback: Scrape website directly (FREE)
+      if (!emailFound && lead.website) {
+        try {
+          const scrapedEmail = await scrapeEmailFromWebsite(lead.website);
+          if (scrapedEmail) {
+            emailFound = scrapedEmail;
+            source = 'website_scraper';
+            scraperFound++;
+          }
+        } catch (e) {}
+      }
+
+      // Save email if found
+      if (emailFound) {
+        await dbQuery('UPDATE outreach_leads SET email = $1, email_source = $2 WHERE id = $3', [
+          emailFound,
+          source,
+          lead.id,
+        ]);
+      }
     }
+
+    results.email_finding = {
+      checked: leadsNeedingEmail.length,
+      hunter_found: hunterFound,
+      scraper_found: scraperFound,
+      total_found: hunterFound + scraperFound
+    };
 
     // Step 3: Send new cold emails
     if (resend) {
