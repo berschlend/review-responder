@@ -1309,14 +1309,14 @@ app.put('/api/auth/change-password', authenticateToken, async (req, res) => {
 
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
 
-    // OAuth user without password - allow setting password without current
-    if (user.oauth_provider && !user.password) {
+    // OAuth user - can always set/change password without current (Google is their primary auth)
+    if (user.oauth_provider) {
       const hashedPassword = await bcrypt.hash(newPassword, 12);
       await dbQuery('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, req.user.id]);
       return res.json({ success: true, message: 'Password set successfully! You can now login with email & password.' });
     }
 
-    // User has password - require current password
+    // Non-OAuth user - require current password
     if (!currentPassword) {
       return res.status(400).json({ error: 'Current password required' });
     }

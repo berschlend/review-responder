@@ -5885,10 +5885,10 @@ const ProfilePage = () => {
     }
     setChangingPassword(true);
     try {
-      // For OAuth users without password, don't send currentPassword
-      const payload = user?.hasPassword
-        ? { currentPassword, newPassword }
-        : { newPassword };
+      // OAuth users can always set password without current; non-OAuth users with password need current
+      const payload = (user?.oauthProvider || !user?.hasPassword)
+        ? { newPassword }
+        : { currentPassword, newPassword };
       const response = await api.put('/auth/change-password', payload);
       toast.success(response.data.message || 'Password updated successfully');
       setCurrentPassword('');
@@ -6120,26 +6120,29 @@ const ProfilePage = () => {
             <Lock size={20} /> Security
           </h2>
 
-          {/* OAuth user without password - show Set Password form */}
-          {user?.oauthProvider && !user?.hasPassword && (
+          {/* OAuth user - can set password for Chrome Extension */}
+          {user?.oauthProvider && (
             <div style={{ padding: '16px', background: '#fef3c7', borderRadius: '8px', marginBottom: '20px', border: '1px solid #fcd34d' }}>
               <p style={{ color: '#92400e', margin: 0, fontSize: '14px' }}>
-                <strong>Set a password</strong> to login to the Chrome Extension. Google Sign-In for the extension is coming soon!
+                {user?.hasPassword
+                  ? <><strong>Update your password</strong> for the Chrome Extension. Your Google login remains your primary sign-in method.</>
+                  : <><strong>Set a password</strong> to login to the Chrome Extension. Google Sign-In for the extension is coming soon!</>
+                }
               </p>
             </div>
           )}
 
           <form onSubmit={handleChangePassword} style={{ display: 'grid', gap: '16px' }}>
-            {/* Only show Current Password if user already has one */}
-            {user?.hasPassword && (
+            {/* Only show Current Password for non-OAuth users who have a password */}
+            {!user?.oauthProvider && user?.hasPassword && (
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Current Password</label>
                 <input type={showPasswords ? 'text' : 'password'} className="form-input" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Enter current password" />
               </div>
             )}
             <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label">{user?.hasPassword ? 'New Password' : 'Password'}</label>
-              <input type={showPasswords ? 'text' : 'password'} className="form-input" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={user?.hasPassword ? 'Enter new password (min 8 characters)' : 'Choose a password (min 8 characters)'} />
+              <label className="form-label">{!user?.oauthProvider && user?.hasPassword ? 'New Password' : 'Password'}</label>
+              <input type={showPasswords ? 'text' : 'password'} className="form-input" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={!user?.oauthProvider && user?.hasPassword ? 'Enter new password (min 8 characters)' : 'Choose a password (min 8 characters)'} />
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Confirm Password</label>
@@ -6149,8 +6152,11 @@ const ProfilePage = () => {
               <input type="checkbox" checked={showPasswords} onChange={(e) => setShowPasswords(e.target.checked)} />
               Show passwords
             </label>
-            <button type="submit" className="btn btn-primary" disabled={changingPassword || (user?.hasPassword && !currentPassword) || !newPassword || !confirmPassword} style={{ width: 'fit-content' }}>
-              {changingPassword ? (user?.hasPassword ? 'Changing...' : 'Setting...') : (user?.hasPassword ? 'Change Password' : 'Set Password')}
+            <button type="submit" className="btn btn-primary" disabled={changingPassword || (!user?.oauthProvider && user?.hasPassword && !currentPassword) || !newPassword || !confirmPassword} style={{ width: 'fit-content' }}>
+              {changingPassword
+                ? (user?.oauthProvider || !user?.hasPassword ? 'Setting...' : 'Changing...')
+                : (user?.oauthProvider || !user?.hasPassword ? 'Set Password' : 'Change Password')
+              }
             </button>
           </form>
         </div>
