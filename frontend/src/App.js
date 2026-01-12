@@ -2108,7 +2108,7 @@ const LandingPage = () => {
             <div>
               <div className="footer-brand">ReviewResponder</div>
               <p className="footer-description">
-                AI-powered review response generator helping small businesses
+                AI-powered review response generator helping businesses
                 maintain their online reputation effortlessly.
               </p>
             </div>
