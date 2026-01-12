@@ -249,6 +249,8 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 - [ ] Demo-Video aufnehmen (2 Min Walkthrough)
 - [ ] Chrome Web Store einreichen (ZIP + Screenshots)
 - [ ] **SEPA-Lastschrift aktivieren**: Stripe Dashboard → Braucht ID-Verifizierung
+- [ ] **GEMINI_API_KEY in Render setzen** - Für Auto-Blog-Generation (https://aistudio.google.com/apikey)
+- [ ] **Cron Job anlegen** (cron-job.org): Blog Auto-Generation Mo/Mi/Fr 07:00 Berlin
 
 ### NÄCHSTE CLAUDE TASKS:
 
@@ -258,16 +260,25 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 
 ### HEUTE ERLEDIGT (12.01.2026):
+- [x] **SEO Auto-Pilot Blog implementiert** - Automatische Blog-Generierung mit Gemini 2.5 Pro
+  - Öffentlicher Blog unter `/blog` und `/blog/:slug`
+  - 25 SEO-optimierte Topics in 5 Kategorien
+  - Gemini 2.5 Pro mit Google Search Grounding (recherchiert aktuelle Daten)
+  - Public Endpoints: `GET /api/public/blog`, `GET /api/public/blog/:slug`
+  - Admin Endpoints: `GET/PUT/DELETE /api/admin/blog/:id`
+  - Cron Endpoint: `POST /api/cron/generate-blog-article`
+  - Komplett kostenlos (Free Tier)
 - [x] **App Verification durchgeführt** - Homepage, Dashboard, AI Generation getestet - alles funktioniert
 - [x] **Email System komplett auditiert** - Alle 18 Email-Typen geprüft und funktionsfähig
 - [x] **Fehlende Notification Functions implementiert**:
   - `sendUsageAlertEmail()` - Warnung bei 80% Usage
   - `sendPlanRenewalEmail()` - Bestätigung bei Subscription-Renewal
   - `/api/cron/send-weekly-summary` - Wöchentliche Statistik-Email
-- [x] **3 Cron Jobs konfiguriert** (cron-job.org):
+- [x] **4 Cron Jobs konfiguriert** (cron-job.org):
   - Outreach: täglich 09:00 Berlin
   - Drip Emails: täglich 10:00 Berlin
   - Weekly Summary: Montag 09:00 Berlin
+  - **Blog Generation: Mo/Mi/Fr 07:00 Berlin (NEU - noch zu konfigurieren)**
 - [x] **Drip Endpoint Auth gefixt** - Akzeptiert jetzt Query-Parameter wie Outreach
 - [x] **Emojis aus Email-Templates entfernt** - Alle Subjects und Bodies bereinigt
 - [x] **URLs korrigiert** - Alte render URLs → tryreviewresponder.com
@@ -316,7 +327,7 @@ Keine offenen Bugs.
 | Backend | Node.js/Express (Render) |
 | Datenbank | PostgreSQL (Render) |
 | Payments | Stripe (Live) |
-| AI | OpenAI GPT-4o-mini + Claude Sonnet (Hybrid) |
+| AI | OpenAI GPT-4o-mini + Claude Sonnet + Gemini 2.5 Pro (Hybrid) |
 | Email | Resend.com |
 | Domain | Namecheap |
 | Email-Forwarding | ImprovMX |

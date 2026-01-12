@@ -13,6 +13,7 @@ const crypto = require('crypto');
 const { Resend } = require('resend');
 const { OAuth2Client } = require('google-auth-library');
 const Anthropic = require('@anthropic-ai/sdk');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -50,6 +51,9 @@ const googleClient = process.env.GOOGLE_CLIENT_ID
   : null;
 const anthropic = process.env.ANTHROPIC_API_KEY
   ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  : null;
+const gemini = process.env.GEMINI_API_KEY
+  ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
   : null;
 
 // Email sender addresses (configurable via ENV)
@@ -414,6 +418,34 @@ async function initDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Add public blog columns to blog_articles table
+    try {
+      await dbQuery(`ALTER TABLE blog_articles ADD COLUMN IF NOT EXISTS slug TEXT UNIQUE`);
+      await dbQuery(
+        `ALTER TABLE blog_articles ADD COLUMN IF NOT EXISTS is_published BOOLEAN DEFAULT FALSE`
+      );
+      await dbQuery(`ALTER TABLE blog_articles ADD COLUMN IF NOT EXISTS published_at TIMESTAMP`);
+      await dbQuery(`ALTER TABLE blog_articles ADD COLUMN IF NOT EXISTS category TEXT`);
+      await dbQuery(
+        `ALTER TABLE blog_articles ADD COLUMN IF NOT EXISTS read_time_minutes INTEGER`
+      );
+      await dbQuery(
+        `ALTER TABLE blog_articles ADD COLUMN IF NOT EXISTS view_count INTEGER DEFAULT 0`
+      );
+      await dbQuery(
+        `ALTER TABLE blog_articles ADD COLUMN IF NOT EXISTS is_auto_generated BOOLEAN DEFAULT FALSE`
+      );
+      await dbQuery(
+        `ALTER TABLE blog_articles ADD COLUMN IF NOT EXISTS author_name TEXT DEFAULT 'ReviewResponder Team'`
+      );
+      // Index for fast public blog queries
+      await dbQuery(
+        `CREATE INDEX IF NOT EXISTS idx_blog_published ON blog_articles(is_published, published_at DESC)`
+      );
+    } catch (error) {
+      // Columns might already exist
+    }
 
     // Referrals table for referral system
     await dbQuery(`
@@ -4475,6 +4507,228 @@ app.delete('/api/blog/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// ============== PUBLIC BLOG ENDPOINTS (No Auth) ==============
+
+// Helper function to generate URL-friendly slug
+function generateSlug(title) {
+  return title
+    .toLowerCase()
+    .replace(/[äöüß]/g, (match) => ({ ä: 'ae', ö: 'oe', ü: 'ue', ß: 'ss' })[match] || match)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .substring(0, 80);
+}
+
+// GET /api/public/blog - List published articles with pagination
+app.get('/api/public/blog', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 10, 20);
+    const offset = (page - 1) * limit;
+    const category = req.query.category;
+
+    let whereClause = 'WHERE is_published = TRUE';
+    const params = [];
+
+    if (category) {
+      params.push(category);
+      whereClause += ` AND category = $${params.length}`;
+    }
+
+    const articles = await dbAll(
+      `SELECT slug, title, meta_description, category, author_name,
+              read_time_minutes, published_at, view_count
+       FROM blog_articles
+       ${whereClause}
+       ORDER BY published_at DESC
+       LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+      [...params, limit, offset]
+    );
+
+    const totalResult = await dbGet(
+      `SELECT COUNT(*) as count FROM blog_articles ${whereClause}`,
+      params
+    );
+
+    res.json({
+      articles,
+      pagination: {
+        page,
+        limit,
+        total: parseInt(totalResult.count),
+        totalPages: Math.ceil(totalResult.count / limit),
+      },
+    });
+  } catch (error) {
+    console.error('Public blog list error:', error);
+    res.status(500).json({ error: 'Failed to fetch articles' });
+  }
+});
+
+// GET /api/public/blog/categories - Get all categories with counts
+app.get('/api/public/blog/categories', async (req, res) => {
+  try {
+    const categories = await dbAll(
+      `SELECT category, COUNT(*) as count
+       FROM blog_articles
+       WHERE is_published = TRUE AND category IS NOT NULL
+       GROUP BY category
+       ORDER BY count DESC`
+    );
+    res.json({ categories });
+  } catch (error) {
+    console.error('Blog categories error:', error);
+    res.status(500).json({ error: 'Failed to fetch categories' });
+  }
+});
+
+// GET /api/public/blog/:slug - Get single article by slug
+app.get('/api/public/blog/:slug', async (req, res) => {
+  try {
+    const article = await dbGet(
+      `SELECT id, slug, title, content, meta_description, keywords, category,
+              author_name, read_time_minutes, published_at, view_count
+       FROM blog_articles
+       WHERE slug = $1 AND is_published = TRUE`,
+      [req.params.slug]
+    );
+
+    if (!article) {
+      return res.status(404).json({ error: 'Article not found' });
+    }
+
+    // Increment view count (fire and forget)
+    dbQuery('UPDATE blog_articles SET view_count = view_count + 1 WHERE id = $1', [
+      article.id,
+    ]).catch((err) => console.error('View count update error:', err));
+
+    // Get related articles (same category, excluding current)
+    const related = await dbAll(
+      `SELECT slug, title, meta_description, read_time_minutes, published_at
+       FROM blog_articles
+       WHERE is_published = TRUE AND id != $1 AND category = $2
+       ORDER BY published_at DESC LIMIT 3`,
+      [article.id, article.category]
+    );
+
+    res.json({ article, related });
+  } catch (error) {
+    console.error('Public blog article error:', error);
+    res.status(500).json({ error: 'Failed to fetch article' });
+  }
+});
+
+// ============== ADMIN BLOG MANAGEMENT ==============
+
+// GET /api/admin/blog - List all articles (published and unpublished)
+app.get('/api/admin/blog', async (req, res) => {
+  const { key } = req.query;
+  if (!process.env.ADMIN_SECRET || !safeCompare(key || '', process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const articles = await dbAll(
+      `SELECT id, slug, title, meta_description, category, is_published,
+              published_at, created_at, is_auto_generated, view_count, word_count
+       FROM blog_articles
+       ORDER BY created_at DESC`
+    );
+    res.json({ articles });
+  } catch (error) {
+    console.error('Admin blog list error:', error);
+    res.status(500).json({ error: 'Failed to fetch articles' });
+  }
+});
+
+// PUT /api/admin/blog/:id/publish - Publish/unpublish article
+app.put('/api/admin/blog/:id/publish', async (req, res) => {
+  const { key } = req.query;
+  if (!process.env.ADMIN_SECRET || !safeCompare(key || '', process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { is_published, category, author_name } = req.body;
+  const { id } = req.params;
+
+  try {
+    // Get article to generate slug if needed
+    const article = await dbGet('SELECT title, slug, content FROM blog_articles WHERE id = $1', [
+      id,
+    ]);
+    if (!article) {
+      return res.status(404).json({ error: 'Article not found' });
+    }
+
+    const slug = article.slug || generateSlug(article.title);
+    const published_at = is_published ? new Date() : null;
+
+    // Calculate read time (avg 200 words per minute)
+    const wordCount = article.content.split(/\s+/).length;
+    const read_time_minutes = Math.ceil(wordCount / 200);
+
+    await dbQuery(
+      `UPDATE blog_articles
+       SET is_published = $1, published_at = COALESCE(published_at, $2),
+           slug = $3, category = COALESCE($4, category),
+           author_name = COALESCE($5, author_name), read_time_minutes = $6
+       WHERE id = $7`,
+      [is_published, published_at, slug, category, author_name, read_time_minutes, id]
+    );
+
+    res.json({ success: true, slug });
+  } catch (error) {
+    console.error('Publish article error:', error);
+    res.status(500).json({ error: 'Failed to update article' });
+  }
+});
+
+// PUT /api/admin/blog/:id - Edit article content
+app.put('/api/admin/blog/:id', async (req, res) => {
+  const { key } = req.query;
+  if (!process.env.ADMIN_SECRET || !safeCompare(key || '', process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { title, content, meta_description, keywords, category } = req.body;
+  const { id } = req.params;
+
+  try {
+    const newSlug = title ? generateSlug(title) : null;
+
+    await dbQuery(
+      `UPDATE blog_articles
+       SET title = COALESCE($1, title), content = COALESCE($2, content),
+           meta_description = COALESCE($3, meta_description),
+           keywords = COALESCE($4, keywords), category = COALESCE($5, category),
+           slug = COALESCE($6, slug)
+       WHERE id = $7`,
+      [title, content, meta_description, keywords, category, newSlug, id]
+    );
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Edit article error:', error);
+    res.status(500).json({ error: 'Failed to update article' });
+  }
+});
+
+// DELETE /api/admin/blog/:id - Delete article (admin)
+app.delete('/api/admin/blog/:id', async (req, res) => {
+  const { key } = req.query;
+  if (!process.env.ADMIN_SECRET || !safeCompare(key || '', process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    await dbQuery('DELETE FROM blog_articles WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Delete article error:', error);
+    res.status(500).json({ error: 'Failed to delete article' });
+  }
+});
+
 // ============== REFERRAL SYSTEM ==============
 
 // Helper function to generate unique referral code
@@ -8065,6 +8319,213 @@ app.post('/api/outreach/send-followups', async (req, res) => {
 // ==========================================
 // CRON ENDPOINTS (For Render Scheduled Jobs)
 // ==========================================
+
+// ============== AUTO BLOG GENERATION WITH GEMINI ==============
+
+// Blog topics organized by category (for SEO Auto-Pilot)
+const AUTO_BLOG_TOPICS = [
+  {
+    category: 'Review Response',
+    topics: [
+      'How to Respond to a 1-Star Review Without Losing Customers',
+      'The Psychology Behind Negative Reviews: What Customers Really Want',
+      '7 Response Templates That Turn Angry Reviewers Into Loyal Customers',
+      'How Fast Should You Respond to Reviews? The Data Says...',
+      'The Art of Apologizing in Business Reviews',
+    ],
+  },
+  {
+    category: 'Reputation Management',
+    topics: [
+      'Building a 5-Star Reputation from Scratch',
+      'How Negative Reviews Actually Help Your Business When Handled Right',
+      'The Hidden Cost of Ignoring Online Reviews',
+      'Local SEO: Why Reviews Are Your Secret Weapon',
+      'Managing Reviews Across Multiple Platforms',
+    ],
+  },
+  {
+    category: 'Industry Guides',
+    topics: [
+      'Restaurant Review Management: A Complete Guide',
+      'Hotel Review Response Strategies That Work',
+      'Retail Store Reviews: Best Practices for 2025',
+      'Medical Practice Reviews: HIPAA-Compliant Response Guide',
+      'Automotive Dealer Review Management',
+    ],
+  },
+  {
+    category: 'AI and Automation',
+    topics: [
+      'How AI is Transforming Customer Review Management',
+      'The Ethics of AI-Generated Review Responses',
+      'When to Use AI vs Human Review Responses',
+      'Personalizing AI Responses: Best Practices',
+      'The Future of Automated Reputation Management',
+    ],
+  },
+  {
+    category: 'Customer Psychology',
+    topics: [
+      'Why Customers Leave Reviews And Why Most Dont',
+      'The Emotional Journey of Writing a Negative Review',
+      'How to Encourage More Positive Reviews Ethically',
+      'Understanding Review Fatigue and How to Combat It',
+      'The Role of Social Proof in Modern Business',
+    ],
+  },
+];
+
+// POST /api/cron/generate-blog-article - Auto-generate SEO blog article
+// Call via cron-job.org: Mon/Wed/Fri at 6:00 UTC
+app.post('/api/cron/generate-blog-article', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!gemini) {
+    return res.status(500).json({ error: 'Gemini API not configured. Set GEMINI_API_KEY.' });
+  }
+
+  console.log('Starting auto blog generation with Gemini 2.5 Pro...');
+
+  try {
+    // Get count of auto-generated articles to rotate through topics
+    const countResult = await dbGet(
+      'SELECT COUNT(*) as count FROM blog_articles WHERE is_auto_generated = TRUE'
+    );
+    const articleCount = parseInt(countResult.count) || 0;
+
+    // Flatten topics with categories
+    const allTopics = AUTO_BLOG_TOPICS.flatMap((cat) =>
+      cat.topics.map((t) => ({ topic: t, category: cat.category }))
+    );
+
+    // Rotate through topics
+    const topicIndex = articleCount % allTopics.length;
+    const { topic, category } = allTopics[topicIndex];
+
+    // Check if we already have this exact topic
+    const existing = await dbGet('SELECT id FROM blog_articles WHERE title ILIKE $1', [
+      `%${topic.substring(0, 30)}%`,
+    ]);
+
+    if (existing) {
+      console.log(`Topic already exists, skipping: ${topic}`);
+      return res.json({
+        skipped: true,
+        message: 'Topic already exists',
+        topic,
+      });
+    }
+
+    // Generate article using Gemini 2.5 Pro with Google Search grounding
+    const model = gemini.getGenerativeModel({
+      model: 'gemini-2.5-pro-preview-06-05',
+      tools: [{ googleSearch: {} }],
+    });
+
+    const prompt = `You are an expert SEO content writer for ReviewResponder, a SaaS tool that helps businesses respond to customer reviews using AI.
+
+Write a comprehensive, SEO-optimized blog article about: "${topic}"
+
+IMPORTANT: Use Google Search to find current statistics, trends, and data to make the article authoritative and up-to-date.
+
+Requirements:
+- Length: Approximately 1200-1500 words
+- Tone: Professional yet approachable, helpful and actionable
+- Include relevant keywords naturally
+- Structure with:
+  - An engaging introduction with a hook
+  - Clear headings (use ## for main sections, ### for subsections)
+  - Bullet points or numbered lists where appropriate
+  - Practical, actionable tips businesses can implement today
+  - A conclusion with a call-to-action mentioning ReviewResponder
+- Include 1-2 natural mentions of ReviewResponder as a solution (not salesy)
+- Include statistics or data points where relevant (cite sources if available)
+- Make it valuable for small to medium business owners
+
+IMPORTANT: Include a subtle CTA like:
+- "Tools like ReviewResponder can help automate this process..."
+- "With AI-powered solutions like ReviewResponder, responding to reviews takes seconds..."
+- "ReviewResponder's Chrome extension makes this even easier by..."
+
+Output Format:
+Line 1: The article title (without any prefix like "Title:")
+Line 2: A compelling meta description (150-160 characters, without prefix)
+Line 3: Empty line
+Lines 4+: The full article content in Markdown format.`;
+
+    const result = await model.generateContent(prompt);
+    const fullResponse = result.response.text();
+
+    // Parse the response
+    const lines = fullResponse.split('\n');
+    const title = lines[0]
+      .replace(/^#\s*/, '')
+      .replace(/^\*\*/, '')
+      .replace(/\*\*$/, '')
+      .replace(/^Title:\s*/i, '')
+      .trim();
+    const metaDescription = lines[1]
+      .replace(/^Meta Description:\s*/i, '')
+      .replace(/^Description:\s*/i, '')
+      .trim();
+    const content = lines.slice(3).join('\n').trim();
+
+    const wordCount = content.split(/\s+/).filter((w) => w.length > 0).length;
+    const readTimeMinutes = Math.ceil(wordCount / 200);
+    const slug = generateSlug(title);
+
+    // Save to database (auto-published)
+    const insertResult = await dbQuery(
+      `INSERT INTO blog_articles
+       (user_id, title, content, meta_description, keywords, topic, tone,
+        word_count, slug, is_published, published_at, category,
+        read_time_minutes, is_auto_generated, author_name)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+       RETURNING id, slug`,
+      [
+        1, // System user ID
+        title,
+        content,
+        metaDescription,
+        topic.toLowerCase().replace(/[^a-z0-9]+/g, ', '),
+        topic,
+        'informative',
+        wordCount,
+        slug,
+        true, // Auto-publish
+        new Date(),
+        category,
+        readTimeMinutes,
+        true,
+        'ReviewResponder Team',
+      ]
+    );
+
+    console.log(`Blog auto-generated: "${title}" (${slug})`);
+
+    res.json({
+      success: true,
+      article: {
+        id: insertResult.rows[0].id,
+        slug: insertResult.rows[0].slug,
+        title,
+        category,
+        wordCount,
+        readTimeMinutes,
+      },
+    });
+  } catch (error) {
+    console.error('Auto-generate blog error:', error);
+    res.status(500).json({ error: 'Failed to generate article', details: error.message });
+  }
+});
 
 // Daily automation: scrape + find emails + send
 // Set up as Render Cron Job: 0 9 * * * (9 AM UTC daily)

@@ -16,6 +16,7 @@ import {
   useNavigate,
   useLocation,
   useSearchParams,
+  useParams,
 } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
 import {
@@ -9797,6 +9798,591 @@ const JoinTeamPage = () => {
   );
 };
 
+// ============== PUBLIC BLOG PAGES ==============
+
+// Blog List Page - Public SEO Blog
+const BlogListPage = () => {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+
+  useEffect(() => {
+    document.title = 'Blog - Review Management Tips & Guides | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute(
+        'content',
+        'Expert guides on review management, reputation building, and customer feedback strategies. Learn how to respond to reviews and grow your business.'
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchArticles();
+    fetchCategories();
+  }, [page, selectedCategory]);
+
+  const fetchArticles = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ page, limit: 10 });
+      if (selectedCategory) params.append('category', selectedCategory);
+
+      const response = await fetch(`${API_URL.replace('/api', '')}/api/public/blog?${params}`);
+      const data = await response.json();
+      setArticles(data.articles || []);
+      setTotalPages(data.pagination?.totalPages || 1);
+    } catch (error) {
+      console.error('Failed to fetch articles:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch(`${API_URL.replace('/api', '')}/api/public/blog/categories`);
+      const data = await response.json();
+      setCategories(data.categories || []);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    }
+  };
+
+  const formatDate = dateString => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'var(--gray-50)' }}>
+      {/* Hero Section */}
+      <div
+        style={{
+          background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
+          padding: '80px 20px 60px',
+          textAlign: 'center',
+          color: 'white',
+        }}
+      >
+        <h1 style={{ fontSize: '42px', fontWeight: '700', marginBottom: '16px' }}>
+          Review Management Blog
+        </h1>
+        <p style={{ fontSize: '18px', opacity: 0.9, maxWidth: '600px', margin: '0 auto' }}>
+          Expert guides, tips, and strategies for managing customer reviews and building your online
+          reputation.
+        </p>
+      </div>
+
+      <div className="container" style={{ maxWidth: '1200px', padding: '40px 20px', margin: '0 auto' }}>
+        {/* Category Filter */}
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '32px' }}>
+          <button
+            onClick={() => {
+              setSelectedCategory('');
+              setPage(1);
+            }}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '20px',
+              border: 'none',
+              background: !selectedCategory ? 'var(--primary)' : 'white',
+              color: !selectedCategory ? 'white' : 'var(--gray-600)',
+              cursor: 'pointer',
+              fontWeight: '500',
+            }}
+          >
+            All Posts
+          </button>
+          {categories.map(cat => (
+            <button
+              key={cat.category}
+              onClick={() => {
+                setSelectedCategory(cat.category);
+                setPage(1);
+              }}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '20px',
+                border: 'none',
+                background: selectedCategory === cat.category ? 'var(--primary)' : 'white',
+                color: selectedCategory === cat.category ? 'white' : 'var(--gray-600)',
+                cursor: 'pointer',
+                fontWeight: '500',
+              }}
+            >
+              {cat.category} ({cat.count})
+            </button>
+          ))}
+        </div>
+
+        {/* Article Grid */}
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '60px' }}>Loading...</div>
+        ) : articles.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px', color: 'var(--gray-500)' }}>
+            <p style={{ fontSize: '18px', marginBottom: '16px' }}>No articles yet.</p>
+            <p>Check back soon for expert review management tips!</p>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+              gap: '24px',
+            }}
+          >
+            {articles.map(article => (
+              <Link
+                key={article.slug}
+                to={`/blog/${article.slug}`}
+                style={{ textDecoration: 'none', color: 'inherit' }}
+              >
+                <article
+                  style={{
+                    background: 'white',
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    height: '100%',
+                    padding: '24px',
+                  }}
+                  onMouseOver={e => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.1)';
+                  }}
+                  onMouseOut={e => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      marginBottom: '12px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        color: 'var(--primary)',
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      {article.category}
+                    </span>
+                    <span style={{ fontSize: '13px', color: 'var(--gray-400)' }}>
+                      {article.read_time_minutes} min read
+                    </span>
+                  </div>
+                  <h2
+                    style={{
+                      fontSize: '20px',
+                      fontWeight: '600',
+                      marginBottom: '12px',
+                      lineHeight: '1.3',
+                    }}
+                  >
+                    {article.title}
+                  </h2>
+                  <p
+                    style={{
+                      fontSize: '14px',
+                      color: 'var(--gray-500)',
+                      lineHeight: '1.6',
+                      marginBottom: '16px',
+                    }}
+                  >
+                    {article.meta_description}
+                  </p>
+                  <div
+                    style={{
+                      fontSize: '13px',
+                      color: 'var(--gray-400)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <span>{article.published_at && formatDate(article.published_at)}</span>
+                    <span>by {article.author_name || 'ReviewResponder Team'}</span>
+                  </div>
+                </article>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '8px',
+              marginTop: '48px',
+            }}
+          >
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              style={{
+                padding: '10px 20px',
+                borderRadius: '8px',
+                border: '1px solid var(--gray-200)',
+                background: 'white',
+                cursor: page === 1 ? 'not-allowed' : 'pointer',
+                opacity: page === 1 ? 0.5 : 1,
+              }}
+            >
+              Previous
+            </button>
+            <span style={{ padding: '10px 20px', display: 'flex', alignItems: 'center' }}>
+              Page {page} of {totalPages}
+            </span>
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              style={{
+                padding: '10px 20px',
+                borderRadius: '8px',
+                border: '1px solid var(--gray-200)',
+                background: 'white',
+                cursor: page === totalPages ? 'not-allowed' : 'pointer',
+                opacity: page === totalPages ? 0.5 : 1,
+              }}
+            >
+              Next
+            </button>
+          </div>
+        )}
+
+        {/* CTA Section */}
+        <div
+          style={{
+            marginTop: '60px',
+            padding: '48px',
+            background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
+            borderRadius: '16px',
+            textAlign: 'center',
+            color: 'white',
+          }}
+        >
+          <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>
+            Ready to Transform Your Review Management?
+          </h2>
+          <p
+            style={{
+              fontSize: '16px',
+              opacity: 0.9,
+              marginBottom: '24px',
+              maxWidth: '500px',
+              margin: '0 auto 24px',
+            }}
+          >
+            Generate professional review responses in seconds with AI. Try 20 responses free.
+          </p>
+          <Link
+            to="/register"
+            style={{
+              display: 'inline-block',
+              padding: '14px 32px',
+              background: 'white',
+              color: 'var(--primary)',
+              borderRadius: '8px',
+              fontWeight: '600',
+              textDecoration: 'none',
+            }}
+          >
+            Start Free Trial
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Blog Article Page - Single Article View
+const BlogArticlePage = () => {
+  const { slug } = useParams();
+  const [article, setArticle] = useState(null);
+  const [related, setRelated] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchArticle();
+  }, [slug]);
+
+  const fetchArticle = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL.replace('/api', '')}/api/public/blog/${slug}`);
+      if (!response.ok) {
+        throw new Error('Article not found');
+      }
+      const data = await response.json();
+      setArticle(data.article);
+      setRelated(data.related || []);
+
+      // Set SEO meta tags
+      document.title = `${data.article.title} | ReviewResponder Blog`;
+
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+        metaDesc.setAttribute('content', data.article.meta_description);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = dateString => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  // Simple Markdown renderer
+  const renderMarkdown = content => {
+    if (!content) return '';
+
+    return content
+      .replace(
+        /^### (.*$)/gm,
+        '<h3 style="font-size: 20px; font-weight: 600; margin: 32px 0 16px; color: var(--gray-800);">$1</h3>'
+      )
+      .replace(
+        /^## (.*$)/gm,
+        '<h2 style="font-size: 24px; font-weight: 700; margin: 40px 0 20px; color: var(--gray-900);">$1</h2>'
+      )
+      .replace(
+        /^# (.*$)/gm,
+        '<h1 style="font-size: 28px; font-weight: 700; margin: 32px 0 16px;">$1</h1>'
+      )
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/^- (.*$)/gm, '<li style="margin-left: 20px; margin-bottom: 8px;">$1</li>')
+      .replace(/^\d+\. (.*$)/gm, '<li style="margin-left: 20px; margin-bottom: 8px;">$1</li>')
+      .replace(
+        /\n\n/g,
+        '</p><p style="margin-bottom: 20px; line-height: 1.8; color: var(--gray-700);">'
+      );
+  };
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <div>Loading article...</div>
+      </div>
+    );
+  }
+
+  if (error || !article) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
+        }}
+      >
+        <h1 style={{ fontSize: '24px', marginBottom: '16px' }}>Article Not Found</h1>
+        <Link to="/blog" style={{ color: 'var(--primary)' }}>
+          Back to Blog
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'white' }}>
+      {/* Article Header */}
+      <div style={{ background: 'var(--gray-50)', padding: '80px 20px 60px' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <Link
+            to="/blog"
+            style={{
+              color: 'var(--primary)',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              marginBottom: '24px',
+            }}
+          >
+            &#8592; Back to Blog
+          </Link>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              marginBottom: '16px',
+            }}
+          >
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                color: 'var(--primary)',
+                textTransform: 'uppercase',
+                background: 'rgba(79, 70, 229, 0.1)',
+                padding: '4px 12px',
+                borderRadius: '4px',
+              }}
+            >
+              {article.category}
+            </span>
+            <span style={{ fontSize: '14px', color: 'var(--gray-500)' }}>
+              {article.read_time_minutes} min read
+            </span>
+          </div>
+          <h1
+            style={{
+              fontSize: '42px',
+              fontWeight: '700',
+              lineHeight: '1.2',
+              marginBottom: '20px',
+              color: 'var(--gray-900)',
+            }}
+          >
+            {article.title}
+          </h1>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              color: 'var(--gray-500)',
+            }}
+          >
+            <span>By {article.author_name || 'ReviewResponder Team'}</span>
+            <span>-</span>
+            <span>{article.published_at && formatDate(article.published_at)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Article Content */}
+      <article style={{ maxWidth: '800px', margin: '0 auto', padding: '48px 20px' }}>
+        <div
+          dangerouslySetInnerHTML={{ __html: renderMarkdown(article.content) }}
+          style={{ fontSize: '17px' }}
+        />
+
+        {/* CTA Box */}
+        <div
+          style={{
+            marginTop: '48px',
+            padding: '32px',
+            background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
+            borderRadius: '12px',
+            color: 'white',
+            textAlign: 'center',
+          }}
+        >
+          <h3 style={{ fontSize: '22px', fontWeight: '600', marginBottom: '12px' }}>
+            Ready to Save Time on Review Responses?
+          </h3>
+          <p style={{ opacity: 0.9, marginBottom: '20px' }}>
+            ReviewResponder generates professional responses in seconds. Try 20 free.
+          </p>
+          <Link
+            to="/register"
+            style={{
+              display: 'inline-block',
+              padding: '12px 28px',
+              background: 'white',
+              color: 'var(--primary)',
+              borderRadius: '8px',
+              fontWeight: '600',
+              textDecoration: 'none',
+            }}
+          >
+            Start Free Trial
+          </Link>
+        </div>
+      </article>
+
+      {/* Related Articles */}
+      {related.length > 0 && (
+        <div style={{ background: 'var(--gray-50)', padding: '60px 20px' }}>
+          <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+            <h2
+              style={{ fontSize: '24px', fontWeight: '700', marginBottom: '32px', textAlign: 'center' }}
+            >
+              Related Articles
+            </h2>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: '24px',
+              }}
+            >
+              {related.map(rel => (
+                <Link
+                  key={rel.slug}
+                  to={`/blog/${rel.slug}`}
+                  style={{
+                    background: 'white',
+                    padding: '24px',
+                    borderRadius: '12px',
+                    textDecoration: 'none',
+                    color: 'inherit',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontSize: '18px',
+                      fontWeight: '600',
+                      marginBottom: '8px',
+                      color: 'var(--gray-800)',
+                    }}
+                  >
+                    {rel.title}
+                  </h3>
+                  <p style={{ fontSize: '14px', color: 'var(--gray-500)', marginBottom: '12px' }}>
+                    {rel.meta_description}
+                  </p>
+                  <span style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: '500' }}>
+                    Read more &#8594;
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Support Page
 const SupportPage = () => {
   const [name, setName] = useState('');
@@ -14089,6 +14675,8 @@ function App() {
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/support" element={<SupportPage />} />
+            <Route path="/blog" element={<BlogListPage />} />
+            <Route path="/blog/:slug" element={<BlogArticlePage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/extension" element={<ExtensionPage />} />
