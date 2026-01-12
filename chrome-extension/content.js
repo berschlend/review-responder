@@ -5146,7 +5146,7 @@ async function scanPageForReviews() {
   const selectors = {
     'Google': ['.jftiEf', '[data-review-id]'],
     'Yelp': ['[class*="comment__"]'],  // Yelp uses dynamic class names
-    'TripAdvisor': ['.review-container', '.reviewSelector'],
+    'TripAdvisor': ['[data-test-target="HR_CC_CARD"]', '[data-test-target="review-card"]', '.review-container', '.reviewSelector'],
     'Facebook': ['[data-testid="UFI2Comment"]', '.userContentWrapper'],
     'Trustpilot': ['.review-card', '.styles_reviewCard'],
     'Booking': ['.review_item', '.c-review'],
@@ -5163,7 +5163,7 @@ async function scanPageForReviews() {
       const textSelectors = [
         '.wiI7pd', '.MyEned',  // Google Maps
         '[class*="comment__"]', '[class*="raw__"]', // Yelp (wildcard for dynamic classes)
-        '.partial_entry', '.entry', // TripAdvisor
+        '._T.FKffI', '._c', '.partial_entry', '.entry', // TripAdvisor (new + legacy)
         '.userContent', // Facebook
         '.review-content__text', // Trustpilot
         '.review_item_review_content', // Booking
