@@ -52,6 +52,143 @@ const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: proces
 const FROM_EMAIL = process.env.FROM_EMAIL || 'ReviewResponder <hello@tryreviewresponder.com>';
 const OUTREACH_FROM_EMAIL = process.env.OUTREACH_FROM_EMAIL || 'Berend von ReviewResponder <outreach@tryreviewresponder.com>';
 
+// ==========================================
+// EMAIL NOTIFICATION HELPER FUNCTIONS
+// ==========================================
+
+// Send Usage Alert Email (when user reaches 80% of limit)
+async function sendUsageAlertEmail(user) {
+  if (!resend) return false;
+  if (!user.email_usage_alerts) return false; // Respect user preference
+
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'https://tryreviewresponder.com';
+
+  try {
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: user.email,
+      subject: 'You\'ve used 80% of your monthly responses',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: white; padding: 30px; border: 1px solid #E5E7EB; border-radius: 0 0 8px 8px; }
+            .progress-bar { background: #E5E7EB; border-radius: 999px; height: 12px; margin: 20px 0; }
+            .progress-fill { background: #F59E0B; border-radius: 999px; height: 12px; width: 80%; }
+            .cta-button { display: inline-block; background: #4F46E5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; }
+            .footer { text-align: center; padding: 20px; color: #6B7280; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Usage Alert</h1>
+              <p>You're running low on responses</p>
+            </div>
+            <div class="content">
+              <p>Hi${user.business_name ? ' ' + user.business_name : ''},</p>
+
+              <p>You've used <strong>80%</strong> of your monthly response limit on your <strong>${user.subscription_plan}</strong> plan.</p>
+
+              <div class="progress-bar">
+                <div class="progress-fill"></div>
+              </div>
+
+              <p>To ensure uninterrupted service, consider upgrading your plan:</p>
+
+              <p style="text-align: center; margin: 30px 0;">
+                <a href="${FRONTEND_URL}/pricing" class="cta-button">View Upgrade Options</a>
+              </p>
+
+              <p style="color: #6B7280; font-size: 14px;">Or continue using your remaining responses - they'll reset at the start of your next billing cycle.</p>
+            </div>
+            <div class="footer">
+              <p>ReviewResponder - AI-Powered Review Responses</p>
+              <p><a href="${FRONTEND_URL}/profile" style="color: #6B7280;">Manage notification preferences</a></p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    });
+    console.log(`Usage alert email sent to ${user.email}`);
+    return true;
+  } catch (error) {
+    console.error('Failed to send usage alert email:', error);
+    return false;
+  }
+}
+
+// Send Plan Renewal Email (when subscription renews)
+async function sendPlanRenewalEmail(user) {
+  if (!resend) return false;
+  if (!user.email_billing_updates) return false; // Respect user preference
+
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'https://tryreviewresponder.com';
+
+  try {
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: user.email,
+      subject: 'Your ReviewResponder subscription has renewed',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: white; padding: 30px; border: 1px solid #E5E7EB; border-radius: 0 0 8px 8px; }
+            .plan-box { background: #F0FDF4; border: 1px solid #10B981; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
+            .cta-button { display: inline-block; background: #4F46E5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; }
+            .footer { text-align: center; padding: 20px; color: #6B7280; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Subscription Renewed</h1>
+              <p>Thank you for your continued support!</p>
+            </div>
+            <div class="content">
+              <p>Hi${user.business_name ? ' ' + user.business_name : ''},</p>
+
+              <p>Your ReviewResponder subscription has been successfully renewed.</p>
+
+              <div class="plan-box">
+                <p style="margin: 0; color: #059669; font-weight: 600;">Current Plan</p>
+                <p style="margin: 10px 0 0 0; font-size: 24px; font-weight: bold;">${user.subscription_plan.charAt(0).toUpperCase() + user.subscription_plan.slice(1)}</p>
+                <p style="margin: 5px 0 0 0; color: #6B7280;">Your response counter has been reset</p>
+              </div>
+
+              <p>Your monthly responses have been refreshed and you're ready to continue creating perfect review responses!</p>
+
+              <p style="text-align: center; margin: 30px 0;">
+                <a href="${FRONTEND_URL}/dashboard" class="cta-button">Go to Dashboard</a>
+              </p>
+            </div>
+            <div class="footer">
+              <p>ReviewResponder - AI-Powered Review Responses</p>
+              <p><a href="${FRONTEND_URL}/profile" style="color: #6B7280;">Manage billing & notifications</a></p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    });
+    console.log(`Plan renewal email sent to ${user.email}`);
+    return true;
+  } catch (error) {
+    console.error('Failed to send plan renewal email:', error);
+    return false;
+  }
+}
+
 // Middleware
 app.use(helmet());
 
@@ -5179,6 +5316,127 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
   } catch (error) {
     console.error('Drip email error:', error);
     res.status(500).json({ error: 'Failed to process drip emails' });
+  }
+});
+
+// Weekly Summary Email Campaign - Send weekly stats to users who opted in
+// Call this endpoint via cron job (e.g., every Monday at 9am)
+app.post('/api/cron/send-weekly-summary', async (req, res) => {
+  // Accept both header and query parameter for secret
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'Email service not configured' });
+  }
+
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'https://tryreviewresponder.com';
+
+  try {
+    // Get all users who have weekly summary enabled and have used the service
+    const users = await dbQuery(`
+      SELECT u.*,
+        (SELECT COUNT(*) FROM responses r WHERE r.user_id = u.id AND r.created_at > NOW() - INTERVAL '7 days') as responses_this_week,
+        (SELECT COUNT(*) FROM responses r WHERE r.user_id = u.id AND r.created_at > NOW() - INTERVAL '14 days' AND r.created_at <= NOW() - INTERVAL '7 days') as responses_last_week
+      FROM users u
+      WHERE u.email_weekly_summary = true
+        AND u.email_verified = true
+        AND (SELECT COUNT(*) FROM responses r WHERE r.user_id = u.id) > 0
+    `);
+
+    let sentCount = 0;
+    let errorCount = 0;
+
+    for (const user of users.rows) {
+      const weeklyResponses = parseInt(user.responses_this_week) || 0;
+      const lastWeekResponses = parseInt(user.responses_last_week) || 0;
+      const change = weeklyResponses - lastWeekResponses;
+      const changeText = change > 0 ? `+${change}` : change.toString();
+      const changeColor = change >= 0 ? '#10B981' : '#EF4444';
+
+      // Skip if no activity this week and last week
+      if (weeklyResponses === 0 && lastWeekResponses === 0) continue;
+
+      try {
+        if (process.env.NODE_ENV === 'production') {
+          await resend.emails.send({
+            from: FROM_EMAIL,
+            to: user.email,
+            subject: `Your weekly review response summary`,
+            html: `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <style>
+                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                  .header { background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+                  .content { background: white; padding: 30px; border: 1px solid #E5E7EB; border-radius: 0 0 8px 8px; }
+                  .stat-box { background: #F9FAFB; border: 1px solid #E5E7EB; padding: 20px; border-radius: 8px; margin: 15px 0; text-align: center; }
+                  .stat-number { font-size: 36px; font-weight: bold; color: #4F46E5; }
+                  .stat-label { color: #6B7280; font-size: 14px; }
+                  .cta-button { display: inline-block; background: #4F46E5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; }
+                  .footer { text-align: center; padding: 20px; color: #6B7280; font-size: 14px; }
+                  .tip-box { background: #EEF2FF; border-left: 4px solid #4F46E5; padding: 15px; margin: 20px 0; }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <div class="header">
+                    <h1>Weekly Summary</h1>
+                    <p>Your ReviewResponder stats for this week</p>
+                  </div>
+                  <div class="content">
+                    <p>Hi${user.business_name ? ' ' + user.business_name : ''},</p>
+
+                    <p>Here's how you did this week:</p>
+
+                    <div class="stat-box">
+                      <div class="stat-number">${weeklyResponses}</div>
+                      <div class="stat-label">Responses Generated This Week</div>
+                      <div style="color: ${changeColor}; font-weight: 600; margin-top: 5px;">${changeText} vs last week</div>
+                    </div>
+
+                    <div class="tip-box">
+                      <strong>Pro Tip:</strong> ${weeklyResponses > 0
+                        ? 'Great job staying on top of your reviews! Consistent responses help build customer trust and improve your online reputation.'
+                        : 'Don\'t let reviews pile up! Responding quickly shows customers you care about their feedback.'}
+                    </div>
+
+                    <p style="text-align: center; margin: 30px 0;">
+                      <a href="${FRONTEND_URL}/dashboard" class="cta-button">View Full Analytics</a>
+                    </p>
+                  </div>
+                  <div class="footer">
+                    <p>ReviewResponder - AI-Powered Review Responses</p>
+                    <p><a href="${FRONTEND_URL}/profile" style="color: #6B7280;">Unsubscribe from weekly summary</a></p>
+                  </div>
+                </div>
+              </body>
+              </html>
+            `
+          });
+        }
+
+        sentCount++;
+        console.log(`Weekly summary sent to ${user.email}`);
+      } catch (emailError) {
+        console.error(`Failed to send weekly summary to ${user.email}:`, emailError.message);
+        errorCount++;
+      }
+    }
+
+    res.json({
+      success: true,
+      message: 'Weekly summary emails processed',
+      sent: sentCount,
+      errors: errorCount
+    });
+  } catch (error) {
+    console.error('Weekly summary error:', error);
+    res.status(500).json({ error: 'Failed to process weekly summary emails' });
   }
 });
 

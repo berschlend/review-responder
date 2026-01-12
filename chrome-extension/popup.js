@@ -1,75 +1,10 @@
 const API_URL = 'https://review-responder.onrender.com/api';
 
-// Detect language from review text (must be called BEFORE cleaning!)
-function detectLanguage(text) {
-  const lowerText = text.toLowerCase();
-
-  // German indicators
-  const germanWords = ['und', 'der', 'die', 'das', 'ist', 'war', 'sehr', 'gut', 'nicht', 'aber', 'haben', 'wurde', 'toll', 'super', 'leider', 'immer', 'auch'];
-  const germanCount = germanWords.filter(w => lowerText.includes(` ${w} `) || lowerText.startsWith(w + ' ')).length;
-
-  // Dutch indicators
-  const dutchWords = ['en', 'het', 'een', 'van', 'zijn', 'naar', 'niet', 'maar', 'heel', 'goed', 'mooi', 'lekker', 'altijd'];
-  const dutchCount = dutchWords.filter(w => lowerText.includes(` ${w} `) || lowerText.startsWith(w + ' ')).length;
-
-  // French indicators
-  const frenchWords = ['et', 'est', 'très', 'bien', 'pas', 'mais', 'pour', 'avec', 'dans', 'leur', 'nous'];
-  const frenchCount = frenchWords.filter(w => lowerText.includes(` ${w} `) || lowerText.startsWith(w + ' ')).length;
-
-  // Spanish indicators
-  const spanishWords = ['y', 'es', 'muy', 'bien', 'pero', 'para', 'con', 'los', 'las', 'que', 'del'];
-  const spanishCount = spanishWords.filter(w => lowerText.includes(` ${w} `) || lowerText.startsWith(w + ' ')).length;
-
-  if (germanCount >= 2) return { code: 'de', name: 'Deutsch' };
-  if (dutchCount >= 2) return { code: 'nl', name: 'Nederlands' };
-  if (frenchCount >= 2) return { code: 'fr', name: 'Français' };
-  if (spanishCount >= 2) return { code: 'es', name: 'Español' };
-
-  return { code: 'en', name: 'English' };
-}
-
-// Clean review text - remove ONLY UI elements, preserve actual review content
-function cleanReviewText(text) {
-  // Only remove very specific UI patterns that won't appear in actual reviews
-  // Be conservative - it's better to leave UI text than remove review content
-  const uiPatterns = [
-    // Time stamps (German)
-    /vor \d+ (Sekunden?|Minuten?|Stunden?|Tagen?|Wochen?|Monaten?|Jahren?)/gi,
-    // Time stamps (English)
-    /\d+ (second|minute|hour|day|week|month|year)s? ago/gi,
-    // Owner response labels
-    /Antwort vom Inhaber/gi,
-    /Owner response/gi,
-    /Response from the owner/gi,
-    // Helpful counts (specific patterns)
-    /\d+ (Person|Personen) fanden? diese Rezension hilfreich/gi,
-    /\d+ (person|people) found this (review )?helpful/gi,
-    // Google translate indicators
-    /Von Google übersetzt/gi,
-    /Translated by Google/gi,
-    /Übersetzung anzeigen/gi,
-    /Original anzeigen/gi,
-    // Local Guide badge
-    /Local Guide\s*·?\s*\d*\s*(Rezension(en)?|reviews?)?/gi,
-    /Lokal Guide\s*·?\s*\d*\s*(Rezension(en)?|reviews?)?/gi,
-  ];
-
-  let cleaned = text;
-  uiPatterns.forEach(pattern => {
-    cleaned = cleaned.replace(pattern, '');
-  });
-  return cleaned.replace(/\s+/g, ' ').trim();
-}
-
-// Google OAuth Config
-const GOOGLE_CLIENT_ID = '395576602784-inhppfo12c9o26okl6g3dgnb2cslqdv1.apps.googleusercontent.com';
-
 // DOM Elements
 const loginSection = document.getElementById('login-section');
 const mainSection = document.getElementById('main-section');
 const loginForm = document.getElementById('login-form');
 const loginError = document.getElementById('login-error');
-const googleSignInBtn = document.getElementById('google-signin-btn');
 const mainError = document.getElementById('main-error');
 const successMsg = document.getElementById('success-msg');
 const userEmail = document.getElementById('user-email');
@@ -79,28 +14,6 @@ const usageLimit = document.getElementById('usage-limit');
 const progress = document.getElementById('progress');
 const planBadge = document.getElementById('plan-badge');
 const upgradeLink = document.getElementById('upgrade-link');
-const reviewText = document.getElementById('review-text');
-const toneSelect = document.getElementById('tone-select');
-const generateBtn = document.getElementById('generate-btn');
-const responseSection = document.getElementById('response-section');
-const responseText = document.getElementById('response-text');
-const copyBtn = document.getElementById('copy-btn');
-const regenerateBtn = document.getElementById('regenerate-btn');
-
-// Preview elements
-const previewTab = document.getElementById('preview-tab');
-const textTab = document.getElementById('text-tab');
-const previewView = document.getElementById('preview-view');
-const textView = document.getElementById('text-view');
-const previewText = document.getElementById('preview-text');
-const businessAvatar = document.getElementById('business-avatar');
-const previewBusinessName = document.getElementById('preview-business-name');
-const toneButtons = document.querySelectorAll('.tone-btn');
-
-// Stats elements
-const statToday = document.getElementById('stat-today');
-const statWeek = document.getElementById('stat-week');
-const statTotal = document.getElementById('stat-total');
 
 // Onboarding elements
 const onboardingCard = document.getElementById('onboarding-card');
@@ -114,7 +27,6 @@ const closeLimitModal = document.getElementById('close-limit-modal');
 // State
 let token = null;
 let user = null;
-let currentResponse = '';
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
@@ -125,7 +37,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     user = stored.user;
     showMainSection();
     fetchUsage();
-    fetchStats();
   }
 });
 
@@ -158,94 +69,10 @@ loginForm.addEventListener('submit', async (e) => {
 
     showMainSection();
     fetchUsage();
-    fetchStats();
   } catch (error) {
     loginError.textContent = error.message;
   }
 });
-
-// Google Sign-In
-if (googleSignInBtn) {
-  googleSignInBtn.addEventListener('click', async () => {
-    loginError.textContent = '';
-    googleSignInBtn.disabled = true;
-    googleSignInBtn.innerHTML = '<span class="loading"></span>Signing in...';
-
-    try {
-      // Build OAuth URL
-      const redirectUrl = chrome.identity.getRedirectURL();
-      const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-      authUrl.searchParams.set('client_id', GOOGLE_CLIENT_ID);
-      authUrl.searchParams.set('redirect_uri', redirectUrl);
-      authUrl.searchParams.set('response_type', 'id_token');
-      authUrl.searchParams.set('scope', 'openid email profile');
-      authUrl.searchParams.set('nonce', Math.random().toString(36).substring(2));
-
-      // Launch OAuth flow
-      const responseUrl = await new Promise((resolve, reject) => {
-        chrome.identity.launchWebAuthFlow(
-          { url: authUrl.toString(), interactive: true },
-          (callbackUrl) => {
-            if (chrome.runtime.lastError) {
-              reject(new Error(chrome.runtime.lastError.message));
-            } else if (callbackUrl) {
-              resolve(callbackUrl);
-            } else {
-              reject(new Error('No callback URL received'));
-            }
-          }
-        );
-      });
-
-      // Extract id_token from response URL
-      const urlParams = new URLSearchParams(responseUrl.split('#')[1]);
-      const idToken = urlParams.get('id_token');
-
-      if (!idToken) {
-        throw new Error('No ID token received from Google');
-      }
-
-      // Send token to backend
-      const response = await fetch(`${API_URL}/auth/google`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Google sign-in failed');
-      }
-
-      token = data.token;
-      user = data.user;
-
-      // Store in extension storage
-      await chrome.storage.local.set({ token, user });
-
-      showMainSection();
-      fetchUsage();
-      fetchStats();
-    } catch (error) {
-      console.error('Google Sign-In error:', error);
-      loginError.textContent = error.message === 'The user did not approve access.'
-        ? 'Sign-in cancelled'
-        : error.message;
-    } finally {
-      googleSignInBtn.disabled = false;
-      googleSignInBtn.innerHTML = `
-        <svg class="google-icon" viewBox="0 0 24 24" width="18" height="18">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-        </svg>
-        Sign in with Google
-      `;
-    }
-  });
-}
 
 // Logout
 logoutBtn.addEventListener('click', async () => {
@@ -253,130 +80,6 @@ logoutBtn.addEventListener('click', async () => {
   user = null;
   await chrome.storage.local.remove(['token', 'user']);
   showLoginSection();
-});
-
-// Generate Response
-generateBtn.addEventListener('click', () => generateResponse());
-regenerateBtn.addEventListener('click', () => generateResponse());
-
-async function generateResponse(overrideTone = null) {
-  const review = reviewText.value.trim();
-  const tone = overrideTone || toneSelect.value;
-
-  if (!review) {
-    mainError.textContent = 'Please enter a review';
-    return;
-  }
-
-  // CRITICAL: Detect language from RAW text BEFORE cleaning!
-  // The cleanReviewText() removes UI elements that could contain language indicators
-  const detectedLang = detectLanguage(review);
-
-  // Clean the review text to remove UI elements
-  const cleanedReview = cleanReviewText(review);
-
-  if (!cleanedReview || cleanedReview.length < 5) {
-    mainError.textContent = 'Please enter a valid review text';
-    return;
-  }
-
-  // Update tone select if overridden
-  if (overrideTone) {
-    toneSelect.value = overrideTone;
-  }
-
-  mainError.textContent = '';
-  successMsg.textContent = '';
-  generateBtn.disabled = true;
-  generateBtn.innerHTML = '<span class="loading"></span>Generating...';
-
-  // Disable tone buttons during generation
-  toneButtons.forEach(btn => btn.disabled = true);
-
-  try {
-    const response = await fetch(`${API_URL}/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      // Send explicit language code instead of 'auto' to fix wrong-language responses
-      body: JSON.stringify({ reviewText: cleanedReview, tone, outputLanguage: detectedLang.code })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Generation failed');
-    }
-
-    currentResponse = data.response;
-    responseText.textContent = data.response;
-    previewText.textContent = data.response;
-    responseSection.classList.remove('hidden');
-
-    // Update tone button states
-    updateToneButtons(tone);
-
-    // Update usage and check for upgrade triggers
-    await fetchUsage();
-    checkUpgradeTriggers();
-  } catch (error) {
-    mainError.textContent = error.message;
-  } finally {
-    generateBtn.disabled = false;
-    generateBtn.innerHTML = 'Generate Response';
-    toneButtons.forEach(btn => btn.disabled = false);
-  }
-}
-
-// Tab switching
-previewTab.addEventListener('click', () => {
-  previewTab.classList.add('active');
-  textTab.classList.remove('active');
-  previewView.classList.remove('hidden');
-  textView.classList.add('hidden');
-});
-
-textTab.addEventListener('click', () => {
-  textTab.classList.add('active');
-  previewTab.classList.remove('active');
-  textView.classList.remove('hidden');
-  previewView.classList.add('hidden');
-});
-
-// Tone buttons
-toneButtons.forEach(btn => {
-  btn.addEventListener('click', () => {
-    const tone = btn.dataset.tone;
-    generateResponse(tone);
-  });
-});
-
-function updateToneButtons(activeTone) {
-  toneButtons.forEach(btn => {
-    if (btn.dataset.tone === activeTone) {
-      btn.classList.add('active');
-    } else {
-      btn.classList.remove('active');
-    }
-  });
-}
-
-// Copy to clipboard
-copyBtn.addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText(currentResponse);
-    const originalText = copyBtn.innerHTML;
-    copyBtn.innerHTML = '✓ Copied!';
-    copyBtn.style.background = '#059669';
-    setTimeout(() => {
-      copyBtn.innerHTML = 'Copy';
-      copyBtn.style.background = '';
-    }, 2000);
-  } catch (error) {
-    mainError.textContent = 'Failed to copy';
-  }
 });
 
 // Fetch usage
@@ -391,7 +94,6 @@ async function fetchUsage() {
       user = data.user;
       await chrome.storage.local.set({ user });
       updateUsageDisplay();
-      updatePreviewBusinessName();
     }
   } catch (error) {
     console.error('Failed to fetch usage:', error);
@@ -432,38 +134,15 @@ function updateUsageDisplay() {
   } else {
     progress.style.background = '';
   }
-}
 
-// Update preview business name
-function updatePreviewBusinessName() {
-  const name = user.businessName || 'Your Business';
-  previewBusinessName.textContent = name;
-  businessAvatar.textContent = name.charAt(0).toUpperCase();
-}
-
-// Fetch stats
-async function fetchStats() {
-  try {
-    const response = await fetch(`${API_URL}/stats`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      if (statToday) statToday.textContent = data.today || 0;
-      if (statWeek) statWeek.textContent = data.thisWeek || 0;
-      if (statTotal) statTotal.textContent = data.total || 0;
-    }
-  } catch (error) {
-    console.error('Failed to fetch stats:', error);
-  }
+  // Check upgrade triggers
+  checkUpgradeTriggers();
 }
 
 // Show/hide sections
 function showLoginSection() {
   loginSection.classList.remove('hidden');
   mainSection.classList.add('hidden');
-  responseSection.classList.add('hidden');
   loginError.textContent = '';
   document.getElementById('login-email').value = '';
   document.getElementById('login-password').value = '';
@@ -474,7 +153,6 @@ function showMainSection() {
   mainSection.classList.remove('hidden');
   userEmail.textContent = user.email;
   updateUsageDisplay();
-  updatePreviewBusinessName();
 
   // Show onboarding card for first-time users
   checkOnboarding();

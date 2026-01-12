@@ -4013,11 +4013,10 @@ async function generateResponse(panel) {
     const toneSection = panel.querySelector('.rr-quick-tones');
     if (toneSection) toneSection.classList.add('hidden');
 
-    // Collapse Review and Options sections
-    const reviewDetails = panel.querySelector('.rr-review-details');
-    const optionsDetails = panel.querySelector('.rr-options-details');
+    // Collapse Review and Options sections (reviewDetails already declared above)
     if (reviewDetails) reviewDetails.removeAttribute('open');
-    if (optionsDetails) optionsDetails.removeAttribute('open');
+    const optionsDetailsEl = panel.querySelector('.rr-options-details');
+    if (optionsDetailsEl) optionsDetailsEl.removeAttribute('open');
 
     // Hide Generate button section (use small 🔄 button for regenerate)
     const generateBtnsSection = panel.querySelector('.rr-generate-buttons');

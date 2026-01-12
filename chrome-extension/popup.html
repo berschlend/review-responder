@@ -39,8 +39,8 @@
         <h3>Welcome to ReviewResponder!</h3>
         <ol class="onboarding-steps">
           <li>Go to <strong>Google Maps</strong>, <strong>Yelp</strong>, or any review page</li>
-          <li>Select any <strong>review text</strong> you want to respond to</li>
-          <li>Click the <strong>lightning button</strong> that appears</li>
+          <li>Find a review and click the <strong>"Respond"</strong> button</li>
+          <li>Choose your tone and click <strong>Generate</strong></li>
           <li>Copy your AI-generated response and paste it!</li>
         </ol>
         <button id="dismiss-onboarding" class="btn btn-primary">Got it, let's go!</button>
@@ -64,73 +64,11 @@
         </div>
         <div class="usage-row">
           <span class="usage-text">
-            <span id="usage-count">0</span> / <span id="usage-limit">20</span> responses
+            <span id="usage-count">0</span> / <span id="usage-limit">20</span> responses this month
           </span>
         </div>
         <div class="progress-bar">
           <div id="progress" class="progress"></div>
-        </div>
-      </div>
-
-      <div class="input-group">
-        <label for="review-text">Paste Review:</label>
-        <textarea id="review-text" rows="4" placeholder="Paste the customer review here..."></textarea>
-      </div>
-
-      <div class="input-group">
-        <label for="tone-select">Response Tone:</label>
-        <select id="tone-select">
-          <option value="professional">Professional</option>
-          <option value="friendly">Friendly</option>
-          <option value="formal">Formal</option>
-          <option value="apologetic">Apologetic</option>
-        </select>
-      </div>
-
-      <button id="generate-btn" class="btn btn-primary btn-full">
-        Generate Response
-      </button>
-
-      <div id="response-section" class="hidden">
-        <div class="preview-toggle">
-          <button id="preview-tab" class="tab-btn active">Preview</button>
-          <button id="text-tab" class="tab-btn">Plain Text</button>
-        </div>
-
-        <!-- Google Maps Style Preview -->
-        <div id="preview-view" class="google-preview">
-          <div class="gm-response-header">
-            <span class="gm-label">Response from the owner</span>
-            <span class="gm-time">Just now</span>
-          </div>
-          <div class="gm-response-body">
-            <div class="gm-avatar" id="business-avatar">B</div>
-            <div class="gm-content">
-              <div class="gm-business-name" id="preview-business-name">Your Business</div>
-              <div class="gm-response-text" id="preview-text"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Plain Text View -->
-        <div id="text-view" class="hidden">
-          <div id="response-text" class="response-box"></div>
-        </div>
-
-        <div class="button-row">
-          <button id="copy-btn" class="btn btn-success">Copy</button>
-          <button id="regenerate-btn" class="btn btn-secondary">Regenerate</button>
-        </div>
-
-        <!-- Quick Tone Switch -->
-        <div class="tone-switch">
-          <span class="tone-label">Try different tone:</span>
-          <div class="tone-buttons">
-            <button class="tone-btn" data-tone="professional">Pro</button>
-            <button class="tone-btn" data-tone="friendly">Friendly</button>
-            <button class="tone-btn" data-tone="formal">Formal</button>
-            <button class="tone-btn" data-tone="apologetic">Sorry</button>
-          </div>
         </div>
       </div>
 
@@ -162,18 +100,15 @@
         <span>🎯</span> How to use
       </div>
       <ol class="how-to-steps">
-        <li>Go to any review page (Google Maps, Yelp, etc.)</li>
-        <li>Select the review text you want to respond to</li>
-        <li>Click the <strong>⚡</strong> button that appears</li>
-        <li>Copy your AI-generated response!</li>
+        <li>Go to <strong>Google Maps</strong>, <strong>Yelp</strong>, or any review page</li>
+        <li>Find a customer review</li>
+        <li>Click the <strong>"Respond"</strong> button next to the review</li>
+        <li>Generate, copy, and paste your response!</li>
       </ol>
       <div class="shortcuts">
         <span class="shortcut"><kbd>Alt+R</kbd> Generate</span>
         <span class="shortcut"><kbd>Alt+C</kbd> Copy</span>
         <span class="shortcut"><kbd>Esc</kbd> Close</span>
-      </div>
-      <div class="batch-tip">
-        <strong>Pro Tip:</strong> Click "Scan Page" in the panel to respond to multiple reviews at once!
       </div>
     </div>
 
