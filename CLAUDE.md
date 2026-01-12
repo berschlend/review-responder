@@ -22,6 +22,32 @@
 
 ---
 
+## CONTEXT MANAGEMENT
+
+**Autocompact:** AUS (manuell `/compact` nach Features)
+
+### Commands
+| Command | Beschreibung |
+|---------|--------------|
+| `/context` | Zeigt Token-Nutzung (Ziel: < 80%) |
+| `/compact` | Manuell komprimieren nach Feature/Milestone |
+| `/cost` | Token-Verbrauch und Kosten |
+
+### Installierte MCPs
+- **Memory MCP** - Persistentes Gedächtnis (optional nutzbar)
+- **Gemini Design MCP** - Frontend outsourcen (API Key in secrets)
+- **Chrome MCP** - Browser Automation (`claude --chrome`)
+
+### Best Practice
+```
+1. Feature coden
+2. Testen
+3. /compact (oder neue Session)
+4. Nächstes Feature
+```
+
+---
+
 ## BORIS CHERNY WORKFLOW (Creator of Claude Code)
 
 ### Custom Slash Commands
