@@ -2663,6 +2663,7 @@ async function createResponsePanel() {
           <div class="rr-batch-empty">
             <span>📭 No reviews found</span>
             <p>Navigate to a page with customer reviews to use batch mode.</p>
+            <p style="font-size: 11px; opacity: 0.8; margin-top: 8px;">Tip: You can also select review text manually with your cursor!</p>
           </div>
         </div>
       </div>
@@ -4732,6 +4733,7 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
 
 // ========== FLOATING BUTTON ==========
 let floatingBtn = null;
+let lastSelectedText = ''; // Store selection before it disappears on click
 
 function createFloatingButton() {
   if (floatingBtn) return floatingBtn;
@@ -4741,11 +4743,13 @@ function createFloatingButton() {
   floatingBtn.innerHTML = '⚡';
   floatingBtn.title = 'Generate response (Alt+R)';
 
-  floatingBtn.addEventListener('click', async (e) => {
+  // Use mousedown instead of click to capture before selection disappears
+  floatingBtn.addEventListener('mousedown', async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const selection = window.getSelection().toString().trim();
+    // Use stored selection (captured when button was shown)
+    const selection = lastSelectedText || window.getSelection().toString().trim();
     if (!selection || selection.length < 10) {
       hideFloatingButton();
       return;
@@ -4778,6 +4782,9 @@ function createFloatingButton() {
 
 function showFloatingButton(x, y) {
   const btn = createFloatingButton();
+
+  // Store the current selection before it can disappear
+  lastSelectedText = window.getSelection().toString().trim();
 
   // Position near cursor but keep on screen
   const btnX = Math.min(x + 15, window.innerWidth - 70);
@@ -5568,7 +5575,7 @@ async function startQueueMode() {
   const reviews = await scanPageForReviews();
 
   if (reviews.length === 0) {
-    showToast('📝 No reviews found on this page', 'info');
+    showToast('📝 No reviews found - select review text manually with your cursor', 'info', 5000);
     return;
   }
 
