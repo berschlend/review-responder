@@ -2005,15 +2005,20 @@ const LandingPage = () => {
           Sign up now to get started.
         </div>
       )}
-      <section className="hero">
-        <div className="container">
+      <section className="hero" style={{ position: 'relative', overflow: 'hidden', padding: '100px 0 60px', background: 'linear-gradient(135deg, #eef2ff 0%, #faf5ff 50%, #ecfdf5 100%)' }}>
+        {/* Decorative background elements - MORE VISIBLE */}
+        <div style={{ position: 'absolute', top: '-5%', left: '10%', width: '500px', height: '500px', background: 'linear-gradient(135deg, #818cf8, #c084fc)', filter: 'blur(100px)', opacity: 0.25, borderRadius: '50%', pointerEvents: 'none', animation: 'pulse 8s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', bottom: '0%', right: '5%', width: '450px', height: '450px', background: 'linear-gradient(135deg, #34d399, #22d3ee)', filter: 'blur(100px)', opacity: 0.2, borderRadius: '50%', pointerEvents: 'none', animation: 'pulse 8s ease-in-out infinite 4s' }} />
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '12px',
-              marginBottom: '16px',
+              gap: '20px',
+              marginBottom: '40px',
             }}
           >
             <Link
@@ -2022,114 +2027,117 @@ const LandingPage = () => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                background: 'var(--gray-100)',
-                color: 'var(--gray-700)',
-                padding: '6px 16px',
-                borderRadius: '20px',
-                fontSize: '13px',
+                background: 'rgba(255, 255, 255, 0.6)',
+                backdropFilter: 'blur(12px)',
+                color: 'var(--text-primary)',
+                padding: '8px 20px',
+                borderRadius: '100px',
+                fontSize: '14px',
                 fontWeight: '600',
                 textDecoration: 'none',
-                cursor: 'pointer',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                border: '1px solid var(--gray-200)',
+                border: '1px solid rgba(255, 255, 255, 0.8)',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               }}
               onMouseOver={e => {
-                e.currentTarget.style.transform = 'scale(1.05)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
               }}
               onMouseOut={e => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.6)';
               }}
             >
-              <Sparkles size={14} style={{ color: 'var(--primary)' }} />
-              50% OFF - Limited Time
+              <Sparkles size={16} style={{ color: 'var(--primary)' }} />
+              <span style={{ background: 'linear-gradient(90deg, var(--primary), var(--primary-dark))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                50% OFF - Launch Special
+              </span>
             </Link>
             <ProductHuntBadge />
           </div>
-          <h1 className="hero-title">
+
+          <h1 className="hero-title" style={{
+            fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
+            lineHeight: '1.05',
+            letterSpacing: '-0.04em',
+            marginBottom: '32px',
+            background: 'linear-gradient(180deg, var(--text-primary) 0%, #64748b 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}>
             Respond to Reviews
             <br />
-            in Seconds, Not Hours
+            <span style={{ color: 'var(--primary)', WebkitTextFillColor: 'initial' }}>in Seconds</span>, Not Hours
           </h1>
-          <p className="hero-subtitle">
-            AI-powered review responses for busy business owners. Generate professional,
-            personalized replies to Google, Yelp, and other platform reviews instantly.
+
+          <p className="hero-subtitle" style={{ maxWidth: '640px', margin: '0 auto 48px', fontSize: '1.25rem', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+            Elevate your brand's reputation with AI-powered responses.
+            Generate professional, personalized replies to any platform instantly.
           </p>
+
           <div
             className="hero-buttons"
-            style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}
+            style={{ display: 'flex', gap: '20px', justifyContent: 'center', alignItems: 'center' }}
           >
-            <Link to={user ? '/dashboard' : '/register'} className="btn btn-primary btn-lg">
+            <Link
+              to={user ? '/dashboard' : '/register'}
+              className="btn btn-primary btn-lg"
+              style={{ boxShadow: '0 10px 25px -5px rgba(79, 70, 229, 0.4)', transition: 'all 0.3s ease' }}
+              onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'}
+              onMouseOut={e => e.currentTarget.style.transform = 'translateY(0) scale(1)'}
+            >
               <Sparkles size={20} />
               Get Started Free
             </Link>
-            <Link to="/pricing" className="btn btn-secondary btn-lg">
+            <Link
+              to="/pricing"
+              className="btn btn-secondary btn-lg"
+              style={{ transition: 'all 0.3s ease' }}
+              onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+              onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
+            >
               View Pricing
             </Link>
           </div>
-          <p style={{ marginTop: '16px', color: 'var(--gray-500)', fontSize: '14px' }}>
+          <p style={{ marginTop: '24px', color: 'var(--gray-500)', fontSize: '14px', fontWeight: '500' }}>
             20 free responses every month. No credit card required.
           </p>
 
-          {/* Trust Badges */}
           <div
             style={{
-              marginTop: '32px',
+              marginTop: '80px',
               display: 'flex',
-              gap: '24px',
+              gap: '40px',
               justifyContent: 'center',
               flexWrap: 'wrap',
+              opacity: 0.7
             }}
           >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                color: 'var(--gray-500)',
-                fontSize: '13px',
-              }}
-            >
-              <Lock size={16} />
-              <span>SSL Secured</span>
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                color: 'var(--gray-500)',
-                fontSize: '13px',
-              }}
-            >
-              <CreditCard size={16} />
-              <span>Stripe Payments</span>
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                color: 'var(--gray-500)',
-                fontSize: '13px',
-              }}
-            >
-              <Shield size={16} />
-              <span>GDPR Compliant</span>
-            </div>
+            {[
+              { icon: <Lock size={18} />, text: "SSL Secured" },
+              { icon: <CreditCard size={18} />, text: "Stripe Payments" },
+              { icon: <Shield size={18} />, text: "GDPR Compliant" }
+            ].map((badge, i) => (
+              <div
+                key={i}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  color: 'var(--text-primary)',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+              >
+                {badge.icon}
+                <span>{badge.text}</span>
+              </div>
+            ))}
           </div>
 
-          {/* Demo Video Section - Hidden until video is ready
-          <div style={{
-            marginTop: '48px',
-            maxWidth: '800px',
-            margin: '48px auto 0',
-            position: 'relative'
-          }}>
-            ... Video content here - uncomment when YouTube video ID is ready ...
+          <div style={{ marginTop: '60px', opacity: 0.4, animation: 'bounce 2s infinite', display: 'flex', justifyContent: 'center' }}>
+            <ChevronDown size={28} />
           </div>
-          */}
         </div>
       </section>
 
