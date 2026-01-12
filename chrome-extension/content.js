@@ -3936,7 +3936,9 @@ async function generateResponse(panel) {
           }, 2000);
         }
       } catch (e) {
-        showToast('✨ Response generated!', 'success');
+        // Clipboard failed (document not focused) - show generate success only
+        console.log('[RR Debug] Auto-copy failed (document not focused):', e.message);
+        showToast('✨ Generated! Click Copy to copy', 'success');
       }
     } else {
       showToast('✨ Response generated!', 'success');
@@ -4111,14 +4113,13 @@ async function generateResponseWithModifier(panel, modifier) {
           }, 2000);
         }
       } catch (e) {
-        showToast('✨ Response generated!', 'success');
+        // Clipboard failed (document not focused)
+        console.log('[RR Debug] Auto-copy failed (document not focused):', e.message);
+        showToast('✨ Generated! Click Copy to copy', 'success');
       }
     } else {
       showToast('✨ Response generated!', 'success');
     }
-
-
-
 
   } catch (error) {
     showToast(`❌ ${error.message}`, 'error');
@@ -4228,7 +4229,9 @@ async function editExistingResponse(panel, editType, currentResponse) {
           }, 2000);
         }
       } catch (e) {
-        showToast(`✨ Response ${editType}!`, 'success');
+        // Clipboard failed (document not focused)
+        console.log('[RR Debug] Auto-copy failed (document not focused):', e.message);
+        showToast(`✨ ${editType.charAt(0).toUpperCase() + editType.slice(1)}! Click Copy`, 'success');
       }
     } else {
       showToast(`✨ Response ${editType}!`, 'success');
@@ -4310,15 +4313,16 @@ async function turboGenerate(reviewText) {
       throw new Error(data.error || 'Generation failed');
     }
 
-    // Copy to clipboard
-    await navigator.clipboard.writeText(data.response);
-
     // Store for potential panel expansion later
     lastSelectedText = cleaned;
     lastGeneratedResponse = data.response;
 
+    // Copy to clipboard using fallback method
+    const copied = await copyToClipboardWithFallback(data.response);
+    console.log('[RR Debug] Turbo copy result:', copied);
+
     // Show turbo popup with response
-    showTurboPopup(data.response, cleaned);
+    showTurboPopup(data.response, cleaned, copied);
 
     // Check if we should show review popup
     checkShowReviewPopup();
@@ -4332,8 +4336,35 @@ async function turboGenerate(reviewText) {
 // Store last generated response for panel expansion
 let lastGeneratedResponse = '';
 
+// Fallback copy function that works without document focus
+async function copyToClipboardWithFallback(text) {
+  // Try modern API first
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (e) {
+    // Fallback: use textarea + execCommand
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-9999px';
+      textarea.style.top = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      const success = document.execCommand('copy');
+      textarea.remove();
+      return success;
+    } catch (fallbackErr) {
+      console.log('[RR Debug] Fallback copy also failed:', fallbackErr);
+      return false;
+    }
+  }
+}
+
 // ========== TURBO POPUP ==========
-function showTurboPopup(response, reviewText) {
+function showTurboPopup(response, reviewText, alreadyCopied = false) {
   // Remove existing popup
   const existing = document.getElementById('rr-turbo-popup');
   if (existing) existing.remove();
@@ -4348,14 +4379,17 @@ function showTurboPopup(response, reviewText) {
     popup.classList.add('rr-dark');
   }
 
+  const headerText = alreadyCopied ? '⚡ Ready & Copied!' : '⚡ Response Ready!';
+  const copyBtnText = alreadyCopied ? '✅ Copied' : '📋 Copy';
+
   popup.innerHTML = `
     <div class="rr-turbo-header">
-      <span>⚡ Response Ready!</span>
+      <span>${headerText}</span>
       <button class="rr-turbo-close">×</button>
     </div>
     <textarea class="rr-turbo-response" spellcheck="false">${response}</textarea>
     <div class="rr-turbo-actions">
-      <button class="rr-turbo-copy">📋 Copy</button>
+      <button class="rr-turbo-copy${alreadyCopied ? ' copied' : ''}">${copyBtnText}</button>
       <button class="rr-turbo-expand">📝 Full Panel</button>
     </div>
   `;
@@ -4379,8 +4413,15 @@ function showTurboPopup(response, reviewText) {
   // Copy button
   popup.querySelector('.rr-turbo-copy').addEventListener('click', async () => {
     const text = popup.querySelector('.rr-turbo-response').value;
-    await navigator.clipboard.writeText(text);
-    showToast('📋 Copied!', 'success');
+    const copyBtn = popup.querySelector('.rr-turbo-copy');
+    const success = await copyToClipboardWithFallback(text);
+    if (success) {
+      copyBtn.textContent = '✅ Copied';
+      copyBtn.classList.add('copied');
+      showToast('📋 Copied!', 'success');
+    } else {
+      showToast('❌ Copy failed - please copy manually', 'error');
+    }
   });
 
   // Expand to full panel
