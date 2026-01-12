@@ -2006,19 +2006,14 @@ const LandingPage = () => {
           Sign up now to get started.
         </div>
       )}
-      <section className="hero" style={{ position: 'relative', overflow: 'hidden', padding: '100px 0 60px', background: 'linear-gradient(135deg, #eef2ff 0%, #faf5ff 50%, #ecfdf5 100%)' }}>
-        {/* Decorative background elements - MORE VISIBLE */}
-        <div style={{ position: 'absolute', top: '-5%', left: '10%', width: '500px', height: '500px', background: 'linear-gradient(135deg, #818cf8, #c084fc)', filter: 'blur(100px)', opacity: 0.25, borderRadius: '50%', pointerEvents: 'none', animation: 'pulse 8s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', bottom: '0%', right: '5%', width: '450px', height: '450px', background: 'linear-gradient(135deg, #34d399, #22d3ee)', filter: 'blur(100px)', opacity: 0.2, borderRadius: '50%', pointerEvents: 'none', animation: 'pulse 8s ease-in-out infinite 4s' }} />
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
-
+      <section className="hero" style={{ position: 'relative', padding: '120px 0 80px', background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)' }}>
         <div className="container" style={{ position: 'relative', zIndex: 1 }}>
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '20px',
+              gap: '24px',
               marginBottom: '40px',
             }}
           >
@@ -2028,116 +2023,102 @@ const LandingPage = () => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                background: 'rgba(255, 255, 255, 0.6)',
-                backdropFilter: 'blur(12px)',
-                color: 'var(--text-primary)',
-                padding: '8px 20px',
-                borderRadius: '100px',
-                fontSize: '14px',
-                fontWeight: '600',
+                background: 'var(--bg-secondary)',
+                color: 'var(--primary)',
+                padding: '6px 16px',
+                borderRadius: '6px',
+                fontSize: '13px',
+                fontWeight: '700',
+                letterSpacing: '0.05em',
                 textDecoration: 'none',
-                border: '1px solid rgba(255, 255, 255, 0.8)',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              }}
-              onMouseOver={e => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
-              }}
-              onMouseOut={e => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.6)';
+                border: '1px solid var(--border-color)',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                transition: 'all 0.2s ease',
               }}
             >
-              <Sparkles size={16} style={{ color: 'var(--primary)' }} />
-              <span style={{ background: 'linear-gradient(90deg, var(--primary), var(--primary-dark))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                50% OFF - Limited Time
-              </span>
+              <Sparkles size={14} />
+              <span>50% OFF - Limited Time Offer</span>
             </Link>
             <ProductHuntBadge />
           </div>
 
           <h1 className="hero-title" style={{
-            fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
-            lineHeight: '1.05',
-            letterSpacing: '-0.04em',
-            marginBottom: '32px',
-            background: 'linear-gradient(180deg, var(--text-primary) 0%, #64748b 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
+            fontSize: 'clamp(2.5rem, 5vw, 4rem)',
+            lineHeight: '1.1',
+            letterSpacing: '-0.02em',
+            marginBottom: '24px',
+            color: 'var(--text-primary)',
+            fontWeight: '800'
           }}>
             Respond to Reviews
             <br />
-            <span style={{ color: 'var(--primary)', WebkitTextFillColor: 'initial' }}>in Seconds</span>, Not Hours
+            <span style={{ color: 'var(--primary)' }}>in Seconds</span>, Not Hours
           </h1>
 
-          <p className="hero-subtitle" style={{ maxWidth: '640px', margin: '0 auto 48px', fontSize: '1.25rem', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+          <p className="hero-subtitle" style={{ maxWidth: '680px', margin: '0 auto 40px', fontSize: '1.125rem', lineHeight: '1.7', color: 'var(--text-secondary)' }}>
             Elevate your brand's reputation with AI-powered responses.
             Generate professional, personalized replies to any platform instantly.
           </p>
 
           <div
             className="hero-buttons"
-            style={{ display: 'flex', gap: '20px', justifyContent: 'center', alignItems: 'center' }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}
           >
-            <Link
-              to={user ? '/dashboard' : '/register'}
-              className="btn btn-primary btn-lg"
-              style={{ boxShadow: '0 10px 25px -5px rgba(79, 70, 229, 0.4)', transition: 'all 0.3s ease' }}
-              onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'}
-              onMouseOut={e => e.currentTarget.style.transform = 'translateY(0) scale(1)'}
-            >
-              <Sparkles size={20} />
-              Get Started Free
-            </Link>
-            <Link
-              to="/pricing"
-              className="btn btn-secondary btn-lg"
-              style={{ transition: 'all 0.3s ease' }}
-              onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-              onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
-            >
-              View Pricing
-            </Link>
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <Link
+                to={user ? '/dashboard' : '/register'}
+                className="btn btn-primary btn-lg"
+                style={{ padding: '0 32px', height: '54px', display: 'flex', alignItems: 'center', borderRadius: '8px', fontWeight: '600', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+              >
+                <Sparkles size={20} style={{ marginRight: '8px' }} />
+                Get Started Free
+              </Link>
+              <Link
+                to="/pricing"
+                className="btn btn-secondary btn-lg"
+                style={{ padding: '0 32px', height: '54px', display: 'flex', alignItems: 'center', borderRadius: '8px', fontWeight: '600', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
+              >
+                View Pricing
+              </Link>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '14px', fontWeight: '500' }}>
+              <Shield size={16} style={{ color: '#10b981' }} />
+              No credit card required - 20 free responses every month
+            </div>
           </div>
-          <p style={{ marginTop: '24px', color: 'var(--gray-500)', fontSize: '14px', fontWeight: '500' }}>
-            20 free responses every month. No credit card required.
-          </p>
 
           <div
             style={{
-              marginTop: '80px',
+              marginTop: '100px',
+              paddingTop: '40px',
+              borderTop: '1px solid var(--border-color)',
               display: 'flex',
-              gap: '40px',
+              gap: '60px',
               justifyContent: 'center',
-              flexWrap: 'wrap',
-              opacity: 0.7
+              flexWrap: 'wrap'
             }}
           >
             {[
-              { icon: <Lock size={18} />, text: "SSL Secured" },
-              { icon: <CreditCard size={18} />, text: "Stripe Payments" },
-              { icon: <Shield size={18} />, text: "GDPR Compliant" }
+              { icon: <Lock size={20} />, text: "Enterprise Security", sub: "256-bit SSL encryption" },
+              { icon: <CreditCard size={20} />, text: "Secure Payments", sub: "Powered by Stripe" },
+              { icon: <Shield size={20} />, text: "Data Privacy", sub: "GDPR Compliant" }
             ].map((badge, i) => (
               <div
                 key={i}
                 style={{
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  color: 'var(--text-primary)',
-                  fontSize: '14px',
-                  fontWeight: '500'
+                  alignItems: 'flex-start',
+                  gap: '12px',
+                  textAlign: 'left'
                 }}
               >
-                {badge.icon}
-                <span>{badge.text}</span>
+                <div style={{ color: 'var(--primary)', marginTop: '2px' }}>{badge.icon}</div>
+                <div>
+                  <div style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: '700' }}>{badge.text}</div>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>{badge.sub}</div>
+                </div>
               </div>
             ))}
-          </div>
-
-          <div style={{ marginTop: '60px', opacity: 0.4, animation: 'bounce 2s infinite', display: 'flex', justifyContent: 'center' }}>
-            <ChevronDown size={28} />
           </div>
         </div>
       </section>
@@ -2148,124 +2129,103 @@ const LandingPage = () => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          gap: '16px',
-          padding: '24px 20px',
-          background: 'linear-gradient(to bottom, #ffffff, var(--gray-50))',
+          gap: '32px',
+          padding: '20px 24px',
+          background: 'var(--gray-50)',
           borderBottom: '1px solid var(--gray-200)',
           flexWrap: 'wrap',
         }}
       >
-        {[
-          { icon: <Sparkles size={18} />, label: "Powered by Claude" },
-          { icon: <Globe size={18} />, label: "50+ Languages" },
-          { icon: <Chrome size={18} />, label: "Chrome Extension" }
-        ].map((item, i) => (
-          <div
-            key={i}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              padding: '8px 20px',
-              background: 'linear-gradient(135deg, #ffffff 0%, rgba(79, 70, 229, 0.03) 100%)',
-              backdropFilter: 'blur(8px)',
-              borderRadius: '100px',
-              border: '1px solid rgba(79, 70, 229, 0.12)',
-              color: 'var(--gray-600)',
-              fontSize: '14px',
-              fontWeight: '600',
-              boxShadow: '0 2px 8px -2px rgba(0,0,0,0.05)',
-              transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-              cursor: 'default',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
-              e.currentTarget.style.borderColor = 'rgba(79, 70, 229, 0.3)';
-              e.currentTarget.style.boxShadow = '0 12px 20px -8px rgba(79, 70, 229, 0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0) scale(1)';
-              e.currentTarget.style.borderColor = 'rgba(79, 70, 229, 0.12)';
-              e.currentTarget.style.boxShadow = '0 2px 8px -2px rgba(0,0,0,0.05)';
-            }}
-          >
-            <div style={{
-              color: 'var(--primary)',
-              display: 'flex',
-              filter: 'drop-shadow(0 0 8px rgba(79, 70, 229, 0.35))'
-            }}>
-              {item.icon}
-            </div>
-            <span style={{ letterSpacing: '-0.01em' }}>{item.label}</span>
-          </div>
-        ))}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: 'var(--gray-600)',
+            fontSize: '14px',
+            fontWeight: '500',
+          }}
+        >
+          <Sparkles size={18} style={{ color: 'var(--primary)' }} />
+          <span>Powered by Claude</span>
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: 'var(--gray-600)',
+            fontSize: '14px',
+            fontWeight: '500',
+          }}
+        >
+          <Globe size={18} style={{ color: 'var(--primary)' }} />
+          <span>50+ Languages</span>
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: 'var(--gray-600)',
+            fontSize: '14px',
+            fontWeight: '500',
+          }}
+        >
+          <Chrome size={18} style={{ color: 'var(--primary)' }} />
+          <span>Chrome Extension</span>
+        </div>
       </div>
 
       {/* Chrome Extension Section - Key Selling Point */}
-      <section className="container" style={{ margin: '80px auto' }}>
+      <section className="container" style={{ marginBottom: '60px', marginTop: '60px' }}>
         <div
           className="card"
           style={{
-            padding: '48px',
-            background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
-            color: 'white',
-            position: 'relative',
-            overflow: 'hidden',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+            padding: '40px',
+            background: 'var(--bg-secondary)',
+            color: 'var(--text-primary)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '12px',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
           }}
         >
-          {/* Animated Glow & Subtle Grid Background */}
-          <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '400px', height: '400px', background: 'var(--primary)', filter: 'blur(120px)', opacity: '0.2', pointerEvents: 'none', borderRadius: '50%' }} />
-          <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0)', backgroundSize: '24px 24px', pointerEvents: 'none' }} />
-
-          <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '48px', flexWrap: 'wrap' }}>
-            <div style={{ flex: '1', minWidth: '320px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '40px', flexWrap: 'wrap' }}>
+            <div style={{ flex: '1', minWidth: '300px' }}>
               <div
-                style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '24px' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}
               >
-                <div style={{ background: 'rgba(255,255,255,0.08)', padding: '10px', borderRadius: '12px', display: 'flex', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  <Chrome size={28} style={{ color: '#4285f4' }} />
-                </div>
+                <Chrome size={32} />
                 <span
                   style={{
                     background: '#4285f4',
-                    padding: '4px 14px',
-                    borderRadius: '20px',
-                    fontSize: '11px',
-                    fontWeight: '800',
-                    letterSpacing: '0.05em',
-                    boxShadow: '0 0 20px rgba(66, 133, 244, 0.4)',
-                    animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                    padding: '4px 12px',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    fontWeight: '600',
                   }}
                 >
                   NEW
                 </span>
               </div>
-              <h2 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '16px', letterSpacing: '-0.025em' }}>
-                Chrome Extension <span style={{ color: 'var(--secondary)' }}>Available</span>
+              <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
+                Chrome Extension Available
               </h2>
               <p
-                style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '32px', lineHeight: '1.7', fontSize: '17px' }}
+                style={{ color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: '1.6' }}
               >
                 Respond to Google Reviews without leaving the page. Our Chrome extension adds a
                 "Generate Response" button directly to each review. One click generates a
                 professional response.
               </p>
-              <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 <Link
                   to="/extension"
-                  className="btn"
+                  className="btn btn-primary"
                   style={{
-                    background: 'linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%)',
-                    color: '#0f172a',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '10px',
-                    padding: '12px 26px',
-                    fontWeight: '700',
-                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    gap: '8px',
                   }}
                 >
                   <Download size={18} />
@@ -2273,15 +2233,7 @@ const LandingPage = () => {
                 </Link>
                 <Link
                   to="/register"
-                  className="btn"
-                  style={{
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    color: 'white',
-                    padding: '12px 26px',
-                    backdropFilter: 'blur(12px)',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                  }}
+                  className="btn btn-secondary"
                 >
                   Create Free Account First
                 </Link>
@@ -2307,13 +2259,13 @@ const LandingPage = () => {
               ) : (
                 <div
                   style={{
-                    background: '#0d0d1a',
+                    background: 'var(--gray-800)',
                     borderRadius: '12px',
                     overflow: 'hidden',
                     aspectRatio: '16/9',
                     position: 'relative',
                     cursor: 'pointer',
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+                    boxShadow: '0 10px 20px rgba(0,0,0,0.15)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -2338,6 +2290,21 @@ const LandingPage = () => {
                   >
                     <Play size={28} fill="white" style={{ marginLeft: '3px' }} />
                   </div>
+                  {/* Duration Badge */}
+                  <span
+                    style={{
+                      position: 'absolute',
+                      bottom: '8px',
+                      right: '8px',
+                      background: 'rgba(0,0,0,0.7)',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                      fontWeight: '500',
+                    }}
+                  >
+                    0:38
+                  </span>
                   {/* Label */}
                   <div
                     style={{
@@ -2356,44 +2323,111 @@ const LandingPage = () => {
               )}
             </div>
 
-            <div style={{ flex: '0 0 auto', width: '280px' }}>
+            <div style={{ flex: '0 0 auto' }}>
               <div
                 style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  backdropFilter: 'blur(16px)',
-                  WebkitBackdropFilter: 'blur(16px)',
-                  borderRadius: '24px',
-                  padding: '24px',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                  background: 'var(--bg-tertiary)',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  border: '1px solid var(--border-color)',
                 }}
               >
-                <div style={{ color: 'white', fontSize: '14px' }}>
-                  <div style={{ fontWeight: '700', marginBottom: '24px', color: 'white', letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '12px', opacity: 0.8 }}>
-                    How it works
+                <div style={{ color: 'var(--text-primary)', fontSize: '14px' }}>
+                  <div style={{ fontWeight: '600', marginBottom: '8px', color: 'var(--text-primary)' }}>
+                    How it works:
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', position: 'relative' }}>
-                      <div style={{ position: 'absolute', left: '12px', top: '24px', height: '20px', width: '1px', background: 'rgba(255,255,255,0.2)' }} />
-                      <span style={{ background: 'var(--primary)', color: 'white', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold', zIndex: 1 }}>1</span>
-                      <span style={{ fontWeight: '500', opacity: 0.9 }}>Install extension</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', position: 'relative' }}>
-                      <div style={{ position: 'absolute', left: '12px', top: '24px', height: '20px', width: '1px', background: 'rgba(255,255,255,0.2)' }} />
-                      <span style={{ background: 'var(--primary)', color: 'white', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold', zIndex: 1 }}>2</span>
-                      <span style={{ fontWeight: '500', opacity: 0.9 }}>Login with your account</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', position: 'relative' }}>
-                      <div style={{ position: 'absolute', left: '12px', top: '24px', height: '20px', width: '1px', background: 'rgba(255,255,255,0.2)' }} />
-                      <span style={{ background: 'var(--primary)', color: 'white', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold', zIndex: 1 }}>3</span>
-                      <span style={{ fontWeight: '500', opacity: 0.9 }}>Click button or select text</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <span style={{ background: 'var(--secondary)', color: 'white', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 0 15px rgba(16, 185, 129, 0.4)', zIndex: 1 }}>
-                        <Check size={14} strokeWidth={3} />
-                      </span>
-                      <span style={{ color: 'var(--secondary)', fontWeight: '700' }}>Copy & paste response</span>
-                    </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '6px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        background: 'var(--primary-600)',
+                        color: 'white',
+                        borderRadius: '50%',
+                        width: '20px',
+                        height: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '11px',
+                      }}
+                    >
+                      1
+                    </span>
+                    <span>Install extension</span>
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '6px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        background: 'var(--primary-600)',
+                        color: 'white',
+                        borderRadius: '50%',
+                        width: '20px',
+                        height: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '11px',
+                      }}
+                    >
+                      2
+                    </span>
+                    <span>Login with your account</span>
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '6px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        background: 'var(--primary-600)',
+                        color: 'white',
+                        borderRadius: '50%',
+                        width: '20px',
+                        height: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '11px',
+                      }}
+                    >
+                      3
+                    </span>
+                    <span>Click button or select text</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span
+                      style={{
+                        background: '#10b981',
+                        color: 'white',
+                        borderRadius: '50%',
+                        width: '20px',
+                        height: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '11px',
+                      }}
+                    >
+                      <Check size={12} />
+                    </span>
+                    <span>Copy & paste response</span>
                   </div>
                 </div>
               </div>
@@ -2403,108 +2437,90 @@ const LandingPage = () => {
       </section>
 
       {/* Demo Video Section - Full Walkthrough */}
-      <section className="container" style={{ marginTop: '80px', marginBottom: '80px', position: 'relative' }}>
-        {/* Background Decorative Elements */}
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '100%', height: '100%', pointerEvents: 'none', zIndex: -1 }}>
-          <div style={{ position: 'absolute', top: '0', left: '10%', width: '300px', height: '300px', background: 'var(--primary)', opacity: '0.1', filter: 'blur(100px)', borderRadius: '50%' }}></div>
-          <div style={{ position: 'absolute', bottom: '0', right: '10%', width: '300px', height: '300px', background: 'var(--secondary)', opacity: '0.1', filter: 'blur(100px)', borderRadius: '50%' }}></div>
-        </div>
-
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <h2 style={{
-            fontSize: '32px',
-            fontWeight: '800',
-            marginBottom: '12px',
-            background: 'linear-gradient(135deg, var(--primary) 0%, #818cf8 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            letterSpacing: '-0.02em'
-          }}>
+      <section className="container" style={{ marginTop: '60px', marginBottom: '60px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
             See ReviewResponder in Action
           </h2>
-          <p style={{ color: 'var(--gray-600)', maxWidth: '580px', margin: '0 auto', fontSize: '18px' }}>
+          <p style={{ color: 'var(--gray-600)', maxWidth: '600px', margin: '0 auto' }}>
             Watch how easy it is to generate professional review responses in seconds
           </p>
         </div>
 
-        {/* Glassmorphism Video Container */}
+        {/* Demo Video Section */}
         <div
           style={{
-            maxWidth: '860px',
+            maxWidth: '800px',
             margin: '0 auto',
-            borderRadius: '24px',
-            padding: '12px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
             position: 'relative',
+            background: 'var(--gray-800)',
+            border: '1px solid var(--border-color)',
           }}
         >
-          <div style={{ borderRadius: '16px', overflow: 'hidden', position: 'relative' }}>
-            {showDemoVideo ? (
-              <video
-                controls
-                autoPlay
-                style={{ width: '100%', display: 'block' }}
-                onEnded={() => setShowDemoVideo(false)}
-              >
-                <source src="/demo-video.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            ) : (
+          {showDemoVideo ? (
+            <video
+              controls
+              autoPlay
+              style={{ width: '100%', display: 'block' }}
+              onEnded={() => setShowDemoVideo(false)}
+            >
+              <source src="/demo-video.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          ) : (
+            <div
+              style={{
+                aspectRatio: '16/9',
+                position: 'relative',
+                backgroundImage: 'url(/demo-thumbnail.jpg)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            >
+              {/* Dark Overlay + Play Button */}
               <div
                 style={{
-                  aspectRatio: '16/9',
-                  position: 'relative',
-                  backgroundImage: 'url(/demo-thumbnail.jpg)',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
+                  position: 'absolute',
+                  inset: '0',
+                  background: 'rgba(0, 0, 0, 0.45)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s',
                 }}
+                onClick={() => setShowDemoVideo(true)}
+                onMouseOver={e => (e.currentTarget.style.background = 'rgba(0, 0, 0, 0.3)')}
+                onMouseOut={e => (e.currentTarget.style.background = 'rgba(0, 0, 0, 0.45)')}
               >
-                {/* Visual Overlay */}
+                {/* Play Button */}
                 <div
+                  className="play-overlay"
                   style={{
-                    position: 'absolute',
-                    inset: '0',
-                    background: 'rgba(15, 23, 42, 0.45)',
+                    width: '80px',
+                    height: '80px',
+                    borderRadius: '50%',
+                    background: 'var(--primary-600)',
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: 'white',
-                    cursor: 'pointer',
-                    transition: 'background 0.3s ease',
+                    boxShadow: '0 8px 32px rgba(79, 70, 229, 0.5)',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    marginBottom: '16px',
                   }}
-                  onClick={() => setShowDemoVideo(true)}
-                  onMouseOver={e => (e.currentTarget.style.background = 'rgba(15, 23, 42, 0.35)')}
-                  onMouseOut={e => (e.currentTarget.style.background = 'rgba(15, 23, 42, 0.45)')}
                 >
-                  {/* Play Button with Pulse & Glow */}
-                  <div
-                    style={{
-                      width: '88px',
-                      height: '88px',
-                      borderRadius: '50%',
-                      background: 'var(--primary)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: '0 0 40px rgba(79, 70, 229, 0.6)',
-                      transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                      animation: 'pulse 2s infinite',
-                    }}
-                    onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.1)')}
-                    onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
-                  >
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="white" style={{ marginLeft: '4px' }}>
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -2513,42 +2529,39 @@ const LandingPage = () => {
         <DogfoodingSection testimonials={testimonials.filter(t => t.ai_response)} />
       )}
 
-      <section className="pricing-section" id="pricing" style={{ padding: '100px 0', background: 'radial-gradient(circle at 50% 0%, rgba(79, 70, 229, 0.06) 0%, transparent 70%)', position: 'relative' }}>
+      <section className="pricing-section" id="pricing">
         <div className="container">
-          <div className="pricing-header" style={{ textAlign: 'center', marginBottom: '64px' }}>
-            <h2 className="pricing-title" style={{ fontSize: '48px', fontWeight: '800', marginBottom: '16px', letterSpacing: '-0.03em', background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'inline-block' }}>Simple, Transparent Pricing</h2>
-            <p style={{ color: 'var(--gray-600)', fontSize: '18px', fontWeight: '500', maxWidth: '600px', margin: '0 auto' }}>Start free, upgrade when you need more</p>
+          <div className="pricing-header">
+            <h2 className="pricing-title">Simple, Transparent Pricing</h2>
+            <p style={{ color: 'var(--gray-600)' }}>Start free, upgrade when you need more</p>
             <Link
               to="/pricing?discount=EARLY50"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                marginTop: '28px',
-                padding: '10px 24px',
-                background: 'white',
-                color: 'var(--primary)',
-                borderRadius: '99px',
+                marginTop: '16px',
+                padding: '8px 20px',
+                background: 'var(--gray-100)',
+                color: 'var(--gray-700)',
+                borderRadius: '20px',
                 fontSize: '14px',
-                fontWeight: '700',
+                fontWeight: '600',
                 textDecoration: 'none',
                 cursor: 'pointer',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                border: '1px solid rgba(79, 70, 229, 0.2)',
-                boxShadow: '0 4px 15px rgba(79, 70, 229, 0.1), 0 0 0 1px rgba(79, 70, 229, 0.05)',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                border: '1px solid var(--gray-200)',
               }}
               onMouseOver={e => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 12px 24px rgba(79, 70, 229, 0.15), 0 0 20px rgba(79, 70, 229, 0.1)';
-                e.currentTarget.style.borderColor = 'var(--primary)';
+                e.currentTarget.style.transform = 'scale(1.05)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
               }}
               onMouseOut={e => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(79, 70, 229, 0.1), 0 0 0 1px rgba(79, 70, 229, 0.05)';
-                e.currentTarget.style.borderColor = 'rgba(79, 70, 229, 0.2)';
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              <Sparkles size={16} fill="var(--primary)" fillOpacity={0.1} />
+              <Sparkles size={14} style={{ color: 'var(--primary)' }} />
               50% OFF - Limited Time
             </Link>
           </div>
@@ -2556,66 +2569,51 @@ const LandingPage = () => {
         </div>
       </section>
 
-      <footer className="footer" style={{
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
-        backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0), linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
-        backgroundSize: '32px 32px, 100% 100%',
-        color: 'rgba(255, 255, 255, 0.6)',
-        padding: '4rem 0 3rem 0',
-        borderTop: '1px solid rgba(255, 255, 255, 0.1)'
-      }}>
+      <footer className="footer">
         <div className="container">
-          <div className="footer-content" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '3rem' }}>
+          <div className="footer-content">
             <div>
-              <div className="footer-brand" style={{ color: '#fff', fontSize: '1.5rem', fontWeight: '800', marginBottom: '1.25rem', letterSpacing: '-0.02em' }}>
-                Review<span style={{ color: 'var(--primary)' }}>Responder</span>
-              </div>
-              <p className="footer-description" style={{ lineHeight: '1.6', fontSize: '0.9375rem', maxWidth: '320px' }}>
+              <div className="footer-brand">ReviewResponder</div>
+              <p className="footer-description">
                 AI-powered review response generator helping businesses maintain their online
                 reputation effortlessly.
               </p>
             </div>
             <div>
-              <div className="footer-title" style={{ color: '#fff', fontWeight: '600', marginBottom: '1.5rem', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Product</div>
-              <ul className="footer-links" style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <li><Link to="/pricing" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s ease' }}>Pricing</Link></li>
-                <li><Link to="/register" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s ease' }}>Get Started</Link></li>
+              <div className="footer-title">Product</div>
+              <ul className="footer-links">
+                <li>
+                  <Link to="/pricing">Pricing</Link>
+                </li>
+                <li>
+                  <Link to="/register">Get Started</Link>
+                </li>
               </ul>
             </div>
             <div>
-              <div className="footer-title" style={{ color: '#fff', fontWeight: '600', marginBottom: '1.5rem', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Support</div>
-              <ul className="footer-links" style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <li><Link to="/support" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s ease' }}>Help Center</Link></li>
-                <li><a href="mailto:support@tryreviewresponder.com" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s ease' }}>Contact</a></li>
+              <div className="footer-title">Support</div>
+              <ul className="footer-links">
+                <li>
+                  <Link to="/support">Help Center</Link>
+                </li>
+                <li>
+                  <a href="mailto:support@tryreviewresponder.com">Contact</a>
+                </li>
               </ul>
             </div>
             <div>
-              <div className="footer-title" style={{ color: '#fff', fontWeight: '600', marginBottom: '1.5rem', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Legal</div>
-              <ul className="footer-links" style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <li><Link to="/privacy" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s ease' }}>Privacy Policy</Link></li>
-                <li><Link to="/terms" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s ease' }}>Terms of Service</Link></li>
+              <div className="footer-title">Legal</div>
+              <ul className="footer-links">
+                <li>
+                  <Link to="/privacy">Privacy Policy</Link>
+                </li>
+                <li>
+                  <Link to="/terms">Terms of Service</Link>
+                </li>
               </ul>
             </div>
           </div>
-          <div className="footer-bottom" style={{
-            marginTop: '4rem',
-            paddingTop: '2rem',
-            borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-            textAlign: 'center',
-            fontSize: '0.875rem',
-            position: 'relative',
-            color: 'rgba(255, 255, 255, 0.4)'
-          }}>
-            <div style={{
-              position: 'absolute',
-              top: '-1px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '120px',
-              height: '1px',
-              background: 'linear-gradient(90deg, transparent, var(--primary), transparent)',
-              boxShadow: '0 0 15px var(--primary)'
-            }}></div>
+          <div className="footer-bottom">
             &copy; {new Date().getFullYear()} ReviewResponder. All rights reserved.
           </div>
         </div>
@@ -2961,7 +2959,7 @@ const PricingCards = ({ showFree = true }) => {
 
   // Discount details for each code
   const discountDetails = {
-    EARLY50: { percent: 50, label: 'Limited Time Offer' },
+    EARLY50: { percent: 50, label: 'Launch Special' },
     SAVE20: { percent: 20, label: 'Special Offer' },
     HUNTLAUNCH: { percent: 60, label: 'Product Hunt Special' },
   };
@@ -3214,6 +3212,25 @@ const LoginPage = () => {
           </div>
         )}
 
+        {/* Trust Signals */}
+        <div style={{
+          marginTop: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '16px',
+          flexWrap: 'wrap'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Lock size={12} style={{ color: 'var(--gray-400)' }} />
+            <span style={{ fontSize: '12px', color: 'var(--gray-400)' }}>256-bit SSL</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Shield size={12} style={{ color: 'var(--gray-400)' }} />
+            <span style={{ fontSize: '12px', color: 'var(--gray-400)' }}>GDPR Compliant</span>
+          </div>
+        </div>
+
         {/* Divider */}
         {GOOGLE_CLIENT_ID && (
           <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0' }}>
@@ -3340,6 +3357,29 @@ const RegisterPage = () => {
           </div>
         )}
 
+        {/* Trust Signals */}
+        <div style={{
+          marginTop: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '16px',
+          flexWrap: 'wrap'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <CreditCard size={12} style={{ color: 'var(--gray-400)' }} />
+            <span style={{ fontSize: '12px', color: 'var(--gray-400)' }}>No credit card</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Sparkles size={12} style={{ color: 'var(--gray-400)' }} />
+            <span style={{ fontSize: '12px', color: 'var(--gray-400)' }}>20 free responses</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Shield size={12} style={{ color: 'var(--gray-400)' }} />
+            <span style={{ fontSize: '12px', color: 'var(--gray-400)' }}>GDPR Compliant</span>
+          </div>
+        </div>
+
         {/* Divider */}
         {GOOGLE_CLIENT_ID && (
           <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0' }}>
@@ -3352,6 +3392,17 @@ const RegisterPage = () => {
         )}
 
         <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label">Business Name</label>
+            <input
+              type="text"
+              className="form-input"
+              value={businessName}
+              onChange={e => setBusinessName(e.target.value)}
+              placeholder="Your business or restaurant name"
+            />
+          </div>
+
           <div className="form-group">
             <label className="form-label">Email</label>
             <input
@@ -3462,6 +3513,18 @@ const ForgotPasswordPage = () => {
             {loading ? 'Sending...' : 'Send Reset Link'}
           </button>
         </form>
+
+        {/* Security Note */}
+        <div style={{
+          marginTop: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '6px'
+        }}>
+          <Lock size={12} style={{ color: 'var(--gray-400)' }} />
+          <span style={{ fontSize: '12px', color: 'var(--gray-400)' }}>Secure password reset via 256-bit SSL</span>
+        </div>
 
         <p className="auth-footer">
           Remember your password? <Link to="/login">Sign in</Link>
