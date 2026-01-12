@@ -7789,6 +7789,100 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
   }
 });
 
+// ==========================================
+// CRON: Send emails to new TripAdvisor leads
+// Called daily by cron-job.org to send cold emails
+// ==========================================
+app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
+  const cronSecret = req.query.secret || req.query.key;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'Email service not configured' });
+  }
+
+  try {
+    // Get all new leads from TripAdvisor that haven't been contacted
+    const newLeads = await dbAll(`
+      SELECT * FROM outreach_leads
+      WHERE source = 'tripadvisor'
+      AND status = 'new'
+      AND email IS NOT NULL
+      ORDER BY created_at ASC
+      LIMIT 50
+    `);
+
+    if (newLeads.length === 0) {
+      return res.json({ success: true, message: 'No new leads to contact', emails_sent: 0 });
+    }
+
+    const results = {
+      total: newLeads.length,
+      emails_sent: 0,
+      errors: []
+    };
+
+    for (const lead of newLeads) {
+      try {
+        // Get template for first email
+        const template = fillEmailTemplate(getTemplateForLead(1, {
+          business_name: lead.business_name,
+          google_rating: lead.google_rating,
+          google_reviews_count: lead.google_reviews_count
+        }), lead);
+
+        // Send email via Resend
+        await resend.emails.send({
+          from: OUTREACH_FROM_EMAIL,
+          to: lead.email,
+          subject: template.subject,
+          html: template.body.replace(/\n/g, '<br>'),
+          tags: [
+            { name: 'campaign', value: 'tripadvisor-auto' },
+            { name: 'source', value: 'tripadvisor' },
+            { name: 'sequence', value: '1' }
+          ]
+        });
+
+        // Update lead status
+        await dbQuery(`
+          UPDATE outreach_leads
+          SET status = 'contacted'
+          WHERE id = $1
+        `, [lead.id]);
+
+        // Log the email
+        await dbQuery(`
+          INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
+          VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), 'tripadvisor-auto')
+        `, [lead.id, lead.email, template.subject, template.body]);
+
+        results.emails_sent++;
+        console.log(`📧 TripAdvisor email sent to: ${lead.email} (${lead.business_name})`);
+
+        // Small delay between emails
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+      } catch (emailError) {
+        results.errors.push(`Failed to email ${lead.business_name}: ${emailError.message}`);
+        console.error(`Email error for ${lead.email}:`, emailError.message);
+      }
+    }
+
+    console.log(`✅ TripAdvisor cron complete: ${results.emails_sent}/${results.total} emails sent`);
+
+    res.json({
+      success: true,
+      ...results
+    });
+  } catch (error) {
+    console.error('TripAdvisor cron error:', error);
+    res.status(500).json({ error: 'Cron job failed', message: error.message });
+  }
+});
+
 // Send follow-up emails (sequence 2 and 3)
 app.post('/api/outreach/send-followups', async (req, res) => {
   const adminKey = req.headers['x-admin-key'];
