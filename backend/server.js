@@ -5308,6 +5308,35 @@ app.get('/api/admin/set-plan', async (req, res) => {
   }
 });
 
+// GET /api/admin/delete-email-capture - Delete email from email_captures (for testing exit-intent)
+app.get('/api/admin/delete-email-capture', async (req, res) => {
+  const { email, key } = req.query;
+  const adminSecret = process.env.ADMIN_SECRET;
+
+  if (!adminSecret || !safeCompare(key, adminSecret)) {
+    return res.status(401).json({ error: 'Invalid admin key' });
+  }
+
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ error: 'Valid email required' });
+  }
+
+  try {
+    const result = await dbQuery(
+      'DELETE FROM email_captures WHERE LOWER(email) = LOWER($1)',
+      [email]
+    );
+    res.json({
+      success: true,
+      message: `Deleted ${result.rowCount} email capture(s) for ${email}`,
+      deleted: result.rowCount
+    });
+  } catch (error) {
+    console.error('Delete email capture error:', error);
+    res.status(500).json({ error: 'Failed to delete email capture' });
+  }
+});
+
 // GET /api/admin/verify-email - Manually verify a user's email
 app.get('/api/admin/verify-email', async (req, res) => {
   const { email, key } = req.query;

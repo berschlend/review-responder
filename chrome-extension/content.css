@@ -2419,15 +2419,24 @@
     font-size: 17px;
   }
 
-  .rr-copy-btn,
-  .rr-regenerate-btn {
-    padding: 16px;
-    font-size: 15px;
+  /* Primary buttons bigger for touch */
+  .rr-done-btn,
+  .rr-submit-btn {
+    padding: 18px 20px;
+    font-size: 16px;
   }
 
-  /* Stack action buttons */
+  /* Secondary buttons slightly bigger for touch */
+  .rr-copy-btn,
+  .rr-paste-btn,
+  .rr-regenerate-btn {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  /* Keep column layout for action buttons */
   .rr-action-buttons {
-    flex-direction: column;
+    gap: 12px;
   }
 
   /* Quick tones wrap nicely */
