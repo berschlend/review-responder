@@ -14,7 +14,7 @@ AI review responses for Google, Yelp & TripAdvisor. 50+ languages, 4 tones, temp
 
 **Stop wasting hours writing review responses. Let AI do it in seconds.**
 
-ReviewResponder helps businesses respond to reviews professionally and quickly on Google Maps, Yelp, TripAdvisor and more. Just click the "Generate Response" button next to any review and get a perfectly crafted response instantly.
+ReviewResponder helps businesses respond to reviews professionally and quickly on Google Maps, Yelp, TripAdvisor and more. Just click the "Generate Response" button next to any review, or simply select the review text - a floating button will appear! Get a perfectly crafted response instantly.
 
 **KEY FEATURES:**
 
@@ -30,9 +30,11 @@ ReviewResponder helps businesses respond to reviews professionally and quickly o
 **HOW IT WORKS:**
 
 1. Browse reviews on Google Maps, Yelp, or TripAdvisor
-2. Click "Generate Response" next to any review
+2. Click "Generate Response" button OR select any review text
 3. Choose your tone and pick from 3 variations
 4. Copy and paste the response
+
+**TIP:** No button visible? Just select the review text and a floating "Respond" button will appear!
 
 **PERFECT FOR:**
 - Restaurant owners
@@ -55,7 +57,7 @@ Start responding to reviews in seconds, not hours. Try ReviewResponder free toda
 
 **Hör auf, Stunden mit Review-Antworten zu verschwenden. Lass KI das in Sekunden erledigen.**
 
-ReviewResponder hilft Unternehmen, professionell und schnell auf Bewertungen zu antworten - auf Google Maps, Yelp, TripAdvisor und mehr. Klicke einfach auf "Generate Response" neben einer Bewertung und erhalte sofort eine perfekt formulierte Antwort.
+ReviewResponder hilft Unternehmen, professionell und schnell auf Bewertungen zu antworten - auf Google Maps, Yelp, TripAdvisor und mehr. Klicke einfach auf "Generate Response" neben einer Bewertung, oder markiere den Bewertungstext - ein schwebender Button erscheint! Erhalte sofort eine perfekt formulierte Antwort.
 
 **HAUPTFUNKTIONEN:**
 
@@ -71,9 +73,11 @@ ReviewResponder hilft Unternehmen, professionell und schnell auf Bewertungen zu 
 **SO FUNKTIONIERT'S:**
 
 1. Bewertungen auf Google Maps, Yelp oder TripAdvisor durchsuchen
-2. "Generate Response" neben einer Bewertung klicken
+2. "Generate Response" Button klicken ODER Bewertungstext markieren
 3. Ton wählen und aus 3 Varianten auswählen
 4. Antwort kopieren und einfügen
+
+**TIPP:** Kein Button sichtbar? Einfach den Bewertungstext markieren und ein "Respond" Button erscheint!
 
 **PERFEKT FÜR:**
 - Restaurantbesitzer

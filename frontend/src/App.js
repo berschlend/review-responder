@@ -2419,7 +2419,7 @@ const LandingPage = () => {
                     >
                       3
                     </span>
-                    <span>Click button on any review</span>
+                    <span>Click button or select text</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span

@@ -2653,6 +2653,7 @@ async function createResponsePanel() {
           <div class="rr-batch-empty">
             <span>📭 No reviews found</span>
             <p>Navigate to a page with customer reviews to use batch mode.</p>
+            <p style="font-size: 11px; opacity: 0.8; margin-top: 8px;">Tip: You can also select review text manually with your cursor!</p>
           </div>
         </div>
       </div>
@@ -3488,26 +3489,28 @@ function initPanelEvents(panel) {
     });
   });
 
-  // Emoji picker toggle
+  // Emoji picker toggle (only if elements exist)
   const emojiBtn = panel.querySelector('.rr-emoji-btn');
   const emojiDropdown = panel.querySelector('.rr-emoji-dropdown');
 
-  emojiBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    emojiDropdown.classList.toggle('hidden');
-  });
-
-  // Emoji selection
-  panel.querySelectorAll('.rr-emoji-option').forEach(opt => {
-    opt.addEventListener('click', (e) => {
+  if (emojiBtn && emojiDropdown) {
+    emojiBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const emoji = opt.dataset.emoji;
-      const textarea = panel.querySelector('.rr-response-textarea');
-      insertAtCursor(textarea, emoji);
-      emojiDropdown.classList.add('hidden');
-      updateCharCounter(panel);
+      emojiDropdown.classList.toggle('hidden');
     });
-  });
+
+    // Emoji selection
+    panel.querySelectorAll('.rr-emoji-option').forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const emoji = opt.dataset.emoji;
+        const textarea = panel.querySelector('.rr-response-textarea');
+        insertAtCursor(textarea, emoji);
+        emojiDropdown.classList.add('hidden');
+        updateCharCounter(panel);
+      });
+    });
+  }
 
   // Close emoji dropdown when clicking elsewhere (only add listener once)
   if (!globalListenersInitialized) {
@@ -4722,6 +4725,7 @@ async function showResponsePanel(reviewText, autoGenerate = false) {
 
 // ========== FLOATING BUTTON ==========
 let floatingBtn = null;
+let lastSelectedText = ''; // Store selection before it disappears on click
 
 function createFloatingButton() {
   if (floatingBtn) return floatingBtn;
@@ -4731,12 +4735,24 @@ function createFloatingButton() {
   floatingBtn.innerHTML = '⚡';
   floatingBtn.title = 'Generate response (Alt+R)';
 
-  floatingBtn.addEventListener('click', async (e) => {
+  // Re-capture selection when hovering over button (backup)
+  floatingBtn.addEventListener('mouseenter', () => {
+    const sel = window.getSelection().toString().trim();
+    if (sel.length >= 10) {
+      lastSelectedText = sel;
+    }
+  });
+
+  // Use pointerdown (fires before mousedown) to capture before selection disappears
+  floatingBtn.addEventListener('pointerdown', async (e) => {
     e.preventDefault();
     e.stopPropagation();
+    e.stopImmediatePropagation();
 
-    const selection = window.getSelection().toString().trim();
+    // Use stored selection (captured when button was shown or on hover)
+    const selection = lastSelectedText;
     if (!selection || selection.length < 10) {
+      showToast('📝 Please select some review text first', 'info');
       hideFloatingButton();
       return;
     }
@@ -4748,17 +4764,18 @@ function createFloatingButton() {
       return;
     }
 
+    // Hide button immediately to prevent double-clicks
+    hideFloatingButton();
+
     // Check if turbo mode is enabled
     // Hold Shift while clicking to FORCE open panel (override turbo mode)
     // Always load fresh settings to ensure we have the latest turbo mode state
     const settings = await loadSettings();
     cachedSettings = settings;
     if (settings.turboMode && !e.shiftKey) {
-      hideFloatingButton();
       turboGenerate(selection);
     } else {
       showResponsePanel(selection, false);  // FALSE = let user choose tone first!
-      hideFloatingButton();
     }
   });
 
@@ -4768,6 +4785,9 @@ function createFloatingButton() {
 
 function showFloatingButton(x, y) {
   const btn = createFloatingButton();
+
+  // Store the current selection before it can disappear
+  lastSelectedText = window.getSelection().toString().trim();
 
   // Position near cursor but keep on screen
   const btnX = Math.min(x + 15, window.innerWidth - 70);
@@ -5136,7 +5156,7 @@ async function scanPageForReviews() {
   const selectors = {
     'Google': ['.jftiEf', '[data-review-id]'],
     'Yelp': ['[class*="comment__"]'],  // Yelp uses dynamic class names
-    'TripAdvisor': ['.review-container', '.reviewSelector'],
+    'TripAdvisor': ['[data-automation="reviewCard"]', '[data-test-target="HR_CC_CARD"]', '.review-container'],
     'Facebook': ['[data-testid="UFI2Comment"]', '.userContentWrapper'],
     'Trustpilot': ['.review-card', '.styles_reviewCard'],
     'Booking': ['.review_item', '.c-review'],
@@ -5153,7 +5173,7 @@ async function scanPageForReviews() {
       const textSelectors = [
         '.wiI7pd', '.MyEned',  // Google Maps
         '[class*="comment__"]', '[class*="raw__"]', // Yelp (wildcard for dynamic classes)
-        '.partial_entry', '.entry', // TripAdvisor
+        '.JguWG', '._T.FKffI', '.biGQs._P', '.partial_entry', // TripAdvisor (2026 + legacy)
         '.userContent', // Facebook
         '.review-content__text', // Trustpilot
         '.review_item_review_content', // Booking
@@ -5558,7 +5578,7 @@ async function startQueueMode() {
   const reviews = await scanPageForReviews();
 
   if (reviews.length === 0) {
-    showToast('📝 No reviews found on this page', 'info');
+    showToast('📝 No reviews found - select review text manually with your cursor', 'info', 5000);
     return;
   }
 

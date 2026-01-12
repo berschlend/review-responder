@@ -709,6 +709,16 @@ footer a:hover {
   border-radius: 4px;
 }
 
+.how-to-tip {
+  font-size: 11px;
+  opacity: 0.85;
+  margin: 0 0 10px 0;
+  padding: 6px 10px;
+  background: rgba(255, 193, 7, 0.2);
+  border-radius: 6px;
+  border-left: 3px solid #ffc107;
+}
+
 .shortcuts {
   display: flex;
   flex-wrap: wrap;
