@@ -49,17 +49,28 @@ loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   loginError.textContent = '';
 
+  // Show loading state
+  const submitBtn = loginForm.querySelector('button[type="submit"]');
+  const originalText = submitBtn.textContent;
+  submitBtn.textContent = 'Logging in...';
+  submitBtn.disabled = true;
+
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
 
+  console.log('[RR Popup] Attempting login for:', email);
+
   try {
+    console.log('[RR Popup] Sending request to:', `${API_URL}/auth/login`);
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
 
+    console.log('[RR Popup] Response status:', response.status);
     const data = await response.json();
+    console.log('[RR Popup] Response data:', data.user ? 'User received' : data.error || 'Unknown');
 
     if (!response.ok) {
       throw new Error(data.error || 'Login failed');
@@ -71,14 +82,19 @@ loginForm.addEventListener('submit', async (e) => {
     // Store in extension storage
     try {
       await chrome.storage.local.set({ token, user });
+      console.log('[RR Popup] Credentials saved to storage');
     } catch (e) {
-      console.error('Failed to save credentials:', e);
+      console.error('[RR Popup] Failed to save credentials:', e);
     }
 
     showMainSection();
     fetchUsage();
   } catch (error) {
-    loginError.textContent = error.message;
+    console.error('[RR Popup] Login error:', error);
+    loginError.textContent = error.message || 'Connection failed. Please try again.';
+  } finally {
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
   }
 });
 

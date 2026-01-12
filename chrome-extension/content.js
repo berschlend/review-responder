@@ -1540,14 +1540,18 @@ function detectLanguage(text) {
 function detectPlatform() {
   const hostname = window.location.hostname;
 
-  if (hostname.includes('google.com')) return { name: 'Google', icon: '📍', color: '#4285f4' };
-  if (hostname.includes('yelp.com')) return { name: 'Yelp', icon: '🔥', color: '#d32323' };
-  if (hostname.includes('tripadvisor.com')) return { name: 'TripAdvisor', icon: '🦉', color: '#00aa6c' };
+  // Google (all domains: google.com, google.de, google.fr, etc.)
+  if (hostname.includes('google.')) return { name: 'Google', icon: '📍', color: '#4285f4' };
+  // Yelp (all domains: yelp.com, yelp.de, yelp.fr, yelp.co.uk, etc.)
+  if (hostname.includes('yelp.')) return { name: 'Yelp', icon: '🔥', color: '#d32323' };
+  // TripAdvisor (all domains)
+  if (hostname.includes('tripadvisor.')) return { name: 'TripAdvisor', icon: '🦉', color: '#00aa6c' };
   if (hostname.includes('facebook.com')) return { name: 'Facebook', icon: '📘', color: '#1877f2' };
-  if (hostname.includes('trustpilot.com')) return { name: 'Trustpilot', icon: '⭐', color: '#00b67a' };
+  // Trustpilot (all domains)
+  if (hostname.includes('trustpilot.')) return { name: 'Trustpilot', icon: '⭐', color: '#00b67a' };
   if (hostname.includes('booking.com')) return { name: 'Booking', icon: '🏨', color: '#003580' };
-  if (hostname.includes('airbnb.com')) return { name: 'Airbnb', icon: '🏠', color: '#ff5a5f' };
-  if (hostname.includes('amazon.com')) return { name: 'Amazon', icon: '📦', color: '#ff9900' };
+  if (hostname.includes('airbnb.')) return { name: 'Airbnb', icon: '🏠', color: '#ff5a5f' };
+  if (hostname.includes('amazon.')) return { name: 'Amazon', icon: '📦', color: '#ff9900' };
 
   return { name: 'Reviews', icon: '💬', color: '#667eea' };
 }
@@ -1557,8 +1561,8 @@ function detectBusinessContext() {
   const hostname = window.location.hostname;
   let businessName = '';
 
-  // Google Maps - Get business name from title or header
-  if (hostname.includes('google.com')) {
+  // Google Maps - Get business name from title or header (all domains)
+  if (hostname.includes('google.')) {
     // Try to get from page title (format: "Business Name - Google Maps")
     const title = document.title;
     if (title && !title.startsWith('Google Maps')) {
@@ -1575,14 +1579,14 @@ function detectBusinessContext() {
     }
   }
 
-  // Yelp
-  if (hostname.includes('yelp.com')) {
+  // Yelp (all domains)
+  if (hostname.includes('yelp.')) {
     const h1 = document.querySelector('h1[class*="heading"]');
     if (h1) businessName = h1.textContent.trim();
   }
 
-  // TripAdvisor
-  if (hostname.includes('tripadvisor.com')) {
+  // TripAdvisor (all domains)
+  if (hostname.includes('tripadvisor.')) {
     const h1 = document.querySelector('h1[data-automation="mainH1"]');
     if (h1) businessName = h1.textContent.trim();
   }
@@ -1593,8 +1597,8 @@ function detectBusinessContext() {
     if (h1) businessName = h1.textContent.trim();
   }
 
-  // Trustpilot
-  if (hostname.includes('trustpilot.com')) {
+  // Trustpilot (all domains)
+  if (hostname.includes('trustpilot.')) {
     const h1 = document.querySelector('h1[class*="typography"]');
     if (h1) businessName = h1.textContent.trim();
   }
