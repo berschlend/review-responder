@@ -5608,11 +5608,17 @@ app.get('/api/admin/delete-user', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Delete related data first (foreign key constraints)
-    await dbQuery('DELETE FROM response_templates WHERE user_id = $1', [user.id]);
+    // Delete related data first (foreign key constraints) - same as delete-account endpoint
     await dbQuery('DELETE FROM responses WHERE user_id = $1', [user.id]);
+    await dbQuery('DELETE FROM response_templates WHERE user_id = $1', [user.id]);
+    await dbQuery('DELETE FROM team_members WHERE team_owner_id = $1 OR member_user_id = $1', [user.id]);
     await dbQuery('DELETE FROM api_keys WHERE user_id = $1', [user.id]);
-    await dbQuery('DELETE FROM team_members WHERE user_id = $1 OR team_owner_id = $1', [user.id]);
+    await dbQuery('DELETE FROM blog_articles WHERE user_id = $1', [user.id]);
+    await dbQuery('DELETE FROM referrals WHERE referrer_id = $1', [user.id]);
+    await dbQuery('DELETE FROM user_feedback WHERE user_id = $1', [user.id]);
+    await dbQuery('DELETE FROM drip_emails WHERE user_id = $1', [user.id]);
+    await dbQuery('DELETE FROM password_reset_tokens WHERE user_id = $1', [user.id]);
+    await dbQuery('DELETE FROM notification_preferences WHERE user_id = $1', [user.id]);
 
     // Delete user
     await dbQuery('DELETE FROM users WHERE id = $1', [user.id]);
