@@ -263,36 +263,26 @@ function getSystemTheme() {
 
 function applyTheme(theme) {
   const effectiveTheme = theme === 'auto' ? getSystemTheme() : theme;
+  const isDark = effectiveTheme === 'dark';
 
   // Apply to panel if it exists
   const panel = document.getElementById('rr-response-panel');
   if (panel) {
-    if (effectiveTheme === 'dark') {
-      panel.classList.add('rr-dark');
-    } else {
-      panel.classList.remove('rr-dark');
-    }
+    panel.classList.toggle('rr-dark', isDark);
+
     // Update toggle button icon
     const toggleBtn = panel.querySelector('.rr-theme-toggle');
     if (toggleBtn) {
-      toggleBtn.textContent = effectiveTheme === 'dark' ? '☀️' : '🌙';
+      toggleBtn.textContent = isDark ? '☀️' : '🌙';
     }
     // Update active state in dropdown
-    const themeOptions = panel.querySelectorAll('.rr-theme-option');
-    themeOptions.forEach(opt => {
+    panel.querySelectorAll('.rr-theme-option').forEach(opt => {
       opt.classList.toggle('active', opt.dataset.theme === theme);
     });
   }
 
   // Apply to queue panel if it exists
-  const queuePanel = document.getElementById('rr-queue-panel');
-  if (queuePanel) {
-    if (effectiveTheme === 'dark') {
-      queuePanel.classList.add('rr-dark');
-    } else {
-      queuePanel.classList.remove('rr-dark');
-    }
-  }
+  document.getElementById('rr-queue-panel')?.classList.toggle('rr-dark', isDark);
 }
 
 // Listen for OS theme changes

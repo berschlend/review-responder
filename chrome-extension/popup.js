@@ -1,5 +1,19 @@
 const API_URL = 'https://review-responder.onrender.com/api';
 
+// Constants
+const UNLIMITED_LIMIT = 999999;
+const UPGRADE_THRESHOLD_PERCENT = 80;
+const CRITICAL_THRESHOLD_PERCENT = 90;
+const LIMIT_REACHED_PERCENT = 100;
+
+// Plan display names
+const PLAN_NAMES = {
+  free: 'Free Plan',
+  starter: 'Starter',
+  pro: 'Pro',
+  unlimited: 'Unlimited'
+};
+
 // DOM Elements
 const loginSection = document.getElementById('login-section');
 const mainSection = document.getElementById('main-section');
@@ -132,40 +146,45 @@ async function fetchUsage() {
   }
 }
 
+// Helper: Extract user usage data with defaults
+function getUserUsageData() {
+  return {
+    used: user?.responsesUsed || 0,
+    limit: user?.responsesLimit || 20,
+    plan: user?.plan || 'free'
+  };
+}
+
+// Helper: Calculate usage percentage (0 for unlimited)
+function getUsagePercentage(used, limit) {
+  return limit === UNLIMITED_LIMIT ? 0 : (used / limit) * 100;
+}
+
+// Helper: Check if user has unlimited plan
+function isUnlimitedPlan(plan, limit) {
+  return plan === 'unlimited' || limit === UNLIMITED_LIMIT;
+}
+
 // Update usage display
 function updateUsageDisplay() {
-  const used = user.responsesUsed || 0;
-  const limit = user.responsesLimit || 20;
-  const plan = user.plan || 'free';
+  const { used, limit, plan } = getUserUsageData();
+  const percentage = getUsagePercentage(used, limit);
+  const isUnlimited = isUnlimitedPlan(plan, limit);
 
   usageCount.textContent = used;
-  usageLimit.textContent = limit === 999999 ? '∞' : limit;
+  usageLimit.textContent = isUnlimited ? '∞' : limit;
 
   // Update plan badge
-  const planNames = {
-    free: 'Free Plan',
-    starter: 'Starter',
-    pro: 'Pro',
-    unlimited: 'Unlimited'
-  };
-  planBadge.textContent = planNames[plan] || 'Free Plan';
+  planBadge.textContent = PLAN_NAMES[plan] || 'Free Plan';
   planBadge.className = 'plan-badge ' + plan;
 
-  const percentage = limit === 999999 ? 0 : (used / limit) * 100;
   progress.style.width = `${Math.min(percentage, 100)}%`;
 
   // Show upgrade link when >80% used (not for unlimited)
-  if (percentage >= 80 && plan !== 'unlimited') {
-    upgradeLink.classList.remove('hidden');
-  } else {
-    upgradeLink.classList.add('hidden');
-  }
+  upgradeLink.classList.toggle('hidden', isUnlimited || percentage < UPGRADE_THRESHOLD_PERCENT);
 
-  if (percentage >= 90 && limit !== 999999) {
-    progress.style.background = '#ef4444';
-  } else {
-    progress.style.background = '';
-  }
+  // Critical progress bar color
+  progress.style.background = (!isUnlimited && percentage >= CRITICAL_THRESHOLD_PERCENT) ? '#ef4444' : '';
 
   // Check upgrade triggers
   checkUpgradeTriggers();
@@ -225,26 +244,20 @@ if (closeLimitModal) {
 function checkUpgradeTriggers() {
   if (!user) return;
 
-  const used = user.responsesUsed || 0;
-  const limit = user.responsesLimit || 20;
-  const plan = user.plan || 'free';
+  const { used, limit, plan } = getUserUsageData();
 
   // Don't show triggers for unlimited plan
-  if (plan === 'unlimited' || limit === 999999) return;
+  if (isUnlimitedPlan(plan, limit)) return;
 
-  const percentage = (used / limit) * 100;
+  const percentage = getUsagePercentage(used, limit);
 
   // Show limit modal at 100%
-  if (percentage >= 100) {
-    if (limitModal) limitModal.classList.remove('hidden');
-    if (upgradeBanner) upgradeBanner.classList.add('hidden');
+  if (percentage >= LIMIT_REACHED_PERCENT) {
+    limitModal?.classList.remove('hidden');
+    upgradeBanner?.classList.add('hidden');
     return;
   }
 
   // Show upgrade banner at 80%
-  if (percentage >= 80) {
-    if (upgradeBanner) upgradeBanner.classList.remove('hidden');
-  } else {
-    if (upgradeBanner) upgradeBanner.classList.add('hidden');
-  }
+  upgradeBanner?.classList.toggle('hidden', percentage < UPGRADE_THRESHOLD_PERCENT);
 }
