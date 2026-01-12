@@ -5932,7 +5932,11 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
     });
   } catch (error) {
     console.error('Drip email error:', error);
-    res.status(500).json({ error: 'Failed to process drip emails' });
+    res.status(500).json({
+      error: 'Failed to process drip emails',
+      details: error.message,
+      stack: process.env.NODE_ENV !== 'production' ? error.stack : undefined
+    });
   }
 });
 
