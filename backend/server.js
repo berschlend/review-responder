@@ -5627,7 +5627,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
                   <div><strong>Click Generate</strong> and get a professional response in seconds!</div>
                 </div>
 
-                <p style="margin-top: 30px;">You have <strong>5 free responses</strong> to try it out. No credit card required.</p>
+                <p style="margin-top: 30px;">You have <strong>20 free responses</strong> to try it out. No credit card required.</p>
 
                 <center style="margin: 30px 0;">
                   <a href="${FRONTEND_URL}/dashboard" class="cta-button">Generate Your First Response →</a>
@@ -5882,7 +5882,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
         `
         SELECT u.id, u.email, u.business_name, u.created_at
         FROM users u
-        WHERE u.created_at <= NOW() - INTERVAL '${day} days'
+        WHERE u.created_at <= NOW() - ($1 * INTERVAL '1 day')
           AND u.email IS NOT NULL
           AND u.email != ''
           AND NOT EXISTS (
