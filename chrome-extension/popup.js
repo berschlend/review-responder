@@ -30,13 +30,17 @@ let user = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
-  // Check for stored token
-  const stored = await chrome.storage.local.get(['token', 'user']);
-  if (stored.token && stored.user) {
-    token = stored.token;
-    user = stored.user;
-    showMainSection();
-    fetchUsage();
+  try {
+    // Check for stored token
+    const stored = await chrome.storage.local.get(['token', 'user']);
+    if (stored.token && stored.user) {
+      token = stored.token;
+      user = stored.user;
+      showMainSection();
+      fetchUsage();
+    }
+  } catch (e) {
+    console.error('Failed to load stored credentials:', e);
   }
 });
 
@@ -65,7 +69,11 @@ loginForm.addEventListener('submit', async (e) => {
     user = data.user;
 
     // Store in extension storage
-    await chrome.storage.local.set({ token, user });
+    try {
+      await chrome.storage.local.set({ token, user });
+    } catch (e) {
+      console.error('Failed to save credentials:', e);
+    }
 
     showMainSection();
     fetchUsage();
@@ -78,7 +86,11 @@ loginForm.addEventListener('submit', async (e) => {
 logoutBtn.addEventListener('click', async () => {
   token = null;
   user = null;
-  await chrome.storage.local.remove(['token', 'user']);
+  try {
+    await chrome.storage.local.remove(['token', 'user']);
+  } catch (e) {
+    console.error('Failed to clear credentials:', e);
+  }
   showLoginSection();
 });
 
@@ -92,7 +104,11 @@ async function fetchUsage() {
     if (response.ok) {
       const data = await response.json();
       user = data.user;
-      await chrome.storage.local.set({ user });
+      try {
+        await chrome.storage.local.set({ user });
+      } catch (e) {
+        console.error('Failed to update user:', e);
+      }
       updateUsageDisplay();
     }
   } catch (error) {
@@ -160,16 +176,24 @@ function showMainSection() {
 
 // Onboarding logic - use chrome.storage.local for persistence
 async function checkOnboarding() {
-  const stored = await chrome.storage.local.get(['rr_onboarding_seen']);
-  if (!stored.rr_onboarding_seen && onboardingCard) {
-    onboardingCard.classList.remove('hidden');
+  try {
+    const stored = await chrome.storage.local.get(['rr_onboarding_seen']);
+    if (!stored.rr_onboarding_seen && onboardingCard) {
+      onboardingCard.classList.remove('hidden');
+    }
+  } catch (e) {
+    console.error('Failed to check onboarding:', e);
   }
 }
 
 // Dismiss onboarding
 if (dismissOnboarding) {
   dismissOnboarding.addEventListener('click', async () => {
-    await chrome.storage.local.set({ rr_onboarding_seen: true });
+    try {
+      await chrome.storage.local.set({ rr_onboarding_seen: true });
+    } catch (e) {
+      console.error('Failed to save onboarding:', e);
+    }
     onboardingCard.classList.add('hidden');
   });
 }

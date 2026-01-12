@@ -5,6 +5,66 @@ console.log('%c[RR] Script loading...', 'color: #667eea; font-weight: bold;');
 
 const API_URL = 'https://review-responder.onrender.com/api';
 
+// ========== SAFE STORAGE HELPERS ==========
+// Prevent "Extension context invalidated" errors when extension reloads
+function isExtensionContextValid() {
+  try {
+    return !!chrome.runtime?.id;
+  } catch (e) {
+    return false;
+  }
+}
+
+async function safeStorageGet(keys) {
+  if (!isExtensionContextValid()) return {};
+  try {
+    return await chrome.storage.local.get(keys);
+  } catch (e) {
+    if (!e.message?.includes('Extension context invalidated')) {
+      console.warn('[RR] Storage get error:', e.message);
+    }
+    return {};
+  }
+}
+
+async function safeStorageSet(data) {
+  if (!isExtensionContextValid()) return false;
+  try {
+    await chrome.storage.local.set(data);
+    return true;
+  } catch (e) {
+    if (!e.message?.includes('Extension context invalidated')) {
+      console.warn('[RR] Storage set error:', e.message);
+    }
+    return false;
+  }
+}
+
+async function safeSyncStorageGet(keys) {
+  if (!isExtensionContextValid()) return {};
+  try {
+    return await chrome.storage.sync.get(keys);
+  } catch (e) {
+    if (!e.message?.includes('Extension context invalidated')) {
+      console.warn('[RR] Sync storage get error:', e.message);
+    }
+    return {};
+  }
+}
+
+async function safeSyncStorageSet(data) {
+  if (!isExtensionContextValid()) return false;
+  try {
+    await chrome.storage.sync.set(data);
+    return true;
+  } catch (e) {
+    if (!e.message?.includes('Extension context invalidated')) {
+      console.warn('[RR] Sync storage set error:', e.message);
+    }
+    return false;
+  }
+}
+
 // ========== GLOBAL FLAGS ==========
 let globalListenersInitialized = false;
 let isCreatingPanel = false;
@@ -16,7 +76,7 @@ let cachedToken = null;
 
 async function checkLoginStatus() {
   try {
-    const stored = await chrome.storage.local.get(['token', 'user']);
+    const stored = await safeStorageGet(['token', 'user']);
     isLoggedIn = !!stored.token;
     cachedToken = stored.token;
     cachedUser = stored.user;
@@ -35,7 +95,9 @@ async function handleUnauthorized() {
   isLoggedIn = false;
   cachedToken = null;
   cachedUser = null;
-  await chrome.storage.local.remove(['token', 'user']);
+  if (isExtensionContextValid()) {
+    try { await chrome.storage.local.remove(['token', 'user']); } catch (e) {}
+  }
   showToast('🔐 Session expired. Please login again via the extension popup.', 'error');
 }
 
@@ -44,13 +106,13 @@ let activeDragPanel = null;
 let dragState = { startX: 0, startY: 0, panelX: 0, panelY: 0 };
 
 // Clear invalid saved position on startup
-chrome.storage.local.get(['rr_panel_position']).then(stored => {
+safeStorageGet(['rr_panel_position']).then(stored => {
   if (stored.rr_panel_position) {
     const left = parseInt(stored.rr_panel_position.left) || 0;
     const top = parseInt(stored.rr_panel_position.top) || 0;
     // If position is negative or way off screen, clear it
     if (left < 0 || top < 0 || left > 3000 || top > 2000) {
-      chrome.storage.local.remove(['rr_panel_position']);
+      safeStorageSet({ rr_panel_position: null });
     }
   }
 });
@@ -65,7 +127,7 @@ function initDraggable(panel) {
   header.addEventListener('mousedown', handleDragStart);
 
   // Restore saved position (with validation)
-  chrome.storage.local.get(['rr_panel_position']).then(stored => {
+  safeStorageGet(['rr_panel_position']).then(stored => {
     if (stored.rr_panel_position) {
       let left = parseInt(stored.rr_panel_position.left) || 0;
       let top = parseInt(stored.rr_panel_position.top) || 0;
@@ -92,7 +154,7 @@ function initDraggable(panel) {
           panel.style.transform = 'none'; // Remove centering transform
         } else {
           // Reset to default centered position
-          chrome.storage.local.remove(['rr_panel_position']);
+          safeStorageSet({ rr_panel_position: null });
           panel.style.position = 'fixed';
           panel.style.top = '5vh';
           panel.style.left = '50%';
@@ -160,7 +222,7 @@ document.addEventListener('mouseup', () => {
     if (header) header.style.cursor = 'grab';
 
     // Save position
-    chrome.storage.local.set({
+    safeStorageSet({
       rr_panel_position: {
         left: activeDragPanel.style.left,
         top: activeDragPanel.style.top
@@ -182,22 +244,14 @@ chrome.storage.onChanged.addListener((changes) => {
 let currentTheme = 'auto'; // light, dark, auto
 
 async function getThemePreference() {
-  try {
-    const stored = await chrome.storage.local.get(['rr_theme']);
-    return stored.rr_theme || 'auto';
-  } catch (e) {
-    return 'auto';
-  }
+  const stored = await safeStorageGet(['rr_theme']);
+  return stored.rr_theme || 'auto';
 }
 
 async function setThemePreference(theme) {
-  try {
-    await chrome.storage.local.set({ rr_theme: theme });
-    currentTheme = theme;
-    applyTheme(theme);
-  } catch (e) {
-    console.error('Error saving theme preference:', e);
-  }
+  await safeStorageSet({ rr_theme: theme });
+  currentTheme = theme;
+  applyTheme(theme);
 }
 
 function getSystemTheme() {
@@ -844,13 +898,7 @@ async function generateVariations(panel) {
     return;
   }
 
-  let stored;
-  try {
-    stored = await chrome.storage.local.get(['token', 'user']);
-  } catch (e) {
-    showToast('Extension error', 'error');
-    return;
-  }
+  const stored = await safeStorageGet(['token', 'user']);
 
   if (!stored.token) {
     showToast('Please login in the extension popup first', 'error');
@@ -946,16 +994,9 @@ function switchVariation(panel, index) {
 
 // ========== ANALYTICS WIDGET ==========
 async function loadAnalytics() {
-  try {
-    if (!chrome.runtime?.id) return { daily: {}, total: { count: 0 } }; // Extension context invalid
-    const data = await chrome.storage.local.get(['rr_analytics']);
-    return data.rr_analytics || { daily: {}, total: { count: 0 } };
-  } catch (e) {
-    if (!e.message?.includes('Extension context invalidated')) {
-      console.error('Failed to load analytics:', e);
-    }
-    return { daily: {}, total: { count: 0 } };
-  }
+  if (!isExtensionContextValid()) return { daily: {}, total: { count: 0 } };
+  const data = await safeStorageGet(['rr_analytics']);
+  return data.rr_analytics || { daily: {}, total: { count: 0 } };
 }
 
 async function updateAnalytics(panel) {
@@ -985,77 +1026,57 @@ async function updateAnalytics(panel) {
 }
 
 async function recordAnalyticsResponse() {
-  try {
-    if (!chrome.runtime?.id) return; // Extension context invalid
-    const analytics = await loadAnalytics();
-    const today = new Date().toISOString().split('T')[0];
+  if (!isExtensionContextValid()) return;
+  const analytics = await loadAnalytics();
+  const today = new Date().toISOString().split('T')[0];
 
-    if (!analytics.daily[today]) {
-      analytics.daily[today] = { count: 0, tones: {} };
-    }
-    analytics.daily[today].count++;
-    analytics.total.count = (analytics.total.count || 0) + 1;
-
-    // Clean up old data (keep last 30 days)
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 30);
-    Object.keys(analytics.daily).forEach(date => {
-      if (new Date(date) < cutoff) {
-        delete analytics.daily[date];
-      }
-    });
-
-    await chrome.storage.local.set({ rr_analytics: analytics });
-  } catch (e) {
-    if (!e.message?.includes('Extension context invalidated')) {
-      console.error('Failed to record analytics:', e);
-    }
+  if (!analytics.daily[today]) {
+    analytics.daily[today] = { count: 0, tones: {} };
   }
+  analytics.daily[today].count++;
+  analytics.total.count = (analytics.total.count || 0) + 1;
+
+  // Clean up old data (keep last 30 days)
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 30);
+  Object.keys(analytics.daily).forEach(date => {
+    if (new Date(date) < cutoff) {
+      delete analytics.daily[date];
+    }
+  });
+
+  await safeStorageSet({ rr_analytics: analytics });
 }
 
 // ========== REVIEW INSIGHTS ==========
 
 async function loadInsights() {
-  try {
-    if (!chrome.runtime?.id) return { issues: {}, sentiments: { positive: 0, neutral: 0, negative: 0 }, lastUpdated: null }; // Extension context invalid
-    const result = await chrome.storage.local.get('rr_insights');
-    return result.rr_insights || {
-      issues: {},       // { issue_type: count }
-      sentiments: { positive: 0, neutral: 0, negative: 0 },
-      lastUpdated: null
-    };
-  } catch (e) {
-    if (!e.message?.includes('Extension context invalidated')) {
-      console.error('Failed to load insights:', e);
-    }
-    return { issues: {}, sentiments: { positive: 0, neutral: 0, negative: 0 }, lastUpdated: null };
-  }
+  if (!isExtensionContextValid()) return { issues: {}, sentiments: { positive: 0, neutral: 0, negative: 0 }, lastUpdated: null };
+  const result = await safeStorageGet(['rr_insights']);
+  return result.rr_insights || {
+    issues: {},
+    sentiments: { positive: 0, neutral: 0, negative: 0 },
+    lastUpdated: null
+  };
 }
 
 async function recordInsights(issues, sentiment) {
-  try {
-    if (!chrome.runtime?.id) return; // Extension context invalid
-    const insights = await loadInsights();
+  if (!isExtensionContextValid()) return;
+  const insights = await loadInsights();
 
-    // Track issues
-    issues.forEach(issue => {
-      insights.issues[issue.issue] = (insights.issues[issue.issue] || 0) + 1;
-    });
+  // Track issues
+  issues.forEach(issue => {
+    insights.issues[issue.issue] = (insights.issues[issue.issue] || 0) + 1;
+  });
 
-    // Track sentiment
-    if (sentiment && insights.sentiments[sentiment] !== undefined) {
-      insights.sentiments[sentiment]++;
-    }
-
-    insights.lastUpdated = new Date().toISOString();
-
-    // Clean up old data - keep issues with count > 0
-    await chrome.storage.local.set({ rr_insights: insights });
-  } catch (e) {
-    if (!e.message?.includes('Extension context invalidated')) {
-      console.error('Failed to record insights:', e);
-    }
+  // Track sentiment
+  if (sentiment && insights.sentiments[sentiment] !== undefined) {
+    insights.sentiments[sentiment]++;
   }
+
+  insights.lastUpdated = new Date().toISOString();
+
+  await safeStorageSet({ rr_insights: insights });
 }
 
 async function updateInsightsWidget(panel) {
@@ -1258,18 +1279,14 @@ function getToneFromSlider(sliderValue) {
 const MAX_ACCOUNTS = 5;
 
 async function loadAccounts() {
-  try {
-    const data = await chrome.storage.local.get(['rr_accounts', 'rr_active_account']);
-    const accounts = data.rr_accounts || [];
-    const activeId = data.rr_active_account || null;
-    return { accounts, activeId };
-  } catch (e) {
-    return { accounts: [], activeId: null };
-  }
+  const data = await safeStorageGet(['rr_accounts', 'rr_active_account']);
+  const accounts = data.rr_accounts || [];
+  const activeId = data.rr_active_account || null;
+  return { accounts, activeId };
 }
 
 async function saveAccounts(accounts, activeId) {
-  await chrome.storage.local.set({ rr_accounts: accounts, rr_active_account: activeId });
+  await safeStorageSet({ rr_accounts: accounts, rr_active_account: activeId });
 }
 
 async function getActiveAccount() {
@@ -1464,18 +1481,12 @@ function showLimitWarning(panel, type, chars, platformName) {
 
 // ========== ONBOARDING ==========
 async function checkOnboarding() {
-  try {
-    const stored = await chrome.storage.local.get(['rr_onboarding_seen']);
-    return stored.rr_onboarding_seen || false;
-  } catch (e) {
-    return false;
-  }
+  const stored = await safeStorageGet(['rr_onboarding_seen']);
+  return stored.rr_onboarding_seen || false;
 }
 
 async function markOnboardingSeen() {
-  try {
-    await chrome.storage.local.set({ rr_onboarding_seen: true });
-  } catch (e) {}
+  await safeStorageSet({ rr_onboarding_seen: true });
 }
 
 function showOnboardingTip(panel) {
@@ -1607,19 +1618,13 @@ function detectBusinessContext() {
 // Save detected business to storage for reuse
 async function saveDetectedBusiness(name) {
   if (!name) return;
-  try {
-    await chrome.storage.local.set({ rr_detected_business: name });
-  } catch (e) {}
+  await safeStorageSet({ rr_detected_business: name });
 }
 
 // Get cached business name
 async function getCachedBusinessName() {
-  try {
-    const stored = await chrome.storage.local.get(['rr_detected_business']);
-    return stored.rr_detected_business || '';
-  } catch (e) {
-    return '';
-  }
+  const stored = await safeStorageGet(['rr_detected_business']);
+  return stored.rr_detected_business || '';
 }
 
 // ========== SMART REPLY CHIPS ==========
@@ -1813,33 +1818,20 @@ const DEFAULT_SETTINGS = {
 };
 
 async function loadSettings() {
-  try {
-    if (!chrome.runtime?.id) return { ...DEFAULT_SETTINGS }; // Extension context invalid
-    const stored = await chrome.storage.local.get(['rr_settings']);
-    // Merge with defaults to ensure all keys exist and turboMode defaults to false
-    const settings = { ...DEFAULT_SETTINGS, ...(stored.rr_settings || {}) };
-    // Safety: if turboMode is somehow not a boolean, reset it
-    if (typeof settings.turboMode !== 'boolean') {
-      settings.turboMode = false;
-    }
-    return settings;
-  } catch (e) {
-    if (!e.message?.includes('Extension context invalidated')) {
-      console.error('Failed to load settings:', e);
-    }
-    return { ...DEFAULT_SETTINGS };
+  if (!isExtensionContextValid()) return { ...DEFAULT_SETTINGS };
+  const stored = await safeStorageGet(['rr_settings']);
+  // Merge with defaults to ensure all keys exist and turboMode defaults to false
+  const settings = { ...DEFAULT_SETTINGS, ...(stored.rr_settings || {}) };
+  // Safety: if turboMode is somehow not a boolean, reset it
+  if (typeof settings.turboMode !== 'boolean') {
+    settings.turboMode = false;
   }
+  return settings;
 }
 
 async function saveSettings(settings) {
-  try {
-    if (!chrome.runtime?.id) return; // Extension context invalid
-    await chrome.storage.local.set({ rr_settings: settings });
-  } catch (e) {
-    if (!e.message?.includes('Extension context invalidated')) {
-      console.error('Failed to save settings:', e);
-    }
-  }
+  if (!isExtensionContextValid()) return;
+  await safeStorageSet({ rr_settings: settings });
 }
 
 // Cache settings for speed
@@ -1850,46 +1842,23 @@ loadSettings().then(s => cachedSettings = s);
 const MAX_TEMPLATES = 10;
 
 async function loadTemplates() {
-  try {
-    if (!chrome.runtime?.id) return []; // Extension context invalid
-    const stored = await chrome.storage.sync.get(['rr_templates']);
-    if (stored.rr_templates && stored.rr_templates.length > 0) {
-      return stored.rr_templates;
-    }
-    // Fallback to local storage if sync is empty
-    const local = await chrome.storage.local.get(['rr_templates']);
-    return local.rr_templates || [];
-  } catch (e) {
-    if (!e.message?.includes('Extension context invalidated')) {
-      // Fallback to local storage if sync fails
-      try {
-        if (!chrome.runtime?.id) return [];
-        const local = await chrome.storage.local.get(['rr_templates']);
-        return local.rr_templates || [];
-      } catch (e2) {
-        if (!e2.message?.includes('Extension context invalidated')) {
-          console.error('Failed to load templates:', e2);
-        }
-        return [];
-      }
-    }
-    return [];
+  if (!isExtensionContextValid()) return [];
+  const stored = await safeSyncStorageGet(['rr_templates']);
+  if (stored.rr_templates && stored.rr_templates.length > 0) {
+    return stored.rr_templates;
   }
+  // Fallback to local storage if sync is empty
+  const local = await safeStorageGet(['rr_templates']);
+  return local.rr_templates || [];
 }
 
 async function saveTemplates(templates) {
-  try {
-    if (!chrome.runtime?.id) return; // Extension context invalid
-    // Limit to MAX_TEMPLATES
-    const limited = templates.slice(0, MAX_TEMPLATES);
-    await chrome.storage.sync.set({ rr_templates: limited });
-    // Also save to local as backup
-    await chrome.storage.local.set({ rr_templates: limited });
-  } catch (e) {
-    if (!e.message?.includes('Extension context invalidated')) {
-      console.error('Failed to save templates:', e);
-    }
-  }
+  if (!isExtensionContextValid()) return;
+  // Limit to MAX_TEMPLATES
+  const limited = templates.slice(0, MAX_TEMPLATES);
+  await safeSyncStorageSet({ rr_templates: limited });
+  // Also save to local as backup
+  await safeStorageSet({ rr_templates: limited });
 }
 
 async function addTemplate(name, content, tone = 'professional') {
@@ -1996,28 +1965,15 @@ function escapeHtml(text) {
 const MAX_DRAFTS = 10;
 
 async function loadDrafts() {
-  try {
-    if (!chrome.runtime?.id) return []; // Extension context invalid
-    const stored = await chrome.storage.local.get(['rr_drafts']);
-    return stored.rr_drafts || [];
-  } catch (e) {
-    if (!e.message?.includes('Extension context invalidated')) {
-      console.error('Failed to load drafts:', e);
-    }
-    return [];
-  }
+  if (!isExtensionContextValid()) return [];
+  const stored = await safeStorageGet(['rr_drafts']);
+  return stored.rr_drafts || [];
 }
 
 async function saveDrafts(drafts) {
-  try {
-    if (!chrome.runtime?.id) return; // Extension context invalid
-    const limited = drafts.slice(0, MAX_DRAFTS);
-    await chrome.storage.local.set({ rr_drafts: limited });
-  } catch (e) {
-    if (!e.message?.includes('Extension context invalidated')) {
-      console.error('Failed to save drafts:', e);
-    }
-  }
+  if (!isExtensionContextValid()) return;
+  const limited = drafts.slice(0, MAX_DRAFTS);
+  await safeStorageSet({ rr_drafts: limited });
 }
 
 async function saveDraft(reviewText, responseText, platform, url) {
@@ -2119,7 +2075,7 @@ function updateDraftsOverlay(panel, drafts) {
 // ========== RESPONSE HISTORY ==========
 async function loadHistory() {
   try {
-    const stored = await chrome.storage.local.get(['token']);
+    const stored = await safeStorageGet(['token']);
     if (!stored.token) return { success: false, history: [] };
 
     const response = await fetch(`${API_URL}/responses/history?limit=10`, {
@@ -3256,7 +3212,7 @@ function initPanelEvents(panel) {
       showVariations: false
     };
 
-    await chrome.storage.local.set({ rr_settings: defaults });
+    await safeStorageSet({ rr_settings: defaults });
     cachedSettings = defaults;
 
     // Update all UI elements
@@ -3679,13 +3635,7 @@ async function autoShortenForPlatform(panel) {
   }
 
   // Check login for API call
-  let stored;
-  try {
-    stored = await chrome.storage.local.get(['token', 'user']);
-  } catch (e) {
-    showToast('Extension error', 'error');
-    return;
-  }
+  const stored = await safeStorageGet(['token', 'user']);
 
   if (!stored.token) {
     showToast('Please login first', 'error');
@@ -3856,13 +3806,7 @@ async function generateResponse(panel) {
 
   console.log('[RR Debug] Proceeding with generation, tone:', tone, 'language:', detectedLanguage);
 
-  let stored;
-  try {
-    stored = await chrome.storage.local.get(['token', 'user']);
-  } catch (e) {
-    showToast('⚠️ Extension error', 'error');
-    return;
-  }
+  const stored = await safeStorageGet(['token', 'user']);
 
   if (!stored.token) {
     showToast('🔐 Please login in the extension popup first', 'error');
@@ -4049,13 +3993,7 @@ async function generateResponseWithModifier(panel, modifier) {
     return;
   }
 
-  let stored;
-  try {
-    stored = await chrome.storage.local.get(['token', 'user']);
-  } catch (e) {
-    showToast('⚠️ Extension error', 'error');
-    return;
-  }
+  const stored = await safeStorageGet(['token', 'user']);
 
   if (!stored.token) {
     showToast('🔐 Please login in the extension popup first', 'error');
@@ -4209,13 +4147,7 @@ async function editExistingResponse(panel, editType, currentResponse) {
   const btnText = panel.querySelector('.rr-btn-text');
   const btnLoading = panel.querySelector('.rr-btn-loading');
 
-  let stored;
-  try {
-    stored = await chrome.storage.local.get(['token', 'user']);
-  } catch (e) {
-    showToast('⚠️ Extension error', 'error');
-    return;
-  }
+  const stored = await safeStorageGet(['token', 'user']);
 
   if (!stored.token) {
     showToast('🔐 Please login first', 'error');
@@ -4448,7 +4380,7 @@ async function turboGenerate(reviewText) {
 
   try {
     // Check login
-    const stored = await chrome.storage.local.get(['token', 'user']);
+    const stored = await safeStorageGet(['token', 'user']);
     if (!stored.token) {
       showToast('🔐 Please login via extension popup first', 'error');
       return;
@@ -4959,7 +4891,7 @@ document.addEventListener('keydown', async (e) => {
     e.stopPropagation();
     e.stopImmediatePropagation();
 
-    chrome.storage.local.remove(['rr_panel_position']);
+    safeStorageSet({ rr_panel_position: null });
     const panel = document.getElementById('rr-response-panel');
     if (panel) {
       panel.style.position = 'fixed';
@@ -5301,13 +5233,7 @@ async function generateAllBatchResponses(panel) {
   if (reviews.length === 0) return;
 
   // Check login
-  let stored;
-  try {
-    stored = await chrome.storage.local.get(['token', 'user']);
-  } catch (e) {
-    showToast('Extension error', 'error');
-    return;
-  }
+  const stored = await safeStorageGet(['token', 'user']);
 
   if (!stored.token) {
     showToast('Please login first', 'error');
@@ -5486,13 +5412,7 @@ async function regenerateBatchResponse(panel) {
   if (!results[index] || !reviews[index]) return;
 
   // Check login
-  let stored;
-  try {
-    stored = await chrome.storage.local.get(['token', 'user']);
-  } catch (e) {
-    showToast('Extension error', 'error');
-    return;
-  }
+  const stored = await safeStorageGet(['token', 'user']);
 
   if (!stored.token) {
     showToast('Please login first', 'error');
@@ -6001,7 +5921,7 @@ setTimeout(createScanButton, 1000);
 // Check if review popup should be shown
 async function checkShowReviewPopup() {
   try {
-    const stored = await chrome.storage.local.get(['token', 'rr_review_dismissed', 'rr_review_submitted']);
+    const stored = await safeStorageGet(['token', 'rr_review_dismissed', 'rr_review_submitted']);
 
     // Not logged in
     if (!stored.token) return;
@@ -6161,7 +6081,7 @@ function showReviewPopup() {
     const displayName = modal.querySelector('.rr-review-name-input').value.trim();
 
     try {
-      const stored = await chrome.storage.local.get(['token']);
+      const stored = await safeStorageGet(['token']);
 
       const response = await fetch(`${API_URL}/feedback`, {
         method: 'POST',
@@ -6182,7 +6102,7 @@ function showReviewPopup() {
       }
 
       // Mark as submitted
-      await chrome.storage.local.set({ rr_review_submitted: true });
+      await safeStorageSet({ rr_review_submitted: true });
 
       showToast('🙏 Thank you for your feedback!', 'success');
       closeReviewPopup(modal, false);
@@ -6206,7 +6126,7 @@ function showReviewPopup() {
 async function closeReviewPopup(modal, dismissed) {
   if (dismissed) {
     // Save dismiss timestamp
-    await chrome.storage.local.set({ rr_review_dismissed: Date.now() });
+    await safeStorageSet({ rr_review_dismissed: Date.now() });
   }
 
   modal.classList.remove('rr-visible');
