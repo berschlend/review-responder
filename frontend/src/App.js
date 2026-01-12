@@ -1782,31 +1782,15 @@ const LandingPage = () => {
           <div className="hero-buttons" style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
             <Link to={user ? "/dashboard" : "/register"} className="btn btn-primary btn-lg">
               <Sparkles size={20} />
-              Start Free Trial
+              Get Started Free
             </Link>
             <Link to="/pricing" className="btn btn-secondary btn-lg">
               View Pricing
             </Link>
           </div>
           <p style={{ marginTop: '16px', color: 'var(--gray-500)', fontSize: '14px' }}>
-            20 free responses included. No credit card required.
+            20 free responses every month. No credit card required.
           </p>
-
-          {/* Trust Badges */}
-          <div style={{ marginTop: '32px', display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-500)', fontSize: '13px' }}>
-              <Lock size={16} />
-              <span>SSL Secured</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-500)', fontSize: '13px' }}>
-              <CreditCard size={16} />
-              <span>Stripe Payments</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-500)', fontSize: '13px' }}>
-              <Shield size={16} />
-              <span>GDPR Compliant</span>
-            </div>
-          </div>
 
           {/* Demo Video Section - Hidden until video is ready
           <div style={{
@@ -1820,6 +1804,31 @@ const LandingPage = () => {
           */}
         </div>
       </section>
+
+      {/* Feature Highlights */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: '32px',
+        padding: '20px 24px',
+        background: 'var(--gray-50)',
+        borderBottom: '1px solid var(--gray-200)',
+        flexWrap: 'wrap'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)', fontSize: '14px', fontWeight: '500' }}>
+          <Sparkles size={18} style={{ color: 'var(--primary)' }} />
+          <span>Powered by Claude AI</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)', fontSize: '14px', fontWeight: '500' }}>
+          <Globe size={18} style={{ color: 'var(--primary)' }} />
+          <span>50+ Languages</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)', fontSize: '14px', fontWeight: '500' }}>
+          <Chrome size={18} style={{ color: 'var(--primary)' }} />
+          <span>Chrome Extension</span>
+        </div>
+      </div>
 
       {/* Chrome Extension Section - Key Selling Point */}
       <section className="container" style={{ marginBottom: '60px', marginTop: '60px' }}>
@@ -1951,56 +1960,6 @@ const LandingPage = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-
-      {/* Feature Cards */}
-      <section className="container" style={{ marginTop: '60px' }}>
-        <div className="features-grid">
-          <div className="card feature-card">
-            <div className="feature-icon">
-              <Chrome size={28} />
-            </div>
-            <h3 className="feature-title">Chrome Extension</h3>
-            <p className="feature-description">
-              Works directly on Google Maps, Yelp, TripAdvisor.
-              One click to respond - no copy-paste needed.
-            </p>
-          </div>
-
-          <div className="card feature-card">
-            <div className="feature-icon">
-              <Sparkles size={28} />
-            </div>
-            <h3 className="feature-title">Smart AI</h3>
-            <p className="feature-description">
-              Powered by Claude - the best AI for natural, authentic responses.
-              No robotic templates, just human-like replies.
-            </p>
-          </div>
-
-          <div className="card feature-card">
-            <div className="feature-icon">
-              <Building size={28} />
-            </div>
-            <h3 className="feature-title">Your Context</h3>
-            <p className="feature-description">
-              AI knows YOUR business. Not generic responses -
-              personalized replies that mention your policies, staff, and services.
-            </p>
-          </div>
-
-          <div className="card feature-card">
-            <div className="feature-icon">
-              <Globe size={28} />
-            </div>
-            <h3 className="feature-title">50+ Languages</h3>
-            <p className="feature-description">
-              Auto-detects and responds in the reviewer's language.
-              German, Spanish, French, Chinese, Arabic - all covered.
-            </p>
           </div>
         </div>
       </section>
