@@ -1157,13 +1157,13 @@ Respond ONLY with the review text, no quotes.`;
 
 // ============ PROFILE & ACCOUNT MANAGEMENT ============
 
-// Change Password
+// Change Password (or Set Password for OAuth users)
 app.put('/api/auth/change-password', authenticateToken, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({ error: 'Current and new password required' });
+    if (!newPassword) {
+      return res.status(400).json({ error: 'New password required' });
     }
 
     if (newPassword.length < 8) {
@@ -1172,11 +1172,16 @@ app.put('/api/auth/change-password', authenticateToken, async (req, res) => {
 
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
 
-    // Check if OAuth user without password
+    // OAuth user without password - allow setting password without current
     if (user.oauth_provider && !user.password) {
-      return res.status(400).json({
-        error: 'Cannot change password for accounts signed in with Google. Manage your password through Google.'
-      });
+      const hashedPassword = await bcrypt.hash(newPassword, 12);
+      await dbQuery('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, req.user.id]);
+      return res.json({ success: true, message: 'Password set successfully! You can now login with email & password.' });
+    }
+
+    // User has password - require current password
+    if (!currentPassword) {
+      return res.status(400).json({ error: 'Current password required' });
     }
 
     // Verify current password
@@ -3072,7 +3077,10 @@ app.get('/api/stats', authenticateToken, async (req, res) => {
         status: isTeamMember ? usageOwner.subscription_status : user.subscription_status
       },
       isTeamMember,
-      hasSmartAI: !!anthropic
+      hasSmartAI: !!anthropic,
+      // For password management (OAuth users may not have password)
+      hasPassword: !!user.password,
+      oauthProvider: user.oauth_provider || null
     });
   } catch (error) {
     console.error('Stats error:', error);

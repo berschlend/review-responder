@@ -5885,13 +5885,19 @@ const ProfilePage = () => {
     }
     setChangingPassword(true);
     try {
-      await api.put('/auth/change-password', { currentPassword, newPassword });
-      toast.success('Password changed successfully');
+      // For OAuth users without password, don't send currentPassword
+      const payload = user?.hasPassword
+        ? { currentPassword, newPassword }
+        : { newPassword };
+      const response = await api.put('/auth/change-password', payload);
+      toast.success(response.data.message || 'Password updated successfully');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
+      // Refresh user data to update hasPassword status
+      fetchStats();
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Failed to change password');
+      toast.error(error.response?.data?.error || 'Failed to update password');
     } finally {
       setChangingPassword(false);
     }
@@ -6114,38 +6120,39 @@ const ProfilePage = () => {
             <Lock size={20} /> Security
           </h2>
 
-          {user?.oauthProvider && !user?.hasPassword ? (
-            <div style={{ padding: '20px', background: 'var(--bg-tertiary)', borderRadius: '8px', textAlign: 'center' }}>
-              <p style={{ color: 'var(--text-muted)', marginBottom: '12px' }}>
-                You signed in with Google. Password management is handled by Google.
+          {/* OAuth user without password - show Set Password form */}
+          {user?.oauthProvider && !user?.hasPassword && (
+            <div style={{ padding: '16px', background: '#fef3c7', borderRadius: '8px', marginBottom: '20px', border: '1px solid #fcd34d' }}>
+              <p style={{ color: '#92400e', margin: 0, fontSize: '14px' }}>
+                <strong>Set a password</strong> to login to the Chrome Extension. Google Sign-In for the extension is coming soon!
               </p>
-              <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                Manage Google Security <ExternalLink size={14} />
-              </a>
             </div>
-          ) : (
-            <form onSubmit={handleChangePassword} style={{ display: 'grid', gap: '16px' }}>
+          )}
+
+          <form onSubmit={handleChangePassword} style={{ display: 'grid', gap: '16px' }}>
+            {/* Only show Current Password if user already has one */}
+            {user?.hasPassword && (
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Current Password</label>
                 <input type={showPasswords ? 'text' : 'password'} className="form-input" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Enter current password" />
               </div>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">New Password</label>
-                <input type={showPasswords ? 'text' : 'password'} className="form-input" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Enter new password (min 8 characters)" />
-              </div>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Confirm New Password</label>
-                <input type={showPasswords ? 'text' : 'password'} className="form-input" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm new password" />
-              </div>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
-                <input type="checkbox" checked={showPasswords} onChange={(e) => setShowPasswords(e.target.checked)} />
-                Show passwords
-              </label>
-              <button type="submit" className="btn btn-primary" disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword} style={{ width: 'fit-content' }}>
-                {changingPassword ? 'Changing...' : 'Change Password'}
-              </button>
-            </form>
-          )}
+            )}
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label">{user?.hasPassword ? 'New Password' : 'Password'}</label>
+              <input type={showPasswords ? 'text' : 'password'} className="form-input" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={user?.hasPassword ? 'Enter new password (min 8 characters)' : 'Choose a password (min 8 characters)'} />
+            </div>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label">Confirm Password</label>
+              <input type={showPasswords ? 'text' : 'password'} className="form-input" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm password" />
+            </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
+              <input type="checkbox" checked={showPasswords} onChange={(e) => setShowPasswords(e.target.checked)} />
+              Show passwords
+            </label>
+            <button type="submit" className="btn btn-primary" disabled={changingPassword || (user?.hasPassword && !currentPassword) || !newPassword || !confirmPassword} style={{ width: 'fit-content' }}>
+              {changingPassword ? (user?.hasPassword ? 'Changing...' : 'Setting...') : (user?.hasPassword ? 'Change Password' : 'Set Password')}
+            </button>
+          </form>
         </div>
       )}
 
