@@ -1571,8 +1571,8 @@ SIGN OFF:
           >
             {/* The Review */}
             <div style={{
-              background: 'white',
-              border: '1px solid var(--gray-200)',
+              background: 'var(--card-bg)',
+              border: '1px solid var(--border-color)',
               borderRadius: '12px',
               padding: '20px'
             }}>
@@ -1614,8 +1614,8 @@ SIGN OFF:
 
             {/* Our AI Response */}
             <div style={{
-              background: 'linear-gradient(135deg, var(--primary-50) 0%, white 100%)',
-              border: '1px solid var(--primary-200)',
+              background: 'var(--card-bg)',
+              border: '1px solid var(--border-color)',
               borderRadius: '12px',
               padding: '20px'
             }}>
