@@ -273,6 +273,12 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 
 ### HEUTE ERLEDIGT (13.01.2026):
+- [x] **Review Alert Outreach System** - Personalisierte Emails mit AI-generierten Antwort-Drafts
+  - Daily Outreach fetcht jetzt Place Details inkl. Reviews
+  - Für Businesses mit 1-2 Sterne Reviews: AI-Draft generiert
+  - Emails enthalten echte Review + fertige Antwort (Wert statt Spam)
+  - Kosten: ~$10/Monat (nur Claude Sonnet für Drafts)
+  - Campaign tracking: `review_alert` vs `main`
 - [x] **Sales Automation implementiert** - Komplettes System für automatische Lead-Generierung
   - DACH-Städte hinzugefügt (München, Hamburg, Frankfurt, Köln, Stuttgart, Düsseldorf, Wien, Zürich, Genf, Brüssel)
   - 4 neue Branchen (Spa, Tierarzt, Physiotherapie, Steuerberater)
