@@ -70,6 +70,7 @@ import {
   PartyPopper,
   Utensils,
   CheckCircle,
+  CheckCircle2,
   Keyboard,
   Store,
   MapPin,
@@ -83,6 +84,7 @@ import {
   Edit3,
   LayoutDashboard,
   Play,
+  PlayCircle,
   Video,
   Loader,
 } from 'lucide-react';
@@ -266,6 +268,108 @@ api.interceptors.request.use(config => {
 const AuthContext = createContext(null);
 
 const useAuth = () => useContext(AuthContext);
+
+// Reusable Footer Component
+const Footer = () => (
+  <footer className="footer">
+    <div className="container">
+      <div className="footer-content">
+        <div>
+          <div className="footer-brand">ReviewResponder</div>
+          <p className="footer-description">
+            AI-powered review response generator helping businesses maintain their online
+            reputation effortlessly.
+          </p>
+        </div>
+        <div>
+          <div className="footer-title">Product</div>
+          <ul className="footer-links">
+            <li>
+              <Link to="/pricing">Pricing</Link>
+            </li>
+            <li>
+              <Link to="/register">Get Started</Link>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <div className="footer-title">Solutions</div>
+          <ul className="footer-links">
+            <li>
+              <Link to="/google-review-response-generator">Google Reviews</Link>
+            </li>
+            <li>
+              <Link to="/yelp-review-reply-tool">Yelp Reviews</Link>
+            </li>
+            <li>
+              <Link to="/tripadvisor-review-responses">TripAdvisor</Link>
+            </li>
+            <li>
+              <Link to="/booking-review-generator">Booking.com</Link>
+            </li>
+            <li>
+              <Link to="/facebook-review-responses">Facebook</Link>
+            </li>
+            <li>
+              <Link to="/negative-review-responses">Negative Reviews</Link>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <div className="footer-title">Industries</div>
+          <ul className="footer-links">
+            <li>
+              <Link to="/restaurant-review-responses">Restaurants</Link>
+            </li>
+            <li>
+              <Link to="/hotel-review-management">Hotels</Link>
+            </li>
+            <li>
+              <Link to="/dentist-review-responses">Dentists</Link>
+            </li>
+            <li>
+              <Link to="/medical-practice-reviews">Medical</Link>
+            </li>
+            <li>
+              <Link to="/salon-spa-review-responses">Salons & Spas</Link>
+            </li>
+            <li>
+              <Link to="/auto-shop-reviews">Auto Shops</Link>
+            </li>
+            <li>
+              <Link to="/local-business-reviews">Local Business</Link>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <div className="footer-title">Support</div>
+          <ul className="footer-links">
+            <li>
+              <Link to="/support">Help Center</Link>
+            </li>
+            <li>
+              <a href="mailto:support@tryreviewresponder.com">Contact</a>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <div className="footer-title">Legal</div>
+          <ul className="footer-links">
+            <li>
+              <Link to="/privacy">Privacy Policy</Link>
+            </li>
+            <li>
+              <Link to="/terms">Terms of Service</Link>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div className="footer-bottom">
+        &copy; {new Date().getFullYear()} ReviewResponder. All rights reserved.
+      </div>
+    </div>
+  </footer>
+);
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -919,7 +1023,7 @@ const ExitIntentPopup = () => {
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'rgba(0, 0, 0, 0.6)',
+        background: 'rgba(0, 0, 0, 0.5)',
         zIndex: 9999,
         display: 'flex',
         alignItems: 'center',
@@ -929,14 +1033,14 @@ const ExitIntentPopup = () => {
       onClick={() => setIsVisible(false)}
     >
       <div
-        className="card"
         style={{
-          maxWidth: '480px',
+          maxWidth: '400px',
           width: '100%',
-          padding: '0',
-          overflow: 'hidden',
+          background: 'white',
+          borderRadius: '12px',
+          padding: '32px',
           position: 'relative',
-          animation: 'slideIn 0.3s ease-out',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
         }}
         onClick={e => e.stopPropagation()}
       >
@@ -951,136 +1055,143 @@ const ExitIntentPopup = () => {
             border: 'none',
             cursor: 'pointer',
             padding: '4px',
-            color: 'var(--gray-400)',
-            zIndex: 1,
+            color: 'var(--text-muted)',
           }}
         >
-          <X size={20} />
+          <X size={18} />
         </button>
 
-        {/* Header with gradient */}
-        <div
-          style={{
-            background: 'linear-gradient(135deg, var(--primary-600), var(--primary-700))',
-            padding: '32px',
-            textAlign: 'center',
-            color: 'white',
-          }}
-        >
-          <div
-            style={{
+        {!submitted ? (
+          <>
+            {/* Header */}
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <span style={{
+                display: 'inline-block',
+                padding: '6px 12px',
+                background: 'var(--bg-secondary)',
+                color: 'var(--primary)',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: '600',
+                marginBottom: '16px',
+                border: '1px solid var(--border-color)',
+              }}>
+                EARLY ACCESS
+              </span>
+              <h2 style={{
+                fontSize: '22px',
+                fontWeight: '600',
+                color: 'var(--text-primary)',
+                marginBottom: '8px',
+                lineHeight: '1.3'
+              }}>
+                Get 50% off your first year
+              </h2>
+              <p style={{
+                fontSize: '14px',
+                color: 'var(--text-secondary)',
+                lineHeight: '1.5'
+              }}>
+                Enter your email to unlock this limited-time offer.
+              </p>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit}>
+              <input
+                type="email"
+                placeholder="you@company.com"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  padding: '12px 14px',
+                  fontSize: '14px',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  marginBottom: '12px',
+                  outline: 'none',
+                }}
+              />
+
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  background: 'var(--primary)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.7 : 1,
+                }}
+              >
+                {loading ? 'Please wait...' : 'Unlock 50% Discount'}
+              </button>
+            </form>
+
+            <p style={{
+              textAlign: 'center',
+              fontSize: '12px',
+              color: 'var(--text-muted)',
+              marginTop: '16px',
+            }}>
+              No spam. Unsubscribe anytime.
+            </p>
+          </>
+        ) : (
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '64px',
-              height: '64px',
-              background: 'rgba(255,255,255,0.2)',
+              width: '48px',
+              height: '48px',
+              background: 'var(--bg-secondary)',
               borderRadius: '50%',
               marginBottom: '16px',
-            }}
-          >
-            <Sparkles size={32} />
-          </div>
-          <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
-            Wait! Don't Leave Empty-Handed
-          </h2>
-          <p style={{ fontSize: '16px', opacity: 0.95 }}>
-            Get 50% off your subscription - forever!
-          </p>
-        </div>
-
-        {/* Content */}
-        <div style={{ padding: '32px' }}>
-          {!submitted ? (
-            <>
-              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                <div
-                  style={{
-                    display: 'inline-block',
-                    padding: '8px 20px',
-                    background: 'linear-gradient(135deg, #10b981, #059669)',
-                    color: 'white',
-                    borderRadius: '20px',
-                    fontSize: '18px',
-                    fontWeight: '600',
-                    marginBottom: '12px',
-                  }}
-                >
-                  Exclusive Offer: Save 50%
-                </div>
-                <p style={{ color: 'var(--gray-600)', fontSize: '14px' }}>
-                  Enter your email to unlock this limited-time discount
-                </p>
-              </div>
-
-              <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                  <input
-                    type="email"
-                    className="form-input"
-                    placeholder="your@email.com"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    required
-                    style={{ fontSize: '16px', padding: '12px 16px' }}
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  style={{ width: '100%', fontSize: '16px', padding: '12px' }}
-                  disabled={loading}
-                >
-                  {loading ? 'Processing...' : 'Get My 50% Discount'}
-                </button>
-              </form>
-
-              <p
-                style={{
-                  textAlign: 'center',
-                  fontSize: '12px',
-                  color: 'var(--gray-500)',
-                  marginTop: '16px',
-                }}
-              >
-                No spam, unsubscribe anytime. Discount valid for 7 days.
-              </p>
-            </>
-          ) : (
-            <div style={{ textAlign: 'center' }}>
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '64px',
-                  height: '64px',
-                  background: '#d1fae5',
-                  borderRadius: '50%',
-                  marginBottom: '16px',
-                }}
-              >
-                <Check size={32} style={{ color: '#10b981' }} />
-              </div>
-              <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>
-                ✨ 50% OFF Unlocked!
-              </h3>
-              <p style={{ color: 'var(--gray-600)', marginBottom: '20px' }}>
-                Your exclusive discount is ready. We also sent the link to your email.
-              </p>
-              <Link
-                to="/pricing?discount=EARLY50"
-                className="btn btn-primary"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-                onClick={() => setIsVisible(false)}
-              >
-                Claim 50% Discount
-                <ArrowRight size={18} />
-              </Link>
+              border: '1px solid var(--border-color)',
+            }}>
+              <Check size={24} style={{ color: 'var(--primary)' }} />
             </div>
-          )}
-        </div>
+            <h3 style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              marginBottom: '8px',
+              color: 'var(--text-primary)'
+            }}>
+              Discount Unlocked
+            </h3>
+            <p style={{
+              color: 'var(--text-secondary)',
+              marginBottom: '20px',
+              fontSize: '14px'
+            }}>
+              Your 50% discount is ready. We sent the details to your email.
+            </p>
+            <Link
+              to="/pricing?discount=EARLY50"
+              style={{
+                display: 'inline-block',
+                padding: '12px 24px',
+                fontSize: '14px',
+                fontWeight: '600',
+                background: 'var(--primary)',
+                color: 'white',
+                borderRadius: '8px',
+                textDecoration: 'none',
+              }}
+              onClick={() => setIsVisible(false)}
+            >
+              View Plans
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1567,7 +1678,7 @@ const DogfoodingSection = ({ testimonials }) => {
   const REVIEWRESPONDER_CONTEXT = {
     businessName: 'ReviewResponder',
     businessType: 'SaaS / AI Software Tool',
-    businessContext: `ReviewResponder helps small business owners respond to customer reviews quickly and professionally.
+    businessContext: `ReviewResponder helps business owners respond to customer reviews quickly and professionally.
 
 WHO WE ARE:
 - Created by Berend in Germany, 2026
@@ -2013,119 +2124,81 @@ const LandingPage = () => {
           Sign up now to get started.
         </div>
       )}
-      <section className="hero" style={{ position: 'relative', padding: '80px 0 60px', background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)' }}>
-        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
+      <section className="hero" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)' }}>
+        <div className="container" style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center', padding: '40px 20px' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <span style={{
+              display: 'inline-flex',
               alignItems: 'center',
-              gap: '24px',
-              marginBottom: '40px',
-            }}
-          >
-            <Link
-              to="/pricing?discount=EARLY50"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                background: 'var(--bg-secondary)',
-                color: 'var(--primary)',
-                padding: '6px 16px',
-                borderRadius: '6px',
-                fontSize: '13px',
-                fontWeight: '700',
-                letterSpacing: '0.05em',
-                textDecoration: 'none',
-                border: '1px solid var(--border-color)',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              <Sparkles size={14} />
-              <span>50% OFF - Limited Time Offer</span>
-            </Link>
+              gap: '8px',
+              padding: '6px 14px',
+              background: 'var(--bg-secondary)',
+              color: 'var(--text-secondary)',
+              borderRadius: '20px',
+              fontSize: '11px',
+              fontWeight: '600',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              border: '1px solid var(--border-color)'
+            }}>
+              <Shield size={12} style={{ color: 'var(--primary)' }} />
+              Enterprise-Grade Review Management
+            </span>
+          </div>
+          <div style={{ marginBottom: '24px', transform: 'scale(0.85)', opacity: 0.9 }}>
             <ProductHuntBadge />
           </div>
 
           <h1 className="hero-title" style={{
-            fontSize: 'clamp(2.5rem, 5vw, 4rem)',
-            lineHeight: '1.1',
-            letterSpacing: '-0.02em',
-            marginBottom: '24px',
+            fontSize: '2.5rem',
+            lineHeight: '1.15',
+            letterSpacing: '-0.025em',
+            marginBottom: '16px',
             color: 'var(--text-primary)',
-            fontWeight: '800'
+            fontWeight: '700'
           }}>
-            Respond to Reviews
-            <br />
-            <span style={{ color: 'var(--primary)' }}>in Seconds</span>, Not Hours
+            Respond to Reviews <span style={{ color: 'var(--primary)' }}>in Seconds</span>, Not Hours
           </h1>
 
-          <p className="hero-subtitle" style={{ maxWidth: '680px', margin: '0 auto 40px', fontSize: '1.125rem', lineHeight: '1.7', color: 'var(--text-secondary)' }}>
-            Elevate your brand's reputation with AI-powered responses.
-            Generate professional, personalized replies to any platform instantly.
+          <p className="hero-subtitle" style={{ maxWidth: '540px', margin: '0 auto 32px', fontSize: '1.05rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
+            AI-powered responses for Google, Yelp, and TripAdvisor.
+            Professional replies in one click. 20 free responses/month.
           </p>
 
           <div
             className="hero-buttons"
-            style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '32px', alignItems: 'center' }}
           >
-            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
               <Link
                 to={user ? '/dashboard' : '/register'}
-                className="btn btn-primary btn-lg"
-                style={{ padding: '0 32px', height: '54px', display: 'flex', alignItems: 'center', borderRadius: '8px', fontWeight: '600', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                className="btn btn-primary"
+                style={{ padding: '0 20px', height: '44px', display: 'flex', alignItems: 'center', borderRadius: '6px', fontWeight: '600', fontSize: '14px' }}
               >
-                <Sparkles size={20} style={{ marginRight: '8px' }} />
                 Get Started Free
               </Link>
-              <Link
-                to="/pricing"
-                className="btn btn-secondary btn-lg"
-                style={{ padding: '0 32px', height: '54px', display: 'flex', alignItems: 'center', borderRadius: '8px', fontWeight: '600', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}
+              <a
+                href="#demo"
+                className="btn btn-secondary"
+                style={{ padding: '0 20px', height: '44px', display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '6px', fontWeight: '600', fontSize: '14px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
               >
-                View Pricing
-              </Link>
+                <PlayCircle size={16} />
+                Watch Demo
+              </a>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '14px', fontWeight: '500' }}>
-              <Shield size={16} style={{ color: '#10b981' }} />
-              No credit card required - 20 free responses every month
-            </div>
-          </div>
 
-          <div
-            style={{
-              marginTop: '48px',
-              paddingTop: '32px',
-              borderTop: '1px solid var(--border-color)',
-              display: 'flex',
-              gap: '40px',
-              justifyContent: 'center',
-              flexWrap: 'wrap'
-            }}
-          >
-            {[
-              { icon: <Lock size={20} />, text: "Enterprise Security", sub: "256-bit SSL encryption" },
-              { icon: <CreditCard size={20} />, text: "Secure Payments", sub: "Powered by Stripe" },
-              { icon: <Shield size={20} />, text: "Data Privacy", sub: "GDPR Compliant" }
-            ].map((badge, i) => (
-              <div
-                key={i}
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '12px',
-                  textAlign: 'left'
-                }}
-              >
-                <div style={{ color: 'var(--primary)', marginTop: '2px' }}>{badge.icon}</div>
-                <div>
-                  <div style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: '700' }}>{badge.text}</div>
-                  <div style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>{badge.sub}</div>
+            <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              {[
+                { icon: <CreditCard size={14} />, text: "No credit card required" },
+                { icon: <Clock size={14} />, text: "Setup in 2 minutes" },
+                { icon: <Check size={14} />, text: "20 free responses/month" }
+              ].map((item, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '13px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>{item.icon}</span>
+                  {item.text}
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -2136,10 +2209,10 @@ const LandingPage = () => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          gap: '32px',
-          padding: '20px 24px',
-          background: 'var(--gray-50)',
-          borderBottom: '1px solid var(--gray-200)',
+          gap: '24px',
+          padding: '10px 24px',
+          background: 'var(--bg-secondary)',
+          borderBottom: '1px solid var(--border-color)',
           flexWrap: 'wrap',
         }}
       >
@@ -2147,323 +2220,196 @@ const LandingPage = () => {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            color: 'var(--gray-600)',
-            fontSize: '14px',
+            gap: '6px',
+            color: 'var(--text-secondary)',
+            fontSize: '12px',
             fontWeight: '500',
+            letterSpacing: '0.01em',
           }}
         >
-          <Sparkles size={18} style={{ color: 'var(--primary)' }} />
+          <Sparkles size={14} style={{ color: 'var(--primary)', opacity: 0.9 }} />
           <span>Powered by Claude</span>
         </div>
+        <div style={{ width: '1px', height: '12px', background: 'var(--border-color)' }} />
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            color: 'var(--gray-600)',
-            fontSize: '14px',
+            gap: '6px',
+            color: 'var(--text-secondary)',
+            fontSize: '12px',
             fontWeight: '500',
+            letterSpacing: '0.01em',
           }}
         >
-          <Globe size={18} style={{ color: 'var(--primary)' }} />
+          <Globe size={14} style={{ color: 'var(--text-muted)' }} />
           <span>50+ Languages</span>
         </div>
+        <div style={{ width: '1px', height: '12px', background: 'var(--border-color)' }} />
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            color: 'var(--gray-600)',
-            fontSize: '14px',
+            gap: '6px',
+            color: 'var(--text-secondary)',
+            fontSize: '12px',
             fontWeight: '500',
+            letterSpacing: '0.01em',
           }}
         >
-          <Chrome size={18} style={{ color: 'var(--primary)' }} />
+          <Chrome size={14} style={{ color: 'var(--text-muted)' }} />
           <span>Chrome Extension</span>
         </div>
       </div>
 
-      {/* Chrome Extension Section - Key Selling Point */}
-      <section className="container" style={{ marginBottom: '60px', marginTop: '60px' }}>
+      {/* Chrome Extension Section - Executive Assistant Style */}
+      <section className="container" style={{ marginBottom: '48px', marginTop: '48px' }}>
         <div
           className="card"
           style={{
-            padding: '40px',
+            padding: '32px',
             background: 'var(--bg-secondary)',
             color: 'var(--text-primary)',
             border: '1px solid var(--border-color)',
-            borderRadius: '12px',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+            borderRadius: '8px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '40px', flexWrap: 'wrap' }}>
-            <div style={{ flex: '1', minWidth: '300px' }}>
-              <div
-                style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}
-              >
-                <Chrome size={32} />
-                <span
-                  style={{
-                    background: '#4285f4',
-                    padding: '4px 12px',
-                    borderRadius: '12px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                  }}
-                >
-                  NEW
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '48px', alignItems: 'start' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                <Chrome size={20} color="var(--primary)" strokeWidth={2.5} />
+                <span style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.05em', color: 'var(--primary)', textTransform: 'uppercase', background: 'rgba(79, 70, 229, 0.08)', padding: '2px 8px', borderRadius: '4px' }}>
+                  Official Extension
                 </span>
               </div>
-              <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
-                Chrome Extension Available
+              <h2 style={{ fontSize: '22px', fontWeight: '600', marginBottom: '12px', letterSpacing: '-0.01em' }}>
+                Integrated Review Workflow
               </h2>
-              <p
-                style={{ color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: '1.6' }}
-              >
-                Respond to Google Reviews without leaving the page. Our Chrome extension adds a
-                "Generate Response" button directly to each review. One click generates a
-                professional response.
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '14px', lineHeight: '1.5', maxWidth: '440px' }}>
+                Works inside your review pages. Respond on Google, Yelp, TripAdvisor and more - without leaving the page.
               </p>
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                <Link
-                  to="/extension"
-                  className="btn btn-primary"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                  }}
-                >
-                  <Download size={18} />
-                  Get Extension
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
+                {[
+                  'One-click response generation',
+                  'Maintains brand voice & personality',
+                  'No manual copy-pasting required'
+                ].map((step, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: 'var(--text-primary)' }}>
+                    <CheckCircle2 size={14} color="var(--primary)" />
+                    <span>{step}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <Link to="/extension" className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Download size={14} /> Get Extension
                 </Link>
-                <Link
-                  to="/register"
-                  className="btn btn-secondary"
-                >
-                  Create Free Account First
+                <Link to="/register" className="btn btn-secondary" style={{ padding: '8px 16px', fontSize: '13px', border: '1px solid var(--border-color)' }}>
+                  Sign Up Free
                 </Link>
               </div>
             </div>
 
-            {/* Extension Demo Video Preview */}
-            <div style={{ flex: '0 0 280px', minWidth: '240px' }}>
-              {showLandingVideo ? (
-                <video
-                  controls
-                  autoPlay
-                  style={{
-                    width: '100%',
-                    borderRadius: '12px',
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
-                  }}
-                  onEnded={() => setShowLandingVideo(false)}
-                >
-                  <source src="/demo-video.mp4" type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              ) : (
-                <div
-                  style={{
-                    background: 'var(--gray-800)',
-                    borderRadius: '12px',
-                    overflow: 'hidden',
-                    aspectRatio: '16/9',
-                    position: 'relative',
-                    cursor: 'pointer',
-                    boxShadow: '0 10px 20px rgba(0,0,0,0.15)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  className="extension-video-preview"
-                  onClick={() => setShowLandingVideo(true)}
-                >
-                  {/* Play Button */}
-                  <div
-                    className="play-overlay"
-                    style={{
-                      width: '64px',
-                      height: '64px',
-                      background: 'rgba(79, 70, 229, 0.9)',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'transform 0.2s, background 0.2s',
-                      zIndex: 2,
-                    }}
-                  >
-                    <Play size={28} fill="white" style={{ marginLeft: '3px' }} />
-                  </div>
-                  {/* Duration Badge */}
-                  <span
-                    style={{
-                      position: 'absolute',
-                      bottom: '8px',
-                      right: '8px',
-                      background: 'rgba(0,0,0,0.7)',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      fontSize: '11px',
-                      fontWeight: '500',
-                    }}
-                  >
-                    0:38
-                  </span>
-                  {/* Label */}
-                  <div
-                    style={{
-                      position: 'absolute',
-                      bottom: '8px',
-                      left: '8px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                    }}
-                  >
-                    <Video size={14} style={{ opacity: 0.7 }} />
-                    <span style={{ fontSize: '11px', opacity: 0.7 }}>Extension Demo</span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div style={{ flex: '0 0 auto' }}>
+            <div style={{ position: 'relative' }}>
               <div
                 style={{
-                  background: 'var(--bg-tertiary)',
-                  borderRadius: '12px',
-                  padding: '20px',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
                   border: '1px solid var(--border-color)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                 }}
               >
-                <div style={{ color: 'var(--text-primary)', fontSize: '14px' }}>
-                  <div style={{ fontWeight: '600', marginBottom: '8px', color: 'var(--text-primary)' }}>
-                    How it works:
-                  </div>
-                  <div
+                {showLandingVideo ? (
+                  <video
+                    controls
+                    autoPlay
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      marginBottom: '6px',
+                      width: '100%',
+                      display: 'block',
+                      aspectRatio: '16/9',
+                      objectFit: 'contain',
+                      background: 'var(--bg-tertiary)',
+                    }}
+                    onEnded={() => setShowLandingVideo(false)}
+                  >
+                    <source src="/demo-video.mp4" type="video/mp4" />
+                  </video>
+                ) : (
+                  <div
+                    onClick={() => setShowLandingVideo(true)}
+                    style={{
+                      aspectRatio: '16/9',
+                      position: 'relative',
+                      backgroundImage: 'url(/extension-demo-thumb.jpg)',
+                      backgroundSize: 'contain',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'center',
+                      backgroundColor: 'var(--bg-tertiary)',
+                      cursor: 'pointer',
                     }}
                   >
-                    <span
+                    <div
                       style={{
-                        background: 'var(--primary-600)',
-                        color: 'white',
-                        borderRadius: '50%',
-                        width: '20px',
-                        height: '20px',
+                        position: 'absolute',
+                        inset: '0',
+                        background: 'rgba(0, 0, 0, 0.25)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '11px',
+                        transition: 'background 0.2s ease',
                       }}
+                      onMouseOver={e => (e.currentTarget.style.background = 'rgba(0, 0, 0, 0.15)')}
+                      onMouseOut={e => (e.currentTarget.style.background = 'rgba(0, 0, 0, 0.25)')}
                     >
-                      1
-                    </span>
-                    <span>Install extension</span>
+                      <div
+                        style={{
+                          width: '56px',
+                          height: '56px',
+                          borderRadius: '50%',
+                          background: 'var(--primary)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 4px 16px rgba(79, 70, 229, 0.4)',
+                          transition: 'transform 0.15s ease',
+                        }}
+                        onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.08)')}
+                        onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
+                      >
+                        <PlayCircle size={28} fill="white" color="white" />
+                      </div>
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      marginBottom: '6px',
-                    }}
-                  >
-                    <span
-                      style={{
-                        background: 'var(--primary-600)',
-                        color: 'white',
-                        borderRadius: '50%',
-                        width: '20px',
-                        height: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '11px',
-                      }}
-                    >
-                      2
-                    </span>
-                    <span>Login with your account</span>
-                  </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      marginBottom: '6px',
-                    }}
-                  >
-                    <span
-                      style={{
-                        background: 'var(--primary-600)',
-                        color: 'white',
-                        borderRadius: '50%',
-                        width: '20px',
-                        height: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '11px',
-                      }}
-                    >
-                      3
-                    </span>
-                    <span>Click button or select text</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span
-                      style={{
-                        background: '#10b981',
-                        color: 'white',
-                        borderRadius: '50%',
-                        width: '20px',
-                        height: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '11px',
-                      }}
-                    >
-                      <Check size={12} />
-                    </span>
-                    <span>Copy & paste response</span>
-                  </div>
-                </div>
+                )}
               </div>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '12px', fontStyle: 'italic' }}>
+                Watch: 45-second workflow overview
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Demo Video Section - Full Walkthrough */}
-      <section className="container" style={{ marginTop: '60px', marginBottom: '60px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
-            See ReviewResponder in Action
+      {/* Demo Video Section - Refined Walkthrough */}
+      <section id="demo" className="container" style={{ marginTop: '48px', marginBottom: '48px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '6px' }}>
+            See it in Action
           </h2>
-          <p style={{ color: 'var(--gray-600)', maxWidth: '600px', margin: '0 auto' }}>
-            Watch how easy it is to generate professional review responses in seconds
-          </p>
         </div>
 
-        {/* Demo Video Section */}
         <div
           style={{
-            maxWidth: '800px',
+            maxWidth: '720px',
             margin: '0 auto',
-            borderRadius: '16px',
+            borderRadius: '8px',
             overflow: 'hidden',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
             position: 'relative',
-            background: 'var(--gray-800)',
+            background: 'var(--bg-tertiary)',
             border: '1px solid var(--border-color)',
           }}
         >
@@ -2471,7 +2417,13 @@ const LandingPage = () => {
             <video
               controls
               autoPlay
-              style={{ width: '100%', display: 'block' }}
+              style={{
+                width: '100%',
+                display: 'block',
+                aspectRatio: '16/9',
+                objectFit: 'contain',
+                background: 'var(--bg-tertiary)',
+              }}
               onEnded={() => setShowDemoVideo(false)}
             >
               <source src="/walkthrough-video-v2.mp4" type="video/mp4" />
@@ -2483,46 +2435,44 @@ const LandingPage = () => {
                 aspectRatio: '16/9',
                 position: 'relative',
                 backgroundImage: 'url(/demo-thumbnail.jpg)',
-                backgroundSize: 'cover',
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'center',
+                backgroundColor: 'var(--bg-tertiary)',
               }}
             >
-              {/* Dark Overlay + Play Button */}
               <div
                 style={{
                   position: 'absolute',
                   inset: '0',
-                  background: 'rgba(0, 0, 0, 0.45)',
+                  background: 'rgba(17, 24, 39, 0.4)',
                   display: 'flex',
-                  flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: 'white',
                   cursor: 'pointer',
-                  transition: 'background 0.2s',
+                  transition: 'background 0.2s ease',
                 }}
                 onClick={() => setShowDemoVideo(true)}
-                onMouseOver={e => (e.currentTarget.style.background = 'rgba(0, 0, 0, 0.3)')}
-                onMouseOut={e => (e.currentTarget.style.background = 'rgba(0, 0, 0, 0.45)')}
+                onMouseOver={e => (e.currentTarget.style.background = 'rgba(17, 24, 39, 0.3)')}
+                onMouseOut={e => (e.currentTarget.style.background = 'rgba(17, 24, 39, 0.4)')}
               >
-                {/* Play Button */}
                 <div
-                  className="play-overlay"
                   style={{
-                    width: '80px',
-                    height: '80px',
+                    width: '56px',
+                    height: '56px',
                     borderRadius: '50%',
-                    background: 'var(--primary-600)',
+                    background: 'var(--primary)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 8px 32px rgba(79, 70, 229, 0.5)',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                    marginBottom: '16px',
+                    transition: 'transform 0.15s ease',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
                   }}
+                  onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.05)')}
+                  onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
                 >
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
-                    <path d="M8 5v14l11-7z" />
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                    <path d="M8 5.14v14l11-7-11-7z" />
                   </svg>
                 </div>
               </div>
@@ -2538,100 +2488,55 @@ const LandingPage = () => {
 
       <section className="pricing-section" id="pricing">
         <div className="container">
-          <div className="pricing-header">
-            <h2 className="pricing-title">Simple, Transparent Pricing</h2>
-            <p style={{ color: 'var(--gray-600)' }}>Start free, upgrade when you need more</p>
+          <div className="pricing-header" style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <h2 className="pricing-title" style={{ fontSize: '24px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '8px', letterSpacing: '-0.02em' }}>
+              Plans & Pricing
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: '0' }}>
+              Choose a plan that fits your business.
+            </p>
             <Link
               to="/pricing?discount=EARLY50"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '6px',
                 marginTop: '16px',
-                padding: '8px 20px',
-                background: 'var(--gray-100)',
-                color: 'var(--gray-700)',
-                borderRadius: '20px',
-                fontSize: '14px',
-                fontWeight: '600',
+                padding: '4px 10px',
+                border: '1px solid var(--border-color)',
+                borderRadius: '4px',
+                color: 'var(--text-muted)',
+                fontSize: '12px',
+                fontWeight: '500',
                 textDecoration: 'none',
-                cursor: 'pointer',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                border: '1px solid var(--gray-200)',
+                transition: 'color 0.2s, border-color 0.2s',
               }}
               onMouseOver={e => {
-                e.currentTarget.style.transform = 'scale(1.05)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                e.currentTarget.style.borderColor = 'var(--text-muted)';
+                e.currentTarget.style.color = 'var(--text-primary)';
               }}
               onMouseOut={e => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.borderColor = 'var(--border-color)';
+                e.currentTarget.style.color = 'var(--text-muted)';
               }}
             >
-              <Sparkles size={14} style={{ color: 'var(--primary)' }} />
-              50% OFF - Limited Time
+              <Sparkles size={12} style={{ color: 'var(--primary)' }} />
+              Early Access - 50% Off
             </Link>
           </div>
           <PricingCards />
         </div>
       </section>
 
-      <footer className="footer">
-        <div className="container">
-          <div className="footer-content">
-            <div>
-              <div className="footer-brand">ReviewResponder</div>
-              <p className="footer-description">
-                AI-powered review response generator helping businesses maintain their online
-                reputation effortlessly.
-              </p>
-            </div>
-            <div>
-              <div className="footer-title">Product</div>
-              <ul className="footer-links">
-                <li>
-                  <Link to="/pricing">Pricing</Link>
-                </li>
-                <li>
-                  <Link to="/register">Get Started</Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <div className="footer-title">Support</div>
-              <ul className="footer-links">
-                <li>
-                  <Link to="/support">Help Center</Link>
-                </li>
-                <li>
-                  <a href="mailto:support@tryreviewresponder.com">Contact</a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <div className="footer-title">Legal</div>
-              <ul className="footer-links">
-                <li>
-                  <Link to="/privacy">Privacy Policy</Link>
-                </li>
-                <li>
-                  <Link to="/terms">Terms of Service</Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="footer-bottom">
-            &copy; {new Date().getFullYear()} ReviewResponder. All rights reserved.
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
 
 // Privacy Policy Page
 const PrivacyPage = () => (
-  <div className="container" style={{ maxWidth: '800px', padding: '60px 20px' }}>
+  <>
+    <div className="container" style={{ maxWidth: '800px', padding: '60px 20px' }}>
     <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '24px' }}>Privacy Policy</h1>
     <p style={{ color: 'var(--gray-500)', marginBottom: '32px' }}>Last updated: January 9, 2026</p>
 
@@ -2759,12 +2664,15 @@ const PrivacyPage = () => (
       </p>
     </div>
   </div>
+  <Footer />
+  </>
 );
 
 // Terms of Service Page
 const TermsPage = () => (
-  <div className="container" style={{ maxWidth: '800px', padding: '60px 20px' }}>
-    <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '24px' }}>Terms of Service</h1>
+  <>
+    <div className="container" style={{ maxWidth: '800px', padding: '60px 20px' }}>
+      <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '24px' }}>Terms of Service</h1>
     <p style={{ color: 'var(--gray-500)', marginBottom: '32px' }}>Last updated: January 9, 2026</p>
 
     <div style={{ lineHeight: '1.8', color: 'var(--gray-700)' }}>
@@ -2843,7 +2751,9 @@ const TermsPage = () => (
         </a>
       </p>
     </div>
-  </div>
+    </div>
+    <Footer />
+  </>
 );
 
 // Pricing Cards Component
@@ -2966,7 +2876,7 @@ const PricingCards = ({ showFree = true }) => {
 
   // Discount details for each code
   const discountDetails = {
-    EARLY50: { percent: 50, label: 'Launch Special' },
+    EARLY50: { percent: 50, label: 'Early Access' },
     SAVE20: { percent: 20, label: 'Special Offer' },
     HUNTLAUNCH: { percent: 60, label: 'Product Hunt Special' },
   };
@@ -2988,11 +2898,10 @@ const PricingCards = ({ showFree = true }) => {
           }}
         >
           <div style={{ fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>
-            ✨ {currentDiscount.percent}% OFF Applied!
+            ✨ Early Access - {currentDiscount.percent}% OFF!
           </div>
           <div style={{ fontSize: '14px', opacity: 0.9 }}>
-            {currentDiscount.label} - Code <strong>{activeDiscount}</strong> will be applied at
-            checkout
+            Code <strong>{activeDiscount}</strong> will be applied at checkout
           </div>
         </div>
       )}
@@ -10183,6 +10092,7 @@ const BlogListPage = () => {
           <NewsletterSignup />
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
@@ -10487,7 +10397,7 @@ const NewsletterSignup = ({ compact = false }) => {
           }}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Check size={14} /> Free forever
+            <Check size={14} /> No spam
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <Check size={14} /> Unsubscribe anytime
@@ -10970,6 +10880,247 @@ const BlogArticlePage = () => {
           </div>
         </div>
       )}
+      <Footer />
+    </div>
+  );
+};
+
+// Demo Landing Page - Personalized demo for cold outreach
+const DemoPage = () => {
+  const { token } = useParams();
+  const [demo, setDemo] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchDemo();
+  }, [token]);
+
+  const fetchDemo = async () => {
+    try {
+      const response = await fetch(`${API_URL.replace('/api', '')}/api/public/demo/${token}`);
+      if (!response.ok) {
+        throw new Error('Demo not found');
+      }
+      const data = await response.json();
+      setDemo(data);
+
+      // Set SEO meta tags
+      document.title = `${data.business_name} - AI Review Responses Demo | ReviewResponder`;
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const StarRating = ({ rating }) => {
+    return (
+      <span style={{ color: '#fbbf24', fontSize: '16px' }}>
+        {'★'.repeat(rating)}
+        {'☆'.repeat(5 - rating)}
+      </span>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <div className="loading-spinner" />
+      </div>
+    );
+  }
+
+  if (error || !demo) {
+    return (
+      <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+        <h1 style={{ fontSize: '32px', marginBottom: '16px', color: 'var(--gray-800)' }}>Demo Not Found</h1>
+        <p style={{ color: 'var(--gray-500)', marginBottom: '24px' }}>
+          This demo link may have expired or is invalid.
+        </p>
+        <a
+          href="/"
+          style={{
+            display: 'inline-block',
+            background: 'var(--primary)',
+            color: 'white',
+            padding: '12px 24px',
+            borderRadius: '8px',
+            textDecoration: 'none',
+            fontWeight: '500',
+          }}
+        >
+          Visit ReviewResponder
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #f8fafc 0%, #fff 100%)' }}>
+      {/* Header */}
+      <div style={{ background: 'white', borderBottom: '1px solid #e5e7eb', padding: '16px 0' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <a href="/" style={{ textDecoration: 'none' }}>
+            <span style={{ fontSize: '20px', fontWeight: '700', color: 'var(--primary)' }}>ReviewResponder</span>
+          </a>
+          <a
+            href={demo.cta_url}
+            style={{
+              background: 'var(--primary)',
+              color: 'white',
+              padding: '10px 20px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontWeight: '500',
+              fontSize: '14px',
+            }}
+          >
+            Try It Free
+          </a>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px' }}>
+        {/* Hero */}
+        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+          <h1 style={{ fontSize: '32px', fontWeight: '700', color: 'var(--gray-800)', marginBottom: '16px' }}>
+            AI Review Responses for {demo.business_name}
+          </h1>
+          <p style={{ fontSize: '18px', color: 'var(--gray-500)', marginBottom: '8px' }}>
+            {demo.city && `${demo.city} • `}
+            {demo.google_rating && `${demo.google_rating} Google Rating • `}
+            {demo.total_reviews && `${demo.total_reviews} reviews`}
+          </p>
+          <p style={{ fontSize: '16px', color: 'var(--gray-600)' }}>
+            Here's how ReviewResponder can help you respond to your reviews:
+          </p>
+        </div>
+
+        {/* Demo Cards */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', marginBottom: '48px' }}>
+          {demo.demos && demo.demos.map((item, index) => (
+            <div
+              key={index}
+              style={{
+                background: 'white',
+                borderRadius: '16px',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.1)',
+                overflow: 'hidden',
+              }}
+            >
+              {/* Original Review */}
+              <div style={{ padding: '24px', borderBottom: '1px solid #f3f4f6' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                  <div
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: '600',
+                      color: '#6b7280',
+                    }}
+                  >
+                    {item.review.author?.charAt(0) || 'A'}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: '600', color: 'var(--gray-800)' }}>{item.review.author || 'Anonymous'}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <StarRating rating={item.review.rating} />
+                      {item.review.date && (
+                        <span style={{ fontSize: '13px', color: 'var(--gray-400)' }}>{item.review.date}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <p style={{ color: 'var(--gray-600)', lineHeight: '1.6', fontSize: '15px' }}>
+                  "{item.review.text}"
+                </p>
+              </div>
+
+              {/* AI Response */}
+              <div style={{ padding: '24px', background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                    <path d="M2 17l10 5 10-5" />
+                    <path d="M2 12l10 5 10-5" />
+                  </svg>
+                  <span style={{ fontWeight: '600', color: '#059669', fontSize: '14px' }}>AI-Generated Response</span>
+                </div>
+                <p style={{ color: 'var(--gray-700)', lineHeight: '1.7', fontSize: '15px' }}>
+                  {item.ai_response}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA Section */}
+        <div
+          style={{
+            background: 'linear-gradient(135deg, var(--primary) 0%, #5a67d8 100%)',
+            borderRadius: '16px',
+            padding: '40px',
+            textAlign: 'center',
+            color: 'white',
+          }}
+        >
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>
+            Generate responses like these in seconds
+          </h2>
+          <p style={{ fontSize: '16px', opacity: 0.9, marginBottom: '24px' }}>
+            20 free responses. No credit card required.
+          </p>
+          <a
+            href={demo.cta_url}
+            style={{
+              display: 'inline-block',
+              background: 'white',
+              color: 'var(--primary)',
+              padding: '14px 32px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontWeight: '600',
+              fontSize: '16px',
+            }}
+          >
+            Start Your Free Trial
+          </a>
+        </div>
+
+        {/* Features */}
+        <div style={{ marginTop: '48px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
+          {[
+            { icon: '🎯', title: 'Multiple Tones', desc: 'Professional, friendly, formal, or apologetic' },
+            { icon: '🌍', title: '50+ Languages', desc: 'Respond in any language automatically' },
+            { icon: '⚡', title: 'Instant Generation', desc: 'Perfect responses in under 5 seconds' },
+            { icon: '📊', title: 'Quality Score', desc: 'AI rates your responses for impact' },
+          ].map((feature, i) => (
+            <div key={i} style={{ textAlign: 'center', padding: '20px' }}>
+              <div style={{ fontSize: '32px', marginBottom: '8px' }}>{feature.icon}</div>
+              <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--gray-800)', marginBottom: '4px' }}>
+                {feature.title}
+              </h3>
+              <p style={{ fontSize: '14px', color: 'var(--gray-500)' }}>{feature.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{ background: 'white', borderTop: '1px solid #e5e7eb', padding: '24px 0', marginTop: '48px' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 20px', textAlign: 'center' }}>
+          <p style={{ fontSize: '14px', color: 'var(--gray-400)' }}>
+            ReviewResponder - AI-powered review responses for busy business owners
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
@@ -11041,15 +11192,16 @@ const SupportPage = () => {
   }
 
   return (
-    <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px' }}>
-      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '12px' }}>
-          How can we help?
-        </h1>
-        <p style={{ color: 'var(--gray-600)' }}>Check our FAQ or send us a message</p>
-      </div>
+    <div>
+      <div className="container" style={{ paddingTop: '40px', paddingBottom: '60px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '12px' }}>
+            How can we help?
+          </h1>
+          <p style={{ color: 'var(--gray-600)' }}>Check our FAQ or send us a message</p>
+        </div>
 
-      <div className="faq-contact-grid">
+        <div className="faq-contact-grid">
         <div>
           <h2
             style={{
@@ -11194,7 +11346,9 @@ const SupportPage = () => {
         </div>
       </div>
     </div>
-  );
+    <Footer />
+  </div>
+);
 };
 
 // SEO Landing Page Component - Google Review Response Generator
@@ -11252,50 +11406,116 @@ const GoogleReviewPage = () => {
       <section
         style={{
           background: 'linear-gradient(135deg, #4285f4 0%, #34a853 100%)',
-          padding: '80px 0',
+          padding: '100px 0 80px',
           color: 'white',
+          position: 'relative',
+          overflow: 'hidden'
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '800px' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
           <div
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
-              background: 'rgba(255,255,255,0.2)',
-              padding: '8px 16px',
-              borderRadius: '20px',
-              marginBottom: '24px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
             }}
           >
-            <Star size={16} fill="white" />
-            <span style={{ fontSize: '14px', fontWeight: '600' }}>Google Maps Integration</span>
+            <Star size={14} fill="currentColor" />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+              Google Maps Integration
+            </span>
           </div>
-          <h1
-            style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}
-          >
+
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
             Google Review Response Generator
           </h1>
-          <p style={{ fontSize: '20px', opacity: 0.95, marginBottom: '32px', lineHeight: '1.6' }}>
+
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
             Respond to Google reviews in seconds with AI. Generate professional, personalized
-            replies that improve your business reputation and show customers you care.
+            replies that boost your local SEO and show customers you care.
           </p>
-          <Link
-            to="/register"
-            className="btn btn-lg"
-            style={{
-              background: 'white',
-              color: '#4285f4',
-              fontWeight: '600',
-              padding: '16px 32px',
-            }}
-          >
-            <Sparkles size={20} />
-            Generate Free Responses
-          </Link>
-          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>
-            20 free responses • No credit card required
-          </p>
+
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            background: 'white',
+            padding: '6px',
+            borderRadius: '14px',
+            maxWidth: '540px',
+            margin: '0 auto 32px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <input
+              type="email"
+              placeholder="Enter your business email"
+              style={{
+                flex: 1,
+                minWidth: '200px',
+                border: 'none',
+                padding: '14px 20px',
+                fontSize: '16px',
+                color: 'var(--gray-900)',
+                outline: 'none',
+                background: 'transparent',
+                borderRadius: '10px'
+              }}
+            />
+            <Link
+              to="/register"
+              className="btn btn-primary"
+              style={{
+                padding: '14px 28px',
+                borderRadius: '10px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                margin: 0,
+                whiteSpace: 'nowrap'
+              }}
+            >
+              Get Started Free <Sparkles size={18} />
+            </Link>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '24px',
+            marginBottom: '48px',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          </div>
+
+          <div style={{
+            borderTop: '1px solid rgba(255,255,255,0.2)',
+            paddingTop: '32px',
+            opacity: 0.7,
+            fontSize: '12px',
+            fontWeight: '600',
+            letterSpacing: '1px',
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '32px',
+            alignItems: 'center'
+          }}>
+            <span>GOOGLE MAPS</span>
+            <span>YELP</span>
+            <span>TRIPADVISOR</span>
+            <span>BOOKING.COM</span>
+          </div>
         </div>
       </section>
 
@@ -11358,7 +11578,7 @@ const GoogleReviewPage = () => {
           </h2>
           <ol style={{ lineHeight: '2', color: 'var(--gray-700)' }}>
             <li>
-              <strong>Copy the review</strong> from your Google Business Profile
+              <strong>Copy the review</strong> from Google Maps
             </li>
             <li>
               <strong>Paste it</strong> into ReviewResponder
@@ -11419,6 +11639,7 @@ const GoogleReviewPage = () => {
           </p>
         </div>
       </section>
+      <Footer />
     </div>
   );
 };
@@ -11472,50 +11693,118 @@ const YelpReviewPage = () => {
       <section
         style={{
           background: 'linear-gradient(135deg, #d32323 0%, #ff5a5f 100%)',
-          padding: '80px 0',
+          padding: '100px 0 80px',
           color: 'white',
+          position: 'relative',
+          overflow: 'hidden'
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '800px' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
           <div
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
-              background: 'rgba(255,255,255,0.2)',
-              padding: '8px 16px',
-              borderRadius: '20px',
-              marginBottom: '24px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
             }}
           >
-            <Star size={16} fill="white" />
-            <span style={{ fontSize: '14px', fontWeight: '600' }}>Yelp Business Owners</span>
+            <Star size={14} fill="currentColor" />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+              Yelp Business Owners
+            </span>
           </div>
-          <h1
-            style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}
-          >
+
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
             Yelp Review Reply Tool
           </h1>
-          <p style={{ fontSize: '20px', opacity: 0.95, marginBottom: '32px', lineHeight: '1.6' }}>
-            Never let a Yelp review go unanswered. Generate professional, thoughtful responses to
-            all your Yelp reviews with AI - from 5-star praise to 1-star complaints.
+
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+            Never let a Yelp review go unanswered. Generate professional, thoughtful responses
+            to all your reviews with AI - from 5-star praise to 1-star complaints.
           </p>
-          <Link
-            to="/register"
-            className="btn btn-lg"
-            style={{
-              background: 'white',
-              color: '#d32323',
-              fontWeight: '600',
-              padding: '16px 32px',
-            }}
-          >
-            <Sparkles size={20} />
-            Reply to Yelp Reviews Free
-          </Link>
-          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>
-            20 free responses • Works with any Yelp review
-          </p>
+
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            background: 'white',
+            padding: '6px',
+            borderRadius: '14px',
+            maxWidth: '540px',
+            margin: '0 auto 32px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <input
+              type="email"
+              placeholder="Enter your business email"
+              style={{
+                flex: 1,
+                minWidth: '200px',
+                border: 'none',
+                padding: '14px 20px',
+                fontSize: '16px',
+                color: 'var(--gray-900)',
+                outline: 'none',
+                background: 'transparent',
+                borderRadius: '10px'
+              }}
+            />
+            <Link
+              to="/register"
+              className="btn"
+              style={{
+                padding: '14px 28px',
+                borderRadius: '10px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                margin: 0,
+                whiteSpace: 'nowrap',
+                background: '#d32323',
+                color: 'white'
+              }}
+            >
+              Get Started Free <Sparkles size={18} />
+            </Link>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '24px',
+            marginBottom: '48px',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          </div>
+
+          <div style={{
+            borderTop: '1px solid rgba(255,255,255,0.2)',
+            paddingTop: '32px',
+            opacity: 0.7,
+            fontSize: '12px',
+            fontWeight: '600',
+            letterSpacing: '1px',
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '32px',
+            alignItems: 'center'
+          }}>
+            <span>YELP</span>
+            <span>GOOGLE MAPS</span>
+            <span>TRIPADVISOR</span>
+            <span>TRUSTPILOT</span>
+          </div>
         </div>
       </section>
 
@@ -11641,6 +11930,7 @@ const YelpReviewPage = () => {
           </p>
         </div>
       </section>
+      <Footer />
     </div>
   );
 };
@@ -11694,50 +11984,118 @@ const RestaurantReviewPage = () => {
       <section
         style={{
           background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
-          padding: '80px 0',
+          padding: '100px 0 80px',
           color: 'white',
+          position: 'relative',
+          overflow: 'hidden'
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '800px' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
           <div
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
-              background: 'rgba(255,255,255,0.2)',
-              padding: '8px 16px',
-              borderRadius: '20px',
-              marginBottom: '24px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
             }}
           >
-            <Utensils size={16} />
-            <span style={{ fontSize: '14px', fontWeight: '600' }}>For Restaurant Owners</span>
+            <Utensils size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+              For Restaurant Owners
+            </span>
           </div>
-          <h1
-            style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}
-          >
+
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
             Restaurant Review Response Generator
           </h1>
-          <p style={{ fontSize: '20px', opacity: 0.95, marginBottom: '32px', lineHeight: '1.6' }}>
+
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
             Running a restaurant is hard enough. Let AI handle your review responses so you can
             focus on what matters - great food and happy customers.
           </p>
-          <Link
-            to="/register"
-            className="btn btn-lg"
-            style={{
-              background: 'white',
-              color: '#ef4444',
-              fontWeight: '600',
-              padding: '16px 32px',
-            }}
-          >
-            <Sparkles size={20} />
-            Try Free for Restaurants
-          </Link>
-          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>
-            Perfect for Google, Yelp, TripAdvisor & more
-          </p>
+
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            background: 'white',
+            padding: '6px',
+            borderRadius: '14px',
+            maxWidth: '540px',
+            margin: '0 auto 32px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <input
+              type="email"
+              placeholder="Enter your restaurant email"
+              style={{
+                flex: 1,
+                minWidth: '200px',
+                border: 'none',
+                padding: '14px 20px',
+                fontSize: '16px',
+                color: 'var(--gray-900)',
+                outline: 'none',
+                background: 'transparent',
+                borderRadius: '10px'
+              }}
+            />
+            <Link
+              to="/register"
+              className="btn"
+              style={{
+                padding: '14px 28px',
+                borderRadius: '10px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                margin: 0,
+                whiteSpace: 'nowrap',
+                background: '#ef4444',
+                color: 'white'
+              }}
+            >
+              Get Started Free <Sparkles size={18} />
+            </Link>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '24px',
+            marginBottom: '48px',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          </div>
+
+          <div style={{
+            borderTop: '1px solid rgba(255,255,255,0.2)',
+            paddingTop: '32px',
+            opacity: 0.7,
+            fontSize: '12px',
+            fontWeight: '600',
+            letterSpacing: '1px',
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '32px',
+            alignItems: 'center'
+          }}>
+            <span>GOOGLE MAPS</span>
+            <span>YELP</span>
+            <span>TRIPADVISOR</span>
+            <span>OPENTABLE</span>
+          </div>
         </div>
       </section>
 
@@ -11871,6 +12229,7 @@ const RestaurantReviewPage = () => {
           </p>
         </div>
       </section>
+      <Footer />
     </div>
   );
 };
@@ -11924,50 +12283,118 @@ const HotelReviewPage = () => {
       <section
         style={{
           background: 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)',
-          padding: '80px 0',
+          padding: '100px 0 80px',
           color: 'white',
+          position: 'relative',
+          overflow: 'hidden'
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '800px' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
           <div
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
-              background: 'rgba(255,255,255,0.2)',
-              padding: '8px 16px',
-              borderRadius: '20px',
-              marginBottom: '24px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
             }}
           >
-            <Building size={16} />
-            <span style={{ fontSize: '14px', fontWeight: '600' }}>For Hotels & B&Bs</span>
+            <Building size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+              For Hotels & B&Bs
+            </span>
           </div>
-          <h1
-            style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}
-          >
+
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
             Hotel Review Management Tool
           </h1>
-          <p style={{ fontSize: '20px', opacity: 0.95, marginBottom: '32px', lineHeight: '1.6' }}>
+
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
             Manage guest reviews across all platforms with AI. From Booking.com to TripAdvisor,
             respond professionally to every review and boost your hotel's reputation.
           </p>
-          <Link
-            to="/register"
-            className="btn btn-lg"
-            style={{
-              background: 'white',
-              color: '#6366f1',
-              fontWeight: '600',
-              padding: '16px 32px',
-            }}
-          >
-            <Sparkles size={20} />
-            Try Free for Hotels
-          </Link>
-          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>
-            Works with Booking.com, TripAdvisor, Expedia, Google & more
-          </p>
+
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            background: 'white',
+            padding: '6px',
+            borderRadius: '14px',
+            maxWidth: '540px',
+            margin: '0 auto 32px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <input
+              type="email"
+              placeholder="Enter your hotel email"
+              style={{
+                flex: 1,
+                minWidth: '200px',
+                border: 'none',
+                padding: '14px 20px',
+                fontSize: '16px',
+                color: 'var(--gray-900)',
+                outline: 'none',
+                background: 'transparent',
+                borderRadius: '10px'
+              }}
+            />
+            <Link
+              to="/register"
+              className="btn"
+              style={{
+                padding: '14px 28px',
+                borderRadius: '10px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                margin: 0,
+                whiteSpace: 'nowrap',
+                background: '#6366f1',
+                color: 'white'
+              }}
+            >
+              Get Started Free <Sparkles size={18} />
+            </Link>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '24px',
+            marginBottom: '48px',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          </div>
+
+          <div style={{
+            borderTop: '1px solid rgba(255,255,255,0.2)',
+            paddingTop: '32px',
+            opacity: 0.7,
+            fontSize: '12px',
+            fontWeight: '600',
+            letterSpacing: '1px',
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '32px',
+            alignItems: 'center'
+          }}>
+            <span>BOOKING.COM</span>
+            <span>TRIPADVISOR</span>
+            <span>EXPEDIA</span>
+            <span>GOOGLE</span>
+          </div>
         </div>
       </section>
 
@@ -12101,6 +12528,7 @@ const HotelReviewPage = () => {
           </p>
         </div>
       </section>
+      <Footer />
     </div>
   );
 };
@@ -12154,50 +12582,118 @@ const LocalBusinessReviewPage = () => {
       <section
         style={{
           background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-          padding: '80px 0',
+          padding: '100px 0 80px',
           color: 'white',
+          position: 'relative',
+          overflow: 'hidden'
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '800px' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
           <div
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
-              background: 'rgba(255,255,255,0.2)',
-              padding: '8px 16px',
-              borderRadius: '20px',
-              marginBottom: '24px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
             }}
           >
-            <Store size={16} />
-            <span style={{ fontSize: '14px', fontWeight: '600' }}>For Local Businesses</span>
+            <Store size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+              For Local Businesses
+            </span>
           </div>
-          <h1
-            style={{ fontSize: '42px', fontWeight: '700', marginBottom: '20px', lineHeight: '1.2' }}
-          >
+
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
             AI Review Responses for Local Businesses
           </h1>
-          <p style={{ fontSize: '20px', opacity: 0.95, marginBottom: '32px', lineHeight: '1.6' }}>
+
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
             You're busy running your business. Let AI write professional, personalized responses to
             every review - from glowing 5-stars to tough complaints.
           </p>
-          <Link
-            to="/register"
-            className="btn btn-lg"
-            style={{
-              background: 'white',
-              color: '#059669',
-              fontWeight: '600',
-              padding: '16px 32px',
-            }}
-          >
-            <Sparkles size={20} />
-            Try Free - 20 Responses
-          </Link>
-          <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.8 }}>
-            Works with Google, Yelp, Facebook, and more
-          </p>
+
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            background: 'white',
+            padding: '6px',
+            borderRadius: '14px',
+            maxWidth: '540px',
+            margin: '0 auto 32px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <input
+              type="email"
+              placeholder="Enter your business email"
+              style={{
+                flex: 1,
+                minWidth: '200px',
+                border: 'none',
+                padding: '14px 20px',
+                fontSize: '16px',
+                color: 'var(--gray-900)',
+                outline: 'none',
+                background: 'transparent',
+                borderRadius: '10px'
+              }}
+            />
+            <Link
+              to="/register"
+              className="btn"
+              style={{
+                padding: '14px 28px',
+                borderRadius: '10px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                margin: 0,
+                whiteSpace: 'nowrap',
+                background: '#059669',
+                color: 'white'
+              }}
+            >
+              Get Started Free <Sparkles size={18} />
+            </Link>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '24px',
+            marginBottom: '48px',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          </div>
+
+          <div style={{
+            borderTop: '1px solid rgba(255,255,255,0.2)',
+            paddingTop: '32px',
+            opacity: 0.7,
+            fontSize: '12px',
+            fontWeight: '600',
+            letterSpacing: '1px',
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '32px',
+            alignItems: 'center'
+          }}>
+            <span>GOOGLE MAPS</span>
+            <span>YELP</span>
+            <span>FACEBOOK</span>
+            <span>NEXTDOOR</span>
+          </div>
         </div>
       </section>
 
@@ -12409,6 +12905,2298 @@ const LocalBusinessReviewPage = () => {
           </p>
         </div>
       </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - Negative Review Responses (Highest purchase intent!)
+const NegativeReviewPage = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/negative-review-responses',
+    };
+    if (utmParams.utm_source) {
+      sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    }
+
+    document.title = 'How to Respond to Negative Reviews | AI Response Generator | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Turn negative reviews into opportunities. Generate professional, empathetic responses to 1-star and 2-star reviews with AI. Protect your reputation and win back customers.'
+      );
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Negative Review Response Generator',
+      description: 'AI tool to respond professionally to negative customer reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
+    document.head.appendChild(script);
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+  }, [location.search]);
+
+  return (
+    <div>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #D32F2F 0%, #B71C1C 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
+            <AlertCircle size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+              Damage Control
+            </span>
+          </div>
+
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+            How to Respond to Negative Reviews
+          </h1>
+
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+            Got a bad review? Don't panic. Our AI generates professional, empathetic responses that
+            show you care - and can turn critics into loyal customers.
+          </p>
+
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            background: 'white',
+            padding: '6px',
+            borderRadius: '14px',
+            maxWidth: '540px',
+            margin: '0 auto 32px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <input
+              type="email"
+              placeholder="Enter your business email"
+              style={{
+                flex: 1,
+                minWidth: '200px',
+                border: 'none',
+                padding: '14px 20px',
+                fontSize: '16px',
+                color: 'var(--gray-900)',
+                outline: 'none',
+                background: 'transparent',
+                borderRadius: '10px'
+              }}
+            />
+            <Link
+              to="/register"
+              className="btn"
+              style={{
+                padding: '14px 28px',
+                borderRadius: '10px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                margin: 0,
+                whiteSpace: 'nowrap',
+                background: '#B71C1C',
+                color: 'white'
+              }}
+            >
+              Get Started Free <Sparkles size={18} />
+            </Link>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '24px',
+            marginBottom: '48px',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          </div>
+
+          <div style={{
+            borderTop: '1px solid rgba(255,255,255,0.2)',
+            paddingTop: '32px',
+            opacity: 0.7,
+            fontSize: '12px',
+            fontWeight: '600',
+            letterSpacing: '1px',
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '32px',
+            alignItems: 'center'
+          }}>
+            <span>GOOGLE MAPS</span>
+            <span>YELP</span>
+            <span>TRIPADVISOR</span>
+            <span>FACEBOOK</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Responding to Negative Reviews Matters
+        </h2>
+
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#D32F2F', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              70% Change Their Mind
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Customers who see thoughtful responses to complaints are 70% more likely to give your
+              business another chance.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Users size={32} style={{ color: '#D32F2F', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Others Are Watching
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              94% of consumers read review responses. How you handle criticism shapes how new
+              customers see your business.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Shield size={32} style={{ color: '#D32F2F', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Protect Your Rating
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Quick, professional responses often lead to updated reviews. Many critics upgrade
+              their rating after a good experience.
+            </p>
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: '60px',
+            background: 'var(--gray-50)',
+            borderRadius: '16px',
+            padding: '40px',
+          }}
+        >
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
+            The Right Way to Respond to Negative Reviews
+          </h2>
+          <div style={{ display: 'grid', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#D32F2F', marginTop: '2px' }} />
+              <div>
+                <strong>Respond within 24 hours</strong> - Speed shows you take feedback seriously
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#D32F2F', marginTop: '2px' }} />
+              <div>
+                <strong>Acknowledge their feelings</strong> - Start with empathy, not defensiveness
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#D32F2F', marginTop: '2px' }} />
+              <div>
+                <strong>Take responsibility</strong> - Even if you disagree, own what you can
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#D32F2F', marginTop: '2px' }} />
+              <div>
+                <strong>Offer a solution</strong> - Invite them back or provide contact info to resolve
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#D32F2F', marginTop: '2px' }} />
+              <div>
+                <strong>Keep it professional</strong> - Never argue or get defensive publicly
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Turn Criticism Into Opportunity
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Let AI help you craft the perfect response to every negative review.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Start Free - No Credit Card
+          </Link>
+        </div>
+
+        <div
+          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
+        >
+          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
+            <Link to="/" style={{ color: 'var(--primary-600)' }}>
+              ReviewResponder
+            </Link>{' '}
+            •
+            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Google Reviews
+            </Link>{' '}
+            •
+            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Yelp Reviews
+            </Link>{' '}
+            •
+            <Link to="/restaurant-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Restaurants
+            </Link>
+          </p>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - TripAdvisor Review Responses
+const TripAdvisorReviewPage = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/tripadvisor-review-responses',
+    };
+    if (utmParams.utm_source) {
+      sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    }
+
+    document.title = 'TripAdvisor Review Response Generator | AI-Powered Replies | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional TripAdvisor review responses with AI. Reply to hotel, restaurant, and attraction reviews instantly. Boost your TripAdvisor ranking.'
+      );
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - TripAdvisor Review Response Generator',
+      description: 'AI tool to respond professionally to TripAdvisor reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
+    document.head.appendChild(script);
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+  }, [location.search]);
+
+  return (
+    <div>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #003580 0%, #0066cc 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
+            <MapPin size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+              TripAdvisor Integration
+            </span>
+          </div>
+
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+            TripAdvisor Review Response Generator
+          </h1>
+
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+            Stand out on TripAdvisor with AI-crafted responses. Reply to guest reviews professionally
+            and boost your ranking in the world's largest travel platform.
+          </p>
+
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            background: 'white',
+            padding: '6px',
+            borderRadius: '14px',
+            maxWidth: '540px',
+            margin: '0 auto 32px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <input
+              type="email"
+              placeholder="Enter your business email"
+              style={{
+                flex: 1,
+                minWidth: '200px',
+                border: 'none',
+                padding: '14px 20px',
+                fontSize: '16px',
+                color: 'var(--gray-900)',
+                outline: 'none',
+                background: 'transparent',
+                borderRadius: '10px'
+              }}
+            />
+            <Link
+              to="/register"
+              className="btn"
+              style={{
+                padding: '14px 28px',
+                borderRadius: '10px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                margin: 0,
+                whiteSpace: 'nowrap',
+                background: '#0066cc',
+                color: 'white'
+              }}
+            >
+              Get Started Free <Sparkles size={18} />
+            </Link>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '24px',
+            marginBottom: '48px',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          </div>
+
+          <div style={{
+            borderTop: '1px solid rgba(255,255,255,0.2)',
+            paddingTop: '32px',
+            opacity: 0.7,
+            fontSize: '12px',
+            fontWeight: '600',
+            letterSpacing: '1px',
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '32px',
+            alignItems: 'center'
+          }}>
+            <span>HOTELS</span>
+            <span>RESTAURANTS</span>
+            <span>ATTRACTIONS</span>
+            <span>VACATION RENTALS</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why TripAdvisor Reviews Matter for Your Business
+        </h2>
+
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Users size={32} style={{ color: '#003580', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              463M Monthly Visitors
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              TripAdvisor is the world's largest travel platform. Your reviews are seen by millions
+              of potential guests every month.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#003580', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Higher Ranking
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Businesses that respond to reviews rank higher in TripAdvisor search results.
+              Engagement matters for visibility.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#003580', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Traveller's Choice
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Active review management helps you earn TripAdvisor badges and awards that attract
+              more bookings.
+            </p>
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: '60px',
+            background: 'var(--gray-50)',
+            borderRadius: '16px',
+            padding: '40px',
+          }}
+        >
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
+            How to Respond to TripAdvisor Reviews
+          </h2>
+          <ol style={{ lineHeight: '2', color: 'var(--gray-700)' }}>
+            <li>
+              <strong>Copy the review</strong> from your TripAdvisor management center
+            </li>
+            <li>
+              <strong>Paste it</strong> into ReviewResponder
+            </li>
+            <li>
+              <strong>Select your tone</strong> (Professional, Friendly, Formal, or Apologetic)
+            </li>
+            <li>
+              <strong>Click Generate</strong> and get your personalized response
+            </li>
+            <li>
+              <strong>Post it</strong> on TripAdvisor as your official management response
+            </li>
+          </ol>
+        </div>
+
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Start Winning on TripAdvisor Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join hospitality businesses using AI to manage their TripAdvisor reputation.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
+
+        <div
+          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
+        >
+          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
+            <Link to="/" style={{ color: 'var(--primary-600)' }}>
+              ReviewResponder
+            </Link>{' '}
+            •
+            <Link to="/hotel-review-management" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Hotel Reviews
+            </Link>{' '}
+            •
+            <Link to="/restaurant-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Restaurant Reviews
+            </Link>{' '}
+            •
+            <Link to="/booking-review-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Booking.com Reviews
+            </Link>
+          </p>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - Booking.com Review Responses
+const BookingReviewPage = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/booking-review-generator',
+    };
+    if (utmParams.utm_source) {
+      sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    }
+
+    document.title = 'Booking.com Review Response Generator | AI Hotel Replies | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional Booking.com review responses with AI. Reply to guest reviews instantly and improve your property rating. Perfect for hotels and vacation rentals.'
+      );
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Booking.com Review Response Generator',
+      description: 'AI tool to respond professionally to Booking.com guest reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
+    document.head.appendChild(script);
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+  }, [location.search]);
+
+  return (
+    <div>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #003580 0%, #0066ff 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
+            <Globe size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+              Booking.com Partner
+            </span>
+          </div>
+
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+            Booking.com Review Response Generator
+          </h1>
+
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+            Improve your Booking.com rating with thoughtful, AI-generated responses. Reply to every
+            guest review professionally and increase your bookings.
+          </p>
+
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            background: 'white',
+            padding: '6px',
+            borderRadius: '14px',
+            maxWidth: '540px',
+            margin: '0 auto 32px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <input
+              type="email"
+              placeholder="Enter your business email"
+              style={{
+                flex: 1,
+                minWidth: '200px',
+                border: 'none',
+                padding: '14px 20px',
+                fontSize: '16px',
+                color: 'var(--gray-900)',
+                outline: 'none',
+                background: 'transparent',
+                borderRadius: '10px'
+              }}
+            />
+            <Link
+              to="/register"
+              className="btn"
+              style={{
+                padding: '14px 28px',
+                borderRadius: '10px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                margin: 0,
+                whiteSpace: 'nowrap',
+                background: '#0066ff',
+                color: 'white'
+              }}
+            >
+              Get Started Free <Sparkles size={18} />
+            </Link>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '24px',
+            marginBottom: '48px',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          </div>
+
+          <div style={{
+            borderTop: '1px solid rgba(255,255,255,0.2)',
+            paddingTop: '32px',
+            opacity: 0.7,
+            fontSize: '12px',
+            fontWeight: '600',
+            letterSpacing: '1px',
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '32px',
+            alignItems: 'center'
+          }}>
+            <span>HOTELS</span>
+            <span>APARTMENTS</span>
+            <span>HOSTELS</span>
+            <span>VACATION RENTALS</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Booking.com Reviews Are Critical
+        </h2>
+
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Star size={32} style={{ color: '#003580', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Rating = Visibility
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Properties with higher review scores rank better in Booking.com search. Every 0.1
+              point increase matters for bookings.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <MessageSquare size={32} style={{ color: '#003580', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Response Rate Tracked
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Booking.com shows your response rate to potential guests. High engagement builds trust
+              and increases conversions.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#003580', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Earn Badges
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Active review management helps you earn Booking.com badges like "Traveller Review
+              Awards" that boost credibility.
+            </p>
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: '60px',
+            background: 'var(--gray-50)',
+            borderRadius: '16px',
+            padding: '40px',
+          }}
+        >
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
+            How to Respond to Booking.com Reviews
+          </h2>
+          <ol style={{ lineHeight: '2', color: 'var(--gray-700)' }}>
+            <li>
+              <strong>Copy the guest review</strong> from your Booking.com extranet
+            </li>
+            <li>
+              <strong>Paste it</strong> into ReviewResponder
+            </li>
+            <li>
+              <strong>Select your tone</strong> (Professional for complaints, Friendly for praise)
+            </li>
+            <li>
+              <strong>Click Generate</strong> and customize if needed
+            </li>
+            <li>
+              <strong>Post</strong> the response in your Booking.com extranet
+            </li>
+          </ol>
+        </div>
+
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Improve Your Booking.com Performance
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join properties worldwide using AI to manage their Booking.com reviews.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
+
+        <div
+          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
+        >
+          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
+            <Link to="/" style={{ color: 'var(--primary-600)' }}>
+              ReviewResponder
+            </Link>{' '}
+            •
+            <Link to="/hotel-review-management" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Hotel Reviews
+            </Link>{' '}
+            •
+            <Link to="/tripadvisor-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              TripAdvisor Reviews
+            </Link>{' '}
+            •
+            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Google Reviews
+            </Link>
+          </p>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - Facebook Review Responses
+const FacebookReviewPage = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/facebook-review-responses',
+    };
+    if (utmParams.utm_source) {
+      sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    }
+
+    document.title = 'Facebook Review Response Generator | AI-Powered Replies | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional Facebook review responses with AI. Reply to Facebook recommendations and reviews instantly. Perfect for local businesses with Facebook pages.'
+      );
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Facebook Review Response Generator',
+      description: 'AI tool to respond professionally to Facebook business reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
+    document.head.appendChild(script);
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+  }, [location.search]);
+
+  return (
+    <div>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #1877f2 0%, #0a66c2 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
+            <MessageSquare size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+              Facebook Business
+            </span>
+          </div>
+
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+            Facebook Review Response Generator
+          </h1>
+
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+            Build trust on Facebook with AI-crafted responses. Reply to recommendations and reviews
+            professionally to grow your local business presence.
+          </p>
+
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            background: 'white',
+            padding: '6px',
+            borderRadius: '14px',
+            maxWidth: '540px',
+            margin: '0 auto 32px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <input
+              type="email"
+              placeholder="Enter your business email"
+              style={{
+                flex: 1,
+                minWidth: '200px',
+                border: 'none',
+                padding: '14px 20px',
+                fontSize: '16px',
+                color: 'var(--gray-900)',
+                outline: 'none',
+                background: 'transparent',
+                borderRadius: '10px'
+              }}
+            />
+            <Link
+              to="/register"
+              className="btn"
+              style={{
+                padding: '14px 28px',
+                borderRadius: '10px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                margin: 0,
+                whiteSpace: 'nowrap',
+                background: '#0a66c2',
+                color: 'white'
+              }}
+            >
+              Get Started Free <Sparkles size={18} />
+            </Link>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '24px',
+            marginBottom: '48px',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          </div>
+
+          <div style={{
+            borderTop: '1px solid rgba(255,255,255,0.2)',
+            paddingTop: '32px',
+            opacity: 0.7,
+            fontSize: '12px',
+            fontWeight: '600',
+            letterSpacing: '1px',
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '32px',
+            alignItems: 'center'
+          }}>
+            <span>FACEBOOK</span>
+            <span>INSTAGRAM</span>
+            <span>META BUSINESS</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Facebook Reviews Matter for Local Business
+        </h2>
+
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Users size={32} style={{ color: '#1877f2', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              3 Billion Users
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Facebook is the world's largest social network. Your business reviews are visible to
+              friends and family of your customers.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Star size={32} style={{ color: '#1877f2', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Recommendations Matter
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Facebook's recommendation system shows reviews to people searching for local
+              businesses. Engaged pages get more visibility.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <MessageSquare size={32} style={{ color: '#1877f2', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Social Proof
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Responding to Facebook reviews shows you're an active, caring business. This builds
+              trust with potential customers.
+            </p>
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: '60px',
+            background: 'var(--gray-50)',
+            borderRadius: '16px',
+            padding: '40px',
+          }}
+        >
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
+            How to Respond to Facebook Reviews
+          </h2>
+          <ol style={{ lineHeight: '2', color: 'var(--gray-700)' }}>
+            <li>
+              <strong>Copy the review</strong> from your Facebook business page
+            </li>
+            <li>
+              <strong>Paste it</strong> into ReviewResponder
+            </li>
+            <li>
+              <strong>Select your tone</strong> (Friendly works great for Facebook's casual vibe)
+            </li>
+            <li>
+              <strong>Click Generate</strong> and personalize if needed
+            </li>
+            <li>
+              <strong>Reply</strong> directly on your Facebook page
+            </li>
+          </ol>
+        </div>
+
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Grow Your Facebook Business Presence
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join businesses using AI to manage their Facebook reviews efficiently.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
+
+        <div
+          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
+        >
+          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
+            <Link to="/" style={{ color: 'var(--primary-600)' }}>
+              ReviewResponder
+            </Link>{' '}
+            •
+            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Google Reviews
+            </Link>{' '}
+            •
+            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Yelp Reviews
+            </Link>{' '}
+            •
+            <Link to="/local-business-reviews" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Local Business
+            </Link>
+          </p>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - Dentist Review Responses
+const DentistReviewPage = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/dentist-review-responses',
+    };
+    if (utmParams.utm_source) {
+      sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    }
+
+    document.title = 'Dentist Review Response Generator | AI Replies for Dental Practices | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional review responses for dental practices with AI. Reply to Google, Yelp, and Healthgrades reviews. Perfect for dentists, orthodontists, and dental clinics.'
+      );
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Dentist Review Response Generator',
+      description: 'AI tool for dental practices to respond professionally to patient reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
+    document.head.appendChild(script);
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+  }, [location.search]);
+
+  return (
+    <div>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
+            <Heart size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+              For Dental Practices
+            </span>
+          </div>
+
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+            Dentist Review Response Generator
+          </h1>
+
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+            Build patient trust with thoughtful review responses. Our AI helps dental practices
+            respond professionally while maintaining HIPAA compliance awareness.
+          </p>
+
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            background: 'white',
+            padding: '6px',
+            borderRadius: '14px',
+            maxWidth: '540px',
+            margin: '0 auto 32px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <input
+              type="email"
+              placeholder="Enter your practice email"
+              style={{
+                flex: 1,
+                minWidth: '200px',
+                border: 'none',
+                padding: '14px 20px',
+                fontSize: '16px',
+                color: 'var(--gray-900)',
+                outline: 'none',
+                background: 'transparent',
+                borderRadius: '10px'
+              }}
+            />
+            <Link
+              to="/register"
+              className="btn"
+              style={{
+                padding: '14px 28px',
+                borderRadius: '10px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                margin: 0,
+                whiteSpace: 'nowrap',
+                background: '#2E7D32',
+                color: 'white'
+              }}
+            >
+              Get Started Free <Sparkles size={18} />
+            </Link>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '24px',
+            marginBottom: '48px',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          </div>
+
+          <div style={{
+            borderTop: '1px solid rgba(255,255,255,0.2)',
+            paddingTop: '32px',
+            opacity: 0.7,
+            fontSize: '12px',
+            fontWeight: '600',
+            letterSpacing: '1px',
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '32px',
+            alignItems: 'center'
+          }}>
+            <span>GOOGLE</span>
+            <span>YELP</span>
+            <span>HEALTHGRADES</span>
+            <span>ZOCDOC</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Reviews Matter for Dental Practices
+        </h2>
+
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Users size={32} style={{ color: '#4CAF50', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Patients Research Online
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              77% of patients use online reviews when choosing a new dentist. Your responses show
+              you care about patient experience.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Shield size={32} style={{ color: '#4CAF50', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              HIPAA-Aware Responses
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Our AI generates responses that avoid confirming patient relationships or treatment
+              details, helping you stay compliant.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#4CAF50', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Grow Your Practice
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Dental practices that respond to reviews see more new patient appointments. Active
+              engagement builds trust.
+            </p>
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: '60px',
+            background: 'var(--gray-50)',
+            borderRadius: '16px',
+            padding: '40px',
+          }}
+        >
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
+            Common Dental Review Scenarios
+          </h2>
+          <div style={{ display: 'grid', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#4CAF50', marginTop: '2px' }} />
+              <div>
+                <strong>"Dr. Smith was amazing!"</strong> - Thank them warmly, mention your
+                commitment to patient care
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#4CAF50', marginTop: '2px' }} />
+              <div>
+                <strong>"Wait time was too long"</strong> - Apologize for the inconvenience, explain
+                your commitment to quality care
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#4CAF50', marginTop: '2px' }} />
+              <div>
+                <strong>"Procedure was painful"</strong> - Show empathy, invite them to discuss
+                concerns privately
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#4CAF50', marginTop: '2px' }} />
+              <div>
+                <strong>"Front desk was rude"</strong> - Take it seriously, commit to addressing the
+                issue
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Grow Your Dental Practice with Better Reviews
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join dental practices using AI to manage their online reputation.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
+
+        <div
+          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
+        >
+          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
+            <Link to="/" style={{ color: 'var(--primary-600)' }}>
+              ReviewResponder
+            </Link>{' '}
+            •
+            <Link to="/medical-practice-reviews" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Medical Practices
+            </Link>{' '}
+            •
+            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Google Reviews
+            </Link>{' '}
+            •
+            <Link to="/local-business-reviews" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Local Business
+            </Link>
+          </p>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - Medical Practice Review Responses
+const MedicalPracticeReviewPage = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/medical-practice-reviews',
+    };
+    if (utmParams.utm_source) {
+      sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    }
+
+    document.title = 'Medical Practice Review Response Generator | AI for Healthcare | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional review responses for medical practices with AI. HIPAA-aware replies for doctors, clinics, and healthcare providers. Manage your online reputation.'
+      );
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Medical Practice Review Response Generator',
+      description: 'AI tool for healthcare providers to respond professionally to patient reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
+    document.head.appendChild(script);
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+  }, [location.search]);
+
+  return (
+    <div>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #E53935 0%, #C62828 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
+            <Heart size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+              For Healthcare Providers
+            </span>
+          </div>
+
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+            Medical Practice Review Response Generator
+          </h1>
+
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+            Manage your medical practice's online reputation with AI. Generate professional,
+            HIPAA-aware responses that build patient trust without compromising privacy.
+          </p>
+
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            background: 'white',
+            padding: '6px',
+            borderRadius: '14px',
+            maxWidth: '540px',
+            margin: '0 auto 32px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <input
+              type="email"
+              placeholder="Enter your practice email"
+              style={{
+                flex: 1,
+                minWidth: '200px',
+                border: 'none',
+                padding: '14px 20px',
+                fontSize: '16px',
+                color: 'var(--gray-900)',
+                outline: 'none',
+                background: 'transparent',
+                borderRadius: '10px'
+              }}
+            />
+            <Link
+              to="/register"
+              className="btn"
+              style={{
+                padding: '14px 28px',
+                borderRadius: '10px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                margin: 0,
+                whiteSpace: 'nowrap',
+                background: '#C62828',
+                color: 'white'
+              }}
+            >
+              Get Started Free <Sparkles size={18} />
+            </Link>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '24px',
+            marginBottom: '48px',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          </div>
+
+          <div style={{
+            borderTop: '1px solid rgba(255,255,255,0.2)',
+            paddingTop: '32px',
+            opacity: 0.7,
+            fontSize: '12px',
+            fontWeight: '600',
+            letterSpacing: '1px',
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '32px',
+            alignItems: 'center'
+          }}>
+            <span>GOOGLE</span>
+            <span>HEALTHGRADES</span>
+            <span>VITALS</span>
+            <span>ZOCDOC</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Reviews Matter for Medical Practices
+        </h2>
+
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Users size={32} style={{ color: '#E53935', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Patients Choose Based on Reviews
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              84% of patients use online reviews to evaluate physicians. Your responses shape
+              how new patients perceive your practice.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Shield size={32} style={{ color: '#E53935', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              HIPAA Compliance Matters
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Our AI generates responses that don't confirm patient relationships or disclose
+              PHI, helping you respond safely.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Clock size={32} style={{ color: '#E53935', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Save Staff Time
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Your staff is busy with patient care. Let AI draft responses in seconds that you
+              can review and post quickly.
+            </p>
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: '60px',
+            background: 'var(--gray-50)',
+            borderRadius: '16px',
+            padding: '40px',
+          }}
+        >
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
+            Safe Review Response Guidelines
+          </h2>
+          <div style={{ display: 'grid', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#E53935', marginTop: '2px' }} />
+              <div>
+                <strong>Never confirm patient status</strong> - Don't acknowledge someone is/was your patient
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#E53935', marginTop: '2px' }} />
+              <div>
+                <strong>Avoid treatment details</strong> - Keep responses general about your practice's approach
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#E53935', marginTop: '2px' }} />
+              <div>
+                <strong>Take complaints offline</strong> - Invite concerned reviewers to contact you directly
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#E53935', marginTop: '2px' }} />
+              <div>
+                <strong>Stay professional</strong> - Never argue or get defensive, even with unfair reviews
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Protect Your Medical Practice's Reputation
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join healthcare providers using AI to manage their online presence safely.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
+
+        <div
+          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
+        >
+          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
+            <Link to="/" style={{ color: 'var(--primary-600)' }}>
+              ReviewResponder
+            </Link>{' '}
+            •
+            <Link to="/dentist-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Dentist Reviews
+            </Link>{' '}
+            •
+            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Google Reviews
+            </Link>{' '}
+            •
+            <Link to="/negative-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Negative Reviews
+            </Link>
+          </p>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - Salon & Spa Review Responses
+const SalonSpaReviewPage = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/salon-spa-review-responses',
+    };
+    if (utmParams.utm_source) {
+      sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    }
+
+    document.title = 'Salon & Spa Review Response Generator | AI for Beauty Industry | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional review responses for salons and spas with AI. Perfect for hair salons, nail salons, day spas, and beauty services. Boost your online reputation.'
+      );
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Salon & Spa Review Response Generator',
+      description: 'AI tool for beauty businesses to respond professionally to client reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
+    document.head.appendChild(script);
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+  }, [location.search]);
+
+  return (
+    <div>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #E91E63 0%, #C2185B 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
+            <Scissors size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+              For Beauty Businesses
+            </span>
+          </div>
+
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+            Salon & Spa Review Response Generator
+          </h1>
+
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+            Build your beauty business reputation with AI-crafted responses. Reply to client reviews
+            professionally and attract more bookings.
+          </p>
+
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            background: 'white',
+            padding: '6px',
+            borderRadius: '14px',
+            maxWidth: '540px',
+            margin: '0 auto 32px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <input
+              type="email"
+              placeholder="Enter your business email"
+              style={{
+                flex: 1,
+                minWidth: '200px',
+                border: 'none',
+                padding: '14px 20px',
+                fontSize: '16px',
+                color: 'var(--gray-900)',
+                outline: 'none',
+                background: 'transparent',
+                borderRadius: '10px'
+              }}
+            />
+            <Link
+              to="/register"
+              className="btn"
+              style={{
+                padding: '14px 28px',
+                borderRadius: '10px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                margin: 0,
+                whiteSpace: 'nowrap',
+                background: '#C2185B',
+                color: 'white'
+              }}
+            >
+              Get Started Free <Sparkles size={18} />
+            </Link>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '24px',
+            marginBottom: '48px',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          </div>
+
+          <div style={{
+            borderTop: '1px solid rgba(255,255,255,0.2)',
+            paddingTop: '32px',
+            opacity: 0.7,
+            fontSize: '12px',
+            fontWeight: '600',
+            letterSpacing: '1px',
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '32px',
+            alignItems: 'center'
+          }}>
+            <span>HAIR SALONS</span>
+            <span>NAIL SALONS</span>
+            <span>DAY SPAS</span>
+            <span>MED SPAS</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Reviews Matter for Salons & Spas
+        </h2>
+
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Star size={32} style={{ color: '#E91E63', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Visual Results Matter
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Clients research salons extensively before booking. Reviews help them trust you with
+              their look and self-care.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Heart size={32} style={{ color: '#E91E63', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Personal Connection
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              The beauty industry is personal. Responding to reviews shows you value each client
+              relationship.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#E91E63', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              More Bookings
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Salons with more reviews and responses rank higher in local search, bringing in new
+              clients naturally.
+            </p>
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: '60px',
+            background: 'var(--gray-50)',
+            borderRadius: '16px',
+            padding: '40px',
+          }}
+        >
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
+            Common Salon & Spa Review Scenarios
+          </h2>
+          <div style={{ display: 'grid', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#E91E63', marginTop: '2px' }} />
+              <div>
+                <strong>"Love my new hair color!"</strong> - Thank them, credit your stylist's
+                expertise
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#E91E63', marginTop: '2px' }} />
+              <div>
+                <strong>"Cut was too short"</strong> - Apologize sincerely, offer to make it right
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#E91E63', marginTop: '2px' }} />
+              <div>
+                <strong>"Most relaxing massage ever"</strong> - Express gratitude, invite them back
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#E91E63', marginTop: '2px' }} />
+              <div>
+                <strong>"Nail polish chipped next day"</strong> - Apologize, offer a redo or discount
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Grow Your Beauty Business with Better Reviews
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join salons and spas using AI to build their online reputation.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
+
+        <div
+          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
+        >
+          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
+            <Link to="/" style={{ color: 'var(--primary-600)' }}>
+              ReviewResponder
+            </Link>{' '}
+            •
+            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Google Reviews
+            </Link>{' '}
+            •
+            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Yelp Reviews
+            </Link>{' '}
+            •
+            <Link to="/local-business-reviews" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Local Business
+            </Link>
+          </p>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - Auto Shop Review Responses
+const AutoShopReviewPage = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/auto-shop-reviews',
+    };
+    if (utmParams.utm_source) {
+      sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    }
+
+    document.title = 'Auto Shop Review Response Generator | AI for Mechanics | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional review responses for auto shops with AI. Perfect for mechanics, auto repair shops, tire shops, and car dealerships. Build customer trust.'
+      );
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Auto Shop Review Response Generator',
+      description: 'AI tool for automotive businesses to respond professionally to customer reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
+    document.head.appendChild(script);
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+  }, [location.search]);
+
+  return (
+    <div>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #FF6F00 0%, #E65100 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
+            <Car size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+              For Auto Shops
+            </span>
+          </div>
+
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+            Auto Shop Review Response Generator
+          </h1>
+
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+            Build trust in an industry where customers are skeptical. Our AI helps you respond to
+            reviews professionally and turn first-timers into loyal customers.
+          </p>
+
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            background: 'white',
+            padding: '6px',
+            borderRadius: '14px',
+            maxWidth: '540px',
+            margin: '0 auto 32px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <input
+              type="email"
+              placeholder="Enter your business email"
+              style={{
+                flex: 1,
+                minWidth: '200px',
+                border: 'none',
+                padding: '14px 20px',
+                fontSize: '16px',
+                color: 'var(--gray-900)',
+                outline: 'none',
+                background: 'transparent',
+                borderRadius: '10px'
+              }}
+            />
+            <Link
+              to="/register"
+              className="btn"
+              style={{
+                padding: '14px 28px',
+                borderRadius: '10px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                margin: 0,
+                whiteSpace: 'nowrap',
+                background: '#E65100',
+                color: 'white'
+              }}
+            >
+              Get Started Free <Sparkles size={18} />
+            </Link>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '24px',
+            marginBottom: '48px',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          </div>
+
+          <div style={{
+            borderTop: '1px solid rgba(255,255,255,0.2)',
+            paddingTop: '32px',
+            opacity: 0.7,
+            fontSize: '12px',
+            fontWeight: '600',
+            letterSpacing: '1px',
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '32px',
+            alignItems: 'center'
+          }}>
+            <span>AUTO REPAIR</span>
+            <span>TIRE SHOPS</span>
+            <span>OIL CHANGE</span>
+            <span>DEALERSHIPS</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Reviews Are Critical for Auto Shops
+        </h2>
+
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Shield size={32} style={{ color: '#FF6F00', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Trust Is Everything
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Customers worry about being overcharged or upsold. Reviews and your responses prove
+              you're honest and fair.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Users size={32} style={{ color: '#FF6F00', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Local Search Dominance
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              When someone's car breaks down, they search "auto repair near me." More reviews =
+              higher ranking = more calls.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#FF6F00', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Repeat Business
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Responding to reviews builds relationships. Happy customers come back for oil changes,
+              tires, and recommend you to friends.
+            </p>
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: '60px',
+            background: 'var(--gray-50)',
+            borderRadius: '16px',
+            padding: '40px',
+          }}
+        >
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
+            Common Auto Shop Review Scenarios
+          </h2>
+          <div style={{ display: 'grid', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#FF6F00', marginTop: '2px' }} />
+              <div>
+                <strong>"Fixed my car right the first time"</strong> - Thank them, mention your
+                commitment to quality work
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#FF6F00', marginTop: '2px' }} />
+              <div>
+                <strong>"Price was higher than quoted"</strong> - Explain transparently, offer to
+                discuss
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#FF6F00', marginTop: '2px' }} />
+              <div>
+                <strong>"Took longer than expected"</strong> - Apologize, explain the thoroughness
+                of your work
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <CheckCircle size={20} style={{ color: '#FF6F00', marginTop: '2px' }} />
+              <div>
+                <strong>"Same problem came back"</strong> - Take responsibility, offer to make it
+                right
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Build Trust and Grow Your Auto Shop
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join auto shops using AI to build their reputation and win more customers.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
+
+        <div
+          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
+        >
+          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
+            <Link to="/" style={{ color: 'var(--primary-600)' }}>
+              ReviewResponder
+            </Link>{' '}
+            •
+            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Google Reviews
+            </Link>{' '}
+            •
+            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Yelp Reviews
+            </Link>{' '}
+            •
+            <Link to="/local-business-reviews" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
+              Local Business
+            </Link>
+          </p>
+        </div>
+      </section>
+      <Footer />
     </div>
   );
 };
@@ -12416,10 +15204,11 @@ const LocalBusinessReviewPage = () => {
 // Extension Page
 const ExtensionPage = () => {
   return (
-    <div
-      className="container"
-      style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}
-    >
+    <div>
+      <div
+        className="container"
+        style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}
+      >
       <div style={{ textAlign: 'center', marginBottom: '40px' }}>
         <Chrome size={48} style={{ color: 'var(--primary-600)', marginBottom: '16px' }} />
         <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '12px' }}>
@@ -12592,7 +15381,9 @@ const ExtensionPage = () => {
         </a>
       </div>
     </div>
-  );
+    <Footer />
+  </div>
+);
 };
 
 // Pricing Page
@@ -13128,6 +15919,8 @@ const PricingPage = () => {
           </Link>
         </div>
       </div>
+
+      <Footer />
 
       <style>
         {`
@@ -16058,6 +18851,7 @@ function App() {
             <Route path="/support" element={<SupportPage />} />
             <Route path="/blog" element={<BlogListPage />} />
             <Route path="/blog/:slug" element={<BlogArticlePage />} />
+            <Route path="/demo/:token" element={<DemoPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/extension" element={<ExtensionPage />} />
@@ -16066,6 +18860,14 @@ function App() {
             <Route path="/restaurant-review-responses" element={<RestaurantReviewPage />} />
             <Route path="/hotel-review-management" element={<HotelReviewPage />} />
             <Route path="/local-business-reviews" element={<LocalBusinessReviewPage />} />
+            <Route path="/negative-review-responses" element={<NegativeReviewPage />} />
+            <Route path="/tripadvisor-review-responses" element={<TripAdvisorReviewPage />} />
+            <Route path="/booking-review-generator" element={<BookingReviewPage />} />
+            <Route path="/facebook-review-responses" element={<FacebookReviewPage />} />
+            <Route path="/dentist-review-responses" element={<DentistReviewPage />} />
+            <Route path="/medical-practice-reviews" element={<MedicalPracticeReviewPage />} />
+            <Route path="/salon-spa-review-responses" element={<SalonSpaReviewPage />} />
+            <Route path="/auto-shop-reviews" element={<AutoShopReviewPage />} />
             <Route
               path="/dashboard"
               element={

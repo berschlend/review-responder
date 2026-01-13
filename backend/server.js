@@ -14,6 +14,7 @@ const { Resend } = require('resend');
 const { OAuth2Client } = require('google-auth-library');
 const Anthropic = require('@anthropic-ai/sdk');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { TwitterApi } = require('twitter-api-v2');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -54,6 +55,16 @@ const anthropic = process.env.ANTHROPIC_API_KEY
   : null;
 const gemini = process.env.GEMINI_API_KEY
   ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+  : null;
+
+// Twitter/X API Client (OAuth 1.0a for posting)
+const twitterClient = process.env.TWITTER_API_KEY && process.env.TWITTER_ACCESS_TOKEN
+  ? new TwitterApi({
+      appKey: process.env.TWITTER_API_KEY,
+      appSecret: process.env.TWITTER_API_SECRET,
+      accessToken: process.env.TWITTER_ACCESS_TOKEN,
+      accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+    })
   : null;
 
 // Email sender addresses (configurable via ENV)
@@ -509,6 +520,36 @@ async function initDatabase() {
       // Index might already exist
     }
 
+    // Demo generations table for personalized outreach demos
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS demo_generations (
+        id SERIAL PRIMARY KEY,
+        business_name TEXT NOT NULL,
+        google_place_id TEXT,
+        google_maps_url TEXT,
+        city TEXT,
+        google_rating DECIMAL(2,1),
+        total_reviews INTEGER,
+        scraped_reviews JSONB,
+        demo_token TEXT UNIQUE NOT NULL,
+        generated_responses JSONB,
+        lead_id INTEGER REFERENCES outreach_leads(id),
+        email_sent_at TIMESTAMP,
+        email_opened_at TIMESTAMP,
+        demo_page_viewed_at TIMESTAMP,
+        converted_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Index for fast demo lookups
+    try {
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_demo_token ON demo_generations(demo_token)`);
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_demo_lead ON demo_generations(lead_id)`);
+    } catch (error) {
+      // Index might already exist
+    }
+
     // Affiliates table for affiliate/partner program
     await dbQuery(`
       CREATE TABLE IF NOT EXISTS affiliates (
@@ -792,6 +833,20 @@ async function initDatabase() {
       await dbQuery(`CREATE INDEX IF NOT EXISTS idx_agency_leads_sequence ON agency_leads(email_sequence)`);
     } catch (error) {
       // Indexes might already exist
+    }
+
+    // Add demo columns to linkedin_outreach for LinkedIn Demo Outreach feature
+    try {
+      await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS demo_token TEXT`);
+      await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS demo_url TEXT`);
+      await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS connection_note TEXT`);
+      await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS business_name TEXT`);
+      await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS google_place_id TEXT`);
+      await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS google_rating DECIMAL(2,1)`);
+      await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS demo_viewed_at TIMESTAMP`);
+      await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS converted_at TIMESTAMP`);
+    } catch (error) {
+      // Columns might already exist
     }
 
     console.log('📊 Database initialized');
@@ -3305,7 +3360,8 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
 
     const sessionConfig = {
       customer: user.stripe_customer_id,
-      payment_method_types: ['card'],
+      // Let Stripe automatically show all payment methods enabled in Dashboard
+      // (Card, PayPal, SEPA, Link, Apple Pay, Google Pay)
       line_items: [
         {
           price: priceId,
@@ -4724,6 +4780,491 @@ app.get('/api/public/blog/:slug', async (req, res) => {
   } catch (error) {
     console.error('Public blog article error:', error);
     res.status(500).json({ error: 'Failed to fetch article' });
+  }
+});
+
+// ============== DEMO GENERATOR SYSTEM ==============
+// Personalized demos for cold outreach: scrape reviews, generate AI responses
+
+// Helper: Scrape Google reviews via SerpAPI
+async function scrapeGoogleReviews(placeId, limit = 10) {
+  if (!process.env.SERPAPI_KEY) {
+    throw new Error('SERPAPI_KEY not configured');
+  }
+
+  const url = `https://serpapi.com/search.json?engine=google_maps_reviews&place_id=${placeId}&hl=en&api_key=${process.env.SERPAPI_KEY}`;
+
+  const response = await fetch(url);
+  const data = await response.json();
+
+  if (data.error) {
+    throw new Error(`SerpAPI error: ${data.error}`);
+  }
+
+  return (
+    data.reviews?.slice(0, limit).map((r) => ({
+      text: r.snippet || r.text || '',
+      rating: r.rating || 0,
+      author: r.user?.name || 'Anonymous',
+      date: r.date || '',
+      source: 'google',
+    })) || []
+  );
+}
+
+// Helper: Lookup Google Place ID from business name + city
+async function lookupPlaceId(businessName, city) {
+  if (!process.env.GOOGLE_PLACES_API_KEY) {
+    throw new Error('GOOGLE_PLACES_API_KEY not configured');
+  }
+
+  const query = encodeURIComponent(`${businessName} ${city}`);
+  const url = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${query}&inputtype=textquery&fields=place_id,name,rating,user_ratings_total&key=${process.env.GOOGLE_PLACES_API_KEY}`;
+
+  const response = await fetch(url);
+  const data = await response.json();
+
+  if (data.status !== 'OK' || !data.candidates?.length) {
+    throw new Error(`Place not found: ${businessName} in ${city}`);
+  }
+
+  const place = data.candidates[0];
+  return {
+    placeId: place.place_id,
+    name: place.name,
+    rating: place.rating,
+    totalReviews: place.user_ratings_total,
+  };
+}
+
+// Helper: Extract place_id from Google Maps URL
+function extractPlaceIdFromUrl(url) {
+  // Format: https://www.google.com/maps/place/.../@...!1s[PLACE_ID]...
+  // or: https://maps.google.com/?cid=...
+  const placeIdMatch = url.match(/!1s(ChI[^!]+)/);
+  if (placeIdMatch) return placeIdMatch[1];
+
+  // Try data=!4m... format
+  const dataMatch = url.match(/place_id[=:]([^&\s]+)/i);
+  if (dataMatch) return dataMatch[1];
+
+  return null;
+}
+
+// Helper: Generate AI response for a review (for demo purposes)
+async function generateDemoResponse(review, businessName) {
+  if (!anthropic) {
+    throw new Error('ANTHROPIC_API_KEY not configured');
+  }
+
+  const systemMessage = `You are the owner of "${businessName}". Generate a professional response to this customer review.
+
+RULES:
+- Write directly as the owner (first person)
+- Be genuine and human, not corporate
+- Keep it 2-3 sentences max
+- If negative: acknowledge, take responsibility, offer to make it right
+- If positive: thank them specifically, mention what made it special
+- NO: "Thank you for your feedback" | "We value your input" | "Sorry for any inconvenience"
+- NO emojis unless they used them first
+- End with your name or just a warm sign-off`;
+
+  const userMessage = `[${review.rating} stars from ${review.author}]
+"${review.text}"
+
+Write a response:`;
+
+  const response = await anthropic.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 200,
+    system: systemMessage,
+    messages: [{ role: 'user', content: userMessage }],
+  });
+
+  return response.content[0].text.trim();
+}
+
+// Helper: Generate demo token
+function generateDemoToken() {
+  return crypto.randomBytes(16).toString('hex');
+}
+
+// POST /api/demo/generate - Generate a personalized demo for a business
+app.post('/api/demo/generate', async (req, res) => {
+  // Admin auth check
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(adminKey || '', process.env.ADMIN_SECRET || '')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const { google_maps_url, business_name, city, review_count = 3, focus = 'negative', send_email = false, email } = req.body;
+
+    // Resolve place_id
+    let placeId = null;
+    let resolvedName = business_name;
+    let googleRating = null;
+    let totalReviews = null;
+
+    if (google_maps_url) {
+      placeId = extractPlaceIdFromUrl(google_maps_url);
+      if (!placeId && business_name && city) {
+        // URL didn't contain place_id, try lookup
+        const placeInfo = await lookupPlaceId(business_name, city);
+        placeId = placeInfo.placeId;
+        resolvedName = placeInfo.name;
+        googleRating = placeInfo.rating;
+        totalReviews = placeInfo.totalReviews;
+      }
+    } else if (business_name && city) {
+      const placeInfo = await lookupPlaceId(business_name, city);
+      placeId = placeInfo.placeId;
+      resolvedName = placeInfo.name;
+      googleRating = placeInfo.rating;
+      totalReviews = placeInfo.totalReviews;
+    }
+
+    if (!placeId) {
+      return res.status(400).json({
+        error: 'Could not find business. Provide google_maps_url or business_name + city',
+      });
+    }
+
+    // Scrape reviews
+    const allReviews = await scrapeGoogleReviews(placeId, 20);
+
+    if (allReviews.length === 0) {
+      return res.status(404).json({ error: 'No reviews found for this business' });
+    }
+
+    // Filter reviews based on focus
+    let targetReviews = allReviews;
+    if (focus === 'negative') {
+      targetReviews = allReviews
+        .filter((r) => r.rating <= 3)
+        .sort((a, b) => a.rating - b.rating)
+        .slice(0, review_count);
+
+      // If not enough negative reviews, add some mixed
+      if (targetReviews.length < review_count) {
+        const remaining = allReviews
+          .filter((r) => r.rating === 4)
+          .slice(0, review_count - targetReviews.length);
+        targetReviews = [...targetReviews, ...remaining];
+      }
+    } else if (focus === 'mixed') {
+      // Mix of ratings
+      const negative = allReviews.filter((r) => r.rating <= 2).slice(0, 1);
+      const neutral = allReviews.filter((r) => r.rating === 3).slice(0, 1);
+      const positive = allReviews.filter((r) => r.rating >= 4).slice(0, 1);
+      targetReviews = [...negative, ...neutral, ...positive].slice(0, review_count);
+    } else {
+      targetReviews = allReviews.slice(0, review_count);
+    }
+
+    // Generate AI responses for each review
+    const demos = [];
+    for (const review of targetReviews) {
+      const aiResponse = await generateDemoResponse(review, resolvedName);
+      demos.push({
+        review: {
+          text: review.text,
+          rating: review.rating,
+          author: review.author,
+          date: review.date,
+        },
+        ai_response: aiResponse,
+      });
+    }
+
+    // Generate unique token
+    const demoToken = generateDemoToken();
+
+    // Save to database
+    await dbQuery(
+      `INSERT INTO demo_generations
+       (business_name, google_place_id, google_maps_url, city, google_rating, total_reviews, scraped_reviews, demo_token, generated_responses)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [
+        resolvedName,
+        placeId,
+        google_maps_url || null,
+        city || null,
+        googleRating,
+        totalReviews,
+        JSON.stringify(allReviews),
+        demoToken,
+        JSON.stringify(demos),
+      ]
+    );
+
+    // Optionally send email
+    let emailSent = false;
+    if (send_email && email) {
+      try {
+        await sendDemoEmail(email, resolvedName, demos, demoToken, totalReviews);
+        await dbQuery('UPDATE demo_generations SET email_sent_at = NOW() WHERE demo_token = $1', [demoToken]);
+        emailSent = true;
+      } catch (emailError) {
+        console.error('Failed to send demo email:', emailError);
+      }
+    }
+
+    res.json({
+      success: true,
+      demo_token: demoToken,
+      demo_url: `https://tryreviewresponder.com/demo/${demoToken}`,
+      business: {
+        name: resolvedName,
+        rating: googleRating,
+        total_reviews: totalReviews,
+      },
+      reviews_processed: demos.length,
+      generated_responses: demos,
+      email_sent: emailSent,
+    });
+  } catch (error) {
+    console.error('Demo generation error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/public/demo/:token - Public demo page data
+app.get('/api/public/demo/:token', async (req, res) => {
+  try {
+    const demo = await dbGet('SELECT * FROM demo_generations WHERE demo_token = $1', [req.params.token]);
+
+    if (!demo) {
+      return res.status(404).json({ error: 'Demo not found' });
+    }
+
+    // Track page view (only first view)
+    if (!demo.demo_page_viewed_at) {
+      await dbQuery('UPDATE demo_generations SET demo_page_viewed_at = NOW() WHERE id = $1', [demo.id]);
+    }
+
+    res.json({
+      business_name: demo.business_name,
+      city: demo.city,
+      google_rating: parseFloat(demo.google_rating) || null,
+      total_reviews: demo.total_reviews,
+      demos: demo.generated_responses,
+      cta_url: `https://tryreviewresponder.com/register?ref=demo_${demo.demo_token}`,
+    });
+  } catch (error) {
+    console.error('Public demo error:', error);
+    res.status(500).json({ error: 'Failed to load demo' });
+  }
+});
+
+// POST /api/public/demo/:token/convert - Track conversion (called when user signs up)
+app.post('/api/public/demo/:token/convert', async (req, res) => {
+  try {
+    await dbQuery(
+      'UPDATE demo_generations SET converted_at = NOW() WHERE demo_token = $1 AND converted_at IS NULL',
+      [req.params.token]
+    );
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to track conversion' });
+  }
+});
+
+// Helper: Send demo email
+async function sendDemoEmail(toEmail, businessName, demos, demoToken, totalReviews) {
+  if (!resend) {
+    throw new Error('RESEND_API_KEY not configured');
+  }
+
+  // Build demo content for email
+  let demoContent = '';
+  demos.forEach((demo, i) => {
+    const stars = '★'.repeat(demo.review.rating) + '☆'.repeat(5 - demo.review.rating);
+    demoContent += `
+-------------------------------------------
+[${stars} from ${demo.review.author}]
+"${demo.review.text.slice(0, 200)}${demo.review.text.length > 200 ? '...' : ''}"
+
+YOUR AI RESPONSE:
+"${demo.ai_response}"
+-------------------------------------------
+`;
+  });
+
+  const subject = `${businessName} - saw your reviews, made you something`;
+  const body = `Hi,
+
+I saw you have ${totalReviews || 'many'}+ Google reviews - nice work!
+
+I noticed a few that might benefit from a response, so I put together some AI-generated suggestions:
+
+${demoContent}
+
+These took me 10 seconds each to generate. If you want to try it yourself:
+https://tryreviewresponder.com/demo/${demoToken}
+
+Cheers,
+Berend
+Founder, ReviewResponder
+
+P.S. Just reply if you have any questions - I read every email.
+
+---
+Unsubscribe: https://tryreviewresponder.com/unsubscribe?email=${encodeURIComponent(toEmail)}`;
+
+  await resend.emails.send({
+    from: 'Berend from ReviewResponder <hello@tryreviewresponder.com>',
+    to: toEmail,
+    subject: subject,
+    text: body,
+  });
+}
+
+// POST /api/cron/generate-demos - Batch generate demos for leads
+app.post('/api/cron/generate-demos', async (req, res) => {
+  const cronSecret = req.query.secret || req.headers['x-cron-secret'];
+  if (!safeCompare(cronSecret || '', process.env.CRON_SECRET || '')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const sendEmails = req.query.send_emails === 'true';
+
+    // Find leads with email but no demo yet
+    const leads = await dbAll(
+      `SELECT ol.* FROM outreach_leads ol
+       LEFT JOIN demo_generations dg ON ol.id = dg.lead_id
+       WHERE ol.email IS NOT NULL
+       AND ol.email != ''
+       AND dg.id IS NULL
+       AND ol.google_reviews_count >= 20
+       ORDER BY ol.google_reviews_count DESC
+       LIMIT $1`,
+      [limit]
+    );
+
+    const results = {
+      processed: 0,
+      success: 0,
+      failed: 0,
+      demos: [],
+    };
+
+    for (const lead of leads) {
+      results.processed++;
+      try {
+        // Generate demo
+        const placeInfo = await lookupPlaceId(lead.business_name, lead.city);
+        const allReviews = await scrapeGoogleReviews(placeInfo.placeId, 20);
+
+        // Get worst reviews
+        const targetReviews = allReviews
+          .filter((r) => r.rating <= 3)
+          .sort((a, b) => a.rating - b.rating)
+          .slice(0, 3);
+
+        if (targetReviews.length === 0) {
+          console.log(`No negative reviews for ${lead.business_name}, skipping`);
+          continue;
+        }
+
+        // Generate AI responses
+        const demos = [];
+        for (const review of targetReviews) {
+          const aiResponse = await generateDemoResponse(review, lead.business_name);
+          demos.push({
+            review: { text: review.text, rating: review.rating, author: review.author, date: review.date },
+            ai_response: aiResponse,
+          });
+        }
+
+        const demoToken = generateDemoToken();
+
+        // Save demo
+        await dbQuery(
+          `INSERT INTO demo_generations
+           (business_name, google_place_id, city, google_rating, total_reviews, scraped_reviews, demo_token, generated_responses, lead_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+          [
+            lead.business_name,
+            placeInfo.placeId,
+            lead.city,
+            placeInfo.rating,
+            placeInfo.totalReviews,
+            JSON.stringify(allReviews),
+            demoToken,
+            JSON.stringify(demos),
+            lead.id,
+          ]
+        );
+
+        // Send email if requested
+        if (sendEmails && lead.email) {
+          try {
+            await sendDemoEmail(lead.email, lead.business_name, demos, demoToken, placeInfo.totalReviews);
+            await dbQuery('UPDATE demo_generations SET email_sent_at = NOW() WHERE demo_token = $1', [demoToken]);
+          } catch (emailError) {
+            console.error(`Email failed for ${lead.email}:`, emailError.message);
+          }
+        }
+
+        results.success++;
+        results.demos.push({
+          business: lead.business_name,
+          demo_url: `https://tryreviewresponder.com/demo/${demoToken}`,
+          reviews_count: demos.length,
+        });
+
+        // Small delay to avoid rate limits
+        await new Promise((r) => setTimeout(r, 1000));
+      } catch (error) {
+        results.failed++;
+        console.error(`Demo generation failed for ${lead.business_name}:`, error.message);
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Generated ${results.success} demos from ${results.processed} leads`,
+      ...results,
+    });
+  } catch (error) {
+    console.error('Batch demo generation error:', error);
+    res.status(500).json({ error: error.message.slice(0, 100) });
+  }
+});
+
+// GET /api/admin/demos - List all generated demos
+app.get('/api/admin/demos', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(adminKey || '', process.env.ADMIN_SECRET || '')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const demos = await dbAll(
+      `SELECT id, business_name, city, google_rating, total_reviews, demo_token,
+              email_sent_at, demo_page_viewed_at, converted_at, created_at,
+              (SELECT COUNT(*) FROM jsonb_array_elements(generated_responses)) as response_count
+       FROM demo_generations
+       ORDER BY created_at DESC
+       LIMIT 100`
+    );
+
+    const stats = await dbGet(
+      `SELECT
+         COUNT(*) as total,
+         COUNT(email_sent_at) as emails_sent,
+         COUNT(demo_page_viewed_at) as pages_viewed,
+         COUNT(converted_at) as conversions
+       FROM demo_generations`
+    );
+
+    res.json({ demos, stats });
+  } catch (error) {
+    console.error('Admin demos error:', error);
+    res.status(500).json({ error: 'Failed to fetch demos' });
   }
 });
 
@@ -7839,6 +8380,13 @@ async function initOutreachTables() {
       ON CONFLICT (name) DO NOTHING
     `);
 
+    // Add review alert columns (for personalized outreach with AI-generated response drafts)
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS worst_review_text TEXT`);
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS worst_review_rating INTEGER`);
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS worst_review_author TEXT`);
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS ai_response_draft TEXT`);
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS has_bad_review BOOLEAN DEFAULT FALSE`);
+
     console.log('✅ Outreach tables initialized');
   } catch (error) {
     console.error('Error initializing outreach tables:', error);
@@ -7972,6 +8520,65 @@ Berend`,
   },
 };
 
+// Email templates for REVIEW ALERT outreach - ENGLISH
+// These are sent when we find a business with a bad review
+const REVIEW_ALERT_TEMPLATES_EN = {
+  sequence1: {
+    subject: '{business_name} - response to your Google review',
+    body: `Hi,
+
+I noticed {business_name} has a {review_rating}-star review on Google:
+
+"{review_text_truncated}"
+- {review_author}
+
+Here's a professional response you could use:
+
+---
+{ai_response_draft}
+---
+
+This response is free - feel free to use it directly.
+
+If you'd like AI-generated responses for all your reviews, try ReviewResponder:
+https://tryreviewresponder.com?ref=alert
+
+Best,
+Berend
+
+P.S. I'm the founder. Reply if you have questions.`,
+  },
+};
+
+// Email templates for REVIEW ALERT outreach - GERMAN
+const REVIEW_ALERT_TEMPLATES_DE = {
+  sequence1: {
+    subject: '{business_name} - Antwort auf Ihre Google-Bewertung',
+    body: `Hi,
+
+ich habe gesehen dass {business_name} eine {review_rating}-Sterne Bewertung auf Google hat:
+
+"{review_text_truncated}"
+- {review_author}
+
+Hier ist ein professioneller Antwortvorschlag:
+
+---
+{ai_response_draft}
+---
+
+Diese Antwort ist kostenlos - nutzen Sie sie gerne direkt.
+
+Falls Sie professionelle Antworten auf alle Reviews möchten, probieren Sie ReviewResponder:
+https://tryreviewresponder.com?ref=alert
+
+Grüße,
+Berend
+
+P.S. Bin der Gründer, bei Fragen einfach antworten.`,
+  },
+};
+
 // Combined templates with language selection
 const EMAIL_TEMPLATES = {
   sequence1: EMAIL_TEMPLATES_EN.sequence1,
@@ -7980,13 +8587,59 @@ const EMAIL_TEMPLATES = {
   sequence1_de: EMAIL_TEMPLATES_DE.sequence1,
   sequence2_de: EMAIL_TEMPLATES_DE.sequence2,
   sequence3_de: EMAIL_TEMPLATES_DE.sequence3,
+  // Review alert templates (only sequence 1 - one-shot value delivery)
+  review_alert: REVIEW_ALERT_TEMPLATES_EN.sequence1,
+  review_alert_de: REVIEW_ALERT_TEMPLATES_DE.sequence1,
 };
 
-// Helper: Get template based on language
+// Helper: Get template based on language and review status
 function getTemplateForLead(sequenceNum, lead) {
   const lang = detectLanguage(lead.city);
+
+  // For leads with bad reviews, use the review alert template (only for first email)
+  if (lead.has_bad_review && lead.ai_response_draft && sequenceNum === 1) {
+    return lang === 'de' ? EMAIL_TEMPLATES.review_alert_de : EMAIL_TEMPLATES.review_alert;
+  }
+
+  // Default cold email templates
   const key = lang === 'de' ? `sequence${sequenceNum}_de` : `sequence${sequenceNum}`;
   return EMAIL_TEMPLATES[key];
+}
+
+// Helper: Generate AI response draft for a bad review (used in outreach emails)
+async function generateReviewAlertDraft(businessName, businessType, reviewText, reviewRating, reviewAuthor) {
+  try {
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+    const systemPrompt = `You are a professional review response writer helping businesses respond to customer reviews.
+
+Generate a professional, empathetic response to this negative review. The response should:
+- Acknowledge the customer's concerns
+- Apologize for any inconvenience
+- Offer to make things right (without making specific promises)
+- Keep a professional but warm tone
+- Be 3-5 sentences maximum
+- NOT include any greeting or sign-off (those will be added by the business)
+
+Business: ${businessName} (${businessType || 'local business'})`;
+
+    const userPrompt = `Write a response to this ${reviewRating}-star review from ${reviewAuthor || 'a customer'}:
+
+"${reviewText}"`;
+
+    const completion = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 300,
+      messages: [
+        { role: 'user', content: systemPrompt + '\n\n' + userPrompt }
+      ],
+    });
+
+    return completion.content[0].text.trim();
+  } catch (error) {
+    console.error('Failed to generate review alert draft:', error.message);
+    return null;
+  }
 }
 
 // Helper: Scrape email from website (free fallback when Hunter.io fails)
@@ -8060,6 +8713,13 @@ function fillEmailTemplate(template, lead) {
   let subject = template.subject;
   let body = template.body;
 
+  // Truncate review text to ~150 chars for email readability
+  const reviewTextTruncated = lead.worst_review_text
+    ? (lead.worst_review_text.length > 150
+        ? lead.worst_review_text.substring(0, 147) + '...'
+        : lead.worst_review_text)
+    : '';
+
   const replacements = {
     '{business_name}': lead.business_name || 'your business',
     '{business_type}': lead.business_type || 'business',
@@ -8067,6 +8727,11 @@ function fillEmailTemplate(template, lead) {
     '{email}': encodeURIComponent(lead.email || ''),
     '{city}': lead.city || '',
     '{contact_name}': lead.contact_name || 'there',
+    // Review alert specific replacements
+    '{review_rating}': lead.worst_review_rating || '',
+    '{review_text_truncated}': reviewTextTruncated,
+    '{review_author}': lead.worst_review_author || 'a customer',
+    '{ai_response_draft}': lead.ai_response_draft || '',
   };
 
   for (const [key, value] of Object.entries(replacements)) {
@@ -8113,8 +8778,8 @@ app.post('/api/outreach/scrape-leads', async (req, res) => {
     const leads = [];
 
     for (const place of data.results.slice(0, limit)) {
-      // Get detailed info for each place
-      const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,types&key=${GOOGLE_API_KEY}`;
+      // Get detailed info for each place (including reviews for personalized outreach)
+      const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,types,reviews&key=${GOOGLE_API_KEY}`;
 
       const detailsResponse = await fetch(detailsUrl);
       const details = await detailsResponse.json();
@@ -8126,6 +8791,18 @@ app.post('/api/outreach/scrape-leads', async (req, res) => {
         const addressParts = (result.formatted_address || '').split(',');
         const cityState = addressParts[1]?.trim() || city;
 
+        // Find worst review (1-2 stars) for personalized outreach
+        let worstReview = null;
+        if (result.reviews && result.reviews.length > 0) {
+          const badReviews = result.reviews.filter(r => r.rating <= 2);
+          if (badReviews.length > 0) {
+            // Get the one with most text (usually more specific complaint)
+            worstReview = badReviews.reduce((worst, current) =>
+              (current.text?.length || 0) > (worst.text?.length || 0) ? current : worst
+            );
+          }
+        }
+
         const lead = {
           business_name: result.name,
           business_type: query,
@@ -8136,6 +8813,10 @@ app.post('/api/outreach/scrape-leads', async (req, res) => {
           google_rating: result.rating,
           google_reviews_count: result.user_ratings_total,
           source: 'google_places',
+          worst_review_text: worstReview?.text || null,
+          worst_review_rating: worstReview?.rating || null,
+          worst_review_author: worstReview?.author_name || null,
+          has_bad_review: worstReview !== null,
         };
 
         // Insert lead (ignore duplicates)
@@ -8143,12 +8824,16 @@ app.post('/api/outreach/scrape-leads', async (req, res) => {
           await dbQuery(
             `
             INSERT INTO outreach_leads
-            (business_name, business_type, address, city, phone, website, google_rating, google_reviews_count, source)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            (business_name, business_type, address, city, phone, website, google_rating, google_reviews_count, source, worst_review_text, worst_review_rating, worst_review_author, has_bad_review)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
             ON CONFLICT (business_name, city) DO UPDATE SET
               google_rating = EXCLUDED.google_rating,
               google_reviews_count = EXCLUDED.google_reviews_count,
-              website = COALESCE(EXCLUDED.website, outreach_leads.website)
+              website = COALESCE(EXCLUDED.website, outreach_leads.website),
+              worst_review_text = COALESCE(EXCLUDED.worst_review_text, outreach_leads.worst_review_text),
+              worst_review_rating = COALESCE(EXCLUDED.worst_review_rating, outreach_leads.worst_review_rating),
+              worst_review_author = COALESCE(EXCLUDED.worst_review_author, outreach_leads.worst_review_author),
+              has_bad_review = COALESCE(EXCLUDED.has_bad_review, outreach_leads.has_bad_review)
           `,
             [
               lead.business_name,
@@ -8160,6 +8845,10 @@ app.post('/api/outreach/scrape-leads', async (req, res) => {
               lead.google_rating,
               lead.google_reviews_count,
               lead.source,
+              lead.worst_review_text,
+              lead.worst_review_rating,
+              lead.worst_review_author,
+              lead.has_bad_review,
             ]
           );
 
@@ -8648,19 +9337,27 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
           continue;
         }
 
-        // Insert or update lead
+        // Check if lead has a bad review (for Review Alert emails)
+        const hasBadReview = lead.worst_review_text && lead.worst_review_rating && lead.worst_review_rating <= 2;
+
+        // Insert or update lead (including review alert fields)
         await dbQuery(`
           INSERT INTO outreach_leads
             (business_name, business_type, address, city, country, phone, website,
-             google_rating, google_reviews_count, email, source, status)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+             google_rating, google_reviews_count, email, source, status,
+             worst_review_text, worst_review_rating, worst_review_author, has_bad_review)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
           ON CONFLICT (business_name, city)
           DO UPDATE SET
             email = COALESCE(EXCLUDED.email, outreach_leads.email),
             phone = COALESCE(EXCLUDED.phone, outreach_leads.phone),
             website = COALESCE(EXCLUDED.website, outreach_leads.website),
             google_rating = COALESCE(EXCLUDED.google_rating, outreach_leads.google_rating),
-            google_reviews_count = COALESCE(EXCLUDED.google_reviews_count, outreach_leads.google_reviews_count)
+            google_reviews_count = COALESCE(EXCLUDED.google_reviews_count, outreach_leads.google_reviews_count),
+            worst_review_text = COALESCE(EXCLUDED.worst_review_text, outreach_leads.worst_review_text),
+            worst_review_rating = COALESCE(EXCLUDED.worst_review_rating, outreach_leads.worst_review_rating),
+            worst_review_author = COALESCE(EXCLUDED.worst_review_author, outreach_leads.worst_review_author),
+            has_bad_review = COALESCE(EXCLUDED.has_bad_review, outreach_leads.has_bad_review)
         `, [
           lead.name || lead.business_name,
           lead.type || lead.business_type || 'restaurant',
@@ -8673,18 +9370,45 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
           lead.reviews || lead.google_reviews_count,
           lead.email,
           'tripadvisor',
-          'new'
+          'new',
+          lead.worst_review_text || null,
+          lead.worst_review_rating || null,
+          lead.worst_review_author || null,
+          hasBadReview
         ]);
 
         results.added++;
 
         // Send email immediately if requested
         if (send_emails && resend && lead.email) {
-          const template = fillEmailTemplate(getTemplateForLead(1, {
+          // Generate AI draft for leads with bad reviews
+          let aiDraft = lead.ai_response_draft || null;
+          if (hasBadReview && lead.worst_review_text && !aiDraft) {
+            console.log(`📝 Generating AI draft for TripAdvisor lead: ${lead.name || lead.business_name}...`);
+            aiDraft = await generateReviewAlertDraft(
+              lead.name || lead.business_name,
+              lead.type || lead.business_type || 'restaurant',
+              lead.worst_review_text,
+              lead.worst_review_rating,
+              lead.worst_review_author
+            );
+          }
+
+          // Prepare lead data with all review alert fields
+          const leadData = {
             ...lead,
             business_name: lead.name || lead.business_name,
-            google_reviews_count: lead.reviews || lead.google_reviews_count
-          }), lead);
+            business_type: lead.type || lead.business_type || 'restaurant',
+            google_reviews_count: lead.reviews || lead.google_reviews_count,
+            has_bad_review: hasBadReview,
+            worst_review_text: lead.worst_review_text,
+            worst_review_rating: lead.worst_review_rating,
+            worst_review_author: lead.worst_review_author,
+            ai_response_draft: aiDraft
+          };
+
+          const template = fillEmailTemplate(getTemplateForLead(1, leadData), leadData);
+          const emailCampaign = hasBadReview && aiDraft ? 'tripadvisor-review-alert' : campaign;
 
           try {
             await resend.emails.send({
@@ -8693,24 +9417,29 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
               subject: template.subject,
               html: template.body.replace(/\n/g, '<br>'),
               tags: [
-                { name: 'campaign', value: campaign },
+                { name: 'campaign', value: emailCampaign },
                 { name: 'source', value: 'tripadvisor' },
                 { name: 'sequence', value: '1' }
               ]
             });
             results.emails_sent++;
 
-            // Log the sent email
+            // Log the sent email and save AI draft
             const insertedLead = await dbGet(
               'SELECT id FROM outreach_leads WHERE business_name = $1 AND city = $2',
               [lead.name || lead.business_name, lead.city]
             );
             if (insertedLead) {
+              // Save AI draft if generated
+              if (aiDraft) {
+                await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1 WHERE id = $2', [aiDraft, insertedLead.id]);
+              }
+
               await dbQuery(`
                 INSERT INTO outreach_emails
                   (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
                 VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5)
-              `, [insertedLead.id, lead.email, template.subject, template.body, campaign]);
+              `, [insertedLead.id, lead.email, template.subject, template.body, emailCampaign]);
 
               await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', ['contacted', insertedLead.id]);
             }
@@ -8772,12 +9501,25 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
 
     for (const lead of newLeads) {
       try {
-        // Get template for first email
-        const template = fillEmailTemplate(getTemplateForLead(1, {
-          business_name: lead.business_name,
-          google_rating: lead.google_rating,
-          google_reviews_count: lead.google_reviews_count
-        }), lead);
+        // Generate AI draft for leads with bad reviews (if not already done)
+        if (lead.has_bad_review && lead.worst_review_text && !lead.ai_response_draft) {
+          console.log(`📝 Generating AI draft for TripAdvisor lead: ${lead.business_name}...`);
+          const aiDraft = await generateReviewAlertDraft(
+            lead.business_name,
+            lead.business_type,
+            lead.worst_review_text,
+            lead.worst_review_rating,
+            lead.worst_review_author
+          );
+          if (aiDraft) {
+            lead.ai_response_draft = aiDraft;
+            await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1 WHERE id = $2', [aiDraft, lead.id]);
+          }
+        }
+
+        // Get template for first email (uses review alert template if has_bad_review)
+        const template = fillEmailTemplate(getTemplateForLead(1, lead), lead);
+        const emailCampaign = lead.has_bad_review && lead.ai_response_draft ? 'tripadvisor-review-alert' : 'tripadvisor-auto';
 
         // Send email via Resend
         await resend.emails.send({
@@ -8786,7 +9528,7 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
           subject: template.subject,
           html: template.body.replace(/\n/g, '<br>'),
           tags: [
-            { name: 'campaign', value: 'tripadvisor-auto' },
+            { name: 'campaign', value: emailCampaign },
             { name: 'source', value: 'tripadvisor' },
             { name: 'sequence', value: '1' }
           ]
@@ -8802,8 +9544,8 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
         // Log the email
         await dbQuery(`
           INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
-          VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), 'tripadvisor-auto')
-        `, [lead.id, lead.email, template.subject, template.body]);
+          VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5)
+        `, [lead.id, lead.email, template.subject, template.body, emailCampaign]);
 
         results.emails_sent++;
         console.log(`📧 TripAdvisor email sent to: ${lead.email} (${lead.business_name})`);
@@ -9224,6 +9966,10 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
 
   console.log('🚀 Starting daily outreach automation...');
 
+  // Optional query params to override city/industry (for manual triggering)
+  const overrideCity = req.query.city;
+  const overrideIndustry = req.query.industry;
+
   const results = {
     scraping: null,
     email_finding: null,
@@ -9257,9 +10003,12 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
 
     let totalScraped = 0;
 
-    // Pick random city and industry for today
-    const todayCity = cities[new Date().getDay() % cities.length];
-    const todayIndustry = industries[new Date().getDay() % industries.length];
+    // Pick city and industry based on date (better rotation across all cities)
+    // Using day of year for city, day of month for industry
+    // Can be overridden via query params: ?city=München&industry=restaurant
+    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+    const todayCity = overrideCity || cities[dayOfYear % cities.length];
+    const todayIndustry = overrideIndustry || industries[new Date().getDate() % industries.length];
 
     if (process.env.GOOGLE_PLACES_API_KEY) {
       const scrapeUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(todayIndustry + ' in ' + todayCity)}&key=${process.env.GOOGLE_PLACES_API_KEY}`;
@@ -9269,18 +10018,64 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
         const data = await response.json();
 
         if (data.results) {
-          for (const place of data.results.slice(0, 50)) {
+          for (const place of data.results.slice(0, 30)) { // Reduced to 30 to save API costs
             try {
-              await dbQuery(
-                `
-                INSERT INTO outreach_leads (business_name, business_type, city, source)
-                VALUES ($1, $2, $3, 'google_places')
-                ON CONFLICT (business_name, city) DO NOTHING
-              `,
-                [place.name, todayIndustry, todayCity]
-              );
-              totalScraped++;
-            } catch (e) {}
+              // Fetch Place Details including reviews for personalized outreach
+              const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,reviews&key=${process.env.GOOGLE_PLACES_API_KEY}`;
+              const detailsResponse = await fetch(detailsUrl);
+              const details = await detailsResponse.json();
+
+              if (details.status === 'OK') {
+                const result = details.result;
+
+                // Find worst review (1-2 stars) for personalized outreach
+                let worstReview = null;
+                if (result.reviews && result.reviews.length > 0) {
+                  const badReviews = result.reviews.filter(r => r.rating <= 2);
+                  if (badReviews.length > 0) {
+                    worstReview = badReviews.reduce((worst, current) =>
+                      (current.text?.length || 0) > (worst.text?.length || 0) ? current : worst
+                    );
+                  }
+                }
+
+                await dbQuery(
+                  `
+                  INSERT INTO outreach_leads (business_name, business_type, city, address, phone, website, google_rating, google_reviews_count, source, worst_review_text, worst_review_rating, worst_review_author, has_bad_review)
+                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'google_places', $9, $10, $11, $12)
+                  ON CONFLICT (business_name, city) DO UPDATE SET
+                    website = COALESCE(EXCLUDED.website, outreach_leads.website),
+                    phone = COALESCE(EXCLUDED.phone, outreach_leads.phone),
+                    google_rating = COALESCE(EXCLUDED.google_rating, outreach_leads.google_rating),
+                    google_reviews_count = COALESCE(EXCLUDED.google_reviews_count, outreach_leads.google_reviews_count),
+                    worst_review_text = COALESCE(EXCLUDED.worst_review_text, outreach_leads.worst_review_text),
+                    worst_review_rating = COALESCE(EXCLUDED.worst_review_rating, outreach_leads.worst_review_rating),
+                    worst_review_author = COALESCE(EXCLUDED.worst_review_author, outreach_leads.worst_review_author),
+                    has_bad_review = COALESCE(EXCLUDED.has_bad_review, outreach_leads.has_bad_review)
+                `,
+                  [
+                    result.name,
+                    todayIndustry,
+                    todayCity,
+                    result.formatted_address || null,
+                    result.formatted_phone_number || null,
+                    result.website || null,
+                    result.rating || null,
+                    result.user_ratings_total || null,
+                    worstReview?.text || null,
+                    worstReview?.rating || null,
+                    worstReview?.author_name || null,
+                    worstReview !== null,
+                  ]
+                );
+                totalScraped++;
+              }
+
+              // Rate limiting
+              await new Promise(r => setTimeout(r, 200));
+            } catch (e) {
+              console.error('Place details error:', e.message);
+            }
           }
         }
       } catch (e) {
@@ -9353,7 +10148,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
       total_found: hunterFound + scraperFound
     };
 
-    // Step 3: Send new cold emails
+    // Step 3: Send new cold emails (with AI-generated drafts for bad reviews)
     if (resend) {
       const newLeads = await dbAll(`
         SELECT l.* FROM outreach_leads l
@@ -9363,9 +10158,30 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
       `);
 
       let sent = 0;
+      let reviewAlertsSent = 0;
 
       for (const lead of newLeads) {
         try {
+          // For leads with bad reviews, generate AI response draft if not already done
+          if (lead.has_bad_review && lead.worst_review_text && !lead.ai_response_draft) {
+            console.log(`📝 Generating AI draft for ${lead.business_name}...`);
+            const aiDraft = await generateReviewAlertDraft(
+              lead.business_name,
+              lead.business_type,
+              lead.worst_review_text,
+              lead.worst_review_rating,
+              lead.worst_review_author
+            );
+
+            if (aiDraft) {
+              lead.ai_response_draft = aiDraft;
+              await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1 WHERE id = $2', [
+                aiDraft,
+                lead.id,
+              ]);
+            }
+          }
+
           const template = fillEmailTemplate(getTemplateForLead(1, lead), lead);
 
           await resend.emails.send({
@@ -9375,12 +10191,16 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
             html: template.body.replace(/\n/g, '<br>'),
           });
 
+          // Track if this was a review alert email
+          const campaign = lead.has_bad_review && lead.ai_response_draft ? 'review_alert' : 'main';
+          if (campaign === 'review_alert') reviewAlertsSent++;
+
           await dbQuery(
             `
             INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
-            VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), 'main')
+            VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5)
           `,
-            [lead.id, lead.email, template.subject, template.body]
+            [lead.id, lead.email, template.subject, template.body, campaign]
           );
 
           await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', [
@@ -9395,7 +10215,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
         }
       }
 
-      results.sending = { sent: sent };
+      results.sending = { sent: sent, review_alerts: reviewAlertsSent };
 
       // Step 4: Send follow-ups
       const needsFollowup = await dbAll(`
@@ -9868,33 +10688,48 @@ app.get('/api/admin/reddit-responses', async (req, res) => {
 });
 
 // ==========================================
-// TWITTER/X ENGAGEMENT
+// TWITTER/X ENGAGEMENT (Auto-Posting via @ExecPsychology)
 // ==========================================
 
-// Search Twitter for relevant tweets
+// Search Twitter for relevant tweets using OAuth 1.0a client
 async function searchTwitter(query) {
-  const bearerToken = process.env.TWITTER_BEARER_TOKEN;
-  if (!bearerToken) return [];
+  if (!twitterClient) return [];
 
-  const params = new URLSearchParams({
-    query: `${query} -is:retweet lang:en`,
-    'tweet.fields': 'author_id,created_at,public_metrics',
-    'user.fields': 'username,name',
-    expansions: 'author_id',
-    max_results: '10'
-  });
+  try {
+    const result = await twitterClient.v2.search(query, {
+      'tweet.fields': ['author_id', 'created_at', 'public_metrics', 'conversation_id'],
+      'user.fields': ['username', 'name'],
+      'expansions': ['author_id'],
+      'max_results': 10
+    });
 
-  const response = await fetch(`https://api.twitter.com/2/tweets/search/recent?${params}`, {
-    headers: {
-      'Authorization': `Bearer ${bearerToken}`
-    }
-  });
-
-  const data = await response.json();
-  return data.data || [];
+    return result.data?.data || [];
+  } catch (error) {
+    console.error('[Twitter] Search error:', error.message);
+    return [];
+  }
 }
 
-// Twitter monitor cron endpoint
+// Post a reply to a tweet
+async function postTwitterReply(tweetId, replyText) {
+  if (!twitterClient) {
+    return { success: false, error: 'Twitter client not configured' };
+  }
+
+  try {
+    const result = await twitterClient.v2.reply(replyText, tweetId);
+    return {
+      success: true,
+      tweetId: result.data.id,
+      text: result.data.text
+    };
+  } catch (error) {
+    console.error('[Twitter] Reply error:', error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+// Twitter monitor cron endpoint - Auto-posts replies via @ExecPsychology
 app.get('/api/cron/twitter-monitor', async (req, res) => {
   const secret = req.query.secret || req.headers['x-cron-secret'];
   if (!safeCompare(secret, process.env.CRON_SECRET)) {
@@ -9903,10 +10738,10 @@ app.get('/api/cron/twitter-monitor', async (req, res) => {
 
   const dryRun = req.query.dry_run === 'true';
 
-  if (!process.env.TWITTER_BEARER_TOKEN) {
+  if (!twitterClient) {
     return res.status(500).json({
       error: 'Twitter API not configured',
-      setup: 'Add TWITTER_BEARER_TOKEN to Render environment variables'
+      setup: 'Add TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET to Render'
     });
   }
 
@@ -9918,7 +10753,7 @@ app.get('/api/cron/twitter-monitor', async (req, res) => {
   };
 
   try {
-    // Initialize Twitter responses table
+    // Initialize Twitter responses table with posted status
     await dbQuery(`
       CREATE TABLE IF NOT EXISTS twitter_responses (
         id SERIAL PRIMARY KEY,
@@ -9926,34 +10761,46 @@ app.get('/api/cron/twitter-monitor', async (req, res) => {
         tweet_text TEXT,
         tweet_author VARCHAR(100),
         our_reply TEXT,
+        our_reply_id VARCHAR(50),
         topic VARCHAR(100),
+        posted BOOLEAN DEFAULT FALSE,
         posted_at TIMESTAMP DEFAULT NOW()
       )
     `);
 
-    // Check daily limit (max 5 replies per day)
+    // Add posted column if not exists (migration for existing tables)
+    await dbQuery(`
+      ALTER TABLE twitter_responses ADD COLUMN IF NOT EXISTS posted BOOLEAN DEFAULT FALSE
+    `).catch(() => {});
+    await dbQuery(`
+      ALTER TABLE twitter_responses ADD COLUMN IF NOT EXISTS our_reply_id VARCHAR(50)
+    `).catch(() => {});
+
+    // Check daily limit (max 10 replies per day to stay safe)
     const todayCount = await dbGet(`
       SELECT COUNT(*) as count FROM twitter_responses
-      WHERE posted_at > NOW() - INTERVAL '24 hours'
+      WHERE posted = TRUE AND posted_at > NOW() - INTERVAL '24 hours'
     `);
 
-    const dailyLimit = 5;
+    const dailyLimit = 10;
     const remaining = dailyLimit - parseInt(todayCount?.count || 0);
 
     if (remaining <= 0) {
       return res.json({
-        message: 'Daily limit reached (5 replies/day)',
+        message: 'Daily limit reached (10 auto-replies/day)',
         results: results
       });
     }
 
-    // Keywords to search
+    // Keywords to search (English + German)
     const keywords = [
-      '"negative review" help',
-      '"bad review" business',
-      'respond to review',
-      '"online reputation" help',
-      '"google review" response'
+      '"negative review" help -is:retweet',
+      '"bad review" business -is:retweet',
+      'how to respond review -is:retweet',
+      '"online reputation" help -is:retweet',
+      '"google review" response -is:retweet',
+      '"schlechte Bewertung" -is:retweet',
+      '"negative Bewertung" hilfe -is:retweet'
     ];
 
     const allTweets = [];
@@ -9962,7 +10809,8 @@ app.get('/api/cron/twitter-monitor', async (req, res) => {
       try {
         const tweets = await searchTwitter(keyword);
         allTweets.push(...tweets.map(t => ({ ...t, searchKeyword: keyword })));
-        await new Promise(r => setTimeout(r, 1000));
+        // Rate limit: wait 2 seconds between searches
+        await new Promise(r => setTimeout(r, 2000));
       } catch (e) {
         results.errors.push(`Search error: ${keyword}`);
       }
@@ -9978,52 +10826,74 @@ app.get('/api/cron/twitter-monitor', async (req, res) => {
 
     const newTweets = uniqueTweets.filter(t => !respondedIds.has(t.id));
 
-    // Note: Twitter API v2 free tier doesn't allow posting tweets
-    // This endpoint monitors and logs opportunities for manual engagement
+    // Process tweets and auto-post replies
     for (const tweet of newTweets.slice(0, remaining)) {
       try {
-        // Generate helpful reply
-        const systemPrompt = `You are a helpful business expert on Twitter. Write a short, helpful reply (max 280 chars) that:
-1. Addresses the user's problem directly
-2. Offers a quick tip or suggestion
-3. Is friendly and genuine (not salesy)
-4. Only mentions ReviewResponder if directly relevant to review management`;
+        // Generate helpful reply using Claude Sonnet (cost-effective for volume)
+        const systemPrompt = `You are @ExecPsychology, a helpful business psychology expert on Twitter. Write a short, helpful reply (max 250 chars) that:
+1. Addresses the user's problem with empathy
+2. Offers a quick, actionable tip
+3. Is friendly and genuine (NOT salesy)
+4. Only mention ReviewResponder if the tweet is specifically about review response tools
+5. Use casual Twitter tone with occasional emoji`;
 
-        // Use Opus 4.5 for highest quality (important marketing touchpoints)
         const reply = anthropic ? await anthropic.messages.create({
-          model: 'claude-opus-4-20250514',
+          model: 'claude-sonnet-4-20250514',
           max_tokens: 100,
           system: systemPrompt,
-          messages: [{ role: 'user', content: `Tweet: "${tweet.text}"\n\nWrite a helpful reply:` }]
-        }).then(r => r.content[0].text) : null;
+          messages: [{ role: 'user', content: `Tweet: "${tweet.text}"\n\nWrite a helpful reply (max 250 chars):` }]
+        }).then(r => r.content[0].text.trim()) : null;
 
-        if (reply) {
+        if (reply && reply.length <= 280) {
           results.replies_generated++;
 
-          // Save for manual review (Twitter free tier doesn't allow posting)
-          await dbQuery(`
-            INSERT INTO twitter_responses (tweet_id, tweet_text, tweet_author, our_reply, topic)
-            VALUES ($1, $2, $3, $4, $5)
-            ON CONFLICT (tweet_id) DO NOTHING
-          `, [tweet.id, tweet.text, tweet.author_id, reply, tweet.searchKeyword]);
-
           if (!dryRun) {
-            console.log(`[Twitter] Found opportunity: "${tweet.text.substring(0, 50)}..."`);
-            console.log(`Suggested reply: ${reply}`);
+            // Actually post the reply!
+            const postResult = await postTwitterReply(tweet.id, reply);
+
+            if (postResult.success) {
+              results.replies_posted++;
+              console.log(`[Twitter] Posted reply to tweet ${tweet.id}`);
+
+              // Save successful post to DB
+              await dbQuery(`
+                INSERT INTO twitter_responses (tweet_id, tweet_text, tweet_author, our_reply, our_reply_id, topic, posted)
+                VALUES ($1, $2, $3, $4, $5, $6, TRUE)
+                ON CONFLICT (tweet_id) DO UPDATE SET posted = TRUE, our_reply_id = $5
+              `, [tweet.id, tweet.text, tweet.author_id, reply, postResult.tweetId, tweet.searchKeyword]);
+
+              // Rate limit: wait 30 seconds between posts (stay well under limits)
+              await new Promise(r => setTimeout(r, 30000));
+            } else {
+              results.errors.push(`Post failed for ${tweet.id}: ${postResult.error}`);
+
+              // Save failed attempt for review
+              await dbQuery(`
+                INSERT INTO twitter_responses (tweet_id, tweet_text, tweet_author, our_reply, topic, posted)
+                VALUES ($1, $2, $3, $4, $5, FALSE)
+                ON CONFLICT (tweet_id) DO NOTHING
+              `, [tweet.id, tweet.text, tweet.author_id, reply, tweet.searchKeyword]);
+            }
+          } else {
+            // Dry run - just log
+            console.log(`[Twitter DRY RUN] Would reply to: "${tweet.text.substring(0, 50)}..."`);
+            console.log(`Reply: ${reply}`);
           }
         }
 
       } catch (e) {
-        results.errors.push(`Tweet error: ${tweet.id}`);
+        results.errors.push(`Tweet processing error: ${tweet.id} - ${e.message}`);
       }
     }
 
     res.json({
       success: true,
       dry_run: dryRun,
-      message: 'Twitter opportunities logged for manual engagement (free tier cannot post)',
+      message: dryRun
+        ? 'Dry run complete - no tweets posted'
+        : `Auto-posted ${results.replies_posted} replies via @ExecPsychology`,
       daily_limit: dailyLimit,
-      remaining_today: remaining - results.replies_generated,
+      remaining_today: remaining - results.replies_posted,
       results: results
     });
 
@@ -10033,7 +10903,7 @@ app.get('/api/cron/twitter-monitor', async (req, res) => {
   }
 });
 
-// Get Twitter engagement opportunities
+// Get Twitter engagement history
 app.get('/api/admin/twitter-opportunities', async (req, res) => {
   const adminKey = req.query.key || req.headers['x-admin-key'];
   if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
@@ -10041,18 +10911,275 @@ app.get('/api/admin/twitter-opportunities', async (req, res) => {
   }
 
   try {
-    const opportunities = await dbAll(`
+    const responses = await dbAll(`
       SELECT * FROM twitter_responses
       ORDER BY posted_at DESC
       LIMIT 50
     `);
 
+    const posted = responses.filter(r => r.posted);
+    const pending = responses.filter(r => !r.posted);
+
     res.json({
-      message: 'These are suggested replies for manual posting (Twitter free tier limitation)',
-      opportunities: opportunities
+      account: '@ExecPsychology',
+      auto_posting: !!twitterClient,
+      stats: {
+        total: responses.length,
+        posted: posted.length,
+        pending: pending.length
+      },
+      posted: posted,
+      pending: pending
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to get Twitter opportunities' });
+    res.status(500).json({ error: 'Failed to get Twitter responses' });
+  }
+});
+
+// ============================================
+// TWITTER AUTO-TWEET SCHEDULER (@ExecPsychology)
+// ============================================
+
+// Tweet content categories and prompts
+const TWEET_CATEGORIES = [
+  {
+    name: 'business_psychology',
+    weight: 30,
+    prompt: `Write a short, insightful tweet about business psychology. Topics: customer behavior, decision-making, trust-building, emotional intelligence in business. Be specific and actionable. No hashtags.`
+  },
+  {
+    name: 'review_management',
+    weight: 25,
+    prompt: `Write a short tweet with a practical tip about responding to customer reviews (positive or negative). Share real insight, not generic advice. No hashtags.`
+  },
+  {
+    name: 'business_tip',
+    weight: 20,
+    prompt: `Write a short tweet with a counterintuitive or lesser-known business tip. Make it memorable and shareable. No hashtags.`
+  },
+  {
+    name: 'engagement_question',
+    weight: 15,
+    prompt: `Write a short tweet asking business owners an engaging question about their challenges with customer feedback, reviews, or reputation. Make it conversational. No hashtags.`
+  },
+  {
+    name: 'soft_promo',
+    weight: 10,
+    prompt: `Write a short tweet mentioning ReviewResponder (AI tool for responding to customer reviews). Be subtle and value-first - lead with the problem it solves, not the product. Include tryreviewresponder.com naturally. No hashtags.`
+  }
+];
+
+// Select category based on weights
+function selectTweetCategory() {
+  const totalWeight = TWEET_CATEGORIES.reduce((sum, cat) => sum + cat.weight, 0);
+  let random = Math.random() * totalWeight;
+
+  for (const category of TWEET_CATEGORIES) {
+    random -= category.weight;
+    if (random <= 0) return category;
+  }
+  return TWEET_CATEGORIES[0];
+}
+
+// Generate tweet content using Claude
+async function generateTweetContent(category) {
+  if (!anthropic) return null;
+
+  const systemPrompt = `You are @ExecPsychology on Twitter - a business psychology expert who helps entrepreneurs understand customer behavior and build better businesses.
+
+Your tone is:
+- Insightful but accessible (no jargon)
+- Confident but not arrogant
+- Helpful and genuine
+- Occasionally witty
+
+Rules:
+- Max 250 characters (leave room for engagement)
+- No hashtags (they reduce reach on X)
+- No emojis at the start
+- One emoji max, only if it adds value
+- Write like a human, not a brand`;
+
+  try {
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 100,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: category.prompt }]
+    });
+
+    return response.content[0].text.trim();
+  } catch (error) {
+    console.error('[Twitter] Tweet generation error:', error.message);
+    return null;
+  }
+}
+
+// Post a new tweet
+async function postTweet(text) {
+  if (!twitterClient) {
+    return { success: false, error: 'Twitter client not configured' };
+  }
+
+  try {
+    const result = await twitterClient.v2.tweet(text);
+    return {
+      success: true,
+      tweetId: result.data.id,
+      text: result.data.text
+    };
+  } catch (error) {
+    console.error('[Twitter] Post error:', error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+// Auto-Tweet cron endpoint
+app.get('/api/cron/twitter-post', async (req, res) => {
+  const secret = req.query.secret || req.headers['x-cron-secret'];
+  if (!safeCompare(secret, process.env.CRON_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const dryRun = req.query.dry_run === 'true';
+
+  if (!twitterClient) {
+    return res.status(500).json({
+      error: 'Twitter API not configured',
+      setup: 'Add TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET'
+    });
+  }
+
+  try {
+    // Initialize scheduled tweets table
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS twitter_scheduled_posts (
+        id SERIAL PRIMARY KEY,
+        tweet_text TEXT NOT NULL,
+        tweet_id VARCHAR(50),
+        category VARCHAR(50),
+        posted BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT NOW(),
+        posted_at TIMESTAMP
+      )
+    `);
+
+    // Check daily limit (max 2 tweets per day)
+    const todayCount = await dbGet(`
+      SELECT COUNT(*) as count FROM twitter_scheduled_posts
+      WHERE posted = TRUE AND posted_at > NOW() - INTERVAL '24 hours'
+    `);
+
+    const dailyLimit = 2;
+    const postedToday = parseInt(todayCount?.count || 0);
+
+    if (postedToday >= dailyLimit) {
+      return res.json({
+        success: true,
+        message: `Daily limit reached (${dailyLimit} tweets/day)`,
+        posted_today: postedToday,
+        next_slot: 'Tomorrow'
+      });
+    }
+
+    // Select category and generate tweet
+    const category = selectTweetCategory();
+    const tweetText = await generateTweetContent(category);
+
+    if (!tweetText) {
+      return res.status(500).json({ error: 'Failed to generate tweet content' });
+    }
+
+    // Validate length
+    if (tweetText.length > 280) {
+      return res.status(500).json({
+        error: 'Generated tweet too long',
+        length: tweetText.length,
+        text: tweetText
+      });
+    }
+
+    const result = {
+      category: category.name,
+      tweet: tweetText,
+      length: tweetText.length,
+      posted: false,
+      tweet_id: null
+    };
+
+    if (!dryRun) {
+      // Post the tweet
+      const postResult = await postTweet(tweetText);
+
+      if (postResult.success) {
+        result.posted = true;
+        result.tweet_id = postResult.tweetId;
+
+        // Save to database
+        await dbQuery(`
+          INSERT INTO twitter_scheduled_posts (tweet_text, tweet_id, category, posted, posted_at)
+          VALUES ($1, $2, $3, TRUE, NOW())
+        `, [tweetText, postResult.tweetId, category.name]);
+
+        console.log(`[Twitter] Posted tweet: "${tweetText.substring(0, 50)}..."`);
+      } else {
+        result.error = postResult.error;
+
+        // Save failed attempt
+        await dbQuery(`
+          INSERT INTO twitter_scheduled_posts (tweet_text, category, posted)
+          VALUES ($1, $2, FALSE)
+        `, [tweetText, category.name]);
+      }
+    } else {
+      console.log(`[Twitter DRY RUN] Would post: "${tweetText}"`);
+    }
+
+    res.json({
+      success: true,
+      dry_run: dryRun,
+      account: '@ExecPsychology',
+      daily_limit: dailyLimit,
+      posted_today: postedToday + (result.posted ? 1 : 0),
+      result: result
+    });
+
+  } catch (error) {
+    console.error('Twitter post error:', error);
+    res.status(500).json({ error: 'Twitter post failed', details: error.message });
+  }
+});
+
+// Get scheduled tweet history
+app.get('/api/admin/twitter-posts', async (req, res) => {
+  const adminKey = req.query.key || req.headers['x-admin-key'];
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const posts = await dbAll(`
+      SELECT * FROM twitter_scheduled_posts
+      ORDER BY created_at DESC
+      LIMIT 50
+    `);
+
+    // Stats by category
+    const categoryStats = await dbAll(`
+      SELECT category, COUNT(*) as count, SUM(CASE WHEN posted THEN 1 ELSE 0 END) as posted_count
+      FROM twitter_scheduled_posts
+      GROUP BY category
+    `);
+
+    res.json({
+      account: '@ExecPsychology',
+      auto_posting: !!twitterClient,
+      total_posts: posts.length,
+      category_stats: categoryStats,
+      recent_posts: posts
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get tweet history' });
   }
 });
 
@@ -10269,6 +11396,232 @@ app.post('/api/sales/linkedin-leads', async (req, res) => {
   } catch (error) {
     console.error('LinkedIn leads submission error:', error);
     res.status(500).json({ error: 'Failed to submit leads' });
+  }
+});
+
+// POST /api/outreach/linkedin-demo - Generate personalized demo for LinkedIn outreach
+app.post('/api/outreach/linkedin-demo', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.headers['x-api-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized - Admin key required' });
+  }
+
+  try {
+    const { linkedin_url, first_name, company, business_name, city } = req.body;
+
+    if (!linkedin_url && !business_name) {
+      return res.status(400).json({ error: 'Either linkedin_url or business_name required' });
+    }
+
+    // Extract first name from full name if not provided
+    const contactFirstName = first_name || (req.body.name ? req.body.name.split(' ')[0] : 'there');
+    const contactCompany = company || business_name;
+
+    // Try to find the business on Google Maps
+    let placeId = null;
+    let googleRating = null;
+    let totalReviews = 0;
+    let scrapedReviews = [];
+    let generatedResponses = [];
+
+    const searchName = business_name || contactCompany;
+    const searchCity = city || '';
+
+    if (searchName) {
+      try {
+        placeId = await lookupPlaceId(searchName, searchCity);
+      } catch (err) {
+        console.log('Place lookup failed:', err.message);
+      }
+    }
+
+    // If we found a place, try to get reviews and generate demo
+    if (placeId && process.env.SERPAPI_KEY) {
+      try {
+        // Get place details for rating
+        const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=rating,user_ratings_total,name&key=${process.env.GOOGLE_PLACES_API_KEY}`;
+        const detailsRes = await fetch(detailsUrl);
+        const detailsData = await detailsRes.json();
+
+        if (detailsData.result) {
+          googleRating = detailsData.result.rating;
+          totalReviews = detailsData.result.user_ratings_total || 0;
+        }
+
+        // Scrape reviews via SerpAPI
+        scrapedReviews = await scrapeGoogleReviews(placeId, 3);
+
+        // Generate AI responses for each review
+        for (const review of scrapedReviews) {
+          const aiResponse = await generateDemoResponse(review, searchName);
+          generatedResponses.push({
+            review: review,
+            ai_response: aiResponse
+          });
+        }
+      } catch (err) {
+        console.log('Review scraping/generation failed:', err.message);
+      }
+    }
+
+    // Generate demo token
+    const demoToken = generateDemoToken();
+    const demoUrl = `https://tryreviewresponder.com/demo/${demoToken}`;
+
+    // Generate connection note
+    let connectionNote;
+    if (scrapedReviews.length > 0 && googleRating) {
+      connectionNote = `Hi ${contactFirstName},
+
+Saw ${searchName} has ${googleRating} stars on Google - nice work!
+
+I made you something: ${demoUrl}
+
+(3 AI-generated responses to your toughest reviews)
+
+Cheers,
+Berend`;
+    } else {
+      // Fallback note without demo
+      connectionNote = `Hi ${contactFirstName},
+
+Love what you're doing at ${contactCompany}.
+
+Built a tool that writes review responses in 10 seconds.
+Would love your feedback: tryreviewresponder.com
+
+Cheers,
+Berend`;
+    }
+
+    // Save to database (update existing or insert new)
+    let linkedinLeadId;
+    if (linkedin_url) {
+      const existing = await dbGet('SELECT id FROM linkedin_outreach WHERE linkedin_url = $1', [linkedin_url]);
+      if (existing) {
+        await dbQuery(`
+          UPDATE linkedin_outreach
+          SET demo_token = $1, demo_url = $2, connection_note = $3,
+              business_name = $4, google_place_id = $5, google_rating = $6
+          WHERE id = $7
+        `, [demoToken, demoUrl, connectionNote, searchName, placeId, googleRating, existing.id]);
+        linkedinLeadId = existing.id;
+      } else {
+        const inserted = await dbGet(`
+          INSERT INTO linkedin_outreach (name, company, linkedin_url, demo_token, demo_url, connection_note, business_name, google_place_id, google_rating)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          RETURNING id
+        `, [req.body.name || contactFirstName, contactCompany, linkedin_url, demoToken, demoUrl, connectionNote, searchName, placeId, googleRating]);
+        linkedinLeadId = inserted.id;
+      }
+    }
+
+    // Also store in demo_generations if we have reviews
+    if (scrapedReviews.length > 0) {
+      await dbQuery(`
+        INSERT INTO demo_generations (business_name, google_place_id, google_rating, total_reviews, scraped_reviews, demo_token, generated_responses)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        ON CONFLICT (demo_token) DO UPDATE SET generated_responses = $7
+      `, [searchName, placeId, googleRating, totalReviews, JSON.stringify(scrapedReviews), demoToken, JSON.stringify(generatedResponses)]);
+    }
+
+    res.json({
+      success: true,
+      demo_token: demoToken,
+      demo_url: demoUrl,
+      connection_note: connectionNote,
+      linkedin_lead_id: linkedinLeadId,
+      has_reviews: scrapedReviews.length > 0,
+      reviews_processed: scrapedReviews.length,
+      google_rating: googleRating,
+      business_name: searchName
+    });
+
+  } catch (error) {
+    console.error('LinkedIn demo generation error:', error);
+    res.status(500).json({ error: 'Failed to generate LinkedIn demo' });
+  }
+});
+
+// GET /api/outreach/linkedin-demo/:id - Get LinkedIn lead with demo info
+app.get('/api/outreach/linkedin-demo/:id', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.headers['x-api-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const lead = await dbGet('SELECT * FROM linkedin_outreach WHERE id = $1', [req.params.id]);
+    if (!lead) {
+      return res.status(404).json({ error: 'Lead not found' });
+    }
+    res.json(lead);
+  } catch (error) {
+    console.error('LinkedIn lead fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch lead' });
+  }
+});
+
+// PUT /api/outreach/linkedin-demo/:id/sent - Mark connection as sent
+app.put('/api/outreach/linkedin-demo/:id/sent', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.headers['x-api-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    await dbQuery(`
+      UPDATE linkedin_outreach
+      SET connection_sent = TRUE, connection_sent_at = NOW()
+      WHERE id = $1
+    `, [req.params.id]);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('LinkedIn sent update error:', error);
+    res.status(500).json({ error: 'Failed to update' });
+  }
+});
+
+// PUT /api/outreach/linkedin-demo/:id/accepted - Mark connection as accepted
+app.put('/api/outreach/linkedin-demo/:id/accepted', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.headers['x-api-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    await dbQuery(`
+      UPDATE linkedin_outreach
+      SET connection_accepted = TRUE, connection_accepted_at = NOW()
+      WHERE id = $1
+    `, [req.params.id]);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('LinkedIn accepted update error:', error);
+    res.status(500).json({ error: 'Failed to update' });
+  }
+});
+
+// GET /api/outreach/linkedin-pending - Get LinkedIn leads pending connection
+app.get('/api/outreach/linkedin-pending', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.headers['x-api-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+    const leads = await dbAll(`
+      SELECT * FROM linkedin_outreach
+      WHERE demo_token IS NOT NULL
+        AND connection_sent = FALSE
+      ORDER BY created_at DESC
+      LIMIT $1
+    `, [limit]);
+    res.json({ leads, count: leads.length });
+  } catch (error) {
+    console.error('LinkedIn pending fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch pending leads' });
   }
 });
 

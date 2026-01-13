@@ -10,10 +10,33 @@
           }
         ]
       }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File \"C:\\Users\\Berend Mainz\\claude-notify.ps1\" -Type input"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File \"C:\\Users\\Berend Mainz\\claude-notify.ps1\" -Type done"
+          }
+        ]
+      }
     ]
   },
   "permissions": {
     "allow": [
+      "mcp__claude-in-chrome__*",
       "Bash(npm run *)",
       "Bash(npm install *)",
       "Bash(npm uninstall *)",

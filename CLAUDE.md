@@ -246,42 +246,34 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 **Stand: 13.01.2026**
 
 ### USER MUSS MACHEN:
-- [ ] Demo-Video aufnehmen (2 Min Walkthrough)
+- [x] Demo-Video aufnehmen (2 Min Walkthrough) - DONE
 - [ ] Chrome Web Store einreichen (ZIP + Screenshots)
-- [ ] **SEPA-Lastschrift aktivieren**: Stripe Dashboard → Braucht ID-Verifizierung
-- [ ] **API Keys in Render setzen** (für Sales Automation):
-  - `GOOGLE_PLACES_API_KEY` - https://console.cloud.google.com
-  - `HUNTER_API_KEY` - https://hunter.io (Free: 25/Monat)
-  - `GEMINI_API_KEY` - https://aistudio.google.com/apikey
-  - `ADMIN_SECRET` + `CRON_SECRET` - Zufällige Strings
-  - `REDDIT_CLIENT_ID` + `REDDIT_CLIENT_SECRET` + `REDDIT_USERNAME` + `REDDIT_PASSWORD`
-  - `TWITTER_BEARER_TOKEN` - https://developer.twitter.com
-- [ ] **Cron Jobs anlegen** (cron-job.org):
-  - Daily Outreach: `POST .../api/cron/daily-outreach?secret=X` @ 09:00 Berlin
-  - Drip Emails: `POST .../api/cron/send-drip-emails?secret=X` @ 10:00 Berlin
-  - Blog Generation: `POST .../api/cron/generate-blog-article?secret=X` @ Mo/Mi/Fr 07:00
-  - Reddit Monitor: `POST .../api/cron/reddit-monitor?secret=X` @ 12:00 Berlin
-  - Twitter Monitor: `POST .../api/cron/twitter-monitor?secret=X` @ 14:00 Berlin
-- [ ] **Reddit App erstellen**: https://www.reddit.com/prefs/apps
+- [ ] **Reddit API Keys holen**: Wartet auf Genehmigung → https://www.reddit.com/prefs/apps → App erstellen
+
+### CLAUDE KANN SELBST (mit Chrome MCP):
+- Cron Jobs anlegen/ändern auf cron-job.org
+- API Keys in Render setzen
+- Stripe Dashboard Settings
+- Alle Browser-basierten Admin-Tasks
 
 ### NÄCHSTE CLAUDE TASKS:
 
-| Task | Schwierigkeit | Dateien |
-|------|---------------|---------|
-| Tone Preview (Beispiel-Snippets) | Leicht | `chrome-extension/content.js` |
-
+Keine offenen Tasks - App ist feature-complete!
 
 ### HEUTE ERLEDIGT (13.01.2026):
-- [x] **Comprehensive Sales Dashboard** - Admin Panel komplett neu designed für max Sales
-  - **Sales Tab**: MRR/ARR Cards, Growth Metrics (heute/Woche/Monat), Sales Funnel Visualisierung, Plan Distribution, Recent Signups mit Details, Blog & Email Stats
-  - **Insights Tab**: Actionable Intelligence mit 3 Karten:
-    - Upgrade Opportunities (User nahe am Limit)
-    - Hot Free Users (aktive Free-User für Conversion)
-    - Churn Risk (zahlende User ohne Aktivität 14+ Tage)
-  - Power Users Table (Top 10 by Response Count)
-  - Backend: Neuer `/api/admin/sales-dashboard` Endpoint mit Revenue, Funnel, Activity, Insights
-- [x] **Test Account Cleanup** - 54 Fake-Accounts gelöscht, nur echte User behalten
-- [x] **Admin Key Storage** - Secrets in `.claude/secrets.local` für alle Claude Sessions
+- [x] **Frontend Redesign mit Gemini MCP** - Komplette Landing Page überarbeitet
+  - Neues modernes Design mit verbesserter UX
+  - "20 free responses/month" klar kommuniziert (statt vages "free forever")
+  - "Launch Special" → "Early Access" umbenannt
+  - Footer auf allen SEO-Seiten gefixt
+  - Video-Player mit korrektem Aspect Ratio (kein Cropping)
+  - Mobile + Dark Mode getestet
+- [x] **Review Alert Outreach System** - Personalisierte Emails mit AI-generierten Antwort-Drafts
+  - Daily Outreach fetcht jetzt Place Details inkl. Reviews
+  - Für Businesses mit 1-2 Sterne Reviews: AI-Draft generiert
+  - Emails enthalten echte Review + fertige Antwort (Wert statt Spam)
+  - Kosten: ~$10/Monat (nur Claude Sonnet für Drafts)
+  - Campaign tracking: `review_alert` vs `main`
 - [x] **Sales Automation implementiert** - Komplettes System für automatische Lead-Generierung
   - DACH-Städte hinzugefügt (München, Hamburg, Frankfurt, Köln, Stuttgart, Düsseldorf, Wien, Zürich, Genf, Brüssel)
   - 4 neue Branchen (Spa, Tierarzt, Physiotherapie, Steuerberater)
@@ -289,17 +281,23 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 - [x] **Reddit Auto-Responder** - Automatische hilfreiche Kommentare auf Reddit
   - Monitort 8 Subreddits (smallbusiness, Entrepreneur, restaurateur, etc.)
   - 8 Keywords (negative review, review management, etc.)
-  - AI-generierte hilfreiche Antworten (Claude Sonnet)
+  - AI-generierte hilfreiche Antworten (**Claude Opus 4.5** für beste Qualität)
   - 5 Kommentare/Tag Limit (Anti-Spam)
   - Endpoints: `GET /api/cron/reddit-monitor`, `GET /api/admin/reddit-responses`
 - [x] **Twitter/X Engagement** - Findet Tweet-Opportunities für manuelles Engagement
   - Sucht nach review-bezogenen Tweets
-  - Generiert Antwort-Vorschläge
+  - Generiert Antwort-Vorschläge (**Claude Opus 4.5**)
   - Loggt Opportunities für manuelles Posten (Free Tier kann nicht automatisch posten)
   - Endpoints: `GET /api/cron/twitter-monitor`, `GET /api/admin/twitter-opportunities`
 - [x] **Blog SEO Verbesserungen**
   - Internal Linking: Neue Artikel verlinken automatisch zu verwandten Artikeln
   - Schema.org JSON-LD Markup für Rich Snippets in Google
+- [x] **Drip Email Cron Fix** - Error Response kompakter gemacht
+  - cron-job.org hatte "Ausgabe zu groß" Fehler
+  - Error-Response auf max 100 Zeichen gekürzt
+- [x] **Reddit API Access Request** - Antrag eingereicht
+  - Formular ausgefüllt via Chrome MCP
+  - Wartet auf Genehmigung (1-2 Tage)
 
 ### ERLEDIGT (12.01.2026):
 - [x] **SEO Auto-Pilot Blog implementiert** - Automatische Blog-Generierung mit Gemini 2.5 Pro
@@ -474,8 +472,6 @@ ReviewResponder/
 
 ### Admin
 - `GET /api/admin/stats|affiliates` | `PUT /api/admin/affiliates/:id/status`
-- `GET /api/admin/sales-dashboard` - Comprehensive Sales Dashboard (MRR, Funnel, Insights)
-- `GET /api/admin/users` - All users with test account detection
 - `GET /api/admin/set-plan?email=X&plan=X&key=X`
 
 ### Billing
@@ -567,12 +563,7 @@ git add -A && git commit -m "Beschreibung" && git push
 - Exit-Intent Popup
 
 ### Admin
-- Admin Panel (/admin) mit 5 Tabs:
-  - **Sales**: MRR/ARR, Growth Metrics, Sales Funnel, Plan Distribution, Recent Signups
-  - **Insights**: Upgrade Opportunities, Hot Free Users, Churn Risk, Power Users
-  - **Users**: All users mit Test-Account Detection
-  - **Outreach**: Lead Stats, Email Opens, Recent Leads/Emails
-  - **Affiliates**: Applications, Payouts, Conversions
+- Admin Panel (/admin)
 - Profile Page (/profile)
 - Mobile Responsive Design
 
@@ -582,11 +573,11 @@ git add -A && git commit -m "Beschreibung" && git push
 
 | System | Beschreibung | Status |
 |--------|--------------|--------|
-| Reddit Auto-Responder | Keywords monitoren, hilfreiche Antworten | DONE |
-| Twitter/X Engagement | Tweet-Search, Opportunities loggen | DONE |
-| SEO Auto-Pilot Blog | 3 Artikel/Woche auto-generieren | DONE |
+| Reddit Auto-Responder | Keywords monitoren, hilfreiche Antworten | ✅ Implementiert - wartet auf API Keys |
+| Twitter/X Engagement | Tweet-Search, Antwort-Vorschläge | ✅ Implementiert - wartet auf API Keys |
+| SEO Auto-Pilot | 3 Artikel/Woche auto-generieren | ✅ Implementiert + Cron aktiv |
+| Quora Auto-Responder | Ähnlich wie Reddit | Backlog |
 | Competitor Scraper | Unzufriedene Birdeye/Podium Kunden | Backlog |
-| Quora Auto-Responder | Review-Fragen beantworten | Backlog |
 
 ---
 
