@@ -1,20 +1,20 @@
 # Chrome Web Store Listing
 
 ## Extension Name
-**ReviewResponder - AI Review Responses**
+**Google Review Response Generator - AI**
 
 ---
 
 ## Short Description (132 chars max)
-AI review responses for Google, Yelp & TripAdvisor. 50+ languages, 4 tones, templates, quality scores. Save hours every week.
+Google review response generator with AI. Reply to Yelp & TripAdvisor reviews in seconds. 50+ languages, templates, one-click copy.
 
 ---
 
 ## Detailed Description (English)
 
-**Stop wasting hours writing review responses. Let AI do it in seconds.**
+**The #1 Google review response generator. Reply to reviews in seconds, not hours.**
 
-ReviewResponder helps businesses respond to reviews professionally and quickly on Google Maps, Yelp, TripAdvisor and more. Just click the "Generate Response" button next to any review, or simply select the review text - a floating button will appear! Get a perfectly crafted response instantly.
+This AI-powered review response generator helps businesses reply to Google reviews, Yelp reviews, and TripAdvisor reviews professionally and quickly. Just click the "Generate Response" button next to any review on Google Maps, or simply select the review text - a floating button will appear! Get a perfectly crafted Google review reply instantly.
 
 **KEY FEATURES:**
 
