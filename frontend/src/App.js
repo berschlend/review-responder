@@ -3367,13 +3367,13 @@ const RegisterPage = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Business Name</label>
+            <label className="form-label">Business Name <span style={{ color: 'var(--text-secondary)', fontWeight: 'normal' }}>(optional)</span></label>
             <input
               type="text"
               className="form-input"
               value={businessName}
               onChange={e => setBusinessName(e.target.value)}
-              placeholder="Your business or restaurant name"
+              placeholder="e.g. Joe's Pizza"
             />
           </div>
 

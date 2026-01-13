@@ -10474,13 +10474,11 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
 
     console.log(`✅ TripAdvisor cron complete: ${results.emails_sent}/${results.total} emails sent`);
 
-    res.json({
-      success: true,
-      ...results
-    });
+    // Minimal response for cron-job.org (has size limit)
+    res.json({ ok: true, sent: results.emails_sent, err: results.errors.length });
   } catch (error) {
     console.error('TripAdvisor cron error:', error);
-    res.status(500).json({ error: 'Cron job failed', message: error.message });
+    res.status(500).json({ ok: false, err: error.message?.slice(0, 100) });
   }
 });
 
@@ -11458,7 +11456,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
     // Minimal response for cron-job.org (has size limit)
     res.json({
       ok: true,
-      leads: results.new_leads?.found || 0,
+      scraped: results.scraping?.leads_added || 0,
       emails: results.email_finding?.total_found || 0,
       sent: results.sending?.sent || 0,
       followups: results.followups?.sent || 0,
