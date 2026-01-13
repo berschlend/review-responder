@@ -8934,6 +8934,111 @@ app.get('/api/admin/scraped-leads', async (req, res) => {
   }
 });
 
+// POST /api/cron/enrich-g2-leads - Find domain and email for G2 competitor leads
+app.post('/api/cron/enrich-g2-leads', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const results = { domains_found: 0, emails_found: 0, leads_processed: 0 };
+
+  try {
+    // Step 1: Find domains for G2 leads without website (Clearbit Autocomplete - FREE)
+    const leadsNeedingDomain = await dbAll(`
+      SELECT id, business_name FROM outreach_leads
+      WHERE website IS NULL AND lead_type = 'g2_competitor' AND status = 'new'
+      LIMIT 10
+    `);
+
+    for (const lead of leadsNeedingDomain) {
+      try {
+        const clearbitUrl = `https://autocomplete.clearbit.com/v1/companies/suggest?query=${encodeURIComponent(lead.business_name)}`;
+        const response = await fetch(clearbitUrl);
+        const companies = await response.json();
+
+        if (companies && companies.length > 0 && companies[0].domain) {
+          // Check if first result name closely matches our business name
+          const similarity = companies[0].name.toLowerCase().includes(lead.business_name.toLowerCase()) ||
+                           lead.business_name.toLowerCase().includes(companies[0].name.toLowerCase().split(' ')[0]);
+          if (similarity) {
+            const website = `https://${companies[0].domain}`;
+            await dbQuery('UPDATE outreach_leads SET website = $1 WHERE id = $2', [website, lead.id]);
+            results.domains_found++;
+          }
+        }
+        await new Promise(r => setTimeout(r, 300));
+      } catch (e) {}
+    }
+
+    // Step 2: Find emails for G2 leads with website
+    const leadsNeedingEmail = await dbAll(`
+      SELECT id, business_name, website, contact_name, job_title FROM outreach_leads
+      WHERE email IS NULL AND website IS NOT NULL AND lead_type = 'g2_competitor' AND status = 'new'
+      LIMIT 10
+    `);
+
+    for (const lead of leadsNeedingEmail) {
+      let emailFound = null;
+      results.leads_processed++;
+
+      // Try website scraper first
+      try {
+        const scrapedEmail = await scrapeEmailFromWebsite(lead.website);
+        if (scrapedEmail) {
+          emailFound = scrapedEmail;
+          await dbQuery('UPDATE outreach_leads SET email = $1, email_source = $2 WHERE id = $3', [
+            emailFound, 'website_scraper', lead.id
+          ]);
+          results.emails_found++;
+          continue;
+        }
+      } catch (e) {}
+
+      // Fallback to Hunter.io
+      if (!emailFound && process.env.HUNTER_API_KEY) {
+        try {
+          const domain = lead.website.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+          const hunterUrl = `https://api.hunter.io/v2/domain-search?domain=${domain}&api_key=${process.env.HUNTER_API_KEY}`;
+          const response = await fetch(hunterUrl);
+          const data = await response.json();
+
+          if (data.data?.emails && data.data.emails.length > 0) {
+            let bestEmail = data.data.emails[0];
+
+            // Try to match job title
+            if (lead.job_title || lead.contact_name) {
+              const titleKeywords = (lead.job_title || lead.contact_name).toLowerCase().split(/\s+/);
+              const matchingEmail = data.data.emails.find(e => {
+                const position = (e.position || '').toLowerCase();
+                return titleKeywords.some(kw => position.includes(kw));
+              });
+              if (matchingEmail) bestEmail = matchingEmail;
+            }
+
+            await dbQuery('UPDATE outreach_leads SET email = $1, email_source = $2 WHERE id = $3', [
+              bestEmail.value, 'hunter.io', lead.id
+            ]);
+
+            if (bestEmail.first_name && bestEmail.last_name) {
+              await dbQuery('UPDATE outreach_leads SET contact_name = $1 WHERE id = $2', [
+                `${bestEmail.first_name} ${bestEmail.last_name}`, lead.id
+              ]);
+            }
+            results.emails_found++;
+          }
+          await new Promise(r => setTimeout(r, 500));
+        } catch (e) {}
+      }
+    }
+
+    res.json({ success: true, ...results });
+  } catch (error) {
+    console.error('Enrich G2 leads error:', error);
+    res.status(500).json({ error: 'Failed to enrich leads', details: error.message?.substring(0, 100) });
+  }
+});
+
 // ==========================================
 // AUTOMATED OUTREACH SYSTEM
 // Fully automated lead generation & cold email
