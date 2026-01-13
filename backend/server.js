@@ -7839,6 +7839,13 @@ async function initOutreachTables() {
       ON CONFLICT (name) DO NOTHING
     `);
 
+    // Add review alert columns (for personalized outreach with AI-generated response drafts)
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS worst_review_text TEXT`);
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS worst_review_rating INTEGER`);
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS worst_review_author TEXT`);
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS ai_response_draft TEXT`);
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS has_bad_review BOOLEAN DEFAULT FALSE`);
+
     console.log('✅ Outreach tables initialized');
   } catch (error) {
     console.error('Error initializing outreach tables:', error);
@@ -7972,6 +7979,65 @@ Berend`,
   },
 };
 
+// Email templates for REVIEW ALERT outreach - ENGLISH
+// These are sent when we find a business with a bad review
+const REVIEW_ALERT_TEMPLATES_EN = {
+  sequence1: {
+    subject: '{business_name} - response to your Google review',
+    body: `Hi,
+
+I noticed {business_name} has a {review_rating}-star review on Google:
+
+"{review_text_truncated}"
+- {review_author}
+
+Here's a professional response you could use:
+
+---
+{ai_response_draft}
+---
+
+This response is free - feel free to use it directly.
+
+If you'd like AI-generated responses for all your reviews, try ReviewResponder:
+https://tryreviewresponder.com?ref=alert
+
+Best,
+Berend
+
+P.S. I'm the founder. Reply if you have questions.`,
+  },
+};
+
+// Email templates for REVIEW ALERT outreach - GERMAN
+const REVIEW_ALERT_TEMPLATES_DE = {
+  sequence1: {
+    subject: '{business_name} - Antwort auf Ihre Google-Bewertung',
+    body: `Hi,
+
+ich habe gesehen dass {business_name} eine {review_rating}-Sterne Bewertung auf Google hat:
+
+"{review_text_truncated}"
+- {review_author}
+
+Hier ist ein professioneller Antwortvorschlag:
+
+---
+{ai_response_draft}
+---
+
+Diese Antwort ist kostenlos - nutzen Sie sie gerne direkt.
+
+Falls Sie professionelle Antworten auf alle Reviews möchten, probieren Sie ReviewResponder:
+https://tryreviewresponder.com?ref=alert
+
+Grüße,
+Berend
+
+P.S. Bin der Gründer, bei Fragen einfach antworten.`,
+  },
+};
+
 // Combined templates with language selection
 const EMAIL_TEMPLATES = {
   sequence1: EMAIL_TEMPLATES_EN.sequence1,
@@ -7980,13 +8046,59 @@ const EMAIL_TEMPLATES = {
   sequence1_de: EMAIL_TEMPLATES_DE.sequence1,
   sequence2_de: EMAIL_TEMPLATES_DE.sequence2,
   sequence3_de: EMAIL_TEMPLATES_DE.sequence3,
+  // Review alert templates (only sequence 1 - one-shot value delivery)
+  review_alert: REVIEW_ALERT_TEMPLATES_EN.sequence1,
+  review_alert_de: REVIEW_ALERT_TEMPLATES_DE.sequence1,
 };
 
-// Helper: Get template based on language
+// Helper: Get template based on language and review status
 function getTemplateForLead(sequenceNum, lead) {
   const lang = detectLanguage(lead.city);
+
+  // For leads with bad reviews, use the review alert template (only for first email)
+  if (lead.has_bad_review && lead.ai_response_draft && sequenceNum === 1) {
+    return lang === 'de' ? EMAIL_TEMPLATES.review_alert_de : EMAIL_TEMPLATES.review_alert;
+  }
+
+  // Default cold email templates
   const key = lang === 'de' ? `sequence${sequenceNum}_de` : `sequence${sequenceNum}`;
   return EMAIL_TEMPLATES[key];
+}
+
+// Helper: Generate AI response draft for a bad review (used in outreach emails)
+async function generateReviewAlertDraft(businessName, businessType, reviewText, reviewRating, reviewAuthor) {
+  try {
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+    const systemPrompt = `You are a professional review response writer helping businesses respond to customer reviews.
+
+Generate a professional, empathetic response to this negative review. The response should:
+- Acknowledge the customer's concerns
+- Apologize for any inconvenience
+- Offer to make things right (without making specific promises)
+- Keep a professional but warm tone
+- Be 3-5 sentences maximum
+- NOT include any greeting or sign-off (those will be added by the business)
+
+Business: ${businessName} (${businessType || 'local business'})`;
+
+    const userPrompt = `Write a response to this ${reviewRating}-star review from ${reviewAuthor || 'a customer'}:
+
+"${reviewText}"`;
+
+    const completion = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 300,
+      messages: [
+        { role: 'user', content: systemPrompt + '\n\n' + userPrompt }
+      ],
+    });
+
+    return completion.content[0].text.trim();
+  } catch (error) {
+    console.error('Failed to generate review alert draft:', error.message);
+    return null;
+  }
 }
 
 // Helper: Scrape email from website (free fallback when Hunter.io fails)
@@ -8060,6 +8172,13 @@ function fillEmailTemplate(template, lead) {
   let subject = template.subject;
   let body = template.body;
 
+  // Truncate review text to ~150 chars for email readability
+  const reviewTextTruncated = lead.worst_review_text
+    ? (lead.worst_review_text.length > 150
+        ? lead.worst_review_text.substring(0, 147) + '...'
+        : lead.worst_review_text)
+    : '';
+
   const replacements = {
     '{business_name}': lead.business_name || 'your business',
     '{business_type}': lead.business_type || 'business',
@@ -8067,6 +8186,11 @@ function fillEmailTemplate(template, lead) {
     '{email}': encodeURIComponent(lead.email || ''),
     '{city}': lead.city || '',
     '{contact_name}': lead.contact_name || 'there',
+    // Review alert specific replacements
+    '{review_rating}': lead.worst_review_rating || '',
+    '{review_text_truncated}': reviewTextTruncated,
+    '{review_author}': lead.worst_review_author || 'a customer',
+    '{ai_response_draft}': lead.ai_response_draft || '',
   };
 
   for (const [key, value] of Object.entries(replacements)) {
@@ -8113,8 +8237,8 @@ app.post('/api/outreach/scrape-leads', async (req, res) => {
     const leads = [];
 
     for (const place of data.results.slice(0, limit)) {
-      // Get detailed info for each place
-      const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,types&key=${GOOGLE_API_KEY}`;
+      // Get detailed info for each place (including reviews for personalized outreach)
+      const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,types,reviews&key=${GOOGLE_API_KEY}`;
 
       const detailsResponse = await fetch(detailsUrl);
       const details = await detailsResponse.json();
@@ -8126,6 +8250,18 @@ app.post('/api/outreach/scrape-leads', async (req, res) => {
         const addressParts = (result.formatted_address || '').split(',');
         const cityState = addressParts[1]?.trim() || city;
 
+        // Find worst review (1-2 stars) for personalized outreach
+        let worstReview = null;
+        if (result.reviews && result.reviews.length > 0) {
+          const badReviews = result.reviews.filter(r => r.rating <= 2);
+          if (badReviews.length > 0) {
+            // Get the one with most text (usually more specific complaint)
+            worstReview = badReviews.reduce((worst, current) =>
+              (current.text?.length || 0) > (worst.text?.length || 0) ? current : worst
+            );
+          }
+        }
+
         const lead = {
           business_name: result.name,
           business_type: query,
@@ -8136,6 +8272,10 @@ app.post('/api/outreach/scrape-leads', async (req, res) => {
           google_rating: result.rating,
           google_reviews_count: result.user_ratings_total,
           source: 'google_places',
+          worst_review_text: worstReview?.text || null,
+          worst_review_rating: worstReview?.rating || null,
+          worst_review_author: worstReview?.author_name || null,
+          has_bad_review: worstReview !== null,
         };
 
         // Insert lead (ignore duplicates)
@@ -8143,12 +8283,16 @@ app.post('/api/outreach/scrape-leads', async (req, res) => {
           await dbQuery(
             `
             INSERT INTO outreach_leads
-            (business_name, business_type, address, city, phone, website, google_rating, google_reviews_count, source)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            (business_name, business_type, address, city, phone, website, google_rating, google_reviews_count, source, worst_review_text, worst_review_rating, worst_review_author, has_bad_review)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
             ON CONFLICT (business_name, city) DO UPDATE SET
               google_rating = EXCLUDED.google_rating,
               google_reviews_count = EXCLUDED.google_reviews_count,
-              website = COALESCE(EXCLUDED.website, outreach_leads.website)
+              website = COALESCE(EXCLUDED.website, outreach_leads.website),
+              worst_review_text = COALESCE(EXCLUDED.worst_review_text, outreach_leads.worst_review_text),
+              worst_review_rating = COALESCE(EXCLUDED.worst_review_rating, outreach_leads.worst_review_rating),
+              worst_review_author = COALESCE(EXCLUDED.worst_review_author, outreach_leads.worst_review_author),
+              has_bad_review = COALESCE(EXCLUDED.has_bad_review, outreach_leads.has_bad_review)
           `,
             [
               lead.business_name,
@@ -8160,6 +8304,10 @@ app.post('/api/outreach/scrape-leads', async (req, res) => {
               lead.google_rating,
               lead.google_reviews_count,
               lead.source,
+              lead.worst_review_text,
+              lead.worst_review_rating,
+              lead.worst_review_author,
+              lead.has_bad_review,
             ]
           );
 
@@ -9269,18 +9417,64 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
         const data = await response.json();
 
         if (data.results) {
-          for (const place of data.results.slice(0, 50)) {
+          for (const place of data.results.slice(0, 30)) { // Reduced to 30 to save API costs
             try {
-              await dbQuery(
-                `
-                INSERT INTO outreach_leads (business_name, business_type, city, source)
-                VALUES ($1, $2, $3, 'google_places')
-                ON CONFLICT (business_name, city) DO NOTHING
-              `,
-                [place.name, todayIndustry, todayCity]
-              );
-              totalScraped++;
-            } catch (e) {}
+              // Fetch Place Details including reviews for personalized outreach
+              const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,reviews&key=${process.env.GOOGLE_PLACES_API_KEY}`;
+              const detailsResponse = await fetch(detailsUrl);
+              const details = await detailsResponse.json();
+
+              if (details.status === 'OK') {
+                const result = details.result;
+
+                // Find worst review (1-2 stars) for personalized outreach
+                let worstReview = null;
+                if (result.reviews && result.reviews.length > 0) {
+                  const badReviews = result.reviews.filter(r => r.rating <= 2);
+                  if (badReviews.length > 0) {
+                    worstReview = badReviews.reduce((worst, current) =>
+                      (current.text?.length || 0) > (worst.text?.length || 0) ? current : worst
+                    );
+                  }
+                }
+
+                await dbQuery(
+                  `
+                  INSERT INTO outreach_leads (business_name, business_type, city, address, phone, website, google_rating, google_reviews_count, source, worst_review_text, worst_review_rating, worst_review_author, has_bad_review)
+                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'google_places', $9, $10, $11, $12)
+                  ON CONFLICT (business_name, city) DO UPDATE SET
+                    website = COALESCE(EXCLUDED.website, outreach_leads.website),
+                    phone = COALESCE(EXCLUDED.phone, outreach_leads.phone),
+                    google_rating = COALESCE(EXCLUDED.google_rating, outreach_leads.google_rating),
+                    google_reviews_count = COALESCE(EXCLUDED.google_reviews_count, outreach_leads.google_reviews_count),
+                    worst_review_text = COALESCE(EXCLUDED.worst_review_text, outreach_leads.worst_review_text),
+                    worst_review_rating = COALESCE(EXCLUDED.worst_review_rating, outreach_leads.worst_review_rating),
+                    worst_review_author = COALESCE(EXCLUDED.worst_review_author, outreach_leads.worst_review_author),
+                    has_bad_review = COALESCE(EXCLUDED.has_bad_review, outreach_leads.has_bad_review)
+                `,
+                  [
+                    result.name,
+                    todayIndustry,
+                    todayCity,
+                    result.formatted_address || null,
+                    result.formatted_phone_number || null,
+                    result.website || null,
+                    result.rating || null,
+                    result.user_ratings_total || null,
+                    worstReview?.text || null,
+                    worstReview?.rating || null,
+                    worstReview?.author_name || null,
+                    worstReview !== null,
+                  ]
+                );
+                totalScraped++;
+              }
+
+              // Rate limiting
+              await new Promise(r => setTimeout(r, 200));
+            } catch (e) {
+              console.error('Place details error:', e.message);
+            }
           }
         }
       } catch (e) {
@@ -9353,7 +9547,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
       total_found: hunterFound + scraperFound
     };
 
-    // Step 3: Send new cold emails
+    // Step 3: Send new cold emails (with AI-generated drafts for bad reviews)
     if (resend) {
       const newLeads = await dbAll(`
         SELECT l.* FROM outreach_leads l
@@ -9363,9 +9557,30 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
       `);
 
       let sent = 0;
+      let reviewAlertsSent = 0;
 
       for (const lead of newLeads) {
         try {
+          // For leads with bad reviews, generate AI response draft if not already done
+          if (lead.has_bad_review && lead.worst_review_text && !lead.ai_response_draft) {
+            console.log(`📝 Generating AI draft for ${lead.business_name}...`);
+            const aiDraft = await generateReviewAlertDraft(
+              lead.business_name,
+              lead.business_type,
+              lead.worst_review_text,
+              lead.worst_review_rating,
+              lead.worst_review_author
+            );
+
+            if (aiDraft) {
+              lead.ai_response_draft = aiDraft;
+              await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1 WHERE id = $2', [
+                aiDraft,
+                lead.id,
+              ]);
+            }
+          }
+
           const template = fillEmailTemplate(getTemplateForLead(1, lead), lead);
 
           await resend.emails.send({
@@ -9375,12 +9590,16 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
             html: template.body.replace(/\n/g, '<br>'),
           });
 
+          // Track if this was a review alert email
+          const campaign = lead.has_bad_review && lead.ai_response_draft ? 'review_alert' : 'main';
+          if (campaign === 'review_alert') reviewAlertsSent++;
+
           await dbQuery(
             `
             INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
-            VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), 'main')
+            VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5)
           `,
-            [lead.id, lead.email, template.subject, template.body]
+            [lead.id, lead.email, template.subject, template.body, campaign]
           );
 
           await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', [
@@ -9395,7 +9614,7 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
         }
       }
 
-      results.sending = { sent: sent };
+      results.sending = { sent: sent, review_alerts: reviewAlertsSent };
 
       // Step 4: Send follow-ups
       const needsFollowup = await dbAll(`
