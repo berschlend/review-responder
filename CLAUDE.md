@@ -269,7 +269,7 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 ## CURRENT TASKS
 
-**Stand: 13.01.2026**
+**Stand: 14.01.2026**
 
 ### ✅ CHROME WEB STORE EINGEREICHT (13.01.2026)
 
@@ -424,7 +424,16 @@ cat content/leads/scraped-leads-2026-01-13.md
 $env:CLAUDE_SESSION = "scraper"; claude --chrome
 ```
 
-### HEUTE ERLEDIGT (13.01.2026):
+### HEUTE ERLEDIGT (14.01.2026):
+- [x] **Brevo Email Delivery gefixt** - Domain verifiziert, Emails werden jetzt zugestellt
+  - Problem: Emails zeigten "sent" aber wurden nicht delivered (Sender not valid)
+  - Fix: DKIM Records in Namecheap für Brevo konfiguriert
+  - Test: Email an berend.jakob.mainz@gmail.com erfolgreich delivered
+  - Brevo API bestätigt: `"event":"delivered"`
+- [x] **Open Tracking Pixel hinzugefügt** - Outreach Emails tracken jetzt Opens
+- [x] **Email-Logs Admin Endpoint** - `/api/admin/email-logs` zeigt alle gesendeten Emails
+
+### ERLEDIGT (13.01.2026):
 - [x] **Cron Jobs gefixt** - Alle 3 Cron Jobs liefen auf "Ausgabe zu groß" Fehler
   - `send-tripadvisor-emails`: Response minimiert auf `{ok, sent, err}`
   - `daily-outreach`: Bug gefixt (`results.new_leads?.found` → `results.scraping?.leads_added`)
