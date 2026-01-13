@@ -61,6 +61,46 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://tryreviewresponder.com/negative-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/tripadvisor-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/booking-review-generator</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/facebook-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/dentist-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/medical-practice-reviews</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/salon-spa-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/auto-shop-reviews</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://tryreviewresponder.com/blog</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
