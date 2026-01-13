@@ -16,6 +16,7 @@ const Anthropic = require('@anthropic-ai/sdk');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { TwitterApi } = require('twitter-api-v2');
 const SibApiV3Sdk = require('@getbrevo/brevo');
+const { getFewShotExamples } = require('./promptExamples');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -2778,45 +2779,39 @@ async function generateResponseHandler(req, res) {
       ? 'You MAY include 1-2 relevant emojis if appropriate.'
       : 'Do NOT use any emojis.';
 
+    // ========== ANTHROPIC BEST PRACTICES: Positive Framing + XML Tags ==========
     const writingStyleInstructions = `
-OUTPUT FORMAT:
-Write the response directly. No quotes around it. No "Response:" prefix. Just the text.
+<output_format>
+Write the response directly. No quotes. No "Response:" prefix. Just the text.
+</output_format>
 
-VOICE:
-You are the business owner. Not customer service. The actual owner who built this place.
-Write like you talk. Warm but not gushing. Confident but not arrogant.
+<voice>
+You're the business owner, not customer service. Write like you'd text a regular customer.
+Warm but not gushing. Confident but not arrogant.
+</voice>
 
-BANNED (instant AI detection):
-Words: thrilled, delighted, excited, absolutely, incredibly, amazing, wonderful, commendable
-Corporate: embark, delve, foster, leverage, journey, beacon, tapestry, vital, crucial
-Phrases: "Thank you for your feedback" | "We appreciate you taking the time" | "means the world"
-         "Your satisfaction is our priority" | "Sorry for any inconvenience" | "Please don't hesitate"
+<style_guide>
+Write responses that sound like this:
+- "Glad the [specific thing] worked for you."
+- "Nice to hear about [detail]. We [relevant fact about your business]."
+- "That's on us. Email me at [email] and we'll fix it."
 
-STYLE RULES:
-- Contractions always (we're, you'll, it's, that's, don't)
-- Short sentences. Some fragments. Vary rhythm.
-- Zero or one exclamation mark total
-- Reference specific details they mentioned
-- No em-dashes. Use periods or commas instead.
+Keep it:
+- ${lengthInstruction}
+- One exclamation mark max (zero is fine)
+- Contractions always (we're, you'll, that's)
+- Reference something specific from their review
+- ${emojiInstruction}
+</style_guide>
 
-LENGTH: ${lengthInstruction}
-EMOJIS: ${emojiInstruction}`;
-
-    // Few-shot examples matching our demo style exactly
-    const fewShotExamples = {
-      positive: {
-        review:
-          'Amazing pizza! The crust was perfectly crispy and the toppings were fresh. Service was quick and friendly.',
-        goodResponse:
-          'Really happy the crust worked for you. We let our dough rest 48 hours, and it makes all the difference. See you next time.',
-      },
-      negative: {
-        review:
-          'Waited 45 minutes for our food. When it finally arrived, it was cold. Very disappointed.',
-        goodResponse:
-          "45 minutes and cold food. That's on us, and we're sorry. Not the experience we want anyone to have. Reach out to us directly and we'll make it right.",
-      },
-    };
+<avoid_ai_patterns>
+Your response will be rejected if it sounds like AI-generated text. Write like a real person:
+- Instead of "Thank you for your feedback" → "Glad you enjoyed the [specific thing]"
+- Instead of "We appreciate you taking the time" → "Nice to hear about [detail]"
+- Instead of "Sorry for any inconvenience" → "That's on us, we'll fix it"
+- No gushing words (thrilled, delighted, amazing, incredible, wonderful)
+- No corporate speak (leverage, embark, journey, vital, crucial)
+</avoid_ai_patterns>`;
 
     // Get rating strategy
     const getRatingStrategy = rating => {
@@ -2828,7 +2823,6 @@ EMOJIS: ${emojiInstruction}`;
     const ratingStrategy = getRatingStrategy(reviewRating);
     const toneConfig = toneDefinitions[tone] || toneDefinitions.professional;
     const isNegative = reviewRating && reviewRating <= 2;
-    const exampleToUse = isNegative ? fewShotExamples.negative : fewShotExamples.positive;
 
     // Language mapping for output language selection
     const languageNames = {
@@ -2860,6 +2854,11 @@ EMOJIS: ${emojiInstruction}`;
 
     // Build business context section (use team owner's context if team member)
     const contextUser = isTeamMember ? usageOwner : user;
+
+    // Industry-specific examples - matches business type for better relevance
+    // See promptExamples.js for full list of industry examples
+    const fewShotExamples = getFewShotExamples(contextUser?.business_type);
+    const exampleToUse = isNegative ? fewShotExamples.negative : fewShotExamples.positive;
 
     // ========== OPTIMIZED SYSTEM + USER MESSAGE STRUCTURE ==========
 
@@ -5084,22 +5083,37 @@ function extractPlaceIdFromUrl(url) {
 }
 
 // Helper: Generate AI response for a review (for demo purposes)
-async function generateDemoResponse(review, businessName) {
+async function generateDemoResponse(review, businessName, businessType = null, city = null, googleRating = null, totalReviews = null) {
   if (!anthropic) {
     throw new Error('ANTHROPIC_API_KEY not configured');
   }
 
-  const systemMessage = `You are the owner of "${businessName}". Generate a professional response to this customer review.
+  const ownerName = getOwnerName(businessName);
+  const industryContext = businessType ? getIndustryContext(businessType) : 'professional services';
+
+  // Build context section
+  let contextSection = `BUSINESS: ${businessName}`;
+  if (businessType) contextSection += ` (${businessType} - ${industryContext})`;
+  if (city) contextSection += `\nLOCATION: ${city}`;
+  if (googleRating) {
+    contextSection += `\nRATING: ${googleRating} stars`;
+    if (totalReviews) contextSection += ` (${totalReviews} reviews)`;
+  }
+
+  const systemMessage = `You are ${ownerName}, owner of ${businessName}. Generate a professional response to this customer review.
+
+${contextSection}
 
 RULES:
 - Write directly as the owner (first person)
 - Be genuine and human, not corporate
 - Keep it 2-3 sentences max
-- If negative: acknowledge, take responsibility, offer to make it right
-- If positive: thank them specifically, mention what made it special
-- NO: "Thank you for your feedback" | "We value your input" | "Sorry for any inconvenience"
-- NO emojis unless they used them first
-- End with your name or just a warm sign-off`;
+- If negative: acknowledge concerns, offer to make it right
+- If positive: thank them specifically
+- If the review seems fake or from a competitor, stay professional but don't admit fault
+- Sign with: ${ownerName}
+
+DO NOT use: "Thank you for your feedback" | "We value your input" | "Sorry for any inconvenience" | "We take all feedback seriously"`;
 
   const userMessage = `[${review.rating} stars from ${review.author}]
 "${review.text}"
@@ -5197,7 +5211,7 @@ app.post('/api/demo/generate', async (req, res) => {
     // Generate AI responses for each review
     const demos = [];
     for (const review of targetReviews) {
-      const aiResponse = await generateDemoResponse(review, resolvedName);
+      const aiResponse = await generateDemoResponse(review, resolvedName, null, city, googleRating, totalReviews);
       demos.push({
         review: {
           text: review.text,
@@ -5404,7 +5418,7 @@ app.post('/api/cron/generate-demos', async (req, res) => {
         // Generate AI responses
         const demos = [];
         for (const review of targetReviews) {
-          const aiResponse = await generateDemoResponse(review, lead.business_name);
+          const aiResponse = await generateDemoResponse(review, lead.business_name, lead.business_type, lead.city, placeInfo.rating, placeInfo.totalReviews);
           demos.push({
             review: { text: review.text, rating: review.rating, author: review.author, date: review.date },
             ai_response: aiResponse,
@@ -6352,30 +6366,53 @@ app.post('/api/v1/generate', authenticateApiKey, async (req, res) => {
       ru: 'Russian',
     };
 
-    const systemPrompt = `You're a small business owner responding to reviews. Not a customer service rep - the actual owner.
+    // Get industry-specific examples for Public API
+    const publicApiExamples = getFewShotExamples(user?.business_type);
+    const publicApiExample =
+      review_rating && review_rating <= 2
+        ? publicApiExamples.negative
+        : publicApiExamples.positive;
 
-BUSINESS: ${user.business_name || 'Our business'}${user.business_type ? ` (${user.business_type})` : ''}
-${user.business_context ? `About: ${user.business_context}` : ''}
+    const systemPrompt = `You own ${user.business_name || 'a business'}${user.business_type ? ` (${user.business_type})` : ''}.
+${user.business_context ? `About your business: ${user.business_context}` : ''}
 ${user.response_style ? `IMPORTANT - Follow these custom instructions: ${user.response_style}` : ''}
 
-OUTPUT FORMAT:
-Write the response directly. No quotes around it. No "Response:" prefix. Just the text.
+<output_format>
+Write the response directly. No quotes. No "Response:" prefix. Just the text.
+</output_format>
 
-WRITING STYLE:
-Be warm but understated. Direct, not flowery. Confident, not gushing.
+<voice>
+You're the business owner, not customer service. Write like you'd text a regular customer.
+Warm but not gushing. Confident but not arrogant.
+</voice>
 
-BANNED WORDS: thrilled, delighted, excited, absolutely, incredibly, amazing, embark, delve, foster, leverage
-NO PHRASES: "Thank you for your feedback", "We appreciate you taking the time", "Sorry for any inconvenience"
+<style_guide>
+Write responses that sound like this:
+- "Glad the [specific thing] worked for you."
+- "Nice to hear about [detail]. We [relevant fact about your business]."
+- "That's on us. Email me and we'll fix it."
 
-RULES:
-- Use contractions naturally (we're, you'll, it's)
-- Keep sentences short. Vary length.
-- Max ONE exclamation mark per response
-- No em-dashes. Use periods or commas instead.
-- Reference specific details from their review
-- Sound like a real person, not a script
+Keep it:
+- 2-3 sentences max
+- One exclamation mark max (zero is fine)
+- Contractions always (we're, you'll, that's)
+- Reference something specific from their review
+</style_guide>
 
-${review_rating ? `[${review_rating}-star review] ${review_rating <= 2 ? 'Take ownership, offer to make it right.' : 'Show genuine appreciation.'}` : ''}
+<avoid_ai_patterns>
+Your response will be rejected if it sounds like AI. Write like a real person:
+- Instead of "Thank you for your feedback" → "Glad you enjoyed the [specific thing]"
+- Instead of "Sorry for any inconvenience" → "That's on us, we'll fix it"
+- No gushing words (thrilled, delighted, amazing, incredible)
+- No corporate speak (leverage, embark, journey, vital)
+</avoid_ai_patterns>
+
+<example>
+Review: "${publicApiExample.review}"
+Good response: "${publicApiExample.goodResponse}"
+</example>
+
+${review_rating ? `[${review_rating}-star review] ${review_rating <= 2 ? 'Take ownership, offer to make it right.' : ''}` : ''}
 LANGUAGE: ${apiLanguageNames[selectedLanguage] || selectedLanguage}`;
 
     let generatedResponse;
@@ -9816,6 +9853,10 @@ async function initOutreachTables() {
     await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS review_quote TEXT`); // Quote from their negative review
     await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS outreach_angle TEXT`); // Personalized angle for outreach
 
+    // Demo generation columns for personalized outreach with demo links
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS demo_token TEXT`); // Unique demo page token
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS demo_url TEXT`); // Full demo page URL
+
     // A/B Testing table for email subject lines
     await dbQuery(`
       CREATE TABLE IF NOT EXISTS outreach_ab_tests (
@@ -9992,7 +10033,34 @@ Berend`,
 // Email templates for REVIEW ALERT outreach - ENGLISH
 // These are sent when we find a business with a bad review
 const REVIEW_ALERT_TEMPLATES_EN = {
+  // With demo link - used when we have 3+ reviews to show
   sequence1: {
+    subject: '{business_name} - wrote you something',
+    body: `Hi,
+
+I noticed {business_name} has a {review_rating}-star review on Google:
+
+"{review_text_truncated}"
+- {review_author}
+
+Here's a professional response you could use:
+
+---
+{ai_response_draft}
+---
+
+Feel free to use it directly - it's free.
+
+I also wrote 2 more responses to your other reviews:
+{demo_url}
+
+Best,
+Berend
+
+P.S. I'm the founder. Reply if you have questions.`,
+  },
+  // Fallback for leads without demo (only 1 bad review or demo generation failed)
+  sequence1_no_demo: {
     subject: '{business_name} - response to your Google review',
     body: `Hi,
 
@@ -10021,7 +10089,34 @@ P.S. I'm the founder. Reply if you have questions.`,
 
 // Email templates for REVIEW ALERT outreach - GERMAN
 const REVIEW_ALERT_TEMPLATES_DE = {
+  // With demo link
   sequence1: {
+    subject: '{business_name} - hab dir was geschrieben',
+    body: `Hi,
+
+ich habe gesehen dass {business_name} eine {review_rating}-Sterne Bewertung auf Google hat:
+
+"{review_text_truncated}"
+- {review_author}
+
+Hier ist ein professioneller Antwortvorschlag:
+
+---
+{ai_response_draft}
+---
+
+Gerne direkt nutzen - ist kostenlos.
+
+Ich habe noch 2 weitere Antworten auf deine anderen Reviews geschrieben:
+{demo_url}
+
+Grüße,
+Berend
+
+P.S. Bin der Gründer, bei Fragen einfach antworten.`,
+  },
+  // Fallback without demo
+  sequence1_no_demo: {
     subject: '{business_name} - Antwort auf Ihre Google-Bewertung',
     body: `Hi,
 
@@ -10137,6 +10232,8 @@ const EMAIL_TEMPLATES = {
   // Review alert templates (only sequence 1 - one-shot value delivery)
   review_alert: REVIEW_ALERT_TEMPLATES_EN.sequence1,
   review_alert_de: REVIEW_ALERT_TEMPLATES_DE.sequence1,
+  review_alert_no_demo: REVIEW_ALERT_TEMPLATES_EN.sequence1_no_demo,
+  review_alert_no_demo_de: REVIEW_ALERT_TEMPLATES_DE.sequence1_no_demo,
   // G2 competitor templates (for unhappy Birdeye/Podium users)
   g2_competitor_1: G2_COMPETITOR_TEMPLATES_EN.sequence1,
   g2_competitor_2: G2_COMPETITOR_TEMPLATES_EN.sequence2,
@@ -10207,7 +10304,12 @@ function getTemplateForLead(sequenceNum, lead) {
 
   // For leads with bad reviews, use the review alert template (only for first email)
   if (lead.has_bad_review && lead.ai_response_draft && sequenceNum === 1) {
-    return lang === 'de' ? EMAIL_TEMPLATES.review_alert_de : EMAIL_TEMPLATES.review_alert;
+    // Use demo template if demo_url exists, otherwise fallback to no_demo template
+    if (lead.demo_url) {
+      return lang === 'de' ? EMAIL_TEMPLATES.review_alert_de : EMAIL_TEMPLATES.review_alert;
+    } else {
+      return lang === 'de' ? EMAIL_TEMPLATES.review_alert_no_demo_de : EMAIL_TEMPLATES.review_alert_no_demo;
+    }
   }
 
   // Default cold email templates
@@ -10232,22 +10334,72 @@ async function getTemplateForLeadWithABTest(sequenceNum, lead) {
   return { ...template, abVariant: null };
 }
 
+// Helper: Extract owner name from business name
+function getOwnerName(businessName) {
+  if (!businessName) return 'Owner';
+  // "Tony Quach & Co. CPA" → "Tony"
+  // "Mario's Pizza" → "Mario"
+  // "Smith Law Firm" → "Smith"
+  // "The Coffee House" → "The Coffee House" (keep full name if starts with "The")
+  const name = businessName.trim();
+  if (name.toLowerCase().startsWith('the ')) {
+    return 'The Team';
+  }
+  const firstWord = name.split(' ')[0].replace(/['']s?$/, '');
+  return firstWord || 'Owner';
+}
+
+// Helper: Get industry-specific context for better AI responses
+function getIndustryContext(businessType) {
+  const contexts = {
+    'accounting firm': 'CPA services, tax preparation, bookkeeping, financial accuracy',
+    'restaurant': 'food quality, dining experience, service, atmosphere',
+    'hotel': 'hospitality, guest comfort, cleanliness, amenities',
+    'dental office': 'dental care, patient comfort, oral health',
+    'law firm': 'legal services, client representation, professionalism',
+    'auto repair shop': 'vehicle repair, honest diagnostics, fair pricing',
+    'hair salon': 'styling, customer satisfaction, personal care',
+    'gym': 'fitness, equipment, cleanliness, member experience',
+    'real estate agency': 'property transactions, client service, local expertise',
+    'medical clinic': 'patient care, health services, medical expertise',
+    'retail store': 'product quality, customer service, shopping experience',
+    'spa': 'relaxation, wellness, treatment quality',
+    'veterinary clinic': 'pet care, animal health, compassionate service',
+    'physiotherapy': 'rehabilitation, patient recovery, therapeutic care',
+  };
+  return contexts[businessType?.toLowerCase()] || 'professional services, customer satisfaction';
+}
+
 // Helper: Generate AI response draft for a bad review (used in outreach emails)
-async function generateReviewAlertDraft(businessName, businessType, reviewText, reviewRating, reviewAuthor) {
+async function generateReviewAlertDraft(businessName, businessType, reviewText, reviewRating, reviewAuthor, city = null, googleRating = null, totalReviews = null) {
   try {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-    const systemPrompt = `You are a professional review response writer helping businesses respond to customer reviews.
+    const ownerName = getOwnerName(businessName);
+    const industryContext = getIndustryContext(businessType);
 
-Generate a professional, empathetic response to this negative review. The response should:
-- Acknowledge the customer's concerns
-- Apologize for any inconvenience
-- Offer to make things right (without making specific promises)
-- Keep a professional but warm tone
-- Be 3-5 sentences maximum
-- NOT include any greeting or sign-off (those will be added by the business)
+    // Build context section
+    let contextSection = `BUSINESS CONTEXT:
+- Business: ${businessName}
+- Industry: ${businessType || 'local business'} (${industryContext})`;
 
-Business: ${businessName} (${businessType || 'local business'})`;
+    if (city) contextSection += `\n- Location: ${city}`;
+    if (googleRating) contextSection += `\n- Current Rating: ${googleRating} stars`;
+    if (totalReviews) contextSection += ` (${totalReviews} total reviews)`;
+
+    const systemPrompt = `You are ${ownerName}, owner of ${businessName}.
+
+${contextSection}
+
+Write a response to this customer review. Rules:
+- Speak directly as the owner (first person)
+- Be genuine and human, not corporate
+- 2-3 sentences maximum
+- If the customer mentions a specific issue, address it directly
+- If the review seems fake or from a competitor, stay professional but don't admit fault for things you didn't do
+- Sign with your name: ${ownerName}
+
+DO NOT use these phrases: "Thank you for your feedback" | "We value your input" | "Sorry for any inconvenience" | "We take all feedback seriously"`;
 
     const userPrompt = `Write a response to this ${reviewRating}-star review from ${reviewAuthor || 'a customer'}:
 
@@ -10264,6 +10416,121 @@ Business: ${businessName} (${businessType || 'local business'})`;
     return completion.content[0].text.trim();
   } catch (error) {
     console.error('Failed to generate review alert draft:', error.message);
+    return null;
+  }
+}
+
+// Helper: Generate a personalized demo for an outreach lead (3 reviews + AI responses)
+// Returns { demo_url, demo_token, reviews_processed } or null if failed
+async function generateDemoForLead(lead) {
+  try {
+    // Need SerpAPI for review scraping
+    if (!process.env.SERPAPI_KEY || !process.env.GOOGLE_PLACES_API_KEY) {
+      console.log('Missing API keys for demo generation');
+      return null;
+    }
+
+    // Try to find the business on Google
+    let placeId = null;
+    let googleRating = null;
+    let totalReviews = 0;
+
+    try {
+      const placeResult = await lookupPlaceId(lead.business_name, lead.city || '');
+      placeId = placeResult.placeId;
+      googleRating = placeResult.rating;
+      totalReviews = placeResult.totalReviews || 0;
+    } catch (err) {
+      console.log(`Place lookup failed for ${lead.business_name}:`, err.message);
+      return null;
+    }
+
+    if (!placeId) {
+      console.log(`No place found for ${lead.business_name}`);
+      return null;
+    }
+
+    // Scrape reviews via SerpAPI (get more than needed to filter)
+    const allReviews = await scrapeGoogleReviews(placeId, 10);
+
+    if (!allReviews || allReviews.length < 2) {
+      console.log(`Not enough reviews to generate demo for ${lead.business_name}`);
+      return null;
+    }
+
+    // Filter and sort reviews - prioritize negative (1-3 stars)
+    const targetReviews = allReviews
+      .filter(r => r.rating <= 3)
+      .sort((a, b) => a.rating - b.rating)
+      .slice(0, 3);
+
+    // If not enough negative reviews, fill with others
+    if (targetReviews.length < 3) {
+      const remaining = allReviews
+        .filter(r => r.rating > 3)
+        .slice(0, 3 - targetReviews.length);
+      targetReviews.push(...remaining);
+    }
+
+    if (targetReviews.length === 0) {
+      console.log(`No suitable reviews for demo for ${lead.business_name}`);
+      return null;
+    }
+
+    // Generate AI responses for each review
+    const demos = [];
+    for (const review of targetReviews) {
+      const aiResponse = await generateDemoResponse(
+        review,
+        lead.business_name,
+        lead.business_type,
+        lead.city,
+        googleRating,
+        totalReviews
+      );
+      demos.push({
+        review: {
+          text: review.text,
+          rating: review.rating,
+          author: review.author,
+          date: review.date,
+        },
+        ai_response: aiResponse,
+      });
+    }
+
+    // Generate unique token
+    const demoToken = generateDemoToken();
+    const demoUrl = `https://tryreviewresponder.com/demo/${demoToken}`;
+
+    // Save demo to database
+    await dbQuery(
+      `INSERT INTO demo_generations
+       (business_name, google_place_id, city, google_rating, total_reviews, scraped_reviews, demo_token, generated_responses, lead_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [
+        lead.business_name,
+        placeId,
+        lead.city || null,
+        googleRating,
+        totalReviews,
+        JSON.stringify(allReviews),
+        demoToken,
+        JSON.stringify(demos),
+        lead.id || null,
+      ]
+    );
+
+    console.log(`Demo generated for ${lead.business_name}: ${demoUrl}`);
+
+    return {
+      demo_url: demoUrl,
+      demo_token: demoToken,
+      reviews_processed: demos.length,
+      first_ai_response: demos[0]?.ai_response || null,
+    };
+  } catch (error) {
+    console.error('Failed to generate demo for lead:', error.message);
     return null;
   }
 }
@@ -10402,6 +10669,8 @@ function fillEmailTemplate(template, lead, campaign = 'main') {
     '{review_text_truncated}': reviewTextTruncated,
     '{review_author}': lead.worst_review_author || 'a customer',
     '{ai_response_draft}': lead.ai_response_draft || '',
+    // Demo link for personalized demo pages
+    '{demo_url}': lead.demo_url || 'https://tryreviewresponder.com?ref=alert',
     // G2 competitor specific replacements
     '{competitor_platform}': competitorPlatformFormatted,
     '{contact_name_greeting}': contactNameGreeting,
@@ -11104,7 +11373,10 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
               lead.type || lead.business_type || 'restaurant',
               lead.worst_review_text,
               lead.worst_review_rating,
-              lead.worst_review_author
+              lead.worst_review_author,
+              lead.city || null,
+              lead.rating || lead.google_rating || null,
+              lead.reviews || lead.google_reviews_count || null
             );
           }
 
@@ -11222,7 +11494,10 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
             lead.business_type,
             lead.worst_review_text,
             lead.worst_review_rating,
-            lead.worst_review_author
+            lead.worst_review_author,
+            lead.city || null,
+            lead.google_rating || null,
+            lead.google_reviews_count || null
           );
           if (aiDraft) {
             lead.ai_response_draft = aiDraft;
@@ -12133,23 +12408,46 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
 
       for (const lead of newLeads) {
         try {
-          // For leads with bad reviews, generate AI response draft if not already done
+          // For leads with bad reviews, generate full demo with multiple AI responses
           if (lead.has_bad_review && lead.worst_review_text && !lead.ai_response_draft) {
-            console.log(`📝 Generating AI draft for ${lead.business_name}...`);
-            const aiDraft = await generateReviewAlertDraft(
-              lead.business_name,
-              lead.business_type,
-              lead.worst_review_text,
-              lead.worst_review_rating,
-              lead.worst_review_author
-            );
+            console.log(`📝 Generating demo for ${lead.business_name}...`);
 
-            if (aiDraft) {
-              lead.ai_response_draft = aiDraft;
-              await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1 WHERE id = $2', [
-                aiDraft,
-                lead.id,
-              ]);
+            const demoResult = await generateDemoForLead(lead);
+
+            if (demoResult && demoResult.first_ai_response) {
+              // Use first AI response as preview in email
+              lead.ai_response_draft = demoResult.first_ai_response;
+              lead.demo_url = demoResult.demo_url;
+              lead.demo_token = demoResult.demo_token;
+
+              // Save to database
+              await dbQuery(
+                'UPDATE outreach_leads SET ai_response_draft = $1, demo_url = $2, demo_token = $3 WHERE id = $4',
+                [demoResult.first_ai_response, demoResult.demo_url, demoResult.demo_token, lead.id]
+              );
+
+              console.log(`✅ Demo generated: ${demoResult.demo_url} (${demoResult.reviews_processed} reviews)`);
+            } else {
+              // Fallback: Generate single AI draft if demo generation fails
+              console.log(`⚠️ Demo failed, generating single AI draft for ${lead.business_name}...`);
+              const aiDraft = await generateReviewAlertDraft(
+                lead.business_name,
+                lead.business_type,
+                lead.worst_review_text,
+                lead.worst_review_rating,
+                lead.worst_review_author,
+                lead.city || null,
+                lead.google_rating || null,
+                lead.google_reviews_count || null
+              );
+
+              if (aiDraft) {
+                lead.ai_response_draft = aiDraft;
+                await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1 WHERE id = $2', [
+                  aiDraft,
+                  lead.id,
+                ]);
+              }
             }
           }
 
@@ -13817,7 +14115,7 @@ app.post('/api/outreach/linkedin-demo', async (req, res) => {
 
         // Generate AI responses for each review
         for (const review of scrapedReviews) {
-          const aiResponse = await generateDemoResponse(review, searchName);
+          const aiResponse = await generateDemoResponse(review, searchName, null, searchCity, googleRating, totalReviews);
           generatedResponses.push({
             review: review,
             ai_response: aiResponse
