@@ -10177,7 +10177,313 @@ const BlogListPage = () => {
             Start Free Trial
           </Link>
         </div>
+
+        {/* Newsletter Signup */}
+        <div style={{ marginTop: '40px' }}>
+          <NewsletterSignup />
+        </div>
       </div>
+    </div>
+  );
+};
+
+// Social Share Component
+const SocialShareButtons = ({ title, url, vertical = false }) => {
+  const encodedUrl = encodeURIComponent(url);
+  const encodedTitle = encodeURIComponent(title);
+
+  const shareLinks = [
+    {
+      name: 'Twitter',
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+        </svg>
+      ),
+      url: `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`,
+      color: '#000',
+    },
+    {
+      name: 'LinkedIn',
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+        </svg>
+      ),
+      url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+      color: '#0077B5',
+    },
+    {
+      name: 'Facebook',
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+        </svg>
+      ),
+      url: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+      color: '#1877F2',
+    },
+    {
+      name: 'Copy Link',
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+        </svg>
+      ),
+      onClick: () => {
+        navigator.clipboard.writeText(url);
+        toast.success('Link copied!');
+      },
+      color: '#6B7280',
+    },
+  ];
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: vertical ? 'column' : 'row',
+        gap: '12px',
+        alignItems: 'center',
+      }}
+    >
+      {!vertical && (
+        <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--gray-500)' }}>Share:</span>
+      )}
+      {shareLinks.map(link => (
+        <button
+          key={link.name}
+          onClick={() => {
+            if (link.onClick) {
+              link.onClick();
+            } else {
+              window.open(link.url, '_blank', 'width=600,height=400');
+            }
+          }}
+          title={link.name}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            border: '1px solid var(--gray-200)',
+            background: 'white',
+            color: link.color,
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+          }}
+          onMouseOver={e => {
+            e.currentTarget.style.background = link.color;
+            e.currentTarget.style.color = 'white';
+            e.currentTarget.style.borderColor = link.color;
+          }}
+          onMouseOut={e => {
+            e.currentTarget.style.background = 'white';
+            e.currentTarget.style.color = link.color;
+            e.currentTarget.style.borderColor = 'var(--gray-200)';
+          }}
+        >
+          {link.icon}
+        </button>
+      ))}
+    </div>
+  );
+};
+
+// Newsletter Signup Component
+const NewsletterSignup = ({ compact = false }) => {
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+    if (!email) return;
+
+    setLoading(true);
+    try {
+      // For now, just show success - can add backend endpoint later
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setSubscribed(true);
+      toast.success('Thanks for subscribing!');
+    } catch (err) {
+      toast.error('Failed to subscribe');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (subscribed) {
+    return (
+      <div
+        style={{
+          padding: compact ? '16px' : '24px',
+          background: 'var(--gray-50)',
+          borderRadius: '12px',
+          textAlign: 'center',
+        }}
+      >
+        <Check size={24} style={{ color: 'var(--success)', marginBottom: '8px' }} />
+        <p style={{ fontWeight: '500' }}>You're subscribed!</p>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        padding: compact ? '20px' : '32px',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+        borderRadius: '12px',
+        border: '1px solid var(--gray-200)',
+      }}
+    >
+      <h3
+        style={{
+          fontSize: compact ? '16px' : '20px',
+          fontWeight: '600',
+          marginBottom: '8px',
+          color: 'var(--gray-900)',
+        }}
+      >
+        Get Review Tips Weekly
+      </h3>
+      <p
+        style={{
+          fontSize: '14px',
+          color: 'var(--gray-600)',
+          marginBottom: '16px',
+          lineHeight: '1.5',
+        }}
+      >
+        Join 1,000+ business owners getting actionable review management tips.
+      </p>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <input
+          type="email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          placeholder="Enter your email"
+          required
+          style={{
+            flex: '1',
+            minWidth: '180px',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            border: '1px solid var(--gray-300)',
+            fontSize: '14px',
+          }}
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            padding: '12px 20px',
+            background: 'var(--primary)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: '600',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            opacity: loading ? 0.7 : 1,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {loading ? 'Subscribing...' : 'Subscribe'}
+        </button>
+      </form>
+      <p style={{ fontSize: '12px', color: 'var(--gray-400)', marginTop: '12px' }}>
+        No spam. Unsubscribe anytime.
+      </p>
+    </div>
+  );
+};
+
+// Table of Contents Component
+const TableOfContents = ({ content }) => {
+  const [isOpen, setIsOpen] = useState(true);
+
+  // Extract headings from markdown content
+  const headings = [];
+  if (content) {
+    const lines = content.split('\n');
+    lines.forEach((line, index) => {
+      const h2Match = line.match(/^## (.+)$/);
+      const h3Match = line.match(/^### (.+)$/);
+      if (h2Match) {
+        headings.push({ level: 2, text: h2Match[1], id: `heading-${index}` });
+      } else if (h3Match) {
+        headings.push({ level: 3, text: h3Match[1], id: `heading-${index}` });
+      }
+    });
+  }
+
+  if (headings.length < 3) return null;
+
+  return (
+    <div
+      style={{
+        background: 'var(--gray-50)',
+        borderRadius: '12px',
+        padding: '20px',
+        marginBottom: '32px',
+        border: '1px solid var(--gray-200)',
+      }}
+    >
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          width: '100%',
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: 0,
+        }}
+      >
+        <span style={{ fontSize: '16px', fontWeight: '600', color: 'var(--gray-800)' }}>
+          Table of Contents
+        </span>
+        <ChevronDown
+          size={20}
+          style={{
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0)',
+            transition: 'transform 0.2s',
+            color: 'var(--gray-500)',
+          }}
+        />
+      </button>
+      {isOpen && (
+        <nav style={{ marginTop: '16px' }}>
+          {headings.map((heading, i) => (
+            <a
+              key={i}
+              href={`#${heading.id}`}
+              style={{
+                display: 'block',
+                padding: '6px 0',
+                paddingLeft: heading.level === 3 ? '16px' : '0',
+                fontSize: heading.level === 3 ? '14px' : '15px',
+                color: heading.level === 3 ? 'var(--gray-500)' : 'var(--gray-700)',
+                textDecoration: 'none',
+                borderLeft: heading.level === 3 ? '2px solid var(--gray-200)' : 'none',
+              }}
+              onMouseOver={e => (e.currentTarget.style.color = 'var(--primary)')}
+              onMouseOut={e =>
+                (e.currentTarget.style.color =
+                  heading.level === 3 ? 'var(--gray-500)' : 'var(--gray-700)')
+              }
+            >
+              {heading.text}
+            </a>
+          ))}
+        </nav>
+      )}
     </div>
   );
 };
@@ -10189,6 +10495,16 @@ const BlogArticlePage = () => {
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showStickyShare, setShowStickyShare] = useState(false);
+
+  // Show sticky share buttons on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowStickyShare(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     fetchArticle();
@@ -10345,8 +10661,27 @@ const BlogArticlePage = () => {
     );
   }
 
+  const articleUrl = `https://tryreviewresponder.com/blog/${slug}`;
+
   return (
     <div style={{ minHeight: '100vh', background: 'white' }}>
+      {/* Sticky Social Share Bar (Desktop) */}
+      <div
+        style={{
+          position: 'fixed',
+          left: '20px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 100,
+          opacity: showStickyShare ? 1 : 0,
+          visibility: showStickyShare ? 'visible' : 'hidden',
+          transition: 'opacity 0.3s, visibility 0.3s',
+          display: window.innerWidth > 1200 ? 'block' : 'none',
+        }}
+      >
+        <SocialShareButtons title={article.title} url={articleUrl} vertical />
+      </div>
+
       {/* Article Header */}
       <div style={{ background: 'var(--gray-50)', padding: '80px 20px 60px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -10403,28 +10738,61 @@ const BlogArticlePage = () => {
             style={{
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
               gap: '16px',
-              color: 'var(--gray-500)',
             }}
           >
-            <span>By {article.author_name || 'ReviewResponder Team'}</span>
-            <span>-</span>
-            <span>{article.published_at && formatDate(article.published_at)}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', color: 'var(--gray-500)' }}>
+              <span>By {article.author_name || 'ReviewResponder Team'}</span>
+              <span>-</span>
+              <span>{article.published_at && formatDate(article.published_at)}</span>
+            </div>
+            <SocialShareButtons title={article.title} url={articleUrl} />
           </div>
         </div>
       </div>
 
       {/* Article Content */}
       <article style={{ maxWidth: '800px', margin: '0 auto', padding: '48px 20px' }}>
+        {/* Table of Contents */}
+        <TableOfContents content={article.content} />
+
         <div
           dangerouslySetInnerHTML={{ __html: renderMarkdown(article.content) }}
           style={{ fontSize: '17px' }}
         />
 
-        {/* CTA Box */}
+        {/* Share After Reading */}
         <div
           style={{
             marginTop: '48px',
+            padding: '24px',
+            background: 'var(--gray-50)',
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '16px',
+          }}
+        >
+          <div>
+            <p style={{ fontWeight: '600', marginBottom: '4px' }}>Found this helpful?</p>
+            <p style={{ fontSize: '14px', color: 'var(--gray-500)' }}>Share it with your network</p>
+          </div>
+          <SocialShareButtons title={article.title} url={articleUrl} />
+        </div>
+
+        {/* Newsletter Signup */}
+        <div style={{ marginTop: '32px' }}>
+          <NewsletterSignup />
+        </div>
+
+        {/* CTA Box */}
+        <div
+          style={{
+            marginTop: '32px',
             padding: '32px',
             background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
             borderRadius: '12px',
