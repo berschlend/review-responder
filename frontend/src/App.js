@@ -386,14 +386,20 @@ const Footer = () => (
 );
 
 // Reusable Landing Page Email Capture Component
-const LandingEmailCapture = ({ buttonColor = 'var(--primary-600)', buttonText = 'Get Started Free' }) => {
+const LandingEmailCapture = ({ buttonColor = 'var(--primary-600)', buttonText = 'Get Started Free', source = 'landing_page' }) => {
   const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (email.trim()) {
-      sessionStorage.setItem('landing_email', email.trim());
+    const trimmedEmail = email.trim();
+
+    if (trimmedEmail) {
+      sessionStorage.setItem('landing_email', trimmedEmail);
+      setLoading(true);
+      // Send to backend (non-blocking - navigate even if it fails)
+      api.post('/capture-email', { email: trimmedEmail, source, discountCode: 'EARLY50' }).catch(() => {});
     }
     navigate('/register');
   };
@@ -407,7 +413,7 @@ const LandingEmailCapture = ({ buttonColor = 'var(--primary-600)', buttonText = 
         onChange={(e) => setEmail(e.target.value)}
         style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }}
       />
-      <button type="submit" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: buttonColor, color: 'white', border: 'none', cursor: 'pointer' }}>
+      <button type="submit" className="btn" disabled={loading} style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: buttonColor, color: 'white', border: 'none', cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1 }}>
         {buttonText} <Sparkles size={18} />
       </button>
     </form>
@@ -11493,48 +11499,7 @@ const GoogleReviewPage = () => {
             replies that boost your local SEO and show customers you care.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
-            <input
-              type="email"
-              placeholder="Enter your business email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px'
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn btn-primary"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap'
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture />
 
           <div style={{
             display: 'flex',
@@ -11780,50 +11745,7 @@ const YelpReviewPage = () => {
             to all your reviews with AI - from 5-star praise to 1-star complaints.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
-            <input
-              type="email"
-              placeholder="Enter your business email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px'
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#d32323',
-                color: 'white'
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#d32323" />
 
           <div style={{
             display: 'flex',
@@ -12669,50 +12591,7 @@ const LocalBusinessReviewPage = () => {
             every review - from glowing 5-stars to tough complaints.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
-            <input
-              type="email"
-              placeholder="Enter your business email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px'
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#059669',
-                color: 'white'
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#059669" />
 
           <div style={{
             display: 'flex',
@@ -13045,50 +12924,7 @@ const NegativeReviewPage = () => {
             show you care - and can turn critics into loyal customers.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
-            <input
-              type="email"
-              placeholder="Enter your business email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px'
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#B71C1C',
-                color: 'white'
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#B71C1C" />
 
           <div style={{
             display: 'flex',
@@ -13339,50 +13175,7 @@ const TripAdvisorReviewPage = () => {
             and boost your ranking in the world's largest travel platform.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
-            <input
-              type="email"
-              placeholder="Enter your business email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px'
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#0066cc',
-                color: 'white'
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#0066cc" />
 
           <div style={{
             display: 'flex',
@@ -13618,50 +13411,7 @@ const BookingReviewPage = () => {
             guest review professionally and increase your bookings.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
-            <input
-              type="email"
-              placeholder="Enter your business email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px'
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#0066ff',
-                color: 'white'
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#0066ff" />
 
           <div style={{
             display: 'flex',
@@ -13897,50 +13647,7 @@ const FacebookReviewPage = () => {
             professionally to grow your local business presence.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
-            <input
-              type="email"
-              placeholder="Enter your business email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px'
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#0a66c2',
-                color: 'white'
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#0a66c2" />
 
           <div style={{
             display: 'flex',
@@ -14755,50 +14462,7 @@ const SalonSpaReviewPage = () => {
             professionally and attract more bookings.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
-            <input
-              type="email"
-              placeholder="Enter your business email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px'
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#C2185B',
-                color: 'white'
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#C2185B" />
 
           <div style={{
             display: 'flex',
@@ -15044,50 +14708,7 @@ const AutoShopReviewPage = () => {
             reviews professionally and turn first-timers into loyal customers.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
-            <input
-              type="email"
-              placeholder="Enter your business email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px'
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#E65100',
-                color: 'white'
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#E65100" />
 
           <div style={{
             display: 'flex',
@@ -15335,50 +14956,7 @@ const TrustpilotReviewPage = () => {
             Build trust on the world's leading review platform. Generate professional responses to Trustpilot reviews in seconds with AI.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
-            <input
-              type="email"
-              placeholder="Enter your business email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px'
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#00b67a',
-                color: 'white'
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#00b67a" />
 
           <div style={{
             display: 'flex',
@@ -15572,50 +15150,7 @@ const AirbnbReviewPage = () => {
             Respond to guest reviews like a Superhost. Generate warm, professional responses that encourage future bookings.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
-            <input
-              type="email"
-              placeholder="Enter your business email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px'
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#FF5A5F',
-                color: 'white'
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#FF5A5F" />
 
           <div style={{
             display: 'flex',
@@ -15820,50 +15355,7 @@ const RealEstateReviewPage = () => {
             Build your realtor reputation with AI-crafted responses. Generate professional replies to client reviews on Zillow, Realtor.com, and Google.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
-            <input
-              type="email"
-              placeholder="Enter your business email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px'
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#2d5a87',
-                color: 'white'
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#2d5a87" />
 
           <div style={{
             display: 'flex',
@@ -16057,50 +15549,7 @@ const GymReviewPage = () => {
             Keep members motivated and attract new ones. Generate professional responses to gym reviews that show you care about every member's fitness journey.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
-            <input
-              type="email"
-              placeholder="Enter your business email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px'
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#ff6b35',
-                color: 'white'
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#ff6b35" />
 
           <div style={{
             display: 'flex',
@@ -16305,50 +15754,7 @@ const VetReviewPage = () => {
             Show pet owners you care as much about their furry friends as they do. Generate compassionate, professional responses to veterinary reviews.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
-            <input
-              type="email"
-              placeholder="Enter your business email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px'
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#4CAF50',
-                color: 'white'
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#4CAF50" />
 
           <div style={{
             display: 'flex',
@@ -16553,50 +15959,7 @@ const LawFirmReviewPage = () => {
             Respond to client reviews professionally while maintaining attorney-client privilege. Generate ethical, thoughtful responses that build trust.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
-            <input
-              type="email"
-              placeholder="Enter your business email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px'
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#16213e',
-                color: 'white'
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#16213e" />
 
           <div style={{
             display: 'flex',
@@ -16801,50 +16164,7 @@ const EcommerceReviewPage = () => {
             Turn product reviews into sales opportunities. Generate professional responses that address concerns, thank happy customers, and boost your store rating.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
-            <input
-              type="email"
-              placeholder="Enter your business email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px'
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#7c3aed',
-                color: 'white'
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#7c3aed" />
 
           <div style={{
             display: 'flex',
@@ -17049,50 +16369,7 @@ const CoffeeShopReviewPage = () => {
             Brew the perfect response every time. Generate warm, friendly replies that reflect your coffee shop's unique personality and keep customers coming back.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
-            <input
-              type="email"
-              placeholder="Enter your business email"
-              style={{
-                flex: 1,
-                minWidth: '200px',
-                border: 'none',
-                padding: '14px 20px',
-                fontSize: '16px',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                background: 'transparent',
-                borderRadius: '10px'
-              }}
-            />
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                padding: '14px 28px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                background: '#6f4e37',
-                color: 'white'
-              }}
-            >
-              Get Started Free <Sparkles size={18} />
-            </Link>
-          </div>
+          <LandingEmailCapture buttonColor="#6f4e37" />
 
           <div style={{
             display: 'flex',
@@ -17241,10 +16518,7 @@ const AmazonReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Amazon Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Boost your Amazon seller rating with professional AI-generated responses. Turn negative reviews into opportunities.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#FF9900', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#FF9900" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
@@ -17292,10 +16566,7 @@ const G2ReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>G2 Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Win more enterprise deals with professional G2 review responses. Show prospects you care about customer success.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#FF492C', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#FF492C" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
@@ -17343,10 +16614,7 @@ const CapterraReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Capterra Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Stand out on Capterra with professional AI-generated responses. Convert more software buyers into customers.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#044D80', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#044D80" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
@@ -17394,10 +16662,7 @@ const GlassdoorReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Glassdoor Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build a stronger employer brand with professional AI-generated responses. Attract top talent by showing you value feedback.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#0CAA41', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#0CAA41" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
@@ -17445,10 +16710,7 @@ const BBBReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>BBB Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Maintain your BBB rating with professional AI-generated responses. Handle complaints effectively and build consumer trust.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#005A8C', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#005A8C" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
@@ -17496,10 +16758,7 @@ const PlumberReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Plumber Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build your plumbing reputation with professional AI-generated responses. Turn satisfied customers into referral sources.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#1E88E5', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#1E88E5" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
@@ -17547,10 +16806,7 @@ const ElectricianReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Electrician Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Power up your electrical business with professional AI-generated responses. Show customers why you're the trusted choice.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#FFA000', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#FFA000" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
@@ -17598,10 +16854,7 @@ const HVACReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>HVAC Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Keep your HVAC business cool under pressure with professional AI-generated responses. Turn every review into a growth opportunity.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#00ACC1', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#00ACC1" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
@@ -17649,10 +16902,7 @@ const RoofingReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Roofing Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Raise the roof on your reputation with professional AI-generated responses. Win more high-value roofing contracts.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#795548', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#795548" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
@@ -17700,10 +16950,7 @@ const LandscapingReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Landscaping Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Help your landscaping business flourish with professional AI-generated responses. Turn happy customers into year-round clients.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#4CAF50', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#4CAF50" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
@@ -17751,10 +16998,7 @@ const CleaningReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Cleaning Service Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Keep your cleaning business sparkling with professional AI-generated responses. Turn one-time clients into recurring customers.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#9C27B0', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#9C27B0" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
@@ -17802,10 +17046,7 @@ const HealthgradesReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Healthgrades Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build patient trust on Healthgrades with professional AI-generated responses. Attract more patients with a stellar online reputation.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your practice email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#00A99D', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#00A99D" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
@@ -17853,10 +17094,7 @@ const ZocdocReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Zocdoc Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Turn Zocdoc reviews into new patient bookings with professional AI-generated responses. Stand out in the competitive healthcare market.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your practice email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#FFA000', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#FFA000" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
@@ -17904,10 +17142,7 @@ const PhotographerReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Photographer Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Capture more bookings with professional AI-generated responses. Let your reputation shine as bright as your photos.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#424242', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#424242" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
@@ -17955,10 +17190,7 @@ const WeddingReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Wedding Vendor Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Say "I do" to more bookings with professional AI-generated responses. Build the reputation that makes couples choose you.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#E91E63', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#E91E63" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
@@ -18006,10 +17238,7 @@ const PetServiceReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Pet Service Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Fetch more customers with professional AI-generated responses. Show pet parents why their fur babies are in good hands.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#8D6E63', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#8D6E63" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
@@ -18057,10 +17286,7 @@ const DaycareReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Daycare Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Nurture your reputation with professional AI-generated responses. Help parents feel confident choosing your childcare center.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#FF7043', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#FF7043" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
@@ -18108,10 +17334,7 @@ const AccountantReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Accountant Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Balance your books and your reputation with professional AI-generated responses. Build client trust during tax season and beyond.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#37474F', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#37474F" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
@@ -18159,10 +17382,7 @@ const InsuranceReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Insurance Agent Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Protect your reputation like you protect your clients. Professional AI-generated responses that build trust and close more policies.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#1565C0', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#1565C0" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
@@ -18210,10 +17430,7 @@ const SeniorCareReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Senior Care Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Show families the compassionate care you provide with professional AI-generated responses. Build trust during difficult decisions.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#7B1FA2', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#7B1FA2" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
