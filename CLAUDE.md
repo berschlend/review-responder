@@ -315,6 +315,44 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 | Branchen | 25 | Restaurant, Hotel, Plumber, HVAC, Photographer |
 | Generisch | 3 | Local Business, Negative Reviews |
 
+### NÄCHSTE LANDING PAGES (Backlog - 18 Seiten)
+
+**Priorität nach Suchvolumen.** Jede Seite ~30 Min mit bestehendem Template.
+
+#### Tier 1 - Höchstes Suchvolumen (ZUERST):
+| URL | Zielgruppe | Suchvolumen |
+|-----|------------|-------------|
+| `/appstore-app-reviews` | App Entwickler (iOS/Android) | 60K+/mo |
+| `/indeed-company-reviews` | HR/Employer Branding | 50K+/mo |
+| `/zillow-realtor-reviews` | US Immobilienmakler | 40K+/mo |
+| `/therapy-counselor-reviews` | Therapeuten/Psychologen | 35K+/mo |
+| `/thumbtack-reviews` | Service Provider (Handwerker) | 35K+/mo |
+
+#### Tier 2 - Hohes Suchvolumen:
+| URL | Zielgruppe | Suchvolumen |
+|-----|------------|-------------|
+| `/linkedin-recommendations` | B2B Professionals | 30K+/mo |
+| `/angie-list-contractor-reviews` | US Contractors | 25K+/mo |
+| `/chiropractor-reviews` | Chiropraktiker | 25K+/mo |
+| `/barber-barbershop-reviews` | Barbershops | 22K+/mo |
+| `/dermatologist-reviews` | Hautärzte/Kosmetik | 20K+/mo |
+| `/massage-therapist-reviews` | Massage/Wellness | 20K+/mo |
+
+#### Tier 3 - Nischen mit engagierter Community:
+| URL | Zielgruppe | Suchvolumen |
+|-----|------------|-------------|
+| `/personal-trainer-reviews` | Personal Trainer | 18K+/mo |
+| `/orthodontist-reviews` | Kieferorthopäden | 15K+/mo |
+| `/tattoo-artist-reviews` | Tattoo Studios | 15K+/mo |
+| `/producthunt-maker-responses` | Indie Hackers/Startups | 12K+/mo |
+
+#### Tier 4 - Internationale Märkte:
+| URL | Zielgruppe | Suchvolumen |
+|-----|------------|-------------|
+| `/google-bewertungen-antworten` | Deutsche Businesses | 15K+/mo DE |
+| `/google-reviews-uk` | UK Businesses | 18K+/mo UK |
+| `/avis-google-reponses` | Französische Businesses | 12K+/mo FR |
+
 ### CLAUDE KANN SELBST (mit Chrome MCP):
 - Cron Jobs anlegen/ändern auf cron-job.org
 - API Keys in Render setzen
