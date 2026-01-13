@@ -246,7 +246,7 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 **Stand: 13.01.2026**
 
 ### USER MUSS MACHEN:
-- [ ] Demo-Video aufnehmen (2 Min Walkthrough)
+- [x] Demo-Video aufnehmen (2 Min Walkthrough) - DONE
 - [ ] Chrome Web Store einreichen (ZIP + Screenshots)
 - [ ] **Reddit API Keys holen**: Wartet auf Genehmigung → https://www.reddit.com/prefs/apps → App erstellen
 
