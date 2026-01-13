@@ -520,6 +520,27 @@ async function initDatabase() {
       // Index might already exist
     }
 
+    // Outreach click tracking table
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS outreach_clicks (
+        id SERIAL PRIMARY KEY,
+        email TEXT NOT NULL,
+        campaign TEXT NOT NULL,
+        clicked_url TEXT,
+        clicked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        ip_address TEXT,
+        user_agent TEXT
+      )
+    `);
+
+    // Add indexes for click tracking
+    try {
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_outreach_clicks_email ON outreach_clicks(email)`);
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_outreach_clicks_campaign ON outreach_clicks(campaign)`);
+    } catch (error) {
+      // Index might already exist
+    }
+
     // Demo generations table for personalized outreach demos
     await dbQuery(`
       CREATE TABLE IF NOT EXISTS demo_generations (
@@ -8248,6 +8269,42 @@ app.get('/api/outreach/track-open', async (req, res) => {
   res.send(pixel);
 });
 
+// Track email link clicks via redirect
+app.get('/api/outreach/track-click', async (req, res) => {
+  try {
+    const { url, email, campaign } = req.query;
+
+    if (!url) {
+      return res.redirect('https://tryreviewresponder.com');
+    }
+
+    // Decode the URL
+    const targetUrl = decodeURIComponent(url);
+
+    if (email && campaign) {
+      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+      const userAgent = req.headers['user-agent'] || '';
+
+      // Store the click event
+      await dbQuery(
+        `INSERT INTO outreach_clicks (email, campaign, clicked_url, ip_address, user_agent)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT DO NOTHING`,
+        [email, campaign, targetUrl, ip.split(',')[0], userAgent]
+      );
+
+      console.log(`🖱️ Link clicked: ${email} → ${targetUrl} (campaign: ${campaign})`);
+    }
+
+    // Redirect to the actual URL
+    res.redirect(targetUrl);
+  } catch (error) {
+    console.error('Click tracking error:', error.message);
+    // Fallback redirect on error
+    res.redirect(req.query.url ? decodeURIComponent(req.query.url) : 'https://tryreviewresponder.com');
+  }
+});
+
 // Get outreach stats (admin only - use with secret)
 app.get('/api/outreach/stats', async (req, res) => {
   try {
@@ -8291,11 +8348,44 @@ app.get('/api/outreach/stats', async (req, res) => {
        ORDER BY date DESC`
     );
 
+    // Click tracking stats
+    let totalClicks = { count: 0 };
+    let uniqueClicks = { count: 0 };
+    let recentClicks = [];
+    let clicksByUrl = [];
+
+    try {
+      totalClicks = await dbGet(`SELECT COUNT(*) as count FROM outreach_clicks`) || { count: 0 };
+      uniqueClicks = await dbGet(`SELECT COUNT(DISTINCT email) as count FROM outreach_clicks`) || { count: 0 };
+
+      recentClicks = await dbAll(
+        `SELECT email, campaign, clicked_url, clicked_at
+         FROM outreach_clicks
+         ORDER BY clicked_at DESC
+         LIMIT 20`
+      ) || [];
+
+      clicksByUrl = await dbAll(
+        `SELECT clicked_url, COUNT(*) as clicks
+         FROM outreach_clicks
+         GROUP BY clicked_url
+         ORDER BY clicks DESC
+         LIMIT 10`
+      ) || [];
+    } catch (e) {
+      // Table might not exist yet
+      console.log('Click tracking tables not ready:', e.message);
+    }
+
     res.json({
       total_opens: parseInt(totalOpens?.count || 0),
       unique_opens: parseInt(uniqueOpens?.count || 0),
+      total_clicks: parseInt(totalClicks?.count || 0),
+      unique_clicks: parseInt(uniqueClicks?.count || 0),
       by_campaign: byCampaign,
       recent_opens: recentOpens,
+      recent_clicks: recentClicks,
+      clicks_by_url: clicksByUrl,
       by_day: byDay,
     });
   } catch (error) {
@@ -8708,8 +8798,37 @@ async function scrapeEmailFromWebsite(websiteUrl) {
   }
 }
 
-// Helper: Fill email template with lead data
-function fillEmailTemplate(template, lead) {
+// Helper: Wrap URLs with click tracking
+function wrapUrlWithTracking(url, email, campaign) {
+  const baseUrl = process.env.NODE_ENV === 'production'
+    ? 'https://review-responder.onrender.com'
+    : 'http://localhost:3001';
+
+  // Add UTM parameters to the target URL if it's our domain
+  let targetUrl = url;
+  if (url.includes('tryreviewresponder.com') && !url.includes('utm_')) {
+    const separator = url.includes('?') ? '&' : '?';
+    targetUrl = `${url}${separator}utm_source=outreach&utm_medium=email&utm_campaign=${encodeURIComponent(campaign)}`;
+  }
+
+  return `${baseUrl}/api/outreach/track-click?url=${encodeURIComponent(targetUrl)}&email=${encodeURIComponent(email)}&campaign=${encodeURIComponent(campaign)}`;
+}
+
+// Helper: Replace all URLs in text with tracked versions
+function addClickTracking(text, email, campaign) {
+  // Match URLs starting with http:// or https://
+  const urlRegex = /(https?:\/\/[^\s<>"']+)/g;
+
+  return text.replace(urlRegex, (url) => {
+    // Don't track our own tracking URLs (avoid double-wrapping)
+    if (url.includes('/api/outreach/track-')) {
+      return url;
+    }
+    return wrapUrlWithTracking(url, email, campaign);
+  });
+}
+
+function fillEmailTemplate(template, lead, campaign = 'main') {
   let subject = template.subject;
   let body = template.body;
 
@@ -8737,6 +8856,11 @@ function fillEmailTemplate(template, lead) {
   for (const [key, value] of Object.entries(replacements)) {
     subject = subject.replace(new RegExp(key, 'g'), value);
     body = body.replace(new RegExp(key, 'g'), value);
+  }
+
+  // Add click tracking to all URLs in body (if we have lead email)
+  if (lead.email) {
+    body = addClickTracking(body, lead.email, campaign);
   }
 
   return { subject, body };
@@ -10303,6 +10427,14 @@ app.get('/api/outreach/dashboard', async (req, res) => {
       'SELECT COUNT(*) as count FROM outreach_emails WHERE opened_at IS NOT NULL'
     );
 
+    // Click tracking stats
+    let emailsClicked = { count: 0 };
+    try {
+      emailsClicked = await dbGet('SELECT COUNT(DISTINCT email) as count FROM outreach_clicks') || { count: 0 };
+    } catch (e) {
+      // Table might not exist yet
+    }
+
     const byStatus = await dbAll(`
       SELECT status, COUNT(*) as count
       FROM outreach_leads
@@ -10332,9 +10464,14 @@ app.get('/api/outreach/dashboard', async (req, res) => {
         leads_with_email: parseInt(leadsWithEmail?.count || 0),
         emails_sent: parseInt(emailsSent?.count || 0),
         emails_opened: parseInt(emailsOpened?.count || 0),
+        emails_clicked: parseInt(emailsClicked?.count || 0),
         open_rate:
           emailsSent?.count > 0
             ? ((emailsOpened?.count / emailsSent?.count) * 100).toFixed(1) + '%'
+            : '0%',
+        click_rate:
+          emailsSent?.count > 0
+            ? ((emailsClicked?.count / emailsSent?.count) * 100).toFixed(1) + '%'
             : '0%',
       },
       by_status: byStatus,
