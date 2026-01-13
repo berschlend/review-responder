@@ -245,19 +245,19 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 ### Cron Jobs Status (cron-job.org)
 
-**Stand: 13.01.2026**
+**Stand: 14.01.2026**
 
 | Job | Schedule | Status | Letzter Fehler |
 |-----|----------|--------|----------------|
 | Blog Auto-Generation | 06:00 Mo/Mi/Fr | OK | - |
 | Twitter Auto-Post Morning | 09:00 täglich | OK | - |
 | Weekly Summary | 09:00 Montags | OK | - |
-| Daily Outreach | 09:00 täglich | FEHLER | Ausgabe zu groß (116ms) |
-| Drip Emails | 10:00 täglich | FEHLER | Ausgabe zu groß (72ms) |
-| TripAdvisor Email Sender | 09:00 täglich | FEHLER | Ausgabe zu groß (81ms) |
-| **Pre-Registration Drip** | 11:00 täglich | NEU | - |
+| Daily Outreach | 09:00 täglich | ✅ GEFIXT | POST→GET geändert |
+| Drip Emails | 10:00 täglich | ✅ GEFIXT | POST→GET geändert |
+| TripAdvisor Email Sender | 09:00 täglich | OK | war bereits GET |
+| Pre-Registration Drip | 11:00 täglich | OK | - |
 
-**Problem:** 3 Jobs schlagen fehl wegen "Ausgabe zu groß". Response muss gekürzt werden.
+**Fix (14.01):** Daily Outreach + Drip Emails waren POST-Endpoints, aber cron-job.org sendet GET. Beide auf GET geändert.
 
 ---
 
