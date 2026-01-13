@@ -425,6 +425,27 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
 ```
 
 ### HEUTE ERLEDIGT (13.01.2026):
+- [x] **Cron Jobs gefixt** - Alle 3 Cron Jobs liefen auf "Ausgabe zu groß" Fehler
+  - `send-tripadvisor-emails`: Response minimiert auf `{ok, sent, err}`
+  - `daily-outreach`: Bug gefixt (`results.new_leads?.found` → `results.scraping?.leads_added`)
+  - `send-drip-emails`: War schon OK
+  - Alle getestet und funktionieren jetzt
+- [x] **Open Tracking gefixt** - War kaputt, jetzt 3.6% Open Rate (realistisch)
+- [x] **G2 Competitor Lead Scraping** - 74 negative Reviews gefunden
+  - Birdeye: 27 negative (19x 1-Stern, 8x 2-Stern)
+  - Podium: 47 negative (36x 1-Stern, 11x 2-Stern)
+  - 5 Named Leads mit Details (Colin D. = High Value, Mid-Market)
+  - Pain Points: Over-promising, daily bugs, poor support, contract traps
+  - Datei: `content/leads/g2-birdeye-leads-2026-01-13.md`
+- [x] **G2 Leads importiert** - 6 neue Leads in competitor_leads Tabelle
+- [x] **Daily Outreach getriggert** - 20 neue Leads, 11 Emails gesendet
+- [x] **Twitter Auto-Post** - Tweet gepostet auf @ExecPsychology
+- [x] **Outreach Metriken verbessert**:
+  - Leads: 249 → 272 (+23)
+  - Emails: 230 → 329 (+99)
+  - Open Rate: 0.4% → 3.6% (Tracking funktioniert!)
+
+### ERLEDIGT (Keep-Alive Session):
 - [x] **Keep-Alive Cron Job** - Verhindert Render Cold Start "Ausgabe zu groß" Fehler
   - Endpoint: `GET /api/health`
   - Schedule: alle 15 Minuten (*/15 * * * *)
