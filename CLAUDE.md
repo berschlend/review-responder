@@ -272,7 +272,41 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 ### NÄCHSTE CLAUDE TASKS:
 
-Keine offenen Tasks - App ist feature-complete!
+| Task | Schwierigkeit | Dateien |
+|------|---------------|---------|
+| **Chrome MCP Lead Scraper fortsetzen** | Mittel | Memory MCP |
+
+### Chrome MCP Lead Scraper (WIP)
+
+**Status:** 18 Leads gesammelt, morgen weitermachen
+
+**Gesammelte Leads in Memory MCP:**
+| Quelle | Typ | Anzahl |
+|--------|-----|--------|
+| G2 Birdeye | Unzufriedene Kunden | 9 |
+| G2 Podium | Unzufriedene Kunden | 7 |
+| TripAdvisor | Restaurant München | 1 |
+| Yelp | Test | 1 |
+
+**Beste Pain Points (für Cold Email):**
+- Platform bugs/errors daily
+- Slow support (days/weeks)
+- Sales over-promised features
+- Stopped using after 4 months
+
+**Nächste Schritte:**
+1. LinkedIn-Suche für G2 Reviewer-Namen
+2. Mehr TripAdvisor/Yelp Restaurants mit Kontaktdaten
+3. Bei Erfolg: Parallel-Scraping mit 5-10 Sessions
+
+**Commands:**
+```bash
+# Leads abrufen
+mcp__memory__search_nodes({ query: "lead" })
+
+# Neue Session starten
+$env:CLAUDE_SESSION = "scraper"; claude --chrome
+```
 
 ### HEUTE ERLEDIGT (13.01.2026):
 - [x] **Click-Tracking für Outreach Emails** - Endlich messbar ob jemand klickt
