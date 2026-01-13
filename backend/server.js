@@ -102,7 +102,8 @@ const OUTREACH_FROM_EMAIL =
 async function sendEmail({
   to,
   subject,
-  html,
+  html = null,
+  text = null,
   type = 'transactional',
   campaign = null,
   tags = [],
@@ -117,12 +118,15 @@ async function sendEmail({
   let messageId = null;
   let error = null;
 
+  // Convert text to HTML if only text provided
+  let finalHtml = html || (text ? `<pre style="font-family: Arial, sans-serif; white-space: pre-wrap;">${text}</pre>` : null);
+  const finalText = text;
+
   // Add tracking pixel for marketing/outreach emails
-  let finalHtml = html;
-  if (addTrackingPixel && campaign) {
+  if (addTrackingPixel && campaign && finalHtml) {
     const BACKEND_URL = process.env.BACKEND_URL || 'https://review-responder.onrender.com';
     const trackingPixel = `<img src="${BACKEND_URL}/api/outreach/track-open?email=${encodeURIComponent(to)}&campaign=${encodeURIComponent(campaign)}" width="1" height="1" style="display:none;" alt="" />`;
-    finalHtml = html + trackingPixel;
+    finalHtml = finalHtml + trackingPixel;
   }
 
   // Determine sender
@@ -134,7 +138,8 @@ async function sendEmail({
       try {
         const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
         sendSmtpEmail.subject = subject;
-        sendSmtpEmail.htmlContent = finalHtml;
+        if (finalHtml) sendSmtpEmail.htmlContent = finalHtml;
+        if (finalText) sendSmtpEmail.textContent = finalText;
 
         // Parse from address
         const fromMatch = fromAddress.match(/^(.+?)\s*<(.+)>$/);
@@ -179,13 +184,12 @@ async function sendEmail({
         from: fromAddress,
         to,
         subject,
-        html: finalHtml,
         tags: resendTags,
       };
 
-      if (replyTo) {
-        emailOptions.replyTo = replyTo;
-      }
+      if (finalHtml) emailOptions.html = finalHtml;
+      if (finalText) emailOptions.text = finalText;
+      if (replyTo) emailOptions.replyTo = replyTo;
 
       const result = await resend.emails.send(emailOptions);
       messageId = result.id;
@@ -1344,13 +1348,13 @@ app.post('/api/auth/register', async (req, res) => {
     );
 
     // Send verification email (non-blocking - user can still use app)
-    if (resend) {
+    if (resend || brevoApi) {
       const verifyUrl = `${process.env.FRONTEND_URL || 'https://tryreviewresponder.com'}/verify-email?token=${verificationToken}`;
       try {
-        await resend.emails.send({
-          from: FROM_EMAIL,
+        await sendEmail({
           to: email,
           subject: 'Verify your email - ReviewResponder',
+          type: 'transactional',
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
@@ -1370,7 +1374,7 @@ app.post('/api/auth/register', async (req, res) => {
             </div>
           `,
         });
-        console.log(`📧 Verification email sent to ${email}`);
+        console.log(`[Email] Verification email sent to ${email}`);
       } catch (emailError) {
         console.error('Failed to send verification email:', emailError);
         // Don't fail registration if email fails - user can resend later
@@ -1468,13 +1472,13 @@ app.post('/api/auth/resend-verification', authenticateToken, async (req, res) =>
     );
 
     // Send verification email
-    if (resend) {
+    if (resend || brevoApi) {
       const verifyUrl = `${process.env.FRONTEND_URL || 'https://tryreviewresponder.com'}/verify-email?token=${verificationToken}`;
       try {
-        await resend.emails.send({
-          from: FROM_EMAIL,
+        await sendEmail({
           to: user.email,
           subject: 'Verify your email - ReviewResponder',
+          type: 'transactional',
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
@@ -1492,7 +1496,7 @@ app.post('/api/auth/resend-verification', authenticateToken, async (req, res) =>
             </div>
           `,
         });
-        console.log(`📧 Verification email resent to ${user.email}`);
+        console.log(`[Email] Verification email resent to ${user.email}`);
         res.json({ success: true, message: 'Verification email sent' });
       } catch (emailError) {
         console.error('Failed to resend verification email:', emailError);
@@ -2376,13 +2380,13 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
 
-    // Send email if Resend is configured
-    if (resend && process.env.NODE_ENV === 'production') {
+    // Send email if email provider is configured
+    if ((resend || brevoApi) && process.env.NODE_ENV === 'production') {
       try {
-        await resend.emails.send({
-          from: FROM_EMAIL,
+        await sendEmail({
           to: user.email,
           subject: 'Reset Your Password - ReviewResponder',
+          type: 'transactional',
           html: `
             <h2>Reset Your Password</h2>
             <p>Hi there,</p>
@@ -2393,17 +2397,17 @@ app.post('/api/auth/forgot-password', async (req, res) => {
             <p>Best regards,<br>ReviewResponder Team</p>
           `,
         });
-        console.log(`✅ Password reset email sent to ${email}`);
+        console.log(`[Email] Password reset email sent to ${email}`);
       } catch (emailError) {
         console.error('Email send error:', emailError);
         // Continue anyway - don't reveal email sending failed
       }
     } else {
-      // Development mode or Resend not configured
-      console.log(`📧 Password reset requested for ${email}`);
-      console.log(`🔗 Reset URL: ${resetUrl}`);
-      if (!resend) {
-        console.log('⚠️  Resend not configured - add RESEND_API_KEY to environment variables');
+      // Development mode or email not configured
+      console.log(`[Email] Password reset requested for ${email}`);
+      console.log(`[Email] Reset URL: ${resetUrl}`);
+      if (!resend && !brevoApi) {
+        console.log('[Email] No email provider configured');
       }
     }
 
@@ -7078,11 +7082,12 @@ app.get('/api/cron/send-drip-emails', async (req, res) => {
 
         try {
           if (process.env.NODE_ENV === 'production') {
-            await resend.emails.send({
-              from: FROM_EMAIL,
+            await sendEmail({
               to: user.email,
               subject: emailContent.subject,
               html: emailContent.html,
+              type: 'marketing',
+              campaign: `drip_day_${day}`,
             });
           }
 
@@ -7093,7 +7098,7 @@ app.get('/api/cron/send-drip-emails', async (req, res) => {
           );
 
           sentCount++;
-          console.log(`📧 Drip email day ${day} sent to ${user.email}`);
+          console.log(`[Email] Drip email day ${day} sent to ${user.email}`);
         } catch (emailError) {
           console.error(`Failed to send drip email to ${user.email}:`, emailError.message);
           errorCount++;
@@ -7406,12 +7411,13 @@ app.get('/api/cron/send-pre-registration-drips', async (req, res) => {
         if (!emailContent) continue;
 
         try {
-          await resend.emails.send({
-            from: FROM_EMAIL,
-            replyTo: 'hello@tryreviewresponder.com',
+          await sendEmail({
             to: capture.email,
             subject: emailContent.subject,
             html: emailContent.html,
+            type: 'marketing',
+            campaign: `pre_reg_day_${day}`,
+            replyTo: 'hello@tryreviewresponder.com',
           });
 
           // Track that we sent this email
@@ -7421,7 +7427,7 @@ app.get('/api/cron/send-pre-registration-drips', async (req, res) => {
           );
 
           sentCount++;
-          console.log(`📧 Pre-reg drip day ${day} sent to ${capture.email}`);
+          console.log(`[Email] Pre-reg drip day ${day} sent to ${capture.email}`);
         } catch (emailError) {
           console.error(`Failed to send pre-reg drip to ${capture.email}:`, emailError.message);
           errorCount++;
@@ -9493,6 +9499,106 @@ app.get('/api/admin/clickers', async (req, res) => {
   } catch (error) {
     console.error('Get clickers error:', error);
     res.status(500).json({ error: 'Failed to get clickers' });
+  }
+});
+
+// POST /api/cron/followup-clickers - Auto-send demo offer to people who clicked
+app.post('/api/cron/followup-clickers', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'Email service not configured' });
+  }
+
+  try {
+    // Create tracking table if not exists
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS clicker_followups (
+        id SERIAL PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        demo_booked BOOLEAN DEFAULT FALSE,
+        converted BOOLEAN DEFAULT FALSE
+      )
+    `);
+
+    // Find clickers who haven't received follow-up yet
+    const clickers = await dbAll(`
+      SELECT DISTINCT c.email, c.clicked_at,
+        l.business_name, l.contact_name, l.city, l.phone,
+        l.google_reviews_count, l.website
+      FROM outreach_clicks c
+      LEFT JOIN outreach_leads l ON LOWER(c.email) = LOWER(l.email)
+      LEFT JOIN clicker_followups f ON LOWER(c.email) = LOWER(f.email)
+      WHERE f.id IS NULL
+        AND c.email NOT LIKE '%@test.%'
+        AND c.email NOT LIKE '%berend%'
+      ORDER BY c.clicked_at DESC
+      LIMIT 10
+    `);
+
+    let sent = 0;
+    const results = [];
+
+    for (const clicker of clickers) {
+      try {
+        const businessName = clicker.business_name || 'your restaurant';
+        const reviewCount = clicker.google_reviews_count || 'hundreds of';
+        const greeting = clicker.contact_name ? `Hi ${clicker.contact_name.split(' ')[0]},` : 'Hi,';
+
+        // Personalized follow-up email
+        const subject = `${businessName} - your demo is ready`;
+        const body = `${greeting}
+
+I noticed you checked out ReviewResponder earlier - thanks for taking a look!
+
+Quick question: With ${reviewCount} reviews to manage, how much time does your team spend responding each week?
+
+I'd love to give you a quick 15-min demo showing how ${businessName} could respond to reviews 10x faster.
+
+Just reply to this email with a time that works, or pick a slot here:
+https://tryreviewresponder.com/demo
+
+Best,
+Berend
+
+P.S. Sign up during our call and I'll give you the first month free.`;
+
+        await resend.emails.send({
+          from: OUTREACH_FROM_EMAIL,
+          to: clicker.email,
+          subject: subject,
+          text: body,
+          tags: [{ name: 'campaign', value: 'clicker_followup' }],
+        });
+
+        // Track that we sent follow-up
+        await dbQuery(
+          `INSERT INTO clicker_followups (email) VALUES ($1) ON CONFLICT (email) DO NOTHING`,
+          [clicker.email]
+        );
+
+        sent++;
+        results.push({ email: clicker.email, business: businessName });
+
+        await new Promise(r => setTimeout(r, 500));
+      } catch (err) {
+        console.error(`Failed to send followup to ${clicker.email}:`, err.message);
+      }
+    }
+
+    res.json({
+      success: true,
+      sent: sent,
+      followups_sent: results,
+      message: sent > 0 ? `Sent ${sent} demo offers to hot leads!` : 'No new clickers to follow up',
+    });
+  } catch (error) {
+    console.error('Clicker followup error:', error);
+    res.status(500).json({ error: 'Failed to send followups' });
   }
 });
 
@@ -13995,13 +14101,14 @@ app.post('/api/cron/send-yelp-emails', async (req, res) => {
           .replace(/{unanswered}/g, unanswered)
           .replace('{city}', lead.city || 'general');
 
-        if (resend) {
-          await resend.emails.send({
-            from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
+        if (resend || brevoApi) {
+          await sendEmail({
             to: lead.email,
             subject: subject,
             text: body,
-            tags: [{ name: 'campaign', value: 'yelp-audit' }]
+            type: 'outreach',
+            campaign: 'yelp-audit',
+            from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
           });
 
           await dbQuery('UPDATE yelp_leads SET email_sent = TRUE, email_sent_at = NOW() WHERE id = $1', [lead.id]);
@@ -14053,13 +14160,14 @@ app.post('/api/cron/send-g2-emails', async (req, res) => {
           .replace(/{competitor}/g, lead.competitor)
           .replace('{complaint_summary}', lead.complaint_summary || 'your concerns with the product');
 
-        if (resend) {
-          await resend.emails.send({
-            from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
+        if (resend || brevoApi) {
+          await sendEmail({
             to: lead.email,
             subject: subject,
             text: body,
-            tags: [{ name: 'campaign', value: 'g2-switcher' }]
+            type: 'outreach',
+            campaign: 'g2-switcher',
+            from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
           });
 
           await dbQuery('UPDATE competitor_leads SET email_sent = TRUE, email_sent_at = NOW() WHERE id = $1', [lead.id]);
@@ -14118,13 +14226,14 @@ app.post('/api/cron/send-agency-emails', async (req, res) => {
           .replace(/{agency_name}/g, lead.agency_name)
           .replace('{contact_name}', contactName);
 
-        if (resend) {
-          await resend.emails.send({
-            from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
+        if (resend || brevoApi) {
+          await sendEmail({
             to: lead.email,
             subject: subject,
             text: body,
-            tags: [{ name: 'campaign', value: 'agency-partnership' }]
+            type: 'outreach',
+            campaign: 'agency-partnership',
+            from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
           });
 
           await dbQuery('UPDATE agency_leads SET email_sequence = 1, last_email_sent = NOW() WHERE id = $1', [lead.id]);
@@ -14147,13 +14256,14 @@ app.post('/api/cron/send-agency-emails', async (req, res) => {
           .replace(/{agency_name}/g, lead.agency_name)
           .replace('{contact_name}', contactName);
 
-        if (resend) {
-          await resend.emails.send({
-            from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
+        if (resend || brevoApi) {
+          await sendEmail({
             to: lead.email,
             subject: subject,
             text: body,
-            tags: [{ name: 'campaign', value: 'agency-followup' }]
+            type: 'outreach',
+            campaign: 'agency-followup',
+            from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
           });
 
           await dbQuery('UPDATE agency_leads SET email_sequence = 2, last_email_sent = NOW() WHERE id = $1', [lead.id]);
@@ -14179,8 +14289,8 @@ app.post('/api/admin/send-cold-email', async (req, res) => {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  if (!resend) {
-    return res.status(500).json({ error: 'Resend not configured' });
+  if (!resend && !brevoApi) {
+    return res.status(500).json({ error: 'Email provider not configured' });
   }
 
   const { to, name, reviews, type } = req.body;
@@ -14227,17 +14337,18 @@ app.post('/api/admin/send-cold-email', async (req, res) => {
 </html>
     `;
 
-    const result = await resend.emails.send({
-      from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
+    const result = await sendEmail({
       to: to,
       subject: subject,
       html: html,
-      reply_to: 'berend.jakob.mainz@gmail.com',
-      tags: [{ name: 'campaign', value: 'manual-cold-email' }]
+      type: 'outreach',
+      campaign: 'manual-cold-email',
+      from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
+      replyTo: 'berend.jakob.mainz@gmail.com',
     });
 
-    console.log(`Cold email sent to ${name} (${to}):`, result.id);
-    res.json({ success: true, id: result.id, to, name });
+    console.log(`Cold email sent to ${name} (${to}):`, result.messageId);
+    res.json({ success: true, id: result.messageId, to, name, provider: result.provider });
   } catch (error) {
     console.error('Cold email error:', error);
     res.status(500).json({ error: error.message });

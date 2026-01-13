@@ -8682,7 +8682,7 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
     setKeywords('');
     setGenerated('');
     setShowGenerator(false);
-    toast.success('Text übernommen!');
+    toast.success('Text applied!');
   };
 
   if (!showGenerator) {
@@ -8706,7 +8706,7 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
         }}
       >
         <Sparkles size={14} />
-        Mit KI generieren
+        Generate with AI
       </button>
     );
   }
@@ -8740,7 +8740,7 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
           }}
         >
           <Sparkles size={16} />
-          {field === 'context' ? 'Business Context generieren' : 'Response Style generieren'}
+          {field === 'context' ? 'Generate Business Context' : 'Generate Response Style'}
         </span>
         <button
           type="button"
@@ -8760,7 +8760,7 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
             display: 'block',
           }}
         >
-          Stichwörter eingeben (kommagetrennt):
+          Enter keywords (comma-separated):
         </label>
         <input
           type="text"
@@ -8769,8 +8769,8 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
           onChange={e => setKeywords(e.target.value)}
           placeholder={
             field === 'context'
-              ? 'z.B. italienisch, familiengeführt, 1985, hausgemachte Pasta, Terrasse'
-              : 'z.B. freundlich, kurz, mit Grußformel, locker'
+              ? 'e.g. Italian, family-owned, 1985, homemade pasta, terrace'
+              : 'e.g. friendly, short, with greeting, casual'
           }
           style={{ fontSize: '14px' }}
         />
@@ -8820,7 +8820,7 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
               display: 'block',
             }}
           >
-            Generierter Text:
+            Generated text:
           </label>
           <p
             style={{
@@ -8841,11 +8841,11 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
               style={{ background: 'var(--gray-100)', border: '1px solid var(--gray-200)' }}
             >
               <RefreshCw size={14} style={{ marginRight: '4px' }} />
-              Neu generieren
+              Regenerate
             </button>
             <button type="button" onClick={handleAccept} className="btn btn-primary btn-sm">
               <Check size={14} style={{ marginRight: '4px' }} />
-              Übernehmen
+              Apply
             </button>
           </div>
         </div>
