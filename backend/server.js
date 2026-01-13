@@ -8477,6 +8477,16 @@ async function initOutreachTables() {
     await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS ai_response_draft TEXT`);
     await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS has_bad_review BOOLEAN DEFAULT FALSE`);
 
+    // Add columns for scraped leads (G2, Yelp, TripAdvisor)
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS lead_type TEXT DEFAULT 'restaurant'`); // 'restaurant', 'g2_competitor', 'tripadvisor'
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS competitor_platform TEXT`); // 'birdeye', 'podium', etc.
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS pain_points TEXT[]`); // Array of pain points
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS platform_url TEXT`); // Original Yelp/G2/TripAdvisor URL
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS job_title TEXT`); // For G2 leads
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS company_size TEXT`); // For G2 leads
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS review_quote TEXT`); // Quote from their negative review
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS outreach_angle TEXT`); // Personalized angle for outreach
+
     console.log('✅ Outreach tables initialized');
   } catch (error) {
     console.error('Error initializing outreach tables:', error);
@@ -12090,6 +12100,78 @@ app.post('/api/cron/send-agency-emails', async (req, res) => {
   } catch (error) {
     console.error('Agency email cron error:', error);
     res.status(500).json({ error: 'Agency email cron failed' });
+  }
+});
+
+// POST /api/admin/send-cold-email - Send custom cold email to restaurant leads
+app.post('/api/admin/send-cold-email', async (req, res) => {
+  const { key } = req.query;
+  if (key !== process.env.ADMIN_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'Resend not configured' });
+  }
+
+  const { to, name, reviews, type } = req.body;
+  if (!to || !name) {
+    return res.status(400).json({ error: 'to and name required' });
+  }
+
+  try {
+    const subject = `${reviews || 'Ihre'} Bewertungen - Antworten Sie auf alle mit AI?`;
+    const html = `
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+  <p>Guten Tag,</p>
+
+  <p>ich habe gesehen, dass <strong>${name}</strong> ${reviews ? `uber <strong>${reviews} Bewertungen</strong>` : 'viele Bewertungen'} auf TripAdvisor und Yelp hat${reviews ? ' - das ist beeindruckend!' : '.'}</p>
+
+  <p>Aber Hand aufs Herz: Wie viele davon bleiben unbeantwortet?</p>
+
+  <p>Mit <strong>ReviewResponder</strong> konnen Sie:</p>
+  <ul>
+    <li>AI-generierte, personalisierte Antworten in Sekunden erstellen</li>
+    <li>Den richtigen Ton treffen (professionell, freundlich, oder entschuldigend)</li>
+    <li>Zeit sparen und trotzdem jeden Gast wertschatzen</li>
+  </ul>
+
+  <p><strong>20 kostenlose Antworten pro Monat</strong> - ohne Kreditkarte, ohne Verpflichtung.</p>
+
+  <p>Hier konnen Sie es sofort testen:<br>
+  <a href="https://tryreviewresponder.com?utm_source=cold_email&utm_campaign=munich_restaurants&utm_content=${encodeURIComponent(name)}" style="color: #2563eb;">https://tryreviewresponder.com</a></p>
+
+  <p>Falls Sie Fragen haben, antworten Sie einfach auf diese Email.</p>
+
+  <p>Mit freundlichen Grussen,<br>
+  Berend Mainz<br>
+  <span style="color: #666;">ReviewResponder</span></p>
+
+  <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+  <p style="font-size: 12px; color: #999;">
+    Sie erhalten diese Email, weil Ihr Restaurant viele Online-Bewertungen hat.<br>
+    <a href="https://tryreviewresponder.com/unsubscribe?email=${encodeURIComponent(to)}" style="color: #999;">Abmelden</a>
+  </p>
+</body>
+</html>
+    `;
+
+    const result = await resend.emails.send({
+      from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
+      to: to,
+      subject: subject,
+      html: html,
+      reply_to: 'berend.mainz@web.de',
+      tags: [{ name: 'campaign', value: 'manual-cold-email' }]
+    });
+
+    console.log(`Cold email sent to ${name} (${to}):`, result.id);
+    res.json({ success: true, id: result.id, to, name });
+  } catch (error) {
+    console.error('Cold email error:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 

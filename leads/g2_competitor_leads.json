@@ -1,5 +1,5 @@
 {
-  "source": "G2 Reviews",
+  "source": "G2 Reviews + TripAdvisor + Yelp",
   "scraped_at": "2026-01-13",
   "leads": [
     {
@@ -64,14 +64,100 @@
       "source": "Yelp",
       "name": "Augustiner-Keller",
       "location": "Munich, Germany",
-      "address": "Arnulfstr. 52, M\u00fcnchen",
+      "address": "Arnulfstr. 52, 80335 Munich, Maxvorstadt",
       "website": "augustinerkeller.de",
+      "email": "buero@augustinerkeller.de",
       "phone": "089 594393",
       "rating": "4.1",
       "reviews": 781,
       "type": "Bavarian/Beer Garden",
       "status": "unclaimed",
-      "notes": "Popular beer garden with many reviews - good candidate for review management"
+      "priority": "HIGH",
+      "email_sent": "2026-01-13",
+      "notes": "UNCLAIMED on Yelp = best outreach target. 781 reviews to manage!"
+    },
+    {
+      "id": 102,
+      "source": "TripAdvisor",
+      "name": "Das Rosi",
+      "location": "Munich, Germany",
+      "address": "Rosenheimer Str. 2, 81669 Munich",
+      "phone": "+49 89 44999739",
+      "rating": "4.3",
+      "reviews": 266,
+      "type": "Cafe, European",
+      "price_range": "$$ - $$$",
+      "features": ["Breakfast", "Brunch", "Late Night", "Vegetarian friendly"],
+      "priority": "MEDIUM",
+      "notes": "Travelers Choice 2025 - high volume of reviews"
+    },
+    {
+      "id": 103,
+      "source": "TripAdvisor",
+      "name": "Schiller Bräu",
+      "location": "Munich, Germany",
+      "address": "Schillerstrasse 23, 80336 Munich",
+      "email": "info@schiller-braeu.de",
+      "phone": "+49 89 890584820",
+      "rating": "4.5",
+      "reviews": 706,
+      "type": "German, Brew Pub",
+      "price_range": "$$ - $$$",
+      "priority": "HIGH",
+      "email_sent": "2026-01-13",
+      "notes": "Travelers Choice 2025 - 706 reviews, brew pub with high engagement"
+    },
+    {
+      "id": 104,
+      "source": "TripAdvisor",
+      "name": "Steinheil 16",
+      "location": "Munich, Germany",
+      "address": "Steinheilstraße 16, 80333 Munich",
+      "email": "steinheil16@t-online.de",
+      "phone": "+49 89 527488",
+      "rating": "4.5",
+      "reviews": 1263,
+      "type": "German, Austrian",
+      "price_range": "$",
+      "priority": "HIGH",
+      "email_sent": "2026-01-13",
+      "notes": "Travelers Choice 2025 - HIGHEST review count (1,263)! Perfect for AI response demo"
+    },
+    {
+      "id": 105,
+      "source": "Yelp",
+      "name": "Egomio",
+      "location": "Germering (near Munich)",
+      "rating": "5.0",
+      "reviews": 5,
+      "type": "Greek",
+      "price_range": "$$",
+      "priority": "LOW",
+      "notes": "New restaurant - could benefit from more reviews"
+    },
+    {
+      "id": 106,
+      "source": "Yelp",
+      "name": "Schneid Kaffee",
+      "location": "Feldmoching (Munich)",
+      "rating": "5.0",
+      "reviews": 9,
+      "type": "Coffee Roasteries, Cafes",
+      "price_range": "$$",
+      "priority": "LOW",
+      "notes": "Specialty coffee - niche market"
+    },
+    {
+      "id": 107,
+      "source": "Yelp",
+      "name": "Methi",
+      "location": "Höhenkirchen-Siegertsbrunn (near Munich)",
+      "rating": "5.0",
+      "reviews": 7,
+      "type": "Indian",
+      "price_range": "$$",
+      "priority": "LOW",
+      "notes": "High rated Indian restaurant"
     }
   ],
   "cold_email_angles": {
@@ -81,15 +167,30 @@
       "Not getting enough reviews? Our outreach system helps you get more.",
       "Slow support? We respond within hours, not days."
     ],
-    "for_restaurants": [
-      "I noticed your restaurant has [X] reviews on Yelp/TripAdvisor.",
-      "Responding to every review is time-consuming - AI can help.",
-      "Professional responses improve your online reputation."
+    "for_high_volume_restaurants": [
+      "Mit über 1000 Bewertungen ist es unmöglich, auf alle zu antworten - außer mit AI.",
+      "Jede unbeantwortete Bewertung ist eine verpasste Chance, Kunden zurückzugewinnen.",
+      "20 kostenlose AI-Antworten pro Monat - perfekt zum Testen."
+    ],
+    "for_unclaimed_yelp": [
+      "Your Yelp page is unclaimed - customers are reviewing you but you can't respond.",
+      "Claim your page AND get AI-powered responses to save time."
     ]
   },
+  "summary": {
+    "total_competitor_leads": 4,
+    "total_restaurant_leads": 7,
+    "high_priority_targets": [
+      "Augustiner-Keller (UNCLAIMED Yelp, 781 reviews)",
+      "Steinheil 16 (1,263 reviews - highest!)",
+      "Schiller Bräu (706 reviews)"
+    ],
+    "total_reviews_across_targets": 3023,
+    "emails_sent": 3
+  },
   "next_steps": [
-    "LinkedIn search for reviewer names from G2",
-    "More TripAdvisor/Yelp restaurants with contact info",
-    "Email outreach with personalized pain-point messaging"
+    "Follow-up in 3 Tagen wenn keine Antwort",
+    "LinkedIn search for G2 reviewer names",
+    "Hamburg/Frankfurt Restaurants als nächstes"
   ]
 }
