@@ -9955,6 +9955,209 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
   }
 });
 
+// ==========================================
+// IMPORT SCRAPED LEADS (from Memory MCP or manual scraping)
+// ==========================================
+app.post('/api/outreach/import-scraped-leads', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { leads } = req.body;
+
+  if (!leads || !Array.isArray(leads) || leads.length === 0) {
+    return res.status(400).json({ error: 'leads array is required' });
+  }
+
+  try {
+    const results = {
+      imported: 0,
+      skipped: 0,
+      needs_enrichment: 0,
+      errors: []
+    };
+
+    for (const lead of leads) {
+      try {
+        // Parse Memory MCP format or direct format
+        const businessName = lead.business_name || lead.name ||
+          (lead.observations?.find(o => o.startsWith('business_name:'))?.split(': ')[1]);
+        const city = lead.city ||
+          (lead.observations?.find(o => o.startsWith('city:'))?.split(': ')[1]) || 'Unknown';
+        const source = lead.source ||
+          (lead.observations?.find(o => o.startsWith('source:'))?.split(': ')[1]) || 'scraped';
+        const email = lead.email ||
+          (lead.observations?.find(o => o.startsWith('email:'))?.split(': ')[1]);
+        const phone = lead.phone ||
+          (lead.observations?.find(o => o.startsWith('phone:'))?.split(': ')[1]);
+        const address = lead.address ||
+          (lead.observations?.find(o => o.startsWith('address:'))?.split(': ')[1]);
+        const businessType = lead.business_type ||
+          (lead.observations?.find(o => o.startsWith('business_type:'))?.split(': ')[1]) || 'business';
+        const rating = lead.rating ||
+          parseFloat(lead.observations?.find(o => o.startsWith('rating:'))?.split(': ')[1]) || null;
+        const reviewerName = lead.reviewer ||
+          (lead.observations?.find(o => o.startsWith('reviewer:'))?.split(': ')[1]);
+        const painPoints = lead.pain_points || lead.pain_point ||
+          lead.observations?.filter(o => o.startsWith('pain_point'))?.map(o => o.split(': ')[1])?.join('; ');
+        const competitor = lead.competitor ||
+          (lead.observations?.find(o => o.startsWith('competitor:'))?.split(': ')[1]);
+
+        if (!businessName && !reviewerName) {
+          results.skipped++;
+          results.errors.push(`Skipped lead: no business_name or reviewer`);
+          continue;
+        }
+
+        // For G2/competitor leads (reviewer names without business), mark for LinkedIn enrichment
+        if (reviewerName && !email && !businessName) {
+          await dbQuery(`
+            INSERT INTO outreach_leads
+              (business_name, contact_name, source, status, business_type, city)
+            VALUES ($1, $2, $3, 'needs_enrichment', $4, $5)
+            ON CONFLICT (business_name, city) DO NOTHING
+          `, [
+            `${competitor || 'Unknown'} - ${reviewerName}`,
+            reviewerName,
+            source,
+            `competitor_${competitor || 'unknown'}`,
+            city
+          ]);
+          results.needs_enrichment++;
+          continue;
+        }
+
+        // Insert or update lead
+        await dbQuery(`
+          INSERT INTO outreach_leads
+            (business_name, business_type, address, city, phone, website,
+             google_rating, email, source, status, contact_name)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+          ON CONFLICT (business_name, city)
+          DO UPDATE SET
+            email = COALESCE(EXCLUDED.email, outreach_leads.email),
+            phone = COALESCE(EXCLUDED.phone, outreach_leads.phone),
+            contact_name = COALESCE(EXCLUDED.contact_name, outreach_leads.contact_name),
+            google_rating = COALESCE(EXCLUDED.google_rating, outreach_leads.google_rating)
+        `, [
+          businessName || `${competitor} Lead - ${reviewerName}`,
+          businessType,
+          address,
+          city,
+          phone,
+          lead.website,
+          rating,
+          email,
+          source,
+          email ? 'new' : 'needs_enrichment',
+          reviewerName
+        ]);
+
+        if (email) {
+          results.imported++;
+        } else {
+          results.needs_enrichment++;
+        }
+      } catch (err) {
+        results.errors.push(`Error: ${err.message}`);
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Imported ${results.imported} leads, ${results.needs_enrichment} need LinkedIn enrichment`,
+      ...results
+    });
+  } catch (error) {
+    console.error('Import scraped leads error:', error);
+    res.status(500).json({ error: 'Import failed', message: error.message });
+  }
+});
+
+// ==========================================
+// LINKEDIN ENRICHMENT - Find contact info for leads
+// ==========================================
+app.post('/api/outreach/linkedin-enrich', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Get leads that need enrichment
+    const leadsToEnrich = await dbAll(`
+      SELECT id, business_name, contact_name, business_type, city
+      FROM outreach_leads
+      WHERE status = 'needs_enrichment'
+        AND contact_name IS NOT NULL
+        AND email IS NULL
+      ORDER BY created_at DESC
+      LIMIT 50
+    `);
+
+    if (leadsToEnrich.length === 0) {
+      return res.json({
+        success: true,
+        message: 'No leads need enrichment',
+        leads: []
+      });
+    }
+
+    // Return leads formatted for LinkedIn search
+    // Claude with Chrome MCP can use these to search LinkedIn
+    const searchQueries = leadsToEnrich.map(lead => ({
+      id: lead.id,
+      name: lead.contact_name,
+      business_type: lead.business_type,
+      city: lead.city,
+      linkedin_search_url: `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(lead.contact_name)}&origin=GLOBAL_SEARCH_HEADER`
+    }));
+
+    res.json({
+      success: true,
+      message: `${leadsToEnrich.length} leads need LinkedIn enrichment`,
+      leads: searchQueries
+    });
+  } catch (error) {
+    console.error('LinkedIn enrich error:', error);
+    res.status(500).json({ error: 'Enrichment failed', message: error.message });
+  }
+});
+
+// Update lead with LinkedIn data
+app.post('/api/outreach/linkedin-update', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { lead_id, email, linkedin_url, company, title } = req.body;
+
+  if (!lead_id) {
+    return res.status(400).json({ error: 'lead_id is required' });
+  }
+
+  try {
+    await dbQuery(`
+      UPDATE outreach_leads
+      SET email = COALESCE($1, email),
+          website = COALESCE($2, website),
+          business_name = COALESCE($3, business_name),
+          status = CASE WHEN $1 IS NOT NULL THEN 'new' ELSE status END
+      WHERE id = $4
+    `, [email, linkedin_url, company, lead_id]);
+
+    res.json({
+      success: true,
+      message: email ? 'Lead updated with email - ready for outreach' : 'Lead updated'
+    });
+  } catch (error) {
+    console.error('LinkedIn update error:', error);
+    res.status(500).json({ error: 'Update failed', message: error.message });
+  }
+});
+
 // Send follow-up emails (sequence 2 and 3)
 app.post('/api/outreach/send-followups', async (req, res) => {
   const adminKey = req.headers['x-admin-key'];
