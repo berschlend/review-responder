@@ -59,7 +59,8 @@
       "Bash(tail *)",
       "Bash(grep *)",
       "Bash(find *)",
-      "Bash(wc *)"
+      "Bash(wc *)",
+      "Bash(curl *)"
     ],
     "deny": [
       "Bash(rm -rf /)",
