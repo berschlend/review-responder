@@ -249,6 +249,10 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 - [x] Demo-Video aufnehmen (2 Min Walkthrough) - DONE
 - [ ] Chrome Web Store einreichen (ZIP + Screenshots)
 - [ ] **Reddit API Keys holen**: Wartet auf Genehmigung → https://www.reddit.com/prefs/apps → App erstellen
+- [ ] **Google Indexierung beantragen (3 URLs)** - Tageslimit erreicht, morgen nochmal:
+  - `/medical-practice-reviews`
+  - `/salon-spa-review-responses`
+  - `/auto-shop-reviews`
 
 ### CLAUDE KANN SELBST (mit Chrome MCP):
 - Cron Jobs anlegen/ändern auf cron-job.org
@@ -298,6 +302,13 @@ Keine offenen Tasks - App ist feature-complete!
 - [x] **Reddit API Access Request** - Antrag eingereicht
   - Formular ausgefüllt via Chrome MCP
   - Wartet auf Genehmigung (1-2 Tage)
+- [x] **Google Indexierung für 5 neue Landing Pages** - Via Chrome MCP beantragt
+  - `/negative-review-responses`
+  - `/tripadvisor-review-responses`
+  - `/booking-review-generator`
+  - `/facebook-review-responses`
+  - `/dentist-review-responses`
+  - (3 weitere morgen wegen Tageslimit)
 
 ### ERLEDIGT (12.01.2026):
 - [x] **SEO Auto-Pilot Blog implementiert** - Automatische Blog-Generierung mit Gemini 2.5 Pro
