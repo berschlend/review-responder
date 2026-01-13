@@ -14619,11 +14619,13 @@ const AdminPage = () => {
   const [selectedAffiliate, setSelectedAffiliate] = useState(null);
   const [affiliateDetails, setAffiliateDetails] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
-  const [activeAdminTab, setActiveAdminTab] = useState('overview');
+  const [activeAdminTab, setActiveAdminTab] = useState('sales');
   const [outreachData, setOutreachData] = useState(null);
   const [outreachLoading, setOutreachLoading] = useState(false);
   const [usersData, setUsersData] = useState(null);
   const [usersLoading, setUsersLoading] = useState(false);
+  const [salesData, setSalesData] = useState(null);
+  const [salesLoading, setSalesLoading] = useState(false);
 
   // Use the same API_URL as the rest of the app (already includes /api)
   // Remove /api suffix if present to build admin URLs correctly
@@ -14728,6 +14730,23 @@ const AdminPage = () => {
     }
   };
 
+  const loadSalesData = async key => {
+    const keyToUse = key || adminKey;
+    if (!keyToUse) return;
+    setSalesLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/admin/sales-dashboard`, {
+        headers: { 'X-Admin-Key': keyToUse },
+      });
+      setSalesData(res.data);
+    } catch (err) {
+      console.error('Sales load error:', err);
+      toast.error('Failed to load sales data');
+    } finally {
+      setSalesLoading(false);
+    }
+  };
+
   const updateStatus = async (id, status, note = '') => {
     setActionLoading(true);
     try {
@@ -14785,6 +14804,9 @@ const AdminPage = () => {
   // Load data when tab changes
   useEffect(() => {
     if (isAuthenticated && adminKey) {
+      if ((activeAdminTab === 'sales' || activeAdminTab === 'insights') && !salesData) {
+        loadSalesData();
+      }
       if (activeAdminTab === 'outreach' && !outreachData) {
         loadOutreachData();
       }
@@ -14864,10 +14886,16 @@ const AdminPage = () => {
       {/* Admin Tabs */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
         <button
-          className={`btn ${activeAdminTab === 'overview' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setActiveAdminTab('overview')}
+          className={`btn ${activeAdminTab === 'sales' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('sales')}
         >
-          Overview
+          Sales
+        </button>
+        <button
+          className={`btn ${activeAdminTab === 'insights' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('insights')}
+        >
+          Insights
         </button>
         <button
           className={`btn ${activeAdminTab === 'users' ? 'btn-primary' : 'btn-secondary'}`}
@@ -14889,52 +14917,417 @@ const AdminPage = () => {
         </button>
       </div>
 
-      {/* Overview Tab */}
-      {activeAdminTab === 'overview' && (
-        <>
-      {/* Stats Overview */}
-      {stats && (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '16px',
-            marginBottom: '32px',
-          }}
-        >
-          <div className="card" style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', fontWeight: '700', color: 'var(--primary)' }}>
-              {stats.users?.total || 0}
+      {/* Sales Tab - Comprehensive Sales Dashboard */}
+      {activeAdminTab === 'sales' && (
+        <div>
+          {salesLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading sales data...</div>
+          ) : salesData ? (
+            <>
+              {/* Revenue Cards - Top Row */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                  gap: '16px',
+                  marginBottom: '24px',
+                }}
+              >
+                <div className="card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: 'white' }}>
+                  <div style={{ fontSize: '36px', fontWeight: '700' }}>
+                    ${salesData.revenue?.mrr || 0}
+                  </div>
+                  <div style={{ opacity: 0.9 }}>MRR</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', color: 'white' }}>
+                  <div style={{ fontSize: '36px', fontWeight: '700' }}>
+                    ${salesData.revenue?.arr || 0}
+                  </div>
+                  <div style={{ opacity: 0.9 }}>ARR</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '36px', fontWeight: '700', color: 'var(--primary)' }}>
+                    {salesData.users?.total || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-600)' }}>Total Users</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '36px', fontWeight: '700', color: '#10B981' }}>
+                    {salesData.users?.paying || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-600)' }}>Paying</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '36px', fontWeight: '700', color: '#F59E0B' }}>
+                    {salesData.funnel?.conversionRate || 0}%
+                  </div>
+                  <div style={{ color: 'var(--gray-600)' }}>Conversion</div>
+                </div>
+              </div>
+
+              {/* Growth Metrics Row */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                  gap: '12px',
+                  marginBottom: '24px',
+                }}
+              >
+                <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#10B981' }}>+{salesData.users?.newToday || 0}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Today</div>
+                </div>
+                <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#3B82F6' }}>+{salesData.users?.newThisWeek || 0}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>This Week</div>
+                </div>
+                <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#8B5CF6' }}>+{salesData.users?.newThisMonth || 0}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>This Month</div>
+                </div>
+                <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#EC4899' }}>{salesData.activity?.activeUsers7d || 0}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Active (7d)</div>
+                </div>
+                <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#F59E0B' }}>{salesData.activity?.responsesToday || 0}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Responses Today</div>
+                </div>
+                <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#6366F1' }}>{salesData.activity?.responsesThisWeek || 0}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>This Week</div>
+                </div>
+              </div>
+
+              {/* Sales Funnel & Plan Breakdown */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+                {/* Sales Funnel */}
+                <div className="card">
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>Sales Funnel</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ width: '100%', background: 'var(--gray-100)', borderRadius: '8px', overflow: 'hidden' }}>
+                        <div style={{ width: '100%', background: 'var(--primary)', height: '32px', display: 'flex', alignItems: 'center', paddingLeft: '12px', color: 'white', fontWeight: '500' }}>
+                          Registered: {salesData.funnel?.registered || 0}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ width: '100%', background: 'var(--gray-100)', borderRadius: '8px', overflow: 'hidden' }}>
+                        <div style={{ width: `${salesData.funnel?.activationRate || 0}%`, minWidth: '120px', background: '#3B82F6', height: '32px', display: 'flex', alignItems: 'center', paddingLeft: '12px', color: 'white', fontWeight: '500' }}>
+                          Activated: {salesData.funnel?.activated || 0} ({salesData.funnel?.activationRate || 0}%)
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ width: '100%', background: 'var(--gray-100)', borderRadius: '8px', overflow: 'hidden' }}>
+                        <div style={{ width: `${Math.max(parseFloat(salesData.funnel?.conversionRate || 0) * 5, 10)}%`, minWidth: '100px', background: '#10B981', height: '32px', display: 'flex', alignItems: 'center', paddingLeft: '12px', color: 'white', fontWeight: '500' }}>
+                          Paying: {salesData.funnel?.paying || 0} ({salesData.funnel?.conversionRate || 0}%)
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Plan Breakdown */}
+                <div className="card">
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>Plan Distribution</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {Object.entries(salesData.revenue?.planBreakdown || {}).map(([plan, count]) => (
+                      <div key={plan} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: 'var(--gray-50)', borderRadius: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            background: plan === 'free' ? '#E5E7EB' :
+                                       plan === 'starter' ? '#DBEAFE' :
+                                       plan === 'pro' ? '#D1FAE5' : '#EDE9FE',
+                            color: plan === 'free' ? '#374151' :
+                                   plan === 'starter' ? '#1D4ED8' :
+                                   plan === 'pro' ? '#065F46' : '#5B21B6',
+                          }}>
+                            {plan.toUpperCase()}
+                          </span>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontWeight: '700', fontSize: '18px' }}>{count}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
+                            {plan !== 'free' ? `$${plan === 'starter' ? 29 : plan === 'pro' ? 49 : 99}/mo` : 'Free'}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Signups */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: '600' }}>Recent Signups</h3>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => { setSalesData(null); loadSalesData(); }}
+                    style={{ padding: '6px 12px', fontSize: '13px' }}
+                  >
+                    Refresh
+                  </button>
+                </div>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
+                        <th style={{ padding: '10px 8px', textAlign: 'left' }}>Email</th>
+                        <th style={{ padding: '10px 8px', textAlign: 'left' }}>Plan</th>
+                        <th style={{ padding: '10px 8px', textAlign: 'left' }}>Verified</th>
+                        <th style={{ padding: '10px 8px', textAlign: 'left' }}>Stripe</th>
+                        <th style={{ padding: '10px 8px', textAlign: 'left' }}>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {salesData.recentSignups?.map(user => (
+                        <tr key={user.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                          <td style={{ padding: '10px 8px', fontWeight: '500' }}>{user.email}</td>
+                          <td style={{ padding: '10px 8px' }}>
+                            <span style={{
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                              fontWeight: '500',
+                              background: user.subscription_plan === 'free' ? '#E5E7EB' :
+                                         user.subscription_plan === 'starter' ? '#DBEAFE' :
+                                         user.subscription_plan === 'pro' ? '#D1FAE5' : '#EDE9FE',
+                              color: user.subscription_plan === 'free' ? '#374151' :
+                                     user.subscription_plan === 'starter' ? '#1D4ED8' :
+                                     user.subscription_plan === 'pro' ? '#065F46' : '#5B21B6',
+                            }}>
+                              {user.subscription_plan}
+                            </span>
+                          </td>
+                          <td style={{ padding: '10px 8px' }}>
+                            {user.email_verified ? (
+                              <span style={{ color: '#10B981' }}>Yes</span>
+                            ) : (
+                              <span style={{ color: 'var(--gray-400)' }}>No</span>
+                            )}
+                          </td>
+                          <td style={{ padding: '10px 8px' }}>
+                            {user.stripe_customer_id ? (
+                              <span style={{ color: '#10B981' }}>Connected</span>
+                            ) : (
+                              <span style={{ color: 'var(--gray-400)' }}>-</span>
+                            )}
+                          </td>
+                          <td style={{ padding: '10px 8px', color: 'var(--gray-500)' }}>
+                            {new Date(user.created_at).toLocaleDateString()} {new Date(user.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Blog & Activity Stats */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                <div className="card">
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Blog Performance</h3>
+                  <div style={{ display: 'flex', gap: '24px' }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '32px', fontWeight: '700', color: '#6366F1' }}>{salesData.blog?.published || 0}</div>
+                      <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Published</div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '32px', fontWeight: '700', color: 'var(--gray-400)' }}>{salesData.blog?.totalArticles || 0}</div>
+                      <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Total</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="card">
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Email Verification</h3>
+                  <div style={{ display: 'flex', gap: '24px' }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '32px', fontWeight: '700', color: '#10B981' }}>{salesData.users?.verified || 0}</div>
+                      <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Verified</div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '32px', fontWeight: '700', color: '#F59E0B' }}>{salesData.users?.verificationRate || 0}%</div>
+                      <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Rate</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>Failed to load sales data</p>
+              <button className="btn btn-primary" onClick={() => loadSalesData()}>Retry</button>
             </div>
-            <div style={{ color: 'var(--gray-600)' }}>Total Users</div>
-          </div>
-          <div className="card" style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', fontWeight: '700', color: '#10B981' }}>
-              {stats.users?.paying || 0}
-            </div>
-            <div style={{ color: 'var(--gray-600)' }}>Paying Users</div>
-          </div>
-          <div className="card" style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', fontWeight: '700', color: '#F59E0B' }}>
-              {counts.pending}
-            </div>
-            <div style={{ color: 'var(--gray-600)' }}>Pending Affiliates</div>
-          </div>
-          <div className="card" style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', fontWeight: '700', color: '#8B5CF6' }}>
-              {counts.approved}
-            </div>
-            <div style={{ color: 'var(--gray-600)' }}>Active Affiliates</div>
-          </div>
-          <div className="card" style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', fontWeight: '700', color: '#10B981' }}>
-              ${stats.affiliates?.totalEarnings?.toFixed(2) || '0.00'}
-            </div>
-            <div style={{ color: 'var(--gray-600)' }}>Total Affiliate Earnings</div>
-          </div>
+          )}
         </div>
       )}
-        </>
+
+      {/* Insights Tab - Actionable Sales Intelligence */}
+      {activeAdminTab === 'insights' && (
+        <div>
+          {salesLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading insights...</div>
+          ) : salesData ? (
+            <>
+              {/* Action Cards */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', marginBottom: '24px' }}>
+                {/* Upgrade Opportunities */}
+                <div className="card" style={{ borderLeft: '4px solid #10B981' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#10B981' }}>
+                    Upgrade Opportunities ({salesData.insights?.upgradeOpportunities?.length || 0})
+                  </h3>
+                  <p style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '16px' }}>
+                    Users near their plan limit - reach out to upgrade
+                  </p>
+                  {salesData.insights?.upgradeOpportunities?.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '250px', overflowY: 'auto' }}>
+                      {salesData.insights.upgradeOpportunities.map((u, i) => (
+                        <div key={i} style={{ padding: '10px', background: 'var(--gray-50)', borderRadius: '6px', fontSize: '13px' }}>
+                          <div style={{ fontWeight: '500' }}>{u.email}</div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                            <span style={{ color: 'var(--gray-500)' }}>{u.subscription_plan}</span>
+                            <span style={{ color: u.usage_percent >= 80 ? '#EF4444' : '#F59E0B', fontWeight: '600' }}>
+                              {u.monthly_response_count}/{u.limit} ({u.usage_percent}%)
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: '13px', color: 'var(--gray-400)' }}>No upgrade opportunities right now</p>
+                  )}
+                </div>
+
+                {/* Free Users to Convert */}
+                <div className="card" style={{ borderLeft: '4px solid #3B82F6' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#3B82F6' }}>
+                    Hot Free Users ({salesData.insights?.freeUpgradeCandidates?.length || 0})
+                  </h3>
+                  <p style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '16px' }}>
+                    High-activity free users - prime for conversion
+                  </p>
+                  {salesData.insights?.freeUpgradeCandidates?.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '250px', overflowY: 'auto' }}>
+                      {salesData.insights.freeUpgradeCandidates.map((u, i) => (
+                        <div key={i} style={{ padding: '10px', background: 'var(--gray-50)', borderRadius: '6px', fontSize: '13px' }}>
+                          <div style={{ fontWeight: '500' }}>{u.email}</div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                            <span style={{ color: 'var(--gray-500)' }}>
+                              Last: {u.last_activity ? new Date(u.last_activity).toLocaleDateString() : 'Never'}
+                            </span>
+                            <span style={{ color: '#3B82F6', fontWeight: '600' }}>
+                              {u.monthly_response_count}/20 used
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: '13px', color: 'var(--gray-400)' }}>No hot leads right now</p>
+                  )}
+                </div>
+
+                {/* Churn Risk */}
+                <div className="card" style={{ borderLeft: '4px solid #EF4444' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#EF4444' }}>
+                    Churn Risk ({salesData.insights?.churnRisk?.length || 0})
+                  </h3>
+                  <p style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '16px' }}>
+                    Paying users inactive 14+ days - reach out to retain
+                  </p>
+                  {salesData.insights?.churnRisk?.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '250px', overflowY: 'auto' }}>
+                      {salesData.insights.churnRisk.map((u, i) => (
+                        <div key={i} style={{ padding: '10px', background: '#FEF2F2', borderRadius: '6px', fontSize: '13px' }}>
+                          <div style={{ fontWeight: '500' }}>{u.email}</div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                            <span style={{
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                              background: u.subscription_plan === 'starter' ? '#DBEAFE' :
+                                         u.subscription_plan === 'pro' ? '#D1FAE5' : '#EDE9FE',
+                              color: u.subscription_plan === 'starter' ? '#1D4ED8' :
+                                     u.subscription_plan === 'pro' ? '#065F46' : '#5B21B6',
+                            }}>
+                              {u.subscription_plan}
+                            </span>
+                            <span style={{ color: '#EF4444', fontSize: '12px' }}>
+                              Last: {u.last_activity ? new Date(u.last_activity).toLocaleDateString() : 'Never'}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: '13px', color: 'var(--gray-400)' }}>No churn risks detected</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Power Users */}
+              <div className="card">
+                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
+                  Power Users - Top 10 by Usage
+                </h3>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
+                        <th style={{ padding: '10px 8px', textAlign: 'left' }}>Email</th>
+                        <th style={{ padding: '10px 8px', textAlign: 'left' }}>Plan</th>
+                        <th style={{ padding: '10px 8px', textAlign: 'right' }}>Responses</th>
+                        <th style={{ padding: '10px 8px', textAlign: 'left' }}>Last Active</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {salesData.insights?.powerUsers?.map((u, i) => (
+                        <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                          <td style={{ padding: '10px 8px', fontWeight: '500' }}>{u.email}</td>
+                          <td style={{ padding: '10px 8px' }}>
+                            <span style={{
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                              fontWeight: '500',
+                              background: u.subscription_plan === 'free' ? '#E5E7EB' :
+                                         u.subscription_plan === 'starter' ? '#DBEAFE' :
+                                         u.subscription_plan === 'pro' ? '#D1FAE5' : '#EDE9FE',
+                              color: u.subscription_plan === 'free' ? '#374151' :
+                                     u.subscription_plan === 'starter' ? '#1D4ED8' :
+                                     u.subscription_plan === 'pro' ? '#065F46' : '#5B21B6',
+                            }}>
+                              {u.subscription_plan}
+                            </span>
+                          </td>
+                          <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: '600', color: '#10B981' }}>
+                            {u.response_count}
+                          </td>
+                          <td style={{ padding: '10px 8px', color: 'var(--gray-500)' }}>
+                            {u.last_activity ? new Date(u.last_activity).toLocaleDateString() : 'N/A'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>Load sales data first</p>
+              <button className="btn btn-primary" onClick={() => loadSalesData()}>Load Data</button>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Users Tab */}

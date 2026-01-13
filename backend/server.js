@@ -7199,6 +7199,289 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
   }
 });
 
+// GET /api/admin/sales-dashboard - Comprehensive sales dashboard data
+app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
+  try {
+    // Exclude test emails pattern
+    const excludeEmailsClause = `
+      AND email NOT LIKE '%@web.de'
+      AND email NOT LIKE 'test%'
+      AND email NOT LIKE '%test@%'
+      AND email NOT LIKE 'asdf%'
+      AND email NOT LIKE 'qwer%'
+      AND email NOT LIKE 'asd@%'
+      AND email NOT LIKE '%@test.%'
+      AND email NOT LIKE '%@example.%'
+      AND email NOT LIKE 'admin@%'
+      AND email NOT LIKE '%fake%'
+      AND email NOT LIKE 'a@%'
+      AND email NOT LIKE 'aa@%'
+      AND email NOT LIKE 'aaa@%'
+    `;
+
+    // ========== REVENUE METRICS ==========
+    // MRR calculation: Starter $29, Pro $49, Unlimited $99
+    const planPrices = { starter: 29, pro: 49, unlimited: 99 };
+    const planCounts = await dbAll(`
+      SELECT subscription_plan, COUNT(*) as count
+      FROM users
+      WHERE 1=1 ${excludeEmailsClause}
+      GROUP BY subscription_plan
+    `);
+
+    let mrr = 0;
+    const planBreakdown = {};
+    for (const p of planCounts) {
+      planBreakdown[p.subscription_plan] = parseInt(p.count);
+      if (planPrices[p.subscription_plan]) {
+        mrr += planPrices[p.subscription_plan] * parseInt(p.count);
+      }
+    }
+
+    // ========== USER METRICS ==========
+    const userMetrics = await dbGet(`
+      SELECT
+        COUNT(*) as total_users,
+        COUNT(*) FILTER (WHERE subscription_plan != 'free') as paying_users,
+        COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '24 hours') as new_today,
+        COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '7 days') as new_this_week,
+        COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '30 days') as new_this_month,
+        COUNT(*) FILTER (WHERE email_verified = true) as verified_users
+      FROM users
+      WHERE 1=1 ${excludeEmailsClause}
+    `);
+
+    // ========== ACTIVITY METRICS ==========
+    // Active users (generated response in last 7 days)
+    let activityMetrics = { active_7d: 0, active_30d: 0, total_responses: 0, responses_today: 0, responses_week: 0 };
+    try {
+      activityMetrics = await dbGet(`
+        SELECT
+          COUNT(DISTINCT user_id) FILTER (WHERE created_at > NOW() - INTERVAL '7 days') as active_7d,
+          COUNT(DISTINCT user_id) FILTER (WHERE created_at > NOW() - INTERVAL '30 days') as active_30d,
+          COUNT(*) as total_responses,
+          COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '24 hours') as responses_today,
+          COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '7 days') as responses_week
+        FROM responses
+      `) || activityMetrics;
+    } catch (e) {
+      console.error('Activity query error:', e.message);
+    }
+
+    // ========== FUNNEL METRICS ==========
+    // Users who have generated at least 1 response (activated)
+    let activatedCount = 0;
+    try {
+      const activated = await dbGet(`
+        SELECT COUNT(DISTINCT r.user_id) as count
+        FROM responses r
+        JOIN users u ON r.user_id = u.id
+        WHERE 1=1 ${excludeEmailsClause.replace(/email/g, 'u.email')}
+      `);
+      activatedCount = parseInt(activated?.count || 0);
+    } catch (e) {
+      console.error('Activated query error:', e.message);
+    }
+
+    // ========== RECENT SIGNUPS ==========
+    const recentSignups = await dbAll(`
+      SELECT id, email, subscription_plan, created_at, email_verified, stripe_customer_id
+      FROM users
+      WHERE 1=1 ${excludeEmailsClause}
+      ORDER BY created_at DESC
+      LIMIT 15
+    `);
+
+    // ========== USER ACTIVITY DETAILS ==========
+    // Power users (most responses)
+    let powerUsers = [];
+    try {
+      powerUsers = await dbAll(`
+        SELECT u.email, u.subscription_plan, COUNT(r.id) as response_count, MAX(r.created_at) as last_activity
+        FROM users u
+        LEFT JOIN responses r ON u.id = r.user_id
+        WHERE 1=1 ${excludeEmailsClause.replace(/email/g, 'u.email')}
+        GROUP BY u.id, u.email, u.subscription_plan
+        HAVING COUNT(r.id) > 0
+        ORDER BY response_count DESC
+        LIMIT 10
+      `);
+    } catch (e) {
+      console.error('Power users query error:', e.message);
+    }
+
+    // Users near their plan limit (upgrade candidates)
+    let upgradeOpportunities = [];
+    try {
+      const limits = { free: 20, starter: 300, pro: 800 };
+      upgradeOpportunities = await dbAll(`
+        SELECT u.email, u.subscription_plan, u.monthly_response_count, u.smart_response_count
+        FROM users u
+        WHERE u.subscription_plan IN ('free', 'starter', 'pro')
+        AND u.monthly_response_count >= 15
+        ${excludeEmailsClause.replace(/email/g, 'u.email')}
+        ORDER BY u.monthly_response_count DESC
+        LIMIT 10
+      `);
+      // Add percentage to limit
+      upgradeOpportunities = upgradeOpportunities.map(u => ({
+        ...u,
+        limit: limits[u.subscription_plan] || 20,
+        usage_percent: Math.round((u.monthly_response_count / (limits[u.subscription_plan] || 20)) * 100)
+      }));
+    } catch (e) {
+      console.error('Upgrade opportunities query error:', e.message);
+    }
+
+    // Inactive paying users (churn risk) - paid but no activity in 14+ days
+    let churnRisk = [];
+    try {
+      churnRisk = await dbAll(`
+        SELECT u.email, u.subscription_plan, u.created_at,
+               MAX(r.created_at) as last_activity
+        FROM users u
+        LEFT JOIN responses r ON u.id = r.user_id
+        WHERE u.subscription_plan != 'free'
+        ${excludeEmailsClause.replace(/email/g, 'u.email')}
+        GROUP BY u.id, u.email, u.subscription_plan, u.created_at
+        HAVING MAX(r.created_at) IS NULL OR MAX(r.created_at) < NOW() - INTERVAL '14 days'
+        ORDER BY MAX(r.created_at) DESC NULLS LAST
+        LIMIT 10
+      `);
+    } catch (e) {
+      console.error('Churn risk query error:', e.message);
+    }
+
+    // High-activity free users (upgrade candidates)
+    let freeUpgradeCandidates = [];
+    try {
+      freeUpgradeCandidates = await dbAll(`
+        SELECT u.email, u.monthly_response_count, MAX(r.created_at) as last_activity
+        FROM users u
+        LEFT JOIN responses r ON u.id = r.user_id
+        WHERE u.subscription_plan = 'free'
+        AND u.monthly_response_count >= 10
+        ${excludeEmailsClause.replace(/email/g, 'u.email')}
+        GROUP BY u.id, u.email, u.monthly_response_count
+        ORDER BY u.monthly_response_count DESC
+        LIMIT 10
+      `);
+    } catch (e) {
+      console.error('Free upgrade candidates query error:', e.message);
+    }
+
+    // ========== BLOG STATS ==========
+    let blogStats = { total_articles: 0, published: 0 };
+    try {
+      blogStats = await dbGet(`
+        SELECT COUNT(*) as total_articles,
+               COUNT(*) FILTER (WHERE published = true) as published
+        FROM blog_articles
+      `) || blogStats;
+    } catch (e) {
+      console.error('Blog stats query error:', e.message);
+    }
+
+    // ========== EMAIL VERIFICATION STATS ==========
+    let emailStats = { total_tokens: 0, verified: 0 };
+    try {
+      emailStats = await dbGet(`
+        SELECT
+          (SELECT COUNT(*) FROM email_verification_tokens) as total_tokens,
+          (SELECT COUNT(*) FROM users WHERE email_verified = true ${excludeEmailsClause}) as verified
+      `) || emailStats;
+    } catch (e) {
+      console.error('Email stats query error:', e.message);
+    }
+
+    // ========== DAILY REGISTRATIONS (last 14 days) ==========
+    let dailySignups = [];
+    try {
+      dailySignups = await dbAll(`
+        SELECT DATE(created_at) as date, COUNT(*) as count
+        FROM users
+        WHERE created_at > NOW() - INTERVAL '14 days'
+        ${excludeEmailsClause}
+        GROUP BY DATE(created_at)
+        ORDER BY date DESC
+      `);
+    } catch (e) {
+      console.error('Daily signups query error:', e.message);
+    }
+
+    // ========== RESPONSE TREND (last 14 days) ==========
+    let dailyResponses = [];
+    try {
+      dailyResponses = await dbAll(`
+        SELECT DATE(created_at) as date, COUNT(*) as count
+        FROM responses
+        WHERE created_at > NOW() - INTERVAL '14 days'
+        GROUP BY DATE(created_at)
+        ORDER BY date DESC
+      `);
+    } catch (e) {
+      console.error('Daily responses query error:', e.message);
+    }
+
+    res.json({
+      revenue: {
+        mrr,
+        arr: mrr * 12,
+        planBreakdown,
+        avgRevenuePerUser: userMetrics.paying_users > 0 ? (mrr / parseInt(userMetrics.paying_users)).toFixed(2) : 0
+      },
+      users: {
+        total: parseInt(userMetrics.total_users) || 0,
+        paying: parseInt(userMetrics.paying_users) || 0,
+        free: (parseInt(userMetrics.total_users) || 0) - (parseInt(userMetrics.paying_users) || 0),
+        newToday: parseInt(userMetrics.new_today) || 0,
+        newThisWeek: parseInt(userMetrics.new_this_week) || 0,
+        newThisMonth: parseInt(userMetrics.new_this_month) || 0,
+        verified: parseInt(userMetrics.verified_users) || 0,
+        verificationRate: userMetrics.total_users > 0
+          ? ((parseInt(userMetrics.verified_users) / parseInt(userMetrics.total_users)) * 100).toFixed(1)
+          : 0
+      },
+      activity: {
+        activeUsers7d: parseInt(activityMetrics.active_7d) || 0,
+        activeUsers30d: parseInt(activityMetrics.active_30d) || 0,
+        totalResponses: parseInt(activityMetrics.total_responses) || 0,
+        responsesToday: parseInt(activityMetrics.responses_today) || 0,
+        responsesThisWeek: parseInt(activityMetrics.responses_week) || 0
+      },
+      funnel: {
+        registered: parseInt(userMetrics.total_users) || 0,
+        activated: activatedCount,
+        activationRate: userMetrics.total_users > 0
+          ? ((activatedCount / parseInt(userMetrics.total_users)) * 100).toFixed(1)
+          : 0,
+        paying: parseInt(userMetrics.paying_users) || 0,
+        conversionRate: userMetrics.total_users > 0
+          ? ((parseInt(userMetrics.paying_users) / parseInt(userMetrics.total_users)) * 100).toFixed(1)
+          : 0
+      },
+      insights: {
+        powerUsers,
+        upgradeOpportunities,
+        churnRisk,
+        freeUpgradeCandidates
+      },
+      recentSignups,
+      trends: {
+        dailySignups,
+        dailyResponses
+      },
+      blog: {
+        totalArticles: parseInt(blogStats.total_articles) || 0,
+        published: parseInt(blogStats.published) || 0
+      }
+    });
+  } catch (error) {
+    console.error('Sales dashboard error:', error);
+    res.status(500).json({ error: 'Failed to get sales dashboard', details: error.message });
+  }
+});
+
 // Admin: List all users (with fake detection)
 app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
   try {
