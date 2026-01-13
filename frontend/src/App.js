@@ -2221,7 +2221,7 @@ const LandingPage = () => {
                 Get Started Free
               </Link>
               <a
-                href="#walkthrough-demo"
+                href="#chrome-extension-demo"
                 className="btn btn-secondary"
                 style={{ padding: '0 20px', height: '44px', display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '6px', fontWeight: '600', fontSize: '14px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
               >
@@ -4093,7 +4093,7 @@ const ExtensionPromoCard = () => {
   const [showVideo, setShowVideo] = useState(false);
 
   return (
-    <div className="extension-promo-card">
+    <div id="chrome-extension-demo" className="extension-promo-card">
       <div className="extension-promo-header">
         <Chrome size={24} />
         <h3>Chrome Extension</h3>
