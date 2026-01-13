@@ -2,8 +2,8 @@
 
 ## Session Summary
 - **Source:** Chrome MCP Lead Scraper
-- **Date:** 13.01.2026
-- **Total New Leads:** 2
+- **Date:** 13-14.01.2026
+- **Total New Leads:** 3
 
 ---
 
@@ -25,6 +25,22 @@
   - Returned to previous provider
 - **Quote:** "Over-promising and under-delivering caused significant frustration and stress"
 - **Outreach Angle:** They're actively looking for alternatives since they returned to their previous provider. Highlight our simplicity and reliability.
+
+### Lead #1b: Robert R. - Podium Negative Review
+- **Source:** G2.com Podium Reviews (NPS Score 1)
+- **Name:** Robert R.
+- **Title:** Owner
+- **Company Size:** Small-Business (50 or fewer employees)
+- **Review Date:** 7/28/2025
+- **Rating:** 0.5/5 Stars
+- **Pain Points:**
+  - Lock-in contracts, can't cancel without paying full balance
+  - "Upgrades" secretly extended contract another year
+  - Integrated account into competitor's system (their texts had his name!)
+  - Customer support is non-existent, different rep every time
+  - Missed training window due to their errors
+- **Quote:** "Poor Service, Lock-In Contracts, and Zero Customer Care - If you're a small business owner, do not sign up for Podium"
+- **Outreach Angle:** Small business owner burned by predatory contracts. Highlight our no-contract, transparent pricing and simple tool (not a complex platform).
 
 ---
 
