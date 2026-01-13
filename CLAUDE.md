@@ -406,8 +406,12 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
   - Tweet-Generierung mit Claude Sonnet (~$0.01/Tweet)
   - DB-Tabelle: `twitter_scheduled_posts`
   - Admin: `GET /api/admin/twitter-posts?key=...`
-  - Cron Jobs: 09:00 + 18:00 täglich (2 Tweets/Tag Limit)
   - Twitter API Keys in `.claude/secrets.local` + Render Env Vars
+  - **Erster Tweet erfolgreich gepostet!** (Test 13.01.2026)
+  - **USER TODO: Cron Job "Twitter Auto-Post Morning" auf 09:00 fixen (aktuell 00:09)**
+    - cron-job.org -> Jobs -> Twitter Auto-Post Morning -> ERWEITERT Tab -> Cron Expression: `0 9 * * *`
+  - **USER TODO: Zweiten Cron Job für 18:00 anlegen**
+    - URL: `https://review-responder.onrender.com/api/cron/twitter-post?secret=mein-geheimer-cron-key-biwbqevpbACN`
 - [x] **Click-Tracking für Outreach Emails** - Endlich messbar ob jemand klickt
   - Neuer Endpoint: `/api/outreach/track-click` (Redirect-basiert)
   - Alle Email-Links werden automatisch mit Tracking gewrapped
@@ -744,7 +748,7 @@ git add -A && git commit -m "Beschreibung" && git push
 | System | Beschreibung | Status |
 |--------|--------------|--------|
 | Reddit Auto-Responder | Keywords monitoren, hilfreiche Antworten | ✅ Implementiert - wartet auf API Keys |
-| Twitter/X Auto-Post | 2 Tweets/Tag @ExecPsychology | ✅ Live + Cron aktiv (09:00 + 18:00) |
+| Twitter/X Auto-Post | 2 Tweets/Tag @ExecPsychology | ✅ Live - **Cron manuell fixen: 09:00** |
 | SEO Auto-Pilot | 3 Artikel/Woche auto-generieren | ✅ Implementiert + Cron aktiv |
 | Quora Auto-Responder | Ähnlich wie Reddit | Backlog |
 | Competitor Scraper | Unzufriedene Birdeye/Podium Kunden | Backlog |
