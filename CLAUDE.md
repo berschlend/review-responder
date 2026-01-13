@@ -243,6 +243,22 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 | **Google Search Console** | https://search.google.com/search-console?resource_id=https://tryreviewresponder.com/ | SEO, Indexierung |
 | **Gmail** | https://mail.google.com/mail/u/0/#inbox | Support-Anfragen |
 
+### Cron Jobs Status (cron-job.org)
+
+**Stand: 13.01.2026**
+
+| Job | Schedule | Status | Letzter Fehler |
+|-----|----------|--------|----------------|
+| Blog Auto-Generation | 06:00 Mo/Mi/Fr | OK | - |
+| Twitter Auto-Post Morning | 09:00 täglich | OK | - |
+| Weekly Summary | 09:00 Montags | OK | - |
+| Daily Outreach | 09:00 täglich | FEHLER | Ausgabe zu groß (116ms) |
+| Drip Emails | 10:00 täglich | FEHLER | Ausgabe zu groß (72ms) |
+| TripAdvisor Email Sender | 09:00 täglich | FEHLER | Ausgabe zu groß (81ms) |
+| **Pre-Registration Drip** | 11:00 täglich | NEU | - |
+
+**Problem:** 3 Jobs schlagen fehl wegen "Ausgabe zu groß". Response muss gekürzt werden.
+
 ---
 
 ## CURRENT TASKS
@@ -427,6 +443,14 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
 ```
 
 ### HEUTE ERLEDIGT (14.01.2026):
+- [x] **Pre-Registration Drip Email System** - Nurturing für Landing Page Email-Captures
+  - 4 automatische Emails: Tag 1, 3, 7, 14
+  - Check ob User sich registriert hat → wenn ja, keine weiteren Drips
+  - DB-Tabelle: `pre_registration_drips` (tracking sent emails)
+  - Endpoint: `GET /api/cron/send-pre-registration-drips?secret=...`
+  - Test-Endpoint: `GET /api/admin/test-pre-reg-drip?email=X&day=X&key=...`
+  - Alle 4 Emails erfolgreich getestet
+  - Cron Job: täglich 11:00 Uhr
 - [x] **Demo Generator implementiert** - Personalisierte Demos für Cold Outreach
   - SerpAPI Integration für Google Review Scraping
   - `POST /api/demo/generate` - Generiert Demo mit AI-Antworten
