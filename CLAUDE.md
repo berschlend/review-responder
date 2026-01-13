@@ -263,15 +263,29 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 ## CURRENT TASKS
 
-**Stand: 14.01.2026**
+**Stand: 13.01.2026**
 
-### ✅ GOOGLE_PLACES_API_KEY - FUNKTIONIERT (14.01.2026)
+### ✅ CHROME WEB STORE EINGEREICHT (13.01.2026)
 
-Getestet mit LinkedIn Demo Endpoint - Ergebnis: `has_reviews: true`, `reviews_processed: 3`, `google_rating: 4.2`
+**Status:** Überprüfung läuft (1-3 Werktage, evtl. länger wegen broad host permissions)
+
+| Item | Status |
+|------|--------|
+| ZIP v1.6.1 | ✅ Hochgeladen |
+| 5 Screenshots (1280x800) | ✅ Hochgeladen |
+| Promo Tiles (440x280, 1400x560) | ✅ Hochgeladen |
+| Demo Video (YouTube) | ✅ https://www.youtube.com/watch?v=6lujm4Z_Q_Y |
+| Privacy Policy | ✅ https://tryreviewresponder.com/privacy |
+| Test Account | ✅ reviewer@tryreviewresponder.com / ChromeReview2026! |
+
+**Nach Approval:**
+1. Extension ID notieren
+2. Google Cloud Console → OAuth 2.0 Client → Redirect URI hinzufügen:
+   `https://<EXTENSION_ID>.chromiumapp.org/`
 
 ### USER MUSS MACHEN:
 - [x] Demo-Video aufnehmen (2 Min Walkthrough) - DONE
-- [ ] Chrome Web Store einreichen (ZIP + Screenshots)
+- [x] Chrome Web Store einreichen - DONE (13.01.2026)
 - [ ] **Reddit API Keys holen**: Wartet auf Genehmigung → https://www.reddit.com/prefs/apps → App erstellen
 - [ ] **Google Indexierung beantragen (36 URLs)** - Nach und nach (max 5-10/Tag wegen Quota):
   - [ ] `/medical-practice-reviews`
@@ -362,29 +376,8 @@ Getestet mit LinkedIn Demo Endpoint - Ergebnis: `has_reviews: true`, `reviews_pr
 
 | Task | Schwierigkeit | Dateien |
 |------|---------------|---------|
-| **Chrome Web Store Einreichung** | Einfach | chrome-extension/, STORE_LISTING.md |
 | **Chrome MCP Lead Scraper fortsetzen** | Mittel | Memory MCP |
-
-### Chrome Web Store Einreichung (TODO)
-
-**Status:** Vorbereitet, User muss manuell einreichen
-
-**Was noch zu tun:**
-1. 5 Screenshots erstellen (Win+Shift+S auf Yelp/Maps mit Extension)
-2. manifest.json Description updaten mit allen Plattformen + Business Context
-3. Neue ZIP erstellen
-4. Im Chrome Developer Dashboard manuell hochladen (kann nicht automatisiert werden)
-5. Store Listing ausfüllen (Description aus STORE_LISTING.md)
-6. Screenshots hochladen
-7. Einreichen
-
-**Finale Short Description (132 chars):**
-```
-Google review response generator with AI. Personalized replies for Google Maps, Yelp, TripAdvisor & more. Add business context.
-```
-
-**Plattformen für Description:**
-- Google Maps, Yelp, TripAdvisor, Booking.com, Facebook, Trustpilot
+| **Landing Pages Tier 2 erstellen** | Einfach | frontend/src/App.js |
 
 ### Chrome MCP Lead Scraper (WIP)
 
@@ -425,7 +418,17 @@ cat content/leads/scraped-leads-2026-01-13.md
 $env:CLAUDE_SESSION = "scraper"; claude --chrome
 ```
 
-### HEUTE ERLEDIGT (14.01.2026):
+### HEUTE ERLEDIGT (13.01.2026):
+- [x] **Chrome Web Store Einreichung komplett** - Extension v1.6.1 eingereicht
+  - manifest.json mit SEO-optimierter Description
+  - 5 Screenshots erstellt und resized (1280x800)
+  - Promo Tiles erstellt (440x280, 1400x560)
+  - Demo-Video auf YouTube hochgeladen (ungelistet)
+  - Privacy Tab ausgefüllt (alle Permissions begründet)
+  - Test-Account erstellt: reviewer@tryreviewresponder.com
+  - Status: Überprüfung läuft (1-3 Werktage)
+
+### ERLEDIGT (14.01.2026):
 - [x] **Pre-Registration Drip Email System** - Nurturing für Landing Page Email-Captures
   - 4 automatische Emails: Tag 1, 3, 7, 14
   - Check ob User sich registriert hat → wenn ja, keine weiteren Drips
@@ -773,12 +776,14 @@ git add -A && git commit -m "Beschreibung" && git push
 - Affiliate Program (20% recurring)
 - Discount Codes: EARLY50 (50%), SAVE20 (20%), HUNTLAUNCH (60%)
 
-### Chrome Extension v1.4.1
-- Google Maps Integration
-- Templates & Drafts (Auto-Save)
-- AI Tone Recommendation
-- Quality Score & Variations
-- 50+ Industry Templates
+### Chrome Extension v1.6.1 (Im Chrome Web Store Review)
+- Google Maps, Yelp, TripAdvisor, Booking, Facebook, Trustpilot
+- One-Click Response Generation
+- Text Selection → Floating Respond Button
+- 4 Tone Options (Professional, Friendly, Formal, Apologetic)
+- 50+ Languages Auto-Detection
+- Business Context für personalisierte Antworten
+- Copy-to-Clipboard
 
 ### Marketing Systems
 - Automated Outreach (Google Places → Hunter.io → Cold Emails)
