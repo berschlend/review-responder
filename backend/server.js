@@ -73,6 +73,43 @@ const OUTREACH_FROM_EMAIL =
   process.env.OUTREACH_FROM_EMAIL || 'Berend von ReviewResponder <outreach@tryreviewresponder.com>';
 
 // ==========================================
+// OUTREACH EMAIL HELPER - WITH OPEN TRACKING
+// ==========================================
+
+// Generate tracking pixel HTML for email open tracking
+function getTrackingPixel(email, campaign = 'main') {
+  const BACKEND_URL = process.env.BACKEND_URL || 'https://review-responder.onrender.com';
+  const encodedEmail = encodeURIComponent(email);
+  const encodedCampaign = encodeURIComponent(campaign);
+  return `<img src="${BACKEND_URL}/api/outreach/track-open?email=${encodedEmail}&campaign=${encodedCampaign}" width="1" height="1" style="display:none;width:1px;height:1px;border:0;" alt="" />`;
+}
+
+// Send outreach email with automatic tracking pixel injection
+async function sendOutreachEmail({ to, subject, html, campaign = 'main', tags = [] }) {
+  if (!resend) {
+    throw new Error('RESEND_API_KEY not configured');
+  }
+
+  // Add tracking pixel at the end of the email body
+  const trackingPixel = getTrackingPixel(to, campaign);
+  const htmlWithTracking = html + trackingPixel;
+
+  // Add campaign tag if not already present
+  const allTags = [...tags];
+  if (!allTags.find(t => t.name === 'campaign')) {
+    allTags.push({ name: 'campaign', value: campaign });
+  }
+
+  return resend.emails.send({
+    from: OUTREACH_FROM_EMAIL,
+    to,
+    subject,
+    html: htmlWithTracking,
+    tags: allTags,
+  });
+}
+
+// ==========================================
 // EMAIL NOTIFICATION HELPER FUNCTIONS
 // ==========================================
 
@@ -9915,16 +9952,16 @@ app.post('/api/outreach/test-email', async (req, res) => {
     const template = fillEmailTemplate(getTemplateForLead(1, testLead), testLead);
     const language = detectLanguage(testLead.city);
 
-    const result = await resend.emails.send({
-      from: OUTREACH_FROM_EMAIL,
+    const result = await sendOutreachEmail({
       to: email,
       subject: `[TEST] ${template.subject}`,
       html: template.body.replace(/\n/g, '<br>'),
+      campaign: 'test',
     });
 
     res.json({
       success: true,
-      message: `Test email sent to ${email}`,
+      message: `Test email sent to ${email} (with tracking pixel)`,
       from: OUTREACH_FROM_EMAIL,
       language: language,
       city: testLead.city,
@@ -10154,16 +10191,13 @@ app.post('/api/outreach/send-emails', async (req, res) => {
       try {
         const template = fillEmailTemplate(getTemplateForLead(1, lead), lead);
 
-        // Send email via Resend
-        const result = await resend.emails.send({
-          from: OUTREACH_FROM_EMAIL,
+        // Send email with tracking pixel
+        const result = await sendOutreachEmail({
           to: lead.email,
           subject: template.subject,
           html: template.body.replace(/\n/g, '<br>'),
-          tags: [
-            { name: 'campaign', value: campaign },
-            { name: 'sequence', value: '1' },
-          ],
+          campaign,
+          tags: [{ name: 'sequence', value: '1' }],
         });
 
         // Log the email
@@ -10324,13 +10358,12 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
           const emailCampaign = hasBadReview && aiDraft ? 'tripadvisor-review-alert' : campaign;
 
           try {
-            await resend.emails.send({
-              from: OUTREACH_FROM_EMAIL,
+            await sendOutreachEmail({
               to: lead.email,
               subject: template.subject,
               html: template.body.replace(/\n/g, '<br>'),
+              campaign: emailCampaign,
               tags: [
-                { name: 'campaign', value: emailCampaign },
                 { name: 'source', value: 'tripadvisor' },
                 { name: 'sequence', value: '1' }
               ]
@@ -10434,14 +10467,13 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
         const template = fillEmailTemplate(getTemplateForLead(1, lead), lead);
         const emailCampaign = lead.has_bad_review && lead.ai_response_draft ? 'tripadvisor-review-alert' : 'tripadvisor-auto';
 
-        // Send email via Resend
-        await resend.emails.send({
-          from: OUTREACH_FROM_EMAIL,
+        // Send email with tracking pixel
+        await sendOutreachEmail({
           to: lead.email,
           subject: template.subject,
           html: template.body.replace(/\n/g, '<br>'),
+          campaign: emailCampaign,
           tags: [
-            { name: 'campaign', value: emailCampaign },
             { name: 'source', value: 'tripadvisor' },
             { name: 'sequence', value: '1' }
           ]
@@ -10737,11 +10769,12 @@ app.post('/api/outreach/send-followups', async (req, res) => {
       try {
         const template = fillEmailTemplate(getTemplateForLead(2, lead), lead);
 
-        await resend.emails.send({
-          from: OUTREACH_FROM_EMAIL,
+        await sendOutreachEmail({
           to: lead.email,
           subject: template.subject,
           html: template.body.replace(/\n/g, '<br>'),
+          campaign: 'main',
+          tags: [{ name: 'sequence', value: '2' }],
         });
 
         await dbQuery(
@@ -10765,11 +10798,12 @@ app.post('/api/outreach/send-followups', async (req, res) => {
       try {
         const template = fillEmailTemplate(getTemplateForLead(3, lead), lead);
 
-        await resend.emails.send({
-          from: OUTREACH_FROM_EMAIL,
+        await sendOutreachEmail({
           to: lead.email,
           subject: template.subject,
           html: template.body.replace(/\n/g, '<br>'),
+          campaign: 'main',
+          tags: [{ name: 'sequence', value: '3' }],
         });
 
         await dbQuery(
@@ -11354,13 +11388,6 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
 
           const template = fillEmailTemplate(getTemplateForLead(1, lead), lead);
 
-          await resend.emails.send({
-            from: OUTREACH_FROM_EMAIL,
-            to: lead.email,
-            subject: template.subject,
-            html: template.body.replace(/\n/g, '<br>'),
-          });
-
           // Track email campaign type
           let campaign = 'main';
           if (lead.lead_type === 'g2_competitor') {
@@ -11369,6 +11396,14 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
             campaign = 'review_alert';
             reviewAlertsSent++;
           }
+
+          await sendOutreachEmail({
+            to: lead.email,
+            subject: template.subject,
+            html: template.body.replace(/\n/g, '<br>'),
+            campaign,
+            tags: [{ name: 'sequence', value: '1' }],
+          });
 
           await dbQuery(
             `
@@ -11420,11 +11455,12 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
             // Determine campaign type for follow-up
             const followupCampaign = lead.lead_type === 'g2_competitor' ? 'g2_competitor' : 'main';
 
-            await resend.emails.send({
-              from: OUTREACH_FROM_EMAIL,
+            await sendOutreachEmail({
               to: lead.email,
               subject: template.subject,
               html: template.body.replace(/\n/g, '<br>'),
+              campaign: followupCampaign,
+              tags: [{ name: 'sequence', value: String(nextSequence) }],
             });
 
             await dbQuery(
