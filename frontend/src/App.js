@@ -8656,7 +8656,7 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
 
   const handleGenerate = async () => {
     if (!keywords.trim()) {
-      toast.error('Bitte gib ein paar Stichwörter ein');
+      toast.error('Please enter some keywords');
       return;
     }
 
@@ -8671,7 +8671,7 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
       setGenerated(res.data.generated);
       setRemaining(res.data.remaining);
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Fehler beim Generieren');
+      toast.error(error.response?.data?.error || 'Error generating');
     } finally {
       setGenerating(false);
     }

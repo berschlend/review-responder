@@ -14150,6 +14150,73 @@ app.post('/api/admin/send-cold-email', async (req, res) => {
   }
 });
 
+// Test email endpoint (admin only)
+app.get('/api/admin/test-email', authenticateAdmin, async (req, res) => {
+  const testEmail = req.query.to || 'berend.mainz@web.de';
+  const provider = req.query.provider || 'auto'; // 'brevo', 'resend', or 'auto'
+
+  try {
+    let result;
+
+    if (provider === 'brevo' && brevoApi) {
+      // Direct Brevo test
+      const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+      sendSmtpEmail.subject = 'Brevo Test Email';
+      sendSmtpEmail.htmlContent = `<h1>Brevo Test</h1><p>This is a test email sent via Brevo at ${new Date().toISOString()}</p>`;
+      sendSmtpEmail.sender = { name: 'ReviewResponder Test', email: 'hello@tryreviewresponder.com' };
+      sendSmtpEmail.to = [{ email: testEmail }];
+
+      result = await brevoApi.sendTransacEmail(sendSmtpEmail);
+      res.json({
+        success: true,
+        provider: 'brevo',
+        messageId: result.body?.messageId || result.messageId,
+        to: testEmail,
+        note: 'Check spam folder if not in inbox',
+      });
+    } else if (provider === 'resend' && resend) {
+      // Direct Resend test
+      result = await resend.emails.send({
+        from: FROM_EMAIL,
+        to: testEmail,
+        subject: 'Resend Test Email',
+        html: `<h1>Resend Test</h1><p>This is a test email sent via Resend at ${new Date().toISOString()}</p>`,
+      });
+      res.json({
+        success: true,
+        provider: 'resend',
+        messageId: result.id,
+        to: testEmail,
+      });
+    } else {
+      // Use central sendEmail function
+      result = await sendEmail({
+        to: testEmail,
+        subject: 'Email System Test',
+        html: `<h1>Email Test</h1><p>This is a test email sent via the unified email system at ${new Date().toISOString()}</p><p>Provider: auto-selected based on type</p>`,
+        type: 'transactional',
+        campaign: 'test',
+      });
+      res.json({
+        success: true,
+        provider: result.provider,
+        messageId: result.messageId,
+        to: testEmail,
+      });
+    }
+  } catch (error) {
+    console.error('Test email error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      errorDetails: error.response?.body || error.response?.data || null,
+      provider: provider,
+      brevoConfigured: !!brevoApi,
+      resendConfigured: !!resend,
+    });
+  }
+});
+
 // Health check with database status
 app.get('/api/health', async (req, res) => {
   let dbStatus = 'unknown';
