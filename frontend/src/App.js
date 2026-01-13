@@ -98,6 +98,9 @@ import {
   Calculator,
   HeartHandshake,
   Briefcase,
+  Smartphone,
+  Building2,
+  Hammer,
 } from 'lucide-react';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
@@ -18194,6 +18197,341 @@ const SeniorCareReviewPage = () => {
   );
 };
 
+// App Store Review Response Page
+const AppStoreReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/appstore-app-reviews' };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'App Store Review Response Generator | iOS & Android App Reviews | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional App Store and Google Play review responses with AI. Reply to app reviews instantly. Boost your app rating and downloads.');
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - App Store Review Response Generator', description: 'AI tool to respond professionally to iOS and Android app reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <Smartphone size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>App Developers</span>
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>App Store Review Response Generator</h1>
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Boost your app rating with professional AI-generated responses. Reply to iOS App Store and Google Play reviews in seconds.</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
+            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#007AFF', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={16} /> iOS & Android</span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '80px 0' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why App Developers Choose ReviewResponder</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 122, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Smartphone size={24} style={{ color: '#007AFF' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Multi-Platform Support</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Reply to reviews on iOS App Store, Google Play Store, and other app marketplaces from one place.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 122, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Star size={24} style={{ color: '#007AFF' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Improve App Ratings</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Turn negative reviews into positive experiences. Professional responses can lead users to update their ratings.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 122, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Zap size={24} style={{ color: '#007AFF' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Bug Report Handling</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Generate professional responses to bug reports and feature requests. Show users you care about their feedback.</p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to improve your app reviews?</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join thousands of app developers using AI to manage their reviews.</p>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// Indeed Company Review Response Page
+const IndeedReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/indeed-company-reviews' };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'Indeed Company Review Response Generator | Employer Brand Management | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Indeed company review responses with AI. Manage your employer brand and attract top talent with thoughtful replies.');
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Indeed Review Response Generator', description: 'AI tool to respond professionally to Indeed company reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #2164F3 0%, #1a4fc9 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <Briefcase size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>HR & Recruiting</span>
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Indeed Review Response Generator</h1>
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build your employer brand with professional AI-generated responses. Turn employee feedback into recruitment opportunities.</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
+            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#2164F3', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={16} /> Employer Branding</span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '80px 0' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why HR Teams Choose ReviewResponder</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(33, 100, 243, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Briefcase size={24} style={{ color: '#2164F3' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Employer Brand Management</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Respond professionally to employee reviews. Show candidates that you value feedback and care about your workplace culture.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(33, 100, 243, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Users size={24} style={{ color: '#2164F3' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Attract Top Talent</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Candidates read reviews before applying. Professional responses to negative feedback show you take employee concerns seriously.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(33, 100, 243, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><MessageSquare size={24} style={{ color: '#2164F3' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Consistent Messaging</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Maintain a consistent employer voice across all review platforms. AI ensures professional, on-brand responses every time.</p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to improve your employer brand?</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join thousands of HR teams using AI to manage Indeed reviews.</p>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// Zillow Realtor Review Response Page
+const ZillowReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/zillow-realtor-reviews' };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'Zillow Review Response Generator | Realtor Review Management | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Zillow review responses with AI. Real estate agents can reply to client reviews instantly and boost their realtor rating.');
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Zillow Review Response Generator', description: 'AI tool to respond professionally to Zillow realtor reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #006AFF 0%, #0052cc 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <Home size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Real Estate Agents</span>
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Zillow Review Response Generator</h1>
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build your realtor reputation with professional AI-generated responses. Turn client reviews into more listings and sales.</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
+            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#006AFF', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={16} /> Realtor Focused</span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '80px 0' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Real Estate Agents Choose ReviewResponder</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 106, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Home size={24} style={{ color: '#006AFF' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Zillow Profile Optimization</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Boost your Zillow rating with professional responses. Active engagement shows potential clients you care about their experience.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 106, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#006AFF' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>More Listings & Sales</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>94% of home buyers read agent reviews before choosing a realtor. Stand out with thoughtful, professional responses.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 106, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><MessageSquare size={24} style={{ color: '#006AFF' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Handle Difficult Reviews</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Real estate transactions can be emotional. AI helps you craft professional responses to challenging feedback.</p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to grow your real estate business?</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join thousands of realtors using AI to manage their Zillow reviews.</p>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// Therapy/Counselor Review Response Page
+const TherapyReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/therapy-counselor-reviews' };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'Therapist Review Response Generator | Mental Health Practice Reviews | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional therapy practice review responses with AI. HIPAA-aware responses for psychologists, counselors, and therapists.');
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Therapist Review Response Generator', description: 'AI tool to respond professionally to therapy and counseling practice reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #5b21b6 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <Heart size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Mental Health Professionals</span>
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Therapist Review Response Generator</h1>
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build your therapy practice with professional AI-generated responses. Privacy-aware replies that respect client confidentiality.</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
+            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#7C3AED', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={16} /> Privacy-Aware</span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '80px 0' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Therapists Choose ReviewResponder</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(124, 58, 237, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Shield size={24} style={{ color: '#7C3AED' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Privacy-First Responses</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI generates responses that maintain client confidentiality. Never acknowledge treatment details or confirm client status.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(124, 58, 237, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Heart size={24} style={{ color: '#7C3AED' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Compassionate Tone</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI understands the sensitivity of mental health reviews. Responses are empathetic, professional, and appropriate for healthcare.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(124, 58, 237, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Users size={24} style={{ color: '#7C3AED' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Grow Your Practice</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>People seeking therapy often research providers online. Professional responses help build trust with potential clients.</p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to grow your therapy practice?</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join mental health professionals using AI to manage their reviews.</p>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// Thumbtack Review Response Page
+const ThumbtackReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/thumbtack-reviews' };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'Thumbtack Review Response Generator | Service Pro Reviews | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Thumbtack review responses with AI. Service professionals can reply to customer reviews and get more leads.');
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Thumbtack Review Response Generator', description: 'AI tool to respond professionally to Thumbtack service reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #009FD9 0%, #007ab3 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <Hammer size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Service Professionals</span>
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Thumbtack Review Response Generator</h1>
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Get more Thumbtack leads with professional AI-generated responses. Turn positive reviews into more bookings.</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
+            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#009FD9', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={16} /> More Leads</span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '80px 0' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Thumbtack Pros Choose ReviewResponder</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 159, 217, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Hammer size={24} style={{ color: '#009FD9' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Built for Service Pros</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Whether you're a plumber, photographer, or personal trainer - AI generates responses that match your profession and expertise.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 159, 217, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#009FD9' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Increase Your Hire Rate</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Thumbtack customers check reviews before hiring. Professional responses show you're reliable and care about customer satisfaction.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 159, 217, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Zap size={24} style={{ color: '#009FD9' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Quick & Professional</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Respond to reviews between jobs without spending hours writing. AI generates professional replies in seconds.</p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to get more Thumbtack leads?</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join thousands of service pros using AI to manage their reviews.</p>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
 // Extension Page
 const ExtensionPage = () => {
   return (
@@ -21889,6 +22227,11 @@ function App() {
             <Route path="/accountant-review-responses" element={<AccountantReviewPage />} />
             <Route path="/insurance-agent-review-responses" element={<InsuranceReviewPage />} />
             <Route path="/senior-care-review-responses" element={<SeniorCareReviewPage />} />
+            <Route path="/appstore-app-reviews" element={<AppStoreReviewPage />} />
+            <Route path="/indeed-company-reviews" element={<IndeedReviewPage />} />
+            <Route path="/zillow-realtor-reviews" element={<ZillowReviewPage />} />
+            <Route path="/therapy-counselor-reviews" element={<TherapyReviewPage />} />
+            <Route path="/thumbtack-reviews" element={<ThumbtackReviewPage />} />
             <Route
               path="/dashboard"
               element={
