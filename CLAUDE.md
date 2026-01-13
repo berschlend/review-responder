@@ -248,31 +248,26 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 ### USER MUSS MACHEN:
 - [ ] Demo-Video aufnehmen (2 Min Walkthrough)
 - [ ] Chrome Web Store einreichen (ZIP + Screenshots)
-- [ ] **SEPA-Lastschrift aktivieren**: Stripe Dashboard → Braucht ID-Verifizierung
-- [ ] **API Keys in Render setzen** (für Sales Automation):
-  - `GOOGLE_PLACES_API_KEY` - https://console.cloud.google.com
-  - `HUNTER_API_KEY` - https://hunter.io (Free: 25/Monat)
-  - `GEMINI_API_KEY` - https://aistudio.google.com/apikey
-  - `ADMIN_SECRET` + `CRON_SECRET` - Zufällige Strings
-  - `REDDIT_CLIENT_ID` + `REDDIT_CLIENT_SECRET` + `REDDIT_USERNAME` + `REDDIT_PASSWORD`
-  - `TWITTER_BEARER_TOKEN` - https://developer.twitter.com
-- [ ] **Cron Jobs anlegen** (cron-job.org):
-  - Daily Outreach: `POST .../api/cron/daily-outreach?secret=X` @ 09:00 Berlin
-  - Drip Emails: `POST .../api/cron/send-drip-emails?secret=X` @ 10:00 Berlin
-  - Blog Generation: `POST .../api/cron/generate-blog-article?secret=X` @ Mo/Mi/Fr 07:00
-  - Reddit Monitor: `POST .../api/cron/reddit-monitor?secret=X` @ 12:00 Berlin
-  - Twitter Monitor: `POST .../api/cron/twitter-monitor?secret=X` @ 14:00 Berlin
-- [ ] **Reddit API Keys holen**: Nach Genehmigung → https://www.reddit.com/prefs/apps → App erstellen
-- [ ] **Twitter API Keys holen**: https://developer.twitter.com → Bearer Token generieren
+- [ ] **Reddit API Keys holen**: Wartet auf Genehmigung → https://www.reddit.com/prefs/apps → App erstellen
+
+### CLAUDE KANN SELBST (mit Chrome MCP):
+- Cron Jobs anlegen/ändern auf cron-job.org
+- API Keys in Render setzen
+- Stripe Dashboard Settings
+- Alle Browser-basierten Admin-Tasks
 
 ### NÄCHSTE CLAUDE TASKS:
 
-| Task | Schwierigkeit | Dateien |
-|------|---------------|---------|
-| Tone Preview (Beispiel-Snippets) | Leicht | `chrome-extension/content.js` |
-
+Keine offenen Tasks - App ist feature-complete!
 
 ### HEUTE ERLEDIGT (13.01.2026):
+- [x] **Frontend Redesign mit Gemini MCP** - Komplette Landing Page überarbeitet
+  - Neues modernes Design mit verbesserter UX
+  - "20 free responses/month" klar kommuniziert (statt vages "free forever")
+  - "Launch Special" → "Early Access" umbenannt
+  - Footer auf allen SEO-Seiten gefixt
+  - Video-Player mit korrektem Aspect Ratio (kein Cropping)
+  - Mobile + Dark Mode getestet
 - [x] **Review Alert Outreach System** - Personalisierte Emails mit AI-generierten Antwort-Drafts
   - Daily Outreach fetcht jetzt Place Details inkl. Reviews
   - Für Businesses mit 1-2 Sterne Reviews: AI-Draft generiert
