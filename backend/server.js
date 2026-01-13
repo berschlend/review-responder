@@ -13859,6 +13859,11 @@ app.get('/api/health', async (req, res) => {
     status: dbStatus === 'connected' ? 'ok' : 'degraded',
     database: dbStatus,
     databaseUrl: process.env.DATABASE_URL ? 'configured' : 'MISSING',
+    email: {
+      resend: resend ? 'configured' : 'not configured',
+      brevo: brevoApi ? 'configured' : 'not configured',
+      outreach_provider: brevoApi ? 'brevo' : (resend ? 'resend' : 'none'),
+    },
     timestamp: new Date().toISOString(),
   });
 });
