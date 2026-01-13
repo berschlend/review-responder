@@ -8697,6 +8697,28 @@ Lines 4+: The full article content in Markdown format.`;
     const readTimeMinutes = Math.ceil(wordCount / 200);
     const slug = generateSlug(title);
 
+    // Add internal linking to related articles (SEO boost)
+    let contentWithLinks = content;
+    try {
+      const relatedArticles = await dbAll(`
+        SELECT title, slug FROM blog_articles
+        WHERE is_published = TRUE
+          AND category = $1
+          AND slug IS NOT NULL
+        ORDER BY published_at DESC
+        LIMIT 3
+      `, [category]);
+
+      if (relatedArticles.length > 0) {
+        const relatedSection = `\n\n---\n\n## Related Articles\n\n${relatedArticles.map(a =>
+          `- [${a.title}](/blog/${a.slug})`
+        ).join('\n')}\n`;
+        contentWithLinks = content + relatedSection;
+      }
+    } catch (linkError) {
+      console.log('Internal linking skipped:', linkError.message);
+    }
+
     // Save to database (auto-published)
     const insertResult = await dbQuery(
       `INSERT INTO blog_articles
@@ -8708,7 +8730,7 @@ Lines 4+: The full article content in Markdown format.`;
       [
         1, // System user ID
         title,
-        content,
+        contentWithLinks,
         metaDescription,
         topic.toLowerCase().replace(/[^a-z0-9]+/g, ', '),
         topic,
@@ -8781,13 +8803,20 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
       'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas',
       'San Jose', 'Austin', 'Jacksonville', 'San Francisco', 'Seattle',
       'Denver', 'Boston', 'Las Vegas', 'Portland', 'Atlanta',
-      // EU Cities (5)
-      'London', 'Berlin', 'Amsterdam', 'Dublin', 'Vienna'
+      // UK & Ireland (2)
+      'London', 'Dublin',
+      // DACH Region (10)
+      'Berlin', 'München', 'Hamburg', 'Frankfurt', 'Köln',
+      'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf',
+      // Benelux (2)
+      'Amsterdam', 'Brüssel'
     ];
     const industries = [
       'restaurant', 'hotel', 'dental office', 'law firm',
       'auto repair shop', 'hair salon', 'gym', 'real estate agency',
-      'medical clinic', 'retail store'
+      'medical clinic', 'retail store',
+      // New industries
+      'spa', 'veterinary clinic', 'physiotherapy', 'accounting firm'
     ];
 
     let totalScraped = 0;
@@ -8839,8 +8868,20 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
       let emailFound = null;
       let source = null;
 
-      // Try Hunter.io first (if API key available)
-      if (process.env.HUNTER_API_KEY && !emailFound) {
+      // Try FREE website scraper first (saves Hunter.io credits)
+      if (!emailFound && lead.website) {
+        try {
+          const scrapedEmail = await scrapeEmailFromWebsite(lead.website);
+          if (scrapedEmail) {
+            emailFound = scrapedEmail;
+            source = 'website_scraper';
+            scraperFound++;
+          }
+        } catch (e) {}
+      }
+
+      // Fallback: Hunter.io (only if scraper failed and API key available)
+      if (!emailFound && process.env.HUNTER_API_KEY) {
         try {
           const domain = lead.website
             .replace(/^https?:\/\//, '')
@@ -8856,18 +8897,6 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
             hunterFound++;
           }
           await new Promise(r => setTimeout(r, 500));
-        } catch (e) {}
-      }
-
-      // Fallback: Scrape website directly (FREE)
-      if (!emailFound && lead.website) {
-        try {
-          const scrapedEmail = await scrapeEmailFromWebsite(lead.website);
-          if (scrapedEmail) {
-            emailFound = scrapedEmail;
-            source = 'website_scraper';
-            scraperFound++;
-          }
         } catch (e) {}
       }
 
@@ -9060,6 +9089,533 @@ app.get('/api/outreach/dashboard', async (req, res) => {
   } catch (error) {
     console.error('Dashboard error:', error);
     res.status(500).json({ error: 'Failed to get dashboard' });
+  }
+});
+
+// ==========================================
+// REDDIT AUTO-RESPONDER
+// ==========================================
+
+// Reddit API helper function
+async function getRedditAccessToken() {
+  const clientId = process.env.REDDIT_CLIENT_ID;
+  const clientSecret = process.env.REDDIT_CLIENT_SECRET;
+  const username = process.env.REDDIT_USERNAME;
+  const password = process.env.REDDIT_PASSWORD;
+
+  if (!clientId || !clientSecret || !username || !password) {
+    return null;
+  }
+
+  const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+
+  const response = await fetch('https://www.reddit.com/api/v1/access_token', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${auth}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'User-Agent': 'ReviewResponder/1.0'
+    },
+    body: `grant_type=password&username=${username}&password=${password}`
+  });
+
+  const data = await response.json();
+  return data.access_token;
+}
+
+// Search Reddit for relevant posts
+async function searchRedditPosts(accessToken, query, subreddit = null) {
+  const baseUrl = subreddit
+    ? `https://oauth.reddit.com/r/${subreddit}/search`
+    : 'https://oauth.reddit.com/search';
+
+  const params = new URLSearchParams({
+    q: query,
+    sort: 'new',
+    t: 'day', // Last 24 hours
+    limit: '10',
+    type: 'link'
+  });
+
+  if (subreddit) {
+    params.append('restrict_sr', 'true');
+  }
+
+  const response = await fetch(`${baseUrl}?${params}`, {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'User-Agent': 'ReviewResponder/1.0'
+    }
+  });
+
+  const data = await response.json();
+  return data.data?.children?.map(c => c.data) || [];
+}
+
+// Generate helpful Reddit comment using AI
+async function generateRedditComment(post, topic) {
+  const systemPrompt = `You are a helpful small business expert on Reddit. Write a genuinely helpful comment that:
+1. Directly addresses the user's question/problem
+2. Provides actionable advice based on your expertise
+3. Is conversational and friendly (Reddit-style)
+4. Naturally mentions ReviewResponder ONLY if relevant to review management
+5. Is 100-200 words max
+6. Does NOT sound like marketing spam
+7. Does NOT use phrases like "I work for" or "Check out our tool"
+
+If the post is not about reviews/reputation, just give helpful advice WITHOUT mentioning ReviewResponder.`;
+
+  const userPrompt = `Reddit post title: "${post.title}"
+Post content: "${post.selftext?.substring(0, 500) || '(no content)'}"
+Subreddit: r/${post.subreddit}
+Topic: ${topic}
+
+Write a helpful, genuine Reddit comment:`;
+
+  try {
+    // Use Claude for high-quality responses
+    if (anthropic) {
+      const response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 500,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      });
+      return response.content[0].text;
+    }
+
+    // Fallback to OpenAI
+    if (openai) {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        max_tokens: 500,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ]
+      });
+      return response.choices[0].message.content;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('AI generation error:', error.message);
+    return null;
+  }
+}
+
+// Post comment to Reddit
+async function postRedditComment(accessToken, postId, comment) {
+  const response = await fetch('https://oauth.reddit.com/api/comment', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'User-Agent': 'ReviewResponder/1.0'
+    },
+    body: `thing_id=t3_${postId}&text=${encodeURIComponent(comment)}`
+  });
+
+  return response.json();
+}
+
+// Reddit monitor cron endpoint
+app.get('/api/cron/reddit-monitor', async (req, res) => {
+  const secret = req.query.secret || req.headers['x-cron-secret'];
+  if (!safeCompare(secret, process.env.CRON_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const dryRun = req.query.dry_run === 'true';
+
+  // Check Reddit credentials
+  if (!process.env.REDDIT_CLIENT_ID) {
+    return res.status(500).json({
+      error: 'Reddit API not configured',
+      setup: 'Add REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USERNAME, REDDIT_PASSWORD to Render'
+    });
+  }
+
+  const results = {
+    posts_found: 0,
+    comments_generated: 0,
+    comments_posted: 0,
+    skipped: 0,
+    errors: []
+  };
+
+  try {
+    // Initialize Reddit responses table if not exists
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS reddit_responses (
+        id SERIAL PRIMARY KEY,
+        post_id VARCHAR(50) UNIQUE NOT NULL,
+        subreddit VARCHAR(100),
+        post_title TEXT,
+        post_url TEXT,
+        our_comment TEXT,
+        topic VARCHAR(100),
+        posted_at TIMESTAMP DEFAULT NOW(),
+        karma INTEGER DEFAULT 0
+      )
+    `);
+
+    // Check daily limit (max 5 comments per day)
+    const todayCount = await dbGet(`
+      SELECT COUNT(*) as count FROM reddit_responses
+      WHERE posted_at > NOW() - INTERVAL '24 hours'
+    `);
+
+    const dailyLimit = 5;
+    const remaining = dailyLimit - parseInt(todayCount?.count || 0);
+
+    if (remaining <= 0 && !dryRun) {
+      return res.json({
+        message: 'Daily limit reached (5 comments/day)',
+        results: results
+      });
+    }
+
+    // Get Reddit access token
+    const accessToken = await getRedditAccessToken();
+    if (!accessToken) {
+      return res.status(500).json({ error: 'Failed to authenticate with Reddit' });
+    }
+
+    // Subreddits to monitor
+    const subreddits = [
+      'smallbusiness',
+      'Entrepreneur',
+      'restaurateur',
+      'hoteliers',
+      'marketing',
+      'AskMarketing',
+      'ecommerce',
+      'startups'
+    ];
+
+    // Keywords to search for
+    const keywords = [
+      'negative review',
+      'bad review response',
+      'how to respond review',
+      'online reputation',
+      'review management',
+      'customer review help',
+      'yelp review',
+      'google review response'
+    ];
+
+    const allPosts = [];
+
+    // Search each subreddit with each keyword
+    for (const subreddit of subreddits) {
+      for (const keyword of keywords) {
+        try {
+          const posts = await searchRedditPosts(accessToken, keyword, subreddit);
+          allPosts.push(...posts.map(p => ({ ...p, searchKeyword: keyword })));
+          await new Promise(r => setTimeout(r, 1000)); // Rate limit
+        } catch (e) {
+          results.errors.push(`Search error: ${subreddit}/${keyword}`);
+        }
+      }
+    }
+
+    // Deduplicate by post ID
+    const uniquePosts = [...new Map(allPosts.map(p => [p.id, p])).values()];
+    results.posts_found = uniquePosts.length;
+
+    // Filter out posts we've already responded to
+    const respondedPosts = await dbAll('SELECT post_id FROM reddit_responses');
+    const respondedIds = new Set(respondedPosts.map(r => r.post_id));
+
+    const newPosts = uniquePosts.filter(p =>
+      !respondedIds.has(p.id) &&
+      p.num_comments < 50 && // Not too popular (our comment won't be seen)
+      p.num_comments > 0 && // Has some engagement
+      !p.locked &&
+      !p.archived
+    );
+
+    // Process posts (up to remaining daily limit)
+    for (const post of newPosts.slice(0, remaining)) {
+      try {
+        // Generate helpful comment
+        const comment = await generateRedditComment(post, post.searchKeyword);
+
+        if (!comment) {
+          results.skipped++;
+          continue;
+        }
+
+        results.comments_generated++;
+
+        if (dryRun) {
+          console.log(`[DRY RUN] Would post to r/${post.subreddit}: "${post.title}"`);
+          console.log(`Comment: ${comment.substring(0, 100)}...`);
+          continue;
+        }
+
+        // Post the comment
+        const postResult = await postRedditComment(accessToken, post.id, comment);
+
+        if (postResult.success !== false) {
+          // Save to database
+          await dbQuery(`
+            INSERT INTO reddit_responses (post_id, subreddit, post_title, post_url, our_comment, topic)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            ON CONFLICT (post_id) DO NOTHING
+          `, [
+            post.id,
+            post.subreddit,
+            post.title,
+            `https://reddit.com${post.permalink}`,
+            comment,
+            post.searchKeyword
+          ]);
+
+          results.comments_posted++;
+          console.log(`Posted comment to r/${post.subreddit}: "${post.title}"`);
+        }
+
+        // Rate limit between posts
+        await new Promise(r => setTimeout(r, 2000));
+
+      } catch (e) {
+        results.errors.push(`Post error: ${post.id} - ${e.message}`);
+      }
+    }
+
+    res.json({
+      success: true,
+      dry_run: dryRun,
+      daily_limit: dailyLimit,
+      remaining_today: remaining - results.comments_posted,
+      results: results
+    });
+
+  } catch (error) {
+    console.error('Reddit monitor error:', error);
+    res.status(500).json({ error: 'Reddit monitor failed', details: error.message });
+  }
+});
+
+// Get Reddit response history
+app.get('/api/admin/reddit-responses', async (req, res) => {
+  const adminKey = req.query.key || req.headers['x-admin-key'];
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const responses = await dbAll(`
+      SELECT * FROM reddit_responses
+      ORDER BY posted_at DESC
+      LIMIT 50
+    `);
+
+    const stats = await dbGet(`
+      SELECT
+        COUNT(*) as total_responses,
+        COUNT(CASE WHEN posted_at > NOW() - INTERVAL '24 hours' THEN 1 END) as today,
+        COUNT(CASE WHEN posted_at > NOW() - INTERVAL '7 days' THEN 1 END) as this_week
+      FROM reddit_responses
+    `);
+
+    res.json({
+      stats: stats,
+      responses: responses
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get Reddit responses' });
+  }
+});
+
+// ==========================================
+// TWITTER/X ENGAGEMENT
+// ==========================================
+
+// Search Twitter for relevant tweets
+async function searchTwitter(query) {
+  const bearerToken = process.env.TWITTER_BEARER_TOKEN;
+  if (!bearerToken) return [];
+
+  const params = new URLSearchParams({
+    query: `${query} -is:retweet lang:en`,
+    'tweet.fields': 'author_id,created_at,public_metrics',
+    'user.fields': 'username,name',
+    expansions: 'author_id',
+    max_results: '10'
+  });
+
+  const response = await fetch(`https://api.twitter.com/2/tweets/search/recent?${params}`, {
+    headers: {
+      'Authorization': `Bearer ${bearerToken}`
+    }
+  });
+
+  const data = await response.json();
+  return data.data || [];
+}
+
+// Twitter monitor cron endpoint
+app.get('/api/cron/twitter-monitor', async (req, res) => {
+  const secret = req.query.secret || req.headers['x-cron-secret'];
+  if (!safeCompare(secret, process.env.CRON_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const dryRun = req.query.dry_run === 'true';
+
+  if (!process.env.TWITTER_BEARER_TOKEN) {
+    return res.status(500).json({
+      error: 'Twitter API not configured',
+      setup: 'Add TWITTER_BEARER_TOKEN to Render environment variables'
+    });
+  }
+
+  const results = {
+    tweets_found: 0,
+    replies_generated: 0,
+    replies_posted: 0,
+    errors: []
+  };
+
+  try {
+    // Initialize Twitter responses table
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS twitter_responses (
+        id SERIAL PRIMARY KEY,
+        tweet_id VARCHAR(50) UNIQUE NOT NULL,
+        tweet_text TEXT,
+        tweet_author VARCHAR(100),
+        our_reply TEXT,
+        topic VARCHAR(100),
+        posted_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
+    // Check daily limit (max 5 replies per day)
+    const todayCount = await dbGet(`
+      SELECT COUNT(*) as count FROM twitter_responses
+      WHERE posted_at > NOW() - INTERVAL '24 hours'
+    `);
+
+    const dailyLimit = 5;
+    const remaining = dailyLimit - parseInt(todayCount?.count || 0);
+
+    if (remaining <= 0) {
+      return res.json({
+        message: 'Daily limit reached (5 replies/day)',
+        results: results
+      });
+    }
+
+    // Keywords to search
+    const keywords = [
+      '"negative review" help',
+      '"bad review" business',
+      'respond to review',
+      '"online reputation" help',
+      '"google review" response'
+    ];
+
+    const allTweets = [];
+
+    for (const keyword of keywords) {
+      try {
+        const tweets = await searchTwitter(keyword);
+        allTweets.push(...tweets.map(t => ({ ...t, searchKeyword: keyword })));
+        await new Promise(r => setTimeout(r, 1000));
+      } catch (e) {
+        results.errors.push(`Search error: ${keyword}`);
+      }
+    }
+
+    // Deduplicate
+    const uniqueTweets = [...new Map(allTweets.map(t => [t.id, t])).values()];
+    results.tweets_found = uniqueTweets.length;
+
+    // Filter already responded
+    const respondedTweets = await dbAll('SELECT tweet_id FROM twitter_responses');
+    const respondedIds = new Set(respondedTweets.map(r => r.tweet_id));
+
+    const newTweets = uniqueTweets.filter(t => !respondedIds.has(t.id));
+
+    // Note: Twitter API v2 free tier doesn't allow posting tweets
+    // This endpoint monitors and logs opportunities for manual engagement
+    for (const tweet of newTweets.slice(0, remaining)) {
+      try {
+        // Generate helpful reply
+        const systemPrompt = `You are a helpful business expert on Twitter. Write a short, helpful reply (max 280 chars) that:
+1. Addresses the user's problem directly
+2. Offers a quick tip or suggestion
+3. Is friendly and genuine (not salesy)
+4. Only mentions ReviewResponder if directly relevant to review management`;
+
+        const reply = anthropic ? await anthropic.messages.create({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 100,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: `Tweet: "${tweet.text}"\n\nWrite a helpful reply:` }]
+        }).then(r => r.content[0].text) : null;
+
+        if (reply) {
+          results.replies_generated++;
+
+          // Save for manual review (Twitter free tier doesn't allow posting)
+          await dbQuery(`
+            INSERT INTO twitter_responses (tweet_id, tweet_text, tweet_author, our_reply, topic)
+            VALUES ($1, $2, $3, $4, $5)
+            ON CONFLICT (tweet_id) DO NOTHING
+          `, [tweet.id, tweet.text, tweet.author_id, reply, tweet.searchKeyword]);
+
+          if (!dryRun) {
+            console.log(`[Twitter] Found opportunity: "${tweet.text.substring(0, 50)}..."`);
+            console.log(`Suggested reply: ${reply}`);
+          }
+        }
+
+      } catch (e) {
+        results.errors.push(`Tweet error: ${tweet.id}`);
+      }
+    }
+
+    res.json({
+      success: true,
+      dry_run: dryRun,
+      message: 'Twitter opportunities logged for manual engagement (free tier cannot post)',
+      daily_limit: dailyLimit,
+      remaining_today: remaining - results.replies_generated,
+      results: results
+    });
+
+  } catch (error) {
+    console.error('Twitter monitor error:', error);
+    res.status(500).json({ error: 'Twitter monitor failed', details: error.message });
+  }
+});
+
+// Get Twitter engagement opportunities
+app.get('/api/admin/twitter-opportunities', async (req, res) => {
+  const adminKey = req.query.key || req.headers['x-admin-key'];
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const opportunities = await dbAll(`
+      SELECT * FROM twitter_responses
+      ORDER BY posted_at DESC
+      LIMIT 50
+    `);
+
+    res.json({
+      message: 'These are suggested replies for manual posting (Twitter free tier limitation)',
+      opportunities: opportunities
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get Twitter opportunities' });
   }
 });
 

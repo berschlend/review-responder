@@ -10212,6 +10212,43 @@ const BlogArticlePage = () => {
       if (metaDesc) {
         metaDesc.setAttribute('content', data.article.meta_description);
       }
+
+      // Add Schema.org JSON-LD for rich snippets
+      const existingSchema = document.querySelector('script[type="application/ld+json"]');
+      if (existingSchema) existingSchema.remove();
+
+      const schema = {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: data.article.title,
+        description: data.article.meta_description,
+        author: {
+          '@type': 'Organization',
+          name: 'ReviewResponder',
+          url: 'https://tryreviewresponder.com',
+        },
+        publisher: {
+          '@type': 'Organization',
+          name: 'ReviewResponder',
+          logo: {
+            '@type': 'ImageObject',
+            url: 'https://tryreviewresponder.com/logo.png',
+          },
+        },
+        datePublished: data.article.published_at,
+        dateModified: data.article.updated_at || data.article.published_at,
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': `https://tryreviewresponder.com/blog/${slug}`,
+        },
+        articleSection: data.article.category,
+        wordCount: data.article.word_count,
+      };
+
+      const schemaScript = document.createElement('script');
+      schemaScript.type = 'application/ld+json';
+      schemaScript.textContent = JSON.stringify(schema);
+      document.head.appendChild(schemaScript);
     } catch (err) {
       setError(err.message);
     } finally {
