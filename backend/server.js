@@ -12636,7 +12636,7 @@ app.post('/api/admin/send-cold-email', async (req, res) => {
       to: to,
       subject: subject,
       html: html,
-      reply_to: 'berend.mainz@web.de',
+      reply_to: 'berend.jakob.mainz@gmail.com',
       tags: [{ name: 'campaign', value: 'manual-cold-email' }]
     });
 
