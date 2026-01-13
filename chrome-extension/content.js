@@ -5979,8 +5979,27 @@ setTimeout(createScanButton, 1000);
 
 // ========== AUTO-INJECT RESPOND BUTTONS ==========
 
-// Track which review elements already have buttons injected
-const injectedReviews = new WeakSet();
+// Global set to track review IDs we've already processed
+const processedReviewIds = new Set();
+
+// Generate a unique ID for a review element based on its content
+function getReviewUniqueId(reviewEl) {
+  // Try to get a data attribute ID first
+  const dataId = reviewEl.getAttribute('data-review-id') ||
+                 reviewEl.getAttribute('data-id') ||
+                 reviewEl.getAttribute('id');
+  if (dataId) return dataId;
+
+  // Fall back to text content hash
+  const text = reviewEl.textContent.trim().substring(0, 100);
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) {
+    const char = text.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return 'rr_' + Math.abs(hash).toString(36);
+}
 
 // Inject "Respond" buttons next to each review on the page
 function injectRespondButtons() {
@@ -5992,13 +6011,13 @@ function injectRespondButtons() {
   }
 
   // Platform-specific review container selectors
-  // IMPORTANT: Only use top-level review containers, not nested elements
+  // CRITICAL: Use ONLY the most specific top-level review container
   const reviewSelectors = {
-    'Google': ['.jftiEf'],  // Only use main review container, NOT [data-review-id] which has 10+ nested elements per review
-    'Yelp': ['[class*="comment__09f24__"]', '.review'],  // More specific selector
-    'TripAdvisor': ['[data-automation="reviewCard"]', '.review-container'],
-    'Trustpilot': ['.styles_reviewCard__hcAvl', '[class*="styles_cardWrapper"]'],
-    'Booking': ['.review_item', '[data-testid="review-card"]']
+    'Google': ['.jftiEf'],  // Main review card container only
+    'Yelp': ['[class*="comment__09f24__"]'],
+    'TripAdvisor': ['[data-automation="reviewCard"]'],
+    'Trustpilot': ['.styles_reviewCard__hcAvl'],
+    'Booking': ['[data-testid="review-card"]', '.review_item']
   };
 
   // Text content selectors to extract review text
@@ -6016,12 +6035,24 @@ function injectRespondButtons() {
   let injectedCount = 0;
 
   selectors.forEach(selector => {
-    document.querySelectorAll(selector).forEach(reviewEl => {
-      // Skip if already injected (WeakSet check)
-      if (injectedReviews.has(reviewEl)) return;
+    const reviewElements = document.querySelectorAll(selector);
 
-      // Skip if this review already has a respond button (DOM check for page reloads)
-      if (reviewEl.querySelector('.rr-inline-respond-btn')) return;
+    reviewElements.forEach(reviewEl => {
+      // CRITICAL CHECK 1: Skip if this element already has our button as direct/nested child
+      if (reviewEl.querySelector('.rr-inline-respond-btn')) {
+        return;
+      }
+
+      // CRITICAL CHECK 2: Skip if this element is marked as processed
+      if (reviewEl.hasAttribute('data-rr-processed')) {
+        return;
+      }
+
+      // CRITICAL CHECK 3: Generate unique ID and check if already processed globally
+      const reviewId = getReviewUniqueId(reviewEl);
+      if (processedReviewIds.has(reviewId)) {
+        return;
+      }
 
       // Find review text
       let reviewText = '';
@@ -6067,7 +6098,7 @@ function injectRespondButtons() {
         // Check login status
         await checkLoginStatus();
         if (!isLoggedIn) {
-          showToast('🔐 Please login first (click extension icon)', 'error');
+          showToast('Please login first (click extension icon)', 'error');
           return;
         }
 
@@ -6075,62 +6106,60 @@ function injectRespondButtons() {
         const settings = await loadSettings();
         cachedSettings = settings;
 
-
         lastSelectedText = text;
 
         if (settings.turboMode && !e.shiftKey) {
-
           turboGenerate(text);
         } else {
-
           showResponsePanel(text);
         }
       });
 
-      // Find the best place to insert the button
-      // Try to find action buttons, footer, or just append to review
-      // Exclude our own buttons from the search
-      const actionAreas = Array.from(reviewEl.querySelectorAll('[class*="action"], [class*="button"], [class*="footer"], [class*="helpful"]'))
-        .filter(el => !el.classList.contains('rr-inline-respond-btn'));
+      // SIMPLE INSERTION: Just append to the review element
+      // This is the most reliable approach - append at the end of the review container
+      reviewEl.appendChild(btn);
 
-      if (actionAreas.length > 0) {
-        // Insert after the first action area
-        const insertPoint = actionAreas[0];
-        insertPoint.parentNode.insertBefore(btn, insertPoint.nextSibling);
-      } else {
-        // Append to review element
-        reviewEl.appendChild(btn);
-      }
-
-      // Mark as injected
-      injectedReviews.add(reviewEl);
+      // Mark as processed in multiple ways to prevent duplicates
+      reviewEl.setAttribute('data-rr-processed', 'true');
+      processedReviewIds.add(reviewId);
       injectedCount++;
     });
   });
 
   if (injectedCount > 0) {
-    console.log(`[ReviewResponder] Injected ${injectedCount} Respond buttons`);
+    console.log(`[ReviewResponder] Injected ${injectedCount} Respond buttons (total processed: ${processedReviewIds.size})`);
   }
 }
 
 // MutationObserver to inject buttons on dynamically loaded reviews
 let injectButtonsObserver = null;
 let injectButtonsTimeout = null;
+let lastInjectionTime = 0;
 
 function setupRespondButtonObserver() {
-  // Debounced injection function
+  // Heavily debounced injection function - only run every 2 seconds max
   const debouncedInject = () => {
+    const now = Date.now();
+    // Prevent running more than once every 2 seconds
+    if (now - lastInjectionTime < 2000) {
+      return;
+    }
+
     if (injectButtonsTimeout) clearTimeout(injectButtonsTimeout);
     injectButtonsTimeout = setTimeout(() => {
+      lastInjectionTime = Date.now();
       injectRespondButtons();
-    }, 500);
+    }, 1000);
   };
 
   // Create observer
   injectButtonsObserver = new MutationObserver((mutations) => {
-    // Check if any mutation added nodes that could be reviews
-    const hasNewNodes = mutations.some(m => m.addedNodes.length > 0);
-    if (hasNewNodes) {
+    // Only trigger if significant nodes were added (not just text changes)
+    const hasSignificantChanges = mutations.some(m =>
+      m.addedNodes.length > 0 &&
+      Array.from(m.addedNodes).some(n => n.nodeType === 1 && n.childNodes.length > 3)
+    );
+    if (hasSignificantChanges) {
       debouncedInject();
     }
   });
@@ -6142,11 +6171,11 @@ function setupRespondButtonObserver() {
   });
 }
 
-// Initialize respond button injection
+// Initialize respond button injection - run once after page loads
 setTimeout(() => {
   injectRespondButtons();
   setupRespondButtonObserver();
-}, 1500);
+}, 2000);
 
 // ========== REVIEW POPUP ==========
 
