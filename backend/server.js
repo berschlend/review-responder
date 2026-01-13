@@ -11439,14 +11439,18 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
 
     console.log('✅ Daily outreach completed:', results);
 
+    // Minimal response for cron-job.org (has size limit)
     res.json({
-      success: true,
-      timestamp: new Date().toISOString(),
-      results: results,
+      ok: true,
+      leads: results.new_leads?.found || 0,
+      emails: results.email_finding?.total_found || 0,
+      sent: results.sending?.sent || 0,
+      followups: results.followups?.sent || 0,
     });
   } catch (error) {
     console.error('Daily outreach error:', error);
-    res.status(500).json({ error: 'Automation failed', details: error.message });
+    // Minimal error response for cron-job.org
+    res.status(500).json({ ok: false, err: error.message?.slice(0, 100) });
   }
 });
 
