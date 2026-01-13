@@ -249,10 +249,20 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 - [x] Demo-Video aufnehmen (2 Min Walkthrough) - DONE
 - [ ] Chrome Web Store einreichen (ZIP + Screenshots)
 - [ ] **Reddit API Keys holen**: Wartet auf Genehmigung → https://www.reddit.com/prefs/apps → App erstellen
-- [ ] **Google Indexierung beantragen (3 URLs)** - Tageslimit erreicht, morgen nochmal:
-  - `/medical-practice-reviews`
-  - `/salon-spa-review-responses`
-  - `/auto-shop-reviews`
+- [ ] **Google Indexierung beantragen (11 URLs)** - Tageslimit erreicht, morgen nochmal:
+  - Von gestern (3):
+    - `/medical-practice-reviews`
+    - `/salon-spa-review-responses`
+    - `/auto-shop-reviews`
+  - Neue Landing Pages (8):
+    - `/trustpilot-review-responses`
+    - `/airbnb-host-review-responses`
+    - `/real-estate-agent-reviews`
+    - `/gym-fitness-review-responses`
+    - `/veterinarian-review-responses`
+    - `/law-firm-review-responses`
+    - `/ecommerce-review-responses`
+    - `/coffee-shop-review-responses`
 
 ### CLAUDE KANN SELBST (mit Chrome MCP):
 - Cron Jobs anlegen/ändern auf cron-job.org
@@ -265,6 +275,11 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 Keine offenen Tasks - App ist feature-complete!
 
 ### HEUTE ERLEDIGT (13.01.2026):
+- [x] **8 neue SEO Landing Pages erstellt** - Plattformen und Branchen erweitert
+  - Plattformen: Trustpilot, Airbnb, E-Commerce
+  - Branchen: Real Estate, Gym/Fitness, Veterinarian, Law Firm, Coffee Shop
+  - Alle 21 Landing Pages getestet (Status 200 OK)
+  - Google Indexierung wartet auf Tageskontingent (morgen beantragen)
 - [x] **Frontend Redesign mit Gemini MCP** - Komplette Landing Page überarbeitet
   - Neues modernes Design mit verbesserter UX
   - "20 free responses/month" klar kommuniziert (statt vages "free forever")
