@@ -385,6 +385,35 @@ const Footer = () => (
   </footer>
 );
 
+// Reusable Landing Page Email Capture Component
+const LandingEmailCapture = ({ buttonColor = 'var(--primary-600)', buttonText = 'Get Started Free' }) => {
+  const [email, setEmail] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (email.trim()) {
+      sessionStorage.setItem('landing_email', email.trim());
+    }
+    navigate('/register');
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+      <input
+        type="email"
+        placeholder="Enter your business email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }}
+      />
+      <button type="submit" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: buttonColor, color: 'white', border: 'none', cursor: 'pointer' }}>
+        {buttonText} <Sparkles size={18} />
+      </button>
+    </form>
+  );
+};
+
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -3230,6 +3259,15 @@ const RegisterPage = () => {
   const [googleLoading, setGoogleLoading] = useState(false);
   const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+
+  // Pre-fill email from landing page
+  useEffect(() => {
+    const savedEmail = sessionStorage.getItem('landing_email');
+    if (savedEmail) {
+      setEmail(savedEmail);
+      sessionStorage.removeItem('landing_email');
+    }
+  }, []);
 
   const handleSubmit = async e => {
     e.preventDefault();
@@ -18223,10 +18261,7 @@ const AppStoreReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>App Store Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Boost your app rating with professional AI-generated responses. Reply to iOS App Store and Google Play reviews in seconds.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#007AFF', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#007AFF" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
@@ -18290,10 +18325,7 @@ const IndeedReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Indeed Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build your employer brand with professional AI-generated responses. Turn employee feedback into recruitment opportunities.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#2164F3', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#2164F3" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
@@ -18357,10 +18389,7 @@ const ZillowReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Zillow Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build your realtor reputation with professional AI-generated responses. Turn client reviews into more listings and sales.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#006AFF', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#006AFF" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
@@ -18424,10 +18453,7 @@ const TherapyReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Therapist Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build your therapy practice with professional AI-generated responses. Privacy-aware replies that respect client confidentiality.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#7C3AED', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#7C3AED" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
@@ -18491,10 +18517,7 @@ const ThumbtackReviewPage = () => {
           </div>
           <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Thumbtack Review Response Generator</h1>
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Get more Thumbtack leads with professional AI-generated responses. Turn positive reviews into more bookings.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <input type="email" placeholder="Enter your business email" style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }} />
-            <Link to="/register" className="btn" style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: '#009FD9', color: 'white' }}>Get Started Free <Sparkles size={18} /></Link>
-          </div>
+          <LandingEmailCapture buttonColor="#009FD9" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
