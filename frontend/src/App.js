@@ -10320,14 +10320,33 @@ const NewsletterSignup = ({ compact = false }) => {
     return (
       <div
         style={{
-          padding: compact ? '16px' : '24px',
-          background: 'var(--gray-50)',
-          borderRadius: '12px',
+          padding: compact ? '24px' : '40px',
+          background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+          borderRadius: '16px',
           textAlign: 'center',
+          border: '1px solid #a7f3d0',
         }}
       >
-        <Check size={24} style={{ color: 'var(--success)', marginBottom: '8px' }} />
-        <p style={{ fontWeight: '500' }}>You're subscribed!</p>
+        <div
+          style={{
+            width: '56px',
+            height: '56px',
+            background: '#10b981',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 16px',
+          }}
+        >
+          <Check size={28} style={{ color: 'white' }} />
+        </div>
+        <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px', color: '#065f46' }}>
+          You're on the list!
+        </h3>
+        <p style={{ color: '#047857', fontSize: '14px' }}>
+          Check your inbox for a welcome email with your first tip.
+        </p>
       </div>
     );
   }
@@ -10335,69 +10354,146 @@ const NewsletterSignup = ({ compact = false }) => {
   return (
     <div
       style={{
-        padding: compact ? '20px' : '32px',
-        background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-        borderRadius: '12px',
-        border: '1px solid var(--gray-200)',
+        padding: compact ? '24px' : '40px',
+        background: 'linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)',
+        borderRadius: '16px',
+        border: '1px solid #c7d2fe',
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
-      <h3
+      {/* Decorative circles */}
+      <div
         style={{
-          fontSize: compact ? '16px' : '20px',
-          fontWeight: '600',
-          marginBottom: '8px',
-          color: 'var(--gray-900)',
+          position: 'absolute',
+          top: '-40px',
+          right: '-40px',
+          width: '120px',
+          height: '120px',
+          background: 'rgba(99, 102, 241, 0.1)',
+          borderRadius: '50%',
         }}
-      >
-        Get Review Tips Weekly
-      </h3>
-      <p
+      />
+      <div
         style={{
-          fontSize: '14px',
-          color: 'var(--gray-600)',
-          marginBottom: '16px',
-          lineHeight: '1.5',
+          position: 'absolute',
+          bottom: '-20px',
+          left: '-20px',
+          width: '80px',
+          height: '80px',
+          background: 'rgba(99, 102, 241, 0.08)',
+          borderRadius: '50%',
         }}
-      >
-        Join 1,000+ business owners getting actionable review management tips.
-      </p>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-        <input
-          type="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          placeholder="Enter your email"
-          required
+      />
+
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        {/* Icon */}
+        <div
           style={{
-            flex: '1',
-            minWidth: '180px',
-            padding: '12px 16px',
-            borderRadius: '8px',
-            border: '1px solid var(--gray-300)',
-            fontSize: '14px',
-          }}
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            padding: '12px 20px',
-            background: 'var(--primary)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            fontWeight: '600',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            opacity: loading ? 0.7 : 1,
-            whiteSpace: 'nowrap',
+            width: '48px',
+            height: '48px',
+            background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '16px',
           }}
         >
-          {loading ? 'Subscribing...' : 'Subscribe'}
-        </button>
-      </form>
-      <p style={{ fontSize: '12px', color: 'var(--gray-400)', marginTop: '12px' }}>
-        No spam. Unsubscribe anytime.
-      </p>
+          <Mail size={24} style={{ color: 'white' }} />
+        </div>
+
+        <h3
+          style={{
+            fontSize: compact ? '18px' : '24px',
+            fontWeight: '700',
+            marginBottom: '8px',
+            color: '#1e1b4b',
+          }}
+        >
+          Get Smarter About Reviews
+        </h3>
+        <p
+          style={{
+            fontSize: '15px',
+            color: '#4338ca',
+            marginBottom: '20px',
+            lineHeight: '1.6',
+            maxWidth: '400px',
+          }}
+        >
+          Weekly insights on turning reviews into revenue. Join 2,500+ business owners.
+        </p>
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="Enter your email"
+            required
+            style={{
+              flex: '1',
+              minWidth: '200px',
+              padding: '14px 18px',
+              borderRadius: '10px',
+              border: '2px solid white',
+              fontSize: '15px',
+              background: 'white',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+              outline: 'none',
+            }}
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              padding: '14px 28px',
+              background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '10px',
+              fontWeight: '600',
+              fontSize: '15px',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.7 : 1,
+              whiteSpace: 'nowrap',
+              boxShadow: '0 4px 14px rgba(79, 70, 229, 0.4)',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+            }}
+            onMouseOver={e => {
+              if (!loading) {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(79, 70, 229, 0.5)';
+              }
+            }}
+            onMouseOut={e => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 14px rgba(79, 70, 229, 0.4)';
+            }}
+          >
+            {loading ? 'Subscribing...' : 'Subscribe Free'}
+          </button>
+        </form>
+
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            marginTop: '16px',
+            fontSize: '13px',
+            color: '#6366f1',
+          }}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Check size={14} /> Free forever
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Check size={14} /> Unsubscribe anytime
+          </span>
+        </div>
+      </div>
     </div>
   );
 };
