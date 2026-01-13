@@ -4622,7 +4622,7 @@ app.get('/api/public/blog/:slug', async (req, res) => {
 app.get('/sitemap-blog.xml', async (req, res) => {
   try {
     const articles = await dbAll(
-      `SELECT slug, published_at, updated_at
+      `SELECT slug, published_at
        FROM blog_articles
        WHERE is_published = TRUE
        ORDER BY published_at DESC`
@@ -4642,7 +4642,7 @@ app.get('/sitemap-blog.xml', async (req, res) => {
 
     // Individual articles
     for (const article of articles) {
-      const lastmod = article.updated_at || article.published_at;
+      const lastmod = article.published_at;
       xml += '  <url>\n';
       xml += `    <loc>${baseUrl}/blog/${article.slug}</loc>\n`;
       if (lastmod) {
@@ -8668,7 +8668,7 @@ Requirements:
 - Tone: Professional yet approachable, helpful and actionable
 - Include relevant keywords naturally
 - Structure with:
-  - An engaging introduction with a hook
+  - An engaging introduction that gets straight to the point
   - Clear headings (use ## for main sections, ### for subsections)
   - Bullet points or numbered lists where appropriate
   - Practical, actionable tips businesses can implement today
@@ -8682,11 +8682,27 @@ IMPORTANT: Include a subtle CTA like:
 - "With AI-powered solutions like ReviewResponder, responding to reviews takes seconds..."
 - "ReviewResponder's Chrome extension makes this even easier by..."
 
+WRITING STYLE - AVOID AI SLOP:
+Never use these phrases: "Here's the thing", "The uncomfortable truth is", "It turns out", "Let me be clear", "Full stop", "Period", "Let that sink in", "This matters because", "Make no mistake", "Here's why that matters", "Navigate", "Unpack", "Lean into", "Landscape", "Game-changer", "Double down", "Deep dive", "At its core", "In today's world", "It's worth noting", "Interestingly", "Importantly", "At the end of the day", "In a world where".
+
+Avoid these structures:
+- "Not because X. Because Y." binary contrasts
+- "[X] isn't the problem. [Y] is." framing
+- Opening with "What if [reframe]?"
+- Closing paragraphs with punchy one-liners
+- Three consecutive sentences of matching length
+- Em-dashes before reveals
+- Immediate question-answers
+- Starting sentences with "Look," or "So,"
+- DO NOT start with horizontal rules (*** or ---)
+
+Write directly, trust the reader, avoid explaining obvious things.
+
 Output Format:
 Line 1: The article title (without any prefix like "Title:")
 Line 2: A compelling meta description (150-160 characters, without prefix)
 Line 3: Empty line
-Lines 4+: The full article content in Markdown format.`;
+Lines 4+: The full article content in Markdown format (start directly with content, no horizontal rules).`;
 
     const result = await model.generateContent(prompt);
     const fullResponse = result.response.text();

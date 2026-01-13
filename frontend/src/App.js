@@ -10268,27 +10268,47 @@ const BlogArticlePage = () => {
   const renderMarkdown = content => {
     if (!content) return '';
 
-    return content
-      .replace(
-        /^### (.*$)/gm,
-        '<h3 style="font-size: 20px; font-weight: 600; margin: 32px 0 16px; color: var(--gray-800);">$1</h3>'
-      )
-      .replace(
-        /^## (.*$)/gm,
-        '<h2 style="font-size: 24px; font-weight: 700; margin: 40px 0 20px; color: var(--gray-900);">$1</h2>'
-      )
-      .replace(
-        /^# (.*$)/gm,
-        '<h1 style="font-size: 28px; font-weight: 700; margin: 32px 0 16px;">$1</h1>'
-      )
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/^- (.*$)/gm, '<li style="margin-left: 20px; margin-bottom: 8px;">$1</li>')
-      .replace(/^\d+\. (.*$)/gm, '<li style="margin-left: 20px; margin-bottom: 8px;">$1</li>')
-      .replace(
-        /\n\n/g,
-        '</p><p style="margin-bottom: 20px; line-height: 1.8; color: var(--gray-700);">'
-      );
+    return (
+      content
+        // Remove horizontal rules (*** or ---)
+        .replace(/^\*{3,}$/gm, '')
+        .replace(/^-{3,}$/gm, '')
+        // Blockquotes
+        .replace(
+          /^>\s*(.*$)/gm,
+          '<blockquote style="border-left: 4px solid var(--primary-color); padding-left: 16px; margin: 16px 0; color: var(--gray-600); font-style: italic;">$1</blockquote>'
+        )
+        // Headers (h3 before h2 before h1 for correct matching)
+        .replace(
+          /^### (.*$)/gm,
+          '<h3 style="font-size: 20px; font-weight: 600; margin: 32px 0 16px; color: var(--gray-800);">$1</h3>'
+        )
+        .replace(
+          /^## (.*$)/gm,
+          '<h2 style="font-size: 24px; font-weight: 700; margin: 40px 0 20px; color: var(--gray-900);">$1</h2>'
+        )
+        .replace(
+          /^# (.*$)/gm,
+          '<h1 style="font-size: 28px; font-weight: 700; margin: 32px 0 16px;">$1</h1>'
+        )
+        // Bold and italic
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        // List items (both - and * with optional spaces)
+        .replace(
+          /^[*-]\s+(.*$)/gm,
+          '<li style="margin-left: 20px; margin-bottom: 8px;">$1</li>'
+        )
+        .replace(
+          /^\d+\.\s+(.*$)/gm,
+          '<li style="margin-left: 20px; margin-bottom: 8px;">$1</li>'
+        )
+        // Paragraphs
+        .replace(
+          /\n\n/g,
+          '</p><p style="margin-bottom: 20px; line-height: 1.8; color: var(--gray-700);">'
+        )
+    );
   };
 
   if (loading) {
