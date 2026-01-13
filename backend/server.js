@@ -7237,6 +7237,7 @@ app.delete('/api/admin/cleanup-all-tests', authenticateAdmin, async (req, res) =
       { table: 'drip_emails', condition: 'user_id = ANY($1)' },
       { table: 'responses', condition: 'user_id = ANY($1)' },
       { table: 'templates', condition: 'user_id = ANY($1)' },
+      { table: 'response_templates', condition: 'user_id = ANY($1)' },
       { table: 'team_members', condition: 'user_id = ANY($1) OR team_owner_id = ANY($1)' },
       { table: 'api_keys', condition: 'user_id = ANY($1)' },
       { table: 'referrals', condition: 'referrer_id = ANY($1) OR referred_id = ANY($1)' },
@@ -7244,6 +7245,8 @@ app.delete('/api/admin/cleanup-all-tests', authenticateAdmin, async (req, res) =
       { table: 'email_verification_tokens', condition: 'user_id = ANY($1)' },
       { table: 'affiliate_conversions', condition: 'referred_user_id = ANY($1)' },
       { table: 'affiliates', condition: 'user_id = ANY($1)' },
+      { table: 'user_feedback', condition: 'user_id = ANY($1)' },
+      { table: 'support_requests', condition: 'user_id = ANY($1)' },
     ];
 
     for (const { table, condition } of tablesToClean) {
