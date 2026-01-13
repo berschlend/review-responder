@@ -10562,8 +10562,9 @@ app.post('/api/outreach/test-email', async (req, res) => {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  if (!resend) {
-    return res.status(500).json({ error: 'Resend not configured' });
+  // Check if ANY email provider is available
+  if (!resend && !brevoApi) {
+    return res.status(500).json({ error: 'No email provider configured (need RESEND_API_KEY or BREVO_API_KEY)' });
   }
 
   const { email, business_name, city } = req.body;
@@ -10592,11 +10593,12 @@ app.post('/api/outreach/test-email', async (req, res) => {
 
     res.json({
       success: true,
-      message: `Test email sent to ${email} (with tracking pixel)`,
+      message: `Test email sent to ${email} via ${result.provider}`,
+      provider: result.provider,
       from: OUTREACH_FROM_EMAIL,
       language: language,
       city: testLead.city,
-      resend_id: result.id,
+      message_id: result.messageId,
     });
   } catch (err) {
     console.error('Test email error:', err);
