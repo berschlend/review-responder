@@ -11118,6 +11118,40 @@ function selectTweetCategory() {
   return TWEET_CATEGORIES[0];
 }
 
+// AI Slop filter - removes typical AI-generated phrases
+function cleanAISlop(text) {
+  if (!text) return text;
+
+  // Patterns to remove (case-insensitive)
+  const slopPatterns = [
+    /^(here'?s?|here is) (a |the |my |an )?/i,
+    /^(let me |allow me to |i'd like to )/i,
+    /^in today'?s? (world|age|era|landscape|market)/i,
+    /^(the truth is|truth be told|honestly|to be honest),? /i,
+    /^(did you know|fun fact|here'?s? the thing):? /i,
+    /^(as (a |an )?(business owner|entrepreneur|leader)),? /i,
+    /^(what if i told you|imagine (this|if)):? /i,
+    /\b(game[- ]?changer|revolutionary|transform(ative)?|unlock(ing)?|leverage|skyrocket|supercharge)\b/gi,
+    /\b(in (this|today's) (fast[- ]?paced|ever[- ]?changing|dynamic))\b/gi,
+    /\b(at the end of the day|when all is said and done)\b/gi,
+    /\b(it'?s? (important|crucial|essential|vital) to (note|remember|understand))\b/gi,
+    /#\w+/g, // Remove any hashtags that slipped through
+  ];
+
+  let cleaned = text;
+  for (const pattern of slopPatterns) {
+    cleaned = cleaned.replace(pattern, '');
+  }
+
+  // Clean up extra spaces and capitalize first letter
+  cleaned = cleaned.replace(/\s+/g, ' ').trim();
+  if (cleaned.length > 0) {
+    cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  }
+
+  return cleaned;
+}
+
 // Generate tweet content using Claude
 async function generateTweetContent(category) {
   if (!anthropic) return null;
@@ -11135,7 +11169,10 @@ Rules:
 - No hashtags (they reduce reach on X)
 - No emojis at the start
 - One emoji max, only if it adds value
-- Write like a human, not a brand`;
+- Write like a human, not a brand
+- NEVER start with "Here's", "Let me", "Did you know", "The truth is"
+- NEVER use words like: game-changer, revolutionary, transform, unlock, leverage, skyrocket
+- Be direct and punchy - get to the point immediately`;
 
   try {
     const response = await anthropic.messages.create({
@@ -11145,7 +11182,12 @@ Rules:
       messages: [{ role: 'user', content: category.prompt }]
     });
 
-    return response.content[0].text.trim();
+    const rawTweet = response.content[0].text.trim();
+    const cleanedTweet = cleanAISlop(rawTweet);
+
+    console.log(`[Twitter] Raw: "${rawTweet.substring(0, 50)}..." -> Clean: "${cleanedTweet.substring(0, 50)}..."`);
+
+    return cleanedTweet;
   } catch (error) {
     console.error('[Twitter] Tweet generation error:', error.message);
     return null;
