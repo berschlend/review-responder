@@ -2647,10 +2647,12 @@ async function createResponsePanel() {
               <div class="rr-batch-quality"></div>
             </div>
             <div class="rr-batch-result-actions">
-              <button class="rr-batch-copy-one">📋 Copy This</button>
-              <button class="rr-batch-regenerate">🔄 Regenerate</button>
-              <button class="rr-batch-copy-all">📋 Copy All</button>
-              <button class="rr-batch-export">📥 Export CSV</button>
+              <button class="rr-batch-copy-one">📋 Copy</button>
+              ${isPasteSupported ? `<button class="rr-batch-paste">📋 Paste</button>` : ''}
+              ${isPasteSupported ? `<button class="rr-batch-submit">⚡ Submit</button>` : ''}
+              <button class="rr-batch-regenerate">🔄</button>
+              <button class="rr-batch-copy-all">📋 All</button>
+              <button class="rr-batch-export">📥 CSV</button>
             </div>
           </div>
 
@@ -3472,6 +3474,32 @@ function initPanelEvents(panel) {
   panel.querySelector('.rr-batch-export').addEventListener('click', () => {
     exportBatchAsCSV(panel);
   });
+
+  // Paste batch response (into text field without submit)
+  const batchPasteBtn = panel.querySelector('.rr-batch-paste');
+  if (batchPasteBtn) {
+    batchPasteBtn.addEventListener('click', async () => {
+      const text = panel.querySelector('.rr-batch-response-textarea').value;
+      if (text) {
+        await autoPasteToReviewField(text, panel, false);
+      } else {
+        showToast('Nothing to paste', 'warning');
+      }
+    });
+  }
+
+  // Submit batch response (Paste + Auto-Click Submit)
+  const batchSubmitBtn = panel.querySelector('.rr-batch-submit');
+  if (batchSubmitBtn) {
+    batchSubmitBtn.addEventListener('click', async () => {
+      const text = panel.querySelector('.rr-batch-response-textarea').value;
+      if (text) {
+        await autoPasteToReviewField(text, panel, true);
+      } else {
+        showToast('Nothing to submit', 'warning');
+      }
+    });
+  }
 
   // Batch response textarea - update results when edited
   panel.querySelector('.rr-batch-response-textarea').addEventListener('input', (e) => {
