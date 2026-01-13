@@ -8523,7 +8523,7 @@ app.get('/api/admin/scraped-leads', async (req, res) => {
     query += ` ORDER BY created_at DESC LIMIT $${paramIndex}`;
     params.push(parseInt(limit));
 
-    const leads = await dbQuery(query, params);
+    const leads = await dbAll(query, params);
 
     res.json({
       total: leads.length,
