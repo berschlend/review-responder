@@ -325,7 +325,29 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 | Task | Schwierigkeit | Dateien |
 |------|---------------|---------|
+| **Chrome Web Store Einreichung** | Einfach | chrome-extension/, STORE_LISTING.md |
 | **Chrome MCP Lead Scraper fortsetzen** | Mittel | Memory MCP |
+
+### Chrome Web Store Einreichung (TODO)
+
+**Status:** Vorbereitet, User muss manuell einreichen
+
+**Was noch zu tun:**
+1. 5 Screenshots erstellen (Win+Shift+S auf Yelp/Maps mit Extension)
+2. manifest.json Description updaten mit allen Plattformen + Business Context
+3. Neue ZIP erstellen
+4. Im Chrome Developer Dashboard manuell hochladen (kann nicht automatisiert werden)
+5. Store Listing ausfüllen (Description aus STORE_LISTING.md)
+6. Screenshots hochladen
+7. Einreichen
+
+**Finale Short Description (132 chars):**
+```
+Google review response generator with AI. Personalized replies for Google Maps, Yelp, TripAdvisor & more. Add business context.
+```
+
+**Plattformen für Description:**
+- Google Maps, Yelp, TripAdvisor, Booking.com, Facebook, Trustpilot
 
 ### Chrome MCP Lead Scraper (WIP)
 
