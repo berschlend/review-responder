@@ -9173,10 +9173,10 @@ Topic: ${topic}
 Write a helpful, genuine Reddit comment:`;
 
   try {
-    // Use Claude for high-quality responses
+    // Use Claude Opus 4.5 for highest quality (important marketing touchpoints)
     if (anthropic) {
       const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-opus-4-20250514',
         max_tokens: 500,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }]
@@ -9553,8 +9553,9 @@ app.get('/api/cron/twitter-monitor', async (req, res) => {
 3. Is friendly and genuine (not salesy)
 4. Only mentions ReviewResponder if directly relevant to review management`;
 
+        // Use Opus 4.5 for highest quality (important marketing touchpoints)
         const reply = anthropic ? await anthropic.messages.create({
-          model: 'claude-sonnet-4-20250514',
+          model: 'claude-opus-4-20250514',
           max_tokens: 100,
           system: systemPrompt,
           messages: [{ role: 'user', content: `Tweet: "${tweet.text}"\n\nWrite a helpful reply:` }]
