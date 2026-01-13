@@ -2252,6 +2252,9 @@ async function createResponsePanel() {
           <button class="rr-undo-btn hidden" title="Undo last edit">↩️ Undo</button>
         </div>
 
+        <!-- Edit Hint -->
+        <div class="rr-edit-hint">Ready to copy — or edit anytime</div>
+
         <div class="rr-action-buttons">
           <!-- Primary row - Big buttons -->
           <div class="rr-action-primary">

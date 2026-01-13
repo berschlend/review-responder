@@ -1827,6 +1827,18 @@
   margin: 0 -4px 10px;
 }
 
+/* Edit Hint */
+.rr-edit-hint {
+  text-align: center;
+  font-size: 11px;
+  color: #9ca3af;
+  margin: 6px 0 10px 0;
+}
+
+.rr-dark .rr-edit-hint {
+  color: #6b7280;
+}
+
 /* Dark mode for limit warning */
 .rr-dark .rr-limit-warning.rr-limit-warning {
   background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
