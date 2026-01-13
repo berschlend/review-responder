@@ -275,6 +275,17 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 Keine offenen Tasks - App ist feature-complete!
 
 ### HEUTE ERLEDIGT (13.01.2026):
+- [x] **Click-Tracking für Outreach Emails** - Endlich messbar ob jemand klickt
+  - Neuer Endpoint: `/api/outreach/track-click` (Redirect-basiert)
+  - Alle Email-Links werden automatisch mit Tracking gewrapped
+  - UTM-Parameter werden automatisch hinzugefügt
+  - Dashboard zeigt jetzt `click_rate` und `emails_clicked`
+  - Neue DB-Tabelle: `outreach_clicks`
+- [x] **First Principles Sales Analysis** - Mit Chrome MCP Dashboard gecheckt
+  - Funnel-Daten: 8 User (Test-Accounts), 87.5% Activation, 0% Conversion
+  - Outreach-Daten: 191 Leads, 103 Emails, 0% Opens (Tracking kaputt)
+  - Erkenntnis: Activation ist kein Problem, Conversion ist das Bottleneck
+  - Nächster Checkpoint: In 1 Woche Clicks auswerten
 - [x] **8 neue SEO Landing Pages erstellt** - Plattformen und Branchen erweitert
   - Plattformen: Trustpilot, Airbnb, E-Commerce
   - Branchen: Real Estate, Gym/Fitness, Veterinarian, Law Firm, Coffee Shop
