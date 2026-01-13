@@ -3660,17 +3660,18 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
     'Other',
   ];
 
-  // Sync user data when modal opens
+  // Sync user data when modal opens or user changes
   useEffect(() => {
-    if (isVisible) {
-      if (user?.businessName && !businessName) {
-        setBusinessName(user.businessName);
-      }
-      if (user?.businessType && !businessType) {
-        setBusinessType(user.businessType);
-      }
+    if (isVisible && user?.businessName && !businessName) {
+      setBusinessName(user.businessName);
     }
-  }, [isVisible, user?.businessName, user?.businessType]);
+  }, [isVisible, user?.businessName, businessName]);
+
+  useEffect(() => {
+    if (isVisible && user?.businessType && !businessType) {
+      setBusinessType(user.businessType);
+    }
+  }, [isVisible, user?.businessType, businessType]);
 
   const nextStep = async () => {
     if (currentStep === 1 && businessName.trim()) {

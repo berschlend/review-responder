@@ -3383,11 +3383,12 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
     const upperDiscountCode = discountCode ? discountCode.toUpperCase() : '';
 
     if (upperDiscountCode === 'EARLY50') {
-      // Create a 50% off coupon for early adopters
+      // Create a 50% off coupon for early adopters (valid for 12 months)
       try {
         const coupon = await stripe.coupons.create({
           percent_off: 50,
-          duration: 'forever',
+          duration: 'repeating',
+          duration_in_months: 12,
           id: `EARLY50_${Date.now()}_${user.id}`,
           metadata: {
             campaign: 'early_adopter',
@@ -6744,7 +6745,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
                 <div class="discount-box">
                   <p style="margin: 0 0 8px 0;">Use code</p>
                   <div class="discount-code">EARLY50</div>
-                  <p style="margin: 8px 0 0 0;"><strong>50% OFF</strong> any paid plan - forever!</p>
+                  <p style="margin: 8px 0 0 0;"><strong>50% OFF</strong> any paid plan - for your first year!</p>
                 </div>
 
                 <p>This means you can get:</p>
