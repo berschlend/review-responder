@@ -9011,7 +9011,23 @@ app.get('/api/outreach/track-open', async (req, res) => {
         [email]
       );
 
-      console.log(`📧 Email opened: ${email} (campaign: ${campaign})`);
+      // Update A/B test open counts
+      const emailRecord = await dbGet(
+        'SELECT ab_variant FROM outreach_emails WHERE email = $1 AND ab_variant IS NOT NULL ORDER BY sent_at DESC LIMIT 1',
+        [email]
+      );
+
+      if (emailRecord?.ab_variant) {
+        await dbQuery(
+          `UPDATE outreach_ab_tests
+           SET variant_${emailRecord.ab_variant}_opens = variant_${emailRecord.ab_variant}_opens + 1
+           WHERE test_name = 'sequence1_subject' AND is_active = TRUE`,
+          []
+        );
+        console.log(`📧 Email opened: ${email} (campaign: ${campaign}, A/B variant: ${emailRecord.ab_variant})`);
+      } else {
+        console.log(`📧 Email opened: ${email} (campaign: ${campaign})`);
+      }
     }
   } catch (error) {
     // Silent fail - don't break email viewing
@@ -9154,6 +9170,130 @@ app.get('/api/outreach/stats', async (req, res) => {
   } catch (error) {
     console.error('Outreach stats error:', error);
     res.status(500).json({ error: 'Failed to get stats' });
+  }
+});
+
+// GET /api/outreach/ab-results - Get A/B test results for email subject lines
+app.get('/api/outreach/ab-results', async (req, res) => {
+  try {
+    const { secret } = req.query;
+
+    // Simple secret check for admin access
+    if (!process.env.ADMIN_SECRET || !safeCompare(secret, process.env.ADMIN_SECRET)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Get all A/B tests
+    const abTests = await dbAll(`
+      SELECT * FROM outreach_ab_tests
+      ORDER BY created_at DESC
+    `);
+
+    // Calculate stats for each test
+    const results = abTests.map(test => {
+      const variants = [];
+
+      // Variant A
+      if (test.variant_a_subject) {
+        const openRate = test.variant_a_sent > 0
+          ? ((test.variant_a_opens / test.variant_a_sent) * 100).toFixed(2)
+          : 0;
+        variants.push({
+          variant: 'A',
+          subject: test.variant_a_subject,
+          sent: test.variant_a_sent,
+          opens: test.variant_a_opens,
+          open_rate: parseFloat(openRate),
+        });
+      }
+
+      // Variant B
+      if (test.variant_b_subject) {
+        const openRate = test.variant_b_sent > 0
+          ? ((test.variant_b_opens / test.variant_b_sent) * 100).toFixed(2)
+          : 0;
+        variants.push({
+          variant: 'B',
+          subject: test.variant_b_subject,
+          sent: test.variant_b_sent,
+          opens: test.variant_b_opens,
+          open_rate: parseFloat(openRate),
+        });
+      }
+
+      // Variant C
+      if (test.variant_c_subject) {
+        const openRate = test.variant_c_sent > 0
+          ? ((test.variant_c_opens / test.variant_c_sent) * 100).toFixed(2)
+          : 0;
+        variants.push({
+          variant: 'C',
+          subject: test.variant_c_subject,
+          sent: test.variant_c_sent,
+          opens: test.variant_c_opens,
+          open_rate: parseFloat(openRate),
+        });
+      }
+
+      // Variant D
+      if (test.variant_d_subject) {
+        const openRate = test.variant_d_sent > 0
+          ? ((test.variant_d_opens / test.variant_d_sent) * 100).toFixed(2)
+          : 0;
+        variants.push({
+          variant: 'D',
+          subject: test.variant_d_subject,
+          sent: test.variant_d_sent,
+          opens: test.variant_d_opens,
+          open_rate: parseFloat(openRate),
+        });
+      }
+
+      // Sort by open rate and determine winner
+      const sortedVariants = [...variants].sort((a, b) => b.open_rate - a.open_rate);
+      const totalSent = variants.reduce((sum, v) => sum + v.sent, 0);
+      const minSampleSize = 30; // Minimum emails per variant for statistical significance
+
+      // Determine winner (only if we have enough data)
+      let currentWinner = null;
+      let isSignificant = false;
+      if (sortedVariants.length > 0 && totalSent >= minSampleSize * sortedVariants.length) {
+        const best = sortedVariants[0];
+        const secondBest = sortedVariants[1];
+        // Winner needs at least 10% better open rate than second place
+        if (!secondBest || best.open_rate >= secondBest.open_rate * 1.1) {
+          currentWinner = best.variant;
+          isSignificant = true;
+        }
+      }
+
+      return {
+        test_name: test.test_name,
+        is_active: test.is_active,
+        winner: test.winner || currentWinner,
+        is_statistically_significant: isSignificant,
+        total_sent: totalSent,
+        total_opens: variants.reduce((sum, v) => sum + v.opens, 0),
+        variants: sortedVariants,
+        created_at: test.created_at,
+        recommendation: isSignificant && currentWinner
+          ? `Use variant ${currentWinner}: "${sortedVariants[0].subject}"`
+          : `Need more data (${totalSent}/${minSampleSize * variants.length} emails sent)`,
+      };
+    });
+
+    res.json({
+      success: true,
+      ab_tests: results,
+      summary: {
+        total_tests: results.length,
+        active_tests: results.filter(t => t.is_active).length,
+        tests_with_winner: results.filter(t => t.winner).length,
+      },
+    });
+  } catch (error) {
+    console.error('A/B test results error:', error);
+    res.status(500).json({ error: 'Failed to get A/B test results' });
   }
 });
 
@@ -9512,6 +9652,45 @@ async function initOutreachTables() {
     await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS review_quote TEXT`); // Quote from their negative review
     await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS outreach_angle TEXT`); // Personalized angle for outreach
 
+    // A/B Testing table for email subject lines
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS outreach_ab_tests (
+        id SERIAL PRIMARY KEY,
+        test_name TEXT UNIQUE NOT NULL,
+        variant_a_subject TEXT NOT NULL,
+        variant_b_subject TEXT NOT NULL,
+        variant_c_subject TEXT,
+        variant_d_subject TEXT,
+        variant_a_sent INTEGER DEFAULT 0,
+        variant_b_sent INTEGER DEFAULT 0,
+        variant_c_sent INTEGER DEFAULT 0,
+        variant_d_sent INTEGER DEFAULT 0,
+        variant_a_opens INTEGER DEFAULT 0,
+        variant_b_opens INTEGER DEFAULT 0,
+        variant_c_opens INTEGER DEFAULT 0,
+        variant_d_opens INTEGER DEFAULT 0,
+        winner TEXT,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Add ab_test_variant column to outreach_emails to track which variant was sent
+    await dbQuery(`ALTER TABLE outreach_emails ADD COLUMN IF NOT EXISTS ab_variant TEXT`);
+
+    // Initialize default A/B test for sequence1 subject lines (only if not exists)
+    await dbQuery(`
+      INSERT INTO outreach_ab_tests (test_name, variant_a_subject, variant_b_subject, variant_c_subject, variant_d_subject)
+      VALUES (
+        'sequence1_subject',
+        '{business_name} - quick question',
+        'Your {review_count} Google reviews - quick tip',
+        'Free response draft for {business_name}',
+        '{business_name} - saw your 2-star review'
+      )
+      ON CONFLICT (test_name) DO NOTHING
+    `);
+
     console.log('✅ Outreach tables initialized');
   } catch (error) {
     console.error('Error initializing outreach tables:', error);
@@ -9800,6 +9979,56 @@ const EMAIL_TEMPLATES = {
   g2_competitor_2_de: G2_COMPETITOR_TEMPLATES_DE.sequence2,
 };
 
+// A/B Test subject line variants (will be dynamically loaded from DB)
+const AB_TEST_VARIANTS = ['a', 'b', 'c', 'd'];
+
+// Helper: Select A/B test variant randomly (weighted equally)
+function selectABVariant(availableVariants = ['a', 'b', 'c', 'd']) {
+  const randomIndex = Math.floor(Math.random() * availableVariants.length);
+  return availableVariants[randomIndex];
+}
+
+// Helper: Get A/B test subject line for sequence 1
+async function getABTestSubject(lead, baseSubject) {
+  try {
+    // Only run A/B test for sequence 1 emails (first cold email)
+    const abTest = await dbGet(
+      'SELECT * FROM outreach_ab_tests WHERE test_name = $1 AND is_active = TRUE',
+      ['sequence1_subject']
+    );
+
+    if (!abTest) {
+      return { subject: baseSubject, variant: null };
+    }
+
+    // Determine which variants are available (non-null subjects)
+    const availableVariants = [];
+    if (abTest.variant_a_subject) availableVariants.push('a');
+    if (abTest.variant_b_subject) availableVariants.push('b');
+    if (abTest.variant_c_subject) availableVariants.push('c');
+    if (abTest.variant_d_subject) availableVariants.push('d');
+
+    if (availableVariants.length === 0) {
+      return { subject: baseSubject, variant: null };
+    }
+
+    // Select random variant
+    const selectedVariant = selectABVariant(availableVariants);
+    const variantSubject = abTest[`variant_${selectedVariant}_subject`];
+
+    // Update sent count for this variant
+    await dbQuery(
+      `UPDATE outreach_ab_tests SET variant_${selectedVariant}_sent = variant_${selectedVariant}_sent + 1 WHERE test_name = $1`,
+      ['sequence1_subject']
+    );
+
+    return { subject: variantSubject, variant: selectedVariant };
+  } catch (error) {
+    console.error('A/B test selection error:', error.message);
+    return { subject: baseSubject, variant: null };
+  }
+}
+
 // Helper: Get template based on language, lead type, and review status
 function getTemplateForLead(sequenceNum, lead) {
   const lang = detectLanguage(lead.city);
@@ -9819,6 +10048,23 @@ function getTemplateForLead(sequenceNum, lead) {
   // Default cold email templates
   const key = lang === 'de' ? `sequence${sequenceNum}_de` : `sequence${sequenceNum}`;
   return EMAIL_TEMPLATES[key];
+}
+
+// Helper: Get template with A/B tested subject (async version for sequence 1)
+async function getTemplateForLeadWithABTest(sequenceNum, lead) {
+  const template = getTemplateForLead(sequenceNum, lead);
+
+  // Only apply A/B testing to sequence 1 of default templates (not G2 or review_alert)
+  if (sequenceNum === 1 && !lead.lead_type?.startsWith('g2') && !(lead.has_bad_review && lead.ai_response_draft)) {
+    const { subject: abSubject, variant } = await getABTestSubject(lead, template.subject);
+    return {
+      ...template,
+      subject: abSubject,
+      abVariant: variant,
+    };
+  }
+
+  return { ...template, abVariant: null };
 }
 
 // Helper: Generate AI response draft for a bad review (used in outreach emails)
@@ -10516,7 +10762,9 @@ app.post('/api/outreach/send-emails', async (req, res) => {
 
     for (const lead of newLeads) {
       try {
-        const template = fillEmailTemplate(getTemplateForLead(1, lead), lead);
+        // Use A/B tested subject for sequence 1
+        const templateWithAB = await getTemplateForLeadWithABTest(1, lead);
+        const template = fillEmailTemplate(templateWithAB, lead);
 
         // Send email with tracking pixel
         const result = await sendOutreachEmail({
@@ -10527,14 +10775,14 @@ app.post('/api/outreach/send-emails', async (req, res) => {
           tags: [{ name: 'sequence', value: '1' }],
         });
 
-        // Log the email
+        // Log the email with A/B variant
         await dbQuery(
           `
           INSERT INTO outreach_emails
-          (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
-          VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5)
+          (lead_id, email, sequence_number, subject, body, status, sent_at, campaign, ab_variant)
+          VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5, $6)
         `,
-          [lead.id, lead.email, template.subject, template.body, campaign]
+          [lead.id, lead.email, template.subject, template.body, campaign, templateWithAB.abVariant]
         );
 
         // Update lead status
@@ -11713,7 +11961,9 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
             }
           }
 
-          const template = fillEmailTemplate(getTemplateForLead(1, lead), lead);
+          // Use A/B tested subject for sequence 1
+          const templateWithAB = await getTemplateForLeadWithABTest(1, lead);
+          const template = fillEmailTemplate(templateWithAB, lead);
 
           // Track email campaign type
           let campaign = 'main';
@@ -11734,10 +11984,10 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
 
           await dbQuery(
             `
-            INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
-            VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5)
+            INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign, ab_variant)
+            VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5, $6)
           `,
-            [lead.id, lead.email, template.subject, template.body, campaign]
+            [lead.id, lead.email, template.subject, template.body, campaign, templateWithAB.abVariant]
           );
 
           await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', [
