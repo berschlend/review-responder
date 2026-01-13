@@ -2210,8 +2210,8 @@ const LandingPage = () => {
           </h1>
 
           <p className="hero-subtitle" style={{ maxWidth: '540px', margin: '0 auto 32px', fontSize: '1.05rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
-            AI-powered responses for Google, Yelp, and TripAdvisor.
-            Professional replies in one click. 20 free responses/month.
+            AI-powered responses for Google, Yelp, TripAdvisor & 10+ platforms.
+            Professional replies in one click.
           </p>
 
           <div
