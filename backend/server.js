@@ -12651,7 +12651,10 @@ app.post('/api/outreach/linkedin-demo', async (req, res) => {
 
     if (searchName) {
       try {
-        placeId = await lookupPlaceId(searchName, searchCity);
+        const placeResult = await lookupPlaceId(searchName, searchCity);
+        placeId = placeResult.placeId;
+        googleRating = placeResult.rating;
+        totalReviews = placeResult.totalReviews || 0;
       } catch (err) {
         console.log('Place lookup failed:', err.message);
       }
