@@ -14194,9 +14194,11 @@ const AdminPage = () => {
   const [selectedAffiliate, setSelectedAffiliate] = useState(null);
   const [affiliateDetails, setAffiliateDetails] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
-  const [activeAdminTab, setActiveAdminTab] = useState('affiliates');
+  const [activeAdminTab, setActiveAdminTab] = useState('overview');
   const [outreachData, setOutreachData] = useState(null);
   const [outreachLoading, setOutreachLoading] = useState(false);
+  const [usersData, setUsersData] = useState(null);
+  const [usersLoading, setUsersLoading] = useState(false);
 
   // Use the same API_URL as the rest of the app (already includes /api)
   // Remove /api suffix if present to build admin URLs correctly
@@ -14284,6 +14286,23 @@ const AdminPage = () => {
     }
   };
 
+  const loadUsersData = async key => {
+    const keyToUse = key || adminKey;
+    if (!keyToUse) return;
+    setUsersLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/admin/users`, {
+        headers: { 'X-Admin-Key': keyToUse },
+      });
+      setUsersData(res.data);
+    } catch (err) {
+      console.error('Users load error:', err);
+      toast.error('Failed to load users data');
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
   const updateStatus = async (id, status, note = '') => {
     setActionLoading(true);
     try {
@@ -14338,10 +14357,15 @@ const AdminPage = () => {
     if (isAuthenticated && adminKey) loadAffiliates();
   }, [filter]);
 
-  // Load outreach data when tab changes
+  // Load data when tab changes
   useEffect(() => {
-    if (isAuthenticated && adminKey && activeAdminTab === 'outreach' && !outreachData) {
-      loadOutreachData();
+    if (isAuthenticated && adminKey) {
+      if (activeAdminTab === 'outreach' && !outreachData) {
+        loadOutreachData();
+      }
+      if (activeAdminTab === 'users' && !usersData) {
+        loadUsersData();
+      }
     }
   }, [activeAdminTab, isAuthenticated, adminKey]);
 
@@ -14413,12 +14437,18 @@ const AdminPage = () => {
       </div>
 
       {/* Admin Tabs */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
         <button
-          className={`btn ${activeAdminTab === 'affiliates' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setActiveAdminTab('affiliates')}
+          className={`btn ${activeAdminTab === 'overview' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('overview')}
         >
-          Affiliates
+          Overview
+        </button>
+        <button
+          className={`btn ${activeAdminTab === 'users' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('users')}
+        >
+          Users
         </button>
         <button
           className={`btn ${activeAdminTab === 'outreach' ? 'btn-primary' : 'btn-secondary'}`}
@@ -14426,10 +14456,16 @@ const AdminPage = () => {
         >
           Outreach
         </button>
+        <button
+          className={`btn ${activeAdminTab === 'affiliates' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('affiliates')}
+        >
+          Affiliates
+        </button>
       </div>
 
-      {/* Affiliates Tab */}
-      {activeAdminTab === 'affiliates' && (
+      {/* Overview Tab */}
+      {activeAdminTab === 'overview' && (
         <>
       {/* Stats Overview */}
       {stats && (
@@ -14473,7 +14509,147 @@ const AdminPage = () => {
           </div>
         </div>
       )}
+        </>
+      )}
 
+      {/* Users Tab */}
+      {activeAdminTab === 'users' && (
+        <div>
+          {usersLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading users...</div>
+          ) : usersData ? (
+            <>
+              {/* Summary Cards */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                  gap: '16px',
+                  marginBottom: '24px',
+                }}
+              >
+                <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
+                  <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--primary)' }}>
+                    {usersData.summary?.total || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-600)', fontSize: '13px' }}>Total</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
+                  <div style={{ fontSize: '28px', fontWeight: '700', color: '#10B981' }}>
+                    {usersData.summary?.real || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-600)', fontSize: '13px' }}>Real Users</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
+                  <div style={{ fontSize: '28px', fontWeight: '700', color: '#F59E0B' }}>
+                    {usersData.summary?.test || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-600)', fontSize: '13px' }}>Test Accounts</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
+                  <div style={{ fontSize: '28px', fontWeight: '700', color: '#8B5CF6' }}>
+                    {usersData.summary?.realPaying || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-600)', fontSize: '13px' }}>Real Paying</div>
+                </div>
+              </div>
+
+              {/* Users Table */}
+              <div className="card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: '600' }}>All Users</h3>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => { setUsersData(null); loadUsersData(); }}
+                    style={{ padding: '6px 12px', fontSize: '13px' }}
+                  >
+                    Refresh
+                  </button>
+                </div>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
+                        <th style={{ padding: '12px 8px', textAlign: 'left' }}>Email</th>
+                        <th style={{ padding: '12px 8px', textAlign: 'left' }}>Plan</th>
+                        <th style={{ padding: '12px 8px', textAlign: 'left' }}>Type</th>
+                        <th style={{ padding: '12px 8px', textAlign: 'left' }}>Stripe</th>
+                        <th style={{ padding: '12px 8px', textAlign: 'left' }}>Registered</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {usersData.users?.map(user => (
+                        <tr
+                          key={user.id}
+                          style={{
+                            borderBottom: '1px solid var(--border-color)',
+                            background: user.is_test_account ? 'rgba(251, 191, 36, 0.1)' : 'transparent',
+                          }}
+                        >
+                          <td style={{ padding: '12px 8px' }}>
+                            <div style={{ fontWeight: '500' }}>{user.email}</div>
+                          </td>
+                          <td style={{ padding: '12px 8px' }}>
+                            <span
+                              style={{
+                                padding: '2px 8px',
+                                borderRadius: '4px',
+                                fontSize: '12px',
+                                fontWeight: '500',
+                                background: user.subscription_plan === 'free' ? '#E5E7EB' :
+                                           user.subscription_plan === 'starter' ? '#DBEAFE' :
+                                           user.subscription_plan === 'pro' ? '#D1FAE5' : '#EDE9FE',
+                                color: user.subscription_plan === 'free' ? '#374151' :
+                                       user.subscription_plan === 'starter' ? '#1D4ED8' :
+                                       user.subscription_plan === 'pro' ? '#065F46' : '#5B21B6',
+                              }}
+                            >
+                              {user.subscription_plan}
+                            </span>
+                          </td>
+                          <td style={{ padding: '12px 8px' }}>
+                            <span
+                              style={{
+                                padding: '2px 8px',
+                                borderRadius: '4px',
+                                fontSize: '11px',
+                                fontWeight: '500',
+                                background: user.is_test_account ? '#FEF3C7' : '#D1FAE5',
+                                color: user.is_test_account ? '#92400E' : '#065F46',
+                              }}
+                            >
+                              {user.is_test_account ? 'TEST' : 'REAL'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '12px 8px' }}>
+                            {user.stripe_customer_id ? (
+                              <span style={{ color: '#10B981' }}>Connected</span>
+                            ) : (
+                              <span style={{ color: 'var(--gray-400)' }}>-</span>
+                            )}
+                          </td>
+                          <td style={{ padding: '12px 8px', color: 'var(--gray-500)' }}>
+                            {new Date(user.created_at).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>Failed to load users</p>
+              <button className="btn btn-primary" onClick={() => loadUsersData()}>Retry</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Affiliates Tab */}
+      {activeAdminTab === 'affiliates' && (
+        <>
       {/* Affiliate Management */}
       <div className="card">
         <div
