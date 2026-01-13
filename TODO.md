@@ -129,6 +129,12 @@
 
 ## 🟡 FOLLOW-UP CHECKS
 
+### Morgen (14.01.2026) checken:
+- [ ] **Cron Jobs in cron-job.org** - Sollten jetzt funktionieren nach POST→GET Fix
+  - daily-outreach (09:00)
+  - send-drip-emails (10:00)
+  - send-tripadvisor-emails (09:00)
+
 ### Täglich prüfen:
 - [ ] Outreach Dashboard: Neue Leads? Emails gesendet?
 - [ ] Resend: Werden Emails zugestellt? Bounces?
