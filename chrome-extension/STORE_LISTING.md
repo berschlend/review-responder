@@ -6,7 +6,7 @@
 ---
 
 ## Short Description (132 chars max)
-Google review response generator with AI. Reply to Yelp & TripAdvisor reviews in seconds. 50+ languages, templates, one-click copy.
+Google review response generator with AI. Personalized replies for Google Maps, Yelp, TripAdvisor & more. Add business context.
 
 ---
 
@@ -14,27 +14,31 @@ Google review response generator with AI. Reply to Yelp & TripAdvisor reviews in
 
 **The #1 Google review response generator. Reply to reviews in seconds, not hours.**
 
-This AI-powered review response generator helps businesses reply to Google reviews, Yelp reviews, and TripAdvisor reviews professionally and quickly. Just click the "Generate Response" button next to any review on Google Maps, or simply select the review text - a floating button will appear! Get a perfectly crafted Google review reply instantly.
+This AI-powered review response generator helps businesses reply to reviews professionally and quickly on:
+• Google Maps
+• Yelp
+• TripAdvisor
+• Booking.com
+• Facebook
+• Trustpilot
+
+Just click the "Respond" button next to any review, or select the review text - a floating button appears!
 
 **KEY FEATURES:**
 
-🚀 **One-Click Responses** - Generate directly on Google Maps, Yelp, TripAdvisor & more
+⚡ **Lightning Fast** - Responses in under 3 seconds
+🎯 **One-Click Responses** - Generate directly on the review page
 🌍 **50+ Languages** - Auto-detects and responds in reviewer's language
 🎨 **4 Response Tones** - Professional, Friendly, Formal, or Apologetic
-📊 **3 Response Variations** - Get multiple options, pick your favorite
-⭐ **Quality Score** - AI rates your response (Excellent/Good/Needs Work)
-📋 **50+ Industry Templates** - Restaurant, Hotel, Retail, Healthcare & more
-💾 **Auto-Save Drafts** - Never lose your work when closing the panel
-⚡ **Lightning Fast** - Responses in under 3 seconds
+✨ **Personalized** - AI crafts unique replies based on each review
+🏢 **Business Context** - Add your business name & details for branded responses
 
 **HOW IT WORKS:**
 
-1. Browse reviews on Google Maps, Yelp, or TripAdvisor
-2. Click "Generate Response" button OR select any review text
-3. Choose your tone and pick from 3 variations
-4. Copy and paste the response
-
-**TIP:** No button visible? Just select the review text and a floating "Respond" button will appear!
+1. Browse reviews on Google Maps, Yelp, TripAdvisor or any supported platform
+2. Click "Respond" button OR select any review text
+3. Choose your tone and generate
+4. Copy and paste your personalized response
 
 **PERFECT FOR:**
 - Restaurant owners
@@ -55,29 +59,33 @@ Start responding to reviews in seconds, not hours. Try ReviewResponder free toda
 
 ## Detailed Description (German)
 
-**Hör auf, Stunden mit Review-Antworten zu verschwenden. Lass KI das in Sekunden erledigen.**
+**Der #1 Google Review Response Generator. Antworte auf Bewertungen in Sekunden, nicht Stunden.**
 
-ReviewResponder hilft Unternehmen, professionell und schnell auf Bewertungen zu antworten - auf Google Maps, Yelp, TripAdvisor und mehr. Klicke einfach auf "Generate Response" neben einer Bewertung, oder markiere den Bewertungstext - ein schwebender Button erscheint! Erhalte sofort eine perfekt formulierte Antwort.
+Dieser KI-gestützte Review Response Generator hilft Unternehmen, professionell und schnell auf Bewertungen zu antworten auf:
+• Google Maps
+• Yelp
+• TripAdvisor
+• Booking.com
+• Facebook
+• Trustpilot
+
+Klicke einfach auf "Respond" neben einer Bewertung, oder markiere den Bewertungstext - ein Button erscheint!
 
 **HAUPTFUNKTIONEN:**
 
-🚀 **Ein-Klick-Antworten** - Direkt auf Google Maps, Yelp, TripAdvisor & mehr
+⚡ **Blitzschnell** - Antworten in unter 3 Sekunden
+🎯 **Ein-Klick-Antworten** - Direkt auf der Bewertungsseite generieren
 🌍 **50+ Sprachen** - Erkennt automatisch die Sprache der Bewertung
 🎨 **4 Antwort-Töne** - Professionell, Freundlich, Formell oder Entschuldigend
-📊 **3 Antwort-Varianten** - Mehrere Optionen, wähle deine Lieblingsantwort
-⭐ **Qualitäts-Score** - KI bewertet deine Antwort (Excellent/Good/Needs Work)
-📋 **50+ Branchen-Templates** - Restaurant, Hotel, Einzelhandel, Gesundheit & mehr
-💾 **Auto-Speichern** - Entwürfe gehen beim Schließen nicht verloren
-⚡ **Blitzschnell** - Antworten in unter 3 Sekunden
+✨ **Personalisiert** - KI erstellt einzigartige Antworten für jede Bewertung
+🏢 **Business Context** - Füge deinen Firmennamen hinzu für gebrandete Antworten
 
 **SO FUNKTIONIERT'S:**
 
-1. Bewertungen auf Google Maps, Yelp oder TripAdvisor durchsuchen
-2. "Generate Response" Button klicken ODER Bewertungstext markieren
-3. Ton wählen und aus 3 Varianten auswählen
-4. Antwort kopieren und einfügen
-
-**TIPP:** Kein Button sichtbar? Einfach den Bewertungstext markieren und ein "Respond" Button erscheint!
+1. Bewertungen auf Google Maps, Yelp, TripAdvisor oder einer anderen Plattform durchsuchen
+2. "Respond" Button klicken ODER Bewertungstext markieren
+3. Ton wählen und generieren
+4. Personalisierte Antwort kopieren und einfügen
 
 **PERFEKT FÜR:**
 - Restaurantbesitzer
