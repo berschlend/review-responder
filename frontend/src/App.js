@@ -11009,6 +11009,7 @@ const DemoPage = () => {
   const [demo, setDemo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [copiedIndex, setCopiedIndex] = useState(null);
 
   useEffect(() => {
     fetchDemo();
@@ -11022,8 +11023,6 @@ const DemoPage = () => {
       }
       const data = await response.json();
       setDemo(data);
-
-      // Set SEO meta tags
       document.title = `${data.business_name} - AI Review Responses Demo | ReviewResponder`;
     } catch (err) {
       setError(err.message);
@@ -11032,146 +11031,207 @@ const DemoPage = () => {
     }
   };
 
-  const StarRating = ({ rating }) => {
-    return (
-      <span style={{ color: '#fbbf24', fontSize: '16px' }}>
-        {'★'.repeat(rating)}
-        {'☆'.repeat(5 - rating)}
-      </span>
-    );
+  const copyResponse = (text, index) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000);
   };
+
+  const GoogleStars = ({ rating }) => (
+    <div style={{ display: 'flex', gap: '2px' }}>
+      {[1, 2, 3, 4, 5].map(star => (
+        <svg key={star} width="16" height="16" viewBox="0 0 24 24" fill={star <= rating ? '#FBBC04' : '#E8EAED'}>
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+        </svg>
+      ))}
+    </div>
+  );
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-        <div className="loading-spinner" />
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: 'var(--bg-primary)' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div className="loading-spinner" style={{ marginBottom: '16px' }} />
+          <p style={{ color: 'var(--text-muted)' }}>Loading your personalized demo...</p>
+        </div>
       </div>
     );
   }
 
   if (error || !demo) {
     return (
-      <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-        <h1 style={{ fontSize: '32px', marginBottom: '16px', color: 'var(--gray-800)' }}>Demo Not Found</h1>
-        <p style={{ color: 'var(--gray-500)', marginBottom: '24px' }}>
-          This demo link may have expired or is invalid.
-        </p>
-        <a
-          href="/"
-          style={{
-            display: 'inline-block',
-            background: 'var(--primary)',
-            color: 'white',
-            padding: '12px 24px',
-            borderRadius: '8px',
-            textDecoration: 'none',
-            fontWeight: '500',
-          }}
-        >
-          Visit ReviewResponder
-        </a>
+      <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center', padding: '40px 20px', maxWidth: '400px' }}>
+          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 8v4M12 16h.01" />
+            </svg>
+          </div>
+          <h1 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '12px' }}>Demo Not Found</h1>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '24px', lineHeight: '1.6' }}>
+            This demo link may have expired or the URL is incorrect.
+          </p>
+          <a href="/" className="btn btn-primary">Visit ReviewResponder</a>
+        </div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #f8fafc 0%, #fff 100%)' }}>
-      {/* Header */}
-      <div style={{ background: 'white', borderBottom: '1px solid #e5e7eb', padding: '16px 0' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <a href="/" style={{ textDecoration: 'none' }}>
-            <span style={{ fontSize: '20px', fontWeight: '700', color: 'var(--primary)' }}>ReviewResponder</span>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
+      {/* Floating Header */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 100, background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', backdropFilter: 'blur(8px)' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <a href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+              </svg>
+            </div>
+            <span style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)' }}>ReviewResponder</span>
           </a>
-          <a
-            href={demo.cta_url}
-            style={{
-              background: 'var(--primary)',
-              color: 'white',
-              padding: '10px 20px',
-              borderRadius: '8px',
-              textDecoration: 'none',
-              fontWeight: '500',
-              fontSize: '14px',
-            }}
-          >
+          <a href={demo.cta_url} className="btn btn-primary" style={{ padding: '10px 20px', fontSize: '14px' }}>
             Try It Free
           </a>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px' }}>
-        {/* Hero */}
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-          <h1 style={{ fontSize: '32px', fontWeight: '700', color: 'var(--gray-800)', marginBottom: '16px' }}>
-            AI Review Responses for {demo.business_name}
+      {/* Hero Section */}
+      <div style={{ background: 'var(--hero-gradient)', padding: '48px 20px 64px', borderBottom: '1px solid var(--border-color)' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
+          {/* Personalized Badge */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--bg-secondary)', padding: '8px 16px', borderRadius: '100px', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', animation: 'pulse 2s infinite' }} />
+            <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-secondary)' }}>
+              Personalized demo for {demo.business_name}
+            </span>
+          </div>
+
+          <h1 style={{ fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '16px', lineHeight: '1.2' }}>
+            See How AI Can Transform<br />Your Review Responses
           </h1>
-          <p style={{ fontSize: '18px', color: 'var(--gray-500)', marginBottom: '8px' }}>
-            {demo.city && `${demo.city} • `}
-            {demo.google_rating && `${demo.google_rating} Google Rating • `}
-            {demo.total_reviews && `${demo.total_reviews} reviews`}
-          </p>
-          <p style={{ fontSize: '16px', color: 'var(--gray-600)' }}>
-            Here's how ReviewResponder can help you respond to your reviews:
+
+          {/* Business Info Card */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '16px', background: 'var(--bg-secondary)', padding: '16px 24px', borderRadius: '12px', marginTop: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '10px', background: 'linear-gradient(135deg, #4285f4 0%, #34a853 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+              </svg>
+            </div>
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ fontWeight: '700', fontSize: '16px', color: 'var(--text-primary)' }}>{demo.business_name}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                {demo.google_rating && (
+                  <>
+                    <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{demo.google_rating}</span>
+                    <GoogleStars rating={Math.round(demo.google_rating)} />
+                  </>
+                )}
+                {demo.total_reviews && (
+                  <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>({demo.total_reviews} reviews)</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '48px 20px' }}>
+        {/* Section Header */}
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '8px' }}>
+            Your Reviews, Answered by AI
+          </h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '16px' }}>
+            Real reviews from your Google listing with AI-generated responses
           </p>
         </div>
 
         {/* Demo Cards */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', marginBottom: '48px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '48px' }}>
           {demo.demos && demo.demos.map((item, index) => (
             <div
               key={index}
               style={{
-                background: 'white',
+                background: 'var(--card-bg)',
                 borderRadius: '16px',
-                boxShadow: '0 4px 6px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.1)',
+                border: '1px solid var(--border-color)',
                 overflow: 'hidden',
+                boxShadow: 'var(--card-shadow)',
               }}
             >
-              {/* Original Review */}
-              <div style={{ padding: '24px', borderBottom: '1px solid #f3f4f6' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                  <div
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontWeight: '600',
-                      color: '#6b7280',
-                    }}
-                  >
-                    {item.review.author?.charAt(0) || 'A'}
+              {/* Review Header - Google Style */}
+              <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-light)' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                  {/* Avatar */}
+                  <div style={{
+                    width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
+                    background: `linear-gradient(135deg, ${['#4285f4', '#ea4335', '#fbbc04', '#34a853', '#ff6d00'][index % 5]} 0%, ${['#34a853', '#fbbc04', '#ea4335', '#4285f4', '#e91e63'][index % 5]} 100%)`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'white', fontWeight: '600', fontSize: '18px'
+                  }}>
+                    {(item.review.author || 'A').charAt(0).toUpperCase()}
                   </div>
-                  <div>
-                    <div style={{ fontWeight: '600', color: 'var(--gray-800)' }}>{item.review.author || 'Anonymous'}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <span style={{ fontWeight: '600', color: 'var(--text-primary)', fontSize: '15px' }}>
+                        {item.review.author || 'Anonymous'}
+                      </span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="#4285f4">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                      </svg>
+                    </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <StarRating rating={item.review.rating} />
+                      <GoogleStars rating={item.review.rating} />
                       {item.review.date && (
-                        <span style={{ fontSize: '13px', color: 'var(--gray-400)' }}>{item.review.date}</span>
+                        <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{item.review.date}</span>
                       )}
                     </div>
                   </div>
                 </div>
-                <p style={{ color: 'var(--gray-600)', lineHeight: '1.6', fontSize: '15px' }}>
-                  "{item.review.text}"
+                <p style={{ color: 'var(--text-secondary)', lineHeight: '1.7', fontSize: '15px', marginTop: '12px' }}>
+                  {item.review.text}
                 </p>
               </div>
 
               {/* AI Response */}
-              <div style={{ padding: '24px', background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
-                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                    <path d="M2 17l10 5 10-5" />
-                    <path d="M2 12l10 5 10-5" />
-                  </svg>
-                  <span style={{ fontWeight: '600', color: '#059669', fontSize: '14px' }}>AI-Generated Response</span>
+              <div style={{ padding: '20px 24px', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                      </svg>
+                    </div>
+                    <span style={{ fontWeight: '600', color: '#059669', fontSize: '14px' }}>AI-Generated Response</span>
+                    <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#059669', fontSize: '11px', padding: '2px 8px', borderRadius: '4px', fontWeight: '600' }}>READY TO USE</span>
+                  </div>
+                  <button
+                    onClick={() => copyResponse(item.ai_response, index)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', borderRadius: '6px',
+                      background: copiedIndex === index ? '#059669' : 'var(--bg-secondary)',
+                      border: copiedIndex === index ? 'none' : '1px solid var(--border-color)',
+                      color: copiedIndex === index ? 'white' : 'var(--text-secondary)',
+                      cursor: 'pointer', fontSize: '13px', fontWeight: '500', transition: 'all 0.2s'
+                    }}
+                  >
+                    {copiedIndex === index ? (
+                      <>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" /></svg>
+                        Copy
+                      </>
+                    )}
+                  </button>
                 </div>
-                <p style={{ color: 'var(--gray-700)', lineHeight: '1.7', fontSize: '15px' }}>
+                <p style={{ color: 'var(--text-primary)', lineHeight: '1.7', fontSize: '15px' }}>
                   {item.ai_response}
                 </p>
               </div>
@@ -11179,63 +11239,89 @@ const DemoPage = () => {
           ))}
         </div>
 
-        {/* CTA Section */}
-        <div
-          style={{
-            background: 'linear-gradient(135deg, var(--primary) 0%, #5a67d8 100%)',
-            borderRadius: '16px',
-            padding: '40px',
-            textAlign: 'center',
-            color: 'white',
-          }}
-        >
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>
-            Generate responses like these in seconds
-          </h2>
-          <p style={{ fontSize: '16px', opacity: 0.9, marginBottom: '24px' }}>
-            20 free responses. No credit card required.
-          </p>
-          <a
-            href={demo.cta_url}
-            style={{
-              display: 'inline-block',
-              background: 'white',
-              color: 'var(--primary)',
-              padding: '14px 32px',
-              borderRadius: '8px',
-              textDecoration: 'none',
-              fontWeight: '600',
-              fontSize: '16px',
-            }}
-          >
-            Start Your Free Trial
-          </a>
+        {/* Social Proof */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '32px', padding: '32px', background: 'var(--bg-secondary)', borderRadius: '16px', marginBottom: '48px', border: '1px solid var(--border-color)' }}>
+          {[
+            { value: '500K+', label: 'Responses Generated' },
+            { value: '10K+', label: 'Happy Businesses' },
+            { value: '4.8/5', label: 'User Rating' },
+            { value: '<5 sec', label: 'Generation Time' },
+          ].map((stat, i) => (
+            <div key={i} style={{ textAlign: 'center', minWidth: '120px' }}>
+              <div style={{ fontSize: '28px', fontWeight: '800', color: 'var(--primary)', marginBottom: '4px' }}>{stat.value}</div>
+              <div style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>{stat.label}</div>
+            </div>
+          ))}
         </div>
 
-        {/* Features */}
-        <div style={{ marginTop: '48px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
+        {/* CTA Section */}
+        <div style={{
+          background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
+          borderRadius: '20px', padding: '48px 32px', textAlign: 'center', position: 'relative', overflow: 'hidden'
+        }}>
+          {/* Decorative circles */}
+          <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />
+          <div style={{ position: 'absolute', bottom: '-30px', left: '-30px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
+
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.2)', padding: '6px 16px', borderRadius: '100px', marginBottom: '20px' }}>
+              <span style={{ color: 'white', fontSize: '14px', fontWeight: '600' }}>Limited Time: 20 Free Responses</span>
+            </div>
+            <h2 style={{ fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: '800', color: 'white', marginBottom: '12px' }}>
+              Start Responding Like a Pro
+            </h2>
+            <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.9)', marginBottom: '28px', maxWidth: '500px', margin: '0 auto 28px' }}>
+              Join thousands of businesses saving hours on review management. No credit card required.
+            </p>
+            <a
+              href={demo.cta_url}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                background: 'white', color: 'var(--primary)', padding: '16px 36px',
+                borderRadius: '10px', textDecoration: 'none', fontWeight: '700', fontSize: '16px',
+                boxShadow: '0 4px 14px rgba(0,0,0,0.2)', transition: 'transform 0.2s'
+              }}
+            >
+              Get Started Free
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        {/* Features Grid */}
+        <div style={{ marginTop: '48px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
           {[
-            { icon: '🎯', title: 'Multiple Tones', desc: 'Professional, friendly, formal, or apologetic' },
-            { icon: '🌍', title: '50+ Languages', desc: 'Respond in any language automatically' },
-            { icon: '⚡', title: 'Instant Generation', desc: 'Perfect responses in under 5 seconds' },
-            { icon: '📊', title: 'Quality Score', desc: 'AI rates your responses for impact' },
+            { icon: '🎯', title: '4 Professional Tones', desc: 'Professional, friendly, formal, or apologetic - match your brand voice' },
+            { icon: '🌍', title: '50+ Languages', desc: 'Auto-detect and respond in the same language as the review' },
+            { icon: '⚡', title: 'Instant Generation', desc: 'Get perfect responses in under 5 seconds' },
+            { icon: '🔒', title: 'Your Business Context', desc: 'Add your business details for personalized responses' },
           ].map((feature, i) => (
-            <div key={i} style={{ textAlign: 'center', padding: '20px' }}>
-              <div style={{ fontSize: '32px', marginBottom: '8px' }}>{feature.icon}</div>
-              <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--gray-800)', marginBottom: '4px' }}>
+            <div key={i} style={{ padding: '24px', background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+              <div style={{ fontSize: '28px', marginBottom: '12px' }}>{feature.icon}</div>
+              <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '8px' }}>
                 {feature.title}
               </h3>
-              <p style={{ fontSize: '14px', color: 'var(--gray-500)' }}>{feature.desc}</p>
+              <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{feature.desc}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Footer */}
-      <div style={{ background: 'white', borderTop: '1px solid #e5e7eb', padding: '24px 0', marginTop: '48px' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 20px', textAlign: 'center' }}>
-          <p style={{ fontSize: '14px', color: 'var(--gray-400)' }}>
-            ReviewResponder - AI-powered review responses for busy business owners
+      <div style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--border-color)', padding: '32px 20px', marginTop: '48px' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
+          <a href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none', marginBottom: '16px' }}>
+            <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+              </svg>
+            </div>
+            <span style={{ fontWeight: '700', color: 'var(--text-primary)' }}>ReviewResponder</span>
+          </a>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+            AI-powered review responses for busy business owners
           </p>
         </div>
       </div>
