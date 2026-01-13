@@ -1,8 +1,9 @@
 $GIT_STATUS=$(git status --short)
 $GIT_DIFF=$(git diff --stat HEAD~1 2>/dev/null || git diff --stat)
 $BRANCH=$(git branch --show-current)
+$TIMESTAMP=$(date +%m%d-%H%M)
 
-Basierend auf diesen Änderungen erstelle einen Commit und PR:
+Basierend auf diesen Aenderungen erstelle einen Commit und PR:
 
 **Branch:** $BRANCH
 
@@ -18,31 +19,61 @@ $GIT_DIFF
 
 ## Deine Aufgaben:
 
-1. **Analysiere die Änderungen** und verstehe was gemacht wurde
+1. **Analysiere die Aenderungen** und verstehe was gemacht wurde
 
 2. **Erstelle eine Commit Message** im Conventional Commits Format:
-   - `feat:` für neue Features
-   - `fix:` für Bugfixes
-   - `chore:` für Maintenance
-   - `docs:` für Dokumentation
-   - `refactor:` für Refactoring
-   - `test:` für Tests
-   - `style:` für Formatting
+   - `feat:` fuer neue Features
+   - `fix:` fuer Bugfixes
+   - `chore:` fuer Maintenance
+   - `docs:` fuer Dokumentation
+   - `refactor:` fuer Refactoring
+   - `test:` fuer Tests
+   - `style:` fuer Formatting
 
-3. **Committe alle Änderungen:**
+3. **Committe alle Aenderungen:**
    ```bash
    git add -A
-   git commit -m "deine message"
+   git commit -m "deine message
+
+   Co-Authored-By: Claude <noreply@anthropic.com>"
    ```
 
 4. **Pushe zum Remote:**
    ```bash
-   git push origin $BRANCH
+   git push -u origin $BRANCH
    ```
 
-5. **Erstelle einen Pull Request** (wenn möglich via gh CLI):
+5. **Auto-PR + Merge (NUR wenn Branch != main):**
+   Falls `$BRANCH` NICHT "main" ist:
    ```bash
-   gh pr create --title "Commit Message" --body "Beschreibung"
+   # PR erstellen
+   gh pr create --fill --base main
+
+   # Auto-Merge aktivieren
+   gh pr merge --squash --auto || gh pr merge --squash
+
+   # Zurueck zu main und pull
+   git checkout main
+   git pull origin main
+
+   # NEUEN Branch erstellen fuer naechsten Task
+   # Extrahiere Prefix (rr1, rr2, etc.) aus altem Branch
    ```
 
-Falls `gh` nicht verfügbar ist, zeig mir den PR-Link den ich manuell öffnen soll.
+   Erstelle neuen Branch mit gleichem Prefix:
+   - Alter Branch: `rr1/0112-1734` → Neuer Branch: `rr1/$TIMESTAMP`
+   - Alter Branch: `rr2/0112-1734` → Neuer Branch: `rr2/$TIMESTAMP`
+
+   ```bash
+   git checkout -b [prefix]/$TIMESTAMP
+   ```
+
+   Falls `$BRANCH` gleich "main" ist:
+   - Kein PR noetig, direkt deployed
+   - Kein neuer Branch noetig
+
+6. **Bestaetigung an User:**
+   - Was committed wurde
+   - PR URL (falls erstellt)
+   - "Merged to main - Render redeployed automatisch"
+   - "Neuer Branch: [name] - bereit fuer naechsten Task"
