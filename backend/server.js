@@ -10401,6 +10401,253 @@ app.get('/api/admin/twitter-opportunities', async (req, res) => {
 });
 
 // ============================================
+// TWITTER AUTO-TWEET SCHEDULER (@ExecPsychology)
+// ============================================
+
+// Tweet content categories and prompts
+const TWEET_CATEGORIES = [
+  {
+    name: 'business_psychology',
+    weight: 30,
+    prompt: `Write a short, insightful tweet about business psychology. Topics: customer behavior, decision-making, trust-building, emotional intelligence in business. Be specific and actionable. No hashtags.`
+  },
+  {
+    name: 'review_management',
+    weight: 25,
+    prompt: `Write a short tweet with a practical tip about responding to customer reviews (positive or negative). Share real insight, not generic advice. No hashtags.`
+  },
+  {
+    name: 'business_tip',
+    weight: 20,
+    prompt: `Write a short tweet with a counterintuitive or lesser-known business tip. Make it memorable and shareable. No hashtags.`
+  },
+  {
+    name: 'engagement_question',
+    weight: 15,
+    prompt: `Write a short tweet asking business owners an engaging question about their challenges with customer feedback, reviews, or reputation. Make it conversational. No hashtags.`
+  },
+  {
+    name: 'soft_promo',
+    weight: 10,
+    prompt: `Write a short tweet mentioning ReviewResponder (AI tool for responding to customer reviews). Be subtle and value-first - lead with the problem it solves, not the product. Include tryreviewresponder.com naturally. No hashtags.`
+  }
+];
+
+// Select category based on weights
+function selectTweetCategory() {
+  const totalWeight = TWEET_CATEGORIES.reduce((sum, cat) => sum + cat.weight, 0);
+  let random = Math.random() * totalWeight;
+
+  for (const category of TWEET_CATEGORIES) {
+    random -= category.weight;
+    if (random <= 0) return category;
+  }
+  return TWEET_CATEGORIES[0];
+}
+
+// Generate tweet content using Claude
+async function generateTweetContent(category) {
+  if (!anthropic) return null;
+
+  const systemPrompt = `You are @ExecPsychology on Twitter - a business psychology expert who helps entrepreneurs understand customer behavior and build better businesses.
+
+Your tone is:
+- Insightful but accessible (no jargon)
+- Confident but not arrogant
+- Helpful and genuine
+- Occasionally witty
+
+Rules:
+- Max 250 characters (leave room for engagement)
+- No hashtags (they reduce reach on X)
+- No emojis at the start
+- One emoji max, only if it adds value
+- Write like a human, not a brand`;
+
+  try {
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 100,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: category.prompt }]
+    });
+
+    return response.content[0].text.trim();
+  } catch (error) {
+    console.error('[Twitter] Tweet generation error:', error.message);
+    return null;
+  }
+}
+
+// Post a new tweet
+async function postTweet(text) {
+  if (!twitterClient) {
+    return { success: false, error: 'Twitter client not configured' };
+  }
+
+  try {
+    const result = await twitterClient.v2.tweet(text);
+    return {
+      success: true,
+      tweetId: result.data.id,
+      text: result.data.text
+    };
+  } catch (error) {
+    console.error('[Twitter] Post error:', error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+// Auto-Tweet cron endpoint
+app.get('/api/cron/twitter-post', async (req, res) => {
+  const secret = req.query.secret || req.headers['x-cron-secret'];
+  if (!safeCompare(secret, process.env.CRON_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const dryRun = req.query.dry_run === 'true';
+
+  if (!twitterClient) {
+    return res.status(500).json({
+      error: 'Twitter API not configured',
+      setup: 'Add TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET'
+    });
+  }
+
+  try {
+    // Initialize scheduled tweets table
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS twitter_scheduled_posts (
+        id SERIAL PRIMARY KEY,
+        tweet_text TEXT NOT NULL,
+        tweet_id VARCHAR(50),
+        category VARCHAR(50),
+        posted BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT NOW(),
+        posted_at TIMESTAMP
+      )
+    `);
+
+    // Check daily limit (max 2 tweets per day)
+    const todayCount = await dbGet(`
+      SELECT COUNT(*) as count FROM twitter_scheduled_posts
+      WHERE posted = TRUE AND posted_at > NOW() - INTERVAL '24 hours'
+    `);
+
+    const dailyLimit = 2;
+    const postedToday = parseInt(todayCount?.count || 0);
+
+    if (postedToday >= dailyLimit) {
+      return res.json({
+        success: true,
+        message: `Daily limit reached (${dailyLimit} tweets/day)`,
+        posted_today: postedToday,
+        next_slot: 'Tomorrow'
+      });
+    }
+
+    // Select category and generate tweet
+    const category = selectTweetCategory();
+    const tweetText = await generateTweetContent(category);
+
+    if (!tweetText) {
+      return res.status(500).json({ error: 'Failed to generate tweet content' });
+    }
+
+    // Validate length
+    if (tweetText.length > 280) {
+      return res.status(500).json({
+        error: 'Generated tweet too long',
+        length: tweetText.length,
+        text: tweetText
+      });
+    }
+
+    const result = {
+      category: category.name,
+      tweet: tweetText,
+      length: tweetText.length,
+      posted: false,
+      tweet_id: null
+    };
+
+    if (!dryRun) {
+      // Post the tweet
+      const postResult = await postTweet(tweetText);
+
+      if (postResult.success) {
+        result.posted = true;
+        result.tweet_id = postResult.tweetId;
+
+        // Save to database
+        await dbQuery(`
+          INSERT INTO twitter_scheduled_posts (tweet_text, tweet_id, category, posted, posted_at)
+          VALUES ($1, $2, $3, TRUE, NOW())
+        `, [tweetText, postResult.tweetId, category.name]);
+
+        console.log(`[Twitter] Posted tweet: "${tweetText.substring(0, 50)}..."`);
+      } else {
+        result.error = postResult.error;
+
+        // Save failed attempt
+        await dbQuery(`
+          INSERT INTO twitter_scheduled_posts (tweet_text, category, posted)
+          VALUES ($1, $2, FALSE)
+        `, [tweetText, category.name]);
+      }
+    } else {
+      console.log(`[Twitter DRY RUN] Would post: "${tweetText}"`);
+    }
+
+    res.json({
+      success: true,
+      dry_run: dryRun,
+      account: '@ExecPsychology',
+      daily_limit: dailyLimit,
+      posted_today: postedToday + (result.posted ? 1 : 0),
+      result: result
+    });
+
+  } catch (error) {
+    console.error('Twitter post error:', error);
+    res.status(500).json({ error: 'Twitter post failed', details: error.message });
+  }
+});
+
+// Get scheduled tweet history
+app.get('/api/admin/twitter-posts', async (req, res) => {
+  const adminKey = req.query.key || req.headers['x-admin-key'];
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const posts = await dbAll(`
+      SELECT * FROM twitter_scheduled_posts
+      ORDER BY created_at DESC
+      LIMIT 50
+    `);
+
+    // Stats by category
+    const categoryStats = await dbAll(`
+      SELECT category, COUNT(*) as count, SUM(CASE WHEN posted THEN 1 ELSE 0 END) as posted_count
+      FROM twitter_scheduled_posts
+      GROUP BY category
+    `);
+
+    res.json({
+      account: '@ExecPsychology',
+      auto_posting: !!twitterClient,
+      total_posts: posts.length,
+      category_stats: categoryStats,
+      recent_posts: posts
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get tweet history' });
+  }
+});
+
+// ============================================
 // SALES AUTOMATION ENDPOINTS
 // ============================================
 
