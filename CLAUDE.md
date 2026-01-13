@@ -272,6 +272,11 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 
 ### HEUTE ERLEDIGT (13.01.2026):
+- [x] **TripAdvisor Lead Scraper erweitert** - Umfassende Plattform-Analyse
+  - 11 Plattformen getestet (Yelp, Google Maps, Yellow Pages, BBB, OpenTable, Trustpilot, Booking.com, Zomato, Foursquare, golocal.de)
+  - Ergebnis: NUR TripAdvisor funktioniert (keine Anti-Bot-Protection, direkte mailto:-Links)
+  - `/scrape-leads` Command mit Platform Comparison aktualisiert
+  - CLAUDE.md mit TripAdvisor Lead Scraper Dokumentation aktualisiert
 - [x] **Sales Automation implementiert** - Komplettes System für automatische Lead-Generierung
   - DACH-Städte hinzugefügt (München, Hamburg, Frankfurt, Köln, Stuttgart, Düsseldorf, Wien, Zürich, Genf, Brüssel)
   - 4 neue Branchen (Spa, Tierarzt, Physiotherapie, Steuerberater)
@@ -418,6 +423,7 @@ ReviewResponder/
 ├── chrome-extension/  # Browser Extension
 ├── content/           # Marketing (outreach/, product-hunt/, social/)
 ├── scripts/           # Automation Scripts
+├── assets/            # Brand Assets (logo.png)
 ├── .claude/
 │   ├── settings.json  # Auto-Lint Hook + Permissions
 │   ├── commands/      # Custom Slash Commands
@@ -430,6 +436,20 @@ ReviewResponder/
 ├── CLAUDE.md
 └── Todo.md
 ```
+
+---
+
+## BRAND ASSETS
+
+| Asset | Pfad | Verwendung |
+|-------|------|------------|
+| **Logo (Full)** | `assets/logo.png` | Capterra, G2, Marketing |
+| **Icon 128px** | `chrome-extension/icons/icon128.png` | Chrome Extension |
+| **OG Image** | `frontend/public/og-image.png` | Social Media Previews |
+
+**Brand Farben:**
+- Primary: `#6366F1` (Indigo/Lila)
+- Background: Light gradient (blau-lila)
 
 ---
 
@@ -561,13 +581,55 @@ git add -A && git commit -m "Beschreibung" && git push
 
 ---
 
+## TRIPADVISOR LEAD SCRAPER (`/scrape-leads`)
+
+**Was:** Browser-basiertes Scraping von TripAdvisor für Cold Email Outreach.
+**Command:** `/scrape-leads [type] [city]`
+
+### Unterstützte Typen & Email-Raten
+| Typ | Email Rate | Beschreibung |
+|-----|------------|--------------|
+| `restaurants` (default) | ~40% | Restaurants mit mailto: Links |
+| `attractions` | ~30% | Museen, Touren, Venues |
+| `hotels` | 0% | NICHT UNTERSTÜTZT (keine Emails) |
+
+### Unterstützte Städte (25 total)
+**USA (10):** nyc, la, chicago, houston, phoenix, miami, dallas, seattle, denver, boston
+**DACH (10):** berlin, munich, hamburg, frankfurt, cologne, dusseldorf, stuttgart, vienna, zurich, geneva
+**Other (5):** london, toronto, paris, amsterdam, brussels
+
+### Getestete Plattformen (13.01.2026)
+| Platform | Status | Grund |
+|----------|--------|-------|
+| **TripAdvisor** | **WORKS** | Einzige Plattform ohne Anti-Bot |
+| Yelp | BLOCKED | Anti-Bot Protection |
+| Google Maps | BLOCKED | Anti-Bot Protection |
+| Yellow Pages | NO EMAILS | Nur Telefonnummern |
+| BBB | NO EMAILS | Nur Kontaktformular |
+| OpenTable | PARTIAL | Email im Text (komplexe Extraktion) |
+| Trustpilot | BLOCKED | Anti-Bot Protection |
+| Booking.com | NO EMAILS | Keine sichtbaren Emails |
+
+### Workflow
+1. Benutze Chrome MCP (`claude --chrome`)
+2. Navigiere zu TripAdvisor Stadt-Seite
+3. Extrahiere Links mit JavaScript
+4. Besuche jede Business-Seite
+5. Extrahiere `mailto:` Links
+6. Speichere in DB via API
+
+### Admin Key
+`rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U`
+
+---
+
 ## MARKETING AUTOMATION BACKLOG
 
 | System | Beschreibung | Priority |
 |--------|--------------|----------|
-| Reddit/Quora Auto-Responder | Keywords monitoren, hilfreiche Antworten | High |
-| Twitter/X Engagement | Tweet-Search, Auto-Replies | High |
-| SEO Auto-Pilot | 5 Artikel/Woche auto-generieren | High |
+| ~~Reddit/Quora Auto-Responder~~ | ~~Keywords monitoren, hilfreiche Antworten~~ | ~~DONE~~ |
+| ~~Twitter/X Engagement~~ | ~~Tweet-Search, Auto-Replies~~ | ~~DONE~~ |
+| ~~SEO Auto-Pilot~~ | ~~5 Artikel/Woche auto-generieren~~ | ~~DONE~~ |
 | Competitor Scraper | Unzufriedene Birdeye/Podium Kunden | Medium |
 
 ---
