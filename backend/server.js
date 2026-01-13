@@ -685,6 +685,115 @@ async function initDatabase() {
       // Columns might already exist
     }
 
+    // === SALES AUTOMATION TABLES ===
+
+    // Yelp Review Audit Leads
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS yelp_leads (
+        id SERIAL PRIMARY KEY,
+        business_name VARCHAR(255) NOT NULL,
+        yelp_url TEXT,
+        city VARCHAR(100),
+        category VARCHAR(100),
+        total_reviews INTEGER DEFAULT 0,
+        owner_responses INTEGER DEFAULT 0,
+        response_rate DECIMAL(5,2) DEFAULT 0,
+        website VARCHAR(255),
+        phone VARCHAR(50),
+        email VARCHAR(255),
+        email_source VARCHAR(50),
+        email_sent BOOLEAN DEFAULT FALSE,
+        email_sent_at TIMESTAMP,
+        email_opened BOOLEAN DEFAULT FALSE,
+        replied BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Competitor Leads (G2 negative reviews)
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS competitor_leads (
+        id SERIAL PRIMARY KEY,
+        company_name VARCHAR(255) NOT NULL,
+        reviewer_name VARCHAR(255),
+        reviewer_title VARCHAR(255),
+        competitor VARCHAR(100) NOT NULL,
+        star_rating INTEGER,
+        review_title TEXT,
+        complaint_summary TEXT,
+        review_date DATE,
+        g2_url TEXT,
+        website VARCHAR(255),
+        email VARCHAR(255),
+        email_source VARCHAR(50),
+        email_sent BOOLEAN DEFAULT FALSE,
+        email_sent_at TIMESTAMP,
+        email_opened BOOLEAN DEFAULT FALSE,
+        replied BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // LinkedIn Outreach Tracking
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS linkedin_outreach (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        title VARCHAR(255),
+        company VARCHAR(255),
+        location VARCHAR(255),
+        linkedin_url TEXT NOT NULL,
+        connection_sent BOOLEAN DEFAULT FALSE,
+        connection_sent_at TIMESTAMP,
+        connection_accepted BOOLEAN DEFAULT FALSE,
+        connection_accepted_at TIMESTAMP,
+        message_sent BOOLEAN DEFAULT FALSE,
+        message_sent_at TIMESTAMP,
+        followup_sent BOOLEAN DEFAULT FALSE,
+        followup_sent_at TIMESTAMP,
+        replied BOOLEAN DEFAULT FALSE,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Agency Partnership Leads (Clutch.co)
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS agency_leads (
+        id SERIAL PRIMARY KEY,
+        agency_name VARCHAR(255) NOT NULL,
+        website VARCHAR(255),
+        clutch_url TEXT,
+        clutch_rating DECIMAL(3,2),
+        num_reviews INTEGER,
+        services TEXT,
+        location VARCHAR(255),
+        min_project_size VARCHAR(50),
+        hourly_rate VARCHAR(50),
+        employees VARCHAR(50),
+        contact_name VARCHAR(255),
+        email VARCHAR(255),
+        email_source VARCHAR(50),
+        email_sequence INTEGER DEFAULT 0,
+        last_email_sent TIMESTAMP,
+        email_opened BOOLEAN DEFAULT FALSE,
+        replied BOOLEAN DEFAULT FALSE,
+        interested BOOLEAN,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Add indexes for sales automation tables
+    try {
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_yelp_leads_city ON yelp_leads(city)`);
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_yelp_leads_email_sent ON yelp_leads(email_sent)`);
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_competitor_leads_competitor ON competitor_leads(competitor)`);
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_linkedin_outreach_sent ON linkedin_outreach(connection_sent)`);
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_agency_leads_sequence ON agency_leads(email_sequence)`);
+    } catch (error) {
+      // Indexes might already exist
+    }
+
     console.log('📊 Database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -9661,6 +9770,511 @@ app.get('/api/admin/twitter-opportunities', async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to get Twitter opportunities' });
+  }
+});
+
+// ============================================
+// SALES AUTOMATION ENDPOINTS
+// ============================================
+
+// Email Templates for Sales Automation
+const SALES_EMAIL_TEMPLATES = {
+  yelp_audit: {
+    subject: '{business_name}: {unanswered} unbeantwortete Yelp Reviews kosten Sie Kunden',
+    body: `Hallo,
+
+ich habe mir gerade das Yelp-Profil von {business_name} angeschaut und festgestellt:
+
+- {total_reviews} Reviews insgesamt
+- Nur {owner_responses} davon beantwortet ({response_rate}%)
+- {unanswered} Reviews warten auf eine Antwort
+
+Studien zeigen: Businesses die auf Reviews antworten erhalten 35% mehr Anfragen.
+
+Mit ReviewResponder koennen Sie auf alle {unanswered} Reviews in unter 10 Minuten antworten - mit KI-generierten, professionellen Antworten.
+
+Kostenlos testen: https://tryreviewresponder.com?utm_source=yelp_audit&utm_campaign={city}
+
+Beste Gruesse`
+  },
+  g2_switcher: {
+    subject: 'Frustriert mit {competitor}? Es gibt eine bessere Alternative',
+    body: `Hallo {contact_name},
+
+ich habe Ihre Bewertung zu {competitor} auf G2 gelesen - ich verstehe Ihre Frustration.
+
+"{complaint_summary}"
+
+Viele Businesses wechseln zu ReviewResponder weil:
+- Keine versteckten Kosten
+- KI-generierte Antworten in Sekunden
+- 30-Tage Geld-zurueck-Garantie
+
+Wir bieten Ihnen 14 Tage kostenlos zum Testen: https://tryreviewresponder.com?utm_source=g2_switch&utm_campaign={competitor}
+
+Falls Sie Fragen haben, antworten Sie einfach auf diese Email.
+
+Beste Gruesse`
+  },
+  agency_partnership: {
+    subject: 'White-Label Review Management fuer {agency_name} Kunden',
+    body: `Hallo {contact_name},
+
+ich habe {agency_name} auf Clutch gefunden und gesehen, dass Sie Local SEO Services anbieten.
+
+Viele Ihrer Kunden brauchen wahrscheinlich auch Review Management - und wir koennen Ihnen helfen, diesen Service anzubieten ohne eigene Entwicklung.
+
+Unser White-Label Angebot:
+- 30% Revenue Share auf alle Kundenabos
+- Ihr Branding, Ihr Dashboard
+- Wir kuemmern uns um die Technik
+
+Interesse an einem kurzen Gespraech?
+
+Beste Gruesse,
+ReviewResponder Partner Team
+
+https://tryreviewresponder.com/partners?utm_source=clutch&utm_campaign=agency`
+  },
+  agency_followup_1: {
+    subject: 'Re: White-Label Review Management fuer {agency_name}',
+    body: `Hallo {contact_name},
+
+wollte kurz nachfragen ob Sie meine letzte Email gesehen haben.
+
+Falls Review Management nicht auf Ihrer Roadmap ist - kein Problem. Aber falls doch: Wir haben bereits 20+ Agencies als Partner und die Ergebnisse sind beeindruckend.
+
+Ein Partner berichtet: "Wir haben 5 Kunden in den ersten Monat onboarded - $2,450 zusaetzlicher Umsatz pro Monat."
+
+Antworten Sie einfach falls Sie mehr erfahren moechten.
+
+Beste Gruesse`
+  }
+};
+
+// POST /api/sales/yelp-leads - Submit Yelp leads from scraping
+app.post('/api/sales/yelp-leads', async (req, res) => {
+  const authKey = req.headers['x-api-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET) && !safeCompare(authKey, process.env.CRON_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const { leads } = req.body;
+    if (!Array.isArray(leads) || leads.length === 0) {
+      return res.status(400).json({ error: 'leads array required' });
+    }
+
+    let inserted = 0;
+    let skipped = 0;
+
+    for (const lead of leads) {
+      // Check if already exists
+      const existing = await dbGet('SELECT id FROM yelp_leads WHERE yelp_url = $1', [lead.yelp_url]);
+      if (existing) {
+        skipped++;
+        continue;
+      }
+
+      await dbQuery(`
+        INSERT INTO yelp_leads (business_name, yelp_url, city, category, total_reviews, owner_responses, response_rate, website, phone)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `, [
+        lead.business_name,
+        lead.yelp_url,
+        lead.city,
+        lead.category,
+        lead.total_reviews || 0,
+        lead.owner_responses || 0,
+        lead.response_rate || 0,
+        lead.website,
+        lead.phone
+      ]);
+      inserted++;
+    }
+
+    res.json({ success: true, inserted, skipped, total: leads.length });
+  } catch (error) {
+    console.error('Yelp leads submission error:', error);
+    res.status(500).json({ error: 'Failed to submit leads' });
+  }
+});
+
+// POST /api/sales/competitor-leads - Submit G2 competitor leads
+app.post('/api/sales/competitor-leads', async (req, res) => {
+  const authKey = req.headers['x-api-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET) && !safeCompare(authKey, process.env.CRON_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const { leads } = req.body;
+    if (!Array.isArray(leads) || leads.length === 0) {
+      return res.status(400).json({ error: 'leads array required' });
+    }
+
+    let inserted = 0;
+    let skipped = 0;
+
+    for (const lead of leads) {
+      // Check if already exists (by company + competitor combo)
+      const existing = await dbGet(
+        'SELECT id FROM competitor_leads WHERE company_name = $1 AND competitor = $2',
+        [lead.company_name, lead.competitor]
+      );
+      if (existing) {
+        skipped++;
+        continue;
+      }
+
+      await dbQuery(`
+        INSERT INTO competitor_leads (company_name, reviewer_name, reviewer_title, competitor, star_rating, review_title, complaint_summary, review_date, g2_url, website)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `, [
+        lead.company_name,
+        lead.reviewer_name,
+        lead.reviewer_title,
+        lead.competitor,
+        lead.star_rating,
+        lead.review_title,
+        lead.complaint_summary,
+        lead.review_date,
+        lead.g2_url,
+        lead.website
+      ]);
+      inserted++;
+    }
+
+    res.json({ success: true, inserted, skipped, total: leads.length });
+  } catch (error) {
+    console.error('Competitor leads submission error:', error);
+    res.status(500).json({ error: 'Failed to submit leads' });
+  }
+});
+
+// POST /api/sales/linkedin-leads - Submit LinkedIn leads
+app.post('/api/sales/linkedin-leads', async (req, res) => {
+  const authKey = req.headers['x-api-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET) && !safeCompare(authKey, process.env.CRON_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const { leads } = req.body;
+    if (!Array.isArray(leads) || leads.length === 0) {
+      return res.status(400).json({ error: 'leads array required' });
+    }
+
+    let inserted = 0;
+    let skipped = 0;
+
+    for (const lead of leads) {
+      const existing = await dbGet('SELECT id FROM linkedin_outreach WHERE linkedin_url = $1', [lead.linkedin_url]);
+      if (existing) {
+        skipped++;
+        continue;
+      }
+
+      await dbQuery(`
+        INSERT INTO linkedin_outreach (name, title, company, location, linkedin_url)
+        VALUES ($1, $2, $3, $4, $5)
+      `, [lead.name, lead.title, lead.company, lead.location, lead.linkedin_url]);
+      inserted++;
+    }
+
+    res.json({ success: true, inserted, skipped, total: leads.length });
+  } catch (error) {
+    console.error('LinkedIn leads submission error:', error);
+    res.status(500).json({ error: 'Failed to submit leads' });
+  }
+});
+
+// POST /api/sales/agency-leads - Submit agency partnership leads
+app.post('/api/sales/agency-leads', async (req, res) => {
+  const authKey = req.headers['x-api-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET) && !safeCompare(authKey, process.env.CRON_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const { leads } = req.body;
+    if (!Array.isArray(leads) || leads.length === 0) {
+      return res.status(400).json({ error: 'leads array required' });
+    }
+
+    let inserted = 0;
+    let skipped = 0;
+
+    for (const lead of leads) {
+      const existing = await dbGet('SELECT id FROM agency_leads WHERE clutch_url = $1', [lead.clutch_url]);
+      if (existing) {
+        skipped++;
+        continue;
+      }
+
+      await dbQuery(`
+        INSERT INTO agency_leads (agency_name, website, clutch_url, clutch_rating, num_reviews, services, location, min_project_size, hourly_rate, employees)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `, [
+        lead.agency_name,
+        lead.website,
+        lead.clutch_url,
+        lead.clutch_rating,
+        lead.num_reviews,
+        lead.services,
+        lead.location,
+        lead.min_project_size,
+        lead.hourly_rate,
+        lead.employees
+      ]);
+      inserted++;
+    }
+
+    res.json({ success: true, inserted, skipped, total: leads.length });
+  } catch (error) {
+    console.error('Agency leads submission error:', error);
+    res.status(500).json({ error: 'Failed to submit leads' });
+  }
+});
+
+// GET /api/sales/dashboard - Sales automation dashboard
+app.get('/api/sales/dashboard', async (req, res) => {
+  const authKey = req.headers['x-api-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const [yelp, competitor, linkedin, agency] = await Promise.all([
+      dbAll('SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE email_sent) as emailed, COUNT(*) FILTER (WHERE replied) as replied FROM yelp_leads'),
+      dbAll('SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE email_sent) as emailed, COUNT(*) FILTER (WHERE replied) as replied FROM competitor_leads'),
+      dbAll('SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE connection_sent) as sent, COUNT(*) FILTER (WHERE connection_accepted) as accepted, COUNT(*) FILTER (WHERE replied) as replied FROM linkedin_outreach'),
+      dbAll('SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE email_sequence > 0) as emailed, COUNT(*) FILTER (WHERE replied) as replied, COUNT(*) FILTER (WHERE interested) as interested FROM agency_leads')
+    ]);
+
+    res.json({
+      yelp_leads: yelp[0],
+      competitor_leads: competitor[0],
+      linkedin_outreach: linkedin[0],
+      agency_leads: agency[0]
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get dashboard' });
+  }
+});
+
+// POST /api/cron/send-yelp-emails - Send emails to Yelp leads
+app.post('/api/cron/send-yelp-emails', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Get leads with email but not yet emailed (max 20 per run)
+    const leads = await dbAll(`
+      SELECT * FROM yelp_leads
+      WHERE email IS NOT NULL AND email_sent = FALSE
+      ORDER BY created_at DESC
+      LIMIT 20
+    `);
+
+    if (leads.length === 0) {
+      return res.json({ message: 'No Yelp leads to email', sent: 0 });
+    }
+
+    let sent = 0;
+    let failed = 0;
+
+    for (const lead of leads) {
+      try {
+        const unanswered = lead.total_reviews - lead.owner_responses;
+        const subject = SALES_EMAIL_TEMPLATES.yelp_audit.subject
+          .replace('{business_name}', lead.business_name)
+          .replace('{unanswered}', unanswered);
+
+        const body = SALES_EMAIL_TEMPLATES.yelp_audit.body
+          .replace(/{business_name}/g, lead.business_name)
+          .replace('{total_reviews}', lead.total_reviews)
+          .replace('{owner_responses}', lead.owner_responses)
+          .replace('{response_rate}', lead.response_rate)
+          .replace(/{unanswered}/g, unanswered)
+          .replace('{city}', lead.city || 'general');
+
+        if (resend) {
+          await resend.emails.send({
+            from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
+            to: lead.email,
+            subject: subject,
+            text: body,
+            tags: [{ name: 'campaign', value: 'yelp-audit' }]
+          });
+
+          await dbQuery('UPDATE yelp_leads SET email_sent = TRUE, email_sent_at = NOW() WHERE id = $1', [lead.id]);
+          sent++;
+        }
+      } catch (emailError) {
+        console.error(`Failed to send email to ${lead.email}:`, emailError.message);
+        failed++;
+      }
+    }
+
+    res.json({ success: true, sent, failed, total: leads.length });
+  } catch (error) {
+    console.error('Yelp email cron error:', error);
+    res.status(500).json({ error: 'Yelp email cron failed' });
+  }
+});
+
+// POST /api/cron/send-g2-emails - Send emails to G2 competitor leads
+app.post('/api/cron/send-g2-emails', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const leads = await dbAll(`
+      SELECT * FROM competitor_leads
+      WHERE email IS NOT NULL AND email_sent = FALSE
+      ORDER BY created_at DESC
+      LIMIT 15
+    `);
+
+    if (leads.length === 0) {
+      return res.json({ message: 'No G2 leads to email', sent: 0 });
+    }
+
+    let sent = 0;
+    let failed = 0;
+
+    for (const lead of leads) {
+      try {
+        const contactName = lead.reviewer_name || 'there';
+        const subject = SALES_EMAIL_TEMPLATES.g2_switcher.subject
+          .replace('{competitor}', lead.competitor);
+
+        const body = SALES_EMAIL_TEMPLATES.g2_switcher.body
+          .replace('{contact_name}', contactName)
+          .replace(/{competitor}/g, lead.competitor)
+          .replace('{complaint_summary}', lead.complaint_summary || 'your concerns with the product');
+
+        if (resend) {
+          await resend.emails.send({
+            from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
+            to: lead.email,
+            subject: subject,
+            text: body,
+            tags: [{ name: 'campaign', value: 'g2-switcher' }]
+          });
+
+          await dbQuery('UPDATE competitor_leads SET email_sent = TRUE, email_sent_at = NOW() WHERE id = $1', [lead.id]);
+          sent++;
+        }
+      } catch (emailError) {
+        console.error(`Failed to send email to ${lead.email}:`, emailError.message);
+        failed++;
+      }
+    }
+
+    res.json({ success: true, sent, failed, total: leads.length });
+  } catch (error) {
+    console.error('G2 email cron error:', error);
+    res.status(500).json({ error: 'G2 email cron failed' });
+  }
+});
+
+// POST /api/cron/send-agency-emails - Send partnership emails to agencies
+app.post('/api/cron/send-agency-emails', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Get agencies for initial email (sequence 0) or follow-ups
+    const newLeads = await dbAll(`
+      SELECT * FROM agency_leads
+      WHERE email IS NOT NULL AND email_sequence = 0
+      ORDER BY created_at DESC
+      LIMIT 10
+    `);
+
+    // Get leads for follow-up (sent > 4 days ago, sequence 1)
+    const followupLeads = await dbAll(`
+      SELECT * FROM agency_leads
+      WHERE email IS NOT NULL
+        AND email_sequence = 1
+        AND last_email_sent < NOW() - INTERVAL '4 days'
+        AND replied = FALSE
+      LIMIT 10
+    `);
+
+    let sent = 0;
+    let failed = 0;
+
+    // Send initial emails
+    for (const lead of newLeads) {
+      try {
+        const contactName = lead.contact_name || 'there';
+        const subject = SALES_EMAIL_TEMPLATES.agency_partnership.subject
+          .replace('{agency_name}', lead.agency_name);
+
+        const body = SALES_EMAIL_TEMPLATES.agency_partnership.body
+          .replace(/{agency_name}/g, lead.agency_name)
+          .replace('{contact_name}', contactName);
+
+        if (resend) {
+          await resend.emails.send({
+            from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
+            to: lead.email,
+            subject: subject,
+            text: body,
+            tags: [{ name: 'campaign', value: 'agency-partnership' }]
+          });
+
+          await dbQuery('UPDATE agency_leads SET email_sequence = 1, last_email_sent = NOW() WHERE id = $1', [lead.id]);
+          sent++;
+        }
+      } catch (emailError) {
+        console.error(`Failed to send email to ${lead.email}:`, emailError.message);
+        failed++;
+      }
+    }
+
+    // Send follow-up emails
+    for (const lead of followupLeads) {
+      try {
+        const contactName = lead.contact_name || 'there';
+        const subject = SALES_EMAIL_TEMPLATES.agency_followup_1.subject
+          .replace('{agency_name}', lead.agency_name);
+
+        const body = SALES_EMAIL_TEMPLATES.agency_followup_1.body
+          .replace(/{agency_name}/g, lead.agency_name)
+          .replace('{contact_name}', contactName);
+
+        if (resend) {
+          await resend.emails.send({
+            from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
+            to: lead.email,
+            subject: subject,
+            text: body,
+            tags: [{ name: 'campaign', value: 'agency-followup' }]
+          });
+
+          await dbQuery('UPDATE agency_leads SET email_sequence = 2, last_email_sent = NOW() WHERE id = $1', [lead.id]);
+          sent++;
+        }
+      } catch (emailError) {
+        console.error(`Failed to send followup to ${lead.email}:`, emailError.message);
+        failed++;
+      }
+    }
+
+    res.json({ success: true, sent, failed, newLeads: newLeads.length, followups: followupLeads.length });
+  } catch (error) {
+    console.error('Agency email cron error:', error);
+    res.status(500).json({ error: 'Agency email cron failed' });
   }
 });
 
