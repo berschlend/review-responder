@@ -2227,7 +2227,7 @@ const LandingPage = () => {
                 Get Started Free
               </Link>
               <a
-                href="#chrome-extension-demo"
+                href="#demo"
                 className="btn btn-secondary"
                 style={{ padding: '0 20px', height: '44px', display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '6px', fontWeight: '600', fontSize: '14px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
               >
@@ -2388,7 +2388,6 @@ const LandingPage = () => {
                   </video>
                 ) : (
                   <div
-                    onClick={() => setShowLandingVideo(true)}
                     style={{
                       aspectRatio: '16/9',
                       position: 'relative',
@@ -2401,6 +2400,7 @@ const LandingPage = () => {
                     }}
                   >
                     <div
+                      onClick={() => setShowLandingVideo(true)}
                       style={{
                         position: 'absolute',
                         inset: '0',
