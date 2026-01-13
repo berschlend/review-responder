@@ -243,14 +243,26 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 ## CURRENT TASKS
 
-**Stand: 12.01.2026**
+**Stand: 13.01.2026**
 
 ### USER MUSS MACHEN:
 - [ ] Demo-Video aufnehmen (2 Min Walkthrough)
 - [ ] Chrome Web Store einreichen (ZIP + Screenshots)
 - [ ] **SEPA-Lastschrift aktivieren**: Stripe Dashboard → Braucht ID-Verifizierung
-- [ ] **GEMINI_API_KEY in Render setzen** - Für Auto-Blog-Generation (https://aistudio.google.com/apikey)
-- [ ] **Cron Job anlegen** (cron-job.org): Blog Auto-Generation Mo/Mi/Fr 07:00 Berlin
+- [ ] **API Keys in Render setzen** (für Sales Automation):
+  - `GOOGLE_PLACES_API_KEY` - https://console.cloud.google.com
+  - `HUNTER_API_KEY` - https://hunter.io (Free: 25/Monat)
+  - `GEMINI_API_KEY` - https://aistudio.google.com/apikey
+  - `ADMIN_SECRET` + `CRON_SECRET` - Zufällige Strings
+  - `REDDIT_CLIENT_ID` + `REDDIT_CLIENT_SECRET` + `REDDIT_USERNAME` + `REDDIT_PASSWORD`
+  - `TWITTER_BEARER_TOKEN` - https://developer.twitter.com
+- [ ] **Cron Jobs anlegen** (cron-job.org):
+  - Daily Outreach: `POST .../api/cron/daily-outreach?secret=X` @ 09:00 Berlin
+  - Drip Emails: `POST .../api/cron/send-drip-emails?secret=X` @ 10:00 Berlin
+  - Blog Generation: `POST .../api/cron/generate-blog-article?secret=X` @ Mo/Mi/Fr 07:00
+  - Reddit Monitor: `POST .../api/cron/reddit-monitor?secret=X` @ 12:00 Berlin
+  - Twitter Monitor: `POST .../api/cron/twitter-monitor?secret=X` @ 14:00 Berlin
+- [ ] **Reddit App erstellen**: https://www.reddit.com/prefs/apps
 
 ### NÄCHSTE CLAUDE TASKS:
 
@@ -259,7 +271,27 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 | Tone Preview (Beispiel-Snippets) | Leicht | `chrome-extension/content.js` |
 
 
-### HEUTE ERLEDIGT (12.01.2026):
+### HEUTE ERLEDIGT (13.01.2026):
+- [x] **Sales Automation implementiert** - Komplettes System für automatische Lead-Generierung
+  - DACH-Städte hinzugefügt (München, Hamburg, Frankfurt, Köln, Stuttgart, Düsseldorf, Wien, Zürich, Genf, Brüssel)
+  - 4 neue Branchen (Spa, Tierarzt, Physiotherapie, Steuerberater)
+  - Website Scraper als Primary (spart Hunter.io Credits)
+- [x] **Reddit Auto-Responder** - Automatische hilfreiche Kommentare auf Reddit
+  - Monitort 8 Subreddits (smallbusiness, Entrepreneur, restaurateur, etc.)
+  - 8 Keywords (negative review, review management, etc.)
+  - AI-generierte hilfreiche Antworten (Claude Sonnet)
+  - 5 Kommentare/Tag Limit (Anti-Spam)
+  - Endpoints: `GET /api/cron/reddit-monitor`, `GET /api/admin/reddit-responses`
+- [x] **Twitter/X Engagement** - Findet Tweet-Opportunities für manuelles Engagement
+  - Sucht nach review-bezogenen Tweets
+  - Generiert Antwort-Vorschläge
+  - Loggt Opportunities für manuelles Posten (Free Tier kann nicht automatisch posten)
+  - Endpoints: `GET /api/cron/twitter-monitor`, `GET /api/admin/twitter-opportunities`
+- [x] **Blog SEO Verbesserungen**
+  - Internal Linking: Neue Artikel verlinken automatisch zu verwandten Artikeln
+  - Schema.org JSON-LD Markup für Rich Snippets in Google
+
+### ERLEDIGT (12.01.2026):
 - [x] **SEO Auto-Pilot Blog implementiert** - Automatische Blog-Generierung mit Gemini 2.5 Pro
   - Öffentlicher Blog unter `/blog` und `/blog/:slug`
   - 25 SEO-optimierte Topics in 5 Kategorien
