@@ -750,6 +750,9 @@ const Navbar = () => {
                 <Link to="/pricing" className="navbar-link">
                   Pricing
                 </Link>
+                <Link to="/blog" className="navbar-link">
+                  Blog
+                </Link>
                 <Link to="/support" className="navbar-link">
                   Support
                 </Link>
@@ -813,6 +816,10 @@ const Navbar = () => {
             <Link to="/pricing" onClick={closeMobileMenu}>
               <CreditCard size={20} />
               Pricing
+            </Link>
+            <Link to="/blog" onClick={closeMobileMenu}>
+              <FileText size={20} />
+              Blog
             </Link>
             <Link to="/support" onClick={closeMobileMenu}>
               <HelpCircle size={20} />

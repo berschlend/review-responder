@@ -4618,6 +4618,51 @@ app.get('/api/public/blog/:slug', async (req, res) => {
   }
 });
 
+// GET /sitemap-blog.xml - Dynamic sitemap for blog articles
+app.get('/sitemap-blog.xml', async (req, res) => {
+  try {
+    const articles = await dbAll(
+      `SELECT slug, published_at, updated_at
+       FROM blog_articles
+       WHERE is_published = TRUE
+       ORDER BY published_at DESC`
+    );
+
+    const baseUrl = 'https://tryreviewresponder.com';
+
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+
+    // Main blog page
+    xml += '  <url>\n';
+    xml += `    <loc>${baseUrl}/blog</loc>\n`;
+    xml += '    <changefreq>daily</changefreq>\n';
+    xml += '    <priority>0.8</priority>\n';
+    xml += '  </url>\n';
+
+    // Individual articles
+    for (const article of articles) {
+      const lastmod = article.updated_at || article.published_at;
+      xml += '  <url>\n';
+      xml += `    <loc>${baseUrl}/blog/${article.slug}</loc>\n`;
+      if (lastmod) {
+        xml += `    <lastmod>${new Date(lastmod).toISOString().split('T')[0]}</lastmod>\n`;
+      }
+      xml += '    <changefreq>monthly</changefreq>\n';
+      xml += '    <priority>0.7</priority>\n';
+      xml += '  </url>\n';
+    }
+
+    xml += '</urlset>';
+
+    res.set('Content-Type', 'application/xml');
+    res.send(xml);
+  } catch (error) {
+    console.error('Blog sitemap error:', error);
+    res.status(500).send('Error generating sitemap');
+  }
+});
+
 // ============== ADMIN BLOG MANAGEMENT ==============
 
 // GET /api/admin/blog - List all articles (published and unpublished)
@@ -8634,6 +8679,16 @@ Lines 4+: The full article content in Markdown format.`;
     );
 
     console.log(`Blog auto-generated: "${title}" (${slug})`);
+
+    // Ping Google to re-crawl sitemap (fire and forget)
+    try {
+      fetch(
+        'https://www.google.com/ping?sitemap=https://tryreviewresponder.com/sitemap-blog.xml'
+      ).catch(() => {});
+      console.log('Pinged Google about sitemap update');
+    } catch (e) {
+      // Ignore ping errors
+    }
 
     res.json({
       success: true,
