@@ -8808,19 +8808,27 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
           continue;
         }
 
-        // Insert or update lead
+        // Check if lead has a bad review (for Review Alert emails)
+        const hasBadReview = lead.worst_review_text && lead.worst_review_rating && lead.worst_review_rating <= 2;
+
+        // Insert or update lead (including review alert fields)
         await dbQuery(`
           INSERT INTO outreach_leads
             (business_name, business_type, address, city, country, phone, website,
-             google_rating, google_reviews_count, email, source, status)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+             google_rating, google_reviews_count, email, source, status,
+             worst_review_text, worst_review_rating, worst_review_author, has_bad_review)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
           ON CONFLICT (business_name, city)
           DO UPDATE SET
             email = COALESCE(EXCLUDED.email, outreach_leads.email),
             phone = COALESCE(EXCLUDED.phone, outreach_leads.phone),
             website = COALESCE(EXCLUDED.website, outreach_leads.website),
             google_rating = COALESCE(EXCLUDED.google_rating, outreach_leads.google_rating),
-            google_reviews_count = COALESCE(EXCLUDED.google_reviews_count, outreach_leads.google_reviews_count)
+            google_reviews_count = COALESCE(EXCLUDED.google_reviews_count, outreach_leads.google_reviews_count),
+            worst_review_text = COALESCE(EXCLUDED.worst_review_text, outreach_leads.worst_review_text),
+            worst_review_rating = COALESCE(EXCLUDED.worst_review_rating, outreach_leads.worst_review_rating),
+            worst_review_author = COALESCE(EXCLUDED.worst_review_author, outreach_leads.worst_review_author),
+            has_bad_review = COALESCE(EXCLUDED.has_bad_review, outreach_leads.has_bad_review)
         `, [
           lead.name || lead.business_name,
           lead.type || lead.business_type || 'restaurant',
@@ -8833,18 +8841,45 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
           lead.reviews || lead.google_reviews_count,
           lead.email,
           'tripadvisor',
-          'new'
+          'new',
+          lead.worst_review_text || null,
+          lead.worst_review_rating || null,
+          lead.worst_review_author || null,
+          hasBadReview
         ]);
 
         results.added++;
 
         // Send email immediately if requested
         if (send_emails && resend && lead.email) {
-          const template = fillEmailTemplate(getTemplateForLead(1, {
+          // Generate AI draft for leads with bad reviews
+          let aiDraft = lead.ai_response_draft || null;
+          if (hasBadReview && lead.worst_review_text && !aiDraft) {
+            console.log(`📝 Generating AI draft for TripAdvisor lead: ${lead.name || lead.business_name}...`);
+            aiDraft = await generateReviewAlertDraft(
+              lead.name || lead.business_name,
+              lead.type || lead.business_type || 'restaurant',
+              lead.worst_review_text,
+              lead.worst_review_rating,
+              lead.worst_review_author
+            );
+          }
+
+          // Prepare lead data with all review alert fields
+          const leadData = {
             ...lead,
             business_name: lead.name || lead.business_name,
-            google_reviews_count: lead.reviews || lead.google_reviews_count
-          }), lead);
+            business_type: lead.type || lead.business_type || 'restaurant',
+            google_reviews_count: lead.reviews || lead.google_reviews_count,
+            has_bad_review: hasBadReview,
+            worst_review_text: lead.worst_review_text,
+            worst_review_rating: lead.worst_review_rating,
+            worst_review_author: lead.worst_review_author,
+            ai_response_draft: aiDraft
+          };
+
+          const template = fillEmailTemplate(getTemplateForLead(1, leadData), leadData);
+          const emailCampaign = hasBadReview && aiDraft ? 'tripadvisor-review-alert' : campaign;
 
           try {
             await resend.emails.send({
@@ -8853,24 +8888,29 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
               subject: template.subject,
               html: template.body.replace(/\n/g, '<br>'),
               tags: [
-                { name: 'campaign', value: campaign },
+                { name: 'campaign', value: emailCampaign },
                 { name: 'source', value: 'tripadvisor' },
                 { name: 'sequence', value: '1' }
               ]
             });
             results.emails_sent++;
 
-            // Log the sent email
+            // Log the sent email and save AI draft
             const insertedLead = await dbGet(
               'SELECT id FROM outreach_leads WHERE business_name = $1 AND city = $2',
               [lead.name || lead.business_name, lead.city]
             );
             if (insertedLead) {
+              // Save AI draft if generated
+              if (aiDraft) {
+                await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1 WHERE id = $2', [aiDraft, insertedLead.id]);
+              }
+
               await dbQuery(`
                 INSERT INTO outreach_emails
                   (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
                 VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5)
-              `, [insertedLead.id, lead.email, template.subject, template.body, campaign]);
+              `, [insertedLead.id, lead.email, template.subject, template.body, emailCampaign]);
 
               await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', ['contacted', insertedLead.id]);
             }
@@ -8932,12 +8972,25 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
 
     for (const lead of newLeads) {
       try {
-        // Get template for first email
-        const template = fillEmailTemplate(getTemplateForLead(1, {
-          business_name: lead.business_name,
-          google_rating: lead.google_rating,
-          google_reviews_count: lead.google_reviews_count
-        }), lead);
+        // Generate AI draft for leads with bad reviews (if not already done)
+        if (lead.has_bad_review && lead.worst_review_text && !lead.ai_response_draft) {
+          console.log(`📝 Generating AI draft for TripAdvisor lead: ${lead.business_name}...`);
+          const aiDraft = await generateReviewAlertDraft(
+            lead.business_name,
+            lead.business_type,
+            lead.worst_review_text,
+            lead.worst_review_rating,
+            lead.worst_review_author
+          );
+          if (aiDraft) {
+            lead.ai_response_draft = aiDraft;
+            await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1 WHERE id = $2', [aiDraft, lead.id]);
+          }
+        }
+
+        // Get template for first email (uses review alert template if has_bad_review)
+        const template = fillEmailTemplate(getTemplateForLead(1, lead), lead);
+        const emailCampaign = lead.has_bad_review && lead.ai_response_draft ? 'tripadvisor-review-alert' : 'tripadvisor-auto';
 
         // Send email via Resend
         await resend.emails.send({
@@ -8946,7 +8999,7 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
           subject: template.subject,
           html: template.body.replace(/\n/g, '<br>'),
           tags: [
-            { name: 'campaign', value: 'tripadvisor-auto' },
+            { name: 'campaign', value: emailCampaign },
             { name: 'source', value: 'tripadvisor' },
             { name: 'sequence', value: '1' }
           ]
@@ -8962,8 +9015,8 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
         // Log the email
         await dbQuery(`
           INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
-          VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), 'tripadvisor-auto')
-        `, [lead.id, lead.email, template.subject, template.body]);
+          VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5)
+        `, [lead.id, lead.email, template.subject, template.body, emailCampaign]);
 
         results.emails_sent++;
         console.log(`📧 TripAdvisor email sent to: ${lead.email} (${lead.business_name})`);
