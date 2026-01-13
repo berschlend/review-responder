@@ -10681,9 +10681,41 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
 
     results.scraping = { leads_added: totalScraped, city: todayCity, industry: todayIndustry };
 
+    // Step 1.5: Find website/domain for G2 leads without website (Clearbit Autocomplete - FREE)
+    const leadsNeedingDomain = await dbAll(`
+      SELECT id, business_name FROM outreach_leads
+      WHERE website IS NULL AND lead_type = 'g2_competitor'
+      LIMIT 10
+    `);
+
+    let domainsFound = 0;
+
+    for (const lead of leadsNeedingDomain) {
+      try {
+        // Clearbit Autocomplete API - FREE, no API key needed
+        const clearbitUrl = `https://autocomplete.clearbit.com/v1/companies/suggest?query=${encodeURIComponent(lead.business_name)}`;
+        const response = await fetch(clearbitUrl);
+        const companies = await response.json();
+
+        if (companies && companies.length > 0 && companies[0].domain) {
+          const domain = companies[0].domain;
+          const website = `https://${domain}`;
+          await dbQuery('UPDATE outreach_leads SET website = $1 WHERE id = $2', [website, lead.id]);
+          console.log(`🔍 Found domain for ${lead.business_name}: ${domain}`);
+          domainsFound++;
+        }
+
+        await new Promise(r => setTimeout(r, 300)); // Rate limiting
+      } catch (e) {
+        console.error(`Domain lookup error for ${lead.business_name}:`, e.message);
+      }
+    }
+
+    results.domain_finding = { checked: leadsNeedingDomain.length, found: domainsFound };
+
     // Step 2: Find emails for leads without them (Hunter.io + Website Scraper fallback)
     const leadsNeedingEmail = await dbAll(`
-      SELECT id, business_name, website FROM outreach_leads
+      SELECT id, business_name, website, lead_type, contact_name FROM outreach_leads
       WHERE email IS NULL AND website IS NOT NULL
       LIMIT 25
     `);
@@ -10718,10 +10750,34 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
           const response = await fetch(hunterUrl);
           const data = await response.json();
 
-          if (data.data?.emails?.[0]) {
-            emailFound = data.data.emails[0].value;
+          if (data.data?.emails && data.data.emails.length > 0) {
+            // For G2 leads, try to find email matching job title (e.g., "Head of Digital" → "digital", "marketing")
+            let bestEmail = data.data.emails[0];
+
+            if (lead.lead_type === 'g2_competitor' && lead.contact_name) {
+              const titleKeywords = lead.contact_name.toLowerCase().split(/\s+/);
+              const matchingEmail = data.data.emails.find(e => {
+                const position = (e.position || '').toLowerCase();
+                const dept = (e.department || '').toLowerCase();
+                return titleKeywords.some(kw => position.includes(kw) || dept.includes(kw));
+              });
+              if (matchingEmail) {
+                bestEmail = matchingEmail;
+                console.log(`🎯 Found matching email for ${lead.business_name}: ${bestEmail.value} (${bestEmail.position})`);
+              }
+            }
+
+            emailFound = bestEmail.value;
             source = 'hunter.io';
             hunterFound++;
+
+            // Also save contact name if available from Hunter
+            if (bestEmail.first_name && bestEmail.last_name) {
+              await dbQuery('UPDATE outreach_leads SET contact_name = $1 WHERE id = $2 AND (contact_name IS NULL OR contact_name = job_title)', [
+                `${bestEmail.first_name} ${bestEmail.last_name}`,
+                lead.id,
+              ]);
+            }
           }
           await new Promise(r => setTimeout(r, 500));
         } catch (e) {}
