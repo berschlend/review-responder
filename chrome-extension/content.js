@@ -5992,12 +5992,13 @@ function injectRespondButtons() {
   }
 
   // Platform-specific review container selectors
+  // IMPORTANT: Only use top-level review containers, not nested elements
   const reviewSelectors = {
-    'Google': ['.jftiEf', '[data-review-id]'],
-    'Yelp': ['[class*="comment__"]', '.review'],
-    'TripAdvisor': ['[data-automation="reviewCard"]', '[data-test-target="HR_CC_CARD"]', '.review-container'],
-    'Trustpilot': ['.review-card', '.styles_reviewCard__hcAvl', '[class*="styles_cardWrapper"]'],
-    'Booking': ['.review_item', '.c-review', '[data-testid="review-card"]']
+    'Google': ['.jftiEf'],  // Only use main review container, NOT [data-review-id] which has 10+ nested elements per review
+    'Yelp': ['[class*="comment__09f24__"]', '.review'],  // More specific selector
+    'TripAdvisor': ['[data-automation="reviewCard"]', '.review-container'],
+    'Trustpilot': ['.styles_reviewCard__hcAvl', '[class*="styles_cardWrapper"]'],
+    'Booking': ['.review_item', '[data-testid="review-card"]']
   };
 
   // Text content selectors to extract review text
@@ -6016,8 +6017,11 @@ function injectRespondButtons() {
 
   selectors.forEach(selector => {
     document.querySelectorAll(selector).forEach(reviewEl => {
-      // Skip if already injected
+      // Skip if already injected (WeakSet check)
       if (injectedReviews.has(reviewEl)) return;
+
+      // Skip if this review already has a respond button (DOM check for page reloads)
+      if (reviewEl.querySelector('.rr-inline-respond-btn')) return;
 
       // Find review text
       let reviewText = '';
@@ -6085,7 +6089,9 @@ function injectRespondButtons() {
 
       // Find the best place to insert the button
       // Try to find action buttons, footer, or just append to review
-      const actionAreas = reviewEl.querySelectorAll('[class*="action"], [class*="button"], [class*="footer"], [class*="helpful"]');
+      // Exclude our own buttons from the search
+      const actionAreas = Array.from(reviewEl.querySelectorAll('[class*="action"], [class*="button"], [class*="footer"], [class*="helpful"]'))
+        .filter(el => !el.classList.contains('rr-inline-respond-btn'));
 
       if (actionAreas.length > 0) {
         // Insert after the first action area
