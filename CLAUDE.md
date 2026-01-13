@@ -249,12 +249,11 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 - [x] Demo-Video aufnehmen (2 Min Walkthrough) - DONE
 - [ ] Chrome Web Store einreichen (ZIP + Screenshots)
 - [ ] **Reddit API Keys holen**: Wartet auf Genehmigung → https://www.reddit.com/prefs/apps → App erstellen
-- [ ] **Google Indexierung beantragen (11 URLs)** - Tageslimit erreicht, morgen nochmal:
-  - Von gestern (3):
+- [ ] **Google Indexierung beantragen (31 URLs)** - Tageslimit erreicht, morgen nochmal:
+  - Von früher (11):
     - `/medical-practice-reviews`
     - `/salon-spa-review-responses`
     - `/auto-shop-reviews`
-  - Neue Landing Pages (8):
     - `/trustpilot-review-responses`
     - `/airbnb-host-review-responses`
     - `/real-estate-agent-reviews`
@@ -263,6 +262,27 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
     - `/law-firm-review-responses`
     - `/ecommerce-review-responses`
     - `/coffee-shop-review-responses`
+  - Neue Landing Pages (20):
+    - `/amazon-review-responses`
+    - `/g2-review-responses`
+    - `/capterra-review-responses`
+    - `/glassdoor-review-responses`
+    - `/bbb-review-responses`
+    - `/plumber-review-responses`
+    - `/electrician-review-responses`
+    - `/hvac-review-responses`
+    - `/roofing-review-responses`
+    - `/landscaping-review-responses`
+    - `/cleaning-service-review-responses`
+    - `/healthgrades-review-responses`
+    - `/zocdoc-review-responses`
+    - `/photographer-review-responses`
+    - `/wedding-vendor-review-responses`
+    - `/pet-service-review-responses`
+    - `/daycare-review-responses`
+    - `/accountant-review-responses`
+    - `/insurance-agent-review-responses`
+    - `/senior-care-review-responses`
 
 ### CLAUDE KANN SELBST (mit Chrome MCP):
 - Cron Jobs anlegen/ändern auf cron-job.org
@@ -309,6 +329,13 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
 ```
 
 ### HEUTE ERLEDIGT (13.01.2026):
+- [x] **20 weitere SEO Landing Pages erstellt** - Gesamt jetzt 41 Landing Pages
+  - Plattformen (5): Amazon, G2, Capterra, Glassdoor, BBB
+  - Home Services (6): Plumber, Electrician, HVAC, Roofing, Landscaping, Cleaning
+  - Healthcare (2): Healthgrades, Zocdoc
+  - Event/Lifestyle (4): Photographer, Wedding, Pet Service, Daycare
+  - Professional Services (3): Accountant, Insurance, Senior Care
+  - Alle 41 Landing Pages getestet (Status 200 OK)
 - [x] **Twitter Auto-Post System** - Automatische Tweets für @ExecPsychology
   - Endpoint: `GET /api/cron/twitter-post?secret=...`
   - 5 Kategorien (business_psychology 30%, review_management 25%, business_tip 20%, engagement_question 15%, soft_promo 10%)
@@ -329,11 +356,9 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
   - Outreach-Daten: 191 Leads, 103 Emails, 0% Opens (Tracking kaputt)
   - Erkenntnis: Activation ist kein Problem, Conversion ist das Bottleneck
   - Nächster Checkpoint: In 1 Woche Clicks auswerten
-- [x] **8 neue SEO Landing Pages erstellt** - Plattformen und Branchen erweitert
+- [x] **8 neue SEO Landing Pages erstellt** (vorher)
   - Plattformen: Trustpilot, Airbnb, E-Commerce
   - Branchen: Real Estate, Gym/Fitness, Veterinarian, Law Firm, Coffee Shop
-  - Alle 21 Landing Pages getestet (Status 200 OK)
-  - Google Indexierung wartet auf Tageskontingent (morgen beantragen)
 - [x] **Frontend Redesign mit Gemini MCP** - Komplette Landing Page überarbeitet
   - Neues modernes Design mit verbesserter UX
   - "20 free responses/month" klar kommuniziert (statt vages "free forever")
