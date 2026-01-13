@@ -272,6 +272,16 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 
 ### HEUTE ERLEDIGT (13.01.2026):
+- [x] **Comprehensive Sales Dashboard** - Admin Panel komplett neu designed für max Sales
+  - **Sales Tab**: MRR/ARR Cards, Growth Metrics (heute/Woche/Monat), Sales Funnel Visualisierung, Plan Distribution, Recent Signups mit Details, Blog & Email Stats
+  - **Insights Tab**: Actionable Intelligence mit 3 Karten:
+    - Upgrade Opportunities (User nahe am Limit)
+    - Hot Free Users (aktive Free-User für Conversion)
+    - Churn Risk (zahlende User ohne Aktivität 14+ Tage)
+  - Power Users Table (Top 10 by Response Count)
+  - Backend: Neuer `/api/admin/sales-dashboard` Endpoint mit Revenue, Funnel, Activity, Insights
+- [x] **Test Account Cleanup** - 54 Fake-Accounts gelöscht, nur echte User behalten
+- [x] **Admin Key Storage** - Secrets in `.claude/secrets.local` für alle Claude Sessions
 - [x] **Sales Automation implementiert** - Komplettes System für automatische Lead-Generierung
   - DACH-Städte hinzugefügt (München, Hamburg, Frankfurt, Köln, Stuttgart, Düsseldorf, Wien, Zürich, Genf, Brüssel)
   - 4 neue Branchen (Spa, Tierarzt, Physiotherapie, Steuerberater)
@@ -464,6 +474,8 @@ ReviewResponder/
 
 ### Admin
 - `GET /api/admin/stats|affiliates` | `PUT /api/admin/affiliates/:id/status`
+- `GET /api/admin/sales-dashboard` - Comprehensive Sales Dashboard (MRR, Funnel, Insights)
+- `GET /api/admin/users` - All users with test account detection
 - `GET /api/admin/set-plan?email=X&plan=X&key=X`
 
 ### Billing
@@ -555,7 +567,12 @@ git add -A && git commit -m "Beschreibung" && git push
 - Exit-Intent Popup
 
 ### Admin
-- Admin Panel (/admin)
+- Admin Panel (/admin) mit 5 Tabs:
+  - **Sales**: MRR/ARR, Growth Metrics, Sales Funnel, Plan Distribution, Recent Signups
+  - **Insights**: Upgrade Opportunities, Hot Free Users, Churn Risk, Power Users
+  - **Users**: All users mit Test-Account Detection
+  - **Outreach**: Lead Stats, Email Opens, Recent Leads/Emails
+  - **Affiliates**: Applications, Payouts, Conversions
 - Profile Page (/profile)
 - Mobile Responsive Design
 
@@ -563,12 +580,13 @@ git add -A && git commit -m "Beschreibung" && git push
 
 ## MARKETING AUTOMATION BACKLOG
 
-| System | Beschreibung | Priority |
-|--------|--------------|----------|
-| Reddit/Quora Auto-Responder | Keywords monitoren, hilfreiche Antworten | High |
-| Twitter/X Engagement | Tweet-Search, Auto-Replies | High |
-| SEO Auto-Pilot | 5 Artikel/Woche auto-generieren | High |
-| Competitor Scraper | Unzufriedene Birdeye/Podium Kunden | Medium |
+| System | Beschreibung | Status |
+|--------|--------------|--------|
+| Reddit Auto-Responder | Keywords monitoren, hilfreiche Antworten | DONE |
+| Twitter/X Engagement | Tweet-Search, Opportunities loggen | DONE |
+| SEO Auto-Pilot Blog | 3 Artikel/Woche auto-generieren | DONE |
+| Competitor Scraper | Unzufriedene Birdeye/Podium Kunden | Backlog |
+| Quora Auto-Responder | Review-Fragen beantworten | Backlog |
 
 ---
 
