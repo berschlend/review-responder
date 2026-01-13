@@ -2006,7 +2006,7 @@ const LandingPage = () => {
           Sign up now to get started.
         </div>
       )}
-      <section className="hero" style={{ position: 'relative', padding: '120px 0 80px', background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)' }}>
+      <section className="hero" style={{ position: 'relative', padding: '80px 0 60px', background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)' }}>
         <div className="container" style={{ position: 'relative', zIndex: 1 }}>
           <div
             style={{
@@ -2089,11 +2089,11 @@ const LandingPage = () => {
 
           <div
             style={{
-              marginTop: '100px',
-              paddingTop: '40px',
+              marginTop: '48px',
+              paddingTop: '32px',
               borderTop: '1px solid var(--border-color)',
               display: 'flex',
-              gap: '60px',
+              gap: '40px',
               justifyContent: 'center',
               flexWrap: 'wrap'
             }}
