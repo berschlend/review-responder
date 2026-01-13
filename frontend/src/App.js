@@ -2474,7 +2474,7 @@ const LandingPage = () => {
               style={{ width: '100%', display: 'block' }}
               onEnded={() => setShowDemoVideo(false)}
             >
-              <source src="/demo-video.mp4" type="video/mp4" />
+              <source src="/walkthrough-video-v2.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           ) : (
