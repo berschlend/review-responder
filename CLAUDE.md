@@ -271,7 +271,33 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 | Tone Preview (Beispiel-Snippets) | Leicht | `chrome-extension/content.js` |
 
 
+### IN PROGRESS - Capterra/G2 Listing:
+**Status:** Media-Seite (Screenshots hochladen)
+**URL:** https://digitalmarkets.gartner.com/get-listed/listing/media?request=d3469e27-98cf-43ba-ae4a-3df1e501a877
+
+**Bereits erledigt:**
+- [x] Account erstellt (hello@tryreviewresponder.com)
+- [x] Product description ausgefüllt
+- [x] Product details ausgefüllt
+- [x] Logo hochgeladen (komprimiert: `C:\Users\Berend Mainz\Documents\Gemini_logo_compressed.jpg`)
+
+**Noch zu tun:**
+- [ ] Media: Screenshots hochladen (Pfad: `chrome-extension/screenshots/`)
+  - Caption 1: `AI-powered response panel generating personalized review replies in real-time`
+  - Caption 2: `Key features: multiple tones, 50+ languages, one-click copy, and custom templates`
+- [ ] Integrations ausfüllen
+- [ ] Category wählen (Reputation Management)
+- [ ] Target market wählen
+- [ ] Product pricing ausfüllen
+- [ ] Submit for review
+
+**Nach Capterra:** G2 Listing (https://sell.g2.com/create-a-profile)
+
+---
+
 ### HEUTE ERLEDIGT (13.01.2026):
+- [x] **Brand Logo erstellt** - Gemini-generiertes Logo in `assets/logo.png`
+- [x] **Capterra/G2 Recherche** - Listing-Prozess dokumentiert, PPC-Infos gesammelt
 - [x] **TripAdvisor Lead Scraper erweitert** - Umfassende Plattform-Analyse
   - 11 Plattformen getestet (Yelp, Google Maps, Yellow Pages, BBB, OpenTable, Trustpilot, Booking.com, Zomato, Foursquare, golocal.de)
   - Ergebnis: NUR TripAdvisor funktioniert (keine Anti-Bot-Protection, direkte mailto:-Links)
