@@ -3632,6 +3632,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
 
   // Step 2: Business Type + Keywords
   const [businessType, setBusinessType] = useState(user?.businessType || '');
+  const [customBusinessType, setCustomBusinessType] = useState('');
   const [keywords, setKeywords] = useState('');
   const [generatedContext, setGeneratedContext] = useState('');
   const [generatingContext, setGeneratingContext] = useState(false);
@@ -3669,7 +3670,14 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
 
   useEffect(() => {
     if (isVisible && user?.businessType && !businessType) {
-      setBusinessType(user.businessType);
+      // Check if user has a custom business type (not in preset list)
+      if (businessTypes.includes(user.businessType)) {
+        setBusinessType(user.businessType);
+      } else {
+        // Custom type - show "Other" dropdown + custom value in input
+        setBusinessType('Other');
+        setCustomBusinessType(user.businessType);
+      }
     }
   }, [isVisible, user?.businessType, businessType]);
 
@@ -3685,15 +3693,18 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
   };
 
   const saveBusinessProfile = async () => {
+    // Use custom type if "Other" is selected, otherwise use dropdown value
+    const finalBusinessType = businessType === 'Other' ? customBusinessType.trim() : businessType;
+
     try {
       await api.put('/auth/profile', {
         businessName: businessName.trim(),
-        businessType,
+        businessType: finalBusinessType,
         businessContext: generatedContext,
       });
       updateUser({
         businessName: businessName.trim(),
-        businessType,
+        businessType: finalBusinessType,
         businessContext: generatedContext,
       });
       setCurrentStep(3);
@@ -3709,12 +3720,15 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
       return;
     }
 
+    // Use custom type if "Other" is selected
+    const finalBusinessType = businessType === 'Other' ? customBusinessType.trim() : businessType;
+
     setGeneratingContext(true);
     try {
       // Step 1: Generate business context
       const contextResult = await api.post('/personalization/generate-context', {
         keywords: keywords.trim(),
-        businessType,
+        businessType: finalBusinessType,
         businessName: businessName.trim(),
         field: 'context',
       });
@@ -3724,7 +3738,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
       // Step 2: Generate sample review based on context
       const reviewResult = await api.post('/personalization/generate-context', {
         keywords: context,
-        businessType,
+        businessType: finalBusinessType,
         businessName: businessName.trim(),
         field: 'sample_review',
       });
@@ -3737,7 +3751,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
         tone: 'friendly',
         businessName: businessName.trim(),
         businessContext: context,
-        businessType: businessType,
+        businessType: finalBusinessType,
         isOnboarding: true,
       });
       setSampleResponse(responseResult.data.response);
@@ -3888,7 +3902,12 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                     <select
                       className="form-input"
                       value={businessType}
-                      onChange={e => setBusinessType(e.target.value)}
+                      onChange={e => {
+                        setBusinessType(e.target.value);
+                        if (e.target.value !== 'Other') {
+                          setCustomBusinessType('');
+                        }
+                      }}
                       style={{ cursor: 'pointer' }}
                     >
                       <option value="">Select type...</option>
@@ -3898,6 +3917,16 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                         </option>
                       ))}
                     </select>
+                    {businessType === 'Other' && (
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Enter your business type..."
+                        value={customBusinessType}
+                        onChange={e => setCustomBusinessType(e.target.value)}
+                        style={{ marginTop: '8px' }}
+                      />
+                    )}
                   </div>
 
                   <div className="form-group" style={{ marginBottom: '16px' }}>
@@ -8859,11 +8888,31 @@ const SettingsPage = () => {
   const { user, updateUser } = useAuth();
   const [businessName, setBusinessName] = useState(user?.businessName || '');
   const [businessType, setBusinessType] = useState(user?.businessType || '');
+  const [customBusinessType, setCustomBusinessType] = useState('');
   const [businessContext, setBusinessContext] = useState(user?.businessContext || '');
   const [responseStyle, setResponseStyle] = useState(user?.responseStyle || '');
   const [saving, setSaving] = useState(false);
   const [apiKeys, setApiKeys] = useState([]);
   const [loadingKeys, setLoadingKeys] = useState(false);
+
+  const businessTypes = [
+    'Restaurant',
+    'Cafe / Coffee Shop',
+    'Hotel / Accommodation',
+    'Bar / Nightclub',
+    'Spa / Wellness',
+    'Hair Salon / Barbershop',
+    'Dental Practice',
+    'Medical Practice',
+    'Auto Repair / Service',
+    'Gym / Fitness Studio',
+    'Retail Store',
+    'E-commerce',
+    'Professional Services',
+    'Real Estate',
+    'Home Services',
+    'Other',
+  ];
   const [newKeyName, setNewKeyName] = useState('');
   const [generatedKey, setGeneratedKey] = useState(null);
   const [creatingKey, setCreatingKey] = useState(false);
@@ -8910,7 +8959,18 @@ const SettingsPage = () => {
     if (user) {
       setBusinessName(user.businessName || '');
       if (user.plan === 'unlimited' && user.subscriptionStatus === 'active') loadApiKeys();
-      setBusinessType(user.businessType || '');
+      // Check if user has a custom business type (not in preset list)
+      if (user.businessType && businessTypes.includes(user.businessType)) {
+        setBusinessType(user.businessType);
+        setCustomBusinessType('');
+      } else if (user.businessType) {
+        // Custom type - show "Other" dropdown + custom value in input
+        setBusinessType('Other');
+        setCustomBusinessType(user.businessType);
+      } else {
+        setBusinessType('');
+        setCustomBusinessType('');
+      }
       setBusinessContext(user.businessContext || '');
       setResponseStyle(user.responseStyle || '');
     }
@@ -8920,10 +8980,13 @@ const SettingsPage = () => {
     e.preventDefault();
     setSaving(true);
 
+    // Use custom type if "Other" is selected, otherwise use dropdown value
+    const finalBusinessType = businessType === 'Other' ? customBusinessType.trim() : businessType;
+
     try {
       const res = await api.put('/auth/profile', {
         businessName,
-        businessType,
+        businessType: finalBusinessType,
         businessContext,
         responseStyle,
       });
@@ -8935,25 +8998,6 @@ const SettingsPage = () => {
       setSaving(false);
     }
   };
-
-  const businessTypes = [
-    'Restaurant',
-    'Cafe / Coffee Shop',
-    'Hotel / Accommodation',
-    'Bar / Nightclub',
-    'Spa / Wellness',
-    'Hair Salon / Barbershop',
-    'Dental Practice',
-    'Medical Practice',
-    'Auto Repair / Service',
-    'Gym / Fitness Studio',
-    'Retail Store',
-    'E-commerce',
-    'Professional Services',
-    'Real Estate',
-    'Home Services',
-    'Other',
-  ];
 
   return (
     <div
@@ -9015,7 +9059,12 @@ const SettingsPage = () => {
             <select
               className="form-select"
               value={businessType}
-              onChange={e => setBusinessType(e.target.value)}
+              onChange={e => {
+                setBusinessType(e.target.value);
+                if (e.target.value !== 'Other') {
+                  setCustomBusinessType('');
+                }
+              }}
             >
               <option value="">Select your business type</option>
               {businessTypes.map(type => (
@@ -9024,6 +9073,16 @@ const SettingsPage = () => {
                 </option>
               ))}
             </select>
+            {businessType === 'Other' && (
+              <input
+                type="text"
+                className="form-input"
+                placeholder="Enter your business type..."
+                value={customBusinessType}
+                onChange={e => setCustomBusinessType(e.target.value)}
+                style={{ marginTop: '8px' }}
+              />
+            )}
           </div>
         </div>
 
