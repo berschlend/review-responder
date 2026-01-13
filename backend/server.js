@@ -9735,6 +9735,7 @@ async function initOutreachTables() {
 
     // Add ab_test_variant column to outreach_emails to track which variant was sent
     await dbQuery(`ALTER TABLE outreach_emails ADD COLUMN IF NOT EXISTS ab_variant TEXT`);
+    await dbQuery(`ALTER TABLE outreach_emails ADD COLUMN IF NOT EXISTS provider TEXT DEFAULT 'resend'`);
 
     // Initialize default A/B test for sequence1 subject lines (only if not exists)
     await dbQuery(`
@@ -10839,10 +10840,10 @@ app.post('/api/outreach/send-emails', async (req, res) => {
         await dbQuery(
           `
           INSERT INTO outreach_emails
-          (lead_id, email, sequence_number, subject, body, status, sent_at, campaign, ab_variant)
-          VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5, $6)
+          (lead_id, email, sequence_number, subject, body, status, sent_at, campaign, ab_variant, provider)
+          VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5, $6, $7)
         `,
-          [lead.id, lead.email, template.subject, template.body, campaign, templateWithAB.abVariant]
+          [lead.id, lead.email, template.subject, template.body, campaign, templateWithAB.abVariant, result.provider || 'resend']
         );
 
         // Update lead status
@@ -10993,7 +10994,7 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
           const emailCampaign = hasBadReview && aiDraft ? 'tripadvisor-review-alert' : campaign;
 
           try {
-            await sendOutreachEmail({
+            const emailResult = await sendOutreachEmail({
               to: lead.email,
               subject: template.subject,
               html: template.body.replace(/\n/g, '<br>'),
@@ -11018,9 +11019,9 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
 
               await dbQuery(`
                 INSERT INTO outreach_emails
-                  (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
-                VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5)
-              `, [insertedLead.id, lead.email, template.subject, template.body, emailCampaign]);
+                  (lead_id, email, sequence_number, subject, body, status, sent_at, campaign, provider)
+                VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5, $6)
+              `, [insertedLead.id, lead.email, template.subject, template.body, emailCampaign, emailResult.provider || 'resend']);
 
               await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', ['contacted', insertedLead.id]);
             }
@@ -11103,7 +11104,7 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
         const emailCampaign = lead.has_bad_review && lead.ai_response_draft ? 'tripadvisor-review-alert' : 'tripadvisor-auto';
 
         // Send email with tracking pixel
-        await sendOutreachEmail({
+        const emailResult = await sendOutreachEmail({
           to: lead.email,
           subject: template.subject,
           html: template.body.replace(/\n/g, '<br>'),
@@ -11123,9 +11124,9 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
 
         // Log the email
         await dbQuery(`
-          INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
-          VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5)
-        `, [lead.id, lead.email, template.subject, template.body, emailCampaign]);
+          INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign, provider)
+          VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5, $6)
+        `, [lead.id, lead.email, template.subject, template.body, emailCampaign, emailResult.provider || 'resend']);
 
         results.emails_sent++;
         console.log(`📧 TripAdvisor email sent to: ${lead.email} (${lead.business_name})`);
@@ -11404,7 +11405,7 @@ app.post('/api/outreach/send-followups', async (req, res) => {
       try {
         const template = fillEmailTemplate(getTemplateForLead(2, lead), lead);
 
-        await sendOutreachEmail({
+        const emailResult = await sendOutreachEmail({
           to: lead.email,
           subject: template.subject,
           html: template.body.replace(/\n/g, '<br>'),
@@ -11415,10 +11416,10 @@ app.post('/api/outreach/send-followups', async (req, res) => {
         await dbQuery(
           `
           INSERT INTO outreach_emails
-          (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
-          VALUES ($1, $2, 2, $3, $4, 'sent', NOW(), 'main')
+          (lead_id, email, sequence_number, subject, body, status, sent_at, campaign, provider)
+          VALUES ($1, $2, 2, $3, $4, 'sent', NOW(), 'main', $5)
         `,
-          [lead.id, lead.email, template.subject, template.body]
+          [lead.id, lead.email, template.subject, template.body, emailResult.provider || 'resend']
         );
 
         sent2++;
@@ -11433,7 +11434,7 @@ app.post('/api/outreach/send-followups', async (req, res) => {
       try {
         const template = fillEmailTemplate(getTemplateForLead(3, lead), lead);
 
-        await sendOutreachEmail({
+        const emailResult = await sendOutreachEmail({
           to: lead.email,
           subject: template.subject,
           html: template.body.replace(/\n/g, '<br>'),
@@ -11444,10 +11445,10 @@ app.post('/api/outreach/send-followups', async (req, res) => {
         await dbQuery(
           `
           INSERT INTO outreach_emails
-          (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
-          VALUES ($1, $2, 3, $3, $4, 'sent', NOW(), 'main')
+          (lead_id, email, sequence_number, subject, body, status, sent_at, campaign, provider)
+          VALUES ($1, $2, 3, $3, $4, 'sent', NOW(), 'main', $5)
         `,
-          [lead.id, lead.email, template.subject, template.body]
+          [lead.id, lead.email, template.subject, template.body, emailResult.provider || 'resend']
         );
 
         // Mark as completed sequence
@@ -12034,7 +12035,7 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
             reviewAlertsSent++;
           }
 
-          await sendOutreachEmail({
+          const emailResult = await sendOutreachEmail({
             to: lead.email,
             subject: template.subject,
             html: template.body.replace(/\n/g, '<br>'),
@@ -12044,10 +12045,10 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
 
           await dbQuery(
             `
-            INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign, ab_variant)
-            VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5, $6)
+            INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign, ab_variant, provider)
+            VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5, $6, $7)
           `,
-            [lead.id, lead.email, template.subject, template.body, campaign, templateWithAB.abVariant]
+            [lead.id, lead.email, template.subject, template.body, campaign, templateWithAB.abVariant, emailResult.provider || 'resend']
           );
 
           await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', [
@@ -12092,7 +12093,7 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
             // Determine campaign type for follow-up
             const followupCampaign = lead.lead_type === 'g2_competitor' ? 'g2_competitor' : 'main';
 
-            await sendOutreachEmail({
+            const emailResult = await sendOutreachEmail({
               to: lead.email,
               subject: template.subject,
               html: template.body.replace(/\n/g, '<br>'),
@@ -12102,10 +12103,10 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
 
             await dbQuery(
               `
-              INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
-              VALUES ($1, $2, $3, $4, $5, 'sent', NOW(), $6)
+              INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign, provider)
+              VALUES ($1, $2, $3, $4, $5, 'sent', NOW(), $6, $7)
             `,
-              [lead.id, lead.email, nextSequence, template.subject, template.body, followupCampaign]
+              [lead.id, lead.email, nextSequence, template.subject, template.body, followupCampaign, emailResult.provider || 'resend']
             );
 
             if (nextSequence === maxSequence) {
@@ -12216,6 +12217,253 @@ app.get('/api/outreach/dashboard', async (req, res) => {
   } catch (error) {
     console.error('Dashboard error:', error);
     res.status(500).json({ error: 'Failed to get dashboard' });
+  }
+});
+
+// GET /api/outreach/funnel - Comprehensive sales funnel dashboard
+app.get('/api/outreach/funnel', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // ========== FUNNEL METRICS ==========
+    const funnel = {};
+
+    // Stage 1: Leads
+    const totalLeads = await dbGet('SELECT COUNT(*) as count FROM outreach_leads');
+    const leadsWithEmail = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE email IS NOT NULL');
+    funnel.leads = {
+      total: parseInt(totalLeads?.count || 0),
+      with_email: parseInt(leadsWithEmail?.count || 0),
+      email_rate: totalLeads?.count > 0 ? ((leadsWithEmail?.count / totalLeads?.count) * 100).toFixed(1) + '%' : '0%'
+    };
+
+    // Stage 2: Emails Sent
+    const emailsSent = await dbGet('SELECT COUNT(*) as count FROM outreach_emails WHERE status = $1', ['sent']);
+    funnel.emails_sent = parseInt(emailsSent?.count || 0);
+
+    // Stage 3: Opens
+    const emailsOpened = await dbGet('SELECT COUNT(*) as count FROM outreach_emails WHERE opened_at IS NOT NULL');
+    funnel.opens = {
+      count: parseInt(emailsOpened?.count || 0),
+      rate: funnel.emails_sent > 0 ? ((emailsOpened?.count / funnel.emails_sent) * 100).toFixed(1) + '%' : '0%'
+    };
+
+    // Stage 4: Clicks
+    let clicksData = { count: 0, unique: 0 };
+    try {
+      const totalClicks = await dbGet('SELECT COUNT(*) as count FROM outreach_clicks');
+      const uniqueClicks = await dbGet('SELECT COUNT(DISTINCT email) as count FROM outreach_clicks');
+      clicksData = {
+        count: parseInt(totalClicks?.count || 0),
+        unique: parseInt(uniqueClicks?.count || 0)
+      };
+    } catch (e) {}
+    funnel.clicks = {
+      total: clicksData.count,
+      unique: clicksData.unique,
+      rate: funnel.emails_sent > 0 ? ((clicksData.unique / funnel.emails_sent) * 100).toFixed(1) + '%' : '0%'
+    };
+
+    // Stage 5: Signups (users who came from outreach)
+    let signups = { count: 0 };
+    try {
+      signups = await dbGet(`
+        SELECT COUNT(*) as count FROM users
+        WHERE referral_source LIKE '%outreach%'
+           OR referral_source LIKE '%alert%'
+           OR email IN (SELECT DISTINCT email FROM outreach_clicks)
+      `) || { count: 0 };
+    } catch (e) {}
+    funnel.signups = {
+      count: parseInt(signups?.count || 0),
+      rate: clicksData.unique > 0 ? ((signups?.count / clicksData.unique) * 100).toFixed(1) + '%' : '0%'
+    };
+
+    // Stage 6: Paid Conversions
+    let paidUsers = { count: 0, revenue: 0 };
+    try {
+      paidUsers = await dbGet(`
+        SELECT COUNT(*) as count, COALESCE(SUM(
+          CASE subscription_plan
+            WHEN 'starter' THEN 29
+            WHEN 'pro' THEN 49
+            WHEN 'unlimited' THEN 99
+            ELSE 0
+          END
+        ), 0) as revenue
+        FROM users
+        WHERE subscription_plan != 'free'
+          AND (referral_source LIKE '%outreach%'
+               OR referral_source LIKE '%alert%'
+               OR email IN (SELECT DISTINCT email FROM outreach_clicks))
+      `) || { count: 0, revenue: 0 };
+    } catch (e) {}
+    funnel.paid = {
+      count: parseInt(paidUsers?.count || 0),
+      monthly_revenue: parseInt(paidUsers?.revenue || 0),
+      conversion_rate: funnel.signups.count > 0 ? ((paidUsers?.count / funnel.signups.count) * 100).toFixed(1) + '%' : '0%'
+    };
+
+    // ========== PROVIDER BREAKDOWN (Brevo vs Resend) ==========
+    let providers = { brevo: { sent: 0, opens: 0 }, resend: { sent: 0, opens: 0 } };
+    try {
+      const providerStats = await dbAll(`
+        SELECT
+          COALESCE(provider, 'resend') as provider,
+          COUNT(*) as sent,
+          COUNT(*) FILTER (WHERE opened_at IS NOT NULL) as opens
+        FROM outreach_emails
+        WHERE status = 'sent'
+        GROUP BY COALESCE(provider, 'resend')
+      `);
+      for (const p of providerStats) {
+        if (p.provider === 'brevo' || p.provider === 'resend') {
+          providers[p.provider] = {
+            sent: parseInt(p.sent || 0),
+            opens: parseInt(p.opens || 0),
+            open_rate: p.sent > 0 ? ((p.opens / p.sent) * 100).toFixed(1) + '%' : '0%'
+          };
+        }
+      }
+    } catch (e) {}
+
+    // ========== A/B TEST SUMMARY ==========
+    let abTest = null;
+    try {
+      const test = await dbGet('SELECT * FROM outreach_ab_tests WHERE test_name = $1 AND is_active = TRUE', ['sequence1_subject']);
+      if (test) {
+        const variants = [];
+        ['a', 'b', 'c', 'd'].forEach(v => {
+          const subjectKey = `variant_${v}_subject`;
+          const sentKey = `variant_${v}_sent`;
+          const opensKey = `variant_${v}_opens`;
+          if (test[subjectKey]) {
+            const sent = parseInt(test[sentKey] || 0);
+            const opens = parseInt(test[opensKey] || 0);
+            variants.push({
+              variant: v.toUpperCase(),
+              subject: test[subjectKey],
+              sent,
+              opens,
+              open_rate: sent > 0 ? ((opens / sent) * 100).toFixed(1) + '%' : '0%'
+            });
+          }
+        });
+        abTest = {
+          test_name: test.test_name,
+          variants,
+          winner: test.winner,
+          total_sent: variants.reduce((sum, v) => sum + v.sent, 0),
+          needs_data: variants.reduce((sum, v) => sum + v.sent, 0) < 120
+        };
+      }
+    } catch (e) {}
+
+    // ========== CAMPAIGN BREAKDOWN ==========
+    let campaigns = [];
+    try {
+      campaigns = await dbAll(`
+        SELECT
+          COALESCE(campaign, 'main') as campaign,
+          COUNT(*) as sent,
+          COUNT(*) FILTER (WHERE opened_at IS NOT NULL) as opens,
+          COUNT(DISTINCT lead_id) as unique_leads
+        FROM outreach_emails
+        WHERE status = 'sent'
+        GROUP BY COALESCE(campaign, 'main')
+        ORDER BY sent DESC
+      `);
+      campaigns = campaigns.map(c => ({
+        ...c,
+        sent: parseInt(c.sent || 0),
+        opens: parseInt(c.opens || 0),
+        open_rate: c.sent > 0 ? ((c.opens / c.sent) * 100).toFixed(1) + '%' : '0%'
+      }));
+    } catch (e) {}
+
+    // ========== DAILY TRENDS (Last 14 days) ==========
+    let dailyTrends = [];
+    try {
+      dailyTrends = await dbAll(`
+        SELECT
+          DATE(sent_at) as date,
+          COUNT(*) as sent,
+          COUNT(*) FILTER (WHERE opened_at IS NOT NULL) as opens
+        FROM outreach_emails
+        WHERE sent_at > NOW() - INTERVAL '14 days'
+        GROUP BY DATE(sent_at)
+        ORDER BY date DESC
+      `);
+      dailyTrends = dailyTrends.map(d => ({
+        date: d.date,
+        sent: parseInt(d.sent || 0),
+        opens: parseInt(d.opens || 0),
+        open_rate: d.sent > 0 ? ((d.opens / d.sent) * 100).toFixed(1) + '%' : '0%'
+      }));
+    } catch (e) {}
+
+    // ========== TOP PERFORMING EMAILS ==========
+    let topEmails = [];
+    try {
+      topEmails = await dbAll(`
+        SELECT
+          e.subject,
+          COUNT(*) as sent,
+          COUNT(*) FILTER (WHERE e.opened_at IS NOT NULL) as opens,
+          ROUND(COUNT(*) FILTER (WHERE e.opened_at IS NOT NULL)::numeric / NULLIF(COUNT(*), 0) * 100, 1) as open_rate
+        FROM outreach_emails e
+        WHERE e.status = 'sent' AND e.subject IS NOT NULL
+        GROUP BY e.subject
+        HAVING COUNT(*) >= 5
+        ORDER BY open_rate DESC NULLS LAST
+        LIMIT 5
+      `);
+    } catch (e) {}
+
+    // ========== BREVO STATUS ==========
+    const brevoStatus = {
+      configured: !!process.env.BREVO_API_KEY,
+      api_key_set: !!process.env.BREVO_API_KEY,
+      active: !!brevoApi
+    };
+
+    res.json({
+      success: true,
+      generated_at: new Date().toISOString(),
+      funnel: {
+        stages: [
+          { name: 'Leads', value: funnel.leads.total, sub: `${funnel.leads.with_email} with email (${funnel.leads.email_rate})` },
+          { name: 'Emails Sent', value: funnel.emails_sent },
+          { name: 'Opens', value: funnel.opens.count, rate: funnel.opens.rate },
+          { name: 'Clicks', value: funnel.clicks.unique, rate: funnel.clicks.rate },
+          { name: 'Signups', value: funnel.signups.count, rate: funnel.signups.rate },
+          { name: 'Paid', value: funnel.paid.count, rate: funnel.paid.conversion_rate, revenue: `$${funnel.paid.monthly_revenue}/mo` }
+        ],
+        conversion_rates: {
+          lead_to_email: funnel.leads.email_rate,
+          email_to_open: funnel.opens.rate,
+          open_to_click: funnel.opens.count > 0 ? ((funnel.clicks.unique / funnel.opens.count) * 100).toFixed(1) + '%' : '0%',
+          click_to_signup: funnel.signups.rate,
+          signup_to_paid: funnel.paid.conversion_rate,
+          overall: funnel.leads.total > 0 ? ((funnel.paid.count / funnel.leads.total) * 100).toFixed(2) + '%' : '0%'
+        }
+      },
+      providers: {
+        brevo: providers.brevo,
+        resend: providers.resend,
+        brevo_status: brevoStatus
+      },
+      ab_test: abTest,
+      campaigns,
+      daily_trends: dailyTrends,
+      top_emails: topEmails
+    });
+  } catch (error) {
+    console.error('Funnel dashboard error:', error);
+    res.status(500).json({ error: 'Failed to get funnel dashboard' });
   }
 });
 
