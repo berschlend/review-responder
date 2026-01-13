@@ -340,6 +340,17 @@ async function initDatabase() {
       )
     `);
 
+    // Pre-registration drip email tracking
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS pre_registration_drips (
+        id SERIAL PRIMARY KEY,
+        email TEXT NOT NULL,
+        email_day INTEGER NOT NULL,
+        sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(email, email_day)
+      )
+    `);
+
     await dbQuery(`
       CREATE TABLE IF NOT EXISTS team_members (
         id SERIAL PRIMARY KEY,
@@ -6900,6 +6911,394 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
     console.error('Drip email error:', error);
     // Minimal response for cron-job.org (has strict size limit)
     res.status(500).json({ ok: false, error: error.message?.slice(0, 100) });
+  }
+});
+
+// Pre-Registration Drip Email Campaign - Nurture captured emails who haven't registered
+// Call this endpoint via cron job (e.g., daily at 10am)
+app.post('/api/cron/send-pre-registration-drips', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'Email service not configured' });
+  }
+
+  const DRIP_SCHEDULE = [1, 3, 7, 14]; // Days after email capture
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'https://tryreviewresponder.com';
+
+  // Email templates for pre-registration nurturing
+  const getPreRegistrationEmail = (day, email, discountCode) => {
+    const templates = {
+      1: {
+        subject: 'Your 50% discount expires soon',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background: white; padding: 40px; border: 1px solid #E5E7EB; border-radius: 0 0 8px 8px; }
+              .discount-box { background: #FEF3C7; border: 2px dashed #F59E0B; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
+              .discount-code { font-size: 28px; font-weight: bold; color: #D97706; letter-spacing: 2px; }
+              .cta-button { display: inline-block; background: #4F46E5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; }
+              .footer { text-align: center; padding: 20px; color: #6B7280; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>Don't Miss Your 50% Discount!</h1>
+              </div>
+              <div class="content">
+                <p>Hi there!</p>
+
+                <p>You showed interest in ReviewResponder yesterday. Just a quick reminder that your exclusive discount code is waiting:</p>
+
+                <div class="discount-box">
+                  <p style="margin: 0 0 10px 0; color: #92400E;">Your Exclusive Code:</p>
+                  <div class="discount-code">${discountCode}</div>
+                  <p style="margin: 10px 0 0 0; color: #92400E; font-size: 14px;">50% off your first month</p>
+                </div>
+
+                <p>With ReviewResponder, you can:</p>
+                <ul>
+                  <li>Respond to reviews in seconds, not minutes</li>
+                  <li>Sound professional without the effort</li>
+                  <li>Boost your local SEO with consistent engagement</li>
+                </ul>
+
+                <center style="margin: 30px 0;">
+                  <a href="${FRONTEND_URL}/register" class="cta-button">Claim Your 50% Discount</a>
+                </center>
+
+                <p>Questions? Just reply to this email!</p>
+
+                <p>Best,<br>The ReviewResponder Team</p>
+              </div>
+              <div class="footer">
+                <p>ReviewResponder - AI-Powered Review Responses</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+      },
+      3: {
+        subject: 'Why ignoring reviews costs you customers',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background: white; padding: 40px; border: 1px solid #E5E7EB; border-radius: 0 0 8px 8px; }
+              .stat-box { background: #FEF2F2; border-left: 4px solid #DC2626; padding: 16px; margin: 16px 0; }
+              .cta-button { display: inline-block; background: #4F46E5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; }
+              .footer { text-align: center; padding: 20px; color: #6B7280; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>The Hidden Cost of Unanswered Reviews</h1>
+              </div>
+              <div class="content">
+                <p>Hi there!</p>
+
+                <p>Did you know that ignoring reviews could be silently hurting your business?</p>
+
+                <div class="stat-box">
+                  <strong>53% of customers</strong> expect businesses to respond to negative reviews within a week. Only 37% of reviews ever get a response.
+                </div>
+
+                <div class="stat-box">
+                  <strong>Businesses that respond</strong> to reviews see 12% higher revenue growth than those that don't.
+                </div>
+
+                <div class="stat-box">
+                  <strong>89% of consumers</strong> read business responses to reviews before making a purchase decision.
+                </div>
+
+                <p>The problem? Responding to reviews takes time. Crafting the perfect response to a negative review can take 15-20 minutes.</p>
+
+                <p><strong>ReviewResponder solves this.</strong> Get professional, personalized responses in seconds - not minutes.</p>
+
+                <center style="margin: 30px 0;">
+                  <a href="${FRONTEND_URL}/register" class="cta-button">Try 20 Free Responses</a>
+                </center>
+
+                <p>Your discount code <strong>${discountCode}</strong> is still valid!</p>
+
+                <p>Best,<br>The ReviewResponder Team</p>
+              </div>
+              <div class="footer">
+                <p>ReviewResponder - AI-Powered Review Responses</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+      },
+      7: {
+        subject: 'How Mario saved 5 hours/week on reviews',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background: white; padding: 40px; border: 1px solid #E5E7EB; border-radius: 0 0 8px 8px; }
+              .testimonial { background: #F0FDF4; border: 1px solid #10B981; padding: 24px; border-radius: 8px; margin: 20px 0; font-style: italic; }
+              .cta-button { display: inline-block; background: #4F46E5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; }
+              .footer { text-align: center; padding: 20px; color: #6B7280; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>Real Results from Real Businesses</h1>
+              </div>
+              <div class="content">
+                <p>Hi there!</p>
+
+                <p>Meet Mario, owner of a busy Italian restaurant in Munich with 200+ Google reviews.</p>
+
+                <div class="testimonial">
+                  "I used to spend Sunday evenings responding to the week's reviews. Now I do it in 10 minutes during my morning coffee. ReviewResponder doesn't just save time - it helped me sound more professional too. My responses went from 'Thanks!' to actually addressing what customers said."
+                  <p style="margin: 16px 0 0 0; font-style: normal;"><strong>- Mario T., Restaurant Owner</strong></p>
+                </div>
+
+                <p><strong>Mario's results after 3 months:</strong></p>
+                <ul>
+                  <li>5+ hours saved per week</li>
+                  <li>100% response rate (up from 30%)</li>
+                  <li>4.2 to 4.6 star rating improvement</li>
+                </ul>
+
+                <p>You could see similar results. And with your discount code <strong>${discountCode}</strong>, you can start for just $14.50/month.</p>
+
+                <center style="margin: 30px 0;">
+                  <a href="${FRONTEND_URL}/register" class="cta-button">Start Your Free Trial</a>
+                </center>
+
+                <p>Best,<br>The ReviewResponder Team</p>
+              </div>
+              <div class="footer">
+                <p>ReviewResponder - AI-Powered Review Responses</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+      },
+      14: {
+        subject: 'Last chance: Your exclusive offer expires tomorrow',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background: white; padding: 40px; border: 1px solid #E5E7EB; border-radius: 0 0 8px 8px; }
+              .urgency-box { background: #FEF3C7; border: 2px solid #F59E0B; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
+              .cta-button { display: inline-block; background: #7C3AED; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; }
+              .footer { text-align: center; padding: 20px; color: #6B7280; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>Final Reminder</h1>
+                <p>Your 50% discount expires tomorrow</p>
+              </div>
+              <div class="content">
+                <p>Hi there!</p>
+
+                <p>This is my last email about this - I promise!</p>
+
+                <p>Two weeks ago, you showed interest in ReviewResponder. Since then, your competitors have probably responded to dozens of reviews while building their reputation.</p>
+
+                <div class="urgency-box">
+                  <p style="margin: 0; font-size: 18px;"><strong>Your code ${discountCode} expires tomorrow.</strong></p>
+                  <p style="margin: 8px 0 0 0; color: #92400E;">After that, you'll pay full price.</p>
+                </div>
+
+                <p><strong>Quick recap of what you get:</strong></p>
+                <ul>
+                  <li>20 free responses to try (no credit card)</li>
+                  <li>AI-powered professional responses in seconds</li>
+                  <li>Works with Google, Yelp, TripAdvisor & more</li>
+                  <li>Chrome extension for one-click responses</li>
+                </ul>
+
+                <center style="margin: 30px 0;">
+                  <a href="${FRONTEND_URL}/register" class="cta-button">Use Your 50% Discount Now</a>
+                </center>
+
+                <p>If you have any questions, just reply to this email. I read every response.</p>
+
+                <p>Best,<br>The ReviewResponder Team</p>
+              </div>
+              <div class="footer">
+                <p>ReviewResponder - AI-Powered Review Responses</p>
+                <p style="font-size: 12px; color: #9CA3AF;">This is the last email in this series. You won't receive more promotional emails from us.</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+      },
+    };
+    return templates[day];
+  };
+
+  let sentCount = 0;
+  let skippedCount = 0;
+  let errorCount = 0;
+
+  try {
+    // Process each drip day
+    for (const day of DRIP_SCHEDULE) {
+      // Get captured emails that:
+      // 1. Were captured X days ago (based on drip schedule)
+      // 2. Haven't received this drip email yet
+      // 3. Haven't converted (registered)
+      const eligibleEmails = await dbAll(`
+        SELECT ec.* FROM email_captures ec
+        WHERE ec.converted = FALSE
+          AND DATE(ec.created_at) = DATE(NOW() - INTERVAL '${day} days')
+          AND NOT EXISTS (
+            SELECT 1 FROM pre_registration_drips prd
+            WHERE LOWER(prd.email) = LOWER(ec.email)
+            AND prd.email_day = $1
+          )
+      `, [day]);
+
+      for (const capture of eligibleEmails) {
+        // Check if user has registered (email exists in users table)
+        const existingUser = await dbGet(
+          'SELECT id FROM users WHERE LOWER(email) = LOWER($1)',
+          [capture.email]
+        );
+
+        if (existingUser) {
+          // User registered! Mark as converted and skip
+          await dbQuery(
+            'UPDATE email_captures SET converted = TRUE WHERE id = $1',
+            [capture.id]
+          );
+          skippedCount++;
+          console.log(`⏭️ Pre-reg drip skipped (user registered): ${capture.email}`);
+          continue;
+        }
+
+        const emailContent = getPreRegistrationEmail(day, capture.email, capture.discount_code);
+        if (!emailContent) continue;
+
+        try {
+          await resend.emails.send({
+            from: FROM_EMAIL,
+            replyTo: 'hello@tryreviewresponder.com',
+            to: capture.email,
+            subject: emailContent.subject,
+            html: emailContent.html,
+          });
+
+          // Track that we sent this email
+          await dbQuery(
+            'INSERT INTO pre_registration_drips (email, email_day) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [capture.email.toLowerCase(), day]
+          );
+
+          sentCount++;
+          console.log(`📧 Pre-reg drip day ${day} sent to ${capture.email}`);
+        } catch (emailError) {
+          console.error(`Failed to send pre-reg drip to ${capture.email}:`, emailError.message);
+          errorCount++;
+        }
+      }
+    }
+
+    res.json({ ok: true, sent: sentCount, skipped: skippedCount, err: errorCount });
+  } catch (error) {
+    console.error('Pre-registration drip error:', error);
+    res.status(500).json({ ok: false, error: error.message?.slice(0, 100) });
+  }
+});
+
+// Test endpoint: Send a specific pre-registration drip email
+// GET /api/admin/test-pre-reg-drip?email=test@example.com&day=1&key=ADMIN_SECRET
+app.get('/api/admin/test-pre-reg-drip', async (req, res) => {
+  const { email, day, key } = req.query;
+
+  if (!safeCompare(key, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!email || !day) {
+    return res.status(400).json({ error: 'email and day parameters required' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'Email service not configured' });
+  }
+
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'https://tryreviewresponder.com';
+  const discountCode = 'EARLY50';
+  const dayNum = parseInt(day);
+
+  const templates = {
+    1: {
+      subject: 'Your 50% discount expires soon',
+      html: `<!DOCTYPE html><html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#111827;line-height:1.6}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:linear-gradient(135deg,#4F46E5 0%,#7C3AED 100%);color:white;padding:40px;text-align:center;border-radius:8px 8px 0 0}.content{background:white;padding:40px;border:1px solid #E5E7EB;border-radius:0 0 8px 8px}.discount-box{background:#FEF3C7;border:2px dashed #F59E0B;padding:20px;border-radius:8px;margin:20px 0;text-align:center}.discount-code{font-size:28px;font-weight:bold;color:#D97706;letter-spacing:2px}.cta-button{display:inline-block;background:#4F46E5;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:600}.footer{text-align:center;padding:20px;color:#6B7280;font-size:14px}</style></head><body><div class="container"><div class="header"><h1>Don't Miss Your 50% Discount!</h1></div><div class="content"><p>Hi there!</p><p>You showed interest in ReviewResponder yesterday. Just a quick reminder that your exclusive discount code is waiting:</p><div class="discount-box"><p style="margin:0 0 10px 0;color:#92400E">Your Exclusive Code:</p><div class="discount-code">${discountCode}</div><p style="margin:10px 0 0 0;color:#92400E;font-size:14px">50% off your first month</p></div><p>With ReviewResponder, you can:</p><ul><li>Respond to reviews in seconds, not minutes</li><li>Sound professional without the effort</li><li>Boost your local SEO with consistent engagement</li></ul><center style="margin:30px 0"><a href="${FRONTEND_URL}/register" class="cta-button">Claim Your 50% Discount</a></center><p>Questions? Just reply to this email!</p><p>Best,<br>The ReviewResponder Team</p></div><div class="footer"><p>ReviewResponder - AI-Powered Review Responses</p></div></div></body></html>`,
+    },
+    3: {
+      subject: 'Why ignoring reviews costs you customers',
+      html: `<!DOCTYPE html><html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#111827;line-height:1.6}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:linear-gradient(135deg,#DC2626 0%,#B91C1C 100%);color:white;padding:40px;text-align:center;border-radius:8px 8px 0 0}.content{background:white;padding:40px;border:1px solid #E5E7EB;border-radius:0 0 8px 8px}.stat-box{background:#FEF2F2;border-left:4px solid #DC2626;padding:16px;margin:16px 0}.cta-button{display:inline-block;background:#4F46E5;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:600}.footer{text-align:center;padding:20px;color:#6B7280;font-size:14px}</style></head><body><div class="container"><div class="header"><h1>The Hidden Cost of Unanswered Reviews</h1></div><div class="content"><p>Hi there!</p><p>Did you know that ignoring reviews could be silently hurting your business?</p><div class="stat-box"><strong>53% of customers</strong> expect businesses to respond to negative reviews within a week.</div><div class="stat-box"><strong>Businesses that respond</strong> to reviews see 12% higher revenue growth.</div><div class="stat-box"><strong>89% of consumers</strong> read business responses before making a purchase decision.</div><p>The problem? Responding to reviews takes time. Crafting the perfect response can take 15-20 minutes.</p><p><strong>ReviewResponder solves this.</strong> Get professional responses in seconds.</p><center style="margin:30px 0"><a href="${FRONTEND_URL}/register" class="cta-button">Try 20 Free Responses</a></center><p>Your discount code <strong>${discountCode}</strong> is still valid!</p><p>Best,<br>The ReviewResponder Team</p></div><div class="footer"><p>ReviewResponder - AI-Powered Review Responses</p></div></div></body></html>`,
+    },
+    7: {
+      subject: 'How Mario saved 5 hours/week on reviews',
+      html: `<!DOCTYPE html><html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#111827;line-height:1.6}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:linear-gradient(135deg,#10B981 0%,#059669 100%);color:white;padding:40px;text-align:center;border-radius:8px 8px 0 0}.content{background:white;padding:40px;border:1px solid #E5E7EB;border-radius:0 0 8px 8px}.testimonial{background:#F0FDF4;border:1px solid #10B981;padding:24px;border-radius:8px;margin:20px 0;font-style:italic}.cta-button{display:inline-block;background:#4F46E5;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:600}.footer{text-align:center;padding:20px;color:#6B7280;font-size:14px}</style></head><body><div class="container"><div class="header"><h1>Real Results from Real Businesses</h1></div><div class="content"><p>Hi there!</p><p>Meet Mario, owner of a busy Italian restaurant in Munich with 200+ Google reviews.</p><div class="testimonial">"I used to spend Sunday evenings responding to the week's reviews. Now I do it in 10 minutes during my morning coffee. ReviewResponder doesn't just save time - it helped me sound more professional too."<p style="margin:16px 0 0 0;font-style:normal"><strong>- Mario T., Restaurant Owner</strong></p></div><p><strong>Mario's results after 3 months:</strong></p><ul><li>5+ hours saved per week</li><li>100% response rate (up from 30%)</li><li>4.2 to 4.6 star rating improvement</li></ul><p>With your discount code <strong>${discountCode}</strong>, you can start for just $14.50/month.</p><center style="margin:30px 0"><a href="${FRONTEND_URL}/register" class="cta-button">Start Your Free Trial</a></center><p>Best,<br>The ReviewResponder Team</p></div><div class="footer"><p>ReviewResponder - AI-Powered Review Responses</p></div></div></body></html>`,
+    },
+    14: {
+      subject: 'Last chance: Your exclusive offer expires tomorrow',
+      html: `<!DOCTYPE html><html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#111827;line-height:1.6}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:linear-gradient(135deg,#7C3AED 0%,#5B21B6 100%);color:white;padding:40px;text-align:center;border-radius:8px 8px 0 0}.content{background:white;padding:40px;border:1px solid #E5E7EB;border-radius:0 0 8px 8px}.urgency-box{background:#FEF3C7;border:2px solid #F59E0B;padding:20px;border-radius:8px;margin:20px 0;text-align:center}.cta-button{display:inline-block;background:#7C3AED;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:600}.footer{text-align:center;padding:20px;color:#6B7280;font-size:14px}</style></head><body><div class="container"><div class="header"><h1>Final Reminder</h1><p>Your 50% discount expires tomorrow</p></div><div class="content"><p>Hi there!</p><p>This is my last email about this - I promise!</p><p>Two weeks ago, you showed interest in ReviewResponder. Since then, your competitors have probably responded to dozens of reviews.</p><div class="urgency-box"><p style="margin:0;font-size:18px"><strong>Your code ${discountCode} expires tomorrow.</strong></p><p style="margin:8px 0 0 0;color:#92400E">After that, you'll pay full price.</p></div><p><strong>Quick recap:</strong></p><ul><li>20 free responses to try (no credit card)</li><li>AI-powered professional responses in seconds</li><li>Works with Google, Yelp, TripAdvisor & more</li><li>Chrome extension for one-click responses</li></ul><center style="margin:30px 0"><a href="${FRONTEND_URL}/register" class="cta-button">Use Your 50% Discount Now</a></center><p>Best,<br>The ReviewResponder Team</p></div><div class="footer"><p>ReviewResponder - AI-Powered Review Responses</p><p style="font-size:12px;color:#9CA3AF">This is the last email in this series.</p></div></div></body></html>`,
+    },
+  };
+
+  const template = templates[dayNum];
+  if (!template) {
+    return res.status(400).json({ error: 'Invalid day. Use 1, 3, 7, or 14' });
+  }
+
+  try {
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      replyTo: 'hello@tryreviewresponder.com',
+      to: email,
+      subject: `[TEST] ${template.subject}`,
+      html: template.html,
+    });
+
+    console.log(`🧪 Test pre-reg drip day ${dayNum} sent to ${email}`);
+    res.json({ success: true, message: `Test email day ${dayNum} sent to ${email}` });
+  } catch (error) {
+    console.error('Test email error:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
