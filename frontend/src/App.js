@@ -2867,6 +2867,7 @@ const PricingCards = ({ showFree = true }) => {
         'All 4 tone options',
         '50+ languages',
         'Response history',
+        'Chrome Extension (all platforms)',
       ],
       buttonText: 'Get Started',
       plan: 'free',
@@ -2883,6 +2884,7 @@ const PricingCards = ({ showFree = true }) => {
         'Response templates',
         'CSV/PDF export',
         'Email support',
+        'Chrome Extension (all platforms)',
       ],
       buttonText: 'Subscribe',
       plan: 'starter',
@@ -2900,6 +2902,7 @@ const PricingCards = ({ showFree = true }) => {
         'Analytics dashboard',
         'Team members (3)',
         'Priority support',
+        'Chrome Extension (all platforms)',
       ],
       buttonText: 'Subscribe',
       plan: 'professional',
@@ -2917,6 +2920,8 @@ const PricingCards = ({ showFree = true }) => {
         'Team members (10)',
         'API access',
         'Dedicated support',
+        'Chrome Extension (all platforms)',
+        'Priority feature requests',
       ],
       buttonText: 'Subscribe',
       plan: 'unlimited',
@@ -17921,6 +17926,390 @@ const ThumbtackReviewPage = () => {
   );
 };
 
+// SEO Landing Page - LinkedIn Recommendations
+const LinkedInReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/linkedin-recommendations' };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'LinkedIn Recommendation Response Generator | Professional Thank You Messages | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional thank you responses to LinkedIn recommendations with AI. Reply to colleagues and build your professional reputation.');
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - LinkedIn Recommendation Response Generator', description: 'AI tool to respond professionally to LinkedIn recommendations', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #0A66C2 0%, #004182 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <Linkedin size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>B2B Professionals</span>
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>LinkedIn Recommendation Response Generator</h1>
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Never leave a LinkedIn recommendation unanswered. Generate thoughtful thank you responses that strengthen your professional network.</p>
+          <LandingEmailCapture buttonColor="#0A66C2" />
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={16} /> Build Your Network</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Briefcase size={16} /> Professional Tone</span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '80px 0' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why LinkedIn Recommendations Matter</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(10, 102, 194, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Linkedin size={24} style={{ color: '#0A66C2' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>900M+ Professionals</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>LinkedIn is the world's largest professional network. Recommendations boost your credibility and visibility.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(10, 102, 194, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#0A66C2' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Career Growth</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Responding to recommendations shows gratitude and strengthens relationships that can lead to new opportunities.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(10, 102, 194, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><MessageSquare size={24} style={{ color: '#0A66C2' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Reciprocity</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>A thoughtful response often leads to reciprocal recommendations, building your profile further.</p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to build your LinkedIn reputation?</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Generate professional thank you responses in seconds.</p>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - Angi (Angie's List) Contractor Reviews
+const AngiReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/angie-list-contractor-reviews' };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'Angi Review Response Generator | Contractor Review Replies | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Angi (Angie\'s List) review responses with AI. Contractors can reply to customer reviews and get more leads.');
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Angi Review Response Generator', description: 'AI tool to respond professionally to Angi contractor reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #00A651 0%, #007336 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <Hammer size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Home Service Contractors</span>
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Angi Review Response Generator</h1>
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Win more jobs on Angi with professional AI-generated review responses. Build your contractor reputation and get more leads.</p>
+          <LandingEmailCapture buttonColor="#00A651" />
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Award size={16} /> Top Pro Status</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><TrendingUp size={16} /> More Leads</span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '80px 0' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Angi Contractors Choose ReviewResponder</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 166, 81, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Hammer size={24} style={{ color: '#00A651' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Built for Contractors</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Plumbers, electricians, roofers, landscapers - AI generates responses that match your trade and expertise.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 166, 81, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Award size={24} style={{ color: '#00A651' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Boost Your Rating</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Responding to reviews shows professionalism and can help you achieve Top Pro status on Angi.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 166, 81, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Clock size={24} style={{ color: '#00A651' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Save Time</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Stop spending hours writing review responses. AI generates professional replies between jobs in seconds.</p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to get more Angi leads?</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join contractors using AI to manage their Angi reviews.</p>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - Chiropractor Reviews
+const ChiropractorReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/chiropractor-reviews' };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'Chiropractor Review Response Generator | Chiropractic Practice Reviews | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional chiropractor review responses with AI. Reply to patient reviews and grow your chiropractic practice.');
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Chiropractor Review Response Generator', description: 'AI tool to respond professionally to chiropractic practice reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #5C6BC0 0%, #3949AB 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <Activity size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Chiropractic Practices</span>
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Chiropractor Review Response Generator</h1>
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build patient trust with professional AI-generated review responses. Grow your chiropractic practice with better online reputation.</p>
+          <LandingEmailCapture buttonColor="#5C6BC0" />
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Heart size={16} /> HIPAA Aware</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={16} /> More Patients</span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '80px 0' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Chiropractors Choose ReviewResponder</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(92, 107, 192, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Activity size={24} style={{ color: '#5C6BC0' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Healthcare Focused</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI understands chiropractic care terminology and patient sensitivity. Responses are professional and HIPAA-aware.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(92, 107, 192, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#5C6BC0' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Attract New Patients</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>93% of patients read online reviews before choosing a chiropractor. Professional responses build trust.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(92, 107, 192, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Shield size={24} style={{ color: '#5C6BC0' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Handle Negative Reviews</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Turn negative feedback into positive outcomes with thoughtful, professional responses.</p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to grow your practice?</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join chiropractors using AI to manage patient reviews.</p>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - Barber/Barbershop Reviews
+const BarberReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/barber-barbershop-reviews' };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'Barbershop Review Response Generator | Barber Shop Reviews | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional barbershop review responses with AI. Reply to customer reviews and get more clients for your barber shop.');
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Barbershop Review Response Generator', description: 'AI tool to respond professionally to barbershop reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #D32F2F 0%, #B71C1C 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <Scissors size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Barbershops & Barbers</span>
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Barbershop Review Response Generator</h1>
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Keep your chair full with professional AI-generated review responses. Build loyalty and attract new clients to your barbershop.</p>
+          <LandingEmailCapture buttonColor="#D32F2F" />
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Scissors size={16} /> Built for Barbers</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><TrendingUp size={16} /> More Clients</span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '80px 0' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Barbers Choose ReviewResponder</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(211, 47, 47, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Scissors size={24} style={{ color: '#D32F2F' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Built for Barbershops</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI understands barbershop culture and terminology. Responses sound authentic, not robotic.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(211, 47, 47, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Users size={24} style={{ color: '#D32F2F' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Build Client Loyalty</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Thank regulars for their reviews and turn first-timers into repeat clients with thoughtful responses.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(211, 47, 47, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Clock size={24} style={{ color: '#D32F2F' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Save Time</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Respond between cuts instead of after closing. AI generates professional replies in seconds.</p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to fill your chair?</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join barbers using AI to build their online reputation.</p>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - Dermatologist Reviews
+const DermatologistReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/dermatologist-reviews' };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'Dermatologist Review Response Generator | Dermatology Practice Reviews | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional dermatologist review responses with AI. Reply to patient reviews and grow your dermatology practice.');
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Dermatologist Review Response Generator', description: 'AI tool to respond professionally to dermatology practice reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #26A69A 0%, #00897B 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <Sparkles size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Dermatology Practices</span>
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Dermatologist Review Response Generator</h1>
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build patient confidence with professional AI-generated review responses. Grow your dermatology practice with better online reputation.</p>
+          <LandingEmailCapture buttonColor="#26A69A" />
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Heart size={16} /> HIPAA Aware</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={16} /> More Patients</span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '80px 0' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Dermatologists Choose ReviewResponder</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(38, 166, 154, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Sparkles size={24} style={{ color: '#26A69A' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Medical & Cosmetic</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI handles both medical dermatology and cosmetic procedure reviews with appropriate professional tone.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(38, 166, 154, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Shield size={24} style={{ color: '#26A69A' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>HIPAA Compliant</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Responses never reveal patient information. Professional, private, and compliant with healthcare regulations.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(38, 166, 154, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#26A69A' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Build Trust</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Patients research extensively before choosing a dermatologist. Professional responses establish credibility.</p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to grow your practice?</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join dermatologists using AI to manage patient reviews.</p>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - Massage Therapist Reviews
+const MassageTherapistReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/massage-therapist-reviews' };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'Massage Therapist Review Response Generator | Spa & Massage Reviews | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional massage therapist review responses with AI. Reply to client reviews and grow your massage therapy practice.');
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Massage Therapist Review Response Generator', description: 'AI tool to respond professionally to massage therapy reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #8E24AA 0%, #6A1B9A 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <Heart size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Massage & Wellness</span>
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Massage Therapist Review Response Generator</h1>
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Keep your schedule full with professional AI-generated review responses. Build client relationships and attract new bookings.</p>
+          <LandingEmailCapture buttonColor="#8E24AA" />
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Heart size={16} /> Warm & Personal</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={16} /> More Bookings</span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '80px 0' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Massage Therapists Choose ReviewResponder</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(142, 36, 170, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Heart size={24} style={{ color: '#8E24AA' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Warm & Personal</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI generates responses that feel genuine and caring - matching the personal nature of massage therapy.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(142, 36, 170, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Users size={24} style={{ color: '#8E24AA' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Client Retention</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Personal thank you responses turn one-time clients into regulars. Build lasting relationships.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(142, 36, 170, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#8E24AA' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Grow Your Practice</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>New clients check reviews before booking. Professional responses build trust and attract bookings.</p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to fill your schedule?</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join massage therapists using AI to build their client base.</p>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
 // Extension Page
 const ExtensionPage = () => {
   return (
@@ -18170,6 +18559,7 @@ const PricingPage = () => {
   // Feature comparison data - Updated with Hybrid AI limits (Smart + Standard)
   const features = [
     { name: 'Monthly Responses', free: '20', starter: '300', pro: '800', unlimited: 'Unlimited' },
+    { name: 'Chrome Extension', free: true, starter: true, pro: true, unlimited: true },
     { name: 'Smart AI', free: '3', starter: '100', pro: '300', unlimited: 'Unlimited' },
     { name: 'Standard AI', free: '17', starter: '200', pro: '500', unlimited: 'Unlimited' },
     { name: 'AI Tone Options', free: true, starter: true, pro: true, unlimited: true },
@@ -18181,8 +18571,9 @@ const PricingPage = () => {
     { name: 'Analytics Dashboard', free: false, starter: false, pro: true, unlimited: true },
     { name: 'Team Members', free: '-', starter: '-', pro: '3', unlimited: '10' },
     { name: 'API Access', free: false, starter: false, pro: false, unlimited: true },
-    { name: 'Email Support', free: false, starter: true, pro: true, unlimited: true },
+    { name: 'Email Support', free: true, starter: true, pro: true, unlimited: true },
     { name: 'Priority Support', free: false, starter: false, pro: true, unlimited: true },
+    { name: 'Priority Feature Requests', free: false, starter: false, pro: false, unlimited: true },
   ];
 
   return (
