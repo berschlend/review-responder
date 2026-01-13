@@ -6741,7 +6741,7 @@ app.post('/api/admin/testimonials/:id/generate-response', async (req, res) => {
 
 // Drip Email Campaign - Send scheduled emails based on user signup date
 // Call this endpoint via cron job (e.g., daily at 9am)
-app.post('/api/cron/send-drip-emails', async (req, res) => {
+app.get('/api/cron/send-drip-emails', async (req, res) => {
   // Accept both header and query parameter for secret (like daily-outreach)
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
   if (
@@ -11430,7 +11430,7 @@ Lines 4+: The full article content in Markdown format (start directly with conte
 
 // Daily automation: scrape + find emails + send
 // Set up as Render Cron Job: 0 9 * * * (9 AM UTC daily)
-app.post('/api/cron/daily-outreach', async (req, res) => {
+app.get('/api/cron/daily-outreach', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
   if (
     !safeCompare(cronSecret, process.env.CRON_SECRET) &&
