@@ -2313,7 +2313,7 @@ const LandingPage = () => {
               </div>
             </div>
 
-            <div style={{ position: 'relative' }}>
+            <div id="demo" style={{ position: 'relative' }}>
               <div
                 style={{
                   borderRadius: '8px',
@@ -2394,7 +2394,7 @@ const LandingPage = () => {
       </section>
 
       {/* Demo Video Section - Refined Walkthrough */}
-      <section id="demo" className="container" style={{ marginTop: '48px', marginBottom: '48px' }}>
+      <section className="container" style={{ marginTop: '48px', marginBottom: '48px' }}>
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <h2 style={{ fontSize: '20px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '6px' }}>
             See it in Action
