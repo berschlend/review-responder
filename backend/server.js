@@ -6954,7 +6954,7 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
 
 // Pre-Registration Drip Email Campaign - Nurture captured emails who haven't registered
 // Call this endpoint via cron job (e.g., daily at 10am)
-app.post('/api/cron/send-pre-registration-drips', async (req, res) => {
+app.get('/api/cron/send-pre-registration-drips', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
   if (
     !safeCompare(cronSecret, process.env.CRON_SECRET) &&
