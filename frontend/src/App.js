@@ -8786,19 +8786,19 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
         {generating ? (
           <>
             <Loader size={14} className="spin" style={{ marginRight: '6px' }} />
-            Generiere...
+            Generating...
           </>
         ) : (
           <>
             <Sparkles size={14} style={{ marginRight: '6px' }} />
-            Generieren
+            Generate
           </>
         )}
       </button>
 
       {remaining !== null && remaining < 10 && (
         <span style={{ fontSize: '12px', color: 'var(--gray-500)', marginLeft: '8px' }}>
-          ({remaining} Generierungen verbleibend heute)
+          ({remaining} generations remaining today)
         </span>
       )}
 

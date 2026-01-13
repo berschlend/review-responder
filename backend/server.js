@@ -110,9 +110,9 @@ async function sendEmail({
   replyTo = null,
   addTrackingPixel = false,
 }) {
-  // Determine provider based on type
-  // Marketing/Outreach → Brevo (300/day free), Transactional → Resend (100/day free)
-  const useBrevo = (type === 'marketing' || type === 'outreach') && brevoApi;
+  // CHANGED: Always try Brevo first (Resend quota exhausted)
+  // Brevo: 300/day free, Resend: 100/day free (but quota exhausted)
+  const useBrevo = brevoApi !== null;
   let provider = useBrevo ? 'brevo' : 'resend';
   let messageId = null;
   let error = null;
@@ -10603,6 +10603,31 @@ app.post('/api/outreach/test-email', async (req, res) => {
     });
   } catch (err) {
     console.error('Test email error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Debug email logs - see recent sent emails
+app.get('/api/admin/email-logs', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!process.env.ADMIN_SECRET || !safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const limit = parseInt(req.query.limit) || 20;
+    const result = await dbQuery(`
+      SELECT id, to_email, subject, type, campaign, provider, status, error, message_id, sent_at
+      FROM email_logs
+      ORDER BY sent_at DESC
+      LIMIT $1
+    `, [limit]);
+
+    res.json({
+      total: result.rows.length,
+      emails: result.rows
+    });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
