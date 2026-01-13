@@ -10232,8 +10232,44 @@ async function getTemplateForLeadWithABTest(sequenceNum, lead) {
   return { ...template, abVariant: null };
 }
 
+// Helper: Extract owner name from business name
+function getOwnerName(businessName) {
+  if (!businessName) return 'Owner';
+  // "Tony Quach & Co. CPA" → "Tony"
+  // "Mario's Pizza" → "Mario"
+  // "Smith Law Firm" → "Smith"
+  // "The Coffee House" → "The Coffee House" (keep full name if starts with "The")
+  const name = businessName.trim();
+  if (name.toLowerCase().startsWith('the ')) {
+    return 'The Team';
+  }
+  const firstWord = name.split(' ')[0].replace(/['']s?$/, '');
+  return firstWord || 'Owner';
+}
+
+// Helper: Get industry-specific context for better AI responses
+function getIndustryContext(businessType) {
+  const contexts = {
+    'accounting firm': 'CPA services, tax preparation, bookkeeping, financial accuracy',
+    'restaurant': 'food quality, dining experience, service, atmosphere',
+    'hotel': 'hospitality, guest comfort, cleanliness, amenities',
+    'dental office': 'dental care, patient comfort, oral health',
+    'law firm': 'legal services, client representation, professionalism',
+    'auto repair shop': 'vehicle repair, honest diagnostics, fair pricing',
+    'hair salon': 'styling, customer satisfaction, personal care',
+    'gym': 'fitness, equipment, cleanliness, member experience',
+    'real estate agency': 'property transactions, client service, local expertise',
+    'medical clinic': 'patient care, health services, medical expertise',
+    'retail store': 'product quality, customer service, shopping experience',
+    'spa': 'relaxation, wellness, treatment quality',
+    'veterinary clinic': 'pet care, animal health, compassionate service',
+    'physiotherapy': 'rehabilitation, patient recovery, therapeutic care',
+  };
+  return contexts[businessType?.toLowerCase()] || 'professional services, customer satisfaction';
+}
+
 // Helper: Generate AI response draft for a bad review (used in outreach emails)
-async function generateReviewAlertDraft(businessName, businessType, reviewText, reviewRating, reviewAuthor) {
+async function generateReviewAlertDraft(businessName, businessType, reviewText, reviewRating, reviewAuthor, city = null, googleRating = null, totalReviews = null) {
   try {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 

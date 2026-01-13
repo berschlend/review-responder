@@ -2326,10 +2326,13 @@ const LandingPage = () => {
         >
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '48px', alignItems: 'start' }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
                 <Chrome size={20} color="var(--primary)" strokeWidth={2.5} />
                 <span style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.05em', color: 'var(--primary)', textTransform: 'uppercase', background: 'rgba(79, 70, 229, 0.08)', padding: '2px 8px', borderRadius: '4px' }}>
                   Official Extension
+                </span>
+                <span style={{ fontSize: '10px', fontWeight: '600', color: '#059669', background: 'rgba(5, 150, 105, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>
+                  Chrome Web Store - Coming Soon
                 </span>
               </div>
               <h2 style={{ fontSize: '22px', fontWeight: '600', marginBottom: '12px', letterSpacing: '-0.01em' }}>
@@ -3346,7 +3349,7 @@ const RegisterPage = () => {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Sparkles size={12} style={{ color: 'var(--gray-400)' }} />
-            <span style={{ fontSize: '12px', color: 'var(--gray-400)' }}>20 free responses</span>
+            <span style={{ fontSize: '12px', color: 'var(--gray-400)' }}>20 free responses/month</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Shield size={12} style={{ color: 'var(--gray-400)' }} />
@@ -17932,6 +17935,11 @@ const ExtensionPage = () => {
           Install Chrome Extension
         </h1>
         <p style={{ color: 'var(--gray-600)' }}>3 simple steps - takes less than 1 minute</p>
+        <div style={{ background: 'rgba(5, 150, 105, 0.1)', padding: '12px 20px', borderRadius: '8px', marginTop: '16px', display: 'inline-block' }}>
+          <p style={{ margin: 0, fontSize: '14px', color: '#059669', fontWeight: '500' }}>
+            Coming soon to Chrome Web Store! For now, install manually below.
+          </p>
+        </div>
       </div>
 
       <div className="card" style={{ marginBottom: '24px' }}>
