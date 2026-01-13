@@ -1,6 +1,6 @@
 # ReviewResponder - Todo Liste
 
-> Letzte Aktualisierung: 13.01.2026
+> Letzte Aktualisierung: 14.01.2026
 
 ---
 
@@ -74,11 +74,8 @@
 
 ## 🟠 AKTUELL IN ARBEIT
 
-### Stripe Zahlungsmethoden Fix
-- [ ] **Stripe Link zeigt nicht alle Zahlungsmethoden** - PayPal, SEPA etc. fehlen im Checkout
-  - Checkout Session prüfen: `payment_method_types` korrekt?
-  - Stripe Dashboard prüfen: Sind alle Methoden aktiviert?
-  - Link (Stripe Wallet) Konfiguration checken
+### ✅ Stripe Zahlungsmethoden - ERLEDIGT (14.01.2026)
+- [x] PayPal, SEPA etc. im Stripe Dashboard aktiviert
 
 ### Chrome Extension Release v1.5.2
 - [x] Extension fertig testen - CLAUDE HAT GETESTET
@@ -143,12 +140,55 @@
 
 ---
 
-## 🟢 HEUTE ERLEDIGT (11.01.2026)
+## 🟢 HEUTE ERLEDIGT (14.01.2026)
+
+- [x] **Demo Generator implementiert** - Personalisierte Demos für Cold Outreach
+  - SerpAPI Integration für Google Review Scraping
+  - `POST /api/demo/generate` - Generiert Demo mit AI-Antworten
+  - `GET /api/public/demo/:token` - Public Demo Landing Page
+  - Frontend: `/demo/:token` Route mit DemoPage Komponente
+- [x] **LinkedIn Demo Outreach implementiert** - Personalisierte Connection Notes
+  - `POST /api/outreach/linkedin-demo` - Generiert Demo + Connection Note
+  - Database: linkedin_outreach erweitert mit demo_token, demo_url, connection_note
+- [x] **Admin Secret gespeichert** in `.claude/secrets.local`
+- [x] **GOOGLE_PLACES_API_KEY** - Funktioniert! (getestet 14.01.2026)
+
+## 🟢 ERLEDIGT (13.01.2026)
+
+- [x] **Twitter Auto-Post System** - Automatische Tweets für @ExecPsychology
+  - Endpoint: `GET /api/cron/twitter-post?secret=...`
+  - 5 Kategorien (business_psychology, review_management, etc.)
+  - AI-Slop Filter + Tweet-Generierung mit Claude Sonnet
+  - **Erster Tweet erfolgreich gepostet!**
+- [x] **Click-Tracking für Outreach Emails** - Messbar ob jemand klickt
+  - Neuer Endpoint: `/api/outreach/track-click` (Redirect-basiert)
+  - UTM-Parameter automatisch hinzugefügt
+- [x] **8 neue SEO Landing Pages** - Plattformen und Branchen erweitert
+  - Trustpilot, Airbnb, E-Commerce, Real Estate, Gym/Fitness, Veterinarian, Law Firm, Coffee Shop
+- [x] **Frontend Redesign mit Gemini MCP** - Komplette Landing Page überarbeitet
+- [x] **Review Alert Outreach System** - Personalisierte Emails mit AI-Draft
+- [x] **Sales Automation** - DACH-Städte + 4 neue Branchen
+- [x] **Reddit Auto-Responder** - Wartet auf API Keys (beantragt)
+- [x] **Twitter/X Engagement** - Tweet-Opportunities für manuelles Engagement
+- [x] **Blog SEO Verbesserungen** - Internal Linking + Schema.org Markup
+
+## 🟢 ERLEDIGT (12.01.2026)
+
+- [x] **SEO Auto-Pilot Blog** - Automatische Blog-Generierung mit Gemini 2.5 Pro
+  - Öffentlicher Blog unter `/blog` und `/blog/:slug`
+  - 25 SEO-optimierte Topics, Gemini 2.5 Pro mit Google Search Grounding
+- [x] **App Verification** - Homepage, Dashboard, AI Generation getestet
+- [x] **Email System auditiert** - Alle 18 Email-Typen geprüft
+- [x] **Fehlende Notification Functions** - Usage Alert, Plan Renewal, Weekly Summary
+
+## 🟢 ERLEDIGT (11.01.2026)
 
 - [x] **Video-Platzhalter auf Landing Page** - Extension Demo Preview mit Play-Button in Chrome Extension Section
 - [x] **Yelp Scan Reviews gefixt** - CSS-Selektoren für dynamische Klassen aktualisiert
 - [x] **Video-Strategie geplant** - 2 Videos (Extension Demo + Full Walkthrough)
 - [x] **Chrome Web Store Vorbereitung** - Store Listing + Account vorhanden
+- [x] **Dogfooding Section** - "Reviews About Us, Answered By Us"
+- [x] **Auto AI-Response für Testimonials** - Bei neuem Testimonial automatisch AI-Antwort
 
 ## 🟢 ERLEDIGT (10.01.2026)
 

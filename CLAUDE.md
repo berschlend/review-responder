@@ -265,26 +265,9 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 **Stand: 14.01.2026**
 
-### DRINGEND - GOOGLE_PLACES_API_KEY FIXEN:
+### ✅ GOOGLE_PLACES_API_KEY - FUNKTIONIERT (14.01.2026)
 
-**Problem:** Der Key in Render funktioniert nicht ("The provided API key is invalid").
-**Aber:** Places API ist aktiviert und hat 69 Requests in Google Cloud Dashboard.
-
-**Diagnose-Schritte:**
-1. User fragen: "Kopiere den GOOGLE_PLACES_API_KEY aus Render und gib ihn mir"
-2. Diesen Key direkt testen:
-   ```bash
-   curl "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=Hofbraeuhaus%20Munich&inputtype=textquery&fields=place_id&key=DER_KEY_HIER"
-   ```
-3. Wenn "invalid": Key in Google Cloud Console nochmal kopieren und in Render ersetzen
-4. Nach Fix LinkedIn Demo testen:
-   ```bash
-   curl -X POST https://review-responder.onrender.com/api/outreach/linkedin-demo \
-     -H "X-Admin-Key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U" \
-     -H "Content-Type: application/json" \
-     -d '{"name": "Test", "business_name": "Curry 36", "city": "Berlin"}'
-   ```
-5. Erwartetes Ergebnis: `has_reviews: true`, `reviews_processed: 3`
+Getestet mit LinkedIn Demo Endpoint - Ergebnis: `has_reviews: true`, `reviews_processed: 3`, `google_rating: 4.2`
 
 ### USER MUSS MACHEN:
 - [x] Demo-Video aufnehmen (2 Min Walkthrough) - DONE
@@ -465,7 +448,7 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
   - `GET /api/outreach/linkedin-pending` - Pending leads with demos
   - Database: linkedin_outreach erweitert mit demo_token, demo_url, connection_note, etc.
 - [x] **Admin Secret gespeichert** in `.claude/secrets.local`
-- [ ] **GOOGLE_PLACES_API_KEY fixen** - Key in Render funktioniert nicht (siehe oben)
+- [x] **GOOGLE_PLACES_API_KEY** - Funktioniert! (getestet 14.01.2026)
 
 ### ERLEDIGT (13.01.2026):
 - [x] **Twitter Auto-Post System** - Automatische Tweets für @ExecPsychology

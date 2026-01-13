@@ -20087,6 +20087,8 @@ const AdminPage = () => {
   const [usersLoading, setUsersLoading] = useState(false);
   const [salesData, setSalesData] = useState(null);
   const [salesLoading, setSalesLoading] = useState(false);
+  const [emailData, setEmailData] = useState(null);
+  const [emailLoading, setEmailLoading] = useState(false);
 
   // Use the same API_URL as the rest of the app (already includes /api)
   // Remove /api suffix if present to build admin URLs correctly
@@ -20208,6 +20210,23 @@ const AdminPage = () => {
     }
   };
 
+  const loadEmailData = async key => {
+    const keyToUse = key || adminKey;
+    if (!keyToUse) return;
+    setEmailLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/admin/email-dashboard`, {
+        headers: { 'X-Admin-Key': keyToUse },
+      });
+      setEmailData(res.data);
+    } catch (err) {
+      console.error('Email load error:', err);
+      toast.error('Failed to load email data');
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
   const updateStatus = async (id, status, note = '') => {
     setActionLoading(true);
     try {
@@ -20273,6 +20292,9 @@ const AdminPage = () => {
       }
       if (activeAdminTab === 'users' && !usersData) {
         loadUsersData();
+      }
+      if (activeAdminTab === 'email' && !emailData) {
+        loadEmailData();
       }
     }
   }, [activeAdminTab, isAuthenticated, adminKey]);
@@ -20375,6 +20397,12 @@ const AdminPage = () => {
           onClick={() => setActiveAdminTab('affiliates')}
         >
           Affiliates
+        </button>
+        <button
+          className={`btn ${activeAdminTab === 'email' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('email')}
+        >
+          Email
         </button>
       </div>
 
@@ -21395,6 +21423,252 @@ const AdminPage = () => {
                 Could not load outreach data
               </p>
               <button className="btn btn-primary" onClick={() => loadOutreachData()}>
+                Retry
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Email Tab - Unified Email Dashboard */}
+      {activeAdminTab === 'email' && (
+        <div>
+          {emailLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading email data...</div>
+          ) : emailData ? (
+            <>
+              {/* Provider Summary Cards */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                  gap: '16px',
+                  marginBottom: '24px',
+                }}
+              >
+                <div className="card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)', color: 'white' }}>
+                  <div style={{ fontSize: '32px', fontWeight: '700' }}>
+                    {emailData.summary?.total_sent || 0}
+                  </div>
+                  <div style={{ opacity: 0.9 }}>Total Sent</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: 'white' }}>
+                  <div style={{ fontSize: '32px', fontWeight: '700' }}>
+                    {emailData.summary?.total_today || 0}
+                  </div>
+                  <div style={{ opacity: 0.9 }}>Today</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)', color: 'white' }}>
+                  <div style={{ fontSize: '32px', fontWeight: '700' }}>
+                    {emailData.summary?.total_failed || 0}
+                  </div>
+                  <div style={{ opacity: 0.9 }}>Failed</div>
+                </div>
+              </div>
+
+              {/* Provider Breakdown */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                  gap: '16px',
+                  marginBottom: '24px',
+                }}
+              >
+                <div className="card">
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#8B5CF6' }}></span>
+                    Brevo (Marketing)
+                  </h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <div style={{ fontSize: '24px', fontWeight: '700' }}>{emailData.summary?.by_provider?.brevo?.sent || 0}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Sent</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#10B981' }}>{emailData.summary?.by_provider?.brevo?.today || 0}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Today</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#EF4444' }}>{emailData.summary?.by_provider?.brevo?.failed || 0}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Failed</div>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--gray-500)' }}>300/day free limit</div>
+                </div>
+
+                <div className="card">
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#F59E0B' }}></span>
+                    Resend (Transactional)
+                  </h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <div style={{ fontSize: '24px', fontWeight: '700' }}>{emailData.summary?.by_provider?.resend?.sent || 0}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Sent</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#10B981' }}>{emailData.summary?.by_provider?.resend?.today || 0}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Today</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#EF4444' }}>{emailData.summary?.by_provider?.resend?.failed || 0}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Failed</div>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--gray-500)' }}>100/day free limit</div>
+                </div>
+              </div>
+
+              {/* By Type & Campaign */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                  gap: '16px',
+                  marginBottom: '24px',
+                }}
+              >
+                {/* By Type */}
+                <div className="card">
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>By Type</h3>
+                  {emailData.byType?.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {emailData.byType.map(t => (
+                        <div key={t.type} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: 'var(--bg-secondary)', borderRadius: '6px' }}>
+                          <span style={{ fontWeight: '500', textTransform: 'capitalize' }}>{t.type}</span>
+                          <div style={{ display: 'flex', gap: '16px' }}>
+                            <span style={{ color: 'var(--gray-600)' }}>{t.sent} sent</span>
+                            {t.failed > 0 && <span style={{ color: '#EF4444' }}>{t.failed} failed</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ color: 'var(--gray-500)' }}>No data yet</p>
+                  )}
+                </div>
+
+                {/* Outreach Stats (from existing tracking) */}
+                <div className="card">
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Outreach Engagement</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div style={{ textAlign: 'center', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
+                      <div style={{ fontSize: '28px', fontWeight: '700', color: '#10B981' }}>{emailData.outreachStats?.opens || 0}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Total Opens</div>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
+                      <div style={{ fontSize: '28px', fontWeight: '700', color: '#3B82F6' }}>{emailData.outreachStats?.clicks || 0}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Total Clicks</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Campaign Performance */}
+              {emailData.byCampaign?.length > 0 && (
+                <div className="card" style={{ marginBottom: '24px' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Campaign Performance</h3>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
+                          <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>Campaign</th>
+                          <th style={{ textAlign: 'right', padding: '12px 8px', fontWeight: '600' }}>Sent</th>
+                          <th style={{ textAlign: 'right', padding: '12px 8px', fontWeight: '600' }}>Opens</th>
+                          <th style={{ textAlign: 'right', padding: '12px 8px', fontWeight: '600' }}>Clicks</th>
+                          <th style={{ textAlign: 'right', padding: '12px 8px', fontWeight: '600' }}>Open Rate</th>
+                          <th style={{ textAlign: 'right', padding: '12px 8px', fontWeight: '600' }}>Click Rate</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {emailData.byCampaign.map(c => (
+                          <tr key={c.campaign} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                            <td style={{ padding: '12px 8px', fontWeight: '500' }}>{c.campaign}</td>
+                            <td style={{ padding: '12px 8px', textAlign: 'right' }}>{c.sent}</td>
+                            <td style={{ padding: '12px 8px', textAlign: 'right', color: '#10B981' }}>{c.opens}</td>
+                            <td style={{ padding: '12px 8px', textAlign: 'right', color: '#3B82F6' }}>{c.clicks}</td>
+                            <td style={{ padding: '12px 8px', textAlign: 'right' }}>{c.openRate}</td>
+                            <td style={{ padding: '12px 8px', textAlign: 'right' }}>{c.clickRate}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Recent Emails */}
+              <div className="card">
+                <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Recent Emails</h3>
+                {emailData.recentEmails?.length > 0 ? (
+                  <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                    {emailData.recentEmails.map(email => (
+                      <div
+                        key={email.id}
+                        style={{
+                          padding: '12px',
+                          borderBottom: '1px solid var(--border-color)',
+                          display: 'grid',
+                          gridTemplateColumns: '1fr auto auto auto',
+                          gap: '12px',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: '500', fontSize: '13px' }}>{email.to}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{email.subject}</div>
+                        </div>
+                        <div style={{
+                          fontSize: '11px',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          background: email.provider === 'brevo' ? '#EDE9FE' : '#FEF3C7',
+                          color: email.provider === 'brevo' ? '#6D28D9' : '#D97706',
+                          fontWeight: '500'
+                        }}>
+                          {email.provider}
+                        </div>
+                        <div style={{
+                          fontSize: '11px',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          background: email.status === 'sent' ? '#D1FAE5' : '#FEE2E2',
+                          color: email.status === 'sent' ? '#059669' : '#DC2626',
+                          fontWeight: '500'
+                        }}>
+                          {email.status}
+                        </div>
+                        <div style={{ fontSize: '12px', color: 'var(--gray-500)', whiteSpace: 'nowrap' }}>
+                          {email.sentAt ? new Date(email.sentAt).toLocaleString() : '-'}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ color: 'var(--gray-500)' }}>No emails logged yet. Emails will appear here after the next send.</p>
+                )}
+              </div>
+
+              {/* Refresh Button */}
+              <div style={{ marginTop: '24px', textAlign: 'center' }}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setEmailData(null);
+                    loadEmailData();
+                  }}
+                >
+                  Refresh Data
+                </button>
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+                Could not load email data
+              </p>
+              <button className="btn btn-primary" onClick={() => loadEmailData()}>
                 Retry
               </button>
             </div>

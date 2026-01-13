@@ -81,63 +81,160 @@ const OUTREACH_FROM_EMAIL =
   process.env.OUTREACH_FROM_EMAIL || 'Berend von ReviewResponder <outreach@tryreviewresponder.com>';
 
 // ==========================================
-// OUTREACH EMAIL HELPER - WITH OPEN TRACKING
+// UNIFIED EMAIL SYSTEM - Central Router
 // ==========================================
+// Routes emails to Brevo (marketing) or Resend (transactional)
+// Logs all emails to email_logs table for dashboard
 
-// Generate tracking pixel HTML for email open tracking
-function getTrackingPixel(email, campaign = 'main') {
-  const BACKEND_URL = process.env.BACKEND_URL || 'https://review-responder.onrender.com';
-  const encodedEmail = encodeURIComponent(email);
-  const encodedCampaign = encodeURIComponent(campaign);
-  return `<img src="${BACKEND_URL}/api/outreach/track-open?email=${encodedEmail}&campaign=${encodedCampaign}" width="1" height="1" style="display:none;width:1px;height:1px;border:0;" alt="" />`;
+/**
+ * Central email function with provider routing and logging
+ * @param {Object} params
+ * @param {string} params.to - Recipient email
+ * @param {string} params.subject - Email subject
+ * @param {string} params.html - HTML content
+ * @param {string} params.type - 'transactional' | 'marketing' | 'outreach'
+ * @param {string} params.campaign - Campaign identifier for tracking
+ * @param {Array} params.tags - Additional tags for analytics
+ * @param {string} params.from - Custom from address (optional)
+ * @param {string} params.replyTo - Reply-to address (optional)
+ * @param {boolean} params.addTrackingPixel - Add open tracking pixel (default: false for transactional)
+ */
+async function sendEmail({
+  to,
+  subject,
+  html,
+  type = 'transactional',
+  campaign = null,
+  tags = [],
+  from = null,
+  replyTo = null,
+  addTrackingPixel = false,
+}) {
+  // Determine provider based on type
+  // Marketing/Outreach → Brevo (300/day free), Transactional → Resend (100/day free)
+  const useBrevo = (type === 'marketing' || type === 'outreach') && brevoApi;
+  let provider = useBrevo ? 'brevo' : 'resend';
+  let messageId = null;
+  let error = null;
+
+  // Add tracking pixel for marketing/outreach emails
+  let finalHtml = html;
+  if (addTrackingPixel && campaign) {
+    const BACKEND_URL = process.env.BACKEND_URL || 'https://review-responder.onrender.com';
+    const trackingPixel = `<img src="${BACKEND_URL}/api/outreach/track-open?email=${encodeURIComponent(to)}&campaign=${encodeURIComponent(campaign)}" width="1" height="1" style="display:none;" alt="" />`;
+    finalHtml = html + trackingPixel;
+  }
+
+  // Determine sender
+  const fromAddress = from || (type === 'outreach' ? OUTREACH_FROM_EMAIL : FROM_EMAIL);
+
+  try {
+    if (useBrevo) {
+      // Send via Brevo
+      try {
+        const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+        sendSmtpEmail.subject = subject;
+        sendSmtpEmail.htmlContent = finalHtml;
+
+        // Parse from address
+        const fromMatch = fromAddress.match(/^(.+?)\s*<(.+)>$/);
+        if (fromMatch) {
+          sendSmtpEmail.sender = { name: fromMatch[1].trim(), email: fromMatch[2].trim() };
+        } else {
+          sendSmtpEmail.sender = { name: 'ReviewResponder', email: fromAddress };
+        }
+
+        sendSmtpEmail.to = [{ email: to }];
+        sendSmtpEmail.tags = [type, campaign, ...tags.map(t => t.value || t.name || t)].filter(Boolean);
+
+        if (replyTo) {
+          sendSmtpEmail.replyTo = { email: replyTo };
+        }
+
+        const result = await brevoApi.sendTransacEmail(sendSmtpEmail);
+        messageId = result.body?.messageId || result.messageId;
+        console.log(`[Brevo] ${type} email sent to ${to} (campaign: ${campaign || 'none'})`);
+      } catch (brevoError) {
+        console.error(`[Brevo] Failed: ${brevoError.message}, falling back to Resend`);
+        provider = 'resend';
+        // Fall through to Resend
+      }
+    }
+
+    // Send via Resend (primary for transactional, fallback for marketing)
+    if (provider === 'resend') {
+      if (!resend) {
+        throw new Error('No email provider available (RESEND_API_KEY required)');
+      }
+
+      const resendTags = [...tags];
+      if (campaign && !resendTags.find(t => t.name === 'campaign')) {
+        resendTags.push({ name: 'campaign', value: campaign });
+      }
+      if (!resendTags.find(t => t.name === 'type')) {
+        resendTags.push({ name: 'type', value: type });
+      }
+
+      const emailOptions = {
+        from: fromAddress,
+        to,
+        subject,
+        html: finalHtml,
+        tags: resendTags,
+      };
+
+      if (replyTo) {
+        emailOptions.replyTo = replyTo;
+      }
+
+      const result = await resend.emails.send(emailOptions);
+      messageId = result.id;
+      console.log(`[Resend] ${type} email sent to ${to} (campaign: ${campaign || 'none'})`);
+    }
+
+    // Log successful email to DB (non-blocking)
+    pool
+      .query(
+        `INSERT INTO email_logs (to_email, subject, type, campaign, provider, status, message_id, sent_at)
+       VALUES ($1, $2, $3, $4, $5, 'sent', $6, NOW())`,
+        [to, subject.substring(0, 255), type, campaign, provider, messageId]
+      )
+      .catch(logErr => console.error('[Email Log] Failed to log:', logErr.message));
+
+    return { success: true, provider, messageId };
+  } catch (err) {
+    error = err.message;
+    console.error(`[Email] Failed to send ${type} email to ${to}:`, error);
+
+    // Log failed email to DB (non-blocking)
+    pool
+      .query(
+        `INSERT INTO email_logs (to_email, subject, type, campaign, provider, status, error, sent_at)
+       VALUES ($1, $2, $3, $4, $5, 'failed', $6, NOW())`,
+        [to, subject.substring(0, 255), type, campaign, provider, error]
+      )
+      .catch(logErr => console.error('[Email Log] Failed to log error:', logErr.message));
+
+    throw err;
+  }
 }
 
-// Send outreach email with automatic tracking pixel injection
-// Uses Brevo (300/day free) if available, falls back to Resend
+// ==========================================
+// OUTREACH EMAIL HELPER - WITH OPEN TRACKING
+// ==========================================
+// Wrapper around sendEmail() for backwards compatibility
+// Automatically adds tracking pixel and uses 'outreach' type
+
 async function sendOutreachEmail({ to, subject, html, campaign = 'main', tags = [] }) {
-  // Add tracking pixel at the end of the email body
-  const trackingPixel = getTrackingPixel(to, campaign);
-  const htmlWithTracking = html + trackingPixel;
-
-  // Try Brevo first (higher free tier: 300/day vs Resend's 100/day)
-  if (brevoApi) {
-    try {
-      const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-      sendSmtpEmail.subject = subject;
-      sendSmtpEmail.htmlContent = htmlWithTracking;
-      sendSmtpEmail.sender = { name: 'Berend von ReviewResponder', email: 'outreach@tryreviewresponder.com' };
-      sendSmtpEmail.to = [{ email: to }];
-      sendSmtpEmail.tags = [campaign, ...tags.map(t => t.value || t.name)];
-
-      const result = await brevoApi.sendTransacEmail(sendSmtpEmail);
-      console.log(`[Brevo] Email sent to ${to} (campaign: ${campaign})`);
-      return { id: result.body?.messageId || result.messageId, provider: 'brevo' };
-    } catch (brevoError) {
-      console.error('[Brevo] Failed, falling back to Resend:', brevoError.message);
-      // Fall through to Resend
-    }
-  }
-
-  // Fallback to Resend
-  if (!resend) {
-    throw new Error('No email provider configured (BREVO_API_KEY or RESEND_API_KEY required)');
-  }
-
-  // Add campaign tag if not already present
-  const allTags = [...tags];
-  if (!allTags.find(t => t.name === 'campaign')) {
-    allTags.push({ name: 'campaign', value: campaign });
-  }
-
-  const result = await resend.emails.send({
-    from: OUTREACH_FROM_EMAIL,
+  return sendEmail({
     to,
     subject,
-    html: htmlWithTracking,
-    tags: allTags,
+    html,
+    type: 'outreach',
+    campaign,
+    tags,
+    addTrackingPixel: true,
   });
-  console.log(`[Resend] Email sent to ${to} (campaign: ${campaign})`);
-  return { ...result, provider: 'resend' };
 }
 
 // ==========================================
@@ -146,16 +243,17 @@ async function sendOutreachEmail({ to, subject, html, campaign = 'main', tags = 
 
 // Send Usage Alert Email (when user reaches 80% of limit)
 async function sendUsageAlertEmail(user) {
-  if (!resend) return false;
+  if (!resend && !brevoApi) return false;
   if (!user.email_usage_alerts) return false; // Respect user preference
 
   const FRONTEND_URL = process.env.FRONTEND_URL || 'https://tryreviewresponder.com';
 
   try {
-    await resend.emails.send({
-      from: FROM_EMAIL,
+    await sendEmail({
       to: user.email,
       subject: "You've used 80% of your monthly responses",
+      type: 'transactional',
+      campaign: 'usage_alert',
       html: `
         <!DOCTYPE html>
         <html>
@@ -203,26 +301,27 @@ async function sendUsageAlertEmail(user) {
         </html>
       `,
     });
-    console.log(`Usage alert email sent to ${user.email}`);
+    console.log(`[Email] Usage alert sent to ${user.email}`);
     return true;
   } catch (error) {
-    console.error('Failed to send usage alert email:', error);
+    console.error('[Email] Failed to send usage alert:', error.message);
     return false;
   }
 }
 
 // Send Plan Renewal Email (when subscription renews)
 async function sendPlanRenewalEmail(user) {
-  if (!resend) return false;
+  if (!resend && !brevoApi) return false;
   if (!user.email_billing_updates) return false; // Respect user preference
 
   const FRONTEND_URL = process.env.FRONTEND_URL || 'https://tryreviewresponder.com';
 
   try {
-    await resend.emails.send({
-      from: FROM_EMAIL,
+    await sendEmail({
       to: user.email,
       subject: 'Your ReviewResponder subscription has renewed',
+      type: 'transactional',
+      campaign: 'billing',
       html: `
         <!DOCTYPE html>
         <html>
@@ -269,10 +368,10 @@ async function sendPlanRenewalEmail(user) {
         </html>
       `,
     });
-    console.log(`Plan renewal email sent to ${user.email}`);
+    console.log(`[Email] Plan renewal sent to ${user.email}`);
     return true;
   } catch (error) {
-    console.error('Failed to send plan renewal email:', error);
+    console.error('[Email] Failed to send plan renewal:', error.message);
     return false;
   }
 }
@@ -618,6 +717,34 @@ async function initDatabase() {
       await dbQuery(`CREATE INDEX IF NOT EXISTS idx_outreach_clicks_campaign ON outreach_clicks(campaign)`);
     } catch (error) {
       // Index might already exist
+    }
+
+    // Unified email logs table (for dashboard - tracks all emails from all providers)
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS email_logs (
+        id SERIAL PRIMARY KEY,
+        to_email TEXT NOT NULL,
+        subject TEXT,
+        type TEXT NOT NULL,
+        campaign TEXT,
+        provider TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
+        message_id TEXT,
+        error TEXT,
+        sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        opened_at TIMESTAMP,
+        clicked_at TIMESTAMP
+      )
+    `);
+
+    // Add indexes for email logs
+    try {
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_email_logs_type ON email_logs(type)`);
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_email_logs_provider ON email_logs(provider)`);
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_email_logs_sent_at ON email_logs(sent_at)`);
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_email_logs_campaign ON email_logs(campaign)`);
+    } catch (error) {
+      // Indexes might already exist
     }
 
     // Demo generations table for personalized outreach demos
@@ -8509,6 +8636,166 @@ app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
   } catch (error) {
     console.error('Sales dashboard error:', error);
     res.status(500).json({ error: 'Failed to get sales dashboard', details: error.message });
+  }
+});
+
+// GET /api/admin/email-dashboard - Unified email dashboard for both providers
+app.get('/api/admin/email-dashboard', authenticateAdmin, async (req, res) => {
+  try {
+    // Summary stats from email_logs
+    let summary = {
+      total_sent: 0,
+      total_today: 0,
+      total_failed: 0,
+      by_provider: { brevo: { sent: 0, today: 0, failed: 0 }, resend: { sent: 0, today: 0, failed: 0 } },
+    };
+
+    try {
+      const stats = await dbAll(`
+        SELECT
+          provider,
+          COUNT(*) FILTER (WHERE status = 'sent') as sent,
+          COUNT(*) FILTER (WHERE status = 'sent' AND sent_at > NOW() - INTERVAL '24 hours') as today,
+          COUNT(*) FILTER (WHERE status = 'failed') as failed
+        FROM email_logs
+        GROUP BY provider
+      `);
+
+      for (const s of stats) {
+        if (s.provider === 'brevo' || s.provider === 'resend') {
+          summary.by_provider[s.provider] = {
+            sent: parseInt(s.sent) || 0,
+            today: parseInt(s.today) || 0,
+            failed: parseInt(s.failed) || 0,
+          };
+        }
+      }
+
+      summary.total_sent =
+        summary.by_provider.brevo.sent + summary.by_provider.resend.sent;
+      summary.total_today =
+        summary.by_provider.brevo.today + summary.by_provider.resend.today;
+      summary.total_failed =
+        summary.by_provider.brevo.failed + summary.by_provider.resend.failed;
+    } catch (e) {
+      console.error('Email summary query error:', e.message);
+    }
+
+    // Stats by email type
+    let byType = [];
+    try {
+      byType = await dbAll(`
+        SELECT
+          type,
+          COUNT(*) FILTER (WHERE status = 'sent') as sent,
+          COUNT(*) FILTER (WHERE status = 'failed') as failed
+        FROM email_logs
+        GROUP BY type
+        ORDER BY sent DESC
+      `);
+    } catch (e) {
+      console.error('Email by type query error:', e.message);
+    }
+
+    // Stats by campaign (for marketing/outreach)
+    let byCampaign = [];
+    try {
+      byCampaign = await dbAll(`
+        SELECT
+          campaign,
+          COUNT(*) as sent,
+          COUNT(*) FILTER (WHERE opened_at IS NOT NULL) as opens,
+          COUNT(*) FILTER (WHERE clicked_at IS NOT NULL) as clicks
+        FROM email_logs
+        WHERE campaign IS NOT NULL AND status = 'sent'
+        GROUP BY campaign
+        ORDER BY sent DESC
+        LIMIT 20
+      `);
+    } catch (e) {
+      console.error('Email by campaign query error:', e.message);
+    }
+
+    // Also include outreach_tracking data (existing open tracking)
+    let outreachStats = { opens: 0, clicks: 0 };
+    try {
+      const opens = await dbGet(`SELECT COUNT(*) as count FROM outreach_tracking`);
+      const clicks = await dbGet(`SELECT COUNT(*) as count FROM outreach_clicks`);
+      outreachStats = {
+        opens: parseInt(opens?.count) || 0,
+        clicks: parseInt(clicks?.count) || 0,
+      };
+    } catch (e) {
+      console.error('Outreach stats query error:', e.message);
+    }
+
+    // Recent emails
+    let recentEmails = [];
+    try {
+      recentEmails = await dbAll(`
+        SELECT id, to_email, subject, type, campaign, provider, status, sent_at
+        FROM email_logs
+        ORDER BY sent_at DESC
+        LIMIT 50
+      `);
+    } catch (e) {
+      console.error('Recent emails query error:', e.message);
+    }
+
+    // Daily trend (last 14 days)
+    let dailyTrend = [];
+    try {
+      dailyTrend = await dbAll(`
+        SELECT
+          DATE(sent_at) as date,
+          COUNT(*) FILTER (WHERE provider = 'brevo') as brevo,
+          COUNT(*) FILTER (WHERE provider = 'resend') as resend,
+          COUNT(*) as total
+        FROM email_logs
+        WHERE sent_at > NOW() - INTERVAL '14 days' AND status = 'sent'
+        GROUP BY DATE(sent_at)
+        ORDER BY date DESC
+      `);
+    } catch (e) {
+      console.error('Daily trend query error:', e.message);
+    }
+
+    res.json({
+      summary,
+      byType: byType.map(t => ({
+        type: t.type,
+        sent: parseInt(t.sent) || 0,
+        failed: parseInt(t.failed) || 0,
+      })),
+      byCampaign: byCampaign.map(c => ({
+        campaign: c.campaign,
+        sent: parseInt(c.sent) || 0,
+        opens: parseInt(c.opens) || 0,
+        clicks: parseInt(c.clicks) || 0,
+        openRate: c.sent > 0 ? ((c.opens / c.sent) * 100).toFixed(1) + '%' : '0%',
+        clickRate: c.sent > 0 ? ((c.clicks / c.sent) * 100).toFixed(1) + '%' : '0%',
+      })),
+      outreachStats,
+      recentEmails: recentEmails.map(e => ({
+        id: e.id,
+        to: e.to_email,
+        subject: e.subject?.substring(0, 50) + (e.subject?.length > 50 ? '...' : ''),
+        type: e.type,
+        campaign: e.campaign,
+        provider: e.provider,
+        status: e.status,
+        sentAt: e.sent_at,
+      })),
+      dailyTrend: dailyTrend.map(d => ({
+        date: d.date,
+        brevo: parseInt(d.brevo) || 0,
+        resend: parseInt(d.resend) || 0,
+        total: parseInt(d.total) || 0,
+      })),
+    });
+  } catch (error) {
+    console.error('Email dashboard error:', error);
+    res.status(500).json({ error: 'Failed to get email dashboard', details: error.message });
   }
 });
 
