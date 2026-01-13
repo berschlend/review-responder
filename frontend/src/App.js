@@ -2221,7 +2221,7 @@ const LandingPage = () => {
                 Get Started Free
               </Link>
               <a
-                href="#demo"
+                href="#walkthrough-demo"
                 className="btn btn-secondary"
                 style={{ padding: '0 20px', height: '44px', display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '6px', fontWeight: '600', fontSize: '14px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
               >
@@ -2437,7 +2437,7 @@ const LandingPage = () => {
       </section>
 
       {/* Demo Video Section - Refined Walkthrough */}
-      <section className="container" style={{ marginTop: '48px', marginBottom: '48px' }}>
+      <section id="walkthrough-demo" className="container" style={{ marginTop: '48px', marginBottom: '48px' }}>
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <h2 style={{ fontSize: '20px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '6px' }}>
             See it in Action

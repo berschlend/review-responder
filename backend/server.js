@@ -8394,6 +8394,147 @@ app.get('/api/outreach/stats', async (req, res) => {
   }
 });
 
+// POST /api/admin/import-leads - Import scraped leads (G2, Yelp, TripAdvisor)
+app.post('/api/admin/import-leads', async (req, res) => {
+  try {
+    const authKey = req.headers['x-admin-key'] || req.query.key;
+    if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { leads } = req.body;
+    if (!leads || !Array.isArray(leads)) {
+      return res.status(400).json({ error: 'leads array required' });
+    }
+
+    const imported = [];
+    const skipped = [];
+
+    for (const lead of leads) {
+      try {
+        // Determine lead type based on source
+        let leadType = 'restaurant';
+        if (lead.source?.toLowerCase().includes('g2')) {
+          leadType = 'g2_competitor';
+        } else if (lead.source?.toLowerCase().includes('tripadvisor')) {
+          leadType = 'tripadvisor';
+        } else if (lead.source?.toLowerCase().includes('yelp')) {
+          leadType = 'yelp';
+        }
+
+        // Extract competitor platform from source (e.g., "G2.com Birdeye Reviews" -> "birdeye")
+        let competitorPlatform = null;
+        if (leadType === 'g2_competitor') {
+          const match = lead.source?.match(/g2.*?(birdeye|podium|yext|reputation)/i);
+          if (match) {
+            competitorPlatform = match[1].toLowerCase();
+          }
+        }
+
+        // Insert lead
+        const result = await dbQuery(
+          `INSERT INTO outreach_leads (
+            business_name, business_type, address, city, country,
+            phone, website, email, contact_name, source,
+            lead_type, competitor_platform, pain_points, platform_url,
+            job_title, company_size, review_quote, outreach_angle,
+            google_rating, google_reviews_count, status
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, 'new')
+          ON CONFLICT (business_name, city) DO UPDATE SET
+            phone = COALESCE(EXCLUDED.phone, outreach_leads.phone),
+            website = COALESCE(EXCLUDED.website, outreach_leads.website),
+            email = COALESCE(EXCLUDED.email, outreach_leads.email),
+            contact_name = COALESCE(EXCLUDED.contact_name, outreach_leads.contact_name),
+            lead_type = EXCLUDED.lead_type,
+            competitor_platform = EXCLUDED.competitor_platform,
+            pain_points = EXCLUDED.pain_points,
+            platform_url = EXCLUDED.platform_url,
+            job_title = EXCLUDED.job_title,
+            company_size = EXCLUDED.company_size,
+            review_quote = EXCLUDED.review_quote,
+            outreach_angle = EXCLUDED.outreach_angle
+          RETURNING id, business_name`,
+          [
+            lead.name || lead.business_name,
+            lead.type || lead.business_type || 'unknown',
+            lead.address || null,
+            lead.city || 'Unknown',
+            lead.country || 'DE',
+            lead.phone || null,
+            lead.website || null,
+            lead.email || null,
+            lead.contact_name || lead.title || null,
+            lead.source || 'manual_import',
+            leadType,
+            competitorPlatform,
+            lead.pain_points ? `{${lead.pain_points.map(p => `"${p.replace(/"/g, '\\"')}"`).join(',')}}` : null,
+            lead.platform_url || lead.yelp_url || lead.tripadvisor_url || null,
+            lead.title || lead.job_title || null,
+            lead.company_size || null,
+            lead.quote || lead.review_quote || null,
+            lead.outreach_angle || null,
+            lead.rating ? parseFloat(lead.rating) : null,
+            lead.reviews ? parseInt(lead.reviews) : null,
+          ]
+        );
+        imported.push({ id: result.id, name: result.business_name });
+      } catch (err) {
+        console.error('Import lead error:', err.message);
+        skipped.push({ name: lead.name || lead.business_name, error: err.message });
+      }
+    }
+
+    res.json({
+      success: true,
+      imported: imported.length,
+      skipped: skipped.length,
+      imported_leads: imported,
+      skipped_leads: skipped,
+    });
+  } catch (error) {
+    console.error('Import leads error:', error);
+    res.status(500).json({ error: 'Failed to import leads' });
+  }
+});
+
+// GET /api/admin/scraped-leads - Get all scraped leads
+app.get('/api/admin/scraped-leads', async (req, res) => {
+  try {
+    const authKey = req.headers['x-admin-key'] || req.query.key;
+    if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { lead_type, status, limit = 50 } = req.query;
+
+    let query = `SELECT * FROM outreach_leads WHERE 1=1`;
+    const params = [];
+    let paramIndex = 1;
+
+    if (lead_type) {
+      query += ` AND lead_type = $${paramIndex++}`;
+      params.push(lead_type);
+    }
+    if (status) {
+      query += ` AND status = $${paramIndex++}`;
+      params.push(status);
+    }
+
+    query += ` ORDER BY created_at DESC LIMIT $${paramIndex}`;
+    params.push(parseInt(limit));
+
+    const leads = await dbQuery(query, params);
+
+    res.json({
+      total: leads.length,
+      leads: leads,
+    });
+  } catch (error) {
+    console.error('Get scraped leads error:', error);
+    res.status(500).json({ error: 'Failed to get leads' });
+  }
+});
+
 // ==========================================
 // AUTOMATED OUTREACH SYSTEM
 // Fully automated lead generation & cold email
@@ -8679,6 +8820,84 @@ P.S. Bin der Gründer, bei Fragen einfach antworten.`,
   },
 };
 
+// Email templates for G2 COMPETITOR outreach - targeting unhappy Birdeye/Podium users
+const G2_COMPETITOR_TEMPLATES_EN = {
+  sequence1: {
+    subject: 'Saw your {competitor_platform} review - found something simpler',
+    body: `Hi{contact_name_greeting},
+
+I saw your G2 review about {competitor_platform} - sounds like a frustrating experience.
+
+"{review_quote}"
+
+I hear this feedback a lot. That's why I built ReviewResponder - no complex platform, no daily bugs.
+
+Just AI that writes professional review responses in 3 seconds.
+
+Try 20 free responses: https://tryreviewresponder.com?ref=g2
+
+Best,
+Berend
+
+P.S. I'm the founder. If you have questions, just reply.`,
+  },
+  sequence2: {
+    subject: 'Re: {competitor_platform} alternative',
+    body: `Hey{contact_name_greeting},
+
+Quick follow-up on my last email.
+
+I know switching tools is a hassle. But if you're still dealing with:
+- Bugs every day
+- Slow support
+- Features that don't work
+
+Maybe worth a quick look: https://tryreviewresponder.com?ref=g2
+
+Cheers,
+Berend`,
+  },
+};
+
+// Email templates for G2 COMPETITOR outreach - GERMAN
+const G2_COMPETITOR_TEMPLATES_DE = {
+  sequence1: {
+    subject: 'Ihre {competitor_platform} Bewertung - einfachere Alternative gefunden',
+    body: `Hi{contact_name_greeting},
+
+ich habe Ihre G2 Bewertung zu {competitor_platform} gesehen - klingt nach einer frustrierenden Erfahrung.
+
+"{review_quote}"
+
+Dieses Feedback höre ich oft. Deshalb habe ich ReviewResponder gebaut - keine komplexe Plattform, keine täglichen Bugs.
+
+Einfach KI die professionelle Review-Antworten in 3 Sekunden schreibt.
+
+20 kostenlose Antworten testen: https://tryreviewresponder.com?ref=g2
+
+Grüße,
+Berend
+
+P.S. Bin der Gründer. Bei Fragen einfach antworten.`,
+  },
+  sequence2: {
+    subject: 'Re: {competitor_platform} Alternative',
+    body: `Hey{contact_name_greeting},
+
+kurzes Follow-up zu meiner letzten Mail.
+
+Ich weiß, Tool-Wechsel sind nervig. Aber falls Sie noch kämpfen mit:
+- Tägliche Bugs
+- Langsamer Support
+- Features die nicht funktionieren
+
+Vielleicht einen kurzen Blick wert: https://tryreviewresponder.com?ref=g2
+
+Grüße,
+Berend`,
+  },
+};
+
 // Combined templates with language selection
 const EMAIL_TEMPLATES = {
   sequence1: EMAIL_TEMPLATES_EN.sequence1,
@@ -8690,11 +8909,23 @@ const EMAIL_TEMPLATES = {
   // Review alert templates (only sequence 1 - one-shot value delivery)
   review_alert: REVIEW_ALERT_TEMPLATES_EN.sequence1,
   review_alert_de: REVIEW_ALERT_TEMPLATES_DE.sequence1,
+  // G2 competitor templates (for unhappy Birdeye/Podium users)
+  g2_competitor_1: G2_COMPETITOR_TEMPLATES_EN.sequence1,
+  g2_competitor_2: G2_COMPETITOR_TEMPLATES_EN.sequence2,
+  g2_competitor_1_de: G2_COMPETITOR_TEMPLATES_DE.sequence1,
+  g2_competitor_2_de: G2_COMPETITOR_TEMPLATES_DE.sequence2,
 };
 
-// Helper: Get template based on language and review status
+// Helper: Get template based on language, lead type, and review status
 function getTemplateForLead(sequenceNum, lead) {
   const lang = detectLanguage(lead.city);
+
+  // G2 competitor leads (unhappy Birdeye/Podium users)
+  if (lead.lead_type === 'g2_competitor' && sequenceNum <= 2) {
+    return lang === 'de'
+      ? EMAIL_TEMPLATES[`g2_competitor_${sequenceNum}_de`]
+      : EMAIL_TEMPLATES[`g2_competitor_${sequenceNum}`];
+  }
 
   // For leads with bad reviews, use the review alert template (only for first email)
   if (lead.has_bad_review && lead.ai_response_draft && sequenceNum === 1) {
@@ -8849,6 +9080,21 @@ function fillEmailTemplate(template, lead, campaign = 'main') {
         : lead.worst_review_text)
     : '';
 
+  // G2 competitor specific: format competitor platform name
+  const competitorPlatformFormatted = lead.competitor_platform
+    ? lead.competitor_platform.charAt(0).toUpperCase() + lead.competitor_platform.slice(1)
+    : 'your current tool';
+
+  // G2 competitor specific: contact name greeting (with leading space if name exists)
+  const contactNameGreeting = lead.contact_name ? ` ${lead.contact_name}` : '';
+
+  // G2 competitor specific: review quote (truncated)
+  const reviewQuote = lead.review_quote
+    ? (lead.review_quote.length > 120
+        ? lead.review_quote.substring(0, 117) + '...'
+        : lead.review_quote)
+    : '';
+
   const replacements = {
     '{business_name}': lead.business_name || 'your business',
     '{business_type}': lead.business_type || 'business',
@@ -8861,6 +9107,10 @@ function fillEmailTemplate(template, lead, campaign = 'main') {
     '{review_text_truncated}': reviewTextTruncated,
     '{review_author}': lead.worst_review_author || 'a customer',
     '{ai_response_draft}': lead.ai_response_draft || '',
+    // G2 competitor specific replacements
+    '{competitor_platform}': competitorPlatformFormatted,
+    '{contact_name_greeting}': contactNameGreeting,
+    '{review_quote}': reviewQuote,
   };
 
   for (const [key, value] of Object.entries(replacements)) {
@@ -10325,9 +10575,14 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
             html: template.body.replace(/\n/g, '<br>'),
           });
 
-          // Track if this was a review alert email
-          const campaign = lead.has_bad_review && lead.ai_response_draft ? 'review_alert' : 'main';
-          if (campaign === 'review_alert') reviewAlertsSent++;
+          // Track email campaign type
+          let campaign = 'main';
+          if (lead.lead_type === 'g2_competitor') {
+            campaign = 'g2_competitor';
+          } else if (lead.has_bad_review && lead.ai_response_draft) {
+            campaign = 'review_alert';
+            reviewAlertsSent++;
+          }
 
           await dbQuery(
             `
