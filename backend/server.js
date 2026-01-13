@@ -9438,6 +9438,64 @@ app.get('/api/admin/scraped-leads', async (req, res) => {
   }
 });
 
+// GET /api/admin/clickers - Get leads who clicked email links (HOT LEADS!)
+app.get('/api/admin/clickers', async (req, res) => {
+  try {
+    const authKey = req.headers['x-admin-key'] || req.query.key;
+    if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Get unique clickers with their lead details
+    const clickers = await dbAll(`
+      SELECT DISTINCT ON (c.email)
+        c.email,
+        c.campaign,
+        c.clicked_url,
+        c.clicked_at,
+        l.id as lead_id,
+        l.business_name,
+        l.business_type,
+        l.city,
+        l.phone,
+        l.website,
+        l.contact_name,
+        l.lead_type,
+        l.google_reviews_count
+      FROM outreach_clicks c
+      LEFT JOIN outreach_leads l ON LOWER(c.email) = LOWER(l.email)
+      ORDER BY c.email, c.clicked_at DESC
+    `);
+
+    // Format for easy LinkedIn search
+    const formattedClickers = clickers.map(c => ({
+      email: c.email,
+      business_name: c.business_name || 'Unknown',
+      contact_name: c.contact_name || null,
+      city: c.city || null,
+      phone: c.phone || null,
+      website: c.website || null,
+      lead_type: c.lead_type || 'unknown',
+      reviews: c.google_reviews_count || null,
+      clicked_at: c.clicked_at,
+      campaign: c.campaign,
+      // For LinkedIn search
+      linkedin_search: c.contact_name
+        ? `${c.contact_name} ${c.business_name}`
+        : c.business_name,
+    }));
+
+    res.json({
+      total: formattedClickers.length,
+      message: 'These leads clicked your email links - CONTACT THEM!',
+      clickers: formattedClickers,
+    });
+  } catch (error) {
+    console.error('Get clickers error:', error);
+    res.status(500).json({ error: 'Failed to get clickers' });
+  }
+});
+
 // POST /api/cron/enrich-g2-leads - Find domain and email for G2 competitor leads
 app.post('/api/cron/enrich-g2-leads', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
