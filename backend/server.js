@@ -520,6 +520,36 @@ async function initDatabase() {
       // Index might already exist
     }
 
+    // Demo generations table for personalized outreach demos
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS demo_generations (
+        id SERIAL PRIMARY KEY,
+        business_name TEXT NOT NULL,
+        google_place_id TEXT,
+        google_maps_url TEXT,
+        city TEXT,
+        google_rating DECIMAL(2,1),
+        total_reviews INTEGER,
+        scraped_reviews JSONB,
+        demo_token TEXT UNIQUE NOT NULL,
+        generated_responses JSONB,
+        lead_id INTEGER REFERENCES outreach_leads(id),
+        email_sent_at TIMESTAMP,
+        email_opened_at TIMESTAMP,
+        demo_page_viewed_at TIMESTAMP,
+        converted_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Index for fast demo lookups
+    try {
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_demo_token ON demo_generations(demo_token)`);
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_demo_lead ON demo_generations(lead_id)`);
+    } catch (error) {
+      // Index might already exist
+    }
+
     // Affiliates table for affiliate/partner program
     await dbQuery(`
       CREATE TABLE IF NOT EXISTS affiliates (
@@ -4736,6 +4766,491 @@ app.get('/api/public/blog/:slug', async (req, res) => {
   } catch (error) {
     console.error('Public blog article error:', error);
     res.status(500).json({ error: 'Failed to fetch article' });
+  }
+});
+
+// ============== DEMO GENERATOR SYSTEM ==============
+// Personalized demos for cold outreach: scrape reviews, generate AI responses
+
+// Helper: Scrape Google reviews via SerpAPI
+async function scrapeGoogleReviews(placeId, limit = 10) {
+  if (!process.env.SERPAPI_KEY) {
+    throw new Error('SERPAPI_KEY not configured');
+  }
+
+  const url = `https://serpapi.com/search.json?engine=google_maps_reviews&place_id=${placeId}&hl=en&api_key=${process.env.SERPAPI_KEY}`;
+
+  const response = await fetch(url);
+  const data = await response.json();
+
+  if (data.error) {
+    throw new Error(`SerpAPI error: ${data.error}`);
+  }
+
+  return (
+    data.reviews?.slice(0, limit).map((r) => ({
+      text: r.snippet || r.text || '',
+      rating: r.rating || 0,
+      author: r.user?.name || 'Anonymous',
+      date: r.date || '',
+      source: 'google',
+    })) || []
+  );
+}
+
+// Helper: Lookup Google Place ID from business name + city
+async function lookupPlaceId(businessName, city) {
+  if (!process.env.GOOGLE_PLACES_API_KEY) {
+    throw new Error('GOOGLE_PLACES_API_KEY not configured');
+  }
+
+  const query = encodeURIComponent(`${businessName} ${city}`);
+  const url = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${query}&inputtype=textquery&fields=place_id,name,rating,user_ratings_total&key=${process.env.GOOGLE_PLACES_API_KEY}`;
+
+  const response = await fetch(url);
+  const data = await response.json();
+
+  if (data.status !== 'OK' || !data.candidates?.length) {
+    throw new Error(`Place not found: ${businessName} in ${city}`);
+  }
+
+  const place = data.candidates[0];
+  return {
+    placeId: place.place_id,
+    name: place.name,
+    rating: place.rating,
+    totalReviews: place.user_ratings_total,
+  };
+}
+
+// Helper: Extract place_id from Google Maps URL
+function extractPlaceIdFromUrl(url) {
+  // Format: https://www.google.com/maps/place/.../@...!1s[PLACE_ID]...
+  // or: https://maps.google.com/?cid=...
+  const placeIdMatch = url.match(/!1s(ChI[^!]+)/);
+  if (placeIdMatch) return placeIdMatch[1];
+
+  // Try data=!4m... format
+  const dataMatch = url.match(/place_id[=:]([^&\s]+)/i);
+  if (dataMatch) return dataMatch[1];
+
+  return null;
+}
+
+// Helper: Generate AI response for a review (for demo purposes)
+async function generateDemoResponse(review, businessName) {
+  if (!anthropic) {
+    throw new Error('ANTHROPIC_API_KEY not configured');
+  }
+
+  const systemMessage = `You are the owner of "${businessName}". Generate a professional response to this customer review.
+
+RULES:
+- Write directly as the owner (first person)
+- Be genuine and human, not corporate
+- Keep it 2-3 sentences max
+- If negative: acknowledge, take responsibility, offer to make it right
+- If positive: thank them specifically, mention what made it special
+- NO: "Thank you for your feedback" | "We value your input" | "Sorry for any inconvenience"
+- NO emojis unless they used them first
+- End with your name or just a warm sign-off`;
+
+  const userMessage = `[${review.rating} stars from ${review.author}]
+"${review.text}"
+
+Write a response:`;
+
+  const response = await anthropic.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 200,
+    system: systemMessage,
+    messages: [{ role: 'user', content: userMessage }],
+  });
+
+  return response.content[0].text.trim();
+}
+
+// Helper: Generate demo token
+function generateDemoToken() {
+  return crypto.randomBytes(16).toString('hex');
+}
+
+// POST /api/demo/generate - Generate a personalized demo for a business
+app.post('/api/demo/generate', async (req, res) => {
+  // Admin auth check
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(adminKey || '', process.env.ADMIN_SECRET || '')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const { google_maps_url, business_name, city, review_count = 3, focus = 'negative', send_email = false, email } = req.body;
+
+    // Resolve place_id
+    let placeId = null;
+    let resolvedName = business_name;
+    let googleRating = null;
+    let totalReviews = null;
+
+    if (google_maps_url) {
+      placeId = extractPlaceIdFromUrl(google_maps_url);
+      if (!placeId && business_name && city) {
+        // URL didn't contain place_id, try lookup
+        const placeInfo = await lookupPlaceId(business_name, city);
+        placeId = placeInfo.placeId;
+        resolvedName = placeInfo.name;
+        googleRating = placeInfo.rating;
+        totalReviews = placeInfo.totalReviews;
+      }
+    } else if (business_name && city) {
+      const placeInfo = await lookupPlaceId(business_name, city);
+      placeId = placeInfo.placeId;
+      resolvedName = placeInfo.name;
+      googleRating = placeInfo.rating;
+      totalReviews = placeInfo.totalReviews;
+    }
+
+    if (!placeId) {
+      return res.status(400).json({
+        error: 'Could not find business. Provide google_maps_url or business_name + city',
+      });
+    }
+
+    // Scrape reviews
+    const allReviews = await scrapeGoogleReviews(placeId, 20);
+
+    if (allReviews.length === 0) {
+      return res.status(404).json({ error: 'No reviews found for this business' });
+    }
+
+    // Filter reviews based on focus
+    let targetReviews = allReviews;
+    if (focus === 'negative') {
+      targetReviews = allReviews
+        .filter((r) => r.rating <= 3)
+        .sort((a, b) => a.rating - b.rating)
+        .slice(0, review_count);
+
+      // If not enough negative reviews, add some mixed
+      if (targetReviews.length < review_count) {
+        const remaining = allReviews
+          .filter((r) => r.rating === 4)
+          .slice(0, review_count - targetReviews.length);
+        targetReviews = [...targetReviews, ...remaining];
+      }
+    } else if (focus === 'mixed') {
+      // Mix of ratings
+      const negative = allReviews.filter((r) => r.rating <= 2).slice(0, 1);
+      const neutral = allReviews.filter((r) => r.rating === 3).slice(0, 1);
+      const positive = allReviews.filter((r) => r.rating >= 4).slice(0, 1);
+      targetReviews = [...negative, ...neutral, ...positive].slice(0, review_count);
+    } else {
+      targetReviews = allReviews.slice(0, review_count);
+    }
+
+    // Generate AI responses for each review
+    const demos = [];
+    for (const review of targetReviews) {
+      const aiResponse = await generateDemoResponse(review, resolvedName);
+      demos.push({
+        review: {
+          text: review.text,
+          rating: review.rating,
+          author: review.author,
+          date: review.date,
+        },
+        ai_response: aiResponse,
+      });
+    }
+
+    // Generate unique token
+    const demoToken = generateDemoToken();
+
+    // Save to database
+    await dbQuery(
+      `INSERT INTO demo_generations
+       (business_name, google_place_id, google_maps_url, city, google_rating, total_reviews, scraped_reviews, demo_token, generated_responses)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [
+        resolvedName,
+        placeId,
+        google_maps_url || null,
+        city || null,
+        googleRating,
+        totalReviews,
+        JSON.stringify(allReviews),
+        demoToken,
+        JSON.stringify(demos),
+      ]
+    );
+
+    // Optionally send email
+    let emailSent = false;
+    if (send_email && email) {
+      try {
+        await sendDemoEmail(email, resolvedName, demos, demoToken, totalReviews);
+        await dbQuery('UPDATE demo_generations SET email_sent_at = NOW() WHERE demo_token = $1', [demoToken]);
+        emailSent = true;
+      } catch (emailError) {
+        console.error('Failed to send demo email:', emailError);
+      }
+    }
+
+    res.json({
+      success: true,
+      demo_token: demoToken,
+      demo_url: `https://tryreviewresponder.com/demo/${demoToken}`,
+      business: {
+        name: resolvedName,
+        rating: googleRating,
+        total_reviews: totalReviews,
+      },
+      reviews_processed: demos.length,
+      generated_responses: demos,
+      email_sent: emailSent,
+    });
+  } catch (error) {
+    console.error('Demo generation error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/public/demo/:token - Public demo page data
+app.get('/api/public/demo/:token', async (req, res) => {
+  try {
+    const demo = await dbGet('SELECT * FROM demo_generations WHERE demo_token = $1', [req.params.token]);
+
+    if (!demo) {
+      return res.status(404).json({ error: 'Demo not found' });
+    }
+
+    // Track page view (only first view)
+    if (!demo.demo_page_viewed_at) {
+      await dbQuery('UPDATE demo_generations SET demo_page_viewed_at = NOW() WHERE id = $1', [demo.id]);
+    }
+
+    res.json({
+      business_name: demo.business_name,
+      city: demo.city,
+      google_rating: parseFloat(demo.google_rating) || null,
+      total_reviews: demo.total_reviews,
+      demos: demo.generated_responses,
+      cta_url: `https://tryreviewresponder.com/register?ref=demo_${demo.demo_token}`,
+    });
+  } catch (error) {
+    console.error('Public demo error:', error);
+    res.status(500).json({ error: 'Failed to load demo' });
+  }
+});
+
+// POST /api/public/demo/:token/convert - Track conversion (called when user signs up)
+app.post('/api/public/demo/:token/convert', async (req, res) => {
+  try {
+    await dbQuery(
+      'UPDATE demo_generations SET converted_at = NOW() WHERE demo_token = $1 AND converted_at IS NULL',
+      [req.params.token]
+    );
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to track conversion' });
+  }
+});
+
+// Helper: Send demo email
+async function sendDemoEmail(toEmail, businessName, demos, demoToken, totalReviews) {
+  if (!resend) {
+    throw new Error('RESEND_API_KEY not configured');
+  }
+
+  // Build demo content for email
+  let demoContent = '';
+  demos.forEach((demo, i) => {
+    const stars = '★'.repeat(demo.review.rating) + '☆'.repeat(5 - demo.review.rating);
+    demoContent += `
+-------------------------------------------
+[${stars} from ${demo.review.author}]
+"${demo.review.text.slice(0, 200)}${demo.review.text.length > 200 ? '...' : ''}"
+
+YOUR AI RESPONSE:
+"${demo.ai_response}"
+-------------------------------------------
+`;
+  });
+
+  const subject = `${businessName} - saw your reviews, made you something`;
+  const body = `Hi,
+
+I saw you have ${totalReviews || 'many'}+ Google reviews - nice work!
+
+I noticed a few that might benefit from a response, so I put together some AI-generated suggestions:
+
+${demoContent}
+
+These took me 10 seconds each to generate. If you want to try it yourself:
+https://tryreviewresponder.com/demo/${demoToken}
+
+Cheers,
+Berend
+Founder, ReviewResponder
+
+P.S. Just reply if you have any questions - I read every email.
+
+---
+Unsubscribe: https://tryreviewresponder.com/unsubscribe?email=${encodeURIComponent(toEmail)}`;
+
+  await resend.emails.send({
+    from: 'Berend from ReviewResponder <hello@tryreviewresponder.com>',
+    to: toEmail,
+    subject: subject,
+    text: body,
+  });
+}
+
+// POST /api/cron/generate-demos - Batch generate demos for leads
+app.post('/api/cron/generate-demos', async (req, res) => {
+  const cronSecret = req.query.secret || req.headers['x-cron-secret'];
+  if (!safeCompare(cronSecret || '', process.env.CRON_SECRET || '')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const sendEmails = req.query.send_emails === 'true';
+
+    // Find leads with email but no demo yet
+    const leads = await dbAll(
+      `SELECT ol.* FROM outreach_leads ol
+       LEFT JOIN demo_generations dg ON ol.id = dg.lead_id
+       WHERE ol.email IS NOT NULL
+       AND ol.email != ''
+       AND dg.id IS NULL
+       AND ol.google_reviews_count >= 20
+       ORDER BY ol.google_reviews_count DESC
+       LIMIT $1`,
+      [limit]
+    );
+
+    const results = {
+      processed: 0,
+      success: 0,
+      failed: 0,
+      demos: [],
+    };
+
+    for (const lead of leads) {
+      results.processed++;
+      try {
+        // Generate demo
+        const placeInfo = await lookupPlaceId(lead.business_name, lead.city);
+        const allReviews = await scrapeGoogleReviews(placeInfo.placeId, 20);
+
+        // Get worst reviews
+        const targetReviews = allReviews
+          .filter((r) => r.rating <= 3)
+          .sort((a, b) => a.rating - b.rating)
+          .slice(0, 3);
+
+        if (targetReviews.length === 0) {
+          console.log(`No negative reviews for ${lead.business_name}, skipping`);
+          continue;
+        }
+
+        // Generate AI responses
+        const demos = [];
+        for (const review of targetReviews) {
+          const aiResponse = await generateDemoResponse(review, lead.business_name);
+          demos.push({
+            review: { text: review.text, rating: review.rating, author: review.author, date: review.date },
+            ai_response: aiResponse,
+          });
+        }
+
+        const demoToken = generateDemoToken();
+
+        // Save demo
+        await dbQuery(
+          `INSERT INTO demo_generations
+           (business_name, google_place_id, city, google_rating, total_reviews, scraped_reviews, demo_token, generated_responses, lead_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+          [
+            lead.business_name,
+            placeInfo.placeId,
+            lead.city,
+            placeInfo.rating,
+            placeInfo.totalReviews,
+            JSON.stringify(allReviews),
+            demoToken,
+            JSON.stringify(demos),
+            lead.id,
+          ]
+        );
+
+        // Send email if requested
+        if (sendEmails && lead.email) {
+          try {
+            await sendDemoEmail(lead.email, lead.business_name, demos, demoToken, placeInfo.totalReviews);
+            await dbQuery('UPDATE demo_generations SET email_sent_at = NOW() WHERE demo_token = $1', [demoToken]);
+          } catch (emailError) {
+            console.error(`Email failed for ${lead.email}:`, emailError.message);
+          }
+        }
+
+        results.success++;
+        results.demos.push({
+          business: lead.business_name,
+          demo_url: `https://tryreviewresponder.com/demo/${demoToken}`,
+          reviews_count: demos.length,
+        });
+
+        // Small delay to avoid rate limits
+        await new Promise((r) => setTimeout(r, 1000));
+      } catch (error) {
+        results.failed++;
+        console.error(`Demo generation failed for ${lead.business_name}:`, error.message);
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Generated ${results.success} demos from ${results.processed} leads`,
+      ...results,
+    });
+  } catch (error) {
+    console.error('Batch demo generation error:', error);
+    res.status(500).json({ error: error.message.slice(0, 100) });
+  }
+});
+
+// GET /api/admin/demos - List all generated demos
+app.get('/api/admin/demos', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(adminKey || '', process.env.ADMIN_SECRET || '')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const demos = await dbAll(
+      `SELECT id, business_name, city, google_rating, total_reviews, demo_token,
+              email_sent_at, demo_page_viewed_at, converted_at, created_at,
+              (SELECT COUNT(*) FROM jsonb_array_elements(generated_responses)) as response_count
+       FROM demo_generations
+       ORDER BY created_at DESC
+       LIMIT 100`
+    );
+
+    const stats = await dbGet(
+      `SELECT
+         COUNT(*) as total,
+         COUNT(email_sent_at) as emails_sent,
+         COUNT(demo_page_viewed_at) as pages_viewed,
+         COUNT(converted_at) as conversions
+       FROM demo_generations`
+    );
+
+    res.json({ demos, stats });
+  } catch (error) {
+    console.error('Admin demos error:', error);
+    res.status(500).json({ error: 'Failed to fetch demos' });
   }
 });
 

@@ -10856,6 +10856,246 @@ const BlogArticlePage = () => {
   );
 };
 
+// Demo Landing Page - Personalized demo for cold outreach
+const DemoPage = () => {
+  const { token } = useParams();
+  const [demo, setDemo] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchDemo();
+  }, [token]);
+
+  const fetchDemo = async () => {
+    try {
+      const response = await fetch(`${API_URL.replace('/api', '')}/api/public/demo/${token}`);
+      if (!response.ok) {
+        throw new Error('Demo not found');
+      }
+      const data = await response.json();
+      setDemo(data);
+
+      // Set SEO meta tags
+      document.title = `${data.business_name} - AI Review Responses Demo | ReviewResponder`;
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const StarRating = ({ rating }) => {
+    return (
+      <span style={{ color: '#fbbf24', fontSize: '16px' }}>
+        {'★'.repeat(rating)}
+        {'☆'.repeat(5 - rating)}
+      </span>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <div className="loading-spinner" />
+      </div>
+    );
+  }
+
+  if (error || !demo) {
+    return (
+      <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+        <h1 style={{ fontSize: '32px', marginBottom: '16px', color: 'var(--gray-800)' }}>Demo Not Found</h1>
+        <p style={{ color: 'var(--gray-500)', marginBottom: '24px' }}>
+          This demo link may have expired or is invalid.
+        </p>
+        <a
+          href="/"
+          style={{
+            display: 'inline-block',
+            background: 'var(--primary)',
+            color: 'white',
+            padding: '12px 24px',
+            borderRadius: '8px',
+            textDecoration: 'none',
+            fontWeight: '500',
+          }}
+        >
+          Visit ReviewResponder
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #f8fafc 0%, #fff 100%)' }}>
+      {/* Header */}
+      <div style={{ background: 'white', borderBottom: '1px solid #e5e7eb', padding: '16px 0' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <a href="/" style={{ textDecoration: 'none' }}>
+            <span style={{ fontSize: '20px', fontWeight: '700', color: 'var(--primary)' }}>ReviewResponder</span>
+          </a>
+          <a
+            href={demo.cta_url}
+            style={{
+              background: 'var(--primary)',
+              color: 'white',
+              padding: '10px 20px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontWeight: '500',
+              fontSize: '14px',
+            }}
+          >
+            Try It Free
+          </a>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px' }}>
+        {/* Hero */}
+        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+          <h1 style={{ fontSize: '32px', fontWeight: '700', color: 'var(--gray-800)', marginBottom: '16px' }}>
+            AI Review Responses for {demo.business_name}
+          </h1>
+          <p style={{ fontSize: '18px', color: 'var(--gray-500)', marginBottom: '8px' }}>
+            {demo.city && `${demo.city} • `}
+            {demo.google_rating && `${demo.google_rating} Google Rating • `}
+            {demo.total_reviews && `${demo.total_reviews} reviews`}
+          </p>
+          <p style={{ fontSize: '16px', color: 'var(--gray-600)' }}>
+            Here's how ReviewResponder can help you respond to your reviews:
+          </p>
+        </div>
+
+        {/* Demo Cards */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', marginBottom: '48px' }}>
+          {demo.demos && demo.demos.map((item, index) => (
+            <div
+              key={index}
+              style={{
+                background: 'white',
+                borderRadius: '16px',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.1)',
+                overflow: 'hidden',
+              }}
+            >
+              {/* Original Review */}
+              <div style={{ padding: '24px', borderBottom: '1px solid #f3f4f6' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                  <div
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: '600',
+                      color: '#6b7280',
+                    }}
+                  >
+                    {item.review.author?.charAt(0) || 'A'}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: '600', color: 'var(--gray-800)' }}>{item.review.author || 'Anonymous'}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <StarRating rating={item.review.rating} />
+                      {item.review.date && (
+                        <span style={{ fontSize: '13px', color: 'var(--gray-400)' }}>{item.review.date}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <p style={{ color: 'var(--gray-600)', lineHeight: '1.6', fontSize: '15px' }}>
+                  "{item.review.text}"
+                </p>
+              </div>
+
+              {/* AI Response */}
+              <div style={{ padding: '24px', background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                    <path d="M2 17l10 5 10-5" />
+                    <path d="M2 12l10 5 10-5" />
+                  </svg>
+                  <span style={{ fontWeight: '600', color: '#059669', fontSize: '14px' }}>AI-Generated Response</span>
+                </div>
+                <p style={{ color: 'var(--gray-700)', lineHeight: '1.7', fontSize: '15px' }}>
+                  {item.ai_response}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA Section */}
+        <div
+          style={{
+            background: 'linear-gradient(135deg, var(--primary) 0%, #5a67d8 100%)',
+            borderRadius: '16px',
+            padding: '40px',
+            textAlign: 'center',
+            color: 'white',
+          }}
+        >
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>
+            Generate responses like these in seconds
+          </h2>
+          <p style={{ fontSize: '16px', opacity: 0.9, marginBottom: '24px' }}>
+            20 free responses. No credit card required.
+          </p>
+          <a
+            href={demo.cta_url}
+            style={{
+              display: 'inline-block',
+              background: 'white',
+              color: 'var(--primary)',
+              padding: '14px 32px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontWeight: '600',
+              fontSize: '16px',
+            }}
+          >
+            Start Your Free Trial
+          </a>
+        </div>
+
+        {/* Features */}
+        <div style={{ marginTop: '48px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
+          {[
+            { icon: '🎯', title: 'Multiple Tones', desc: 'Professional, friendly, formal, or apologetic' },
+            { icon: '🌍', title: '50+ Languages', desc: 'Respond in any language automatically' },
+            { icon: '⚡', title: 'Instant Generation', desc: 'Perfect responses in under 5 seconds' },
+            { icon: '📊', title: 'Quality Score', desc: 'AI rates your responses for impact' },
+          ].map((feature, i) => (
+            <div key={i} style={{ textAlign: 'center', padding: '20px' }}>
+              <div style={{ fontSize: '32px', marginBottom: '8px' }}>{feature.icon}</div>
+              <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--gray-800)', marginBottom: '4px' }}>
+                {feature.title}
+              </h3>
+              <p style={{ fontSize: '14px', color: 'var(--gray-500)' }}>{feature.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{ background: 'white', borderTop: '1px solid #e5e7eb', padding: '24px 0', marginTop: '48px' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 20px', textAlign: 'center' }}>
+          <p style={{ fontSize: '14px', color: 'var(--gray-400)' }}>
+            ReviewResponder - AI-powered review responses for busy business owners
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Support Page
 const SupportPage = () => {
   const [name, setName] = useState('');
@@ -16291,6 +16531,7 @@ function App() {
             <Route path="/support" element={<SupportPage />} />
             <Route path="/blog" element={<BlogListPage />} />
             <Route path="/blog/:slug" element={<BlogArticlePage />} />
+            <Route path="/demo/:token" element={<DemoPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/extension" element={<ExtensionPage />} />
