@@ -7052,8 +7052,7 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
 app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
   try {
     const users = await dbAll(`
-      SELECT id, email, subscription_plan, created_at,
-             stripe_customer_id, stripe_subscription_id
+      SELECT id, email, subscription_plan, created_at, stripe_customer_id
       FROM users
       ORDER BY created_at DESC
       LIMIT 100
@@ -7131,7 +7130,7 @@ app.delete('/api/admin/cleanup-test-accounts', authenticateAdmin, async (req, re
       SELECT id, email, subscription_plan, created_at
       FROM users
       WHERE (${fakePatterns.join(' OR ')})
-      AND stripe_subscription_id IS NULL
+      AND stripe_customer_id IS NULL
     `);
 
     if (toDelete.length === 0) {
@@ -7142,7 +7141,7 @@ app.delete('/api/admin/cleanup-test-accounts', authenticateAdmin, async (req, re
     const result = await dbQuery(`
       DELETE FROM users
       WHERE (${fakePatterns.join(' OR ')})
-      AND stripe_subscription_id IS NULL
+      AND stripe_customer_id IS NULL
       RETURNING id, email
     `);
 
