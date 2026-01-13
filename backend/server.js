@@ -7200,6 +7200,52 @@ app.delete('/api/admin/cleanup-test-accounts', authenticateAdmin, async (req, re
   }
 });
 
+// Admin: Delete all test accounts except specified real users
+app.delete('/api/admin/cleanup-all-tests', authenticateAdmin, async (req, res) => {
+  try {
+    // These are the ONLY real users to keep
+    const realEmails = [
+      'berend.mainz@gmail.com',
+      'berend.mainz@web.de',
+      'tiniwi09@gmail.com',
+      'rolicupo.twitch@gmail.com',
+      'andrehoellering1732004@gmail.com',
+      'rolicupo.games@gmail.com',
+      'matiasaseff@hotmail.com',
+      'clvalentini24@gmail.com',
+      'penelopefier@gmail.com',
+      'breihosen@gmail.com',
+    ];
+
+    // Get accounts that will be deleted
+    const toDelete = await dbAll(`
+      SELECT id, email, subscription_plan, created_at
+      FROM users
+      WHERE LOWER(email) NOT IN (${realEmails.map(e => `'${e.toLowerCase()}'`).join(', ')})
+    `);
+
+    if (toDelete.length === 0) {
+      return res.json({ message: 'No test accounts to delete', deleted: [], kept: realEmails.length });
+    }
+
+    // Delete them
+    const result = await dbQuery(`
+      DELETE FROM users
+      WHERE LOWER(email) NOT IN (${realEmails.map(e => `'${e.toLowerCase()}'`).join(', ')})
+      RETURNING id, email
+    `);
+
+    res.json({
+      message: `Deleted ${result.rows?.length || toDelete.length} test accounts`,
+      deleted: result.rows || toDelete,
+      kept: realEmails.length
+    });
+  } catch (error) {
+    console.error('Cleanup all tests error:', error);
+    res.status(500).json({ error: 'Failed to cleanup', details: error.message });
+  }
+});
+
 // ==========================================
 // OUTREACH EMAIL TRACKING
 // ==========================================
