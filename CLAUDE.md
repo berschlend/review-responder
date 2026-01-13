@@ -270,20 +270,50 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 - [x] Demo-Video aufnehmen (2 Min Walkthrough) - DONE
 - [ ] Chrome Web Store einreichen (ZIP + Screenshots)
 - [ ] **Reddit API Keys holen**: Wartet auf Genehmigung → https://www.reddit.com/prefs/apps → App erstellen
-- [ ] **Google Indexierung beantragen (11 URLs)** - Tageslimit erreicht, morgen nochmal:
-  - Von gestern (3):
-    - `/medical-practice-reviews`
-    - `/salon-spa-review-responses`
-    - `/auto-shop-reviews`
-  - Neue Landing Pages (8):
-    - `/trustpilot-review-responses`
-    - `/airbnb-host-review-responses`
-    - `/real-estate-agent-reviews`
-    - `/gym-fitness-review-responses`
-    - `/veterinarian-review-responses`
-    - `/law-firm-review-responses`
-    - `/ecommerce-review-responses`
-    - `/coffee-shop-review-responses`
+- [ ] **Google Indexierung beantragen (31 URLs)** - Nach und nach (max 5-10/Tag wegen Quota):
+  - [ ] `/medical-practice-reviews`
+  - [ ] `/salon-spa-review-responses`
+  - [ ] `/auto-shop-reviews`
+  - [ ] `/trustpilot-review-responses`
+  - [ ] `/airbnb-host-review-responses`
+  - [ ] `/real-estate-agent-reviews`
+  - [ ] `/gym-fitness-review-responses`
+  - [ ] `/veterinarian-review-responses`
+  - [ ] `/law-firm-review-responses`
+  - [ ] `/ecommerce-review-responses`
+  - [ ] `/coffee-shop-review-responses`
+  - [ ] `/amazon-review-responses`
+  - [ ] `/g2-review-responses`
+  - [ ] `/capterra-review-responses`
+  - [ ] `/glassdoor-review-responses`
+  - [ ] `/bbb-review-responses`
+  - [ ] `/plumber-review-responses`
+  - [ ] `/electrician-review-responses`
+  - [ ] `/hvac-review-responses`
+  - [ ] `/roofing-review-responses`
+  - [ ] `/landscaping-review-responses`
+  - [ ] `/cleaning-service-review-responses`
+  - [ ] `/healthgrades-review-responses`
+  - [ ] `/zocdoc-review-responses`
+  - [ ] `/photographer-review-responses`
+  - [ ] `/wedding-vendor-review-responses`
+  - [ ] `/pet-service-review-responses`
+  - [ ] `/daycare-review-responses`
+  - [ ] `/accountant-review-responses`
+  - [ ] `/insurance-agent-review-responses`
+  - [ ] `/senior-care-review-responses`
+
+### SEO LANDING PAGES (41 Total)
+
+**Status:** Alle 41 live und getestet (HTTP 200 OK)
+**Backend:** Generisch - alle nutzen `/api/generate`, kein spezielles Backend nötig
+**Email-Input:** Nur visuell - speichert nichts, Button ist Link zu `/register`
+
+| Kategorie | Anzahl | Beispiele |
+|-----------|--------|-----------|
+| Plattformen | 13 | Google, Yelp, TripAdvisor, Amazon, G2, Glassdoor |
+| Branchen | 25 | Restaurant, Hotel, Plumber, HVAC, Photographer |
+| Generisch | 3 | Local Business, Negative Reviews |
 
 ### CLAUDE KANN SELBST (mit Chrome MCP):
 - Cron Jobs anlegen/ändern auf cron-job.org
