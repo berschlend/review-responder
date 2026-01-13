@@ -8678,11 +8678,19 @@ app.get('/api/outreach/track-open', async (req, res) => {
       const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
       const userAgent = req.headers['user-agent'] || '';
 
-      // Store the open event
+      // Store the open event in tracking table
       await dbQuery(
         `INSERT INTO outreach_tracking (email, campaign, ip_address, user_agent)
          VALUES ($1, $2, $3, $4)`,
         [email, campaign, ip.split(',')[0], userAgent]
+      );
+
+      // Also update outreach_emails.opened_at (only first open)
+      await dbQuery(
+        `UPDATE outreach_emails
+         SET opened_at = COALESCE(opened_at, NOW())
+         WHERE email = $1 AND opened_at IS NULL`,
+        [email]
       );
 
       console.log(`📧 Email opened: ${email} (campaign: ${campaign})`);
