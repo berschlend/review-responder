@@ -9966,6 +9966,10 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
 
   console.log('🚀 Starting daily outreach automation...');
 
+  // Optional query params to override city/industry (for manual triggering)
+  const overrideCity = req.query.city;
+  const overrideIndustry = req.query.industry;
+
   const results = {
     scraping: null,
     email_finding: null,
@@ -9999,9 +10003,12 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
 
     let totalScraped = 0;
 
-    // Pick random city and industry for today
-    const todayCity = cities[new Date().getDay() % cities.length];
-    const todayIndustry = industries[new Date().getDay() % industries.length];
+    // Pick city and industry based on date (better rotation across all cities)
+    // Using day of year for city, day of month for industry
+    // Can be overridden via query params: ?city=München&industry=restaurant
+    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+    const todayCity = overrideCity || cities[dayOfYear % cities.length];
+    const todayIndustry = overrideIndustry || industries[new Date().getDate() % industries.length];
 
     if (process.env.GOOGLE_PLACES_API_KEY) {
       const scrapeUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(todayIndustry + ' in ' + todayCity)}&key=${process.env.GOOGLE_PLACES_API_KEY}`;
