@@ -10436,7 +10436,7 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
     `);
 
     if (newLeads.length === 0) {
-      return res.json({ success: true, message: 'No new leads to contact', emails_sent: 0 });
+      return res.json({ ok: true, sent: 0, msg: 'no leads' });
     }
 
     const results = {
