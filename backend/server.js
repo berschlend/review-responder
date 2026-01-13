@@ -8958,13 +8958,29 @@ app.post('/api/cron/enrich-g2-leads', async (req, res) => {
         const companies = await response.json();
 
         if (companies && companies.length > 0 && companies[0].domain) {
-          // Check if first result name closely matches our business name
-          const similarity = companies[0].name.toLowerCase().includes(lead.business_name.toLowerCase()) ||
-                           lead.business_name.toLowerCase().includes(companies[0].name.toLowerCase().split(' ')[0]);
-          if (similarity) {
+          // Strict similarity check to avoid false positives
+          const searchName = lead.business_name.toLowerCase().trim();
+          const foundName = companies[0].name.toLowerCase().trim();
+          const foundFirstWord = foundName.split(' ')[0];
+
+          // Skip if search name is too short (< 5 chars) - too generic
+          if (searchName.length < 5) {
+            console.log(`⚠️ Skipping ${lead.business_name}: name too short for reliable matching`);
+            continue;
+          }
+
+          // Check similarity: found name should START with search name, or search name should be the first word
+          const isGoodMatch = foundName.startsWith(searchName) ||
+                            foundFirstWord === searchName ||
+                            searchName.startsWith(foundFirstWord);
+
+          if (isGoodMatch) {
             const website = `https://${companies[0].domain}`;
             await dbQuery('UPDATE outreach_leads SET website = $1 WHERE id = $2', [website, lead.id]);
+            console.log(`✅ Found domain for ${lead.business_name}: ${companies[0].domain}`);
             results.domains_found++;
+          } else {
+            console.log(`⚠️ Skipping ${lead.business_name}: best match "${companies[0].name}" doesn't match well enough`);
           }
         }
         await new Promise(r => setTimeout(r, 300));

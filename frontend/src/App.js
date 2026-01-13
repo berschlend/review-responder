@@ -2312,7 +2312,7 @@ const LandingPage = () => {
       </div>
 
       {/* Chrome Extension Section - Executive Assistant Style */}
-      <section className="container" style={{ marginBottom: '48px', marginTop: '48px' }}>
+      <section id="demo" className="container" style={{ marginBottom: '48px', marginTop: '48px' }}>
         <div
           className="card"
           style={{
@@ -2362,7 +2362,7 @@ const LandingPage = () => {
               </div>
             </div>
 
-            <div id="demo" style={{ position: 'relative' }}>
+            <div style={{ position: 'relative' }}>
               <div
                 style={{
                   borderRadius: '8px',
