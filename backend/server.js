@@ -7217,21 +7217,33 @@ app.delete('/api/admin/cleanup-all-tests', authenticateAdmin, async (req, res) =
       'breihosen@gmail.com',
     ];
 
+    const emailList = realEmails.map(e => `'${e.toLowerCase()}'`).join(', ');
+
     // Get accounts that will be deleted
     const toDelete = await dbAll(`
       SELECT id, email, subscription_plan, created_at
       FROM users
-      WHERE LOWER(email) NOT IN (${realEmails.map(e => `'${e.toLowerCase()}'`).join(', ')})
+      WHERE LOWER(email) NOT IN (${emailList})
     `);
 
     if (toDelete.length === 0) {
       return res.json({ message: 'No test accounts to delete', deleted: [], kept: realEmails.length });
     }
 
-    // Delete them
+    const userIds = toDelete.map(u => u.id);
+
+    // Delete related data first (foreign key constraints)
+    await dbQuery(`DELETE FROM drip_emails WHERE user_id = ANY($1)`, [userIds]);
+    await dbQuery(`DELETE FROM responses WHERE user_id = ANY($1)`, [userIds]);
+    await dbQuery(`DELETE FROM templates WHERE user_id = ANY($1)`, [userIds]);
+    await dbQuery(`DELETE FROM team_members WHERE user_id = ANY($1) OR team_owner_id = ANY($1)`, [userIds]);
+    await dbQuery(`DELETE FROM api_keys WHERE user_id = ANY($1)`, [userIds]);
+    await dbQuery(`DELETE FROM referrals WHERE referrer_id = ANY($1) OR referred_id = ANY($1)`, [userIds]);
+
+    // Now delete users
     const result = await dbQuery(`
       DELETE FROM users
-      WHERE LOWER(email) NOT IN (${realEmails.map(e => `'${e.toLowerCase()}'`).join(', ')})
+      WHERE LOWER(email) NOT IN (${emailList})
       RETURNING id, email
     `);
 
