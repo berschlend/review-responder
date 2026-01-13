@@ -7232,13 +7232,23 @@ app.delete('/api/admin/cleanup-all-tests', authenticateAdmin, async (req, res) =
 
     const userIds = toDelete.map(u => u.id);
 
-    // Delete related data first (foreign key constraints)
-    await dbQuery(`DELETE FROM drip_emails WHERE user_id = ANY($1)`, [userIds]);
-    await dbQuery(`DELETE FROM responses WHERE user_id = ANY($1)`, [userIds]);
-    await dbQuery(`DELETE FROM templates WHERE user_id = ANY($1)`, [userIds]);
-    await dbQuery(`DELETE FROM team_members WHERE user_id = ANY($1) OR team_owner_id = ANY($1)`, [userIds]);
-    await dbQuery(`DELETE FROM api_keys WHERE user_id = ANY($1)`, [userIds]);
-    await dbQuery(`DELETE FROM referrals WHERE referrer_id = ANY($1) OR referred_id = ANY($1)`, [userIds]);
+    // Delete related data first (foreign key constraints) - ignore if table doesn't exist
+    const tablesToClean = [
+      { table: 'drip_emails', condition: 'user_id = ANY($1)' },
+      { table: 'responses', condition: 'user_id = ANY($1)' },
+      { table: 'templates', condition: 'user_id = ANY($1)' },
+      { table: 'team_members', condition: 'user_id = ANY($1) OR team_owner_id = ANY($1)' },
+      { table: 'api_keys', condition: 'user_id = ANY($1)' },
+      { table: 'referrals', condition: 'referrer_id = ANY($1) OR referred_id = ANY($1)' },
+    ];
+
+    for (const { table, condition } of tablesToClean) {
+      try {
+        await dbQuery(`DELETE FROM ${table} WHERE ${condition}`, [userIds]);
+      } catch (e) {
+        // Table might not exist, skip
+      }
+    }
 
     // Now delete users
     const result = await dbQuery(`
