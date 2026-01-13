@@ -6227,11 +6227,8 @@ app.post('/api/cron/send-drip-emails', async (req, res) => {
     res.json({ ok: true, sent: sentCount, err: errorCount });
   } catch (error) {
     console.error('Drip email error:', error);
-    res.status(500).json({
-      error: 'Failed to process drip emails',
-      details: error.message,
-      stack: process.env.NODE_ENV !== 'production' ? error.stack : undefined
-    });
+    // Minimal response for cron-job.org (has strict size limit)
+    res.status(500).json({ ok: false, error: error.message?.slice(0, 100) });
   }
 });
 
