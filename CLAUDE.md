@@ -389,33 +389,40 @@ Google review response generator with AI. Personalized replies for Google Maps, 
 
 ### Chrome MCP Lead Scraper (WIP)
 
-**Status:** 18 Leads gesammelt, morgen weitermachen
+**Status:** ~25 Leads gesammelt, Session 13.01.2026 abgeschlossen
 
-**Gesammelte Leads in Memory MCP:**
-| Quelle | Typ | Anzahl |
-|--------|-----|--------|
-| G2 Birdeye | Unzufriedene Kunden | 9 |
-| G2 Podium | Unzufriedene Kunden | 7 |
-| TripAdvisor | Restaurant München | 1 |
-| Yelp | Test | 1 |
+**Problem:** Chrome MCP Extension instabil bei 40+ offenen Tabs
+**Loesung:** Erst Tabs schliessen, dann mit weniger Tabs arbeiten
 
-**Beste Pain Points (für Cold Email):**
+**Gesammelte Leads:**
+| Quelle | Typ | Anzahl | Details |
+|--------|-----|--------|---------|
+| G2 Birdeye | Unzufriedene Kunden | 10 | +1 ACAD Lead (0/5, daily bugs) |
+| G2 Podium | Unzufriedene Kunden | 7 | |
+| Yelp Muenchen | Restaurants | 2 | Augustiner-Keller (781 reviews) |
+| TripAdvisor | Restaurants | 1 | |
+
+**Dokumentierte Leads:** `content/leads/scraped-leads-2026-01-13.md`
+
+**Beste Pain Points (fuer Cold Email):**
 - Platform bugs/errors daily
 - Slow support (days/weeks)
 - Sales over-promised features
 - Stopped using after 4 months
+- Returned to previous provider
 
-**Nächste Schritte:**
-1. LinkedIn-Suche für G2 Reviewer-Namen
-2. Mehr TripAdvisor/Yelp Restaurants mit Kontaktdaten
-3. Bei Erfolg: Parallel-Scraping mit 5-10 Sessions
+**Naechste Schritte:**
+1. **ERST:** Alle unnoetigen Tabs im Browser schliessen (unter 10 Tabs)
+2. LinkedIn-Suche fuer G2 Reviewer-Namen (ACAD, Head of Digital)
+3. Mehr Restaurant-Details scrapen (Telefon, Email, Website)
+4. Cold Email Kampagne mit gesammelten Leads starten
 
 **Commands:**
 ```bash
-# Leads abrufen
-mcp__memory__search_nodes({ query: "lead" })
+# Leads-Datei lesen
+cat content/leads/scraped-leads-2026-01-13.md
 
-# Neue Session starten
+# Neue Session starten (erst Tabs schliessen!)
 $env:CLAUDE_SESSION = "scraper"; claude --chrome
 ```
 

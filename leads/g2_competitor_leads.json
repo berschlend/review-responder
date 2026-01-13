@@ -1,0 +1,95 @@
+{
+  "source": "G2 Reviews",
+  "scraped_at": "2026-01-13",
+  "leads": [
+    {
+      "id": 1,
+      "source": "G2 Birdeye",
+      "type": "competitor_unhappy_customer",
+      "industry": "Accounting/Legal",
+      "company_size": "Small-Business (50 or fewer emp.)",
+      "reviewer_title": "Attorney",
+      "date": "2025-01-23",
+      "rating": "0/5",
+      "headline": "The WORST COMPANY I have dealt with in over 30 years as an attorney",
+      "pain_points": [
+        "Less than 5 reviews in 12 months",
+        "Refused to let out of 12-month contract",
+        "Grossly failed to deliver reviews"
+      ],
+      "contact_hint": "Search LinkedIn for attorneys in accounting industry who recently posted about review management"
+    },
+    {
+      "id": 2,
+      "source": "G2 Birdeye",
+      "type": "competitor_unhappy_customer",
+      "industry": "Consulting",
+      "company_size": "Small-Business (50 or fewer emp.)",
+      "reviewer_title": "Consultant",
+      "date": "2024-09-13",
+      "rating": "0.5/5",
+      "headline": "Not Happy with Birdeye, but I have no Other Options Right Now",
+      "pain_points": [
+        "Forced to pay for many services they don't need",
+        "Only requires online reviews, nothing else",
+        "Feels locked in"
+      ],
+      "contact_hint": "Perfect target - looking for simpler, cheaper alternative"
+    },
+    {
+      "id": 3,
+      "source": "G2 Birdeye (from CLAUDE.md)",
+      "type": "competitor_unhappy_customer",
+      "industry": "Various",
+      "pain_points": [
+        "Platform bugs/errors daily",
+        "Slow support (days/weeks)",
+        "Sales over-promised features",
+        "Stopped using after 4 months"
+      ],
+      "notes": "Previously collected leads - 9 total from Birdeye"
+    },
+    {
+      "id": 4,
+      "source": "G2 Podium (from CLAUDE.md)",
+      "type": "competitor_unhappy_customer",
+      "industry": "Various",
+      "count": 7,
+      "notes": "Previously collected leads - 7 total from Podium"
+    }
+  ],
+  "restaurant_leads": [
+    {
+      "id": 101,
+      "source": "Yelp",
+      "name": "Augustiner-Keller",
+      "location": "Munich, Germany",
+      "address": "Arnulfstr. 52, M\u00fcnchen",
+      "website": "augustinerkeller.de",
+      "phone": "089 594393",
+      "rating": "4.1",
+      "reviews": 781,
+      "type": "Bavarian/Beer Garden",
+      "status": "unclaimed",
+      "notes": "Popular beer garden with many reviews - good candidate for review management"
+    }
+  ],
+  "cold_email_angles": {
+    "for_birdeye_users": [
+      "Frustrated with 12-month contracts? ReviewResponder is month-to-month.",
+      "Paying for features you don't use? We focus on one thing: AI review responses.",
+      "Not getting enough reviews? Our outreach system helps you get more.",
+      "Slow support? We respond within hours, not days."
+    ],
+    "for_restaurants": [
+      "I noticed your restaurant has [X] reviews on Yelp/TripAdvisor.",
+      "Responding to every review is time-consuming - AI can help.",
+      "Professional responses improve your online reputation."
+    ]
+  },
+  "next_steps": [
+    "LinkedIn search for reviewer names from G2",
+    "More TripAdvisor/Yelp restaurants with contact info",
+    "Email outreach with personalized pain-point messaging"
+  ]
+}
