@@ -270,7 +270,7 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 - [x] Demo-Video aufnehmen (2 Min Walkthrough) - DONE
 - [ ] Chrome Web Store einreichen (ZIP + Screenshots)
 - [ ] **Reddit API Keys holen**: Wartet auf Genehmigung → https://www.reddit.com/prefs/apps → App erstellen
-- [ ] **Google Indexierung beantragen (31 URLs)** - Nach und nach (max 5-10/Tag wegen Quota):
+- [ ] **Google Indexierung beantragen (36 URLs)** - Nach und nach (max 5-10/Tag wegen Quota):
   - [ ] `/medical-practice-reviews`
   - [ ] `/salon-spa-review-responses`
   - [ ] `/auto-shop-reviews`
@@ -302,31 +302,27 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
   - [ ] `/accountant-review-responses`
   - [ ] `/insurance-agent-review-responses`
   - [ ] `/senior-care-review-responses`
+  - [ ] `/appstore-app-reviews`
+  - [ ] `/indeed-company-reviews`
+  - [ ] `/zillow-realtor-reviews`
+  - [ ] `/therapy-counselor-reviews`
+  - [ ] `/thumbtack-reviews`
 
-### SEO LANDING PAGES (41 Total)
+### SEO LANDING PAGES (46 Total)
 
-**Status:** Alle 41 live und getestet (HTTP 200 OK)
+**Status:** Alle 46 live und getestet (HTTP 200 OK)
 **Backend:** Generisch - alle nutzen `/api/generate`, kein spezielles Backend nötig
 **Email-Input:** Nur visuell - speichert nichts, Button ist Link zu `/register`
 
 | Kategorie | Anzahl | Beispiele |
 |-----------|--------|-----------|
-| Plattformen | 13 | Google, Yelp, TripAdvisor, Amazon, G2, Glassdoor |
-| Branchen | 25 | Restaurant, Hotel, Plumber, HVAC, Photographer |
+| Plattformen | 18 | Google, Yelp, TripAdvisor, Amazon, G2, Glassdoor, Indeed, Zillow, Thumbtack, App Store |
+| Branchen | 25 | Restaurant, Hotel, Plumber, HVAC, Photographer, Therapy |
 | Generisch | 3 | Local Business, Negative Reviews |
 
-### NÄCHSTE LANDING PAGES (Backlog - 18 Seiten)
+### NÄCHSTE LANDING PAGES (Backlog - 13 Seiten)
 
 **Priorität nach Suchvolumen.** Jede Seite ~30 Min mit bestehendem Template.
-
-#### Tier 1 - Höchstes Suchvolumen (ZUERST):
-| URL | Zielgruppe | Suchvolumen |
-|-----|------------|-------------|
-| `/appstore-app-reviews` | App Entwickler (iOS/Android) | 60K+/mo |
-| `/indeed-company-reviews` | HR/Employer Branding | 50K+/mo |
-| `/zillow-realtor-reviews` | US Immobilienmakler | 40K+/mo |
-| `/therapy-counselor-reviews` | Therapeuten/Psychologen | 35K+/mo |
-| `/thumbtack-reviews` | Service Provider (Handwerker) | 35K+/mo |
 
 #### Tier 2 - Hohes Suchvolumen:
 | URL | Zielgruppe | Suchvolumen |
