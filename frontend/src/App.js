@@ -21408,7 +21408,21 @@ const AdminPage = () => {
 function App() {
   return (
     <BrowserRouter>
-      <ThemeProvider>
+      <AppContent />
+    </BrowserRouter>
+  );
+}
+
+// App Content (inside Router for useLocation to work)
+const AppContent = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return (
+    <ThemeProvider>
         <AuthProvider>
           <Toaster position="top-right" />
           <Navbar />
@@ -21547,8 +21561,7 @@ function App() {
           </Routes>
         </AuthProvider>
       </ThemeProvider>
-    </BrowserRouter>
   );
-}
+};
 
 export default App;
