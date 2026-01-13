@@ -10422,7 +10422,7 @@ const NewsletterSignup = ({ compact = false }) => {
             maxWidth: '400px',
           }}
         >
-          Weekly insights on turning reviews into revenue. Join 2,500+ business owners.
+          Weekly insights on turning reviews into revenue. Actionable tips, no fluff.
         </p>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
