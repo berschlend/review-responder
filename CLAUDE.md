@@ -435,6 +435,14 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
 ```
 
 ### HEUTE ERLEDIGT (14.01.2026):
+- [x] **Outreach Emails: Preview + Demo-Link** - Bessere Conversion durch "Preview + More"
+  - Problem: Tony Quach (erste Antwort!) bekam generische AI-Response ohne Business Context
+  - Fix: System Prompt jetzt mit Owner Name, Industry Context, City, Rating
+  - Neue Helper: `getOwnerName()` (z.B. "Tony Quach & Co" → "Tony"), `getIndustryContext()`
+  - Email zeigt jetzt 1 AI-Antwort als Preview + Link zu Demo Page mit 2 weiteren
+  - Daily Outreach ruft `generateDemoForLead()` statt nur `generateReviewAlertDraft()`
+  - Fallback: Wenn Demo-Generation fehlschlägt → Single AI Draft wie vorher
+  - DB: `outreach_leads` hat jetzt `demo_token` und `demo_url` Columns
 - [x] **Demo Generation Cron Job** - Automatische personalisierte Demo-Emails
   - Cron Job auf cron-job.org angelegt: 08:00 täglich
   - POST `/api/cron/generate-demos?send_emails=true&limit=10`
