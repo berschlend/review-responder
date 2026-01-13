@@ -14,6 +14,7 @@ const { Resend } = require('resend');
 const { OAuth2Client } = require('google-auth-library');
 const Anthropic = require('@anthropic-ai/sdk');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { TwitterApi } = require('twitter-api-v2');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -54,6 +55,16 @@ const anthropic = process.env.ANTHROPIC_API_KEY
   : null;
 const gemini = process.env.GEMINI_API_KEY
   ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+  : null;
+
+// Twitter/X API Client (OAuth 1.0a for posting)
+const twitterClient = process.env.TWITTER_API_KEY && process.env.TWITTER_ACCESS_TOKEN
+  ? new TwitterApi({
+      appKey: process.env.TWITTER_API_KEY,
+      appSecret: process.env.TWITTER_API_SECRET,
+      accessToken: process.env.TWITTER_ACCESS_TOKEN,
+      accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+    })
   : null;
 
 // Email sender addresses (configurable via ENV)
@@ -10088,33 +10099,48 @@ app.get('/api/admin/reddit-responses', async (req, res) => {
 });
 
 // ==========================================
-// TWITTER/X ENGAGEMENT
+// TWITTER/X ENGAGEMENT (Auto-Posting via @ExecPsychology)
 // ==========================================
 
-// Search Twitter for relevant tweets
+// Search Twitter for relevant tweets using OAuth 1.0a client
 async function searchTwitter(query) {
-  const bearerToken = process.env.TWITTER_BEARER_TOKEN;
-  if (!bearerToken) return [];
+  if (!twitterClient) return [];
 
-  const params = new URLSearchParams({
-    query: `${query} -is:retweet lang:en`,
-    'tweet.fields': 'author_id,created_at,public_metrics',
-    'user.fields': 'username,name',
-    expansions: 'author_id',
-    max_results: '10'
-  });
+  try {
+    const result = await twitterClient.v2.search(query, {
+      'tweet.fields': ['author_id', 'created_at', 'public_metrics', 'conversation_id'],
+      'user.fields': ['username', 'name'],
+      'expansions': ['author_id'],
+      'max_results': 10
+    });
 
-  const response = await fetch(`https://api.twitter.com/2/tweets/search/recent?${params}`, {
-    headers: {
-      'Authorization': `Bearer ${bearerToken}`
-    }
-  });
-
-  const data = await response.json();
-  return data.data || [];
+    return result.data?.data || [];
+  } catch (error) {
+    console.error('[Twitter] Search error:', error.message);
+    return [];
+  }
 }
 
-// Twitter monitor cron endpoint
+// Post a reply to a tweet
+async function postTwitterReply(tweetId, replyText) {
+  if (!twitterClient) {
+    return { success: false, error: 'Twitter client not configured' };
+  }
+
+  try {
+    const result = await twitterClient.v2.reply(replyText, tweetId);
+    return {
+      success: true,
+      tweetId: result.data.id,
+      text: result.data.text
+    };
+  } catch (error) {
+    console.error('[Twitter] Reply error:', error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+// Twitter monitor cron endpoint - Auto-posts replies via @ExecPsychology
 app.get('/api/cron/twitter-monitor', async (req, res) => {
   const secret = req.query.secret || req.headers['x-cron-secret'];
   if (!safeCompare(secret, process.env.CRON_SECRET)) {
@@ -10123,10 +10149,10 @@ app.get('/api/cron/twitter-monitor', async (req, res) => {
 
   const dryRun = req.query.dry_run === 'true';
 
-  if (!process.env.TWITTER_BEARER_TOKEN) {
+  if (!twitterClient) {
     return res.status(500).json({
       error: 'Twitter API not configured',
-      setup: 'Add TWITTER_BEARER_TOKEN to Render environment variables'
+      setup: 'Add TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET to Render'
     });
   }
 
@@ -10138,7 +10164,7 @@ app.get('/api/cron/twitter-monitor', async (req, res) => {
   };
 
   try {
-    // Initialize Twitter responses table
+    // Initialize Twitter responses table with posted status
     await dbQuery(`
       CREATE TABLE IF NOT EXISTS twitter_responses (
         id SERIAL PRIMARY KEY,
@@ -10146,34 +10172,46 @@ app.get('/api/cron/twitter-monitor', async (req, res) => {
         tweet_text TEXT,
         tweet_author VARCHAR(100),
         our_reply TEXT,
+        our_reply_id VARCHAR(50),
         topic VARCHAR(100),
+        posted BOOLEAN DEFAULT FALSE,
         posted_at TIMESTAMP DEFAULT NOW()
       )
     `);
 
-    // Check daily limit (max 5 replies per day)
+    // Add posted column if not exists (migration for existing tables)
+    await dbQuery(`
+      ALTER TABLE twitter_responses ADD COLUMN IF NOT EXISTS posted BOOLEAN DEFAULT FALSE
+    `).catch(() => {});
+    await dbQuery(`
+      ALTER TABLE twitter_responses ADD COLUMN IF NOT EXISTS our_reply_id VARCHAR(50)
+    `).catch(() => {});
+
+    // Check daily limit (max 10 replies per day to stay safe)
     const todayCount = await dbGet(`
       SELECT COUNT(*) as count FROM twitter_responses
-      WHERE posted_at > NOW() - INTERVAL '24 hours'
+      WHERE posted = TRUE AND posted_at > NOW() - INTERVAL '24 hours'
     `);
 
-    const dailyLimit = 5;
+    const dailyLimit = 10;
     const remaining = dailyLimit - parseInt(todayCount?.count || 0);
 
     if (remaining <= 0) {
       return res.json({
-        message: 'Daily limit reached (5 replies/day)',
+        message: 'Daily limit reached (10 auto-replies/day)',
         results: results
       });
     }
 
-    // Keywords to search
+    // Keywords to search (English + German)
     const keywords = [
-      '"negative review" help',
-      '"bad review" business',
-      'respond to review',
-      '"online reputation" help',
-      '"google review" response'
+      '"negative review" help -is:retweet',
+      '"bad review" business -is:retweet',
+      'how to respond review -is:retweet',
+      '"online reputation" help -is:retweet',
+      '"google review" response -is:retweet',
+      '"schlechte Bewertung" -is:retweet',
+      '"negative Bewertung" hilfe -is:retweet'
     ];
 
     const allTweets = [];
@@ -10182,7 +10220,8 @@ app.get('/api/cron/twitter-monitor', async (req, res) => {
       try {
         const tweets = await searchTwitter(keyword);
         allTweets.push(...tweets.map(t => ({ ...t, searchKeyword: keyword })));
-        await new Promise(r => setTimeout(r, 1000));
+        // Rate limit: wait 2 seconds between searches
+        await new Promise(r => setTimeout(r, 2000));
       } catch (e) {
         results.errors.push(`Search error: ${keyword}`);
       }
@@ -10198,52 +10237,74 @@ app.get('/api/cron/twitter-monitor', async (req, res) => {
 
     const newTweets = uniqueTweets.filter(t => !respondedIds.has(t.id));
 
-    // Note: Twitter API v2 free tier doesn't allow posting tweets
-    // This endpoint monitors and logs opportunities for manual engagement
+    // Process tweets and auto-post replies
     for (const tweet of newTweets.slice(0, remaining)) {
       try {
-        // Generate helpful reply
-        const systemPrompt = `You are a helpful business expert on Twitter. Write a short, helpful reply (max 280 chars) that:
-1. Addresses the user's problem directly
-2. Offers a quick tip or suggestion
-3. Is friendly and genuine (not salesy)
-4. Only mentions ReviewResponder if directly relevant to review management`;
+        // Generate helpful reply using Claude Sonnet (cost-effective for volume)
+        const systemPrompt = `You are @ExecPsychology, a helpful business psychology expert on Twitter. Write a short, helpful reply (max 250 chars) that:
+1. Addresses the user's problem with empathy
+2. Offers a quick, actionable tip
+3. Is friendly and genuine (NOT salesy)
+4. Only mention ReviewResponder if the tweet is specifically about review response tools
+5. Use casual Twitter tone with occasional emoji`;
 
-        // Use Opus 4.5 for highest quality (important marketing touchpoints)
         const reply = anthropic ? await anthropic.messages.create({
-          model: 'claude-opus-4-20250514',
+          model: 'claude-sonnet-4-20250514',
           max_tokens: 100,
           system: systemPrompt,
-          messages: [{ role: 'user', content: `Tweet: "${tweet.text}"\n\nWrite a helpful reply:` }]
-        }).then(r => r.content[0].text) : null;
+          messages: [{ role: 'user', content: `Tweet: "${tweet.text}"\n\nWrite a helpful reply (max 250 chars):` }]
+        }).then(r => r.content[0].text.trim()) : null;
 
-        if (reply) {
+        if (reply && reply.length <= 280) {
           results.replies_generated++;
 
-          // Save for manual review (Twitter free tier doesn't allow posting)
-          await dbQuery(`
-            INSERT INTO twitter_responses (tweet_id, tweet_text, tweet_author, our_reply, topic)
-            VALUES ($1, $2, $3, $4, $5)
-            ON CONFLICT (tweet_id) DO NOTHING
-          `, [tweet.id, tweet.text, tweet.author_id, reply, tweet.searchKeyword]);
-
           if (!dryRun) {
-            console.log(`[Twitter] Found opportunity: "${tweet.text.substring(0, 50)}..."`);
-            console.log(`Suggested reply: ${reply}`);
+            // Actually post the reply!
+            const postResult = await postTwitterReply(tweet.id, reply);
+
+            if (postResult.success) {
+              results.replies_posted++;
+              console.log(`[Twitter] Posted reply to tweet ${tweet.id}`);
+
+              // Save successful post to DB
+              await dbQuery(`
+                INSERT INTO twitter_responses (tweet_id, tweet_text, tweet_author, our_reply, our_reply_id, topic, posted)
+                VALUES ($1, $2, $3, $4, $5, $6, TRUE)
+                ON CONFLICT (tweet_id) DO UPDATE SET posted = TRUE, our_reply_id = $5
+              `, [tweet.id, tweet.text, tweet.author_id, reply, postResult.tweetId, tweet.searchKeyword]);
+
+              // Rate limit: wait 30 seconds between posts (stay well under limits)
+              await new Promise(r => setTimeout(r, 30000));
+            } else {
+              results.errors.push(`Post failed for ${tweet.id}: ${postResult.error}`);
+
+              // Save failed attempt for review
+              await dbQuery(`
+                INSERT INTO twitter_responses (tweet_id, tweet_text, tweet_author, our_reply, topic, posted)
+                VALUES ($1, $2, $3, $4, $5, FALSE)
+                ON CONFLICT (tweet_id) DO NOTHING
+              `, [tweet.id, tweet.text, tweet.author_id, reply, tweet.searchKeyword]);
+            }
+          } else {
+            // Dry run - just log
+            console.log(`[Twitter DRY RUN] Would reply to: "${tweet.text.substring(0, 50)}..."`);
+            console.log(`Reply: ${reply}`);
           }
         }
 
       } catch (e) {
-        results.errors.push(`Tweet error: ${tweet.id}`);
+        results.errors.push(`Tweet processing error: ${tweet.id} - ${e.message}`);
       }
     }
 
     res.json({
       success: true,
       dry_run: dryRun,
-      message: 'Twitter opportunities logged for manual engagement (free tier cannot post)',
+      message: dryRun
+        ? 'Dry run complete - no tweets posted'
+        : `Auto-posted ${results.replies_posted} replies via @ExecPsychology`,
       daily_limit: dailyLimit,
-      remaining_today: remaining - results.replies_generated,
+      remaining_today: remaining - results.replies_posted,
       results: results
     });
 
@@ -10253,7 +10314,7 @@ app.get('/api/cron/twitter-monitor', async (req, res) => {
   }
 });
 
-// Get Twitter engagement opportunities
+// Get Twitter engagement history
 app.get('/api/admin/twitter-opportunities', async (req, res) => {
   const adminKey = req.query.key || req.headers['x-admin-key'];
   if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
@@ -10261,18 +10322,28 @@ app.get('/api/admin/twitter-opportunities', async (req, res) => {
   }
 
   try {
-    const opportunities = await dbAll(`
+    const responses = await dbAll(`
       SELECT * FROM twitter_responses
       ORDER BY posted_at DESC
       LIMIT 50
     `);
 
+    const posted = responses.filter(r => r.posted);
+    const pending = responses.filter(r => !r.posted);
+
     res.json({
-      message: 'These are suggested replies for manual posting (Twitter free tier limitation)',
-      opportunities: opportunities
+      account: '@ExecPsychology',
+      auto_posting: !!twitterClient,
+      stats: {
+        total: responses.length,
+        posted: posted.length,
+        pending: pending.length
+      },
+      posted: posted,
+      pending: pending
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to get Twitter opportunities' });
+    res.status(500).json({ error: 'Failed to get Twitter responses' });
   }
 });
 
