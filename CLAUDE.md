@@ -243,17 +243,39 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 ## CURRENT TASKS
 
-**Stand: 13.01.2026**
+**Stand: 14.01.2026**
+
+### DRINGEND - GOOGLE_PLACES_API_KEY FIXEN:
+
+**Problem:** Der Key in Render funktioniert nicht ("The provided API key is invalid").
+**Aber:** Places API ist aktiviert und hat 69 Requests in Google Cloud Dashboard.
+
+**Diagnose-Schritte:**
+1. User fragen: "Kopiere den GOOGLE_PLACES_API_KEY aus Render und gib ihn mir"
+2. Diesen Key direkt testen:
+   ```bash
+   curl "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=Hofbraeuhaus%20Munich&inputtype=textquery&fields=place_id&key=DER_KEY_HIER"
+   ```
+3. Wenn "invalid": Key in Google Cloud Console nochmal kopieren und in Render ersetzen
+4. Nach Fix LinkedIn Demo testen:
+   ```bash
+   curl -X POST https://review-responder.onrender.com/api/outreach/linkedin-demo \
+     -H "X-Admin-Key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U" \
+     -H "Content-Type: application/json" \
+     -d '{"name": "Test", "business_name": "Curry 36", "city": "Berlin"}'
+   ```
+5. Erwartetes Ergebnis: `has_reviews: true`, `reviews_processed: 3`
 
 ### USER MUSS MACHEN:
 - [x] Demo-Video aufnehmen (2 Min Walkthrough) - DONE
 - [ ] Chrome Web Store einreichen (ZIP + Screenshots)
 - [ ] **Reddit API Keys holen**: Wartet auf Genehmigung → https://www.reddit.com/prefs/apps → App erstellen
-- [ ] **Google Indexierung beantragen (31 URLs)** - Tageslimit erreicht, morgen nochmal:
-  - Von früher (11):
+- [ ] **Google Indexierung beantragen (11 URLs)** - Tageslimit erreicht, morgen nochmal:
+  - Von gestern (3):
     - `/medical-practice-reviews`
     - `/salon-spa-review-responses`
     - `/auto-shop-reviews`
+  - Neue Landing Pages (8):
     - `/trustpilot-review-responses`
     - `/airbnb-host-review-responses`
     - `/real-estate-agent-reviews`
@@ -262,27 +284,6 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
     - `/law-firm-review-responses`
     - `/ecommerce-review-responses`
     - `/coffee-shop-review-responses`
-  - Neue Landing Pages (20):
-    - `/amazon-review-responses`
-    - `/g2-review-responses`
-    - `/capterra-review-responses`
-    - `/glassdoor-review-responses`
-    - `/bbb-review-responses`
-    - `/plumber-review-responses`
-    - `/electrician-review-responses`
-    - `/hvac-review-responses`
-    - `/roofing-review-responses`
-    - `/landscaping-review-responses`
-    - `/cleaning-service-review-responses`
-    - `/healthgrades-review-responses`
-    - `/zocdoc-review-responses`
-    - `/photographer-review-responses`
-    - `/wedding-vendor-review-responses`
-    - `/pet-service-review-responses`
-    - `/daycare-review-responses`
-    - `/accountant-review-responses`
-    - `/insurance-agent-review-responses`
-    - `/senior-care-review-responses`
 
 ### CLAUDE KANN SELBST (mit Chrome MCP):
 - Cron Jobs anlegen/ändern auf cron-job.org
@@ -328,14 +329,24 @@ mcp__memory__search_nodes({ query: "lead" })
 $env:CLAUDE_SESSION = "scraper"; claude --chrome
 ```
 
-### HEUTE ERLEDIGT (13.01.2026):
-- [x] **20 weitere SEO Landing Pages erstellt** - Gesamt jetzt 41 Landing Pages
-  - Plattformen (5): Amazon, G2, Capterra, Glassdoor, BBB
-  - Home Services (6): Plumber, Electrician, HVAC, Roofing, Landscaping, Cleaning
-  - Healthcare (2): Healthgrades, Zocdoc
-  - Event/Lifestyle (4): Photographer, Wedding, Pet Service, Daycare
-  - Professional Services (3): Accountant, Insurance, Senior Care
-  - Alle 41 Landing Pages getestet (Status 200 OK)
+### HEUTE ERLEDIGT (14.01.2026):
+- [x] **Demo Generator implementiert** - Personalisierte Demos für Cold Outreach
+  - SerpAPI Integration für Google Review Scraping
+  - `POST /api/demo/generate` - Generiert Demo mit AI-Antworten
+  - `GET /api/public/demo/:token` - Public Demo Landing Page
+  - `POST /api/cron/generate-demos` - Batch Demo Generation
+  - Frontend: `/demo/:token` Route mit DemoPage Komponente
+- [x] **LinkedIn Demo Outreach implementiert** - Personalisierte Connection Notes
+  - `POST /api/outreach/linkedin-demo` - Generiert Demo + Connection Note
+  - `GET /api/outreach/linkedin-demo/:id` - Lead Details
+  - `PUT /api/outreach/linkedin-demo/:id/sent` - Mark as sent
+  - `PUT /api/outreach/linkedin-demo/:id/accepted` - Mark as accepted
+  - `GET /api/outreach/linkedin-pending` - Pending leads with demos
+  - Database: linkedin_outreach erweitert mit demo_token, demo_url, connection_note, etc.
+- [x] **Admin Secret gespeichert** in `.claude/secrets.local`
+- [ ] **GOOGLE_PLACES_API_KEY fixen** - Key in Render funktioniert nicht (siehe oben)
+
+### ERLEDIGT (13.01.2026):
 - [x] **Twitter Auto-Post System** - Automatische Tweets für @ExecPsychology
   - Endpoint: `GET /api/cron/twitter-post?secret=...`
   - 5 Kategorien (business_psychology 30%, review_management 25%, business_tip 20%, engagement_question 15%, soft_promo 10%)
@@ -356,9 +367,11 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
   - Outreach-Daten: 191 Leads, 103 Emails, 0% Opens (Tracking kaputt)
   - Erkenntnis: Activation ist kein Problem, Conversion ist das Bottleneck
   - Nächster Checkpoint: In 1 Woche Clicks auswerten
-- [x] **8 neue SEO Landing Pages erstellt** (vorher)
+- [x] **8 neue SEO Landing Pages erstellt** - Plattformen und Branchen erweitert
   - Plattformen: Trustpilot, Airbnb, E-Commerce
   - Branchen: Real Estate, Gym/Fitness, Veterinarian, Law Firm, Coffee Shop
+  - Alle 21 Landing Pages getestet (Status 200 OK)
+  - Google Indexierung wartet auf Tageskontingent (morgen beantragen)
 - [x] **Frontend Redesign mit Gemini MCP** - Komplette Landing Page überarbeitet
   - Neues modernes Design mit verbesserter UX
   - "20 free responses/month" klar kommuniziert (statt vages "free forever")
