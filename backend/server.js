@@ -12408,26 +12408,46 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
 
       for (const lead of newLeads) {
         try {
-          // For leads with bad reviews, generate AI response draft if not already done
+          // For leads with bad reviews, generate full demo with multiple AI responses
           if (lead.has_bad_review && lead.worst_review_text && !lead.ai_response_draft) {
-            console.log(`📝 Generating AI draft for ${lead.business_name}...`);
-            const aiDraft = await generateReviewAlertDraft(
-              lead.business_name,
-              lead.business_type,
-              lead.worst_review_text,
-              lead.worst_review_rating,
-              lead.worst_review_author,
-              lead.city || null,
-              lead.google_rating || null,
-              lead.google_reviews_count || null
-            );
+            console.log(`📝 Generating demo for ${lead.business_name}...`);
 
-            if (aiDraft) {
-              lead.ai_response_draft = aiDraft;
-              await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1 WHERE id = $2', [
-                aiDraft,
-                lead.id,
-              ]);
+            const demoResult = await generateDemoForLead(lead);
+
+            if (demoResult && demoResult.first_ai_response) {
+              // Use first AI response as preview in email
+              lead.ai_response_draft = demoResult.first_ai_response;
+              lead.demo_url = demoResult.demo_url;
+              lead.demo_token = demoResult.demo_token;
+
+              // Save to database
+              await dbQuery(
+                'UPDATE outreach_leads SET ai_response_draft = $1, demo_url = $2, demo_token = $3 WHERE id = $4',
+                [demoResult.first_ai_response, demoResult.demo_url, demoResult.demo_token, lead.id]
+              );
+
+              console.log(`✅ Demo generated: ${demoResult.demo_url} (${demoResult.reviews_processed} reviews)`);
+            } else {
+              // Fallback: Generate single AI draft if demo generation fails
+              console.log(`⚠️ Demo failed, generating single AI draft for ${lead.business_name}...`);
+              const aiDraft = await generateReviewAlertDraft(
+                lead.business_name,
+                lead.business_type,
+                lead.worst_review_text,
+                lead.worst_review_rating,
+                lead.worst_review_author,
+                lead.city || null,
+                lead.google_rating || null,
+                lead.google_reviews_count || null
+              );
+
+              if (aiDraft) {
+                lead.ai_response_draft = aiDraft;
+                await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1 WHERE id = $2', [
+                  aiDraft,
+                  lead.id,
+                ]);
+              }
             }
           }
 
