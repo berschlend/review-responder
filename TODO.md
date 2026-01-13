@@ -1,6 +1,43 @@
 # ReviewResponder - Todo Liste
 
-> Letzte Aktualisierung: 11.01.2026 - Morgen Update (Google Sign-In hinzugefügt)
+> Letzte Aktualisierung: 13.01.2026
+
+---
+
+## DEMO VIDEOS & UPLOAD CHECKLISTE
+
+### Verfügbare Videos
+
+| Video | Pfad | Status |
+|-------|------|--------|
+| `walkthrough-video-v2.mp4` | frontend/public/ | Aktuell auf Landing Page |
+| `demo-video.mp4` | frontend/public/ | Backup |
+| `extension-demo-final.mp4` | content/video-scripts/ | Extension Demo |
+| `demo-video-final.mp4` | content/video-scripts/ | FALSCHE AUDIO |
+| `extension-demo.mp4` | scripts/generate-demo-video/ | Alt |
+
+### Upload-Ziele
+
+| Plattform | Video | Status | URL/Notes |
+|-----------|-------|--------|-----------|
+| **YouTube (ungelistet)** | walkthrough-video-v2.mp4 | [ ] TODO | Für Embedding |
+| **YouTube (ungelistet)** | extension-demo-final.mp4 | [ ] TODO | Für Embedding |
+| **Chrome Web Store** | extension-demo-final.mp4 | [ ] TODO | Max 30 Sek, 1280x800 |
+| **Capterra** | walkthrough-video-v2.mp4 | [ ] TODO | Software Listing |
+| **G2** | walkthrough-video-v2.mp4 | [ ] TODO | Software Listing |
+| **GetApp** | walkthrough-video-v2.mp4 | [ ] TODO | Software Listing |
+| **Product Hunt** | walkthrough-video-v2.mp4 | [ ] TODO | Launch Day |
+| **Landing Page** | walkthrough-video-v2.mp4 | [x] DONE | tryreviewresponder.com |
+
+### Video-Anforderungen pro Plattform
+
+| Plattform | Max Länge | Format | Auflösung |
+|-----------|-----------|--------|-----------|
+| YouTube | Unbegrenzt | MP4 | 1080p+ |
+| Chrome Web Store | 30 Sek | MP4/WebM | 1280x800 |
+| Capterra | 3 Min | YouTube Link | - |
+| G2 | 2 Min | YouTube Link | - |
+| Product Hunt | 2 Min | YouTube/Direct | - |
 
 ---
 
