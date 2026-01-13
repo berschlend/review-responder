@@ -12492,6 +12492,75 @@ app.get('/api/outreach/funnel', async (req, res) => {
   }
 });
 
+// POST /api/admin/test-email - Send a test email via specific provider
+app.post('/api/admin/test-email', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { to, provider = 'brevo' } = req.body;
+
+  if (!to) {
+    return res.status(400).json({ error: 'Missing "to" email address' });
+  }
+
+  try {
+    const subject = `[Test] Brevo Email Test - ${new Date().toISOString()}`;
+    const html = `
+      <h2>Brevo Test Email</h2>
+      <p>This is a test email sent via <strong>${provider}</strong>.</p>
+      <p>If you received this, Brevo is working correctly!</p>
+      <p>Sent at: ${new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}</p>
+      <hr>
+      <p><a href="https://tryreviewresponder.com">ReviewResponder</a></p>
+    `;
+
+    if (provider === 'brevo' && brevoApi) {
+      const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+      sendSmtpEmail.subject = subject;
+      sendSmtpEmail.htmlContent = html;
+      sendSmtpEmail.sender = { name: 'Berend from ReviewResponder', email: 'outreach@tryreviewresponder.com' };
+      sendSmtpEmail.to = [{ email: to }];
+      sendSmtpEmail.tags = ['test', 'brevo-test'];
+
+      const result = await brevoApi.sendTransacEmail(sendSmtpEmail);
+      console.log('[Test Email] Brevo test email sent to:', to, 'messageId:', result.messageId);
+
+      return res.json({
+        success: true,
+        provider: 'brevo',
+        to,
+        messageId: result.messageId || result.body?.messageId,
+        message: 'Test email sent via Brevo. Check your inbox and spam folder!'
+      });
+    } else if (resend) {
+      const result = await resend.emails.send({
+        from: FROM_EMAIL,
+        to,
+        subject,
+        html
+      });
+
+      return res.json({
+        success: true,
+        provider: 'resend',
+        to,
+        messageId: result.id,
+        message: 'Test email sent via Resend'
+      });
+    } else {
+      return res.status(500).json({ error: 'No email provider available' });
+    }
+  } catch (error) {
+    console.error('[Test Email] Error:', error);
+    return res.status(500).json({
+      error: 'Failed to send test email',
+      details: error.message
+    });
+  }
+});
+
 // ==========================================
 // REDDIT AUTO-RESPONDER
 // ==========================================
