@@ -3305,7 +3305,8 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
 
     const sessionConfig = {
       customer: user.stripe_customer_id,
-      payment_method_types: ['card'],
+      // Let Stripe automatically show all payment methods enabled in Dashboard
+      // (Card, PayPal, SEPA, Link, Apple Pay, Google Pay)
       line_items: [
         {
           price: priceId,

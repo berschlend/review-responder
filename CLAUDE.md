@@ -262,7 +262,8 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
   - Blog Generation: `POST .../api/cron/generate-blog-article?secret=X` @ Mo/Mi/Fr 07:00
   - Reddit Monitor: `POST .../api/cron/reddit-monitor?secret=X` @ 12:00 Berlin
   - Twitter Monitor: `POST .../api/cron/twitter-monitor?secret=X` @ 14:00 Berlin
-- [ ] **Reddit App erstellen**: https://www.reddit.com/prefs/apps
+- [ ] **Reddit API Keys holen**: Nach Genehmigung → https://www.reddit.com/prefs/apps → App erstellen
+- [ ] **Twitter API Keys holen**: https://developer.twitter.com → Bearer Token generieren
 
 ### NÄCHSTE CLAUDE TASKS:
 
@@ -279,17 +280,23 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 - [x] **Reddit Auto-Responder** - Automatische hilfreiche Kommentare auf Reddit
   - Monitort 8 Subreddits (smallbusiness, Entrepreneur, restaurateur, etc.)
   - 8 Keywords (negative review, review management, etc.)
-  - AI-generierte hilfreiche Antworten (Claude Sonnet)
+  - AI-generierte hilfreiche Antworten (**Claude Opus 4.5** für beste Qualität)
   - 5 Kommentare/Tag Limit (Anti-Spam)
   - Endpoints: `GET /api/cron/reddit-monitor`, `GET /api/admin/reddit-responses`
 - [x] **Twitter/X Engagement** - Findet Tweet-Opportunities für manuelles Engagement
   - Sucht nach review-bezogenen Tweets
-  - Generiert Antwort-Vorschläge
+  - Generiert Antwort-Vorschläge (**Claude Opus 4.5**)
   - Loggt Opportunities für manuelles Posten (Free Tier kann nicht automatisch posten)
   - Endpoints: `GET /api/cron/twitter-monitor`, `GET /api/admin/twitter-opportunities`
 - [x] **Blog SEO Verbesserungen**
   - Internal Linking: Neue Artikel verlinken automatisch zu verwandten Artikeln
   - Schema.org JSON-LD Markup für Rich Snippets in Google
+- [x] **Drip Email Cron Fix** - Error Response kompakter gemacht
+  - cron-job.org hatte "Ausgabe zu groß" Fehler
+  - Error-Response auf max 100 Zeichen gekürzt
+- [x] **Reddit API Access Request** - Antrag eingereicht
+  - Formular ausgefüllt via Chrome MCP
+  - Wartet auf Genehmigung (1-2 Tage)
 
 ### ERLEDIGT (12.01.2026):
 - [x] **SEO Auto-Pilot Blog implementiert** - Automatische Blog-Generierung mit Gemini 2.5 Pro
@@ -563,12 +570,13 @@ git add -A && git commit -m "Beschreibung" && git push
 
 ## MARKETING AUTOMATION BACKLOG
 
-| System | Beschreibung | Priority |
-|--------|--------------|----------|
-| Reddit/Quora Auto-Responder | Keywords monitoren, hilfreiche Antworten | High |
-| Twitter/X Engagement | Tweet-Search, Auto-Replies | High |
-| SEO Auto-Pilot | 5 Artikel/Woche auto-generieren | High |
-| Competitor Scraper | Unzufriedene Birdeye/Podium Kunden | Medium |
+| System | Beschreibung | Status |
+|--------|--------------|--------|
+| Reddit Auto-Responder | Keywords monitoren, hilfreiche Antworten | ✅ Implementiert - wartet auf API Keys |
+| Twitter/X Engagement | Tweet-Search, Antwort-Vorschläge | ✅ Implementiert - wartet auf API Keys |
+| SEO Auto-Pilot | 3 Artikel/Woche auto-generieren | ✅ Implementiert + Cron aktiv |
+| Quora Auto-Responder | Ähnlich wie Reddit | Backlog |
+| Competitor Scraper | Unzufriedene Birdeye/Podium Kunden | Backlog |
 
 ---
 
