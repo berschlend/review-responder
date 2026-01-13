@@ -9123,6 +9123,15 @@ function fillEmailTemplate(template, lead, campaign = 'main') {
     body = addClickTracking(body, lead.email, campaign);
   }
 
+  // Add open tracking pixel (invisible 1x1 gif at the end)
+  if (lead.email) {
+    const baseUrl = process.env.NODE_ENV === 'production'
+      ? 'https://review-responder.onrender.com'
+      : 'http://localhost:3001';
+    const trackingPixel = `<img src="${baseUrl}/api/outreach/track-open?email=${encodeURIComponent(lead.email)}&campaign=${encodeURIComponent(campaign)}" width="1" height="1" style="display:none" alt="" />`;
+    body = body + '\n\n' + trackingPixel;
+  }
+
   return { subject, body };
 }
 
