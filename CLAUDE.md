@@ -17,8 +17,12 @@
 
 ### Workflow
 ```
-1. CLAUDE.md lesen → 2. Task wählen → 3. Erledigen → 4. Testen → 5. Git push → 6. CLAUDE.md updaten
+1. CLAUDE.md lesen → 2. TODO.md checken → 3. Task wählen → 4. Erledigen → 5. Testen → 6. Git push → 7. CLAUDE.md updaten
 ```
+
+### Wichtige Dateien
+- **CLAUDE.md** - Technische Dokumentation, Code Style, API Endpoints
+- **TODO.md** - Aktuelle Tasks, Videos, Sales Priority, Backlog
 
 ---
 
@@ -650,8 +654,8 @@ ReviewResponder/
 │   │   ├── simplify-code.md
 │   │   └── verify-app.md
 │   └── TESTING.md     # Testing Workflow Checklist
-├── CLAUDE.md
-└── Todo.md
+├── CLAUDE.md          # Technische Docs, Code Style, API
+└── TODO.md            # Tasks, Videos, Sales, Backlog
 ```
 
 ---

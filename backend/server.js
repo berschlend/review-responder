@@ -15,6 +15,7 @@ const { OAuth2Client } = require('google-auth-library');
 const Anthropic = require('@anthropic-ai/sdk');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { TwitterApi } = require('twitter-api-v2');
+const SibApiV3Sdk = require('@getbrevo/brevo');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -67,6 +68,13 @@ const twitterClient = process.env.TWITTER_API_KEY && process.env.TWITTER_ACCESS_
     })
   : null;
 
+// Brevo (ex-Sendinblue) for marketing/outreach emails (300/day free)
+let brevoApi = null;
+if (process.env.BREVO_API_KEY) {
+  brevoApi = new SibApiV3Sdk.TransactionalEmailsApi();
+  brevoApi.setApiKey(SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
+}
+
 // Email sender addresses (configurable via ENV)
 const FROM_EMAIL = process.env.FROM_EMAIL || 'ReviewResponder <hello@tryreviewresponder.com>';
 const OUTREACH_FROM_EMAIL =
@@ -85,14 +93,35 @@ function getTrackingPixel(email, campaign = 'main') {
 }
 
 // Send outreach email with automatic tracking pixel injection
+// Uses Brevo (300/day free) if available, falls back to Resend
 async function sendOutreachEmail({ to, subject, html, campaign = 'main', tags = [] }) {
-  if (!resend) {
-    throw new Error('RESEND_API_KEY not configured');
-  }
-
   // Add tracking pixel at the end of the email body
   const trackingPixel = getTrackingPixel(to, campaign);
   const htmlWithTracking = html + trackingPixel;
+
+  // Try Brevo first (higher free tier: 300/day vs Resend's 100/day)
+  if (brevoApi) {
+    try {
+      const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+      sendSmtpEmail.subject = subject;
+      sendSmtpEmail.htmlContent = htmlWithTracking;
+      sendSmtpEmail.sender = { name: 'Berend von ReviewResponder', email: 'outreach@tryreviewresponder.com' };
+      sendSmtpEmail.to = [{ email: to }];
+      sendSmtpEmail.tags = [campaign, ...tags.map(t => t.value || t.name)];
+
+      const result = await brevoApi.sendTransacEmail(sendSmtpEmail);
+      console.log(`[Brevo] Email sent to ${to} (campaign: ${campaign})`);
+      return { id: result.body?.messageId || result.messageId, provider: 'brevo' };
+    } catch (brevoError) {
+      console.error('[Brevo] Failed, falling back to Resend:', brevoError.message);
+      // Fall through to Resend
+    }
+  }
+
+  // Fallback to Resend
+  if (!resend) {
+    throw new Error('No email provider configured (BREVO_API_KEY or RESEND_API_KEY required)');
+  }
 
   // Add campaign tag if not already present
   const allTags = [...tags];
@@ -100,13 +129,15 @@ async function sendOutreachEmail({ to, subject, html, campaign = 'main', tags = 
     allTags.push({ name: 'campaign', value: campaign });
   }
 
-  return resend.emails.send({
+  const result = await resend.emails.send({
     from: OUTREACH_FROM_EMAIL,
     to,
     subject,
     html: htmlWithTracking,
     tags: allTags,
   });
+  console.log(`[Resend] Email sent to ${to} (campaign: ${campaign})`);
+  return { ...result, provider: 'resend' };
 }
 
 // ==========================================
