@@ -10624,9 +10624,15 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
       for (const lead of needsFollowup) {
         const nextSequence = (lead.last_sequence || 1) + 1;
 
-        if (nextSequence <= 3) {
+        // G2 competitor leads only have 2 sequences, others have 3
+        const maxSequence = lead.lead_type === 'g2_competitor' ? 2 : 3;
+
+        if (nextSequence <= maxSequence) {
           try {
             const template = fillEmailTemplate(getTemplateForLead(nextSequence, lead), lead);
+
+            // Determine campaign type for follow-up
+            const followupCampaign = lead.lead_type === 'g2_competitor' ? 'g2_competitor' : 'main';
 
             await resend.emails.send({
               from: OUTREACH_FROM_EMAIL,
@@ -10638,12 +10644,12 @@ app.post('/api/cron/daily-outreach', async (req, res) => {
             await dbQuery(
               `
               INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign)
-              VALUES ($1, $2, $3, $4, $5, 'sent', NOW(), 'main')
+              VALUES ($1, $2, $3, $4, $5, 'sent', NOW(), $6)
             `,
-              [lead.id, lead.email, nextSequence, template.subject, template.body]
+              [lead.id, lead.email, nextSequence, template.subject, template.body, followupCampaign]
             );
 
-            if (nextSequence === 3) {
+            if (nextSequence === maxSequence) {
               await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', [
                 'sequence_completed',
                 lead.id,
