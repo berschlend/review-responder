@@ -385,6 +385,15 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 | **Chrome MCP Lead Scraper fortsetzen** | Mittel | Memory MCP |
 | **Landing Pages Tier 2 erstellen** | Einfach | frontend/src/App.js |
 
+### Chrome MCP Best Practices
+
+**Problem:** Mehrere parallel Claude `--chrome` Sessions → viele Tabs → RAM voll → Crashes
+
+**Lösung:**
+1. **Tab Wrangler Extension** installiert - schließt Tabs nach 30 Min Inaktivität automatisch
+2. Aktive Tabs **pinnen** wenn sie länger offen bleiben sollen
+3. Nur **eine** Claude Session mit `--chrome` für Browser-Tasks, andere ohne
+
 ### Chrome MCP Lead Scraper (WIP)
 
 **Status:** ~25 Leads gesammelt, Session 13.01.2026 abgeschlossen
