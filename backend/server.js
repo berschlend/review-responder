@@ -7235,7 +7235,7 @@ app.delete('/api/admin/cleanup-all-tests', authenticateAdmin, async (req, res) =
       { table: 'responses', condition: 'user_id = ANY($1)' },
       { table: 'templates', condition: 'user_id = ANY($1)' },
       { table: 'response_templates', condition: 'user_id = ANY($1)' },
-      { table: 'team_members', condition: 'user_id = ANY($1) OR team_owner_id = ANY($1) OR member_user_id = ANY($1)' },
+      { table: 'team_members', condition: 'team_owner_id = ANY($1) OR member_user_id = ANY($1)' },
       { table: 'api_keys', condition: 'user_id = ANY($1)' },
       { table: 'referrals', condition: 'referrer_id = ANY($1) OR referred_id = ANY($1)' },
       { table: 'password_reset_tokens', condition: 'user_id = ANY($1)' },
