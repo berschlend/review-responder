@@ -835,6 +835,20 @@ async function initDatabase() {
       // Indexes might already exist
     }
 
+    // Add demo columns to linkedin_outreach for LinkedIn Demo Outreach feature
+    try {
+      await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS demo_token TEXT`);
+      await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS demo_url TEXT`);
+      await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS connection_note TEXT`);
+      await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS business_name TEXT`);
+      await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS google_place_id TEXT`);
+      await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS google_rating DECIMAL(2,1)`);
+      await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS demo_viewed_at TIMESTAMP`);
+      await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS converted_at TIMESTAMP`);
+    } catch (error) {
+      // Columns might already exist
+    }
+
     console.log('📊 Database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -11375,6 +11389,232 @@ app.post('/api/sales/linkedin-leads', async (req, res) => {
   } catch (error) {
     console.error('LinkedIn leads submission error:', error);
     res.status(500).json({ error: 'Failed to submit leads' });
+  }
+});
+
+// POST /api/outreach/linkedin-demo - Generate personalized demo for LinkedIn outreach
+app.post('/api/outreach/linkedin-demo', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.headers['x-api-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized - Admin key required' });
+  }
+
+  try {
+    const { linkedin_url, first_name, company, business_name, city } = req.body;
+
+    if (!linkedin_url && !business_name) {
+      return res.status(400).json({ error: 'Either linkedin_url or business_name required' });
+    }
+
+    // Extract first name from full name if not provided
+    const contactFirstName = first_name || (req.body.name ? req.body.name.split(' ')[0] : 'there');
+    const contactCompany = company || business_name;
+
+    // Try to find the business on Google Maps
+    let placeId = null;
+    let googleRating = null;
+    let totalReviews = 0;
+    let scrapedReviews = [];
+    let generatedResponses = [];
+
+    const searchName = business_name || contactCompany;
+    const searchCity = city || '';
+
+    if (searchName) {
+      try {
+        placeId = await lookupPlaceId(searchName, searchCity);
+      } catch (err) {
+        console.log('Place lookup failed:', err.message);
+      }
+    }
+
+    // If we found a place, try to get reviews and generate demo
+    if (placeId && process.env.SERPAPI_KEY) {
+      try {
+        // Get place details for rating
+        const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=rating,user_ratings_total,name&key=${process.env.GOOGLE_PLACES_API_KEY}`;
+        const detailsRes = await fetch(detailsUrl);
+        const detailsData = await detailsRes.json();
+
+        if (detailsData.result) {
+          googleRating = detailsData.result.rating;
+          totalReviews = detailsData.result.user_ratings_total || 0;
+        }
+
+        // Scrape reviews via SerpAPI
+        scrapedReviews = await scrapeGoogleReviews(placeId, 3);
+
+        // Generate AI responses for each review
+        for (const review of scrapedReviews) {
+          const aiResponse = await generateDemoResponse(review, searchName);
+          generatedResponses.push({
+            review: review,
+            ai_response: aiResponse
+          });
+        }
+      } catch (err) {
+        console.log('Review scraping/generation failed:', err.message);
+      }
+    }
+
+    // Generate demo token
+    const demoToken = generateDemoToken();
+    const demoUrl = `https://tryreviewresponder.com/demo/${demoToken}`;
+
+    // Generate connection note
+    let connectionNote;
+    if (scrapedReviews.length > 0 && googleRating) {
+      connectionNote = `Hi ${contactFirstName},
+
+Saw ${searchName} has ${googleRating} stars on Google - nice work!
+
+I made you something: ${demoUrl}
+
+(3 AI-generated responses to your toughest reviews)
+
+Cheers,
+Berend`;
+    } else {
+      // Fallback note without demo
+      connectionNote = `Hi ${contactFirstName},
+
+Love what you're doing at ${contactCompany}.
+
+Built a tool that writes review responses in 10 seconds.
+Would love your feedback: tryreviewresponder.com
+
+Cheers,
+Berend`;
+    }
+
+    // Save to database (update existing or insert new)
+    let linkedinLeadId;
+    if (linkedin_url) {
+      const existing = await dbGet('SELECT id FROM linkedin_outreach WHERE linkedin_url = $1', [linkedin_url]);
+      if (existing) {
+        await dbQuery(`
+          UPDATE linkedin_outreach
+          SET demo_token = $1, demo_url = $2, connection_note = $3,
+              business_name = $4, google_place_id = $5, google_rating = $6
+          WHERE id = $7
+        `, [demoToken, demoUrl, connectionNote, searchName, placeId, googleRating, existing.id]);
+        linkedinLeadId = existing.id;
+      } else {
+        const inserted = await dbGet(`
+          INSERT INTO linkedin_outreach (name, company, linkedin_url, demo_token, demo_url, connection_note, business_name, google_place_id, google_rating)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          RETURNING id
+        `, [req.body.name || contactFirstName, contactCompany, linkedin_url, demoToken, demoUrl, connectionNote, searchName, placeId, googleRating]);
+        linkedinLeadId = inserted.id;
+      }
+    }
+
+    // Also store in demo_generations if we have reviews
+    if (scrapedReviews.length > 0) {
+      await dbQuery(`
+        INSERT INTO demo_generations (business_name, google_place_id, google_rating, total_reviews, scraped_reviews, demo_token, generated_responses)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        ON CONFLICT (demo_token) DO UPDATE SET generated_responses = $7
+      `, [searchName, placeId, googleRating, totalReviews, JSON.stringify(scrapedReviews), demoToken, JSON.stringify(generatedResponses)]);
+    }
+
+    res.json({
+      success: true,
+      demo_token: demoToken,
+      demo_url: demoUrl,
+      connection_note: connectionNote,
+      linkedin_lead_id: linkedinLeadId,
+      has_reviews: scrapedReviews.length > 0,
+      reviews_processed: scrapedReviews.length,
+      google_rating: googleRating,
+      business_name: searchName
+    });
+
+  } catch (error) {
+    console.error('LinkedIn demo generation error:', error);
+    res.status(500).json({ error: 'Failed to generate LinkedIn demo' });
+  }
+});
+
+// GET /api/outreach/linkedin-demo/:id - Get LinkedIn lead with demo info
+app.get('/api/outreach/linkedin-demo/:id', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.headers['x-api-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const lead = await dbGet('SELECT * FROM linkedin_outreach WHERE id = $1', [req.params.id]);
+    if (!lead) {
+      return res.status(404).json({ error: 'Lead not found' });
+    }
+    res.json(lead);
+  } catch (error) {
+    console.error('LinkedIn lead fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch lead' });
+  }
+});
+
+// PUT /api/outreach/linkedin-demo/:id/sent - Mark connection as sent
+app.put('/api/outreach/linkedin-demo/:id/sent', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.headers['x-api-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    await dbQuery(`
+      UPDATE linkedin_outreach
+      SET connection_sent = TRUE, connection_sent_at = NOW()
+      WHERE id = $1
+    `, [req.params.id]);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('LinkedIn sent update error:', error);
+    res.status(500).json({ error: 'Failed to update' });
+  }
+});
+
+// PUT /api/outreach/linkedin-demo/:id/accepted - Mark connection as accepted
+app.put('/api/outreach/linkedin-demo/:id/accepted', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.headers['x-api-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    await dbQuery(`
+      UPDATE linkedin_outreach
+      SET connection_accepted = TRUE, connection_accepted_at = NOW()
+      WHERE id = $1
+    `, [req.params.id]);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('LinkedIn accepted update error:', error);
+    res.status(500).json({ error: 'Failed to update' });
+  }
+});
+
+// GET /api/outreach/linkedin-pending - Get LinkedIn leads pending connection
+app.get('/api/outreach/linkedin-pending', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.headers['x-api-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+    const leads = await dbAll(`
+      SELECT * FROM linkedin_outreach
+      WHERE demo_token IS NOT NULL
+        AND connection_sent = FALSE
+      ORDER BY created_at DESC
+      LIMIT $1
+    `, [limit]);
+    res.json({ leads, count: leads.length });
+  } catch (error) {
+    console.error('LinkedIn pending fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch pending leads' });
   }
 });
 
