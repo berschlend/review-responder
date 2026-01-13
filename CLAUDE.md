@@ -245,19 +245,25 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 ### Cron Jobs Status (cron-job.org)
 
-**Stand: 14.01.2026**
+**Stand: 13.01.2026**
 
 | Job | Schedule | Status | Letzter Fehler |
 |-----|----------|--------|----------------|
+| **Keep-Alive (NEU!)** | alle 15 Min | OK | Verhindert Cold Start |
 | Blog Auto-Generation | 06:00 Mo/Mi/Fr | OK | - |
 | Twitter Auto-Post Morning | 09:00 täglich | OK | - |
 | Weekly Summary | 09:00 Montags | OK | - |
-| Daily Outreach | 09:00 täglich | ✅ GEFIXT | POST→GET geändert |
-| Drip Emails | 10:00 täglich | ✅ GEFIXT | POST→GET geändert |
-| TripAdvisor Email Sender | 09:00 täglich | OK | war bereits GET |
+| Daily Outreach | 09:00 täglich | OK | Cold Start (gefixt) |
+| Drip Emails | 10:00 täglich | OK | Cold Start (gefixt) |
+| TripAdvisor Email Sender | 09:00 täglich | OK | Cold Start (gefixt) |
 | Pre-Registration Drip | 11:00 täglich | OK | - |
 
-**Fix (14.01):** Daily Outreach + Drip Emails waren POST-Endpoints, aber cron-job.org sendet GET. Beide auf GET geändert.
+**Root Cause "Ausgabe zu groß" (13.01):**
+- Render Free Tier schläft nach 15 Min Inaktivität
+- Cron Job trifft auf kalten Server → 502 Error mit 218KB HTML
+- cron-job.org sieht 218KB Response → "Ausgabe zu groß"
+
+**Fix:** Keep-Alive Cron Job pingt `/api/health` alle 15 Min → Server bleibt warm
 
 ---
 
@@ -419,6 +425,12 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
 ```
 
 ### HEUTE ERLEDIGT (13.01.2026):
+- [x] **Keep-Alive Cron Job** - Verhindert Render Cold Start "Ausgabe zu groß" Fehler
+  - Endpoint: `GET /api/health`
+  - Schedule: alle 15 Minuten (*/15 * * * *)
+  - Root Cause gefunden: Render Free Tier schläft nach 15 Min → 502 Error mit 218KB HTML
+  - cron-job.org interpretiert 218KB Response als "Ausgabe zu groß"
+  - Fix: Server bleibt jetzt immer warm durch 15-Min Health Checks
 - [x] **Chrome Web Store Einreichung komplett** - Extension v1.6.1 eingereicht
   - manifest.json mit SEO-optimierter Description
   - 5 Screenshots erstellt und resized (1280x800)
