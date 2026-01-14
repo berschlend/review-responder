@@ -18450,6 +18450,158 @@ app.get('/api/health', async (req, res) => {
   });
 });
 
+// GET /api/admin/cleanup-test-data - Remove all test data from database
+app.get('/api/admin/cleanup-test-data', async (req, res) => {
+  const { key, dryrun } = req.query;
+  const adminSecret = process.env.ADMIN_SECRET;
+
+  if (!adminSecret || !safeCompare(key, adminSecret)) {
+    return res.status(401).json({ error: 'Invalid admin key' });
+  }
+
+  const isDryRun = dryrun === 'true';
+  const results = { dryrun: isDryRun, deleted: {}, errors: [] };
+
+  // Test email patterns to delete
+  const testPatterns = [
+    "email LIKE '%berend%'",
+    "email LIKE '%@test.%'",
+    "email LIKE '%@tryreviewresponder.com%'",
+    "email LIKE 'reviewer@%'",
+  ];
+  const whereClause = testPatterns.join(' OR ');
+
+  try {
+    // 1. Outreach Clicks
+    const clicksCount = await pool.query(`SELECT COUNT(*) FROM outreach_clicks WHERE ${whereClause}`);
+    results.deleted.outreach_clicks = parseInt(clicksCount.rows[0].count);
+    if (!isDryRun && results.deleted.outreach_clicks > 0) {
+      await pool.query(`DELETE FROM outreach_clicks WHERE ${whereClause}`);
+    }
+
+    // 2. Outreach Tracking
+    const trackingCount = await pool.query(`SELECT COUNT(*) FROM outreach_tracking WHERE ${whereClause}`);
+    results.deleted.outreach_tracking = parseInt(trackingCount.rows[0].count);
+    if (!isDryRun && results.deleted.outreach_tracking > 0) {
+      await pool.query(`DELETE FROM outreach_tracking WHERE ${whereClause}`);
+    }
+
+    // 3. Outreach Emails
+    const emailsCount = await pool.query(`SELECT COUNT(*) FROM outreach_emails WHERE ${whereClause}`);
+    results.deleted.outreach_emails = parseInt(emailsCount.rows[0].count);
+    if (!isDryRun && results.deleted.outreach_emails > 0) {
+      await pool.query(`DELETE FROM outreach_emails WHERE ${whereClause}`);
+    }
+
+    // 4. Outreach Leads
+    const leadsCount = await pool.query(`SELECT COUNT(*) FROM outreach_leads WHERE ${whereClause}`);
+    results.deleted.outreach_leads = parseInt(leadsCount.rows[0].count);
+    if (!isDryRun && results.deleted.outreach_leads > 0) {
+      await pool.query(`DELETE FROM outreach_leads WHERE ${whereClause}`);
+    }
+
+    // 5. Email Logs (uses to_email)
+    const toEmailPatterns = testPatterns.map(p => p.replace('email', 'to_email'));
+    const toEmailWhere = toEmailPatterns.join(' OR ');
+    const logsCount = await pool.query(`SELECT COUNT(*) FROM email_logs WHERE ${toEmailWhere}`);
+    results.deleted.email_logs = parseInt(logsCount.rows[0].count);
+    if (!isDryRun && results.deleted.email_logs > 0) {
+      await pool.query(`DELETE FROM email_logs WHERE ${toEmailWhere}`);
+    }
+
+    // 6. Email Captures
+    const capturesCount = await pool.query(`SELECT COUNT(*) FROM email_captures WHERE ${whereClause}`);
+    results.deleted.email_captures = parseInt(capturesCount.rows[0].count);
+    if (!isDryRun && results.deleted.email_captures > 0) {
+      await pool.query(`DELETE FROM email_captures WHERE ${whereClause}`);
+    }
+
+    // 7. Competitor Leads
+    const competitorCount = await pool.query(`SELECT COUNT(*) FROM competitor_leads WHERE ${whereClause}`);
+    results.deleted.competitor_leads = parseInt(competitorCount.rows[0].count);
+    if (!isDryRun && results.deleted.competitor_leads > 0) {
+      await pool.query(`DELETE FROM competitor_leads WHERE ${whereClause}`);
+    }
+
+    // 8. Demo Generations (old unconverted demos)
+    const demosCount = await pool.query(`SELECT COUNT(*) FROM demo_generations WHERE created_at < NOW() - INTERVAL '7 days' AND converted_at IS NULL`);
+    results.deleted.demo_generations_old = parseInt(demosCount.rows[0].count);
+    if (!isDryRun && results.deleted.demo_generations_old > 0) {
+      await pool.query(`DELETE FROM demo_generations WHERE created_at < NOW() - INTERVAL '7 days' AND converted_at IS NULL`);
+    }
+
+    // 9. Users (test accounts) - CASCADE will delete responses, templates, etc.
+    const usersCount = await pool.query(`SELECT COUNT(*) FROM users WHERE ${whereClause}`);
+    results.deleted.users = parseInt(usersCount.rows[0].count);
+    if (!isDryRun && results.deleted.users > 0) {
+      // First get user IDs for cascade cleanup
+      const testUsers = await pool.query(`SELECT id FROM users WHERE ${whereClause}`);
+      const userIds = testUsers.rows.map(r => r.id);
+
+      if (userIds.length > 0) {
+        // Delete responses for test users
+        const responsesDeleted = await pool.query(`DELETE FROM responses WHERE user_id = ANY($1) RETURNING id`, [userIds]);
+        results.deleted.responses = responsesDeleted.rowCount;
+
+        // Delete templates for test users
+        const templatesDeleted = await pool.query(`DELETE FROM templates WHERE user_id = ANY($1) RETURNING id`, [userIds]);
+        results.deleted.templates = templatesDeleted.rowCount;
+
+        // Delete users
+        await pool.query(`DELETE FROM users WHERE ${whereClause}`);
+      }
+    }
+
+    // Calculate new totals
+    const newTotals = {};
+    const totalQueries = [
+      { name: 'outreach_leads', query: 'SELECT COUNT(*) FROM outreach_leads' },
+      { name: 'outreach_emails', query: 'SELECT COUNT(*) FROM outreach_emails' },
+      { name: 'outreach_tracking', query: 'SELECT COUNT(*) FROM outreach_tracking' },
+      { name: 'outreach_clicks', query: 'SELECT COUNT(*) FROM outreach_clicks' },
+      { name: 'email_logs', query: 'SELECT COUNT(*) FROM email_logs' },
+      { name: 'users', query: 'SELECT COUNT(*) FROM users' },
+    ];
+
+    for (const q of totalQueries) {
+      const result = await pool.query(q.query);
+      newTotals[q.name] = parseInt(result.rows[0].count);
+    }
+    results.new_totals = newTotals;
+
+    // Calculate open/click rates
+    const openRate = await pool.query(`
+      SELECT
+        COUNT(DISTINCT oe.id) as total_emails,
+        COUNT(DISTINCT ot.email) as opened
+      FROM outreach_emails oe
+      LEFT JOIN outreach_tracking ot ON oe.email = ot.email
+    `);
+    const clickRate = await pool.query(`
+      SELECT
+        COUNT(DISTINCT oe.id) as total_emails,
+        COUNT(DISTINCT oc.email) as clicked
+      FROM outreach_emails oe
+      LEFT JOIN outreach_clicks oc ON oe.email = oc.email
+    `);
+
+    results.new_metrics = {
+      open_rate: openRate.rows[0].total_emails > 0
+        ? ((openRate.rows[0].opened / openRate.rows[0].total_emails) * 100).toFixed(1) + '%'
+        : '0%',
+      click_rate: clickRate.rows[0].total_emails > 0
+        ? ((clickRate.rows[0].clicked / clickRate.rows[0].total_emails) * 100).toFixed(1) + '%'
+        : '0%',
+    };
+
+    res.json(results);
+  } catch (error) {
+    console.error('Cleanup error:', error);
+    results.errors.push(error.message);
+    res.status(500).json(results);
+  }
+});
+
 // Start server
 initDatabase()
   .then(() => {
