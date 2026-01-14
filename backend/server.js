@@ -22571,6 +22571,41 @@ cron.schedule('0 5 * * *', () => runNightBlast('Scheduled-05:00-UTC'), {
 
 console.log('🌙 Night-Blast Scheduler initialized: 21:00, 01:00, 05:00 UTC');
 
+// ============== NIGHT-LOOP SCHEDULER ==============
+// Automatic execution of hourly night tasks
+// Helper function to call night-loop endpoint internally
+async function runNightLoop(hour, source) {
+  console.log(`🌙 [${source}] Running Night-Loop Hour ${hour} at ${new Date().toISOString()}`);
+  try {
+    const baseUrl = process.env.BACKEND_URL || `http://localhost:${PORT}`;
+    const response = await fetch(`${baseUrl}/api/cron/night-loop?secret=${process.env.CRON_SECRET}&hour=${hour}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const result = await response.json();
+    console.log(`🌙 [${source}] Night-Loop Hour ${hour} completed:`, JSON.stringify(result, null, 2).substring(0, 500));
+    return result;
+  } catch (error) {
+    console.error(`🌙 [${source}] Night-Loop Hour ${hour} error:`, error.message);
+    return { error: error.message };
+  }
+}
+
+// Night-Loop Hour 0: Demo Expiration Emails (23:00 UTC = 00:00 Berlin)
+cron.schedule('0 23 * * *', () => runNightLoop(0, 'Scheduled-23:00-UTC-Hour0'), {
+  scheduled: true,
+  timezone: 'UTC'
+});
+
+// Night-Loop Hour 2: Re-Engagement Magic Links (01:00 UTC = 02:00 Berlin)
+// Note: Already overlaps with Night-Blast at 01:00, so night-loop runs A/B tests + magic links
+cron.schedule('5 1 * * *', () => runNightLoop(2, 'Scheduled-01:05-UTC-Hour2'), {
+  scheduled: true,
+  timezone: 'UTC'
+});
+
+console.log('🌙 Night-Loop Scheduler initialized: Hour 0 at 23:00 UTC, Hour 2 at 01:05 UTC');
+
 // Start server
 initDatabase()
   .then(() => {
