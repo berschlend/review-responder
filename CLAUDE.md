@@ -118,19 +118,40 @@ CLAUDE.md lesen → TODO.md checken → Task → Testen → Git push → CLAUDE.
 | Demo Follow-Up | 12:00 täglich |
 | **Night Loop** | **22:00-06:00 stündlich** |
 
-### Night Automation (NEU 14.01.2026)
-Läuft autonom ohne User-Input:
-- **22:00** - Hot Lead Follow-Ups (Demos für Klicker)
-- **23:00** - Second Follow-Up ("1 Monat gratis")
-- **00:00** - Stats Collection
-- **01:00** - Dead Lead Revival ("Problem solved?")
-- **02:00** - A/B Test Evaluation
-- **03:00-06:00** - Idle
+### Night Turbo System (NEU 14.01.2026)
+Läuft 24/7 autonom ohne User-Input - 6x mehr Leads, 4x mehr Emails!
+
+**Hot Lead Attack (alle 2 Stunden):**
+- `/api/cron/hot-lead-attack` - Clicker aus letzten 4h sofort anschreiben
+
+**Turbo Scrape (6 Waves/Tag):**
+| Wave | Zeit | Regionen |
+|------|------|----------|
+| 1 | 00:00 | DACH (Berlin, München, Wien) |
+| 2 | 04:00 | US East (NYC, Boston, Miami) |
+| 3 | 08:00 | US West (LA, SF, Seattle) |
+| 4 | 12:00 | UK/Ireland (London, Dublin) |
+| 5 | 16:00 | Benelux/Nordic |
+| 6 | 20:00 | Random Mix |
+
+**Turbo Email (4 Waves/Tag):**
+| Wave | Zeit | Ziel |
+|------|------|------|
+| 1 | 07:00 | DACH Morning |
+| 2 | 13:00 | DACH Afternoon |
+| 3 | 14:00 | US East Morning |
+| 4 | 20:00 | US West Afternoon |
 
 **Endpoints:**
-- `/api/cron/night-loop` - Master Endpoint (orchestriert alles)
+- `/api/cron/hot-lead-attack` - Sofort-Follow-up für Hot Leads
+- `/api/cron/turbo-scrape?wave=1-6` - Wave-basiertes Scraping
+- `/api/cron/turbo-email?wave=1-4` - Wave-basierte Emails
+- `/api/cron/night-loop` - Legacy Master Endpoint
 - `/api/cron/revive-dead-leads` - Reaktiviert 7+ Tage alte Leads
-- `/api/cron/ab-test-evaluate` - Bewertet A/B Tests automatisch
+
+**Coupon Codes:**
+- CLICKER30 - 30% Rabatt für Clicker
+- DEMO30 - 30% Rabatt in Demo-Emails
 
 ---
 
@@ -297,15 +318,20 @@ Click-Rate ist die echte Metrik. 17 Leute haben geklickt → Demo Attack!
 
 ---
 
-## KÜRZLICH ERLEDIGT (14.01 Nacht)
+## KÜRZLICH ERLEDIGT (14.01 Nacht - Night Turbo)
 
-- **Night Automation System** - Läuft autonom die ganze Nacht ohne Chrome/Input
+- **Night Turbo Automation System** - 6x mehr Leads, 4x mehr Emails
+  - `/api/cron/hot-lead-attack` - Alle 2 Stunden, Clicker aus letzten 4h sofort anschreiben
+  - `/api/cron/turbo-scrape?wave=1-6` - 6 Waves/Tag (DACH, US East, US West, UK, Benelux, Mix)
+  - `/api/cron/turbo-email?wave=1-4` - 4 Waves/Tag (400 Emails statt 70)
+  - CLICKER30 Coupon in allen Follow-Up Emails
+  - `hot_lead_attacks` DB Table für Tracking
+  - `/api/cron/followup-clickers` LIMIT von 5 auf 20 erhöht
+  - **USER TODO:** Cron-Jobs bei cron-job.org einrichten (siehe Tabellen oben)
+- **Night Automation System (Legacy)** - Läuft autonom die ganze Nacht ohne Chrome/Input
   - `/api/cron/night-loop` - Master Endpoint orchestriert alle Nacht-Aktionen
   - `/api/cron/revive-dead-leads` - Reaktiviert 7+ Tage alte Leads
   - `/api/cron/ab-test-evaluate` - Automatische A/B Test Auswertung
-  - A/B Testing Tabelle + Admin Endpoints
-  - Erster A/B Test erstellt: "Subject Line - Personal vs Business"
-  - **USER TODO:** Night Loop Cron bei cron-job.org einrichten (22:00-06:00 UTC)
 
 ---
 
