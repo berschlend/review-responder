@@ -10903,7 +10903,7 @@ app.get('/api/admin/clickers', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Get unique clickers with their lead details
+    // Get unique clickers with their lead details + followup status
     const clickers = await dbAll(`
       SELECT DISTINCT ON (c.email)
         c.email,
@@ -10918,13 +10918,17 @@ app.get('/api/admin/clickers', async (req, res) => {
         l.website,
         l.contact_name,
         l.lead_type,
-        l.google_reviews_count
+        l.google_reviews_count,
+        f.sent_at as followup_sent_at,
+        f.demo_booked,
+        f.converted
       FROM outreach_clicks c
       LEFT JOIN outreach_leads l ON LOWER(c.email) = LOWER(l.email)
+      LEFT JOIN clicker_followups f ON LOWER(c.email) = LOWER(f.email)
       ORDER BY c.email, c.clicked_at DESC
     `);
 
-    // Format for easy LinkedIn search
+    // Format for easy LinkedIn search + followup status
     const formattedClickers = clickers.map(c => ({
       email: c.email,
       business_name: c.business_name || 'Unknown',
@@ -10936,15 +10940,27 @@ app.get('/api/admin/clickers', async (req, res) => {
       reviews: c.google_reviews_count || null,
       clicked_at: c.clicked_at,
       campaign: c.campaign,
+      // Followup status
+      followup_sent_at: c.followup_sent_at || null,
+      demo_booked: c.demo_booked || false,
+      converted: c.converted || false,
       // For LinkedIn search
       linkedin_search: c.contact_name
         ? `${c.contact_name} ${c.business_name}`
         : c.business_name,
     }));
 
+    // Summary stats
+    const followedUp = formattedClickers.filter(c => c.followup_sent_at).length;
+    const pending = formattedClickers.filter(c => !c.followup_sent_at).length;
+
     res.json({
       total: formattedClickers.length,
-      message: 'These leads clicked your email links - CONTACT THEM!',
+      followed_up: followedUp,
+      pending_followup: pending,
+      message: pending > 0
+        ? `${pending} clickers need follow-up!`
+        : 'All clickers have been followed up',
       clickers: formattedClickers,
     });
   } catch (error) {
