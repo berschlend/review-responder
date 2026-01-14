@@ -10698,6 +10698,7 @@ async function generateDemoForLead(lead) {
       demo_token: demoToken,
       reviews_processed: demos.length,
       first_ai_response: demos[0]?.ai_response || null,
+      first_review: demos[0]?.review || null,
     };
   } catch (error) {
     console.error('Failed to generate demo for lead:', error.message);
@@ -11195,6 +11196,12 @@ app.post('/api/outreach/test-review-alert', async (req, res) => {
         testLead.demo_url = demoResult.demo_url;
         testLead.ai_response_draft = demoResult.first_ai_response;
         testLead.has_bad_review = true;
+        // Set review fields for email template
+        if (demoResult.first_review) {
+          testLead.worst_review_rating = demoResult.first_review.rating;
+          testLead.worst_review_text = demoResult.first_review.text;
+          testLead.worst_review_author = demoResult.first_review.author;
+        }
         demoUrl = demoResult.demo_url;
         aiDraftPreview = demoResult.first_ai_response;
         reviewsProcessed = demoResult.reviews_processed;
@@ -12680,10 +12687,28 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
               lead.demo_token = demoResult.demo_token;
               lead.has_bad_review = true; // Mark as having demo content for template selection
 
-              // Save to database
+              // Set review fields for email template
+              if (demoResult.first_review) {
+                lead.worst_review_rating = demoResult.first_review.rating;
+                lead.worst_review_text = demoResult.first_review.text;
+                lead.worst_review_author = demoResult.first_review.author;
+              }
+
+              // Save to database (including review fields for email template)
               await dbQuery(
-                'UPDATE outreach_leads SET ai_response_draft = $1, demo_url = $2, demo_token = $3, has_bad_review = TRUE WHERE id = $4',
-                [demoResult.first_ai_response, demoResult.demo_url, demoResult.demo_token, lead.id]
+                `UPDATE outreach_leads SET
+                  ai_response_draft = $1, demo_url = $2, demo_token = $3, has_bad_review = TRUE,
+                  worst_review_rating = $4, worst_review_text = $5, worst_review_author = $6
+                WHERE id = $7`,
+                [
+                  demoResult.first_ai_response,
+                  demoResult.demo_url,
+                  demoResult.demo_token,
+                  demoResult.first_review?.rating || null,
+                  demoResult.first_review?.text || null,
+                  demoResult.first_review?.author || null,
+                  lead.id
+                ]
               );
 
               console.log(`✅ Demo generated: ${demoResult.demo_url} (${demoResult.reviews_processed} reviews)`);
