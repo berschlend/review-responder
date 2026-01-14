@@ -296,6 +296,13 @@ async function sendEmail({
       )
       .catch(logErr => console.error('[Email Log] Failed to log:', logErr.message));
 
+    // Log API call for cost tracking (emails are free but track for volume)
+    logApiCall({
+      provider: provider === 'brevo' ? 'brevo' : 'resend',
+      endpoint: 'sendEmail',
+      metadata: { type, campaign, to: to.substring(0, 50) },
+    });
+
     return { success: true, provider, messageId };
   } catch (err) {
     error = err.message;
@@ -13549,6 +13556,13 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
       try {
         const response = await fetch(scrapeUrl);
         const data = await response.json();
+
+        // Log Google Places API call (text search)
+        logApiCall({
+          provider: 'google_places',
+          endpoint: '/api/cron/daily-outreach',
+          metadata: { type: 'textsearch', city: todayCity, industry: todayIndustry, resultsCount: data.results?.length || 0 },
+        });
 
         if (data.results) {
           for (const place of data.results.slice(0, 30)) { // Reduced to 30 to save API costs

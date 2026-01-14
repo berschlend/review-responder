@@ -9499,7 +9499,7 @@ const SettingsPage = () => {
           />
 
           <div className="form-group">
-            <label className="form-label">Style Instructions (optional)</label>
+            <label className="form-label">Style Instructions</label>
             <textarea
               className="form-textarea"
               value={responseStyle}
