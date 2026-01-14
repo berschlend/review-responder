@@ -11152,7 +11152,8 @@ app.post('/api/outreach/test-email', async (req, res) => {
   }
 });
 
-// Test Review Alert Email - sends a test review alert email with AI-generated response
+// Test Review Alert Email - sends a test review alert email with personalized demo page
+// Use ?with_demo=true to generate a full demo page with 3 reviews + AI responses
 app.post('/api/outreach/test-review-alert', async (req, res) => {
   const adminKey = req.headers['x-admin-key'];
   if (!process.env.ADMIN_SECRET || !safeCompare(adminKey, process.env.ADMIN_SECRET)) {
@@ -11163,49 +11164,54 @@ app.post('/api/outreach/test-review-alert', async (req, res) => {
     return res.status(500).json({ error: 'No email provider configured' });
   }
 
-  const { email, business_name, city, review_text, review_rating, review_author } = req.body;
+  const { email, business_name, city, with_demo } = req.body;
   if (!email) {
     return res.status(400).json({ error: 'Email required' });
   }
 
   try {
-    // Use provided data or defaults
-    const testBusinessName = business_name || 'Cafe Milano';
+    const testBusinessName = business_name || 'Augustiner-Keller';
     const testCity = city || 'Berlin';
-    const testReviewText = review_text || 'The service was extremely slow and the waiter was rude. We waited 45 minutes for our food and when it arrived, it was cold. Very disappointing experience.';
-    const testReviewRating = review_rating || 1;
-    const testReviewAuthor = review_author || 'Sarah M.';
+    const lang = detectLanguage(testCity);
 
-    // Generate AI response draft
-    const aiDraft = await generateReviewAlertDraft(
-      testBusinessName,
-      'restaurant',
-      testReviewText,
-      testReviewRating,
-      testReviewAuthor
-    );
-
-    if (!aiDraft) {
-      return res.status(500).json({ error: 'Failed to generate AI draft' });
-    }
-
-    // Create test lead with review data
+    // Create test lead object
     const testLead = {
       business_name: testBusinessName,
       business_type: 'restaurant',
       city: testCity,
       email: email,
-      google_reviews_count: 150,
-      has_bad_review: true,
-      worst_review_text: testReviewText,
-      worst_review_rating: testReviewRating,
-      worst_review_author: testReviewAuthor,
-      ai_response_draft: aiDraft,
     };
 
-    // Get review alert template (use no_demo version since we don't generate a demo page for tests)
-    const lang = detectLanguage(testCity);
-    const templateKey = lang === 'de' ? 'review_alert_no_demo_de' : 'review_alert_no_demo';
+    let demoUrl = null;
+    let aiDraftPreview = null;
+    let reviewsProcessed = 0;
+
+    // Generate full demo if requested (default: true for complete testing)
+    if (with_demo !== false) {
+      console.log(`📝 Generating demo for test: ${testBusinessName}...`);
+      const demoResult = await generateDemoForLead(testLead);
+
+      if (demoResult && demoResult.first_ai_response) {
+        testLead.demo_url = demoResult.demo_url;
+        testLead.ai_response_draft = demoResult.first_ai_response;
+        testLead.has_bad_review = true;
+        demoUrl = demoResult.demo_url;
+        aiDraftPreview = demoResult.first_ai_response;
+        reviewsProcessed = demoResult.reviews_processed;
+        console.log(`✅ Demo generated: ${demoUrl} (${reviewsProcessed} reviews)`);
+      } else {
+        console.log(`⚠️ Demo generation failed, using no_demo template`);
+      }
+    }
+
+    // Select template based on whether demo was generated
+    let templateKey;
+    if (testLead.demo_url) {
+      templateKey = lang === 'de' ? 'review_alert_de' : 'review_alert';
+    } else {
+      templateKey = lang === 'de' ? 'review_alert_no_demo_de' : 'review_alert_no_demo';
+    }
+
     const template = fillEmailTemplate(EMAIL_TEMPLATES[templateKey], testLead);
 
     // Send email
@@ -11222,9 +11228,11 @@ app.post('/api/outreach/test-review-alert', async (req, res) => {
       provider: result.provider,
       language: lang,
       business_name: testBusinessName,
-      review_rating: testReviewRating,
-      review_author: testReviewAuthor,
-      ai_draft_preview: aiDraft.substring(0, 200) + '...',
+      demo_generated: !!demoUrl,
+      demo_url: demoUrl,
+      reviews_processed: reviewsProcessed,
+      template_used: templateKey,
+      ai_draft_preview: aiDraftPreview ? aiDraftPreview.substring(0, 200) + '...' : null,
     });
   } catch (err) {
     console.error('Test review alert error:', err);
