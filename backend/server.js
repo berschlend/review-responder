@@ -6076,9 +6076,20 @@ app.get('/api/public/demo/:token', async (req, res) => {
       await dbQuery('UPDATE demo_generations SET demo_page_viewed_at = NOW() WHERE id = $1', [demo.id]);
     }
 
+    // Get google_place_id - fallback to linkedin_outreach if not in demo_generations
+    let placeId = demo.google_place_id;
+    if (!placeId) {
+      const linkedinLead = await dbGet('SELECT google_place_id FROM linkedin_outreach WHERE demo_token = $1', [req.params.token]);
+      if (linkedinLead?.google_place_id) {
+        placeId = linkedinLead.google_place_id;
+        // Also update demo_generations for future lookups
+        await dbQuery('UPDATE demo_generations SET google_place_id = $1 WHERE demo_token = $2', [placeId, req.params.token]);
+      }
+    }
+
     // Generate Google Reviews URL from place_id
-    const googleReviewsUrl = demo.google_place_id
-      ? `https://search.google.com/local/reviews?placeid=${demo.google_place_id}`
+    const googleReviewsUrl = placeId
+      ? `https://search.google.com/local/reviews?placeid=${placeId}`
       : demo.google_maps_url || null;
 
     res.json({

@@ -21536,6 +21536,8 @@ const AdminPage = () => {
   const [costsLoading, setCostsLoading] = useState(false);
   const [usageData, setUsageData] = useState(null);
   const [usageLoading, setUsageLoading] = useState(false);
+  const [creditsData, setCreditsData] = useState(null);
+  const [creditsLoading, setCreditsLoading] = useState(false);
 
   // Use the same API_URL as the rest of the app (already includes /api)
   // Remove /api suffix if present to build admin URLs correctly
@@ -21733,6 +21735,21 @@ const AdminPage = () => {
       toast.error('Failed to load usage analytics');
     } finally {
       setUsageLoading(false);
+    }
+  };
+
+  const loadCreditsData = async key => {
+    const keyToUse = key || adminKey;
+    if (!keyToUse) return;
+    setCreditsLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/admin/api-credits?key=${keyToUse}`);
+      setCreditsData(res.data);
+    } catch (err) {
+      console.error('Credits load error:', err);
+      toast.error('Failed to load API credits');
+    } finally {
+      setCreditsLoading(false);
     }
   };
 
@@ -21975,6 +21992,12 @@ const AdminPage = () => {
           onClick={() => setActiveAdminTab('costs')}
         >
           API Costs
+        </button>
+        <button
+          className={`btn ${activeAdminTab === 'credits' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('credits')}
+        >
+          Credits
         </button>
         <button
           className={`btn ${activeAdminTab === 'usage' ? 'btn-primary' : 'btn-secondary'}`}
@@ -24078,6 +24101,118 @@ const AdminPage = () => {
                 Could not load API costs
               </p>
               <button className="btn btn-primary" onClick={() => loadCostsData()}>
+                Retry
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* API Credits Tab */}
+      {activeAdminTab === 'credits' && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h2 style={{ margin: 0 }}>API Credits</h2>
+            <button
+              className="btn btn-secondary"
+              onClick={() => { setCreditsData(null); loadCreditsData(); }}
+              style={{ padding: '6px 12px', fontSize: '13px' }}
+            >
+              Refresh
+            </button>
+          </div>
+
+          {creditsLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading API credits...</div>
+          ) : creditsData ? (
+            <>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                  gap: '16px',
+                }}
+              >
+                {creditsData.credits?.map((credit, i) => {
+                  const statusColor = credit.status === 'ok' ? '#10B981' :
+                                     credit.status === 'warning' ? '#F59E0B' :
+                                     credit.status === 'critical' ? '#EF4444' :
+                                     credit.status === 'exhausted' ? '#DC2626' : '#6B7280';
+                  const bgGradient = credit.status === 'ok' ? 'linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)' :
+                                    credit.status === 'warning' ? 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)' :
+                                    credit.status === 'critical' ? 'linear-gradient(135deg, #FEF2F2 0%, #FECACA 100%)' :
+                                    credit.status === 'exhausted' ? 'linear-gradient(135deg, #FEF2F2 0%, #FCA5A5 100%)' :
+                                    'var(--gray-50)';
+
+                  return (
+                    <div key={i} className="card" style={{ background: credit.error ? 'var(--gray-50)' : bgGradient }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <strong style={{ fontSize: '16px' }}>{credit.name}</strong>
+                        {!credit.error && (
+                          <span style={{
+                            fontSize: '11px',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            background: statusColor,
+                            color: 'white',
+                            fontWeight: '600',
+                            textTransform: 'uppercase',
+                          }}>
+                            {credit.status}
+                          </span>
+                        )}
+                      </div>
+
+                      {credit.error ? (
+                        <div style={{ color: 'var(--gray-500)', fontSize: '13px' }}>
+                          {credit.error}
+                        </div>
+                      ) : (
+                        <>
+                          <div style={{ fontSize: '24px', fontWeight: '700', color: statusColor }}>
+                            {credit.used}/{credit.limit}
+                          </div>
+                          <div style={{ color: 'var(--gray-600)', fontSize: '12px', marginBottom: '8px' }}>
+                            per {credit.period}
+                          </div>
+
+                          {/* Progress bar */}
+                          <div style={{
+                            width: '100%',
+                            height: '8px',
+                            background: 'rgba(0,0,0,0.1)',
+                            borderRadius: '4px',
+                            overflow: 'hidden',
+                          }}>
+                            <div style={{
+                              width: `${Math.min(credit.percent, 100)}%`,
+                              height: '100%',
+                              background: statusColor,
+                              transition: 'width 0.3s ease',
+                            }} />
+                          </div>
+                          <div style={{ fontSize: '12px', color: 'var(--gray-600)', marginTop: '4px', textAlign: 'right' }}>
+                            {credit.percent}% used
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {creditsData.lastUpdated && (
+                <div style={{ marginTop: '16px', textAlign: 'center', color: 'var(--gray-500)', fontSize: '12px' }}>
+                  Last updated: {new Date(creditsData.lastUpdated).toLocaleString()}
+                </div>
+              )}
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+                Could not load API credits
+              </p>
+              <button className="btn btn-primary" onClick={() => loadCreditsData()}>
                 Retry
               </button>
             </div>
