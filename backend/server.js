@@ -11419,8 +11419,7 @@ Here's a professional response you could use:
 
 Feel free to use it directly - it's free.
 
-I also wrote 2 more responses to your other reviews:
-{demo_url}
+I also prepared responses to 2 more of your reviews: <a href="{demo_url}" style="color: #4F46E5; text-decoration: underline;">See all responses →</a>
 
 Best,
 Berend
@@ -11473,8 +11472,7 @@ Hab mal eine Antwort formuliert die du nutzen könntest:
 
 Kannst du einfach so kopieren wenn du magst.
 
-Hab noch ein paar andere Reviews von euch angeschaut und Antworten dafür vorbereitet:
-{demo_url}
+Hab noch 2 weitere Antworten für dich vorbereitet: <a href="{demo_url}" style="color: #4F46E5; text-decoration: underline;">Hier ansehen →</a>
 
 Viele Grüße
 Berend`,
