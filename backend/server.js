@@ -13131,15 +13131,15 @@ app.get('/api/admin/usage-analytics', async (req, res) => {
   }
 
   try {
-    // Usage distribution for Free users
+    // Usage distribution for Free users (using responses_used column)
     const distribution = await dbQuery(`
       SELECT
         CASE
-          WHEN total_responses = 0 THEN '0 responses'
-          WHEN total_responses < 5 THEN '1-4 responses'
-          WHEN total_responses < 10 THEN '5-9 responses'
-          WHEN total_responses < 15 THEN '10-14 responses'
-          WHEN total_responses < 20 THEN '15-19 responses'
+          WHEN responses_used = 0 THEN '0 responses'
+          WHEN responses_used < 5 THEN '1-4 responses'
+          WHEN responses_used < 10 THEN '5-9 responses'
+          WHEN responses_used < 15 THEN '10-14 responses'
+          WHEN responses_used < 20 THEN '15-19 responses'
           ELSE '20+ (limit hit)'
         END as usage_bucket,
         COUNT(*) as user_count,
@@ -13147,19 +13147,19 @@ app.get('/api/admin/usage-analytics', async (req, res) => {
       FROM users
       WHERE plan = 'free'
       GROUP BY 1
-      ORDER BY MIN(total_responses)
+      ORDER BY MIN(responses_used)
     `);
 
     // Aggregate stats
     const stats = await dbQuery(`
       SELECT
         COUNT(*) as total_free_users,
-        ROUND(AVG(total_responses), 1) as avg_responses,
-        MAX(total_responses) as max_responses,
-        COUNT(*) FILTER (WHERE total_responses >= 20) as limit_reached_count,
-        ROUND(100.0 * COUNT(*) FILTER (WHERE total_responses >= 20) / NULLIF(COUNT(*), 0), 1) as limit_reached_pct,
-        COUNT(*) FILTER (WHERE total_responses > 0) as activated_users,
-        ROUND(100.0 * COUNT(*) FILTER (WHERE total_responses > 0) / NULLIF(COUNT(*), 0), 1) as activation_rate
+        ROUND(AVG(responses_used), 1) as avg_responses,
+        MAX(responses_used) as max_responses,
+        COUNT(*) FILTER (WHERE responses_used >= 20) as limit_reached_count,
+        ROUND(100.0 * COUNT(*) FILTER (WHERE responses_used >= 20) / NULLIF(COUNT(*), 0), 1) as limit_reached_pct,
+        COUNT(*) FILTER (WHERE responses_used > 0) as activated_users,
+        ROUND(100.0 * COUNT(*) FILTER (WHERE responses_used > 0) / NULLIF(COUNT(*), 0), 1) as activation_rate
       FROM users
       WHERE plan = 'free'
     `);
@@ -13175,9 +13175,9 @@ app.get('/api/admin/usage-analytics', async (req, res) => {
 
     // Recent limit-hit users (potential conversion targets)
     const limitHitUsers = await dbQuery(`
-      SELECT email, business_name, total_responses, created_at
+      SELECT email, business_name, responses_used as total_responses, created_at
       FROM users
-      WHERE plan = 'free' AND total_responses >= 20
+      WHERE plan = 'free' AND responses_used >= 20
       ORDER BY created_at DESC
       LIMIT 10
     `);
