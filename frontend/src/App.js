@@ -9087,7 +9087,11 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
 const SettingsPage = () => {
   const { user, updateUser } = useAuth();
   const [businessName, setBusinessName] = useState(user?.businessName || '');
-  const [businessType, setBusinessType] = useState(user?.businessType || '');
+  // Load businessType from localStorage first (draft), then fallback to user data
+  const [businessType, setBusinessType] = useState(() => {
+    const cached = localStorage.getItem('draft_businessType');
+    return cached || user?.businessType || '';
+  });
   const [customBusinessType, setCustomBusinessType] = useState('');
   const [businessContext, setBusinessContext] = useState(user?.businessContext || '');
   const [responseStyle, setResponseStyle] = useState(user?.responseStyle || '');
@@ -9191,6 +9195,8 @@ const SettingsPage = () => {
         responseStyle,
       });
       updateUser(res.data.user);
+      // Clear draft after successful save
+      localStorage.removeItem('draft_businessType');
       toast.success('Settings saved! Your responses will now be more personalized.');
     } catch (error) {
       toast.error('Failed to save settings');
@@ -9260,8 +9266,15 @@ const SettingsPage = () => {
               className="form-select"
               value={businessType}
               onChange={e => {
-                setBusinessType(e.target.value);
-                if (e.target.value !== 'Other') {
+                const newType = e.target.value;
+                setBusinessType(newType);
+                // Cache in localStorage as draft
+                if (newType) {
+                  localStorage.setItem('draft_businessType', newType);
+                } else {
+                  localStorage.removeItem('draft_businessType');
+                }
+                if (newType !== 'Other') {
                   setCustomBusinessType('');
                 }
               }}
