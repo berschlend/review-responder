@@ -116,45 +116,21 @@ CLAUDE.md lesen → TODO.md checken → Task → Testen → Git push → CLAUDE.
 | Drip Emails | 10:00 täglich |
 | Pre-Reg Drip | 11:00 täglich |
 | Demo Follow-Up | 12:00 täglich |
-| **Night-Blast 1** | 22:00 täglich |
-| **Night-Blast 2** | 02:00 täglich |
-| **Night-Blast 3** | 06:00 täglich |
+| **Night Loop** | **22:00-06:00 stündlich** |
 
-### Night Automation System (NEU 14.01.2026)
-Läuft 24/7 autonom ohne User-Input!
+### Night Automation (NEU 14.01.2026)
+Läuft autonom ohne User-Input:
+- **22:00** - Hot Lead Follow-Ups (Demos für Klicker)
+- **23:00** - Second Follow-Up ("1 Monat gratis")
+- **00:00** - Stats Collection
+- **01:00** - Dead Lead Revival ("Problem solved?")
+- **02:00** - A/B Test Evaluation
+- **03:00-06:00** - Idle
 
-**Night-Blast (3x/Nacht):**
-- `/api/cron/night-blast` - Orchestriert alle Nacht-Aktionen
-- 22:00, 02:00, 06:00 - Multi-City Scraping + Follow-ups
-
-**Was Night-Blast tut (pro Lauf):**
-1. Multi-City Scraping: 5 Städte, 100 Leads
-2. Email Finding: 50 neue Leads
-3. Demo Generation: 20 neue Demos
-4. Hot Lead Follow-ups (Clicker)
-5. Second Follow-ups
-6. Demo Follow-ups
-7. G2 Enrichment
-8. Source-specific Emails (TripAdvisor, Yelp, G2, Agency)
-
-**Erwartete Ergebnisse pro Nacht:**
-- ~300 neue Leads
-- ~150 neue Emails gefunden
-- ~60 neue Demos generiert
-- Alle Follow-ups automatisch
-
-**Weitere Endpoints:**
-- `/api/cron/hot-lead-attack` - Sofort-Follow-up für Hot Leads (alle 2h)
-- `/api/cron/turbo-scrape?wave=1-6` - Wave-basiertes Scraping
-- `/api/cron/turbo-email?wave=1-4` - Wave-basierte Emails
-- `/api/cron/night-loop` - Legacy Master Endpoint
+**Endpoints:**
+- `/api/cron/night-loop` - Master Endpoint (orchestriert alles)
 - `/api/cron/revive-dead-leads` - Reaktiviert 7+ Tage alte Leads
-
-**Coupon Codes:**
-- CLICKER30 - 30% Rabatt für Clicker
-- DEMO30 - 30% Rabatt in Demo-Emails
-
-**Setup:** 3 Cron-Jobs bei cron-job.org mit 10min Timeout
+- `/api/cron/ab-test-evaluate` - Bewertet A/B Tests automatisch
 
 ---
 
@@ -321,20 +297,28 @@ Click-Rate ist die echte Metrik. 17 Leute haben geklickt → Demo Attack!
 
 ---
 
-## KÜRZLICH ERLEDIGT (14.01 Nacht - Night Turbo)
+## KÜRZLICH ERLEDIGT (14.01 Nacht - Spät)
 
-- **Night Turbo Automation System** - 6x mehr Leads, 4x mehr Emails
-  - `/api/cron/hot-lead-attack` - Alle 2 Stunden, Clicker aus letzten 4h sofort anschreiben
-  - `/api/cron/turbo-scrape?wave=1-6` - 6 Waves/Tag (DACH, US East, US West, UK, Benelux, Mix)
-  - `/api/cron/turbo-email?wave=1-4` - 4 Waves/Tag (400 Emails statt 70)
-  - CLICKER30 Coupon in allen Follow-Up Emails
-  - `hot_lead_attacks` DB Table für Tracking
-  - `/api/cron/followup-clickers` LIMIT von 5 auf 20 erhöht
-  - **USER TODO:** Cron-Jobs bei cron-job.org einrichten (siehe Tabellen oben)
-- **Night Automation System (Legacy)** - Läuft autonom die ganze Nacht ohne Chrome/Input
+- **Demo Page Conversion Gates** - 0 Conversions Root Cause Fix
+  - **Problem:** Demo-Seite verschenkte vollen Wert ohne Gate (44 Views, 0 Signups)
+  - **Fix 1: Email-Gate für Copy** - Modal erscheint bei Klick auf "Copy"
+  - **Fix 2: Response-Gate** - Nur 2 Responses, Rest hinter "Unlock with Email"
+  - **Fix 3: 24h Countdown Timer** - "30% OFF expires in HH:MM:SS"
+  - Neuer Endpoint: `POST /api/public/demo-email-capture`
+  - Captured Emails werden als `warm_lead` in outreach_leads gespeichert
+  - **DEPLOYED:** bbfad10f - Live & getestet
+
+---
+
+## KÜRZLICH ERLEDIGT (14.01 Nacht)
+
+- **Night Automation System** - Läuft autonom die ganze Nacht ohne Chrome/Input
   - `/api/cron/night-loop` - Master Endpoint orchestriert alle Nacht-Aktionen
   - `/api/cron/revive-dead-leads` - Reaktiviert 7+ Tage alte Leads
   - `/api/cron/ab-test-evaluate` - Automatische A/B Test Auswertung
+  - A/B Testing Tabelle + Admin Endpoints
+  - Erster A/B Test erstellt: "Subject Line - Personal vs Business"
+  - **USER TODO:** Night Loop Cron bei cron-job.org einrichten (22:00-06:00 UTC)
 
 ---
 
