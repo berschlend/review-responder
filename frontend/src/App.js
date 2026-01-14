@@ -23346,6 +23346,10 @@ const AppContent = () => {
             <Route path="/zillow-realtor-reviews" element={<ZillowReviewPage />} />
             <Route path="/therapy-counselor-reviews" element={<TherapyReviewPage />} />
             <Route path="/thumbtack-reviews" element={<ThumbtackReviewPage />} />
+            <Route path="/linkedin-recommendations" element={<LinkedInReviewPage />} />
+            <Route path="/chiropractor-reviews" element={<ChiropractorReviewPage />} />
+            <Route path="/barber-barbershop-reviews" element={<BarberReviewPage />} />
+            <Route path="/dermatologist-reviews" element={<DermatologistReviewPage />} />
             <Route
               path="/dashboard"
               element={
