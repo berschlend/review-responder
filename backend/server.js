@@ -5294,7 +5294,7 @@ Write a response that sounds genuinely human:`;
 
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
-    max_tokens: 300,
+    max_tokens: 350,
     system: systemMessage,
     messages: [{ role: 'user', content: userMessage }],
   });
@@ -10670,17 +10670,39 @@ async function getTemplateForLeadWithABTest(sequenceNum, lead) {
 
 // Helper: Extract owner name from business name
 function getOwnerName(businessName) {
-  if (!businessName) return 'Owner';
+  if (!businessName) return 'The Team';
   // "Tony Quach & Co. CPA" → "Tony"
   // "Mario's Pizza" → "Mario"
-  // "Smith Law Firm" → "Smith"
-  // "The Coffee House" → "The Coffee House" (keep full name if starts with "The")
+  // "Smith Law Firm" → "Smith Law Firm Team"
+  // "The Coffee House" → "The Coffee House Team"
+  // "BLOCK HOUSE" → "BLOCK HOUSE Team"
+  // "Augustiner-Keller" → "Augustiner-Keller Team"
   const name = businessName.trim();
+
+  // If starts with "The", use full name + Team
   if (name.toLowerCase().startsWith('the ')) {
-    return 'The Team';
+    return `${name} Team`;
   }
-  const firstWord = name.split(' ')[0].replace(/['']s?$/, '');
-  return firstWord || 'Owner';
+
+  // Check if first word looks like a person's name (capitalized, not all caps)
+  const words = name.split(' ');
+  const firstWord = words[0].replace(/['']s?$/, '');
+
+  // If ALL CAPS (like "BLOCK HOUSE") or contains hyphen (like "Augustiner-Keller"), use brand name + Team
+  if (firstWord === firstWord.toUpperCase() && firstWord.length > 2) {
+    // Take first two words if available for brand names
+    const brandName = words.slice(0, 2).join(' ').replace(/\s+(am|im|an|bei|in)\s+.*/i, '');
+    return `${brandName} Team`;
+  }
+
+  // If contains hyphen, it's likely a brand name
+  if (name.includes('-')) {
+    const brandPart = name.split(' ')[0];
+    return `${brandPart} Team`;
+  }
+
+  // Otherwise use first word as owner name (Mario, Tony, etc.)
+  return firstWord || 'The Team';
 }
 
 // Helper: Get industry-specific context for better AI responses

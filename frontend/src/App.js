@@ -4728,6 +4728,11 @@ const DashboardPage = () => {
       const res = await api.get('/responses/history?limit=10');
       setHistory(res.data.responses || []);
     } catch (error) {
+      // 403 = Free user, history is Starter+ feature - this is expected
+      if (error.response?.status === 403) {
+        setHistory([]);
+        return;
+      }
       console.error('Failed to fetch history:', error);
       throw error;
     }
@@ -4761,6 +4766,11 @@ const DashboardPage = () => {
       const res = await api.get('/responses/history?limit=1000');
       setAllHistory(res.data.responses || []);
     } catch (error) {
+      // 403 = Free user, history is Starter+ feature - expected
+      if (error.response?.status === 403) {
+        setAllHistory([]);
+        return;
+      }
       console.error('Failed to fetch all history:', error);
       // All history is for export, don't throw
     }
@@ -9001,14 +9011,14 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
             padding: '10px 16px',
             background:
               generating || !keywords.trim()
-                ? 'var(--gray-300)'
-                : 'linear-gradient(135deg, var(--primary-500), var(--primary-600))',
+                ? '#d1d5db'
+                : 'linear-gradient(135deg, #6366f1, #4f46e5)',
             border: 'none',
             borderRadius: '8px',
             cursor: generating || !keywords.trim() ? 'not-allowed' : 'pointer',
             fontSize: '14px',
             fontWeight: '600',
-            color: 'white',
+            color: '#ffffff',
             whiteSpace: 'nowrap',
             boxShadow:
               generating || !keywords.trim() ? 'none' : '0 2px 8px rgba(99, 102, 241, 0.3)',
