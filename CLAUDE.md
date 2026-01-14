@@ -261,6 +261,7 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 | Drip Emails | 10:00 täglich | OK | - |
 | TripAdvisor Email Sender | 09:00 täglich | OK | - |
 | Pre-Registration Drip | 11:00 täglich | OK | - |
+| **Demo Follow-Up (NEU!)** | 12:00 täglich | TODO | Follow-Up an Demo-Viewer |
 
 **Root Cause "Ausgabe zu groß" (13.01):**
 - Render Free Tier schläft nach 15 Min Inaktivität
@@ -521,6 +522,24 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
   - `/g2-miner birdeye` → scraped + findet Emails + sendet + Demo
   - `/linkedin-connect followup` → prüft Acceptances + sendet Follow-ups
   - `/scrape-leads restaurants munich` → scraped + Cron sendet Emails
+- [x] **Demo Conversion Tracking gefixt** - War komplett kaputt!
+  - Problem: Registration ignorierte `ref=demo_{token}` Parameter
+  - Fix: Backend akzeptiert jetzt `ref` bei Email + Google OAuth Registration
+  - Frontend liest `ref` aus URL und sendet an Backend
+  - `demo_generations.converted_at` wird jetzt korrekt gesetzt
+- [x] **Demo Email Tracking gefixt** - `email_sent_at` wurde nicht gesetzt
+  - Problem: Nach Daily Outreach Email wurde `demo_generations.email_sent_at` nicht geupdated
+  - Fix: Nach erfolgreichem Email-Versand wird jetzt `email_sent_at = NOW()` gesetzt
+- [x] **Outscraper als Primary API** - Statt Fallback jetzt Primary
+  - Problem: SerpAPI bei 360% vom monatlichen Limit
+  - Fix: Outscraper (500 free/mo) zuerst, SerpAPI (100 free/mo) nur als Fallback
+  - Reduziert API-Kosten und vermeidet Limit-Probleme
+- [x] **Demo Follow-Up Cron** - Neue automatische Follow-Up Emails
+  - `GET /api/cron/demo-followup` - Sendet Follow-Up an Demo-Viewer ohne Conversion
+  - Bedingung: Demo angesehen vor >24h, nicht konvertiert, kein Follow-Up gesendet
+  - Email enthält AI-Response Preview + `DEMOFOLLOWUP` Code (30% off für 3 Monate)
+  - **USER TODO: Cron Job anlegen:** `0 12 * * *` (12:00 täglich)
+    - URL: `https://review-responder.onrender.com/api/cron/demo-followup?secret=...`
 
 ### ERLEDIGT (13.01.2026):
 - [x] **Cron Jobs gefixt** - Alle 3 Cron Jobs liefen auf "Ausgabe zu groß" Fehler
