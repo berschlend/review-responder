@@ -1877,59 +1877,39 @@ SIGN OFF:
 
         {isContextExpanded && (
           <div style={{ padding: '20px', borderTop: '1px solid var(--gray-200)' }}>
-            {/* WHAT WE TYPED - Green box showing it's easy */}
+            {/* How we set this up - minimal explanation */}
             <div
               style={{
-                background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-                border: '2px solid #22c55e',
-                borderRadius: '12px',
-                padding: '16px 20px',
+                background: '#fefce8',
+                border: '1px solid #fef08a',
+                borderRadius: '8px',
+                padding: '12px 16px',
                 marginBottom: '16px',
+                fontSize: '13px',
+                color: '#854d0e',
               }}
             >
               <div
                 style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#15803d',
-                  marginBottom: '12px',
+                  fontWeight: '600',
+                  marginBottom: '6px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  letterSpacing: '0.5px',
                 }}
               >
-                <Zap size={14} />
-                WHAT WE ACTUALLY TYPED (30 seconds)
+                <Lightbulb size={14} />
+                How we set this up:
               </div>
-              <div style={{ display: 'grid', gap: '8px', fontSize: '14px', color: '#166534' }}>
-                <div>
-                  <strong>Business:</strong> {REVIEWRESPONDER_CONTEXT.whatWeTyped.business}
-                </div>
-                <div>
-                  <strong>Type:</strong> {REVIEWRESPONDER_CONTEXT.whatWeTyped.type}
-                </div>
-                <div>
-                  <strong>Keywords:</strong> {REVIEWRESPONDER_CONTEXT.whatWeTyped.keywords}
-                </div>
+              <div style={{ paddingLeft: '20px', lineHeight: '1.6' }}>
+                Business name + type + a few keywords
+                <br />
+                → AI expanded into full context
+                <br />→ We added personal details (name, email)
               </div>
             </div>
 
-            {/* Arrow showing transformation */}
-            <div
-              style={{
-                textAlign: 'center',
-                fontSize: '14px',
-                color: 'var(--gray-400)',
-                margin: '12px 0',
-                fontWeight: '500',
-              }}
-            >
-              <ArrowDown size={20} style={{ display: 'block', margin: '0 auto 4px auto' }} />
-              AI generated everything below
-            </div>
-
-            {/* GENERATED BUSINESS CONTEXT */}
+            {/* BUSINESS CONTEXT */}
             <div
               style={{
                 background: 'var(--gray-50)',
@@ -1948,16 +1928,16 @@ SIGN OFF:
                   letterSpacing: '0.5px',
                 }}
               >
-                GENERATED BUSINESS CONTEXT
+                BUSINESS CONTEXT
               </div>
               <pre
                 style={{
                   fontFamily: 'ui-monospace, SFMono-Regular, monospace',
-                  fontSize: '12px',
+                  fontSize: '11px',
                   whiteSpace: 'pre-wrap',
                   color: 'var(--gray-600)',
                   margin: 0,
-                  maxHeight: '180px',
+                  maxHeight: '150px',
                   overflow: 'auto',
                   lineHeight: '1.5',
                 }}
@@ -1966,14 +1946,14 @@ SIGN OFF:
               </pre>
             </div>
 
-            {/* GENERATED RESPONSE STYLE */}
+            {/* RESPONSE STYLE */}
             <div
               style={{
                 background: 'var(--gray-50)',
                 border: '1px solid var(--gray-200)',
                 borderRadius: '12px',
                 padding: '16px 20px',
-                marginBottom: '16px',
+                marginBottom: '12px',
               }}
             >
               <div
@@ -1985,16 +1965,16 @@ SIGN OFF:
                   letterSpacing: '0.5px',
                 }}
               >
-                GENERATED RESPONSE STYLE
+                RESPONSE STYLE
               </div>
               <pre
                 style={{
                   fontFamily: 'ui-monospace, SFMono-Regular, monospace',
-                  fontSize: '12px',
+                  fontSize: '11px',
                   whiteSpace: 'pre-wrap',
                   color: 'var(--gray-600)',
                   margin: 0,
-                  maxHeight: '180px',
+                  maxHeight: '150px',
                   overflow: 'auto',
                   lineHeight: '1.5',
                 }}
@@ -2009,29 +1989,20 @@ SIGN OFF:
                 display: 'flex',
                 gap: '24px',
                 flexWrap: 'wrap',
-                padding: '12px 16px',
-                background: 'white',
+                padding: '10px 16px',
+                background: '#fafafa',
                 borderRadius: '8px',
-                border: '1px solid var(--gray-200)',
+                fontSize: '13px',
               }}
             >
-              <div style={{ fontSize: '13px' }}>
-                <span style={{ color: 'var(--gray-500)' }}>Tone:</span>{' '}
-                <span style={{ fontWeight: '600' }}>
-                  {REVIEWRESPONDER_CONTEXT.generationSettings.tone}
-                </span>
+              <div>
+                <strong>Tone:</strong> {REVIEWRESPONDER_CONTEXT.generationSettings.tone}
               </div>
-              <div style={{ fontSize: '13px' }}>
-                <span style={{ color: 'var(--gray-500)' }}>AI:</span>{' '}
-                <span style={{ fontWeight: '600' }}>
-                  {REVIEWRESPONDER_CONTEXT.generationSettings.ai}
-                </span>
+              <div>
+                <strong>AI:</strong> {REVIEWRESPONDER_CONTEXT.generationSettings.ai}
               </div>
-              <div style={{ fontSize: '13px' }}>
-                <span style={{ color: 'var(--gray-500)' }}>Emojis:</span>{' '}
-                <span style={{ fontWeight: '600' }}>
-                  {REVIEWRESPONDER_CONTEXT.generationSettings.emojis}
-                </span>
+              <div>
+                <strong>Emojis:</strong> {REVIEWRESPONDER_CONTEXT.generationSettings.emojis}
               </div>
             </div>
           </div>
