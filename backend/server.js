@@ -1233,6 +1233,7 @@ app.post('/api/auth/register', async (req, res) => {
       utmContent,
       utmTerm,
       landingPage,
+      ref, // Demo conversion tracking: ref=demo_{token}
     } = req.body;
 
     if (!email || !password) {
@@ -1343,6 +1344,20 @@ app.post('/api/auth/register', async (req, res) => {
     // Log affiliate registration
     if (affiliateId) {
       console.log(`🤝 User ${email} registered via affiliate ID ${affiliateId}`);
+    }
+
+    // Track demo conversion if user came from demo page
+    if (ref && ref.startsWith('demo_')) {
+      const demoToken = ref.replace('demo_', '');
+      try {
+        await dbQuery(
+          'UPDATE demo_generations SET converted_at = NOW() WHERE demo_token = $1 AND converted_at IS NULL',
+          [demoToken]
+        );
+        console.log(`🎯 Demo conversion tracked: ${demoToken} -> user ${email}`);
+      } catch (demoErr) {
+        console.error('Failed to track demo conversion:', demoErr.message);
+      }
     }
 
     // Generate email verification token and send verification email
@@ -2215,7 +2230,7 @@ app.delete('/api/auth/delete-account', authenticateToken, async (req, res) => {
 // Google OAuth Sign-In
 app.post('/api/auth/google', async (req, res) => {
   try {
-    const { credential, referralCode, affiliateCode, utmParams } = req.body;
+    const { credential, referralCode, affiliateCode, utmParams, ref } = req.body;
 
     if (!credential) {
       return res.status(400).json({ error: 'Google credential is required' });
@@ -2395,6 +2410,20 @@ app.post('/api/auth/google', async (req, res) => {
     );
 
     const newUser = result.rows[0];
+
+    // Track demo conversion if user came from demo page
+    if (ref && ref.startsWith('demo_')) {
+      const demoToken = ref.replace('demo_', '');
+      try {
+        await dbQuery(
+          'UPDATE demo_generations SET converted_at = NOW() WHERE demo_token = $1 AND converted_at IS NULL',
+          [demoToken]
+        );
+        console.log(`🎯 Demo conversion tracked (Google OAuth): ${demoToken} -> user ${email}`);
+      } catch (demoErr) {
+        console.error('Failed to track demo conversion:', demoErr.message);
+      }
+    }
 
     // Generate JWT token
     const token = jwt.sign({ id: newUser.id, email: newUser.email }, process.env.JWT_SECRET, {
@@ -3671,6 +3700,29 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
         ];
       } catch (err) {
         console.log('HUNTLAUNCH coupon creation error:', err);
+        // Continue without discount if coupon fails
+      }
+    } else if (upperDiscountCode === 'DEMOFOLLOWUP') {
+      // Demo follow-up - 30% off for 48 hours
+      try {
+        const coupon = await stripe.coupons.create({
+          percent_off: 30,
+          duration: 'repeating',
+          duration_in_months: 3,
+          id: `DEMOFOLLOWUP_${Date.now()}_${user.id}`,
+          redeem_by: Math.floor(Date.now() / 1000) + 48 * 60 * 60, // Valid for 48 hours
+          metadata: {
+            campaign: 'demo_followup',
+            user_id: user.id.toString(),
+          },
+        });
+        discounts = [
+          {
+            coupon: coupon.id,
+          },
+        ];
+      } catch (err) {
+        console.log('DEMOFOLLOWUP coupon creation error:', err);
         // Continue without discount if coupon fails
       }
     }
@@ -5164,9 +5216,18 @@ async function scrapeGoogleReviewsOutscraper(placeId, limit = 10) {
   }));
 }
 
-// Helper: Scrape Google reviews - tries SerpAPI first, falls back to Outscraper
+// Helper: Scrape Google reviews - tries Outscraper first (500 free), falls back to SerpAPI (100 free)
 async function scrapeGoogleReviews(placeId, limit = 10) {
-  // Try SerpAPI first (if configured)
+  // Try Outscraper first (500 free reviews/month vs SerpAPI's 100 searches/month)
+  if (process.env.OUTSCRAPER_API_KEY) {
+    try {
+      return await scrapeGoogleReviewsOutscraper(placeId, limit);
+    } catch (outsErr) {
+      console.log(`Outscraper failed: ${outsErr.message}, trying SerpAPI fallback...`);
+    }
+  }
+
+  // Fallback to SerpAPI
   const serpApiKey = getNextSerpApiKey();
   if (serpApiKey) {
     try {
@@ -5175,7 +5236,6 @@ async function scrapeGoogleReviews(placeId, limit = 10) {
       const data = await response.json();
 
       if (data.error) {
-        console.log(`SerpAPI error, trying Outscraper: ${data.error}`);
         throw new Error(data.error);
       }
 
@@ -5189,16 +5249,11 @@ async function scrapeGoogleReviews(placeId, limit = 10) {
         })) || []
       );
     } catch (serpErr) {
-      console.log(`SerpAPI failed: ${serpErr.message}, trying Outscraper fallback...`);
+      console.log(`SerpAPI also failed: ${serpErr.message}`);
     }
   }
 
-  // Fallback to Outscraper
-  if (process.env.OUTSCRAPER_API_KEY) {
-    return scrapeGoogleReviewsOutscraper(placeId, limit);
-  }
-
-  throw new Error('No review scraping API configured (need SERPAPI_KEY or OUTSCRAPER_API_KEY)');
+  throw new Error('No review scraping API configured or all APIs failed');
 }
 
 // Helper: Lookup Google Place ID from business name + city
@@ -9970,6 +10025,113 @@ P.S. Sign up during our call and I'll give you the first month free.`;
   }
 });
 
+// GET /api/cron/demo-followup - Send follow-up to people who viewed demo but didn't convert
+app.get('/api/cron/demo-followup', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'Email service not configured' });
+  }
+
+  try {
+    // Ensure followup_sent_at column exists
+    try {
+      await dbQuery(`ALTER TABLE demo_generations ADD COLUMN IF NOT EXISTS followup_sent_at TIMESTAMP`);
+    } catch (e) { /* Column might already exist */ }
+
+    // Find demos viewed >24h ago that haven't converted and no followup sent
+    const demoViewers = await dbAll(`
+      SELECT
+        d.id, d.demo_token, d.business_name, d.demo_page_viewed_at,
+        d.generated_responses, d.scraped_reviews,
+        l.email, l.contact_name
+      FROM demo_generations d
+      JOIN outreach_leads l ON d.lead_id = l.id
+      WHERE d.demo_page_viewed_at IS NOT NULL
+        AND d.converted_at IS NULL
+        AND d.followup_sent_at IS NULL
+        AND d.demo_page_viewed_at < NOW() - INTERVAL '24 hours'
+        AND l.email IS NOT NULL
+        AND l.email NOT LIKE '%@test.%'
+        AND l.email NOT LIKE '%berend%'
+      ORDER BY d.demo_page_viewed_at DESC
+      LIMIT 10
+    `);
+
+    let sent = 0;
+    const results = [];
+
+    for (const viewer of demoViewers) {
+      try {
+        const businessName = viewer.business_name || 'your business';
+        const greeting = viewer.contact_name ? `Hi ${viewer.contact_name.split(' ')[0]},` : 'Hi,';
+        const demoUrl = `https://tryreviewresponder.com/demo/${viewer.demo_token}`;
+
+        // Get one of the AI responses to showcase
+        let responsePreview = '';
+        if (viewer.generated_responses) {
+          const responses = typeof viewer.generated_responses === 'string'
+            ? JSON.parse(viewer.generated_responses)
+            : viewer.generated_responses;
+          if (responses.length > 0) {
+            responsePreview = `\n\nHere's one we generated for you:\n"${responses[0].response?.substring(0, 150)}..."\n`;
+          }
+        }
+
+        const subject = `Did the AI responses work for ${businessName}?`;
+        const body = `${greeting}
+
+I noticed you checked out the personalized demo we created for ${businessName} yesterday.
+
+What did you think of the AI-generated review responses?${responsePreview}
+If you'd like to see more, just sign up free - you'll get 20 responses/month at no cost:
+${demoUrl}
+
+Or if you have questions, just reply to this email!
+
+Best,
+Berend
+
+P.S. Use code DEMOFOLLOWUP for 30% off if you upgrade within 48h.`;
+
+        await resend.emails.send({
+          from: OUTREACH_FROM_EMAIL,
+          to: viewer.email,
+          subject: subject,
+          text: body,
+          tags: [{ name: 'campaign', value: 'demo_followup' }],
+        });
+
+        // Mark as followed up
+        await dbQuery(
+          `UPDATE demo_generations SET followup_sent_at = NOW() WHERE id = $1`,
+          [viewer.id]
+        );
+
+        sent++;
+        results.push({ email: viewer.email, business: businessName, demo_token: viewer.demo_token });
+
+        await new Promise(r => setTimeout(r, 500));
+      } catch (err) {
+        console.error(`Failed to send demo followup to ${viewer.email}:`, err.message);
+      }
+    }
+
+    res.json({
+      ok: true,
+      sent,
+      followups: results,
+      message: sent > 0 ? `Sent ${sent} follow-ups to demo viewers` : 'No demo viewers to follow up',
+    });
+  } catch (error) {
+    console.error('Demo followup error:', error);
+    res.status(500).json({ error: 'Failed to send demo followups' });
+  }
+});
+
 // POST /api/cron/enrich-g2-leads - Find domain and email for G2 competitor leads
 app.post('/api/cron/enrich-g2-leads', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
@@ -13230,6 +13392,15 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
             'contacted',
             lead.id,
           ]);
+
+          // Track email sent for demo conversion metrics
+          if (lead.demo_token) {
+            await dbQuery(
+              'UPDATE demo_generations SET email_sent_at = NOW() WHERE demo_token = $1',
+              [lead.demo_token]
+            );
+          }
+
           sent++;
 
           await new Promise(r => setTimeout(r, 500));
@@ -16014,7 +16185,7 @@ app.get('/api/admin/automation-health', async (req, res) => {
         outscraper: {
           configured: !!process.env.OUTSCRAPER_API_KEY,
           free_tier_limit: 500,
-          note: 'Fallback when SerpAPI exhausted (500 free reviews)'
+          note: 'PRIMARY for reviews (500 free/mo), SerpAPI is fallback'
         },
         google_places: {
           estimated_monthly_cost_usd: Math.round(googlePlacesCostEstimate * 100) / 100,

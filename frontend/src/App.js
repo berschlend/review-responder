@@ -445,7 +445,7 @@ const AuthProvider = ({ children }) => {
     return res.data;
   };
 
-  const register = async (email, password, businessName) => {
+  const register = async (email, password, businessName, ref = null) => {
     // Check for referral/affiliate codes in localStorage
     const referralCode = localStorage.getItem('referralCode');
     const affiliateCode = localStorage.getItem('affiliateCode');
@@ -473,6 +473,7 @@ const AuthProvider = ({ children }) => {
       utmContent: utmParams.utm_content,
       utmTerm: utmParams.utm_term,
       landingPage: utmParams.landing_page,
+      ref, // Demo conversion tracking: ref=demo_{token}
     });
     localStorage.setItem('token', res.data.token);
     // Clear codes after successful registration
@@ -484,7 +485,7 @@ const AuthProvider = ({ children }) => {
     return res.data;
   };
 
-  const loginWithGoogle = async credential => {
+  const loginWithGoogle = async (credential, ref = null) => {
     // Get referral/affiliate codes from localStorage
     const referralCode = localStorage.getItem('referralCode');
     const affiliateCode = localStorage.getItem('affiliateCode');
@@ -505,6 +506,7 @@ const AuthProvider = ({ children }) => {
       referralCode,
       affiliateCode,
       utmParams,
+      ref, // Demo conversion tracking: ref=demo_{token}
     });
 
     localStorage.setItem('token', res.data.token);
@@ -3292,6 +3294,10 @@ const RegisterPage = () => {
   const [googleLoading, setGoogleLoading] = useState(false);
   const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Get ref parameter for demo conversion tracking (e.g., ref=demo_abc123)
+  const refParam = searchParams.get('ref');
 
   // Pre-fill email from landing page
   useEffect(() => {
@@ -3306,7 +3312,7 @@ const RegisterPage = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await register(email, password, businessName);
+      await register(email, password, businessName, refParam);
       toast.success('Account created! You have 20 free responses.');
       navigate('/dashboard');
     } catch (error) {
@@ -3320,7 +3326,7 @@ const RegisterPage = () => {
     async credential => {
       setGoogleLoading(true);
       try {
-        await loginWithGoogle(credential);
+        await loginWithGoogle(credential, refParam);
         toast.success('Account created! You have 20 free responses.');
         navigate('/dashboard');
       } catch (error) {
@@ -3329,7 +3335,7 @@ const RegisterPage = () => {
         setGoogleLoading(false);
       }
     },
-    [loginWithGoogle, navigate]
+    [loginWithGoogle, navigate, refParam]
   );
 
   const handleGoogleError = useCallback(error => {
