@@ -2111,7 +2111,7 @@ SIGN OFF:
             Go to <strong>Settings → Business Context</strong>
           </li>
           <li>
-            Click <strong>"Generate with AI"</strong> — we auto-fill your details from your website
+            Click <strong>"Generate with AI"</strong> — enter a few keywords, AI writes the rest
           </li>
           <li>Done! Your AI now writes responses like these.</li>
         </ol>
