@@ -9001,14 +9001,14 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
             padding: '10px 16px',
             background:
               generating || !keywords.trim()
-                ? 'var(--gray-300)'
-                : 'linear-gradient(135deg, var(--primary-500), var(--primary-600))',
+                ? '#d1d5db'
+                : 'linear-gradient(135deg, #6366f1, #4f46e5)',
             border: 'none',
             borderRadius: '8px',
             cursor: generating || !keywords.trim() ? 'not-allowed' : 'pointer',
             fontSize: '14px',
             fontWeight: '600',
-            color: 'white',
+            color: '#ffffff',
             whiteSpace: 'nowrap',
             boxShadow:
               generating || !keywords.trim() ? 'none' : '0 2px 8px rgba(99, 102, 241, 0.3)',
