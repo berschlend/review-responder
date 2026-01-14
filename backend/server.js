@@ -11104,6 +11104,25 @@ app.get('/api/admin/clickers', async (req, res) => {
   }
 });
 
+// GET /api/admin/clicker-followups-debug - Debug endpoint to check clicker_followups table
+app.get('/api/admin/clicker-followups-debug', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const followups = await dbAll(`
+      SELECT email, sent_at, second_followup_sent, converted, demo_booked
+      FROM clicker_followups
+      ORDER BY sent_at DESC
+    `);
+    res.json({ total: followups.length, followups });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // GET/POST /api/cron/followup-clickers - Auto-send demo offer to people who clicked
 app.all('/api/cron/followup-clickers', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
