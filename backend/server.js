@@ -18544,7 +18544,7 @@ app.get('/api/admin/cleanup-test-data', async (req, res) => {
       await pool.query(`DELETE FROM demo_generations WHERE created_at < NOW() - INTERVAL '7 days' AND converted_at IS NULL`);
     }
 
-    // 9. Users (test accounts) - CASCADE will delete responses, templates, etc.
+    // 9. Users (test accounts) - Must delete all FK-dependent data first
     const usersCount = await pool.query(`SELECT COUNT(*) FROM users WHERE ${whereClause}`);
     results.deleted.users = parseInt(usersCount.rows[0].count);
     if (!isDryRun && results.deleted.users > 0) {
@@ -18553,16 +18553,38 @@ app.get('/api/admin/cleanup-test-data', async (req, res) => {
       const userIds = testUsers.rows.map(r => r.id);
 
       if (userIds.length > 0) {
-        // Delete responses for test users
-        const responsesDeleted = await pool.query(`DELETE FROM responses WHERE user_id = ANY($1) RETURNING id`, [userIds]);
-        results.deleted.responses = responsesDeleted.rowCount;
-
-        // Delete templates for test users
-        const templatesDeleted = await pool.query(`DELETE FROM templates WHERE user_id = ANY($1) RETURNING id`, [userIds]);
-        results.deleted.templates = templatesDeleted.rowCount;
-
-        // Delete users
-        await pool.query(`DELETE FROM users WHERE ${whereClause}`);
+        // Delete all FK-dependent data in correct order
+        try {
+          // referrals (both referrer_id and referred_user_id)
+          await pool.query(`DELETE FROM referrals WHERE referrer_id = ANY($1) OR referred_user_id = ANY($1)`, [userIds]);
+          // affiliate_payouts
+          await pool.query(`DELETE FROM affiliate_payouts WHERE affiliate_id IN (SELECT id FROM affiliates WHERE user_id = ANY($1))`, [userIds]);
+          // affiliates
+          await pool.query(`DELETE FROM affiliates WHERE user_id = ANY($1)`, [userIds]);
+          // api_keys
+          await pool.query(`DELETE FROM api_keys WHERE user_id = ANY($1)`, [userIds]);
+          // team_members
+          await pool.query(`DELETE FROM team_members WHERE team_owner_id = ANY($1) OR member_user_id = ANY($1)`, [userIds]);
+          // user_settings
+          await pool.query(`DELETE FROM user_settings WHERE user_id = ANY($1)`, [userIds]);
+          // responses
+          const responsesDeleted = await pool.query(`DELETE FROM responses WHERE user_id = ANY($1) RETURNING id`, [userIds]);
+          results.deleted.responses = responsesDeleted.rowCount;
+          // templates
+          const templatesDeleted = await pool.query(`DELETE FROM templates WHERE user_id = ANY($1) RETURNING id`, [userIds]);
+          results.deleted.templates = templatesDeleted.rowCount;
+          // drip_emails
+          await pool.query(`DELETE FROM drip_emails WHERE user_id = ANY($1)`, [userIds]);
+          // pre_registration_drips (if column exists)
+          await pool.query(`DELETE FROM pre_registration_drips WHERE email IN (SELECT email FROM users WHERE id = ANY($1))`, [userIds]).catch(() => {});
+          // Clear referred_by references
+          await pool.query(`UPDATE users SET referred_by = NULL WHERE referred_by = ANY($1)`, [userIds]);
+          // Finally delete users
+          await pool.query(`DELETE FROM users WHERE id = ANY($1)`, [userIds]);
+        } catch (deleteError) {
+          console.error('User cascade delete error:', deleteError);
+          results.errors.push('User delete: ' + deleteError.message);
+        }
       }
     }
 
