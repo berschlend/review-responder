@@ -12768,9 +12768,12 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
       'Denver', 'Boston', 'Las Vegas', 'Portland', 'Atlanta',
       // UK & Ireland (2)
       'London', 'Dublin',
-      // DACH Region (10)
+      // DACH Region (22)
       'Berlin', 'München', 'Hamburg', 'Frankfurt', 'Köln',
       'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf',
+      'Leipzig', 'Dresden', 'Hannover', 'Nürnberg', 'Bremen', 'Essen',
+      'Salzburg', 'Graz', 'Linz', 'Innsbruck',
+      'Basel', 'Bern',
       // Benelux (2)
       'Amsterdam', 'Brüssel'
     ];
@@ -12778,8 +12781,10 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
       'restaurant', 'hotel', 'dental office', 'law firm',
       'auto repair shop', 'hair salon', 'gym', 'real estate agency',
       'medical clinic', 'retail store',
-      // New industries
-      'spa', 'veterinary clinic', 'physiotherapy', 'accounting firm'
+      // Added 13.01.2026
+      'spa', 'veterinary clinic', 'physiotherapy', 'accounting firm',
+      // Added 14.01.2026
+      'bakery', 'coffee shop', 'car dealership', 'optician', 'pharmacy', 'florist'
     ];
 
     let totalScraped = 0;
