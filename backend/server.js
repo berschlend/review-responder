@@ -15239,7 +15239,10 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         tier: 2,
         name: 'LinkedIn',
         type: 'manual',
-        command: '/linkedin-connect "Restaurant Owner" Germany',
+        requires_chrome_mcp: true,
+        slash_command: '/linkedin-connect',
+        chrome_command: 'claude --chrome',
+        scrape_prompt: '/linkedin-connect "Restaurant Owner" Germany',
         leads_total: parseInt(linkedinLeads?.total || 0),
         connections_pending: parseInt(linkedinLeads?.pending || 0),
         connections_accepted: parseInt(linkedinLeads?.accepted || 0),
@@ -15247,7 +15250,13 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         threshold_low: thresholds.linkedin.low,
         threshold_critical: thresholds.linkedin.critical,
         status: getStatus(parseInt(linkedinLeads?.total || 0), thresholds.linkedin),
-        priority_reason: 'Direkte Entscheider'
+        priority_reason: 'Direkte Entscheider, Chrome MCP nötig',
+        workflow: [
+          '1. Starte: claude --chrome',
+          '2. Tippe: /linkedin-connect "Restaurant Owner" Germany',
+          '3. Claude verbindet automatisch',
+          '4. Follow-up mit Demo-Link'
+        ]
       },
       // Tier 3: Experimental
       {
