@@ -15404,6 +15404,28 @@ app.get('/api/outreach/dashboard', async (req, res) => {
       // Table might not exist yet
     }
 
+    // HOT LEADS: Get clickers with business details (the REAL interested leads!)
+    let hotLeads = [];
+    try {
+      hotLeads = await dbAll(`
+        SELECT DISTINCT ON (c.email)
+          c.email,
+          c.clicked_at,
+          l.business_name,
+          l.city,
+          l.phone,
+          l.website,
+          l.google_reviews_count
+        FROM outreach_clicks c
+        LEFT JOIN outreach_leads l ON LOWER(c.email) = LOWER(l.email)
+        WHERE 1=1 ${TEST_EMAIL_FILTER.replace(/email/g, 'c.email')}
+          AND c.email NOT LIKE '%vimeo%'
+        ORDER BY c.email, c.clicked_at DESC
+      `) || [];
+    } catch (e) {
+      // Hot leads query failed
+    }
+
     const byStatus = await dbAll(`
       SELECT status, COUNT(*) as count
       FROM outreach_leads
@@ -15432,21 +15454,20 @@ app.get('/api/outreach/dashboard', async (req, res) => {
         total_leads: parseInt(totalLeads?.count || 0),
         leads_with_email: parseInt(leadsWithEmail?.count || 0),
         emails_sent: parseInt(emailsSent?.count || 0),
-        emails_opened: parseInt(emailsOpened?.count || 0),
-        emails_clicked: parseInt(emailsClicked?.count || 0),
-        open_rate:
-          emailsSent?.count > 0
-            ? ((emailsOpened?.count / emailsSent?.count) * 100).toFixed(1) + '%'
-            : '0%',
+        clicks: parseInt(emailsClicked?.count || 0),
         click_rate:
           emailsSent?.count > 0
             ? ((emailsClicked?.count / emailsSent?.count) * 100).toFixed(1) + '%'
             : '0%',
+        // Note: open_rate removed - unreliable due to bot scans
       },
+      hot_leads: hotLeads,
+      hot_leads_count: hotLeads.length,
       by_status: byStatus,
       recent_leads: recentLeads,
       recent_emails: recentEmails,
       campaign: campaign,
+      _note: 'Open rate removed - most "opens" are bot scans. Click rate is the real metric. hot_leads = businesses that clicked!',
     });
   } catch (error) {
     console.error('Dashboard error:', error);
