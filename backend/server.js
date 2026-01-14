@@ -18493,10 +18493,12 @@ app.get('/api/admin/cleanup-test-data', async (req, res) => {
       await pool.query(`DELETE FROM outreach_clicks WHERE ${whereClause}`);
     }
 
-    // 2. Outreach Tracking
+    // 2. Outreach Tracking (and reset opened_at in outreach_emails)
     const trackingCount = await pool.query(`SELECT COUNT(*) FROM outreach_tracking WHERE ${whereClause}`);
     results.deleted.outreach_tracking = parseInt(trackingCount.rows[0].count);
     if (!isDryRun && results.deleted.outreach_tracking > 0) {
+      // Reset opened_at for emails that were tracked by test accounts
+      await pool.query(`UPDATE outreach_emails SET opened_at = NULL WHERE ${whereClause}`);
       await pool.query(`DELETE FROM outreach_tracking WHERE ${whereClause}`);
     }
 
