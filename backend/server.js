@@ -13145,7 +13145,7 @@ app.get('/api/admin/usage-analytics', async (req, res) => {
         COUNT(*) as user_count,
         ROUND(100.0 * COUNT(*) / NULLIF(SUM(COUNT(*)) OVER (), 0), 1) as percentage
       FROM users
-      WHERE plan = 'free'
+      WHERE subscription_plan = 'free'
       GROUP BY 1
       ORDER BY MIN(responses_used)
     `);
@@ -13161,7 +13161,7 @@ app.get('/api/admin/usage-analytics', async (req, res) => {
         COUNT(*) FILTER (WHERE responses_used > 0) as activated_users,
         ROUND(100.0 * COUNT(*) FILTER (WHERE responses_used > 0) / NULLIF(COUNT(*), 0), 1) as activation_rate
       FROM users
-      WHERE plan = 'free'
+      WHERE subscription_plan = 'free'
     `);
 
     // Exit survey results with percentage
@@ -13177,7 +13177,7 @@ app.get('/api/admin/usage-analytics', async (req, res) => {
     const limitHitUsers = await dbQuery(`
       SELECT email, business_name, responses_used as total_responses, created_at
       FROM users
-      WHERE plan = 'free' AND responses_used >= 20
+      WHERE subscription_plan = 'free' AND responses_used >= 20
       ORDER BY created_at DESC
       LIMIT 10
     `);
