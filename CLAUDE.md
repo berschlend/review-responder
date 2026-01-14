@@ -217,6 +217,7 @@ CLAUDE.md lesen → TODO.md checken → Task → Testen → Git push → CLAUDE.
 
 ## KÜRZLICH ERLEDIGT (14.01)
 
+- Google Indexierung: 2 URLs beantragt (`/salon-spa-review-responses`, `/trustpilot-review-responses`)
 - 2 Cron Jobs angelegt (Demo Follow-Up, Scraper Alerts)
 - Auto Business Context für Demos
 - Sales Automation Blast (13 Städte, +210 Leads)
