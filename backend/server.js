@@ -3571,12 +3571,28 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
       },
     };
 
-    // Claude-style instructions for bulk (compact version)
-    const bulkWritingStyle = `OUTPUT: Write response directly. No quotes around it. No "Response:" prefix.
-STYLE: Write like the actual business owner. Warm but understated, direct, not gushing.
-BANNED: thrilled, delighted, excited, absolutely, incredibly, amazing, embark, delve, foster, leverage
-NO PHRASES: "Thank you for your feedback", "We appreciate you taking the time", "Sorry for any inconvenience"
-RULES: Use contractions. Short sentences. Max 1 exclamation mark. No em-dashes. Be specific about what they mentioned.`;
+    // Claude-style instructions for bulk (XML tags + positive framing)
+    const bulkWritingStyle = `<output_format>
+Write response directly. No quotes. No "Response:" prefix.
+</output_format>
+
+<voice>
+You're the business owner, not customer service. Write like you'd text a regular customer.
+</voice>
+
+<style_guide>
+Write responses like:
+- "Glad the [specific thing] worked."
+- "Nice to hear about [detail]."
+- "That's on us. We'll fix it."
+
+Keep it: Short sentences. Contractions (we're, you'll). Max 1 exclamation mark. Reference their specific details.
+</style_guide>
+
+<avoid_ai_patterns>
+No gushing (thrilled, delighted, amazing). No corporate speak (leverage, embark).
+Instead of "Thank you for your feedback" → "Glad you enjoyed [specific thing]"
+</avoid_ai_patterns>`;
 
     const bulkLanguageNames = {
       en: 'English',
