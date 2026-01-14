@@ -14651,6 +14651,232 @@ app.get('/api/outreach/linkedin-pending', async (req, res) => {
   }
 });
 
+// GET /api/cron/linkedin-demo-daily - Auto-generate LinkedIn demos and send reminder email
+app.get('/api/cron/linkedin-demo-daily', async (req, res) => {
+  const cronSecret = req.query.secret || req.headers['x-cron-secret'];
+  if (!safeCompare(cronSecret || '', process.env.CRON_SECRET || '')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const limit = parseInt(req.query.limit) || 5;
+    const targetCities = ['Munich', 'Berlin', 'Hamburg', 'Frankfurt', 'Vienna', 'Zurich'];
+
+    const results = {
+      searched: 0,
+      demos_created: 0,
+      demos_failed: 0,
+      leads: []
+    };
+
+    // Strategy 1: Find new restaurants via Google Places (rotate through cities)
+    const today = new Date().getDay(); // 0-6
+    const cityIndex = today % targetCities.length;
+    const targetCity = targetCities[cityIndex];
+
+    console.log(`[LinkedIn Demo Daily] Searching restaurants in ${targetCity}...`);
+
+    // Search for restaurants with many reviews in target city
+    const searchTypes = ['restaurant', 'hotel', 'cafe'];
+    const searchType = searchTypes[today % searchTypes.length];
+
+    try {
+      // Use Google Places Text Search
+      const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${searchType}+in+${encodeURIComponent(targetCity)}&key=${process.env.GOOGLE_PLACES_API_KEY}`;
+      const searchRes = await fetch(searchUrl);
+      const searchData = await searchRes.json();
+
+      if (searchData.results && searchData.results.length > 0) {
+        // Filter for businesses with good review counts
+        const candidates = searchData.results
+          .filter(p => p.user_ratings_total >= 100 && p.rating >= 3.5 && p.rating <= 4.5)
+          .sort((a, b) => b.user_ratings_total - a.user_ratings_total)
+          .slice(0, limit * 2); // Get extra in case some fail
+
+        for (const place of candidates) {
+          if (results.demos_created >= limit) break;
+          results.searched++;
+
+          // Check if we already have this business
+          const existing = await dbGet(
+            'SELECT id FROM linkedin_outreach WHERE business_name = $1 OR google_place_id = $2',
+            [place.name, place.place_id]
+          );
+
+          if (existing) {
+            console.log(`[LinkedIn Demo Daily] Skipping ${place.name} - already exists`);
+            continue;
+          }
+
+          // Also check demo_generations
+          const existingDemo = await dbGet(
+            'SELECT id FROM demo_generations WHERE business_name = $1 OR google_place_id = $2',
+            [place.name, place.place_id]
+          );
+
+          if (existingDemo) {
+            console.log(`[LinkedIn Demo Daily] Skipping ${place.name} - demo already exists`);
+            continue;
+          }
+
+          try {
+            // Scrape reviews via SerpAPI
+            const reviews = await scrapeGoogleReviews(place.place_id, 5);
+
+            // Find negative/mixed reviews (1-3 stars)
+            const targetReviews = reviews
+              .filter(r => r.rating <= 3)
+              .slice(0, 3);
+
+            if (targetReviews.length === 0) {
+              console.log(`[LinkedIn Demo Daily] ${place.name} has no negative reviews, skipping`);
+              continue;
+            }
+
+            // Generate AI responses
+            const generatedResponses = [];
+            for (const review of targetReviews) {
+              const aiResponse = await generateDemoResponse(review, place.name);
+              generatedResponses.push({
+                review: {
+                  text: review.text,
+                  rating: review.rating,
+                  author: review.author,
+                  date: review.date,
+                  source: 'google'
+                },
+                ai_response: aiResponse
+              });
+            }
+
+            // Generate demo token and save
+            const demoToken = generateDemoToken();
+            const demoUrl = `https://tryreviewresponder.com/demo/${demoToken}`;
+
+            // Save to demo_generations
+            await dbQuery(`
+              INSERT INTO demo_generations
+              (business_name, google_place_id, city, google_rating, total_reviews, scraped_reviews, demo_token, generated_responses)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            `, [
+              place.name,
+              place.place_id,
+              targetCity,
+              place.rating,
+              place.user_ratings_total,
+              JSON.stringify(reviews),
+              demoToken,
+              JSON.stringify(generatedResponses)
+            ]);
+
+            // Save to linkedin_outreach (without LinkedIn URL - user needs to find it)
+            const connectionNote = `Hi [NAME],
+
+Saw ${place.name} has ${place.rating} stars on Google - nice work!
+
+I made you something: ${demoUrl}
+
+(${targetReviews.length} AI-generated responses to your toughest reviews)
+
+Cheers,
+Berend`;
+
+            const inserted = await dbGet(`
+              INSERT INTO linkedin_outreach
+              (name, company, business_name, google_place_id, google_rating, demo_token, demo_url, connection_note, notes)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+              RETURNING id
+            `, [
+              '[FIND ON LINKEDIN]',
+              place.name,
+              place.name,
+              place.place_id,
+              place.rating,
+              demoToken,
+              demoUrl,
+              connectionNote,
+              `Auto-generated on ${new Date().toISOString().split('T')[0]}. City: ${targetCity}. Reviews: ${place.user_ratings_total}`
+            ]);
+
+            results.demos_created++;
+            results.leads.push({
+              id: inserted.id,
+              business_name: place.name,
+              city: targetCity,
+              rating: place.rating,
+              reviews: place.user_ratings_total,
+              demo_url: demoUrl,
+              negative_reviews: targetReviews.length
+            });
+
+            console.log(`[LinkedIn Demo Daily] Created demo for ${place.name} (${place.rating} stars, ${place.user_ratings_total} reviews)`);
+
+          } catch (demoError) {
+            console.error(`[LinkedIn Demo Daily] Failed to create demo for ${place.name}:`, demoError.message);
+            results.demos_failed++;
+          }
+        }
+      }
+    } catch (searchError) {
+      console.error('[LinkedIn Demo Daily] Google Places search error:', searchError.message);
+    }
+
+    // Send reminder email if we have new leads
+    if (results.leads.length > 0) {
+      try {
+        const leadsList = results.leads.map(l =>
+          `- ${l.business_name} (${l.city}) - ${l.rating} stars, ${l.reviews} reviews\n  Demo: ${l.demo_url}`
+        ).join('\n\n');
+
+        await resend.emails.send({
+          from: 'ReviewResponder <notifications@tryreviewresponder.com>',
+          to: 'berend.mainz@web.de',
+          subject: `${results.leads.length} neue LinkedIn Leads warten auf dich!`,
+          html: `
+            <h2>Neue LinkedIn Demos generiert</h2>
+            <p>Es wurden <strong>${results.leads.length} neue personalisierte Demos</strong> erstellt.</p>
+
+            <h3>Deine Leads f\xFCr heute:</h3>
+            <pre style="background: #f5f5f5; padding: 15px; border-radius: 8px; font-size: 14px;">${leadsList}</pre>
+
+            <h3>N\xE4chste Schritte:</h3>
+            <ol>
+              <li>Finde die Restaurant-Owner auf LinkedIn (suche nach dem Restaurant-Namen)</li>
+              <li>Starte Chrome MCP: <code>claude --chrome</code></li>
+              <li>Claude sendet die Connection Requests mit den Demo-Links</li>
+            </ol>
+
+            <p style="margin-top: 20px;">
+              <a href="https://review-responder.onrender.com/api/outreach/linkedin-pending?key=${process.env.ADMIN_SECRET}"
+                 style="background: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">
+                Alle Pending Leads anzeigen
+              </a>
+            </p>
+
+            <p style="color: #666; font-size: 12px; margin-top: 30px;">
+              Stadt heute: ${targetCity} | Typ: ${searchType} | Gesucht: ${results.searched}
+            </p>
+          `
+        });
+        console.log('[LinkedIn Demo Daily] Reminder email sent');
+      } catch (emailError) {
+        console.error('[LinkedIn Demo Daily] Email error:', emailError.message);
+      }
+    }
+
+    res.json({
+      ok: true,
+      city: targetCity,
+      type: searchType,
+      ...results
+    });
+
+  } catch (error) {
+    console.error('[LinkedIn Demo Daily] Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // POST /api/sales/agency-leads - Submit agency partnership leads
 app.post('/api/sales/agency-leads', async (req, res) => {
   const authKey = req.headers['x-api-key'] || req.query.key;
