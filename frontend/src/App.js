@@ -12065,6 +12065,49 @@ const DemoPage = () => {
     );
   }
 
+  // EXPIRED DEMO: Show special page for expired demos
+  if (demo.expired) {
+    return (
+      <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center', padding: '40px 20px', maxWidth: '500px' }}>
+          <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="white">
+              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+            </svg>
+          </div>
+          <h1 style={{ fontSize: '28px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '12px' }}>
+            Demo Expired
+          </h1>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '8px', lineHeight: '1.6', fontSize: '16px' }}>
+            Your personalized demo for <strong style={{ color: 'var(--text-primary)' }}>{demo.business_name}</strong> has expired after 7 days.
+          </p>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', lineHeight: '1.6' }}>
+            Sign up free to generate fresh AI responses for your reviews. No credit card required.
+          </p>
+          <a
+            href={demo.cta_url || '/register?discount=DEMO30'}
+            className="btn btn-primary"
+            style={{
+              padding: '16px 32px',
+              fontSize: '16px',
+              fontWeight: '600',
+              background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
+              border: 'none',
+              borderRadius: '12px',
+              display: 'inline-block',
+              textDecoration: 'none'
+            }}
+          >
+            Get Fresh Responses - 30% OFF
+          </a>
+          <p style={{ marginTop: '16px', color: 'var(--text-muted)', fontSize: '14px' }}>
+            20 responses/month free forever
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
       {/* EMAIL GATE MODAL */}

@@ -6455,6 +6455,23 @@ app.get('/api/public/demo/:token', async (req, res) => {
       return res.status(404).json({ error: 'Demo not found' });
     }
 
+    // Check if demo is expired (7+ days old and not converted)
+    const isExpired = demo.expired === true;
+    const createdAt = new Date(demo.created_at);
+    const daysSinceCreation = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+
+    // Return expired state if demo is marked expired or 7+ days old
+    if (isExpired || (daysSinceCreation >= 7 && !demo.converted_at)) {
+      return res.json({
+        expired: true,
+        business_name: demo.business_name,
+        city: demo.city,
+        days_since_creation: daysSinceCreation,
+        cta_url: `https://tryreviewresponder.com/register?ref=expired_demo_${demo.demo_token}&discount=DEMO30`,
+        message: 'This demo has expired. Sign up free to generate fresh AI responses for your reviews.',
+      });
+    }
+
     // Track page view (only first view)
     if (!demo.demo_page_viewed_at) {
       await dbQuery('UPDATE demo_generations SET demo_page_viewed_at = NOW() WHERE id = $1', [demo.id]);
@@ -6476,13 +6493,18 @@ app.get('/api/public/demo/:token', async (req, res) => {
       ? `https://search.google.com/local/reviews?placeid=${placeId}`
       : demo.google_maps_url || null;
 
+    // Calculate days remaining (7 day expiration)
+    const daysRemaining = Math.max(0, 7 - daysSinceCreation);
+
     res.json({
+      expired: false,
       business_name: demo.business_name,
       city: demo.city,
       google_rating: parseFloat(demo.google_rating) || null,
       total_reviews: demo.total_reviews,
       demos: demo.generated_responses,
       google_reviews_url: googleReviewsUrl,
+      days_remaining: daysRemaining,
       cta_url: `https://tryreviewresponder.com/register?ref=demo_${demo.demo_token}&discount=DEMO30`,
     });
   } catch (error) {
