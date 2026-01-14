@@ -274,7 +274,7 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 ## CURRENT TASKS
 
-**Stand: 14.01.2026** (Keine Änderungen in dieser Session - nur CLAUDE.md Update angefordert)
+**Stand: 14.01.2026**
 
 ### ✅ CHROME WEB STORE EINGEREICHT (13.01.2026)
 
@@ -343,9 +343,10 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 ### SEO LANDING PAGES (46 Total)
 
-**Status:** Alle 46 live und getestet (HTTP 200 OK)
+**Status:** Alle 46+ live und getestet (HTTP 200 OK)
 **Backend:** Generisch - alle nutzen `/api/generate`, kein spezielles Backend nötig
-**Email-Input:** Nur visuell - speichert nichts, Button ist Link zu `/register`
+**Email-Capture:** Speichert in `email_captures` Tabelle → 4-Email Drip-Sequence über 14 Tage
+**Messaging:** Alle Hero-Badges zeigen "20 Free/Month" + "50+ Languages" + "Chrome Extension"
 
 | Kategorie | Anzahl | Beispiele |
 |-----------|--------|-----------|
@@ -494,6 +495,10 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
 ```
 
 ### HEUTE ERLEDIGT (14.01.2026):
+- [x] **Landing Pages "20 Free/Month" Konsistenz** - Alle 48+ Landing Pages vereinheitlicht
+  - Alle Hero-Badges von "20 Free Responses" → "20 Free/Month" geändert
+  - Email-Capture funktioniert bereits (speichert in `email_captures` → 4-Email Drip)
+  - CLAUDE.md korrigiert (veraltete "nur visuell" Info entfernt)
 - [x] **Sales Automation - Parallel Outreach Blast** - 13 Städte parallel gescraped
   - **Strategie:** `/automate-sales` Command für 10+ Demo-Signups in 30 Tagen
   - **Ergebnis:** +210 Leads (313 → 523), +107 Emails gesendet

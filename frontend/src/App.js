@@ -1816,8 +1816,11 @@ SIGN OFF:
         <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
           Reviews About Us, Answered By Us
         </h2>
-        <p style={{ color: 'var(--gray-600)', maxWidth: '600px', margin: '0 auto 16px auto' }}>
-          See how our AI responds to real reviews — and the exact settings we used
+        <p style={{ color: 'var(--gray-600)', maxWidth: '650px', margin: '0 auto 8px auto' }}>
+          We use ReviewResponder to respond to reviews about ReviewResponder.
+        </p>
+        <p style={{ color: 'var(--gray-500)', maxWidth: '600px', margin: '0 auto 16px auto', fontSize: '14px' }}>
+          We set up our business context once — you can do the same in 60 seconds with "Generate with AI" in Settings.
         </p>
         <span
           style={{
@@ -2077,7 +2080,7 @@ SIGN OFF:
             marginBottom: '16px',
           }}
         >
-          Set up your own business context in Settings and get responses like these
+          Click "Generate with AI" in Settings — it takes 60 seconds, and you'll get responses just like these
         </p>
         <Link to="/register" className="btn btn-primary" style={{ padding: '12px 24px' }}>
           Try It Free
@@ -12036,7 +12039,7 @@ const DemoPage = () => {
 
           <div style={{ position: 'relative', zIndex: 1 }}>
             <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.2)', padding: '6px 16px', borderRadius: '100px', marginBottom: '20px' }}>
-              <span style={{ color: 'white', fontSize: '14px', fontWeight: '600' }}>Limited Time: 20 Free Responses</span>
+              <span style={{ color: 'white', fontSize: '14px', fontWeight: '600' }}>Limited Time: 20 Free/Month</span>
             </div>
             <h2 style={{ fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: '800', color: 'white', marginBottom: '12px' }}>
               Start Responding Like a Pro
@@ -12120,7 +12123,7 @@ const DemoPage = () => {
         `}</style>
         <div style={{ flex: 1, marginRight: '12px' }}>
           <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)' }}>
-            20 Free Responses
+            20 Free/Month
           </div>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
             No credit card required
@@ -12786,7 +12789,7 @@ const GoogleReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -13006,7 +13009,7 @@ const YelpReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -13266,7 +13269,7 @@ const RestaurantReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -13535,7 +13538,7 @@ const HotelReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -13762,7 +13765,7 @@ const LocalBusinessReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -14065,7 +14068,7 @@ const NegativeReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -14294,7 +14297,7 @@ const TripAdvisorReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -14482,7 +14485,7 @@ const BookingReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -14670,7 +14673,7 @@ const FacebookReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -14900,7 +14903,7 @@ const DentistReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -15192,7 +15195,7 @@ const MedicalPracticeReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -15437,7 +15440,7 @@ const SalonSpaReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -15683,7 +15686,7 @@ const AutoShopReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -15931,7 +15934,7 @@ const TrustpilotReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -16114,7 +16117,7 @@ const AirbnbReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -16319,7 +16322,7 @@ const RealEstateReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -16502,7 +16505,7 @@ const GymReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -16707,7 +16710,7 @@ const VetReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -16912,7 +16915,7 @@ const LawFirmReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -17117,7 +17120,7 @@ const EcommerceReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -17322,7 +17325,7 @@ const CoffeeShopReviewPage = () => {
             fontSize: '14px',
             fontWeight: '500'
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -17462,7 +17465,7 @@ const AmazonReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Boost your Amazon seller rating with professional AI-generated responses. Turn negative reviews into opportunities.</p>
           <LandingEmailCapture buttonColor="#FF9900" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -17510,7 +17513,7 @@ const G2ReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Win more enterprise deals with professional G2 review responses. Show prospects you care about customer success.</p>
           <LandingEmailCapture buttonColor="#FF492C" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -17558,7 +17561,7 @@ const CapterraReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Stand out on Capterra with professional AI-generated responses. Convert more software buyers into customers.</p>
           <LandingEmailCapture buttonColor="#044D80" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -17606,7 +17609,7 @@ const GlassdoorReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build a stronger employer brand with professional AI-generated responses. Attract top talent by showing you value feedback.</p>
           <LandingEmailCapture buttonColor="#0CAA41" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -17654,7 +17657,7 @@ const BBBReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Maintain your BBB rating with professional AI-generated responses. Handle complaints effectively and build consumer trust.</p>
           <LandingEmailCapture buttonColor="#005A8C" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -17702,7 +17705,7 @@ const PlumberReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build your plumbing reputation with professional AI-generated responses. Turn satisfied customers into referral sources.</p>
           <LandingEmailCapture buttonColor="#1E88E5" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -17750,7 +17753,7 @@ const ElectricianReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Power up your electrical business with professional AI-generated responses. Show customers why you're the trusted choice.</p>
           <LandingEmailCapture buttonColor="#FFA000" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -17798,7 +17801,7 @@ const HVACReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Keep your HVAC business cool under pressure with professional AI-generated responses. Turn every review into a growth opportunity.</p>
           <LandingEmailCapture buttonColor="#00ACC1" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -17846,7 +17849,7 @@ const RoofingReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Raise the roof on your reputation with professional AI-generated responses. Win more high-value roofing contracts.</p>
           <LandingEmailCapture buttonColor="#795548" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -17894,7 +17897,7 @@ const LandscapingReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Help your landscaping business flourish with professional AI-generated responses. Turn happy customers into year-round clients.</p>
           <LandingEmailCapture buttonColor="#4CAF50" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -17942,7 +17945,7 @@ const CleaningReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Keep your cleaning business sparkling with professional AI-generated responses. Turn one-time clients into recurring customers.</p>
           <LandingEmailCapture buttonColor="#9C27B0" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -17990,7 +17993,7 @@ const HealthgradesReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build patient trust on Healthgrades with professional AI-generated responses. Attract more patients with a stellar online reputation.</p>
           <LandingEmailCapture buttonColor="#00A99D" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={16} /> HIPAA-Aware</span>
           </div>
@@ -18038,7 +18041,7 @@ const ZocdocReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Turn Zocdoc reviews into new patient bookings with professional AI-generated responses. Stand out in the competitive healthcare market.</p>
           <LandingEmailCapture buttonColor="#FFA000" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={16} /> HIPAA-Aware</span>
           </div>
@@ -18086,7 +18089,7 @@ const PhotographerReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Capture more bookings with professional AI-generated responses. Let your reputation shine as bright as your photos.</p>
           <LandingEmailCapture buttonColor="#424242" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -18134,7 +18137,7 @@ const WeddingReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Say "I do" to more bookings with professional AI-generated responses. Build the reputation that makes couples choose you.</p>
           <LandingEmailCapture buttonColor="#E91E63" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -18182,7 +18185,7 @@ const PetServiceReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Fetch more customers with professional AI-generated responses. Show pet parents why their fur babies are in good hands.</p>
           <LandingEmailCapture buttonColor="#8D6E63" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -18230,7 +18233,7 @@ const DaycareReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Nurture your reputation with professional AI-generated responses. Help parents feel confident choosing your childcare center.</p>
           <LandingEmailCapture buttonColor="#FF7043" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -18278,7 +18281,7 @@ const AccountantReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Balance your books and your reputation with professional AI-generated responses. Build client trust during tax season and beyond.</p>
           <LandingEmailCapture buttonColor="#37474F" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -18326,7 +18329,7 @@ const InsuranceReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Protect your reputation like you protect your clients. Professional AI-generated responses that build trust and close more policies.</p>
           <LandingEmailCapture buttonColor="#1565C0" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -18374,7 +18377,7 @@ const SeniorCareReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Show families the compassionate care you provide with professional AI-generated responses. Build trust during difficult decisions.</p>
           <LandingEmailCapture buttonColor="#7B1FA2" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
           </div>
@@ -18422,7 +18425,7 @@ const AppStoreReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Boost your app rating with professional AI-generated responses. Reply to iOS App Store and Google Play reviews in seconds.</p>
           <LandingEmailCapture buttonColor="#007AFF" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={16} /> iOS & Android</span>
           </div>
@@ -18486,7 +18489,7 @@ const IndeedReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build your employer brand with professional AI-generated responses. Turn employee feedback into recruitment opportunities.</p>
           <LandingEmailCapture buttonColor="#2164F3" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={16} /> Employer Branding</span>
           </div>
@@ -18550,7 +18553,7 @@ const ZillowReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build your realtor reputation with professional AI-generated responses. Turn client reviews into more listings and sales.</p>
           <LandingEmailCapture buttonColor="#006AFF" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={16} /> Realtor Focused</span>
           </div>
@@ -18614,7 +18617,7 @@ const TherapyReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build your therapy practice with professional AI-generated responses. Privacy-aware replies that respect client confidentiality.</p>
           <LandingEmailCapture buttonColor="#7C3AED" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={16} /> Privacy-Aware</span>
           </div>
@@ -18678,7 +18681,7 @@ const ThumbtackReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Get more Thumbtack leads with professional AI-generated responses. Turn positive reviews into more bookings.</p>
           <LandingEmailCapture buttonColor="#009FD9" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={16} /> More Leads</span>
           </div>
@@ -18742,7 +18745,7 @@ const LinkedInReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Never leave a LinkedIn recommendation unanswered. Generate thoughtful thank you responses that strengthen your professional network.</p>
           <LandingEmailCapture buttonColor="#0A66C2" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={16} /> Build Your Network</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Briefcase size={16} /> Professional Tone</span>
           </div>
@@ -18806,7 +18809,7 @@ const AngiReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Win more jobs on Angi with professional AI-generated review responses. Build your contractor reputation and get more leads.</p>
           <LandingEmailCapture buttonColor="#00A651" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Award size={16} /> Top Pro Status</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><TrendingUp size={16} /> More Leads</span>
           </div>
@@ -18870,7 +18873,7 @@ const ChiropractorReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build patient trust with professional AI-generated review responses. Grow your chiropractic practice with better online reputation.</p>
           <LandingEmailCapture buttonColor="#5C6BC0" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Heart size={16} /> HIPAA Aware</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={16} /> More Patients</span>
           </div>
@@ -18934,7 +18937,7 @@ const BarberReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Keep your chair full with professional AI-generated review responses. Build loyalty and attract new clients to your barbershop.</p>
           <LandingEmailCapture buttonColor="#D32F2F" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Scissors size={16} /> Built for Barbers</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><TrendingUp size={16} /> More Clients</span>
           </div>
@@ -18998,7 +19001,7 @@ const DermatologistReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build patient confidence with professional AI-generated review responses. Grow your dermatology practice with better online reputation.</p>
           <LandingEmailCapture buttonColor="#26A69A" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Heart size={16} /> HIPAA Aware</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={16} /> More Patients</span>
           </div>
@@ -19062,7 +19065,7 @@ const MassageTherapistReviewPage = () => {
           <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Keep your schedule full with professional AI-generated review responses. Build client relationships and attract new bookings.</p>
           <LandingEmailCapture buttonColor="#8E24AA" />
           <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Heart size={16} /> Warm & Personal</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={16} /> More Bookings</span>
           </div>

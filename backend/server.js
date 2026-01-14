@@ -1089,6 +1089,26 @@ async function initDatabase() {
       // Columns might already exist
     }
 
+    // Add bonus_responses column for micro-pricing ($5 for 10 responses)
+    try {
+      await dbQuery(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS bonus_responses INTEGER DEFAULT 0`
+      );
+    } catch (error) {
+      // Column might already exist
+    }
+
+    // Exit Surveys for conversion optimization
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS exit_surveys (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        reason TEXT NOT NULL,
+        context TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // === SALES AUTOMATION TABLES ===
 
     // Yelp Review Audit Leads
@@ -12419,6 +12439,96 @@ app.get('/api/admin/api-costs', async (req, res) => {
     });
   } catch (err) {
     console.error('[api-costs] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Usage Analytics - Understand Free User behavior for conversion optimization
+app.get('/api/admin/usage-analytics', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!process.env.ADMIN_SECRET || !safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Usage distribution for Free users
+    const distribution = await dbQuery(`
+      SELECT
+        CASE
+          WHEN total_responses = 0 THEN '0 responses'
+          WHEN total_responses < 5 THEN '1-4 responses'
+          WHEN total_responses < 10 THEN '5-9 responses'
+          WHEN total_responses < 15 THEN '10-14 responses'
+          WHEN total_responses < 20 THEN '15-19 responses'
+          ELSE '20+ (limit hit)'
+        END as usage_bucket,
+        COUNT(*) as user_count,
+        ROUND(100.0 * COUNT(*) / NULLIF(SUM(COUNT(*)) OVER (), 0), 1) as percentage
+      FROM users
+      WHERE plan = 'free'
+      GROUP BY 1
+      ORDER BY MIN(total_responses)
+    `);
+
+    // Aggregate stats
+    const stats = await dbQuery(`
+      SELECT
+        COUNT(*) as total_free_users,
+        ROUND(AVG(total_responses), 1) as avg_responses,
+        MAX(total_responses) as max_responses,
+        COUNT(*) FILTER (WHERE total_responses >= 20) as limit_reached_count,
+        ROUND(100.0 * COUNT(*) FILTER (WHERE total_responses >= 20) / NULLIF(COUNT(*), 0), 1) as limit_reached_pct,
+        COUNT(*) FILTER (WHERE total_responses > 0) as activated_users,
+        ROUND(100.0 * COUNT(*) FILTER (WHERE total_responses > 0) / NULLIF(COUNT(*), 0), 1) as activation_rate
+      FROM users
+      WHERE plan = 'free'
+    `);
+
+    // Exit survey results
+    const exitSurveys = await dbQuery(`
+      SELECT reason, COUNT(*) as count
+      FROM exit_surveys
+      GROUP BY reason
+      ORDER BY count DESC
+    `);
+
+    // Recent limit-hit users (potential conversion targets)
+    const limitHitUsers = await dbQuery(`
+      SELECT email, business_name, total_responses, created_at
+      FROM users
+      WHERE plan = 'free' AND total_responses >= 20
+      ORDER BY created_at DESC
+      LIMIT 10
+    `);
+
+    res.json({
+      distribution: distribution.rows,
+      stats: stats.rows[0] || {},
+      exitSurveys: exitSurveys.rows,
+      limitHitUsers: limitHitUsers.rows
+    });
+  } catch (err) {
+    console.error('[usage-analytics] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Exit Survey Tracking - Understand why users don't upgrade
+app.post('/api/analytics/exit-survey', async (req, res) => {
+  const { reason, context, user_id } = req.body;
+
+  if (!reason) {
+    return res.status(400).json({ error: 'Reason is required' });
+  }
+
+  try {
+    await dbQuery(
+      'INSERT INTO exit_surveys (user_id, reason, context, created_at) VALUES ($1, $2, $3, NOW())',
+      [user_id || null, reason, context || null]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[exit-survey] Error:', err);
     res.status(500).json({ error: err.message });
   }
 });
