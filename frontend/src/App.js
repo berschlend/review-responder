@@ -12596,16 +12596,16 @@ const DemoPage = () => {
           </div>
         </div>
 
-        {/* Features - honest stats */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '32px', padding: '32px', background: 'var(--bg-secondary)', borderRadius: '16px', marginBottom: '48px', border: '1px solid var(--border-color)' }}>
+        {/* Quick Stats - Clean */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '40px', padding: '36px 32px', background: 'var(--bg-secondary)', borderRadius: '20px', marginBottom: '56px', border: '1px solid var(--border-color)' }}>
           {[
-            { value: 'Google', label: 'Yelp, TripAdvisor & More' },
-            { value: 'One-Click', label: 'Chrome Extension' },
-            { value: '4 Tones', label: 'Professional to Friendly' },
-            { value: 'Copy & Paste', label: 'Ready Responses' },
+            { value: '6+', label: 'Review Platforms' },
+            { value: '50+', label: 'Languages' },
+            { value: '<5s', label: 'Generation Time' },
+            { value: '100%', label: 'Free to Start' },
           ].map((stat, i) => (
-            <div key={i} style={{ textAlign: 'center', minWidth: '120px' }}>
-              <div style={{ fontSize: '28px', fontWeight: '800', color: 'var(--primary)', marginBottom: '4px' }}>{stat.value}</div>
+            <div key={i} style={{ textAlign: 'center', minWidth: '100px' }}>
+              <div style={{ fontSize: '32px', fontWeight: '800', color: 'var(--primary)', marginBottom: '6px', letterSpacing: '-0.02em' }}>{stat.value}</div>
               <div style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>{stat.label}</div>
             </div>
           ))}
@@ -12669,16 +12669,34 @@ const DemoPage = () => {
           </div>
         </div>
 
-        {/* Features Grid */}
-        <div style={{ marginTop: '48px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+        {/* Features Grid - Professional Icons */}
+        <div style={{ marginTop: '56px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
           {[
-            { icon: '🎯', title: '4 Professional Tones', desc: 'Professional, friendly, formal, or apologetic - match your brand voice' },
-            { icon: '🌍', title: '50+ Languages', desc: 'Auto-detect and respond in the same language as the review' },
-            { icon: '⚡', title: 'Instant Generation', desc: 'Get perfect responses in under 5 seconds' },
-            { icon: '🔒', title: 'Your Business Context', desc: 'Add your business details for personalized responses' },
+            {
+              icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>,
+              title: '4 Professional Tones',
+              desc: 'Professional, friendly, formal, or apologetic - match your brand voice'
+            },
+            {
+              icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+              title: '50+ Languages',
+              desc: 'Auto-detect and respond in the same language as the review'
+            },
+            {
+              icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+              title: 'Instant Generation',
+              desc: 'Get perfect responses in under 5 seconds'
+            },
+            {
+              icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+              title: 'Your Business Context',
+              desc: 'Add your business details for personalized responses'
+            },
           ].map((feature, i) => (
-            <div key={i} style={{ padding: '24px', background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-              <div style={{ fontSize: '28px', marginBottom: '12px' }}>{feature.icon}</div>
+            <div key={i} style={{ padding: '28px', background: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(99, 102, 241, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                {feature.icon}
+              </div>
               <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '8px' }}>
                 {feature.title}
               </h3>
@@ -12705,57 +12723,52 @@ const DemoPage = () => {
         </div>
       </div>
 
-      {/* Sticky CTA Bar - All Devices */}
+      {/* Sticky CTA Bar - Clean & Professional */}
       <div
         style={{
           position: 'fixed',
           bottom: 0,
           left: 0,
           right: 0,
-          background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
-          padding: '14px 20px',
+          background: 'var(--bg-secondary)',
+          borderTop: '1px solid var(--border-color)',
+          padding: '12px 20px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           gap: '16px',
           zIndex: 90,
-          boxShadow: '0 -4px 20px rgba(0,0,0,0.15)'
+          backdropFilter: 'blur(10px)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '15px', fontWeight: '600', color: 'white' }}>
-              30% OFF expires in
+            <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+              20 free responses/month
             </span>
-            {/* COUNTDOWN TIMER */}
-            <span style={{
-              background: countdown.hours === 0 && countdown.minutes < 30 ? '#ef4444' : 'rgba(255,255,255,0.2)',
-              padding: '4px 10px', borderRadius: '6px', fontSize: '13px', fontWeight: '700', color: 'white',
-              fontFamily: 'monospace', minWidth: '80px', textAlign: 'center',
-              animation: countdown.hours === 0 && countdown.minutes < 30 ? 'pulse 1s infinite' : 'none'
-            }}>
-              {String(countdown.hours).padStart(2, '0')}:{String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}
+            <span style={{ fontSize: '12px', padding: '3px 8px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.1)', color: '#059669', fontWeight: '600' }}>
+              No credit card
             </span>
           </div>
           <a
             href={demo?.cta_url}
             style={{
-              background: 'white',
-              color: 'var(--primary)',
-              padding: '12px 28px',
-              borderRadius: '10px',
+              background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
+              color: 'white',
+              padding: '10px 24px',
+              borderRadius: '8px',
               textDecoration: 'none',
-              fontWeight: '700',
-              fontSize: '15px',
+              fontWeight: '600',
+              fontSize: '14px',
               whiteSpace: 'nowrap',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+              gap: '6px',
+              boxShadow: '0 2px 8px rgba(99, 102, 241, 0.3)'
             }}
           >
-            Claim 30% OFF
-            <ArrowRight size={18} />
+            Start Free Trial
+            <ArrowRight size={16} />
           </a>
         </div>
       </div>
