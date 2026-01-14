@@ -15920,6 +15920,62 @@ app.get('/api/admin/automation-health', async (req, res) => {
   }
 });
 
+// GET /api/admin/test-review-scraper - Test SerpAPI + Outscraper integration
+app.get('/api/admin/test-review-scraper', async (req, res) => {
+  const adminKey = req.query.key;
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const placeId = req.query.place_id || 'ChIJAVkDPzdOdkgR0qxvevTUGjo'; // Default: Cafe Central Wien
+  const forceOutscraper = req.query.force_outscraper === 'true';
+
+  try {
+    let reviews;
+    let source;
+
+    if (forceOutscraper) {
+      // Force Outscraper to test it directly
+      if (!process.env.OUTSCRAPER_API_KEY) {
+        return res.json({ error: 'OUTSCRAPER_API_KEY not configured', configured: false });
+      }
+      reviews = await scrapeGoogleReviewsOutscraper(placeId, 3);
+      source = 'outscraper_direct';
+    } else {
+      // Use normal flow (SerpAPI first, Outscraper fallback)
+      reviews = await scrapeGoogleReviews(placeId, 3);
+      source = 'auto_fallback';
+    }
+
+    res.json({
+      success: true,
+      source,
+      place_id: placeId,
+      reviews_found: reviews.length,
+      reviews: reviews.map(r => ({
+        author: r.author,
+        rating: r.rating,
+        text: r.text?.substring(0, 100) + (r.text?.length > 100 ? '...' : '')
+      })),
+      apis_configured: {
+        serpapi: !!getNextSerpApiKey(),
+        serpapi_keys: getSerpApiKeyCount(),
+        outscraper: !!process.env.OUTSCRAPER_API_KEY
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      apis_configured: {
+        serpapi: !!getNextSerpApiKey(),
+        serpapi_keys: getSerpApiKeyCount(),
+        outscraper: !!process.env.OUTSCRAPER_API_KEY
+      }
+    });
+  }
+});
+
 // POST /api/cron/send-yelp-emails - Send emails to Yelp leads
 app.post('/api/cron/send-yelp-emails', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
