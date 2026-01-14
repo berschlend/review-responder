@@ -114,9 +114,14 @@ CLAUDE.md lesen → TODO.md checken → Task → Testen → Git push → CLAUDE.
 - **46+ live** (Plattformen + Branchen)
 - Email-Capture → 4-Email Drip über 14 Tage
 
-### Outreach Metriken (14.01)
-- **523 Leads**, **476 Emails**
-- **24.4% Open Rate**, **3.8% Click Rate**
+### Outreach Metriken (14.01 - BEREINIGT)
+- **528 Leads**, **499 Emails**
+- **~0% echte Opens** (26% sind Bot-Scans, ~3 Sek nach Versand)
+- **3.4% Click Rate** (17 echte Klicks)
+- **0 Conversions** ← HAUPTPROBLEM
+
+**Erkenntnis:** Open-Rate ist unzuverlässig (Email-Server scannen Pixel).
+Click-Rate ist die echte Metrik. 17 Leute haben geklickt → Demo Attack!
 
 ---
 
@@ -217,6 +222,18 @@ CLAUDE.md lesen → TODO.md checken → Task → Testen → Git push → CLAUDE.
 
 ## KÜRZLICH ERLEDIGT (14.01)
 
+- **Test-Daten Bereinigung** - Admin Endpoints zum Cleanup von Metriken
+  - `/api/admin/cleanup-test-data` - Entfernt Test-Accounts, Emails, Clicks
+  - `/api/admin/reset-test-opens` - Setzt Test-Opens zurück
+  - Erkannt: 26% "Open Rate" sind Bot-Scans (3 Sek nach Versand)
+  - Echte Metrik: 3.4% Click Rate (17 echte Klicks)
+- **Direct Review Links auf Demo Pages** - Jede Review verlinkt jetzt direkt zur echten Google Review!
+  - Outscraper API: `review_link` und `review_id` werden jetzt extrahiert
+  - SerpAPI Fallback: `link` wird extrahiert
+  - Frontend: "View This Review on Google" statt allgemeiner Link
+  - Automatisch für alle zukünftigen Demos (Daily Outreach, LinkedIn, Manual)
+- **Loading Animation Fix** - `.animate-spin` CSS Klasse hinzugefügt
+- **Rate Limit → CTA Scroll** - Bei "Daily limit reached" scrollt automatisch zur Signup-Section
 - **Conversion System 2.0** - Free→Paid Conversion verbessern:
   - Usage Analytics Tab im Admin Panel (Distribution, Stats, Exit Surveys)
   - Upgrade Modal bei 20 Response Limit (statt nur Toast)
