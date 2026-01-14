@@ -455,46 +455,46 @@ https://review-responder.onrender.com/api/cron/ENDPOINT?secret=CRON_SECRET
 - Request Method: GET (außer explizit anders)
 - Nach Anlegen: Screenshot machen zur Bestätigung
 
-### Chrome MCP Lead Scraper (WIP)
+### Chrome MCP Lead Scraper (ABGESCHLOSSEN)
 
-**Status:** ~25 Leads gesammelt, Session 13.01.2026 abgeschlossen
-
-**Problem:** Chrome MCP Extension instabil bei 40+ offenen Tabs
-**Loesung:** Erst Tabs schliessen, dann mit weniger Tabs arbeiten
+**Status:** 30+ Leads gesammelt, Session 14.01.2026 abgeschlossen
 
 **Gesammelte Leads:**
 | Quelle | Typ | Anzahl | Details |
 |--------|-----|--------|---------|
 | G2 Birdeye | Unzufriedene Kunden | 10 | +1 ACAD Lead (0/5, daily bugs) |
 | G2 Podium | Unzufriedene Kunden | 7 | |
-| Yelp Muenchen | Restaurants | 2 | Augustiner-Keller (781 reviews) |
-| TripAdvisor | Restaurants | 1 | |
+| Yelp Muenchen | Restaurants | 1 | Augustiner-Keller (781 reviews) |
+| TripAdvisor | Restaurants | 5 | Top München Restaurants (700-1,800+ reviews) |
+
+**Neue TripAdvisor Leads (14.01.2026):**
+- Schiller Bräu - 706 reviews, +49 89 890584820
+- Steinheil 16 - 1,263 reviews, +49 89 527488
+- Trattoria Da Fausto - 1,854 reviews, #4 in München
+- Little London Bar & Grill - 1,675 reviews, MICHELIN, #2 in München
+- La Bohème - 1,882 reviews, MICHELIN, #5 in München
 
 **Dokumentierte Leads:** `content/leads/scraped-leads-2026-01-13.md`
 
-**Beste Pain Points (fuer Cold Email):**
+**Beste Pain Points (für Cold Email):**
 - Platform bugs/errors daily
 - Slow support (days/weeks)
 - Sales over-promised features
 - Stopped using after 4 months
 - Returned to previous provider
 
-**Naechste Schritte:**
-1. **ERST:** Alle unnoetigen Tabs im Browser schliessen (unter 10 Tabs)
-2. LinkedIn-Suche fuer G2 Reviewer-Namen (ACAD, Head of Digital)
-3. Mehr Restaurant-Details scrapen (Telefon, Email, Website)
-4. Cold Email Kampagne mit gesammelten Leads starten
-
-**Commands:**
-```bash
-# Leads-Datei lesen
-cat content/leads/scraped-leads-2026-01-13.md
-
-# Neue Session starten (erst Tabs schliessen!)
-$env:CLAUDE_SESSION = "scraper"; claude --chrome
-```
+**Nächste Schritte:**
+1. LinkedIn-Suche für G2 Reviewer-Namen (ACAD, Robert R.)
+2. Cold Email Kampagne mit gesammelten Leads starten
+3. Hunter.io für Email-Adressen der Restaurant-Leads
 
 ### HEUTE ERLEDIGT (14.01.2026):
+- [x] **Chrome MCP Lead Scraper Session** - 5 neue TripAdvisor Leads gesammelt
+  - Schiller Bräu, Steinheil 16, Trattoria Da Fausto
+  - Little London Bar & Grill (MICHELIN, #2)
+  - La Bohème (MICHELIN, #5)
+  - Alle mit Telefon, Adresse, Website dokumentiert
+  - Leads-Datei: `content/leads/scraped-leads-2026-01-13.md`
 - [x] **Auto Business Context für Demos** - AI-Antworten in Demos jetzt viel qualitätiver
   - Neue Funktion `scrapeBusinessContext()` - Scraped About/Team/Impressum Pages
   - Extrahiert: Business Description, Owner Name, Founded Year, Specialties

@@ -15482,6 +15482,8 @@ const SalonSpaReviewPage = () => {
           </div>
         </div>
 
+        <DemoVideoSection platform="salon and spa" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Grow Your Beauty Business with Better Reviews
@@ -15493,28 +15495,6 @@ const SalonSpaReviewPage = () => {
             <Sparkles size={20} />
             Try Free - No Credit Card
           </Link>
-        </div>
-
-        <div
-          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
-        >
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>
-              ReviewResponder
-            </Link>{' '}
-            •
-            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Google Reviews
-            </Link>{' '}
-            •
-            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Yelp Reviews
-            </Link>{' '}
-            •
-            <Link to="/local-business-reviews" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Local Business
-            </Link>
-          </p>
         </div>
       </section>
       <Footer />
@@ -15731,6 +15711,8 @@ const AutoShopReviewPage = () => {
           </div>
         </div>
 
+        <DemoVideoSection platform="auto shop" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Build Trust and Grow Your Auto Shop
@@ -15742,28 +15724,6 @@ const AutoShopReviewPage = () => {
             <Sparkles size={20} />
             Try Free - No Credit Card
           </Link>
-        </div>
-
-        <div
-          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
-        >
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>
-              ReviewResponder
-            </Link>{' '}
-            •
-            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Google Reviews
-            </Link>{' '}
-            •
-            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Yelp Reviews
-            </Link>{' '}
-            •
-            <Link to="/local-business-reviews" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Local Business
-            </Link>
-          </p>
         </div>
       </section>
       <Footer />
@@ -15927,6 +15887,8 @@ const TrustpilotReviewPage = () => {
 
         <ChromeExtensionHowTo platform="Trustpilot" color="#00b67a" />
 
+        <DemoVideoSection platform="Trustpilot" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Boost Your Trustpilot Score Today
@@ -15938,15 +15900,6 @@ const TrustpilotReviewPage = () => {
             <Sparkles size={20} />
             Try Free - No Credit Card
           </Link>
-        </div>
-
-        <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}>
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>ReviewResponder</Link>{' '}
-            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Google Reviews</Link>{' '}
-            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Yelp Reviews</Link>{' '}
-            <Link to="/facebook-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Facebook Reviews</Link>
-          </p>
         </div>
       </section>
       <Footer />
@@ -16132,6 +16085,8 @@ const AirbnbReviewPage = () => {
           </div>
         </div>
 
+        <DemoVideoSection platform="Airbnb" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Become a Better Host Today
@@ -16143,15 +16098,6 @@ const AirbnbReviewPage = () => {
             <Sparkles size={20} />
             Try Free - No Credit Card
           </Link>
-        </div>
-
-        <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}>
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>ReviewResponder</Link>{' '}
-            <Link to="/hotel-review-management" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Hotel Reviews</Link>{' '}
-            <Link to="/booking-review-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Booking.com</Link>{' '}
-            <Link to="/tripadvisor-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>TripAdvisor</Link>
-          </p>
         </div>
       </section>
       <Footer />
@@ -16315,6 +16261,8 @@ const RealEstateReviewPage = () => {
 
         <ChromeExtensionHowTo platform="Zillow, Realtor.com, or Google" color="#2d5a87" />
 
+        <DemoVideoSection platform="real estate" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Close More Deals with Better Reviews
@@ -16326,15 +16274,6 @@ const RealEstateReviewPage = () => {
             <Sparkles size={20} />
             Try Free - No Credit Card
           </Link>
-        </div>
-
-        <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}>
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>ReviewResponder</Link>{' '}
-            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Google Reviews</Link>{' '}
-            <Link to="/local-business-reviews" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Local Business</Link>{' '}
-            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Yelp Reviews</Link>
-          </p>
         </div>
       </section>
       <Footer />
@@ -16520,6 +16459,8 @@ const GymReviewPage = () => {
           </div>
         </div>
 
+        <DemoVideoSection platform="gym and fitness" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Grow Your Gym with Better Reviews
@@ -16531,15 +16472,6 @@ const GymReviewPage = () => {
             <Sparkles size={20} />
             Try Free - No Credit Card
           </Link>
-        </div>
-
-        <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}>
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>ReviewResponder</Link>{' '}
-            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Google Reviews</Link>{' '}
-            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Yelp Reviews</Link>{' '}
-            <Link to="/local-business-reviews" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Local Business</Link>
-          </p>
         </div>
       </section>
       <Footer />
@@ -16725,6 +16657,8 @@ const VetReviewPage = () => {
           </div>
         </div>
 
+        <DemoVideoSection platform="veterinarian" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Build Trust with Pet Owners Today
@@ -16736,15 +16670,6 @@ const VetReviewPage = () => {
             <Sparkles size={20} />
             Try Free - No Credit Card
           </Link>
-        </div>
-
-        <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}>
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>ReviewResponder</Link>{' '}
-            <Link to="/medical-practice-reviews" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Medical Practice</Link>{' '}
-            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Google Reviews</Link>{' '}
-            <Link to="/local-business-reviews" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Local Business</Link>
-          </p>
         </div>
       </section>
       <Footer />
@@ -16930,6 +16855,8 @@ const LawFirmReviewPage = () => {
           </div>
         </div>
 
+        <DemoVideoSection platform="law firm" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Build Your Firm's Reputation Today
@@ -16941,15 +16868,6 @@ const LawFirmReviewPage = () => {
             <Sparkles size={20} />
             Try Free - No Credit Card
           </Link>
-        </div>
-
-        <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}>
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>ReviewResponder</Link>{' '}
-            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Google Reviews</Link>{' '}
-            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Yelp Reviews</Link>{' '}
-            <Link to="/local-business-reviews" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Local Business</Link>
-          </p>
         </div>
       </section>
       <Footer />
@@ -17135,6 +17053,8 @@ const EcommerceReviewPage = () => {
           </div>
         </div>
 
+        <DemoVideoSection platform="e-commerce" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Scale Your Customer Service Today
@@ -17146,15 +17066,6 @@ const EcommerceReviewPage = () => {
             <Sparkles size={20} />
             Try Free - No Credit Card
           </Link>
-        </div>
-
-        <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}>
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>ReviewResponder</Link>{' '}
-            <Link to="/trustpilot-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Trustpilot</Link>{' '}
-            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Google Reviews</Link>{' '}
-            <Link to="/facebook-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Facebook Reviews</Link>
-          </p>
         </div>
       </section>
       <Footer />
@@ -17340,6 +17251,8 @@ const CoffeeShopReviewPage = () => {
           </div>
         </div>
 
+        <DemoVideoSection platform="coffee shop" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Grow Your Coffee Shop Community Today
@@ -17351,15 +17264,6 @@ const CoffeeShopReviewPage = () => {
             <Sparkles size={20} />
             Try Free - No Credit Card
           </Link>
-        </div>
-
-        <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}>
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>ReviewResponder</Link>{' '}
-            <Link to="/restaurant-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Restaurant Reviews</Link>{' '}
-            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Google Reviews</Link>{' '}
-            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>Yelp Reviews</Link>
-          </p>
         </div>
       </section>
       <Footer />
