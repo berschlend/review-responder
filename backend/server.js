@@ -20007,6 +20007,390 @@ app.get('/api/cron/send-agency-emails', async (req, res) => {
   }
 });
 
+// ============== NIGHT BLAST AUTOMATION ==============
+// Aggressive night-time sales automation - runs multiple cities, all follow-ups, all email queues
+// Designed to run 3x per night (22:00, 02:00, 06:00) via cron-job.org
+// NO Chrome MCP needed - all API-based
+
+app.get('/api/cron/night-blast', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  console.log('🌙 NIGHT BLAST STARTED - Aggressive sales automation...');
+  const startTime = Date.now();
+  const results = {
+    phase1_scraping: null,
+    phase2_email_finding: null,
+    phase3_demo_generation: null,
+    phase4_hot_lead_followups: null,
+    phase5_second_followups: null,
+    phase6_demo_followups: null,
+    phase7_g2_enrichment: null,
+    phase8_source_emails: null,
+  };
+
+  try {
+    // ===== PHASE 1: MULTI-CITY SCRAPING =====
+    // Scrape 5 cities instead of 1 for aggressive lead generation
+    console.log('📍 Phase 1: Multi-City Scraping...');
+
+    const cities = [
+      'New York', 'Los Angeles', 'Chicago', 'Houston', 'Miami',
+      'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas',
+      'San Jose', 'Austin', 'Jacksonville', 'San Francisco', 'Seattle',
+      'Denver', 'Boston', 'Las Vegas', 'Portland', 'Atlanta',
+      'London', 'Dublin',
+      'Berlin', 'München', 'Hamburg', 'Frankfurt', 'Köln',
+      'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf',
+      'Leipzig', 'Dresden', 'Hannover', 'Nürnberg', 'Bremen', 'Essen',
+      'Salzburg', 'Graz', 'Linz', 'Innsbruck', 'Basel', 'Bern',
+      'Amsterdam', 'Brüssel'
+    ];
+
+    const industries = [
+      'restaurant', 'hotel', 'dental office', 'law firm',
+      'auto repair shop', 'hair salon', 'gym', 'real estate agency',
+      'medical clinic', 'retail store', 'spa', 'veterinary clinic',
+      'physiotherapy', 'accounting firm', 'bakery', 'coffee shop',
+      'car dealership', 'optician', 'pharmacy', 'florist'
+    ];
+
+    let totalScraped = 0;
+    const citiesToScrape = 5; // Scrape 5 cities per night-blast run
+    const leadsPerCity = 20; // 20 leads per city = 100 total
+
+    // Calculate starting index based on hour to avoid overlap between runs
+    const hourOfDay = new Date().getHours();
+    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+    const startCityIndex = (dayOfYear * 3 + Math.floor(hourOfDay / 8)) * citiesToScrape;
+
+    if (process.env.GOOGLE_PLACES_API_KEY) {
+      for (let i = 0; i < citiesToScrape; i++) {
+        const cityIndex = (startCityIndex + i) % cities.length;
+        const industryIndex = (dayOfYear + i) % industries.length;
+        const city = cities[cityIndex];
+        const industry = industries[industryIndex];
+
+        try {
+          const scrapeUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(industry + ' in ' + city)}&key=${process.env.GOOGLE_PLACES_API_KEY}`;
+          const response = await fetch(scrapeUrl);
+          const data = await response.json();
+
+          logApiCall({
+            provider: 'google_places',
+            endpoint: '/api/cron/night-blast',
+            metadata: { type: 'textsearch', city, industry, resultsCount: data.results?.length || 0 },
+          });
+
+          if (data.results) {
+            for (const place of data.results.slice(0, leadsPerCity)) {
+              try {
+                const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,reviews&key=${process.env.GOOGLE_PLACES_API_KEY}`;
+                const detailsResponse = await fetch(detailsUrl);
+                const details = await detailsResponse.json();
+
+                if (details.status === 'OK') {
+                  const result = details.result;
+
+                  // Find worst review for personalized outreach
+                  let worstReview = null;
+                  if (result.reviews && result.reviews.length > 0) {
+                    const badReviews = result.reviews.filter(r => r.rating <= 2);
+                    if (badReviews.length > 0) {
+                      worstReview = badReviews.reduce((worst, current) =>
+                        (current.text?.length || 0) > (worst.text?.length || 0) ? current : worst
+                      );
+                    }
+                  }
+
+                  await dbQuery(
+                    `INSERT INTO outreach_leads (business_name, business_type, city, address, phone, website, google_rating, google_reviews_count, source, worst_review_text, worst_review_rating, worst_review_author, has_bad_review)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'night_blast', $9, $10, $11, $12)
+                    ON CONFLICT (business_name, city) DO UPDATE SET
+                      website = COALESCE(EXCLUDED.website, outreach_leads.website),
+                      phone = COALESCE(EXCLUDED.phone, outreach_leads.phone),
+                      google_rating = COALESCE(EXCLUDED.google_rating, outreach_leads.google_rating),
+                      google_reviews_count = COALESCE(EXCLUDED.google_reviews_count, outreach_leads.google_reviews_count),
+                      worst_review_text = COALESCE(EXCLUDED.worst_review_text, outreach_leads.worst_review_text),
+                      worst_review_rating = COALESCE(EXCLUDED.worst_review_rating, outreach_leads.worst_review_rating),
+                      worst_review_author = COALESCE(EXCLUDED.worst_review_author, outreach_leads.worst_review_author),
+                      has_bad_review = COALESCE(EXCLUDED.has_bad_review, outreach_leads.has_bad_review)`,
+                    [
+                      result.name,
+                      industry,
+                      city,
+                      result.formatted_address || null,
+                      result.formatted_phone_number || null,
+                      result.website || null,
+                      result.rating || null,
+                      result.user_ratings_total || null,
+                      worstReview?.text || null,
+                      worstReview?.rating || null,
+                      worstReview?.author_name || null,
+                      worstReview !== null,
+                    ]
+                  );
+                  totalScraped++;
+                }
+
+                await new Promise(r => setTimeout(r, 200)); // Rate limiting
+              } catch (e) {
+                console.error(`Place details error for ${place.name}:`, e.message);
+              }
+            }
+          }
+          console.log(`  ✓ ${city} (${industry}): scraped`);
+        } catch (e) {
+          console.error(`City scrape error ${city}:`, e.message);
+        }
+      }
+    }
+
+    results.phase1_scraping = { leads_added: totalScraped, cities_scraped: citiesToScrape };
+    console.log(`📍 Phase 1 complete: ${totalScraped} leads scraped`);
+
+    // ===== PHASE 2: EMAIL FINDING =====
+    // Find emails for all leads without email (limit 50 per run)
+    console.log('📧 Phase 2: Email Finding...');
+
+    const leadsWithoutEmail = await dbAll(`
+      SELECT id, business_name, website, city FROM outreach_leads
+      WHERE email IS NULL AND website IS NOT NULL
+      ORDER BY created_at DESC
+      LIMIT 50
+    `);
+
+    let emailsFound = 0;
+    for (const lead of leadsWithoutEmail) {
+      try {
+        const emailResult = await findEmailForLead(lead);
+        if (emailResult?.email) {
+          await dbQuery(
+            'UPDATE outreach_leads SET email = $1, email_source = $2, contact_name = $3 WHERE id = $4',
+            [emailResult.email, emailResult.source || 'night_blast', emailResult.contactName || null, lead.id]
+          );
+          emailsFound++;
+        }
+        await new Promise(r => setTimeout(r, 500)); // Rate limiting
+      } catch (e) {
+        console.error(`Email find error for ${lead.business_name}:`, e.message);
+      }
+    }
+
+    results.phase2_email_finding = { processed: leadsWithoutEmail.length, emails_found: emailsFound };
+    console.log(`📧 Phase 2 complete: ${emailsFound} emails found`);
+
+    // ===== PHASE 3: DEMO GENERATION =====
+    // Generate demos for leads with email but no demo (limit 20 per run)
+    console.log('🎬 Phase 3: Demo Generation...');
+
+    const leadsNeedingDemo = await dbAll(`
+      SELECT l.id, l.business_name, l.city, l.email, l.contact_name
+      FROM outreach_leads l
+      LEFT JOIN demo_generations d ON l.id = d.lead_id
+      WHERE l.email IS NOT NULL AND d.id IS NULL
+      ORDER BY l.created_at DESC
+      LIMIT 20
+    `);
+
+    let demosGenerated = 0;
+    for (const lead of leadsNeedingDemo) {
+      try {
+        const placeInfo = await lookupPlaceId(lead.business_name, lead.city);
+        if (placeInfo?.placeId) {
+          const reviews = await scrapeGoogleReviews(placeInfo.placeId, 3);
+          if (reviews && reviews.length > 0) {
+            const demos = [];
+            for (const review of reviews.slice(0, 3)) {
+              try {
+                const response = await generateDemoResponse(
+                  review.text || review.snippet || '',
+                  review.rating || 3,
+                  placeInfo.name || lead.business_name
+                );
+                demos.push({
+                  review: review.text || review.snippet || '',
+                  rating: review.rating || 3,
+                  author: review.author || 'Anonymous',
+                  response: response,
+                  review_link: review.review_link || review.link || null,
+                });
+              } catch (e) {
+                console.error(`Response gen error:`, e.message);
+              }
+            }
+
+            if (demos.length > 0) {
+              const demoToken = crypto.randomBytes(16).toString('hex');
+              await dbQuery(
+                `INSERT INTO demo_generations (lead_id, demo_token, business_name, demo_data, created_at)
+                VALUES ($1, $2, $3, $4, NOW())`,
+                [lead.id, demoToken, lead.business_name, JSON.stringify(demos)]
+              );
+              demosGenerated++;
+            }
+          }
+        }
+        await new Promise(r => setTimeout(r, 1000)); // Rate limiting for API calls
+      } catch (e) {
+        console.error(`Demo gen error for ${lead.business_name}:`, e.message);
+      }
+    }
+
+    results.phase3_demo_generation = { processed: leadsNeedingDemo.length, demos_generated: demosGenerated };
+    console.log(`🎬 Phase 3 complete: ${demosGenerated} demos generated`);
+
+    // ===== PHASE 4: HOT LEAD FOLLOW-UPS =====
+    // Send personalized demos to people who clicked
+    console.log('🔥 Phase 4: Hot Lead Follow-ups...');
+
+    try {
+      const hotLeadResponse = await fetch(
+        `${process.env.BACKEND_URL || 'https://review-responder.onrender.com'}/api/cron/followup-clickers?secret=${process.env.CRON_SECRET}`,
+        { method: 'GET' }
+      );
+      const hotLeadResult = await hotLeadResponse.json();
+      results.phase4_hot_lead_followups = hotLeadResult;
+      console.log(`🔥 Phase 4 complete: ${hotLeadResult.sent || 0} hot lead follow-ups sent`);
+    } catch (e) {
+      results.phase4_hot_lead_followups = { error: e.message };
+      console.error('Phase 4 error:', e.message);
+    }
+
+    // ===== PHASE 5: SECOND FOLLOW-UPS =====
+    // Send second follow-up with better offer to clickers who haven't converted
+    console.log('📨 Phase 5: Second Follow-ups...');
+
+    try {
+      const secondFollowupResponse = await fetch(
+        `${process.env.BACKEND_URL || 'https://review-responder.onrender.com'}/api/cron/second-followup?secret=${process.env.CRON_SECRET}`,
+        { method: 'GET' }
+      );
+      const secondFollowupResult = await secondFollowupResponse.json();
+      results.phase5_second_followups = secondFollowupResult;
+      console.log(`📨 Phase 5 complete: ${secondFollowupResult.sent || 0} second follow-ups sent`);
+    } catch (e) {
+      results.phase5_second_followups = { error: e.message };
+      console.error('Phase 5 error:', e.message);
+    }
+
+    // ===== PHASE 6: DEMO FOLLOW-UPS =====
+    // Follow-up to people who viewed demo but didn't convert
+    console.log('👀 Phase 6: Demo Follow-ups...');
+
+    try {
+      const demoFollowupResponse = await fetch(
+        `${process.env.BACKEND_URL || 'https://review-responder.onrender.com'}/api/cron/demo-followup?secret=${process.env.CRON_SECRET}`,
+        { method: 'GET' }
+      );
+      const demoFollowupResult = await demoFollowupResponse.json();
+      results.phase6_demo_followups = demoFollowupResult;
+      console.log(`👀 Phase 6 complete: ${demoFollowupResult.sent || 0} demo follow-ups sent`);
+    } catch (e) {
+      results.phase6_demo_followups = { error: e.message };
+      console.error('Phase 6 error:', e.message);
+    }
+
+    // ===== PHASE 7: G2 ENRICHMENT =====
+    // Find domain and email for G2 competitor leads
+    console.log('🎯 Phase 7: G2 Enrichment...');
+
+    try {
+      const g2EnrichResponse = await fetch(
+        `${process.env.BACKEND_URL || 'https://review-responder.onrender.com'}/api/cron/enrich-g2-leads?secret=${process.env.CRON_SECRET}`,
+        { method: 'GET' }
+      );
+      const g2EnrichResult = await g2EnrichResponse.json();
+      results.phase7_g2_enrichment = g2EnrichResult;
+      console.log(`🎯 Phase 7 complete: ${g2EnrichResult.domainsFound || 0} domains, ${g2EnrichResult.emailsFound || 0} emails found`);
+    } catch (e) {
+      results.phase7_g2_enrichment = { error: e.message };
+      console.error('Phase 7 error:', e.message);
+    }
+
+    // ===== PHASE 8: SOURCE-SPECIFIC EMAILS =====
+    // Send emails for TripAdvisor, Yelp, G2, Agency leads
+    console.log('📬 Phase 8: Source-specific Emails...');
+
+    const sourceEmailResults = {};
+
+    // TripAdvisor emails
+    try {
+      const tripResponse = await fetch(
+        `${process.env.BACKEND_URL || 'https://review-responder.onrender.com'}/api/cron/send-tripadvisor-emails?secret=${process.env.CRON_SECRET}`,
+        { method: 'GET' }
+      );
+      sourceEmailResults.tripadvisor = await tripResponse.json();
+    } catch (e) {
+      sourceEmailResults.tripadvisor = { error: e.message };
+    }
+
+    // Yelp emails
+    try {
+      const yelpResponse = await fetch(
+        `${process.env.BACKEND_URL || 'https://review-responder.onrender.com'}/api/cron/send-yelp-emails?secret=${process.env.CRON_SECRET}`,
+        { method: 'GET' }
+      );
+      sourceEmailResults.yelp = await yelpResponse.json();
+    } catch (e) {
+      sourceEmailResults.yelp = { error: e.message };
+    }
+
+    // G2 emails
+    try {
+      const g2Response = await fetch(
+        `${process.env.BACKEND_URL || 'https://review-responder.onrender.com'}/api/cron/send-g2-emails?secret=${process.env.CRON_SECRET}`,
+        { method: 'GET' }
+      );
+      sourceEmailResults.g2 = await g2Response.json();
+    } catch (e) {
+      sourceEmailResults.g2 = { error: e.message };
+    }
+
+    // Agency emails
+    try {
+      const agencyResponse = await fetch(
+        `${process.env.BACKEND_URL || 'https://review-responder.onrender.com'}/api/cron/send-agency-emails?secret=${process.env.CRON_SECRET}`,
+        { method: 'GET' }
+      );
+      sourceEmailResults.agency = await agencyResponse.json();
+    } catch (e) {
+      sourceEmailResults.agency = { error: e.message };
+    }
+
+    results.phase8_source_emails = sourceEmailResults;
+    console.log('📬 Phase 8 complete');
+
+    // ===== FINAL SUMMARY =====
+    const duration = Math.round((Date.now() - startTime) / 1000);
+    console.log(`🌙 NIGHT BLAST COMPLETE in ${duration}s`);
+
+    res.json({
+      success: true,
+      duration_seconds: duration,
+      summary: {
+        leads_scraped: results.phase1_scraping?.leads_added || 0,
+        emails_found: results.phase2_email_finding?.emails_found || 0,
+        demos_generated: results.phase3_demo_generation?.demos_generated || 0,
+        hot_lead_followups: results.phase4_hot_lead_followups?.sent || 0,
+        second_followups: results.phase5_second_followups?.sent || 0,
+        demo_followups: results.phase6_demo_followups?.sent || 0,
+      },
+      phases: results,
+    });
+
+  } catch (error) {
+    console.error('Night blast critical error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      partial_results: results,
+    });
+  }
+});
+
 // POST /api/admin/send-cold-email - Send custom cold email to restaurant leads
 app.post('/api/admin/send-cold-email', async (req, res) => {
   const { key } = req.query;
