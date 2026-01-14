@@ -11070,6 +11070,106 @@ P.S. Sign up during our call and I'll give you the first month free.`;
   }
 });
 
+// GET /api/cron/second-followup - Send SECOND follow-up with better offer to clickers who haven't converted
+app.all('/api/cron/second-followup', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!brevo) {
+    return res.status(500).json({ error: 'Brevo not configured' });
+  }
+
+  try {
+    // Add second_followup_sent column if not exists
+    try {
+      await dbQuery(`ALTER TABLE clicker_followups ADD COLUMN IF NOT EXISTS second_followup_sent TIMESTAMP`);
+    } catch (e) { /* Column might already exist */ }
+
+    // Find clickers who received first followup but not second, and haven't converted
+    const clickers = await dbAll(`
+      SELECT f.email, f.sent_at as first_followup_sent,
+        l.business_name, l.contact_name, l.city,
+        l.google_reviews_count
+      FROM clicker_followups f
+      LEFT JOIN outreach_leads l ON LOWER(f.email) = LOWER(l.email)
+      WHERE f.converted = FALSE
+        AND f.second_followup_sent IS NULL
+        AND f.sent_at < NOW() - INTERVAL '2 days'
+        ${getTestEmailExcludeClause('f.email')}
+        AND f.email NOT LIKE '%vimeo%'
+      ORDER BY f.sent_at ASC
+      LIMIT 20
+    `);
+
+    if (clickers.length === 0) {
+      return res.json({ success: true, sent: 0, message: 'No clickers ready for second follow-up' });
+    }
+
+    let sent = 0;
+    const results = [];
+
+    for (const clicker of clickers) {
+      try {
+        const businessName = clicker.business_name || 'your restaurant';
+        const firstName = clicker.contact_name ? clicker.contact_name.split(' ')[0] : null;
+        const greeting = firstName ? `Hey ${firstName},` : 'Hey,';
+
+        // SECOND follow-up with better offer
+        const subject = `Quick question about ${businessName}`;
+        const body = `${greeting}
+
+Quick question: What's holding you back from trying ReviewResponder?
+
+I'd like to offer you:
+- 1 FULL MONTH FREE (not just 20 responses - unlimited!)
+- I'll set it up for you personally
+- 15-min Zoom call where I explain everything
+
+Just reply to this email with a time that works.
+
+Best,
+Berend
+
+P.S. If review management isn't a priority right now, no worries - just let me know and I won't follow up again.`;
+
+        await brevo.sendTransacEmail({
+          sender: { name: 'Berend from ReviewResponder', email: 'outreach@tryreviewresponder.com' },
+          to: [{ email: clicker.email }],
+          subject: subject,
+          textContent: body,
+          tags: ['second_followup'],
+        });
+
+        // Track second followup
+        await dbQuery(
+          `UPDATE clicker_followups SET second_followup_sent = NOW() WHERE LOWER(email) = LOWER($1)`,
+          [clicker.email]
+        );
+
+        sent++;
+        results.push({ email: clicker.email, business: businessName });
+
+        // Rate limit
+        await new Promise(r => setTimeout(r, 500));
+      } catch (err) {
+        console.error(`Failed to send second followup to ${clicker.email}:`, err.message);
+      }
+    }
+
+    res.json({
+      success: true,
+      sent: sent,
+      followups_sent: results,
+      message: sent > 0 ? `Sent ${sent} second follow-ups with better offer!` : 'No emails sent',
+    });
+  } catch (error) {
+    console.error('Second followup error:', error);
+    res.status(500).json({ error: 'Failed to send second followups' });
+  }
+});
+
 // GET /api/cron/demo-followup - Send follow-up to people who viewed demo but didn't convert
 app.get('/api/cron/demo-followup', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
