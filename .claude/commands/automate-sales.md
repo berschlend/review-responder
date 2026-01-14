@@ -1,69 +1,92 @@
 # Sales Automatisierung mit Claude Superpowers
 
-**OUTPUT-REGEL:** Kurze, kompakte Pläne. Keine langen Tabellen. Max 3-5 Bullet Points pro Sektion.
+**OUTPUT-REGEL:** Kurze, kompakte Plaene. Max 3-5 Bullet Points pro Sektion.
 
 ---
 
-## SCHRITT 0: ZEIT-AWARENESS (IMMER ZUERST!)
+## SCHRITT 0: LIVE-DATEN HOLEN (IMMER ZUERST!)
 
-**BEVOR du Panik schiebst oder Aenderungen vorschlaegst:**
+**AUTOMATISCH am Anfang diese Daten holen:**
 
-1. **Wann gestartet?** Check `last_reset` oder erste Email-Timestamps
-2. **Realistische Timelines:**
-   - Cold Email: 7-14 Tage bis erste Antworten
-   - Follow-ups: Wirken ab Tag 5-7
-   - Conversions: Fruehestens nach 2-3 Wochen
-3. **Wenn < 7 Tage:** System laeuft → NICHT anfassen, nur beobachten
-4. **Wenn < 14 Tage:** Nur kleine Tweaks, keine grossen Aenderungen
-
-**REGEL:** Keine Panik bei niedrigen Zahlen wenn System erst kurz laeuft!
-
----
-
-## SCHRITT 1: LIVE-DATEN HOLEN
-
-```bash
-cat .claude/secrets.local
-# Dann mit KEY:
-curl -s -H "X-Admin-Key: KEY" "https://review-responder.onrender.com/api/admin/stats"
-curl -s "https://review-responder.onrender.com/api/outreach/dashboard?key=KEY"
 ```
+1. WebFetch: https://review-responder.onrender.com/api/outreach/dashboard?key=KEY
+   → Zeigt: Leads, Emails, Clicks, Click-Rate, HOT LEADS (Clicker!)
+
+2. KEY aus: .claude/secrets.local (ADMIN_SECRET)
+```
+
+**Dashboard zeigt jetzt:**
+- `stats.total_leads` - Anzahl Leads
+- `stats.emails_sent` - Gesendete Emails
+- `stats.clicks` - Echte Klicks (gefiltert)
+- `stats.click_rate` - Echte Click-Rate
+- `hot_leads` - **WICHTIG: Liste der Businesses die geklickt haben!**
+- `hot_leads_count` - Anzahl Hot Leads
+
+**HINWEIS:** Open-Rate wurde entfernt - ist unzuverlaessig (Bot-Scans).
+Click-Rate ist die einzige echte Metrik!
 
 ---
 
 ## SCHRITT 1: QUICK ANALYSIS (3 Saetze max)
 
-- **Funnel:** X User, Y Paying, Z% Conversion
-- **Outreach:** X Leads, Y% Open, Z% Click
-- **Bottleneck:** [Der EINE Engpass]
+- **Outreach:** X Leads, Y Emails, Z% Click-Rate
+- **Hot Leads:** X Businesses haben geklickt (LISTE ZEIGEN!)
+- **Bottleneck:** Clicks → Signups → Paid
 
 ---
 
-## SCHRITT 2: FIRST-PRINCIPLES (Kompakt!)
+## SCHRITT 2: HOT LEADS PRIORISIEREN
+
+**Diese Leads haben ECHTES Interesse gezeigt:**
+
+Aus `hot_leads` Array:
+- Business Name, Stadt, Email
+- Sortiert nach clicked_at (neueste zuerst)
+
+**Aktionen fuer Hot Leads:**
+1. Demo generieren (personalisiert)
+2. Follow-Up Email mit Demo-Link
+3. LinkedIn Connection Request
+
+---
+
+## SCHRITT 3: ZEIT-AWARENESS
+
+**BEVOR du Panik schiebst:**
+
+1. **Wann gestartet?** Check erste Email-Timestamps
+2. **Realistische Timelines:**
+   - Cold Email: 7-14 Tage bis erste Antworten
+   - Conversions: Fruehestens nach 2-3 Wochen
+3. **Wenn < 7 Tage:** NICHT anfassen, nur beobachten
+
+---
+
+## SCHRITT 4: FIRST-PRINCIPLES (Kompakt!)
 
 **5x Warum → Root Cause:**
-> Warum kauft niemand? → [1 Satz Antwort]
+> Warum kauft niemand? → [1 Satz]
 
 **Annahme zerstoeren:**
 > [1 Annahme die FALSCH sein koennte]
 
 ---
 
-## SCHRITT 3: TOP 3 IDEEN
+## SCHRITT 5: TOP 3 IDEEN
 
-Nur Ideen die den Kunden-Filter bestehen:
-1. **[Idee]** - Weil Kunde X will
-2. **[Idee]** - Weil Kunde Y braucht
-3. **[Idee]** - Weil es Problem Z loest
+1. **Hot Lead Follow-Up** - Die X Clicker direkt kontaktieren
+2. **[Idee]** - Basierend auf Daten
+3. **[Idee]** - Basierend auf Bottleneck
 
 **ANTI-PATTERNS (nie vorschlagen):**
-- Branding auf Kunden-Content
 - Mehr Spam statt bessere Emails
 - Features ohne Kunden-Feedback
+- Panik-Aktionen bei < 7 Tage alten Daten
 
 ---
 
-## SCHRITT 4: ONE THING
+## SCHRITT 6: ONE THING
 
 > Was ist der EINE naechste Schritt?
 
@@ -71,9 +94,9 @@ Nur Ideen die den Kunden-Filter bestehen:
 
 ---
 
-## SCHRITT 5: EXECUTION (Max 3 Tasks)
+## SCHRITT 7: EXECUTION (Max 3 Tasks)
 
-- [ ] **Task 1:** ...
+- [ ] **Task 1:** Hot Leads kontaktieren
 - [ ] **Task 2:** ...
 - [ ] **Task 3:** ...
 
@@ -84,5 +107,6 @@ Nur Ideen die den Kunden-Filter bestehen:
 ## KONTEXT
 
 - **Ziel:** $1000/Mo (30 Kunden)
-- **Status:** Product-Market-Fit noch nicht validiert
-- **Regel:** Keine Skalierung vor erstem zahlenden Kunden
+- **Status:** 0 zahlende Kunden, aber ~17 Hot Leads (Clicker)
+- **Regel:** Hot Leads ZUERST, dann neue Leads
+- **Echte Metrik:** Click-Rate (nicht Open-Rate!)
