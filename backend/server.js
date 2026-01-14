@@ -15407,6 +15407,7 @@ app.get('/api/outreach/dashboard', async (req, res) => {
     // HOT LEADS: Get clickers with business details (the REAL interested leads!)
     let hotLeads = [];
     try {
+      const CLICKS_EMAIL_FILTER = getTestEmailExcludeClause('c.email');
       hotLeads = await dbAll(`
         SELECT DISTINCT ON (c.email)
           c.email,
@@ -15418,7 +15419,7 @@ app.get('/api/outreach/dashboard', async (req, res) => {
           l.google_reviews_count
         FROM outreach_clicks c
         LEFT JOIN outreach_leads l ON LOWER(c.email) = LOWER(l.email)
-        WHERE 1=1 ${TEST_EMAIL_FILTER.replace(/email/g, 'c.email')}
+        WHERE 1=1 ${CLICKS_EMAIL_FILTER}
           AND c.email NOT LIKE '%vimeo%'
         ORDER BY c.email, c.clicked_at DESC
       `) || [];
