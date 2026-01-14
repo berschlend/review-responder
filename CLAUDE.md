@@ -259,6 +259,13 @@ Click-Rate ist die echte Metrik. 17 Leute haben geklickt → Demo Attack!
 
 ## KÜRZLICH ERLEDIGT (14.01)
 
+- **Smart Email Finding** - Personal Emails statt info@/contact@
+  - Team Member Extraktion von /team, /about Seiten
+  - `generatePersonalEmails()` - Name→Email Patterns (firstname@, firstname.lastname@)
+  - Umlaut-Handling (ä→ae, ö→oe, ü→ue, ß→ss)
+  - `isValidPersonName()` mit Blacklist (filtert "and CEO" etc.)
+  - Email-Priorisierung: Personal > Generic
+  - Bug-Fix: Owner-Patterns nutzen jetzt auch die Name-Validierung
 - **Test-Daten Bereinigung** - Admin Endpoints zum Cleanup von Metriken
   - `/api/admin/cleanup-test-data` - Entfernt Test-Accounts, Emails, Clicks
   - `/api/admin/reset-test-opens` - Setzt Test-Opens zurück
