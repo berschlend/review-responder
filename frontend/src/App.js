@@ -21864,6 +21864,9 @@ const AdminPage = () => {
       if (activeAdminTab === 'costs' && !costsData) {
         loadCostsData();
       }
+      if (activeAdminTab === 'credits' && !creditsData) {
+        loadCreditsData();
+      }
       if (activeAdminTab === 'usage' && !usageData) {
         loadUsageData();
       }
