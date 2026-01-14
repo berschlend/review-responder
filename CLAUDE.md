@@ -122,15 +122,24 @@ CLAUDE.md lesen → TODO.md checken → Task → Testen → Git push → CLAUDE.
 Läuft autonom ohne User-Input:
 - **22:00** - Hot Lead Follow-Ups (Demos für Klicker)
 - **23:00** - Second Follow-Up ("1 Monat gratis")
-- **00:00** - Stats Collection
+- **00:00** - Demo Expiration Emails + Stats Collection
 - **01:00** - Dead Lead Revival ("Problem solved?")
-- **02:00** - A/B Test Evaluation
+- **02:00** - Re-Engagement (Magic Links für Nicht-Registrierte)
 - **03:00-06:00** - Idle
 
 **Endpoints:**
 - `/api/cron/night-loop` - Master Endpoint (orchestriert alles)
 - `/api/cron/revive-dead-leads` - Reaktiviert 7+ Tage alte Leads
 - `/api/cron/ab-test-evaluate` - Bewertet A/B Tests automatisch
+- `/api/cron/reengage-clickers` - Magic Links an Clicker die nicht registriert sind
+- `/api/cron/demo-expiration-emails` - Urgency Emails (Tag 3, 5) + Auto-Expire (Tag 7)
+- `/api/auth/magic-login/:token` - Passwordless Login mit Auto-Account-Erstellung
+
+**Magic Link System:**
+- Clicker die nicht registriert sind bekommen Magic Link Email
+- Link erstellt automatisch Account (kein Passwort nötig)
+- User landet direkt im Dashboard
+- Link gültig für 7 Tage
 
 ---
 
@@ -294,6 +303,34 @@ Click-Rate ist die echte Metrik. 17 Leute haben geklickt → Demo Attack!
 - `/scrape-leads` - TripAdvisor Scraping
 - `/g2-miner` - G2 Competitor Mining
 - `/yelp-audit` - Yelp Lead Auditing
+
+---
+
+## KÜRZLICH ERLEDIGT (14.01 Nacht - Magic Link System)
+
+- **Magic Link Authentication** - Passwordless Login für Hot Leads
+  - `/api/auth/magic-login/:token` - Auto-Create Account + Instant Login
+  - `magic_links` DB Table - Tracking von Token, Email, Expiration
+  - Frontend: `MagicLoginPage` Component verarbeitet Token
+  - User landet direkt im Dashboard ohne Passwort-Eingabe
+
+- **Re-Engagement Cron für Hot Leads**
+  - `/api/cron/reengage-clickers` - Magic Links an Clicker ohne Account
+  - Target: Leute die auf Email geklickt haben aber nie registriert
+  - DE/EN Detection für personalisierte Emails
+  - `reengagement_emails` DB Table für Tracking
+
+- **Demo Expiration Urgency System**
+  - `/api/cron/demo-expiration-emails` - Urgency Emails
+  - Tag 3: "Your demo expires in 4 days"
+  - Tag 5: "Last chance - demo expires TOMORROW"
+  - Tag 7: Auto-expire (Demo wird als `expired` markiert)
+  - Neue DB Columns: `expiration_email_day3`, `expiration_email_day5`, `expired`
+
+- **First-Principles Approach:**
+  - Problem: 17 Clicker, 0 Conversions (Demo gibt alles weg ohne Gegenleistung)
+  - Lösung: Frictionless Signup mit Magic Links statt mehr Leads scrapen
+  - "Fix the bucket before pouring more water"
 
 ---
 
