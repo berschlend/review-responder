@@ -14723,13 +14723,20 @@ app.get('/api/cron/linkedin-demo-daily', async (req, res) => {
             // Scrape reviews via SerpAPI
             const reviews = await scrapeGoogleReviews(place.place_id, 5);
 
-            // Find negative/mixed reviews (1-3 stars)
-            const targetReviews = reviews
+            // Find reviews to respond to (prefer negative, but take any if none)
+            let targetReviews = reviews
               .filter(r => r.rating <= 3)
               .slice(0, 3);
 
+            // If no negative reviews, take the lowest-rated ones available
             if (targetReviews.length === 0) {
-              console.log(`[LinkedIn Demo Daily] ${place.name} has no negative reviews, skipping`);
+              targetReviews = reviews
+                .sort((a, b) => a.rating - b.rating)
+                .slice(0, 3);
+            }
+
+            if (targetReviews.length === 0) {
+              console.log(`[LinkedIn Demo Daily] ${place.name} has no reviews at all, skipping`);
               continue;
             }
 
