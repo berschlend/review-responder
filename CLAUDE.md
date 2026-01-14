@@ -446,6 +446,16 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
 ```
 
 ### HEUTE ERLEDIGT (14.01.2026):
+- [x] **Scraper Status Dashboard** - Admin Panel zeigt alle Lead-Quellen mit Prioritaet
+  - Neuer Tab "Scraper" im Admin Panel
+  - 3 Tiers: Automatisch (Daily Outreach, Drip, Blog), Manuell High-ROI (G2, TripAdvisor, LinkedIn), Experimentell (Yelp, Agency)
+  - Status-Farben: OK (gruen), Low (gelb), Critical (rot)
+  - Copy-Button fuer Commands direkt in Clipboard
+  - `GET /api/admin/scraper-status` - Liefert alle Lead-Counts und Status
+  - `GET /api/cron/scraper-alerts` - Taegliche Email-Alerts bei kritischen Quellen
+  - **USER TODO: Cron Job "Scraper Alerts" anlegen** auf cron-job.org
+    - URL: `https://review-responder.onrender.com/api/cron/scraper-alerts?secret=mein-geheimer-cron-key-biwbqevpbACN`
+    - Schedule: `0 8 * * *` (taeglich 08:00 Berlin)
 - [x] **Outreach Emails: Preview + Demo-Link** - Bessere Conversion durch "Preview + More"
   - Problem: Tony Quach (erste Antwort!) bekam generische AI-Response ohne Business Context
   - Fix: System Prompt jetzt mit Owner Name, Industry Context, City, Rating
