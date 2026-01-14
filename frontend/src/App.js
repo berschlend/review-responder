@@ -2301,7 +2301,7 @@ const LandingPage = () => {
 
   return (
     <div>
-      <ExitIntentPopup />
+      {!user && <ExitIntentPopup />}
       <ProductHuntLaunchBanner />
 
       {/* Referral Banner */}
