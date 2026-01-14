@@ -19453,10 +19453,6 @@ const PricingPage = () => {
   const [testimonials, setTestimonials] = useState([]);
   const [expandedFaq, setExpandedFaq] = useState(null);
 
-  // Check if discount is already active in URL
-  const urlParams = new URLSearchParams(location.search);
-  const discountActive = urlParams.get('discount')?.toUpperCase() === 'EARLY50';
-
   useEffect(() => {
     // Fetch testimonials
     api
@@ -19526,36 +19522,6 @@ const PricingPage = () => {
       <div className="pricing-section">
         <div className="container">
           <div className="pricing-header">
-            {!discountActive && (
-              <Link
-                to="/pricing?discount=EARLY50"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  marginBottom: '16px',
-                  padding: '4px 10px',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '4px',
-                  color: 'var(--text-muted)',
-                  fontSize: '12px',
-                  fontWeight: '500',
-                  textDecoration: 'none',
-                  transition: 'color 0.2s, border-color 0.2s',
-                }}
-                onMouseOver={e => {
-                  e.currentTarget.style.borderColor = 'var(--text-muted)';
-                  e.currentTarget.style.color = 'var(--text-primary)';
-                }}
-                onMouseOut={e => {
-                  e.currentTarget.style.borderColor = 'var(--border-color)';
-                  e.currentTarget.style.color = 'var(--text-muted)';
-                }}
-              >
-                <Sparkles size={12} style={{ color: 'var(--primary)' }} />
-                Early Access - 50% Off
-              </Link>
-            )}
             <h1 className="pricing-title">Simple, Transparent Pricing</h1>
             <p style={{ color: 'var(--gray-600)', maxWidth: '600px', margin: '0 auto' }}>
               No hidden fees. No surprises. Choose the plan that fits your business.
