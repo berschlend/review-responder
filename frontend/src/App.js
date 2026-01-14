@@ -9059,21 +9059,21 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
         </span>
         <span
           style={{
-            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-            color: 'white',
-            fontSize: '11px',
-            fontWeight: '700',
-            padding: '4px 10px',
+            background: 'var(--green-100)',
+            color: 'var(--green-700)',
+            fontSize: '10px',
+            fontWeight: '600',
+            padding: '3px 8px',
             borderRadius: '4px',
-            boxShadow: '0 2px 4px rgba(217, 119, 6, 0.3)',
+            border: '1px solid var(--green-200)',
           }}
         >
-          ⭐ RECOMMENDED
-        </span>
-        <span style={{ fontSize: '13px', color: 'var(--gray-600)' }}>
-          Enter keywords, AI generates a profile
+          Recommended
         </span>
       </div>
+      <p style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '10px', marginTop: '0' }}>
+        Enter a few keywords and AI generates a profile you can edit
+      </p>
 
       {/* Input + Button inline - clean design */}
       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
