@@ -495,6 +495,14 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
 ```
 
 ### HEUTE ERLEDIGT (14.01.2026):
+- [x] **Auto Business Context für Demos** - AI-Antworten in Demos jetzt viel qualitätiver
+  - Neue Funktion `scrapeBusinessContext()` - Scraped About/Team/Impressum Pages
+  - Extrahiert: Business Description, Owner Name, Founded Year, Specialties
+  - Neue Funktion `extractMentionedItems()` - Findet populäre Items aus positiven Reviews
+  - Automatische Custom Instructions basierend auf Lead-Daten (City flair, Owner sign-off, etc.)
+  - Automatischer Business Context aus Website + Review-Analyse
+  - `generateDemoResponse()` erweitert um businessContext + customInstructions Parameter
+  - Graceful Fallback wenn Website-Scraping fehlschlägt
 - [x] **Landing Pages "20 Free/Month" Konsistenz** - Alle 48+ Landing Pages vereinheitlicht
   - Alle Hero-Badges von "20 Free Responses" → "20 Free/Month" geändert
   - Email-Capture funktioniert bereits (speichert in `email_captures` → 4-Email Drip)
