@@ -415,6 +415,45 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 > Damit lässt sich viel mehr automatisieren. Die Markierung dient nur
 > dazu, dass User bei parallelen Claudes den Überblick behält.
 
+### Chrome MCP: Cron Jobs selbst anlegen
+
+**Claude kann selbstständig Cron Jobs auf cron-job.org anlegen/ändern!**
+
+**Dashboard:** https://console.cron-job.org/dashboard
+
+**Workflow:**
+1. `tabs_context_mcp` aufrufen (Tab-IDs holen)
+2. `navigate` zu cron-job.org Dashboard
+3. Login falls nötig (Credentials in `.claude/secrets.local`)
+4. "CREATE CRONJOB" Button klicken
+5. Formular ausfüllen:
+   - **Title:** Job-Name (z.B. "Demo Follow-Up")
+   - **URL:** Backend-Endpoint mit Secret
+   - **Schedule:** ERWEITERT Tab → Cron Expression eingeben
+6. "CREATE" klicken
+
+**Typische Cron Expressions:**
+| Expression | Bedeutung |
+|------------|-----------|
+| `0 9 * * *` | Täglich 09:00 |
+| `0 12 * * *` | Täglich 12:00 |
+| `*/15 * * * *` | Alle 15 Minuten |
+| `0 9 * * 1` | Montags 09:00 |
+| `0 6 * * 1,3,5` | Mo/Mi/Fr 06:00 |
+
+**Standard URL-Format:**
+```
+https://review-responder.onrender.com/api/cron/ENDPOINT?secret=CRON_SECRET
+```
+
+**CRON_SECRET:** Siehe `.claude/secrets.local` → `CRON_SECRET`
+
+**Wichtig:**
+- Immer ERWEITERT Tab für Cron Expression (nicht Simple Schedule)
+- Timezone: Europe/Berlin (ist Standard)
+- Request Method: GET (außer explizit anders)
+- Nach Anlegen: Screenshot machen zur Bestätigung
+
 ### Chrome MCP Lead Scraper (WIP)
 
 **Status:** ~25 Leads gesammelt, Session 13.01.2026 abgeschlossen

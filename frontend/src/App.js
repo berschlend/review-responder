@@ -3740,6 +3740,10 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
         businessName: businessName.trim(),
         businessType: finalBusinessType,
       });
+      // Save keywords to localStorage so Settings can pre-fill them
+      if (keywords.trim()) {
+        localStorage.setItem('onboardingKeywords', keywords.trim());
+      }
       setCurrentStep(3);
     } catch (error) {
       console.error('Failed to save business profile:', error);
@@ -8959,6 +8963,17 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
   const [generating, setGenerating] = useState(false);
   const [generated, setGenerated] = useState('');
   const [remaining, setRemaining] = useState(null);
+
+  // Load keywords from onboarding if available (only for context field, only if no current value)
+  useEffect(() => {
+    if (field === 'context' && !currentValue) {
+      const savedKeywords = localStorage.getItem('onboardingKeywords');
+      if (savedKeywords) {
+        setKeywords(savedKeywords);
+        localStorage.removeItem('onboardingKeywords'); // Use only once
+      }
+    }
+  }, [field, currentValue]);
 
   const handleGenerate = async () => {
     if (!keywords.trim()) {
