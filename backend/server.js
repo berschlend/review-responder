@@ -12513,6 +12513,482 @@ P.S. Use code DEMOFOLLOWUP for 30% off if you upgrade within 48h.`;
   }
 });
 
+// ============================================================================
+// MAGIC LINK AUTHENTICATION SYSTEM
+// Auto-creates accounts and logs in users without password
+// Added 14.01.2026: Part of Re-Engagement for hot leads
+// ============================================================================
+
+// GET /api/auth/magic-login/:token - Verify magic link and login user
+app.get('/api/auth/magic-login/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    // Create magic_links table if not exists
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS magic_links (
+        id SERIAL PRIMARY KEY,
+        token TEXT UNIQUE NOT NULL,
+        email TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        used_at TIMESTAMP,
+        expires_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP + INTERVAL '7 days')
+      )
+    `);
+
+    // Find and validate magic link
+    const magicLink = await dbGet(
+      `SELECT * FROM magic_links
+       WHERE token = $1
+       AND used_at IS NULL
+       AND expires_at > NOW()`,
+      [token]
+    );
+
+    if (!magicLink) {
+      // Redirect to login with error
+      return res.redirect('https://tryreviewresponder.com/login?error=invalid_magic_link');
+    }
+
+    // Check if user exists
+    let user = await dbGet('SELECT * FROM users WHERE LOWER(email) = LOWER($1)', [magicLink.email]);
+
+    if (!user) {
+      // Auto-create user account
+      const randomPassword = crypto.randomBytes(32).toString('hex');
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+      // Get business info from outreach leads if available
+      const leadInfo = await dbGet(
+        'SELECT business_name, city FROM outreach_leads WHERE LOWER(email) = LOWER($1)',
+        [magicLink.email]
+      );
+
+      const result = await dbQuery(
+        `INSERT INTO users (email, password, business_name, subscription_plan, responses_limit, email_verified)
+         VALUES ($1, $2, $3, 'free', 20, true)
+         RETURNING *`,
+        [magicLink.email, hashedPassword, leadInfo?.business_name || null]
+      );
+      user = result.rows ? result.rows[0] : result;
+
+      console.log(`🔮 Magic link auto-created user: ${magicLink.email}`);
+    }
+
+    // Mark magic link as used
+    await dbQuery('UPDATE magic_links SET used_at = NOW() WHERE id = $1', [magicLink.id]);
+
+    // Generate JWT token
+    const jwtToken = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
+      expiresIn: '7d',
+    });
+
+    // Redirect to dashboard with token
+    res.redirect(`https://tryreviewresponder.com/magic-login?token=${jwtToken}`);
+  } catch (error) {
+    console.error('Magic login error:', error);
+    res.redirect('https://tryreviewresponder.com/login?error=magic_login_failed');
+  }
+});
+
+// Helper function to generate magic link token
+function generateMagicLinkToken() {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+// Helper function to create magic link for email
+async function createMagicLink(email) {
+  // Create table if not exists
+  await dbQuery(`
+    CREATE TABLE IF NOT EXISTS magic_links (
+      id SERIAL PRIMARY KEY,
+      token TEXT UNIQUE NOT NULL,
+      email TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      used_at TIMESTAMP,
+      expires_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP + INTERVAL '7 days')
+    )
+  `);
+
+  const token = generateMagicLinkToken();
+  await dbQuery(
+    `INSERT INTO magic_links (token, email) VALUES ($1, $2)`,
+    [token, email]
+  );
+
+  return `https://review-responder.onrender.com/api/auth/magic-login/${token}`;
+}
+
+// ============================================================================
+// RE-ENGAGEMENT CRON - Magic links for clickers who haven't registered
+// ============================================================================
+
+// GET /api/cron/reengage-clickers - Send magic login links to hot leads
+app.all('/api/cron/reengage-clickers', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!brevoApi && !resend) {
+    return res.status(500).json({ error: 'Email service not configured' });
+  }
+
+  try {
+    // Create reengagement tracking table if not exists
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS reengagement_emails (
+        id SERIAL PRIMARY KEY,
+        email TEXT NOT NULL,
+        sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        magic_link_token TEXT,
+        clicked_at TIMESTAMP,
+        registered_at TIMESTAMP
+      )
+    `);
+
+    // Find clickers who:
+    // 1. Clicked in last 14 days
+    // 2. NOT registered as users
+    // 3. Have received followup (clicker_followups exists)
+    // 4. Have NOT received reengagement email yet
+    const hotLeads = await dbAll(`
+      SELECT DISTINCT
+        c.email,
+        c.clicked_at,
+        l.business_name,
+        l.contact_name,
+        l.city,
+        f.demo_token
+      FROM outreach_clicks c
+      LEFT JOIN users u ON LOWER(u.email) = LOWER(c.email)
+      LEFT JOIN outreach_leads l ON LOWER(l.email) = LOWER(c.email)
+      LEFT JOIN clicker_followups f ON LOWER(f.email) = LOWER(c.email)
+      LEFT JOIN reengagement_emails r ON LOWER(r.email) = LOWER(c.email)
+      WHERE u.id IS NULL
+        AND c.clicked_at > NOW() - INTERVAL '14 days'
+        AND f.id IS NOT NULL
+        AND r.id IS NULL
+        ${getTestEmailExcludeClause('c.email')}
+      ORDER BY c.clicked_at DESC
+      LIMIT 10
+    `);
+
+    if (hotLeads.length === 0) {
+      return res.json({
+        success: true,
+        sent: 0,
+        message: 'No hot leads ready for re-engagement',
+      });
+    }
+
+    let sent = 0;
+    const results = [];
+
+    for (const lead of hotLeads) {
+      try {
+        // Generate magic link
+        const magicLinkUrl = await createMagicLink(lead.email);
+        const magicToken = magicLinkUrl.split('/').pop();
+
+        const businessName = lead.business_name || 'your business';
+        const city = lead.city || '';
+        const demoUrl = lead.demo_token ? `https://tryreviewresponder.com/demo/${lead.demo_token}` : null;
+
+        // Detect German-speaking cities
+        const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Brüssel', 'Munich', 'Cologne', 'Vienna', 'Zurich', 'Geneva'];
+        const isGerman = germanCities.some(gc => city.toLowerCase().includes(gc.toLowerCase()));
+
+        let subject, body;
+
+        if (isGerman) {
+          subject = `Dein Account ist bereit – kein Passwort nötig`;
+          body = `Hey,
+
+ich hab gesehen, dass du ReviewResponder angeschaut hast.
+
+Ich hab dir einen Account angelegt – kein Passwort nötig, einfach klicken:
+
+${magicLinkUrl}
+
+${demoUrl ? `Deine personalisierte Demo ist immer noch hier: ${demoUrl}` : ''}
+
+20 Antworten/Monat sind kostenlos. Einfach loslegen.
+
+Grüße,
+Berend
+
+P.S. Der Link funktioniert 7 Tage.`;
+        } else {
+          subject = `Your account is ready – no password needed`;
+          body = `Hey,
+
+I noticed you checked out ReviewResponder.
+
+I set up an account for you – no password needed, just click:
+
+${magicLinkUrl}
+
+${demoUrl ? `Your personalized demo is still here: ${demoUrl}` : ''}
+
+20 responses/month are free. Just start using it.
+
+Best,
+Berend
+
+P.S. This link works for 7 days.`;
+        }
+
+        // Send via Brevo (higher deliverability for outreach)
+        if (brevoApi) {
+          await brevoApi.sendTransacEmail({
+            sender: { name: 'Berend from ReviewResponder', email: 'outreach@tryreviewresponder.com' },
+            to: [{ email: lead.email }],
+            subject: subject,
+            textContent: body,
+            tags: ['reengagement', 'magic_link'],
+          });
+        } else {
+          await resend.emails.send({
+            from: OUTREACH_FROM_EMAIL,
+            to: lead.email,
+            subject: subject,
+            text: body,
+            tags: [{ name: 'campaign', value: 'reengagement' }],
+          });
+        }
+
+        // Track reengagement email
+        await dbQuery(
+          `INSERT INTO reengagement_emails (email, magic_link_token) VALUES ($1, $2)`,
+          [lead.email, magicToken]
+        );
+
+        sent++;
+        results.push({
+          email: lead.email,
+          business: businessName,
+          magic_link: magicLinkUrl,
+        });
+
+        // Rate limit
+        await new Promise(r => setTimeout(r, 500));
+      } catch (err) {
+        console.error(`Failed to send reengagement to ${lead.email}:`, err.message);
+      }
+    }
+
+    res.json({
+      success: true,
+      sent: sent,
+      reengagements_sent: results,
+      message: sent > 0 ? `Sent ${sent} magic link re-engagement emails!` : 'No emails sent',
+    });
+  } catch (error) {
+    console.error('Reengagement cron error:', error);
+    res.status(500).json({ error: 'Failed to send reengagement emails' });
+  }
+});
+
+// ============================================================================
+// DEMO EXPIRATION CRON - Create urgency with expiring demos
+// ============================================================================
+
+// GET /api/cron/demo-expiration-emails - Send urgency emails for expiring demos
+app.all('/api/cron/demo-expiration-emails', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!brevoApi && !resend) {
+    return res.status(500).json({ error: 'Email service not configured' });
+  }
+
+  try {
+    // Add expiration tracking columns if not exist
+    try {
+      await dbQuery(`ALTER TABLE demo_generations ADD COLUMN IF NOT EXISTS expiration_email_day3 BOOLEAN DEFAULT false`);
+      await dbQuery(`ALTER TABLE demo_generations ADD COLUMN IF NOT EXISTS expiration_email_day5 BOOLEAN DEFAULT false`);
+      await dbQuery(`ALTER TABLE demo_generations ADD COLUMN IF NOT EXISTS expired BOOLEAN DEFAULT false`);
+    } catch (e) { /* Columns might already exist */ }
+
+    const results = {
+      day3: [],
+      day5: [],
+      expired: [],
+    };
+
+    // Day 3 emails - "Your demo expires in 4 days"
+    const day3Demos = await dbAll(`
+      SELECT d.*, l.email, l.contact_name, l.city
+      FROM demo_generations d
+      LEFT JOIN outreach_leads l ON d.lead_id = l.id
+      WHERE d.created_at BETWEEN NOW() - INTERVAL '4 days' AND NOW() - INTERVAL '3 days'
+        AND d.converted_at IS NULL
+        AND d.expiration_email_day3 = false
+        AND l.email IS NOT NULL
+        ${getTestEmailExcludeClause('l.email')}
+      LIMIT 20
+    `);
+
+    for (const demo of day3Demos) {
+      try {
+        const demoUrl = `https://tryreviewresponder.com/demo/${demo.demo_token}`;
+        const businessName = demo.business_name || 'your business';
+        const city = demo.city || '';
+
+        const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Munich', 'Cologne', 'Vienna', 'Zurich'];
+        const isGerman = germanCities.some(gc => city.toLowerCase().includes(gc.toLowerCase()));
+
+        let subject, body;
+        if (isGerman) {
+          subject = `Deine ${businessName} Demo läuft in 4 Tagen ab`;
+          body = `Hey,
+
+deine personalisierte Demo für ${businessName} läuft in 4 Tagen ab.
+
+Schau sie dir nochmal an bevor sie weg ist:
+${demoUrl}
+
+Falls sie dir gefällt: 20 Antworten/Monat kostenlos.
+
+Grüße,
+Berend`;
+        } else {
+          subject = `Your ${businessName} demo expires in 4 days`;
+          body = `Hey,
+
+Your personalized demo for ${businessName} expires in 4 days.
+
+Check it out before it's gone:
+${demoUrl}
+
+If you like it: 20 responses/month are free.
+
+Best,
+Berend`;
+        }
+
+        if (brevoApi) {
+          await brevoApi.sendTransacEmail({
+            sender: { name: 'Berend from ReviewResponder', email: 'outreach@tryreviewresponder.com' },
+            to: [{ email: demo.email }],
+            subject: subject,
+            textContent: body,
+            tags: ['demo_expiration', 'day3'],
+          });
+        }
+
+        await dbQuery('UPDATE demo_generations SET expiration_email_day3 = true WHERE id = $1', [demo.id]);
+        results.day3.push({ email: demo.email, business: businessName });
+        await new Promise(r => setTimeout(r, 300));
+      } catch (e) {
+        console.error(`Day 3 email failed for ${demo.email}:`, e.message);
+      }
+    }
+
+    // Day 5 emails - "Last chance - demo expires tomorrow"
+    const day5Demos = await dbAll(`
+      SELECT d.*, l.email, l.contact_name, l.city
+      FROM demo_generations d
+      LEFT JOIN outreach_leads l ON d.lead_id = l.id
+      WHERE d.created_at BETWEEN NOW() - INTERVAL '6 days' AND NOW() - INTERVAL '5 days'
+        AND d.converted_at IS NULL
+        AND d.expiration_email_day5 = false
+        AND l.email IS NOT NULL
+        ${getTestEmailExcludeClause('l.email')}
+      LIMIT 20
+    `);
+
+    for (const demo of day5Demos) {
+      try {
+        const demoUrl = `https://tryreviewresponder.com/demo/${demo.demo_token}`;
+        const businessName = demo.business_name || 'your business';
+        const city = demo.city || '';
+
+        const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Munich', 'Cologne', 'Vienna', 'Zurich'];
+        const isGerman = germanCities.some(gc => city.toLowerCase().includes(gc.toLowerCase()));
+
+        let subject, body;
+        if (isGerman) {
+          subject = `Letzte Chance: ${businessName} Demo läuft MORGEN ab`;
+          body = `Hey,
+
+das ist die letzte Erinnerung.
+
+Deine personalisierte Demo für ${businessName} läuft MORGEN ab:
+${demoUrl}
+
+Danach sind die AI-generierten Antworten für deine echten Bewertungen weg.
+
+Falls du sie behalten willst: Einfach kostenlos registrieren.
+
+Grüße,
+Berend`;
+        } else {
+          subject = `Last chance: ${businessName} demo expires TOMORROW`;
+          body = `Hey,
+
+This is the final reminder.
+
+Your personalized demo for ${businessName} expires TOMORROW:
+${demoUrl}
+
+After that, the AI-generated responses for your real reviews will be gone.
+
+If you want to keep them: Just sign up for free.
+
+Best,
+Berend`;
+        }
+
+        if (brevoApi) {
+          await brevoApi.sendTransacEmail({
+            sender: { name: 'Berend from ReviewResponder', email: 'outreach@tryreviewresponder.com' },
+            to: [{ email: demo.email }],
+            subject: subject,
+            textContent: body,
+            tags: ['demo_expiration', 'day5'],
+          });
+        }
+
+        await dbQuery('UPDATE demo_generations SET expiration_email_day5 = true WHERE id = $1', [demo.id]);
+        results.day5.push({ email: demo.email, business: businessName });
+        await new Promise(r => setTimeout(r, 300));
+      } catch (e) {
+        console.error(`Day 5 email failed for ${demo.email}:`, e.message);
+      }
+    }
+
+    // Mark demos as expired after 7 days
+    const expiredResult = await dbQuery(`
+      UPDATE demo_generations
+      SET expired = true
+      WHERE created_at < NOW() - INTERVAL '7 days'
+        AND expired = false
+        AND converted_at IS NULL
+      RETURNING id, business_name
+    `);
+
+    if (expiredResult.rows) {
+      results.expired = expiredResult.rows.map(r => r.business_name);
+    }
+
+    res.json({
+      success: true,
+      day3_sent: results.day3.length,
+      day5_sent: results.day5.length,
+      demos_expired: results.expired.length,
+      details: results,
+      message: `Sent ${results.day3.length} day-3 emails, ${results.day5.length} day-5 emails, expired ${results.expired.length} demos`,
+    });
+  } catch (error) {
+    console.error('Demo expiration cron error:', error);
+    res.status(500).json({ error: 'Failed to process demo expirations' });
+  }
+});
+
 // ====================================================================================
 // NIGHT AUTOMATION SYSTEM - Runs autonomously 22:00-06:00 UTC
 // Added 14.01.2026: Full autonomous night loop for sales conversion optimization

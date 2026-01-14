@@ -546,7 +546,7 @@ const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, login, register, loginWithGoogle, logout, loading, updateUser, refreshUser }}
+      value={{ user, setUser, login, register, loginWithGoogle, logout, loading, updateUser, refreshUser }}
     >
       {children}
     </AuthContext.Provider>
@@ -3488,6 +3488,77 @@ const LoginPage = () => {
         <p className="auth-footer">
           Don't have an account? <Link to="/register">Sign up</Link>
         </p>
+      </div>
+    </div>
+  );
+};
+
+// Magic Login Page - Handles magic link token login
+const MagicLoginPage = () => {
+  const { setUser } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const token = searchParams.get('token');
+    const errorParam = searchParams.get('error');
+
+    if (errorParam) {
+      setError(errorParam === 'invalid_magic_link'
+        ? 'This magic link has expired or is invalid.'
+        : 'Magic link login failed. Please try again.');
+      return;
+    }
+
+    if (token) {
+      // Save token to localStorage
+      localStorage.setItem('token', token);
+
+      // Fetch user data and login
+      api.get('/auth/me')
+        .then(res => {
+          setUser(res.data.user);
+          toast.success('Welcome! Your account is ready.');
+          navigate('/dashboard');
+        })
+        .catch(err => {
+          console.error('Magic login error:', err);
+          localStorage.removeItem('token');
+          setError('Failed to authenticate. Please try again.');
+        });
+    } else {
+      setError('No login token found.');
+    }
+  }, [searchParams, navigate, setUser]);
+
+  if (error) {
+    return (
+      <div className="auth-container">
+        <div className="card auth-card" style={{ textAlign: 'center' }}>
+          <h1 className="auth-title">Magic Link Error</h1>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>{error}</p>
+          <Link to="/login" className="btn btn-primary">
+            Go to Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="auth-container">
+      <div className="card auth-card" style={{ textAlign: 'center' }}>
+        <div className="animate-spin" style={{
+          width: '40px',
+          height: '40px',
+          border: '3px solid var(--border-color)',
+          borderTopColor: 'var(--primary-500)',
+          borderRadius: '50%',
+          margin: '0 auto 20px'
+        }}></div>
+        <h1 className="auth-title">Logging you in...</h1>
+        <p style={{ color: 'var(--text-secondary)' }}>Please wait while we set up your account.</p>
       </div>
     </div>
   );
@@ -25108,6 +25179,7 @@ const AppContent = () => {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/magic-login" element={<MagicLoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
