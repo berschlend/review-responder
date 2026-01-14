@@ -13600,7 +13600,10 @@ Lines 4+: The full article content in Markdown format (start directly with conte
       .replace(/^Meta Description:\s*/i, '')
       .replace(/^Description:\s*/i, '')
       .trim();
-    const content = lines.slice(3).join('\n').trim();
+    const rawContent = lines.slice(3).join('\n').trim();
+
+    // Apply AI slop filter to clean up typical AI phrases
+    const content = cleanAISlop(rawContent);
 
     const wordCount = content.split(/\s+/).filter((w) => w.length > 0).length;
     const readTimeMinutes = Math.ceil(wordCount / 200);

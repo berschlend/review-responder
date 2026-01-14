@@ -11129,6 +11129,11 @@ const BlogArticlePage = () => {
         // Bold and italic
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        // Links [text](url)
+        .replace(
+          /\[([^\]]+)\]\(([^)]+)\)/g,
+          '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">$1</a>'
+        )
         // List items (both - and * with optional spaces)
         .replace(
           /^[*-]\s+(.*$)/gm,
