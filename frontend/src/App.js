@@ -2881,9 +2881,7 @@ const PricingCards = ({ showFree = true }) => {
         '✨ 100 Smart AI responses',
         '⚡ 200 Standard responses',
         '300 total per month',
-        'Response templates',
         'CSV/PDF export',
-        'Email support',
         'Chrome Extension (all platforms)',
       ],
       buttonText: 'Subscribe',
@@ -8933,48 +8931,48 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
   }
 
   return (
-    <div
-      style={{
-        background: 'linear-gradient(135deg, var(--primary-50), #f0f7ff)',
-        border: '2px solid var(--primary-300)',
-        borderRadius: '12px',
-        padding: '20px',
-        marginBottom: '16px',
-      }}
-    >
+    <div style={{ marginBottom: '16px' }}>
+      {/* Subtle label with Step indicator */}
       <div
         style={{
           display: 'flex',
-          justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '16px',
+          gap: '8px',
+          marginBottom: '8px',
         }}
       >
         <span
           style={{
+            background: 'var(--primary-500)',
+            color: 'white',
+            fontSize: '10px',
             fontWeight: '700',
-            fontSize: '16px',
-            color: 'var(--primary-700)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
+            padding: '3px 8px',
+            borderRadius: '4px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
           }}
         >
-          <Sparkles size={20} />
-          {field === 'context' ? '✨ AI Generator - Start Here!' : '✨ AI Style Generator'}
+          Step 1
         </span>
-        <button
-          type="button"
-          onClick={() => setShowGenerator(false)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
-        >
-          <X size={16} style={{ color: 'var(--gray-500)' }} />
-        </button>
+        <span style={{ fontSize: '13px', color: 'var(--gray-600)' }}>
+          Enter keywords, AI generates a profile
+        </span>
       </div>
 
-      {/* Input + Button inline for better visibility */}
-      <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch' }}>
-        <div style={{ flex: 1 }}>
+      {/* Input + Button inline - clean design */}
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div style={{ flex: 1, position: 'relative' }}>
+          <Sparkles
+            size={16}
+            style={{
+              position: 'absolute',
+              left: '12px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'var(--primary-400)',
+            }}
+          />
           <input
             type="text"
             className="form-input"
@@ -8987,10 +8985,9 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
                 : 'e.g. friendly, short, with greeting, casual'
             }
             style={{
-              fontSize: '15px',
-              padding: '14px 16px',
-              height: '100%',
-              borderColor: 'var(--primary-300)',
+              fontSize: '14px',
+              paddingLeft: '36px',
+              borderColor: 'var(--primary-200)',
             }}
           />
         </div>
@@ -8998,47 +8995,28 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
           type="button"
           onClick={handleGenerate}
           disabled={generating || !keywords.trim()}
+          className="btn btn-primary"
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            padding: '14px 24px',
-            background: generating
-              ? 'var(--gray-400)'
-              : 'linear-gradient(135deg, var(--primary-500), var(--primary-600))',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: generating || !keywords.trim() ? 'not-allowed' : 'pointer',
-            fontSize: '15px',
-            fontWeight: '600',
-            color: 'white',
+            gap: '6px',
             whiteSpace: 'nowrap',
-            boxShadow: '0 2px 8px rgba(99, 102, 241, 0.3)',
+            opacity: generating || !keywords.trim() ? 0.6 : 1,
           }}
         >
           {generating ? (
             <>
-              <Loader size={18} className="spin" />
+              <Loader size={14} className="spin" />
               Generating...
             </>
           ) : (
             <>
-              <Sparkles size={18} />
+              <Sparkles size={14} />
               Generate
             </>
           )}
         </button>
       </div>
-      <p
-        style={{
-          fontSize: '13px',
-          color: 'var(--primary-600)',
-          marginTop: '10px',
-          marginBottom: generated ? '12px' : '0',
-        }}
-      >
-        💡 Enter a few keywords, then click Generate. AI creates a profile you can edit below.
-      </p>
 
       {remaining !== null && remaining < 10 && (
         <span style={{ fontSize: '12px', color: 'var(--gray-500)', marginLeft: '8px' }}>
@@ -18719,13 +18697,11 @@ const PricingPage = () => {
     { name: 'AI Tone Options', free: true, starter: true, pro: true, unlimited: true },
     { name: '50+ Languages', free: true, starter: true, pro: true, unlimited: true },
     { name: 'Response History', free: true, starter: true, pro: true, unlimited: true },
-    { name: 'Response Templates', free: false, starter: true, pro: true, unlimited: true },
     { name: 'CSV/PDF Export', free: false, starter: true, pro: true, unlimited: true },
     { name: 'Bulk Generation (20)', free: false, starter: false, pro: true, unlimited: true },
     { name: 'Analytics Dashboard', free: false, starter: false, pro: true, unlimited: true },
     { name: 'Team Members', free: '-', starter: '-', pro: '3', unlimited: '10' },
     { name: 'API Access', free: false, starter: false, pro: false, unlimited: true },
-    { name: 'Email Support', free: true, starter: true, pro: true, unlimited: true },
     { name: 'Priority Support', free: false, starter: false, pro: true, unlimited: true },
     { name: 'Priority Feature Requests', free: false, starter: false, pro: false, unlimited: true },
   ];
