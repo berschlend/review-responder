@@ -21735,6 +21735,9 @@ const AdminPage = () => {
       if (activeAdminTab === 'costs' && !costsData) {
         loadCostsData();
       }
+      if (activeAdminTab === 'usage' && !usageData) {
+        loadUsageData();
+      }
     }
   }, [activeAdminTab, isAuthenticated, adminKey]);
 
