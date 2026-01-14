@@ -1,0 +1,1237 @@
+{
+  "session": {
+    "type": "overnight-growth",
+    "target_hours": 16,
+    "min_tasks_before_stop": 200,
+    "completion_promise": "OVERNIGHT_GROWTH_COMPLETE_ALL_200_TASKS_DONE",
+    "created": "2026-01-14"
+  },
+  "phases": [
+    {
+      "name": "Phase 1: Industry Landing Pages (50 pages)",
+      "priority": 1,
+      "tasks": [
+        {
+          "id": 1,
+          "task": "Create /restaurant-review-response landing page with full SEO",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 2,
+          "task": "Create /hotel-review-response landing page with full SEO",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 3,
+          "task": "Create /cafe-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 4,
+          "task": "Create /bar-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 5,
+          "task": "Create /salon-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 6,
+          "task": "Create /spa-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 7,
+          "task": "Create /gym-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 8,
+          "task": "Create /dentist-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 9,
+          "task": "Create /doctor-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 10,
+          "task": "Create /veterinarian-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 11,
+          "task": "Create /lawyer-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 12,
+          "task": "Create /accountant-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 13,
+          "task": "Create /plumber-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 14,
+          "task": "Create /electrician-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 15,
+          "task": "Create /mechanic-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 16,
+          "task": "Create /real-estate-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 17,
+          "task": "Create /insurance-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 18,
+          "task": "Create /bank-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 19,
+          "task": "Create /car-dealer-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 20,
+          "task": "Create /clothing-store-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 21,
+          "task": "Create /jewelry-store-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 22,
+          "task": "Create /florist-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 23,
+          "task": "Create /bakery-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 24,
+          "task": "Create /pizza-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 25,
+          "task": "Create /sushi-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 26,
+          "task": "Create /steakhouse-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 27,
+          "task": "Create /brewery-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 28,
+          "task": "Create /winery-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 29,
+          "task": "Create /nightclub-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 30,
+          "task": "Create /daycare-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 31,
+          "task": "Create /school-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 32,
+          "task": "Create /university-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 33,
+          "task": "Create /tutoring-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 34,
+          "task": "Create /moving-company-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 35,
+          "task": "Create /cleaning-service-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 36,
+          "task": "Create /landscaping-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 37,
+          "task": "Create /roofing-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 38,
+          "task": "Create /hvac-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 39,
+          "task": "Create /pest-control-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 40,
+          "task": "Create /photography-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 41,
+          "task": "Create /wedding-venue-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 42,
+          "task": "Create /event-planner-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 43,
+          "task": "Create /catering-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 44,
+          "task": "Create /pet-grooming-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 45,
+          "task": "Create /pet-boarding-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 46,
+          "task": "Create /yoga-studio-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 47,
+          "task": "Create /martial-arts-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 48,
+          "task": "Create /dance-studio-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 49,
+          "task": "Create /music-school-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        },
+        {
+          "id": 50,
+          "task": "Create /art-gallery-review-response landing page",
+          "status": "pending",
+          "type": "landing_page"
+        }
+      ]
+    },
+    {
+      "name": "Phase 2: City Landing Pages (50 pages)",
+      "priority": 2,
+      "tasks": [
+        {
+          "id": 51,
+          "task": "Create /review-response-new-york landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 52,
+          "task": "Create /review-response-los-angeles landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 53,
+          "task": "Create /review-response-chicago landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 54,
+          "task": "Create /review-response-houston landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 55,
+          "task": "Create /review-response-phoenix landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 56,
+          "task": "Create /review-response-philadelphia landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 57,
+          "task": "Create /review-response-san-antonio landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 58,
+          "task": "Create /review-response-san-diego landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 59,
+          "task": "Create /review-response-dallas landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 60,
+          "task": "Create /review-response-austin landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 61,
+          "task": "Create /review-response-miami landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 62,
+          "task": "Create /review-response-denver landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 63,
+          "task": "Create /review-response-seattle landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 64,
+          "task": "Create /review-response-boston landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 65,
+          "task": "Create /review-response-atlanta landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 66,
+          "task": "Create /review-response-san-francisco landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 67,
+          "task": "Create /review-response-nashville landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 68,
+          "task": "Create /review-response-portland landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 69,
+          "task": "Create /review-response-las-vegas landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 70,
+          "task": "Create /review-response-detroit landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 71,
+          "task": "Create /review-response-berlin landing page (German)",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 72,
+          "task": "Create /review-response-munich landing page (German)",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 73,
+          "task": "Create /review-response-hamburg landing page (German)",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 74,
+          "task": "Create /review-response-frankfurt landing page (German)",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 75,
+          "task": "Create /review-response-cologne landing page (German)",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 76,
+          "task": "Create /review-response-vienna landing page (German)",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 77,
+          "task": "Create /review-response-zurich landing page (German)",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 78,
+          "task": "Create /review-response-london landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 79,
+          "task": "Create /review-response-manchester landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 80,
+          "task": "Create /review-response-birmingham landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 81,
+          "task": "Create /review-response-toronto landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 82,
+          "task": "Create /review-response-vancouver landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 83,
+          "task": "Create /review-response-montreal landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 84,
+          "task": "Create /review-response-sydney landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 85,
+          "task": "Create /review-response-melbourne landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 86,
+          "task": "Create /review-response-paris landing page (French)",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 87,
+          "task": "Create /review-response-amsterdam landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 88,
+          "task": "Create /review-response-madrid landing page (Spanish)",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 89,
+          "task": "Create /review-response-barcelona landing page (Spanish)",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 90,
+          "task": "Create /review-response-rome landing page (Italian)",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 91,
+          "task": "Create /review-response-milan landing page (Italian)",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 92,
+          "task": "Create /review-response-tokyo landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 93,
+          "task": "Create /review-response-singapore landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 94,
+          "task": "Create /review-response-hong-kong landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 95,
+          "task": "Create /review-response-dubai landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 96,
+          "task": "Create /review-response-mexico-city landing page (Spanish)",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 97,
+          "task": "Create /review-response-sao-paulo landing page (Portuguese)",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 98,
+          "task": "Create /review-response-buenos-aires landing page (Spanish)",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 99,
+          "task": "Create /review-response-cape-town landing page",
+          "status": "pending",
+          "type": "city_page"
+        },
+        {
+          "id": 100,
+          "task": "Create /review-response-johannesburg landing page",
+          "status": "pending",
+          "type": "city_page"
+        }
+      ]
+    },
+    {
+      "name": "Phase 3: Competitor Comparison Pages (20 pages)",
+      "priority": 3,
+      "tasks": [
+        {
+          "id": 101,
+          "task": "Create /reviewresponder-vs-birdeye comparison page",
+          "status": "pending",
+          "type": "comparison"
+        },
+        {
+          "id": 102,
+          "task": "Create /reviewresponder-vs-podium comparison page",
+          "status": "pending",
+          "type": "comparison"
+        },
+        {
+          "id": 103,
+          "task": "Create /reviewresponder-vs-yext comparison page",
+          "status": "pending",
+          "type": "comparison"
+        },
+        {
+          "id": 104,
+          "task": "Create /reviewresponder-vs-reputation comparison page",
+          "status": "pending",
+          "type": "comparison"
+        },
+        {
+          "id": 105,
+          "task": "Create /reviewresponder-vs-nicejob comparison page",
+          "status": "pending",
+          "type": "comparison"
+        },
+        {
+          "id": 106,
+          "task": "Create /reviewresponder-vs-grade-us comparison page",
+          "status": "pending",
+          "type": "comparison"
+        },
+        {
+          "id": 107,
+          "task": "Create /reviewresponder-vs-reviewtrackers comparison page",
+          "status": "pending",
+          "type": "comparison"
+        },
+        {
+          "id": 108,
+          "task": "Create /reviewresponder-vs-trustpilot comparison page",
+          "status": "pending",
+          "type": "comparison"
+        },
+        {
+          "id": 109,
+          "task": "Create /reviewresponder-vs-chatgpt comparison page",
+          "status": "pending",
+          "type": "comparison"
+        },
+        {
+          "id": 110,
+          "task": "Create /reviewresponder-vs-jasper comparison page",
+          "status": "pending",
+          "type": "comparison"
+        },
+        {
+          "id": 111,
+          "task": "Create /best-review-response-tools-2026 listicle page",
+          "status": "pending",
+          "type": "comparison"
+        },
+        {
+          "id": 112,
+          "task": "Create /birdeye-alternative-free page",
+          "status": "pending",
+          "type": "comparison"
+        },
+        {
+          "id": 113,
+          "task": "Create /podium-alternative-cheaper page",
+          "status": "pending",
+          "type": "comparison"
+        },
+        {
+          "id": 114,
+          "task": "Create /review-response-software-comparison page",
+          "status": "pending",
+          "type": "comparison"
+        },
+        {
+          "id": 115,
+          "task": "Create /ai-review-response-generator-comparison page",
+          "status": "pending",
+          "type": "comparison"
+        },
+        {
+          "id": 116,
+          "task": "Create /free-review-response-tools page",
+          "status": "pending",
+          "type": "comparison"
+        },
+        {
+          "id": 117,
+          "task": "Create /review-management-software-for-small-business page",
+          "status": "pending",
+          "type": "comparison"
+        },
+        {
+          "id": 118,
+          "task": "Create /best-google-review-response-tool page",
+          "status": "pending",
+          "type": "comparison"
+        },
+        {
+          "id": 119,
+          "task": "Create /best-yelp-review-response-tool page",
+          "status": "pending",
+          "type": "comparison"
+        },
+        {
+          "id": 120,
+          "task": "Create /review-response-roi-calculator interactive page",
+          "status": "pending",
+          "type": "comparison"
+        }
+      ]
+    },
+    {
+      "name": "Phase 4: Blog Posts (40 posts)",
+      "priority": 4,
+      "tasks": [
+        {
+          "id": 121,
+          "task": "Write blog: 'How to Respond to Negative Reviews: Complete Guide'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 122,
+          "task": "Write blog: '50 Review Response Templates for Any Business'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 123,
+          "task": "Write blog: 'Why Responding to Reviews Increases Revenue'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 124,
+          "task": "Write blog: 'Google Review Response Best Practices 2026'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 125,
+          "task": "Write blog: 'How to Handle Fake Reviews'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 126,
+          "task": "Write blog: 'Review Response Time: Why Speed Matters'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 127,
+          "task": "Write blog: 'AI vs Human Review Responses: Which is Better?'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 128,
+          "task": "Write blog: 'How Restaurants Should Respond to Bad Reviews'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 129,
+          "task": "Write blog: 'Hotel Review Response Examples That Work'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 130,
+          "task": "Write blog: 'Yelp Review Response Strategy Guide'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 131,
+          "task": "Write blog: 'TripAdvisor Review Response Best Practices'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 132,
+          "task": "Write blog: 'How to Get More Google Reviews'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 133,
+          "task": "Write blog: 'Review Management for Multi-Location Businesses'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 134,
+          "task": "Write blog: 'The Psychology of Review Responses'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 135,
+          "task": "Write blog: 'Review Response Mistakes to Avoid'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 136,
+          "task": "Write blog: 'How Long Should a Review Response Be?'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 137,
+          "task": "Write blog: 'Responding to 1-Star Reviews: A Guide'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 138,
+          "task": "Write blog: 'Responding to 5-Star Reviews: Best Practices'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 139,
+          "task": "Write blog: 'Review Response Tone: Professional vs Friendly'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 140,
+          "task": "Write blog: 'How to Turn Negative Reviews into Opportunities'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 141,
+          "task": "Write blog: 'Review Response Automation: Pros and Cons'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 142,
+          "task": "Write blog: 'Local SEO and Review Responses'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 143,
+          "task": "Write blog: 'Review Response for E-Commerce Businesses'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 144,
+          "task": "Write blog: 'Healthcare Review Response Compliance Guide'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 145,
+          "task": "Write blog: 'Legal Industry Review Response Guide'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 146,
+          "task": "Write blog: 'Automotive Review Response Best Practices'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 147,
+          "task": "Write blog: 'Salon and Spa Review Response Examples'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 148,
+          "task": "Write blog: 'Fitness Industry Review Response Guide'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 149,
+          "task": "Write blog: 'Real Estate Review Response Templates'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 150,
+          "task": "Write blog: 'Review Response ROI: Measuring Success'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 151,
+          "task": "Write blog: 'German Reviews: How to Respond in German'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 152,
+          "task": "Write blog: 'French Reviews: Response Guide'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 153,
+          "task": "Write blog: 'Spanish Reviews: Response Templates'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 154,
+          "task": "Write blog: 'Review Response for Franchises'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 155,
+          "task": "Write blog: 'Responding to Employee Reviews on Glassdoor'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 156,
+          "task": "Write blog: 'App Store Review Response Guide'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 157,
+          "task": "Write blog: 'Amazon Review Response for Sellers'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 158,
+          "task": "Write blog: 'Facebook Review Response Best Practices'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 159,
+          "task": "Write blog: 'Booking.com Review Response Guide'",
+          "status": "pending",
+          "type": "blog"
+        },
+        {
+          "id": 160,
+          "task": "Write blog: 'Airbnb Host Review Response Templates'",
+          "status": "pending",
+          "type": "blog"
+        }
+      ]
+    },
+    {
+      "name": "Phase 5: SEO Optimization (40 tasks)",
+      "priority": 5,
+      "tasks": [
+        {
+          "id": 161,
+          "task": "Add Schema.org markup to all landing pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 162,
+          "task": "Create XML sitemap with all new pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 163,
+          "task": "Add internal linking between all landing pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 164,
+          "task": "Optimize meta titles for all pages (under 60 chars)",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 165,
+          "task": "Optimize meta descriptions for all pages (under 160 chars)",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 166,
+          "task": "Add Open Graph tags to all pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 167,
+          "task": "Add Twitter Card tags to all pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 168,
+          "task": "Create robots.txt with all new routes",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 169,
+          "task": "Add canonical URLs to all pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 170,
+          "task": "Add hreflang tags for multi-language pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 171,
+          "task": "Optimize images with alt text on all pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 172,
+          "task": "Add FAQ Schema to all landing pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 173,
+          "task": "Add LocalBusiness Schema where relevant",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 174,
+          "task": "Add Product Schema for pricing pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 175,
+          "task": "Add BreadcrumbList Schema to all pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 176,
+          "task": "Optimize page load speed for all new pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        { "id": 177, "task": "Add lazy loading for images", "status": "pending", "type": "seo" },
+        {
+          "id": 178,
+          "task": "Minify CSS and JS for new pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 179,
+          "task": "Add preconnect hints for external resources",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 180,
+          "task": "Create 404 page with helpful navigation",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 181,
+          "task": "Add structured data testing for all pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 182,
+          "task": "Create blog category pages for SEO",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 183,
+          "task": "Add author pages for blog posts",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 184,
+          "task": "Create industry index page linking all industry pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 185,
+          "task": "Create city index page linking all city pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 186,
+          "task": "Add related posts section to blog posts",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 187,
+          "task": "Add table of contents to long blog posts",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 188,
+          "task": "Optimize heading hierarchy on all pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        { "id": 189, "task": "Add jump links for long pages", "status": "pending", "type": "seo" },
+        {
+          "id": 190,
+          "task": "Create comparison table component for vs pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 191,
+          "task": "Add review snippets to landing pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 192,
+          "task": "Create feature list component for landing pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 193,
+          "task": "Add CTA buttons with proper tracking",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 194,
+          "task": "Implement scroll-depth tracking",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 195,
+          "task": "Add exit-intent tracking to landing pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 196,
+          "task": "Create A/B test variants for top landing pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 197,
+          "task": "Add social proof sections to landing pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 198,
+          "task": "Create testimonial rotation component",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 199,
+          "task": "Add trust badges to all landing pages",
+          "status": "pending",
+          "type": "seo"
+        },
+        {
+          "id": 200,
+          "task": "Final SEO audit and fix any issues",
+          "status": "pending",
+          "type": "seo"
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "total_tasks": 200,
+    "completed": 0,
+    "in_progress": 0,
+    "pending": 200
+  }
+}
