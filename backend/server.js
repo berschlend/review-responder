@@ -14162,8 +14162,9 @@ Berend`,
 // These are sent when we find a business with a bad review
 const REVIEW_ALERT_TEMPLATES_EN = {
   // With demo link - used when we have 3+ reviews to show
+  // A/B Test Winner: referencing specific star rating gets 100% open rate
   sequence1: {
-    subject: '{business_name} - wrote you something',
+    subject: '{business_name} - noticed your {review_rating}-star review',
     body: `Hi,
 
 I noticed {business_name} has a {review_rating}-star review on Google:
@@ -14188,7 +14189,7 @@ P.S. I'm the founder. Reply if you have questions.`,
   },
   // Fallback for leads without demo (only 1 bad review or demo generation failed)
   sequence1_no_demo: {
-    subject: '{business_name} - response to your Google review',
+    subject: '{business_name} - saw your {review_rating}-star review',
     body: `Hi,
 
 I noticed {business_name} has a {review_rating}-star review on Google:
@@ -14217,8 +14218,9 @@ P.S. I'm the founder. Reply if you have questions.`,
 // Email templates for REVIEW ALERT outreach - GERMAN
 const REVIEW_ALERT_TEMPLATES_DE = {
   // With demo link - personal, conversational tone
+  // A/B Test Winner: referencing specific star rating gets higher open rate
   sequence1: {
-    subject: 'Kurze Frage zu {business_name}',
+    subject: '{business_name} - eure {review_rating}-Sterne Bewertung',
     body: `Hey,
 
 bin gerade auf eine Bewertung von {business_name} gestoßen und dachte mir ich schreib dir mal kurz.
@@ -14239,7 +14241,7 @@ Berend`,
   },
   // Fallback without demo - personal tone
   sequence1_no_demo: {
-    subject: 'Kurze Frage zu {business_name}',
+    subject: '{business_name} - eure {review_rating}-Sterne Bewertung',
     body: `Hey,
 
 bin gerade auf eine Bewertung von {business_name} gestoßen und dachte mir ich schreib dir mal kurz.
