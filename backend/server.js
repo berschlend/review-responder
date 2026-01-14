@@ -14419,6 +14419,265 @@ app.get('/api/admin/pipeline-health', async (req, res) => {
   }
 });
 
+// AI Health - Check if AI response generation is working
+// Used by /sales-doctor to verify product functionality
+app.get('/api/admin/ai-health', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!process.env.ADMIN_SECRET || !safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // 1. Recent AI generations
+    const generationsResult = await dbQuery(`
+      SELECT
+        COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE) as today,
+        COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '7 days') as week,
+        MAX(created_at) as last_generation
+      FROM responses
+    `);
+    const generations = generationsResult.rows[0] || {};
+
+    // 2. AI API call stats from logs
+    const apiStatsResult = await dbQuery(`
+      SELECT
+        provider,
+        COUNT(*) as calls,
+        COUNT(*) FILTER (WHERE error IS NOT NULL) as errors,
+        ROUND(AVG(EXTRACT(EPOCH FROM (completed_at - created_at)) * 1000)) as avg_latency_ms
+      FROM api_call_logs
+      WHERE created_at >= CURRENT_DATE - INTERVAL '24 hours'
+      GROUP BY provider
+    `);
+    const apiStats = apiStatsResult.rows || [];
+
+    // 3. Calculate error rates
+    const totalCalls = apiStats.reduce((sum, s) => sum + parseInt(s.calls || 0), 0);
+    const totalErrors = apiStats.reduce((sum, s) => sum + parseInt(s.errors || 0), 0);
+    const errorRate = totalCalls > 0 ? Math.round((totalErrors / totalCalls) * 100) : 0;
+
+    // 4. Last generation age
+    const lastGenAge = generations.last_generation
+      ? Math.floor((Date.now() - new Date(generations.last_generation).getTime()) / (1000 * 60 * 60))
+      : 999;
+
+    // 5. Health status
+    const genStatus = lastGenAge > 48 ? 'critical' : lastGenAge > 24 ? 'warning' : 'ok';
+    const errorStatus = errorRate > 20 ? 'critical' : errorRate > 10 ? 'warning' : 'ok';
+    const overallHealth = genStatus === 'critical' || errorStatus === 'critical' ? 'critical'
+      : genStatus === 'warning' || errorStatus === 'warning' ? 'warning' : 'ok';
+
+    res.json({
+      generations: {
+        today: parseInt(generations.today) || 0,
+        week: parseInt(generations.week) || 0,
+        lastGeneration: generations.last_generation,
+        lastGenerationHoursAgo: lastGenAge,
+        status: genStatus,
+      },
+      apiCalls: {
+        last24h: totalCalls,
+        errors: totalErrors,
+        errorRate,
+        byProvider: apiStats.map(s => ({
+          provider: s.provider,
+          calls: parseInt(s.calls) || 0,
+          errors: parseInt(s.errors) || 0,
+          avgLatencyMs: parseInt(s.avg_latency_ms) || 0,
+        })),
+        status: errorStatus,
+      },
+      health: {
+        overall: overallHealth,
+        generation: genStatus,
+        errorRate: errorStatus,
+      },
+      lastUpdated: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('[ai-health] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Payment Health - Check if Stripe/payments are working
+// Used by /sales-doctor to verify checkout functionality
+app.get('/api/admin/payment-health', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!process.env.ADMIN_SECRET || !safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // 1. Subscription stats
+    const subsResult = await dbQuery(`
+      SELECT
+        COUNT(*) FILTER (WHERE subscription_plan != 'free') as paying_users,
+        COUNT(*) FILTER (WHERE subscription_plan = 'starter') as starter,
+        COUNT(*) FILTER (WHERE subscription_plan = 'professional') as professional,
+        COUNT(*) FILTER (WHERE subscription_plan = 'unlimited') as unlimited,
+        MAX(CASE WHEN subscription_plan != 'free' THEN created_at END) as last_paid_signup
+      FROM users
+    `);
+    const subs = subsResult.rows[0] || {};
+
+    // 2. Recent payment events (if we have a payments table)
+    let payments = { total: 0, successful: 0, failed: 0 };
+    try {
+      const paymentsResult = await dbQuery(`
+        SELECT
+          COUNT(*) as total,
+          COUNT(*) FILTER (WHERE status = 'succeeded') as successful,
+          COUNT(*) FILTER (WHERE status = 'failed') as failed,
+          MAX(created_at) as last_payment
+        FROM stripe_events
+        WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
+        AND event_type LIKE 'payment%'
+      `);
+      payments = paymentsResult.rows[0] || payments;
+    } catch (e) {
+      // stripe_events table might not exist
+    }
+
+    // 3. Stripe config check
+    const stripeConfigured = !!(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET);
+
+    // 4. Calculate health
+    const lastPaidAge = subs.last_paid_signup
+      ? Math.floor((Date.now() - new Date(subs.last_paid_signup).getTime()) / (1000 * 60 * 60 * 24))
+      : 999;
+
+    const paymentStatus = !stripeConfigured ? 'critical'
+      : (parseInt(payments.failed) > parseInt(payments.successful)) ? 'warning' : 'ok';
+
+    res.json({
+      subscriptions: {
+        total: parseInt(subs.paying_users) || 0,
+        starter: parseInt(subs.starter) || 0,
+        professional: parseInt(subs.professional) || 0,
+        unlimited: parseInt(subs.unlimited) || 0,
+        lastPaidSignup: subs.last_paid_signup,
+        daysSinceLastPaid: lastPaidAge,
+      },
+      payments: {
+        last30Days: parseInt(payments.total) || 0,
+        successful: parseInt(payments.successful) || 0,
+        failed: parseInt(payments.failed) || 0,
+        lastPayment: payments.last_payment,
+      },
+      config: {
+        stripeConfigured,
+        webhookConfigured: !!process.env.STRIPE_WEBHOOK_SECRET,
+      },
+      health: {
+        overall: paymentStatus,
+        stripe: stripeConfigured ? 'ok' : 'critical',
+        payments: paymentStatus,
+      },
+      lastUpdated: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('[payment-health] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// User Activity - Check if users are actually using the product
+// Used by /sales-doctor to verify product engagement
+app.get('/api/admin/user-activity', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!process.env.ADMIN_SECRET || !safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Use central test email filter
+    const excludeEmails = getTestEmailExcludeClause('email');
+
+    // 1. Active users (by response generation)
+    const activityResult = await dbQuery(`
+      SELECT
+        COUNT(DISTINCT user_id) FILTER (WHERE created_at >= CURRENT_DATE) as dau,
+        COUNT(DISTINCT user_id) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '7 days') as wau,
+        COUNT(DISTINCT user_id) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '30 days') as mau
+      FROM responses
+      WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
+    `);
+    const activity = activityResult.rows[0] || {};
+
+    // 2. Response generation stats
+    const responsesResult = await dbQuery(`
+      SELECT
+        COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE) as today,
+        COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '7 days') as week,
+        COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '30 days') as month,
+        ROUND(AVG(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '7 days' THEN 1 ELSE NULL END)::numeric * COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '7 days') / 7, 1) as avg_per_day
+      FROM responses
+    `);
+    const responses = responsesResult.rows[0] || {};
+
+    // 3. Users hitting limit (potential conversion targets)
+    const limitResult = await dbQuery(`
+      SELECT
+        COUNT(*) as users_at_limit,
+        COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '7 days') as recent_at_limit
+      FROM users
+      WHERE subscription_plan = 'free'
+      AND responses_used >= 20
+      ${excludeEmails}
+    `);
+    const limits = limitResult.rows[0] || {};
+
+    // 4. New vs returning users
+    const retentionResult = await dbQuery(`
+      SELECT
+        COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '7 days') as new_users_week,
+        COUNT(*) FILTER (WHERE created_at < CURRENT_DATE - INTERVAL '7 days' AND last_login >= CURRENT_DATE - INTERVAL '7 days') as returning_users_week
+      FROM users
+      WHERE 1=1 ${excludeEmails}
+    `);
+    const retention = retentionResult.rows[0] || {};
+
+    // 5. Calculate health
+    const dauStatus = parseInt(activity.dau) > 5 ? 'ok' : parseInt(activity.dau) > 0 ? 'warning' : 'critical';
+    const responsesStatus = parseInt(responses.today) > 10 ? 'ok' : parseInt(responses.today) > 0 ? 'warning' : 'critical';
+
+    res.json({
+      activeUsers: {
+        dau: parseInt(activity.dau) || 0,
+        wau: parseInt(activity.wau) || 0,
+        mau: parseInt(activity.mau) || 0,
+        status: dauStatus,
+      },
+      responses: {
+        today: parseInt(responses.today) || 0,
+        week: parseInt(responses.week) || 0,
+        month: parseInt(responses.month) || 0,
+        avgPerDay: parseFloat(responses.avg_per_day) || 0,
+        status: responsesStatus,
+      },
+      conversion: {
+        usersAtLimit: parseInt(limits.users_at_limit) || 0,
+        recentAtLimit: parseInt(limits.recent_at_limit) || 0,
+      },
+      retention: {
+        newUsersWeek: parseInt(retention.new_users_week) || 0,
+        returningUsersWeek: parseInt(retention.returning_users_week) || 0,
+      },
+      health: {
+        overall: dauStatus === 'critical' || responsesStatus === 'critical' ? 'critical'
+          : dauStatus === 'warning' || responsesStatus === 'warning' ? 'warning' : 'ok',
+        activeUsers: dauStatus,
+        responses: responsesStatus,
+      },
+      lastUpdated: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('[user-activity] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Usage Analytics - Understand Free User behavior for conversion optimization
 app.get('/api/admin/usage-analytics', async (req, res) => {
   const adminKey = req.headers['x-admin-key'] || req.query.key;

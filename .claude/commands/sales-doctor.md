@@ -70,6 +70,67 @@ curl -s --max-time 10 "https://review-responder.onrender.com/api/admin/pipeline-
 }
 ```
 
+### 1.5 AI/Product Health (KRITISCH!)
+```bash
+# AI Response Generator Check - Funktioniert das Kernprodukt?
+curl -s --max-time 10 "https://review-responder.onrender.com/api/admin/ai-health?key=ADMIN_KEY"
+```
+
+**Dieser Endpoint liefert:**
+- **Generations:** Heute, diese Woche, letzte Generation wann?
+- **Errors:** Fehlerrate der AI-Calls
+- **Latency:** Durchschnittliche Antwortzeit
+- **Health Status:** genStatus, errorStatus, overallHealth
+
+**Schwellwerte:**
+| Check | OK | WARNING | CRITICAL |
+|-------|-----|---------|----------|
+| Generationen/Tag | >10 | 1-10 | 0 |
+| Letzte Generation | <24h | 24-48h | >48h |
+| Error Rate | <5% | 5-20% | >20% |
+
+**WICHTIG:** Wenn AI nicht funktioniert, ist das Produkt tot!
+
+### 1.6 Payment Health
+```bash
+# Stripe & Checkout Check - Können User bezahlen?
+curl -s --max-time 10 "https://review-responder.onrender.com/api/admin/payment-health?key=ADMIN_KEY"
+```
+
+**Dieser Endpoint liefert:**
+- **Stripe Config:** Sind alle Keys konfiguriert?
+- **Subscriptions:** Verteilung nach Plan (Free, Starter, Pro, Unlimited)
+- **Payment Events:** Letzte erfolgreiche Zahlung wann?
+- **Health Status:** stripeConfigured, paymentStatus
+
+**Schwellwerte:**
+| Check | OK | WARNING | CRITICAL |
+|-------|-----|---------|----------|
+| Stripe Config | Vollstaendig | - | Fehlt |
+| Letzte Zahlung | <7 Tage | 7-30 Tage | >30 Tage |
+
+### 1.7 User Activity Health
+```bash
+# User Engagement Check - Nutzen User das Produkt?
+curl -s --max-time 10 "https://review-responder.onrender.com/api/admin/user-activity?key=ADMIN_KEY"
+```
+
+**Dieser Endpoint liefert:**
+- **DAU/WAU/MAU:** Daily/Weekly/Monthly Active Users
+- **Responses:** Heute, diese Woche generiert
+- **Limit Hits:** User die ans Limit stossen (Upgrade-Potenzial!)
+- **Retention:** 7-Tage, 30-Tage Retention Rate
+- **Health Status:** dauStatus, responsesStatus
+
+**Schwellwerte:**
+| Check | OK | WARNING | CRITICAL |
+|-------|-----|---------|----------|
+| DAU | >5 | 1-5 | 0 |
+| Responses/Tag | >20 | 5-20 | <5 |
+| Users at Limit | >0 | - | - (gut wenn >0!) |
+
+**INSIGHT:** Users at Limit = Upgrade-Potenzial! Kontaktieren!
+
 ---
 
 ## PHASE 2: CRON JOBS CHECK (CHROME MCP)
@@ -119,7 +180,7 @@ Fehlende Jobs → Dem User mitteilen zum Eintragen
 
 ## PHASE 4: DIAGNOSE REPORT
 
-Erstelle einen kompakten Report basierend auf `/api/admin/pipeline-health`:
+Erstelle einen kompakten Report basierend auf allen Health-Endpoints:
 
 ```
 === SALES DOCTOR REPORT ===
@@ -130,6 +191,16 @@ BACKEND:
 [OK/X] Health Endpoint
 [OK/X] Database Connection
 [OK/X] API Credits
+
+PRODUCT HEALTH (KRITISCH!):
+[OK/WARNING/CRITICAL] AI Generator: XX Responses heute, Letzte vor X Stunden
+[OK/WARNING/CRITICAL] Error Rate: X% (OK <5%, WARNING 5-20%, CRITICAL >20%)
+[OK/WARNING/CRITICAL] Stripe: Konfiguriert? Letzte Zahlung vor X Tagen?
+
+USER ACTIVITY:
+[OK/WARNING/CRITICAL] DAU: X aktive User heute (>5=OK, 1-5=WARNING, 0=CRITICAL)
+[OK/WARNING/CRITICAL] Responses/Tag: XX (>20=OK, 5-20=WARNING, <5=CRITICAL)
+[INFO] Users at Limit: X ← UPGRADE-POTENZIAL!
 
 PIPELINE HEALTH:
 [OK/WARNING/CRITICAL] Lead Queue: XX Leads warten (>100=OK, 20-100=WARNING, <20=CRITICAL)
@@ -239,6 +310,24 @@ START
   │   ├─ NEIN → KRITISCH: Backend down, Render Dashboard checken
   │   └─ JA → Weiter
   │
+  ├─ AI/Product Health OK? (via /api/admin/ai-health) ← KRITISCH!
+  │   │
+  │   ├─ Error Rate >20%? → KRITISCH: AI kaputt! Logs checken, API Keys pruefen
+  │   ├─ Keine Generationen seit 48h? → WARNING: Keine User? Oder Bug?
+  │   └─ OK → Weiter
+  │
+  ├─ Payment Health OK? (via /api/admin/payment-health)
+  │   │
+  │   ├─ Stripe nicht konfiguriert? → KRITISCH: User koennen nicht bezahlen!
+  │   ├─ Keine Zahlung seit 30 Tagen? → INFO: Noch keine Conversions
+  │   └─ OK → Weiter
+  │
+  ├─ User Activity OK? (via /api/admin/user-activity)
+  │   │
+  │   ├─ DAU = 0? → KRITISCH: Keine aktiven User! Traffic-Problem?
+  │   ├─ Users at Limit > 0? → AKTION: Diese User kontaktieren fuer Upgrade!
+  │   └─ OK → Weiter
+  │
   ├─ Pipeline Health abrufen (via /api/admin/pipeline-health)
   │   │
   │   ├─ Lead Queue Status?
@@ -294,6 +383,16 @@ START
 
 SYSTEM STATUS: WARNING
 
+PRODUCT HEALTH:
+[OK] AI Generator: 45 Responses heute, Letzte vor 2 Stunden
+[OK] Error Rate: 2% (unter 5% Schwelle)
+[OK] Stripe: Konfiguriert, keine Zahlungen (noch keine Conversions)
+
+USER ACTIVITY:
+[WARNING] DAU: 3 aktive User (unter 5 Schwelle)
+[OK] Responses/Tag: 45
+[INFO] Users at Limit: 2 ← UPGRADE-POTENZIAL!
+
 PROBLEME GEFUNDEN:
 1. Blog Auto-Generation Cron Job: 404 Error
    → FIX: Endpoint von POST auf GET geaendert ✓
@@ -314,6 +413,7 @@ OUTREACH STATUS:
 === BEREND TODO ===
 
 DRINGEND:
+[ ] 2 User am Limit kontaktieren fuer Upgrade-Gespraech!
 [ ] `claude --chrome` starten und `/linkedin-connect` ausfuehren
 [ ] 5+ LinkedIn Leads fuer DACH Region connecten
 
