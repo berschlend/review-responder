@@ -68,6 +68,7 @@ import {
   Filter,
   Info,
   ArrowRight,
+  ArrowDown,
   PartyPopper,
   Utensils,
   CheckCircle,
@@ -1726,83 +1727,69 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
 const DogfoodingSection = ({ testimonials }) => {
   const [isContextExpanded, setIsContextExpanded] = useState(false);
 
-  // ReviewResponder's business context (open source - exactly what we give the AI)
+  // ReviewResponder's business context - shows WHAT WE TYPED vs WHAT AI GENERATED
   const REVIEWRESPONDER_CONTEXT = {
     businessName: 'ReviewResponder',
     businessType: 'SaaS / AI Software Tool',
+
+    // What we ACTUALLY typed (to show users it's easy!)
+    whatWeTyped: {
+      business: 'ReviewResponder',
+      type: 'SaaS / Software Tool',
+      keywords: 'Chrome extension, review responses, saves time, Google Maps, Yelp, TripAdvisor, 50+ languages',
+    },
+
+    // What the AI GENERATED from those keywords (impressive!)
     businessContext: `ReviewResponder helps business owners respond to customer reviews quickly and professionally.
 
 WHO WE ARE:
 - Created by Berend in Germany, 2026
 - I built this because I watched restaurant owners spend hours every week writing review responses - time they could spend on their actual business
 
-HOW IT WORKS - OUR CHROME EXTENSION:
-The ReviewResponder Chrome Extension is the main product. You install it in your browser, and it works directly on review platforms:
+HOW IT WORKS:
+The ReviewResponder Chrome Extension works directly on review platforms:
 - Google Maps, Yelp, TripAdvisor, Trustpilot, Booking.com
 - Click "Generate Response" next to any review
 - AI creates a personalized response in seconds
 - One click to copy or paste directly
-- No switching between tabs or copy-pasting
 
-FEATURES:
-- Automatic language detection - responds in the reviewer's language (50+ supported)
+KEY FEATURES:
+- Automatic language detection (50+ languages)
 - 4 tone options: Professional, Friendly, Apologetic, Enthusiastic
 - Business context - AI knows your specific business details
-- Template library with industry-specific starting points
 - Bulk generation for catching up on multiple reviews
 - Response history to track what you've responded to
 
 WHY I BUILT THIS:
 Small business owners shouldn't have to choose between ignoring reviews and spending hours writing responses. Every review deserves a thoughtful reply - but it shouldn't take 10 minutes to write one.
 
-PRICING (honest and simple):
-- Free: 20 responses/month - enough to try it properly
-- Starter $29/mo: 300 responses/month
-- Pro $49/mo: 800 responses/month + team access for 3 people
-- Unlimited $99/mo: No limits + API for developers
-- 20% off yearly billing on all plans
-
-HOW WE HANDLE YOUR DATA:
-- Reviews are processed and immediately discarded
-- We don't store or train on your customer data
-- GDPR compliant (required as a German company)
-- No hidden fees, cancel anytime
-
 CONTACT:
 - support@tryreviewresponder.com
-- I (Berend) personally read and respond to support emails
-- Usually within 24 hours, often faster`,
-    responseStyle: `HOW TO RESPOND (our internal guidelines):
+- I (Berend) personally read and respond to support emails`,
+
+    responseStyle: `HOW TO RESPOND:
 
 BE AUTHENTIC:
 - Sound like a real person, not a corporate entity
-- It's okay to say "I" (as Berend) or "we" (as the team)
+- Use "I" (as Berend) or "we" (as the team)
 - Be genuinely grateful, not performatively grateful
-- Never be defensive about criticism
 
 WHEN SOMEONE IS HAPPY:
 - Thank them sincerely (one sentence is enough)
-- If they mention a specific feature they love, acknowledge it
-- If they mention time saved, that means a lot to us - say so
-- Keep it short - a genuine 2-sentence response beats a long fake one
+- If they mention a specific feature, acknowledge it
+- If they mention time saved, that matters - say so
 
-WHEN SOMEONE HAS FEEDBACK OR CONCERNS:
+WHEN SOMEONE HAS FEEDBACK:
 - Take it seriously - they're helping us improve
 - Be honest about what we can and can't do
 - Offer to help: support@tryreviewresponder.com
-- Don't make promises we can't keep
 
-NEVER DO:
-- Over-the-top enthusiasm ("WOW! AMAZING! THANK YOU SO MUCH!!!")
-- Corporate-speak ("We value your feedback...")
-- Begging for more reviews
-- Being defensive or dismissive
-- Making excuses
-- Pretending to be human - be honest that this is an AI-generated response
+THE GOAL:
+Every response should sound like it came from someone who actually cares - because it did. The AI just helped write it faster.
 
 SIGN OFF:
-- "Thanks, Berend" or "- The ReviewResponder Team"
-- Keep it natural and direct`,
+"Thanks, Berend" or "- The ReviewResponder Team"`,
+
     generationSettings: {
       tone: 'Friendly',
       ai: 'Smart AI',
@@ -1896,69 +1883,142 @@ SIGN OFF:
 
         {isContextExpanded && (
           <div style={{ padding: '20px', borderTop: '1px solid var(--gray-200)' }}>
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '4px' }}>
-                Business Name
-              </div>
-              <div style={{ fontWeight: '600' }}>{REVIEWRESPONDER_CONTEXT.businessName}</div>
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '4px' }}>
-                Business Type
-              </div>
-              <div style={{ fontWeight: '600' }}>{REVIEWRESPONDER_CONTEXT.businessType}</div>
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '8px' }}>
-                About our business
-              </div>
+            {/* WHAT WE TYPED - Green box showing it's easy */}
+            <div
+              style={{
+                background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                border: '2px solid #22c55e',
+                borderRadius: '12px',
+                padding: '16px 20px',
+                marginBottom: '16px',
+              }}
+            >
               <div
                 style={{
-                  background: 'var(--gray-50)',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  lineHeight: '1.6',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  color: '#15803d',
+                  marginBottom: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  letterSpacing: '0.5px',
+                }}
+              >
+                <Zap size={14} />
+                WHAT WE ACTUALLY TYPED (10 seconds)
+              </div>
+              <div style={{ display: 'grid', gap: '8px', fontSize: '14px', color: '#166534' }}>
+                <div>
+                  <strong>Business:</strong> {REVIEWRESPONDER_CONTEXT.whatWeTyped.business}
+                </div>
+                <div>
+                  <strong>Type:</strong> {REVIEWRESPONDER_CONTEXT.whatWeTyped.type}
+                </div>
+                <div>
+                  <strong>Keywords:</strong> {REVIEWRESPONDER_CONTEXT.whatWeTyped.keywords}
+                </div>
+              </div>
+            </div>
+
+            {/* Arrow showing transformation */}
+            <div
+              style={{
+                textAlign: 'center',
+                fontSize: '14px',
+                color: 'var(--gray-400)',
+                margin: '12px 0',
+                fontWeight: '500',
+              }}
+            >
+              <ArrowDown size={20} style={{ display: 'block', margin: '0 auto 4px auto' }} />
+              AI generated everything below
+            </div>
+
+            {/* GENERATED BUSINESS CONTEXT */}
+            <div
+              style={{
+                background: 'var(--gray-50)',
+                border: '1px solid var(--gray-200)',
+                borderRadius: '12px',
+                padding: '16px 20px',
+                marginBottom: '12px',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: 'var(--gray-500)',
+                  marginBottom: '12px',
+                  letterSpacing: '0.5px',
+                }}
+              >
+                GENERATED BUSINESS CONTEXT
+              </div>
+              <pre
+                style={{
+                  fontFamily: 'ui-monospace, SFMono-Regular, monospace',
+                  fontSize: '12px',
                   whiteSpace: 'pre-wrap',
-                  maxHeight: '200px',
+                  color: 'var(--gray-600)',
+                  margin: 0,
+                  maxHeight: '180px',
                   overflow: 'auto',
-                  fontFamily: 'monospace',
+                  lineHeight: '1.5',
                 }}
               >
                 {REVIEWRESPONDER_CONTEXT.businessContext}
-              </div>
+              </pre>
             </div>
 
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '8px' }}>
-                Response style
-              </div>
+            {/* GENERATED RESPONSE STYLE */}
+            <div
+              style={{
+                background: 'var(--gray-50)',
+                border: '1px solid var(--gray-200)',
+                borderRadius: '12px',
+                padding: '16px 20px',
+                marginBottom: '16px',
+              }}
+            >
               <div
                 style={{
-                  background: 'var(--gray-50)',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  lineHeight: '1.6',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: 'var(--gray-500)',
+                  marginBottom: '12px',
+                  letterSpacing: '0.5px',
+                }}
+              >
+                GENERATED RESPONSE STYLE
+              </div>
+              <pre
+                style={{
+                  fontFamily: 'ui-monospace, SFMono-Regular, monospace',
+                  fontSize: '12px',
                   whiteSpace: 'pre-wrap',
-                  maxHeight: '200px',
+                  color: 'var(--gray-600)',
+                  margin: 0,
+                  maxHeight: '180px',
                   overflow: 'auto',
-                  fontFamily: 'monospace',
+                  lineHeight: '1.5',
                 }}
               >
                 {REVIEWRESPONDER_CONTEXT.responseStyle}
-              </div>
+              </pre>
             </div>
 
+            {/* Settings Row */}
             <div
               style={{
                 display: 'flex',
-                gap: '16px',
+                gap: '24px',
                 flexWrap: 'wrap',
-                paddingTop: '12px',
-                borderTop: '1px solid var(--gray-200)',
+                padding: '12px 16px',
+                background: 'white',
+                borderRadius: '8px',
+                border: '1px solid var(--gray-200)',
               }}
             >
               <div style={{ fontSize: '13px' }}>
