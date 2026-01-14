@@ -24148,6 +24148,8 @@ const AppContent = () => {
             <Route path="/chiropractor-reviews" element={<ChiropractorReviewPage />} />
             <Route path="/barber-barbershop-reviews" element={<BarberReviewPage />} />
             <Route path="/dermatologist-reviews" element={<DermatologistReviewPage />} />
+            <Route path="/angie-list-contractor-reviews" element={<AngiListReviewPage />} />
+            <Route path="/massage-therapist-reviews" element={<MassageTherapistReviewPage />} />
             <Route
               path="/dashboard"
               element={
