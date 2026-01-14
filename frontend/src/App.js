@@ -12330,54 +12330,53 @@ const DemoPage = () => {
         </div>
       </div>
 
-      {/* Sticky CTA Bar - Mobile Only */}
+      {/* Sticky CTA Bar - All Devices */}
       <div
         style={{
           position: 'fixed',
           bottom: 0,
           left: 0,
           right: 0,
-          background: 'var(--bg-primary)',
-          borderTop: '1px solid var(--border-color)',
-          padding: '12px 16px',
-          display: 'none',
+          background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
+          padding: '14px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '16px',
           zIndex: 90,
-          boxShadow: '0 -4px 20px rgba(0,0,0,0.1)'
+          boxShadow: '0 -4px 20px rgba(0,0,0,0.15)'
         }}
-        className="mobile-sticky-cta"
       >
-        <style>{`
-          @media (max-width: 768px) {
-            .mobile-sticky-cta { display: flex !important; }
-          }
-        `}</style>
-        <div style={{ flex: 1, marginRight: '12px' }}>
-          <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)' }}>
-            20 Free/Month
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '15px', fontWeight: '600', color: 'white' }}>
+              Like what you see?
+            </span>
+            <span style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '6px', fontSize: '13px', fontWeight: '700', color: 'white' }}>
+              30% OFF
+            </span>
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-            No credit card required
-          </div>
+          <a
+            href={demo?.cta_url}
+            style={{
+              background: 'white',
+              color: 'var(--primary)',
+              padding: '12px 28px',
+              borderRadius: '10px',
+              textDecoration: 'none',
+              fontWeight: '700',
+              fontSize: '15px',
+              whiteSpace: 'nowrap',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+            }}
+          >
+            Start Free Trial
+            <ArrowRight size={18} />
+          </a>
         </div>
-        <a
-          href={demo?.cta_url}
-          style={{
-            background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
-            color: 'white',
-            padding: '12px 24px',
-            borderRadius: '10px',
-            textDecoration: 'none',
-            fontWeight: '600',
-            fontSize: '14px',
-            whiteSpace: 'nowrap',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
-          }}
-        >
-          Try Free
-          <ArrowRight size={16} />
-        </a>
       </div>
 
       {/* Exit Intent Popup */}
