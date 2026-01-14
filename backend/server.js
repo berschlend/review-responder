@@ -11814,22 +11814,62 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
 
     for (const lead of newLeads) {
       try {
-        // Generate AI draft for leads with bad reviews (if not already done)
-        if (lead.has_bad_review && lead.worst_review_text && !lead.ai_response_draft) {
-          console.log(`📝 Generating AI draft for TripAdvisor lead: ${lead.business_name}...`);
-          const aiDraft = await generateReviewAlertDraft(
-            lead.business_name,
-            lead.business_type,
-            lead.worst_review_text,
-            lead.worst_review_rating,
-            lead.worst_review_author,
-            lead.city || null,
-            lead.google_rating || null,
-            lead.google_reviews_count || null
-          );
-          if (aiDraft) {
-            lead.ai_response_draft = aiDraft;
-            await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1 WHERE id = $2', [aiDraft, lead.id]);
+        // Demo-Generation für TripAdvisor (wie Daily Outreach)
+        if (!lead.demo_url && lead.has_bad_review) {
+          console.log(`📝 Generating demo for TripAdvisor lead: ${lead.business_name}...`);
+
+          try {
+            const demoResult = await generateDemoForLead(lead);
+
+            if (demoResult && demoResult.first_ai_response) {
+              // Demo erfolgreich - Update Lead
+              await pool.query(
+                `UPDATE outreach_leads SET
+                  demo_url = $1, demo_token = $2, ai_response_draft = $3,
+                  worst_review_rating = $4, worst_review_text = $5,
+                  worst_review_author = $6, has_bad_review = TRUE
+                WHERE id = $7`,
+                [
+                  demoResult.demo_url,
+                  demoResult.demo_token,
+                  demoResult.first_ai_response,
+                  demoResult.first_review?.rating,
+                  demoResult.first_review?.text,
+                  demoResult.first_review?.author,
+                  lead.id,
+                ]
+              );
+
+              // Update lokales lead Objekt für Template-Selection
+              lead.demo_url = demoResult.demo_url;
+              lead.demo_token = demoResult.demo_token;
+              lead.ai_response_draft = demoResult.first_ai_response;
+              lead.worst_review_rating = demoResult.first_review?.rating;
+              lead.worst_review_text = demoResult.first_review?.text;
+              lead.worst_review_author = demoResult.first_review?.author;
+              console.log(`✅ Demo generated for ${lead.business_name}: ${demoResult.demo_url}`);
+            }
+          } catch (err) {
+            console.error(`Demo generation failed for ${lead.business_name}:`, err.message);
+          }
+
+          // Fallback: wenn Demo fehlgeschlagen und kein ai_response_draft
+          if (!lead.ai_response_draft && lead.worst_review_text) {
+            console.log(`📝 Fallback: Generating AI draft for ${lead.business_name}...`);
+            const aiDraft = await generateReviewAlertDraft(
+              lead.business_name,
+              lead.business_type,
+              lead.worst_review_text,
+              lead.worst_review_rating,
+              lead.worst_review_author,
+              lead.city || null,
+              lead.google_rating || null,
+              lead.google_reviews_count || null
+            );
+            if (aiDraft) {
+              lead.ai_response_draft = aiDraft;
+              await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1 WHERE id = $2', [aiDraft, lead.id]);
+            }
           }
         }
 
