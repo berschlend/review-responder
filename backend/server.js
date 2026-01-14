@@ -6127,6 +6127,11 @@ const tryRateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: req => req.ip || req.headers['x-forwarded-for'] || 'unknown',
+  skip: req => {
+    // Skip rate limiting for admin testing
+    const adminKey = req.query.key || req.headers['x-admin-key'];
+    return adminKey === process.env.ADMIN_SECRET;
+  },
 });
 
 // POST /api/public/try - Generate AI response without signup

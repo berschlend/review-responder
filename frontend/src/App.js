@@ -2152,11 +2152,21 @@ const LandingPage = () => {
     setTryError('');
     setTryResponse('');
     try {
-      const res = await axios.post(`${API_URL}/public/try`, {
-        reviewText: tryReviewText,
-        tone: tryTone,
-      });
-      setTryResponse(res.data.response);
+      // If user is logged in, use authenticated endpoint (uses plan limits)
+      // Otherwise use public try endpoint (3/day limit)
+      if (user && token) {
+        const res = await api.post('/generate', {
+          reviewText: tryReviewText,
+          tone: tryTone,
+        });
+        setTryResponse(res.data.response);
+      } else {
+        const res = await axios.post(`${API_URL}/public/try`, {
+          reviewText: tryReviewText,
+          tone: tryTone,
+        });
+        setTryResponse(res.data.response);
+      }
     } catch (err) {
       if (err.response?.status === 429) {
         setTryError(err.response?.data?.message || 'Daily limit reached. Sign up for 20 free/month!');
