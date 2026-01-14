@@ -245,26 +245,31 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 ### Cron Jobs Status (cron-job.org)
 
-**Stand: 14.01.2026**
+**Stand: 14.01.2026 07:30 - Live geprüft via Chrome MCP**
 
-| Job | Schedule | Status | Letzter Fehler |
-|-----|----------|--------|----------------|
-| **Keep-Alive** | alle 15 Min | OK | Verhindert Cold Start |
-| Blog Auto-Generation | 06:00 Mo/Mi/Fr | OK | - |
-| **Demo Generation + Email (NEU!)** | 08:00 täglich | OK | Personalisierte Demo-Emails |
-| Twitter Auto-Post Morning | 09:00 täglich | OK | - |
-| Weekly Summary | 09:00 Montags | OK | - |
-| Daily Outreach | 09:00 täglich | OK | - |
-| Drip Emails | 10:00 täglich | OK | - |
-| TripAdvisor Email Sender | 09:00 täglich | OK | - |
-| Pre-Registration Drip | 11:00 täglich | OK | - |
+| Job | Schedule | Status | Bemerkung |
+|-----|----------|--------|-----------|
+| **Keep-Alive** | alle 10 Min | ✅ OK | Server bleibt warm |
+| **Demo Generation + Email** | 08:00 täglich | ✅ OK | Personalisierte Demo-Emails |
+| **Scraper Alerts** | 08:00 täglich | ✅ OK | Email bei kritischen Lead-Quellen |
+| **Twitter Auto-Post Morning** | 09:00 täglich | ✅ OK | 2x vorhanden (Duplikat löschen!) |
+| **Twitter Auto-Post Evening** | 18:00 täglich | ✅ OK | Zweiter Tweet am Abend |
+| **Weekly Summary** | Mo 09:00 | ✅ OK | Erfolgreich letzte Woche |
+| **Pre-Registration Drip** | 11:00 täglich | ✅ OK | 4 Emails (Tag 1,3,7,14) |
+| Daily Outreach | 09:00 täglich | ⚠️ Fehler | "Ausgabe zu groß" |
+| Drip Emails | 10:00 täglich | ⚠️ Fehler | "Ausgabe zu groß" |
+| TripAdvisor Email Sender | 09:00 täglich | ⚠️ Fehler | "Ausgabe zu groß" |
+| Blog Auto-Generation | 06:00 Mo/Mi/Fr | ⚠️ Fehler | HTTP-Fehler (Server schläft um 06:00) |
+| Followup Clickers | 00:00 täglich | ⚠️ Fehler | HTTP-Fehler + 2x Duplikat |
 
-**Root Cause "Ausgabe zu groß" (13.01):**
-- Render Free Tier schläft nach 15 Min Inaktivität
-- Cron Job trifft auf kalten Server → 502 Error mit 218KB HTML
-- cron-job.org sieht 218KB Response → "Ausgabe zu groß"
+**14 Jobs aktiv, davon 7 OK, 5 mit Fehlern, 2 Duplikate**
 
-**Fix:** Keep-Alive Cron Job pingt `/api/health` alle 15 Min → Server bleibt warm
+**Bekannte Probleme:**
+1. **"Ausgabe zu groß"** - Server antwortet mit 502 HTML wenn kalt
+2. **Blog um 06:00** - Server schläft, Keep-Alive läuft erst ab ~06:20
+3. **Duplikate** - Twitter Morning (2x) und Followup Clickers (2x) sollten bereinigt werden
+
+**Empfehlung:** Blog-Generation auf 07:00 oder 08:00 verschieben (nach Keep-Alive)
 
 ---
 
@@ -549,10 +554,9 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
   - Admin: `GET /api/admin/twitter-posts?key=...`
   - Twitter API Keys in `.claude/secrets.local` + Render Env Vars
   - **Erster Tweet erfolgreich gepostet!** (Test 13.01.2026)
-  - **USER TODO: Cron Job "Twitter Auto-Post Morning" auf 09:00 fixen (aktuell 00:09)**
-    - cron-job.org -> Jobs -> Twitter Auto-Post Morning -> ERWEITERT Tab -> Cron Expression: `0 9 * * *`
-  - **USER TODO: Zweiten Cron Job für 18:00 anlegen**
-    - URL: `https://review-responder.onrender.com/api/cron/twitter-post?secret=mein-geheimer-cron-key-biwbqevpbACN`
+  - ~~**USER TODO: Cron Job "Twitter Auto-Post Morning" auf 09:00 fixen**~~ ✅ ERLEDIGT (14.01)
+  - ~~**USER TODO: Zweiten Cron Job für 18:00 anlegen**~~ ✅ ERLEDIGT (14.01)
+  - **Hinweis:** Twitter Morning ist 2x vorhanden (Duplikat bereinigen)
 - [x] **Click-Tracking für Outreach Emails** - Endlich messbar ob jemand klickt
   - Neuer Endpoint: `/api/outreach/track-click` (Redirect-basiert)
   - Alle Email-Links werden automatisch mit Tracking gewrapped
@@ -891,7 +895,7 @@ git add -A && git commit -m "Beschreibung" && git push
 | System | Beschreibung | Status |
 |--------|--------------|--------|
 | Reddit Auto-Responder | Keywords monitoren, hilfreiche Antworten | ✅ Implementiert - wartet auf API Keys |
-| Twitter/X Auto-Post | 2 Tweets/Tag @ExecPsychology | ✅ Live - **Cron manuell fixen: 09:00** |
+| Twitter/X Auto-Post | 2 Tweets/Tag @ExecPsychology | ✅ Live - 09:00 + 18:00 Crons aktiv |
 | SEO Auto-Pilot | 3 Artikel/Woche auto-generieren | ✅ Implementiert + Cron aktiv |
 | Quora Auto-Responder | Ähnlich wie Reddit | Backlog |
 | Competitor Scraper | Unzufriedene Birdeye/Podium Kunden | Backlog |
