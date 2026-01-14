@@ -14743,6 +14743,8 @@ const FacebookReviewPage = () => {
 
         <ChromeExtensionHowTo platform="Facebook" color="#1877f2" />
 
+        <DemoVideoSection platform="Facebook" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Grow Your Facebook Business Presence
@@ -14754,28 +14756,6 @@ const FacebookReviewPage = () => {
             <Sparkles size={20} />
             Try Free - No Credit Card
           </Link>
-        </div>
-
-        <div
-          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
-        >
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>
-              ReviewResponder
-            </Link>{' '}
-            •
-            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Google Reviews
-            </Link>{' '}
-            •
-            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Yelp Reviews
-            </Link>{' '}
-            •
-            <Link to="/local-business-reviews" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Local Business
-            </Link>
-          </p>
         </div>
       </section>
       <Footer />
