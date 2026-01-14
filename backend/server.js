@@ -11260,7 +11260,21 @@ app.all('/api/cron/second-followup', async (req, res) => {
     `);
 
     if (clickers.length === 0) {
-      return res.json({ success: true, sent: 0, message: 'No clickers ready for second follow-up' });
+      // Debug: Check how many are in clicker_followups table
+      const total = await dbQuery(`SELECT COUNT(*) as count FROM clicker_followups`);
+      const notConverted = await dbQuery(`SELECT COUNT(*) as count FROM clicker_followups WHERE converted = FALSE`);
+      const noSecond = await dbQuery(`SELECT COUNT(*) as count FROM clicker_followups WHERE converted = FALSE AND second_followup_sent IS NULL`);
+      return res.json({
+        success: true,
+        sent: 0,
+        message: 'No clickers ready for second follow-up',
+        debug: {
+          total_in_followups: parseInt(total?.count || 0),
+          not_converted: parseInt(notConverted?.count || 0),
+          no_second_sent: parseInt(noSecond?.count || 0),
+          force_param: forceNow,
+        },
+      });
     }
 
     let sent = 0;
