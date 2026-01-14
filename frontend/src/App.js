@@ -12048,10 +12048,10 @@ const DemoPage = () => {
                 <p style={{ color: 'var(--text-secondary)', lineHeight: '1.7', fontSize: '15px', marginTop: '12px' }}>
                   {item.review.text}
                 </p>
-                {/* View on Google Link */}
-                {demo.google_reviews_url && (
+                {/* View on Google Link - use direct review_link if available, fallback to general reviews page */}
+                {(item.review.review_link || demo.google_reviews_url) && (
                   <a
-                    href={demo.google_reviews_url}
+                    href={item.review.review_link || demo.google_reviews_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
@@ -12062,7 +12062,7 @@ const DemoPage = () => {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="#4285f4">
                       <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                     </svg>
-                    View on Google (by {item.review.author || 'Anonymous'})
+                    {item.review.review_link ? 'View This Review on Google' : `View on Google (by ${item.review.author || 'Anonymous'})`}
                   </a>
                 )}
               </div>
