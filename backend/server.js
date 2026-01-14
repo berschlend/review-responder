@@ -11220,6 +11220,9 @@ app.all('/api/cron/second-followup', async (req, res) => {
       await dbQuery(`ALTER TABLE clicker_followups ADD COLUMN IF NOT EXISTS second_followup_sent TIMESTAMP`);
     } catch (e) { /* Column might already exist */ }
 
+    // Check for force parameter to skip 2-day wait
+    const forceNow = req.query.force === 'true';
+
     // Find clickers who received first followup but not second, and haven't converted
     const clickers = await dbAll(`
       SELECT f.email, f.sent_at as first_followup_sent,
@@ -11229,7 +11232,7 @@ app.all('/api/cron/second-followup', async (req, res) => {
       LEFT JOIN outreach_leads l ON LOWER(f.email) = LOWER(l.email)
       WHERE f.converted = FALSE
         AND f.second_followup_sent IS NULL
-        AND f.sent_at < NOW() - INTERVAL '2 days'
+        ${forceNow ? '' : "AND f.sent_at < NOW() - INTERVAL '2 days'"}
         ${getTestEmailExcludeClause('f.email')}
         AND f.email NOT LIKE '%vimeo%'
       ORDER BY f.sent_at ASC
