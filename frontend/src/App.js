@@ -11564,7 +11564,7 @@ const DemoPage = () => {
 
               {/* AI Response */}
               <div style={{ padding: '20px 24px', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
@@ -11574,28 +11574,50 @@ const DemoPage = () => {
                     <span style={{ fontWeight: '600', color: '#059669', fontSize: '14px' }}>AI-Generated Response</span>
                     <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#059669', fontSize: '11px', padding: '2px 8px', borderRadius: '4px', fontWeight: '600' }}>READY TO USE</span>
                   </div>
-                  <button
-                    onClick={() => copyResponse(item.ai_response, index)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', borderRadius: '6px',
-                      background: copiedIndex === index ? '#059669' : 'var(--bg-secondary)',
-                      border: copiedIndex === index ? 'none' : '1px solid var(--border-color)',
-                      color: copiedIndex === index ? 'white' : 'var(--text-secondary)',
-                      cursor: 'pointer', fontSize: '13px', fontWeight: '500', transition: 'all 0.2s'
-                    }}
-                  >
-                    {copiedIndex === index ? (
-                      <>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" /></svg>
-                        Copy
-                      </>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => copyResponse(item.ai_response, index)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', borderRadius: '6px',
+                        background: copiedIndex === index ? '#059669' : 'var(--bg-secondary)',
+                        border: copiedIndex === index ? 'none' : '1px solid var(--border-color)',
+                        color: copiedIndex === index ? 'white' : 'var(--text-secondary)',
+                        cursor: 'pointer', fontSize: '13px', fontWeight: '500', transition: 'all 0.2s'
+                      }}
+                    >
+                      {copiedIndex === index ? (
+                        <>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" /></svg>
+                          Copy
+                        </>
+                      )}
+                    </button>
+                    {demo.google_reviews_url && (
+                      <a
+                        href={demo.google_reviews_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', borderRadius: '6px',
+                          background: '#4285f4', border: 'none', color: 'white',
+                          cursor: 'pointer', fontSize: '13px', fontWeight: '500', textDecoration: 'none'
+                        }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                        </svg>
+                        Reply on Google
+                      </a>
                     )}
-                  </button>
+                  </div>
                 </div>
                 <p style={{ color: 'var(--text-primary)', lineHeight: '1.7', fontSize: '15px' }}>
                   {item.ai_response}
@@ -23324,6 +23346,10 @@ const AppContent = () => {
             <Route path="/zillow-realtor-reviews" element={<ZillowReviewPage />} />
             <Route path="/therapy-counselor-reviews" element={<TherapyReviewPage />} />
             <Route path="/thumbtack-reviews" element={<ThumbtackReviewPage />} />
+            <Route path="/linkedin-recommendations" element={<LinkedInReviewPage />} />
+            <Route path="/chiropractor-reviews" element={<ChiropractorReviewPage />} />
+            <Route path="/barber-barbershop-reviews" element={<BarberReviewPage />} />
+            <Route path="/dermatologist-reviews" element={<DermatologistReviewPage />} />
             <Route
               path="/dashboard"
               element={
