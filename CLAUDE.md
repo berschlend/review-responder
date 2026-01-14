@@ -116,34 +116,35 @@ CLAUDE.md lesen → TODO.md checken → Task → Testen → Git push → CLAUDE.
 | Drip Emails | 10:00 täglich |
 | Pre-Reg Drip | 11:00 täglich |
 | Demo Follow-Up | 12:00 täglich |
-| **Night Loop** | **22:00-06:00 stündlich** |
+| **Night-Blast 1** | 22:00 täglich |
+| **Night-Blast 2** | 02:00 täglich |
+| **Night-Blast 3** | 06:00 täglich |
 
-### Night Turbo System (NEU 14.01.2026)
-Läuft 24/7 autonom ohne User-Input - 6x mehr Leads, 4x mehr Emails!
+### Night Automation System (NEU 14.01.2026)
+Läuft 24/7 autonom ohne User-Input!
 
-**Hot Lead Attack (alle 2 Stunden):**
-- `/api/cron/hot-lead-attack` - Clicker aus letzten 4h sofort anschreiben
+**Night-Blast (3x/Nacht):**
+- `/api/cron/night-blast` - Orchestriert alle Nacht-Aktionen
+- 22:00, 02:00, 06:00 - Multi-City Scraping + Follow-ups
 
-**Turbo Scrape (6 Waves/Tag):**
-| Wave | Zeit | Regionen |
-|------|------|----------|
-| 1 | 00:00 | DACH (Berlin, München, Wien) |
-| 2 | 04:00 | US East (NYC, Boston, Miami) |
-| 3 | 08:00 | US West (LA, SF, Seattle) |
-| 4 | 12:00 | UK/Ireland (London, Dublin) |
-| 5 | 16:00 | Benelux/Nordic |
-| 6 | 20:00 | Random Mix |
+**Was Night-Blast tut (pro Lauf):**
+1. Multi-City Scraping: 5 Städte, 100 Leads
+2. Email Finding: 50 neue Leads
+3. Demo Generation: 20 neue Demos
+4. Hot Lead Follow-ups (Clicker)
+5. Second Follow-ups
+6. Demo Follow-ups
+7. G2 Enrichment
+8. Source-specific Emails (TripAdvisor, Yelp, G2, Agency)
 
-**Turbo Email (4 Waves/Tag):**
-| Wave | Zeit | Ziel |
-|------|------|------|
-| 1 | 07:00 | DACH Morning |
-| 2 | 13:00 | DACH Afternoon |
-| 3 | 14:00 | US East Morning |
-| 4 | 20:00 | US West Afternoon |
+**Erwartete Ergebnisse pro Nacht:**
+- ~300 neue Leads
+- ~150 neue Emails gefunden
+- ~60 neue Demos generiert
+- Alle Follow-ups automatisch
 
-**Endpoints:**
-- `/api/cron/hot-lead-attack` - Sofort-Follow-up für Hot Leads
+**Weitere Endpoints:**
+- `/api/cron/hot-lead-attack` - Sofort-Follow-up für Hot Leads (alle 2h)
 - `/api/cron/turbo-scrape?wave=1-6` - Wave-basiertes Scraping
 - `/api/cron/turbo-email?wave=1-4` - Wave-basierte Emails
 - `/api/cron/night-loop` - Legacy Master Endpoint
@@ -152,6 +153,8 @@ Läuft 24/7 autonom ohne User-Input - 6x mehr Leads, 4x mehr Emails!
 **Coupon Codes:**
 - CLICKER30 - 30% Rabatt für Clicker
 - DEMO30 - 30% Rabatt in Demo-Emails
+
+**Setup:** 3 Cron-Jobs bei cron-job.org mit 10min Timeout
 
 ---
 
