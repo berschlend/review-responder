@@ -15659,8 +15659,8 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         source: s.name,
         leads: s.leads_total,
         threshold: s.threshold_low,
-        action: `Starte ${s.command} - nur ${s.leads_total} Leads`,
-        command: s.command
+        action: `Starte ${s.scrape_prompt || s.command} - nur ${s.leads_total} Leads`,
+        command: s.scrape_prompt || s.command
       }));
 
     // Summary stats
