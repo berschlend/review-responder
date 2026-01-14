@@ -6101,12 +6101,19 @@ const DashboardPage = () => {
                     className="form-textarea"
                     value={customInstructions}
                     onChange={e => setCustomInstructions(e.target.value)}
-                    placeholder="Add specific instructions for the AI, e.g.: 'Always mention our 24/7 support' or 'Include a discount code SAVE10'"
-                    rows={2}
-                    style={{ resize: 'vertical', minHeight: '60px' }}
+                    placeholder={`<rules>
+- Always mention our 24/7 support
+- Keep responses under 100 words
+</rules>
+<style>
+- Friendly and warm tone
+- Use customer's name if mentioned
+</style>`}
+                    rows={4}
+                    style={{ resize: 'vertical', minHeight: '100px', fontFamily: 'monospace', fontSize: '12px' }}
                   />
                   <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
-                    Guide the AI with specific requirements for your response
+                    Use XML tags like {'<rules>'}, {'<style>'}, {'<always>'}, {'<never>'} for better AI understanding
                   </p>
                 </div>
               </div>
@@ -8734,20 +8741,35 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '6px',
-          padding: '8px 12px',
-          background: 'linear-gradient(135deg, var(--primary-50), var(--primary-100))',
-          border: '1px solid var(--primary-200)',
+          gap: '8px',
+          padding: '10px 16px',
+          background: 'linear-gradient(135deg, var(--primary-500), var(--primary-600))',
+          border: 'none',
           borderRadius: '8px',
           cursor: 'pointer',
-          fontSize: '13px',
-          color: 'var(--primary-700)',
+          fontSize: '14px',
+          fontWeight: '600',
+          color: 'white',
           marginBottom: '12px',
           transition: 'all 0.2s',
+          boxShadow: '0 2px 8px rgba(99, 102, 241, 0.3)',
         }}
       >
-        <Sparkles size={14} />
+        <Sparkles size={16} />
         Generate with AI
+        <span
+          style={{
+            background: 'rgba(255, 255, 255, 0.2)',
+            padding: '2px 8px',
+            borderRadius: '4px',
+            fontSize: '10px',
+            fontWeight: '600',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+          }}
+        >
+          Recommended
+        </span>
       </button>
     );
   }
@@ -9172,14 +9194,24 @@ const SettingsPage = () => {
               className="form-textarea"
               value={responseStyle}
               onChange={e => setResponseStyle(e.target.value)}
-              placeholder={`Examples:
-• Always sign off with "The [Business Name] Team"
-• Use casual language, we're a beach bar
-• Never offer discounts or compensation
-• Always invite them to contact us directly at (555) 123-4567
-• Keep responses short, max 3 sentences`}
-              rows={5}
+              placeholder={`<always>
+- Sign off with "The [Business Name] Team"
+- Invite to contact us at (555) 123-4567
+</always>
+<never>
+- Offer discounts or compensation
+- Admit fault or liability
+</never>
+<style>
+- Casual and warm tone
+- Max 3 sentences
+</style>`}
+              rows={6}
+              style={{ fontFamily: 'monospace', fontSize: '12px' }}
             />
+            <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
+              Use XML tags for clearer structure: {'<always>'}, {'<never>'}, {'<style>'}
+            </p>
           </div>
         </div>
 
