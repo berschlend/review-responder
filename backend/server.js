@@ -11918,6 +11918,467 @@ P.S. Use code DEMOFOLLOWUP for 30% off if you upgrade within 48h.`;
   }
 });
 
+// ====================================================================================
+// NIGHT AUTOMATION SYSTEM - Runs autonomously 22:00-06:00 UTC
+// Added 14.01.2026: Full autonomous night loop for sales conversion optimization
+// ====================================================================================
+
+// GET /api/cron/night-loop - Master endpoint for all nightly automation
+// Schedule at cron-job.org: 0 22-6 * * * (hourly from 22:00-06:00 UTC)
+app.all('/api/cron/night-loop', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const dryRun = req.query.dry_run === 'true';
+  const forceHour = req.query.hour ? parseInt(req.query.hour) : null;
+  const hour = forceHour !== null ? forceHour : new Date().getUTCHours();
+  const actions = [];
+  const results = {};
+
+  console.log(`🌙 Night Loop starting - Hour: ${hour} UTC, Dry Run: ${dryRun}`);
+
+  try {
+    // Hour 22: Hot Lead Follow-Ups (people who clicked but didn't convert)
+    if (hour === 22) {
+      console.log('🔥 22:00 - Running Hot Lead Follow-Ups (followup-clickers)');
+      actions.push({ hour: 22, action: 'followup-clickers', description: 'Send personalized demos to email clickers' });
+
+      if (!dryRun) {
+        // Find clickers who haven't received follow-up yet
+        const clickers = await dbAll(`
+          SELECT DISTINCT c.email, c.clicked_at,
+            l.id as lead_id, l.business_name, l.contact_name, l.city
+          FROM outreach_clicks c
+          LEFT JOIN outreach_leads l ON LOWER(c.email) = LOWER(l.email)
+          LEFT JOIN clicker_followups f ON LOWER(c.email) = LOWER(f.email)
+          WHERE f.id IS NULL
+            ${getTestEmailExcludeClause('c.email')}
+          ORDER BY c.clicked_at DESC
+          LIMIT 5
+        `);
+        results.hot_leads_found = clickers.length;
+        results.hot_leads_message = clickers.length > 0
+          ? `Found ${clickers.length} hot leads to follow up`
+          : 'All hot leads already followed up';
+      }
+    }
+
+    // Hour 23: Second Follow-Up (better offer to non-converters)
+    if (hour === 23) {
+      console.log('📧 23:00 - Running Second Follow-Up (1 month free offer)');
+      actions.push({ hour: 23, action: 'second-followup', description: 'Send "1 month free" to non-converters' });
+
+      if (!dryRun) {
+        const pending = await dbGet(`
+          SELECT COUNT(*) as count FROM clicker_followups
+          WHERE converted = FALSE
+            AND second_followup_sent IS NULL
+            AND sent_at < NOW() - INTERVAL '2 days'
+            ${getTestEmailExcludeClause('email')}
+        `);
+        results.second_followup_pending = parseInt(pending?.count || 0);
+      }
+    }
+
+    // Hour 0: Stats Collection & Report Preparation
+    if (hour === 0) {
+      console.log('📊 00:00 - Collecting nightly stats');
+      actions.push({ hour: 0, action: 'stats-collection', description: 'Collect metrics for daily report' });
+
+      if (!dryRun) {
+        const totalLeads = await dbGet(`SELECT COUNT(*) as count FROM outreach_leads`);
+        const totalEmails = await dbGet(`SELECT COUNT(*) as count FROM outreach_emails`);
+        const totalClicks = await dbGet(`SELECT COUNT(DISTINCT email) as count FROM outreach_clicks`);
+        const conversions = await dbGet(`SELECT COUNT(*) as count FROM clicker_followups WHERE converted = TRUE`);
+
+        results.nightly_stats = {
+          total_leads: parseInt(totalLeads?.count || 0),
+          total_emails_sent: parseInt(totalEmails?.count || 0),
+          unique_clickers: parseInt(totalClicks?.count || 0),
+          conversions: parseInt(conversions?.count || 0),
+        };
+      }
+    }
+
+    // Hour 1: Dead Lead Revival
+    if (hour === 1) {
+      console.log('💀 01:00 - Running Dead Lead Revival');
+      actions.push({ hour: 1, action: 'dead-lead-revival', description: 'Revive leads 7+ days without response' });
+
+      if (!dryRun) {
+        // Find leads that were emailed 7+ days ago, never clicked, never got revival email
+        const deadLeads = await dbAll(`
+          SELECT DISTINCT ON (e.email) e.email, e.sent_at, l.business_name, l.city
+          FROM outreach_emails e
+          LEFT JOIN outreach_leads l ON LOWER(e.email) = LOWER(l.email)
+          LEFT JOIN outreach_clicks c ON LOWER(e.email) = LOWER(c.email)
+          WHERE c.email IS NULL
+            AND e.sent_at < NOW() - INTERVAL '7 days'
+            AND e.revival_sent IS NULL
+            ${getTestEmailExcludeClause('e.email')}
+          ORDER BY e.email, e.sent_at DESC
+          LIMIT 10
+        `);
+        results.dead_leads_found = deadLeads.length;
+      }
+    }
+
+    // Hour 2: A/B Test Evaluation
+    if (hour === 2) {
+      console.log('🔬 02:00 - Evaluating A/B Tests');
+      actions.push({ hour: 2, action: 'ab-test-evaluate', description: 'Evaluate email subject/CTA tests' });
+
+      if (!dryRun) {
+        const activeTests = await dbAll(`
+          SELECT * FROM email_ab_tests
+          WHERE winner IS NULL AND ended_at IS NULL
+        `);
+        results.active_ab_tests = activeTests?.length || 0;
+      }
+    }
+
+    // Hour 3-5: Preparation & Idle
+    if (hour >= 3 && hour <= 5) {
+      console.log(`😴 ${hour}:00 - Night cycle winding down`);
+      actions.push({ hour, action: 'idle', description: 'Preparing for morning outreach' });
+    }
+
+    // Log night loop completion
+    console.log(`🌙 Night Loop completed - ${actions.length} actions scheduled`);
+
+    res.json({
+      success: true,
+      hour,
+      dry_run: dryRun,
+      actions,
+      results,
+      next_action: hour < 6 ? `Hour ${hour + 1}` : 'Night loop complete',
+      message: dryRun ? 'Dry run - no actions taken' : `Night loop executed for hour ${hour}`,
+    });
+  } catch (error) {
+    console.error('Night loop error:', error);
+    res.status(500).json({ error: 'Night loop failed', message: error.message });
+  }
+});
+
+// GET /api/cron/revive-dead-leads - Send revival emails to leads 7+ days without response
+// Added 14.01.2026: Part of night automation system
+app.all('/api/cron/revive-dead-leads', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!brevoApi && !resend) {
+    return res.status(500).json({ error: 'Email service not configured' });
+  }
+
+  const dryRun = req.query.dry_run === 'true';
+
+  try {
+    // Ensure revival_sent column exists
+    try {
+      await dbQuery(`ALTER TABLE outreach_emails ADD COLUMN IF NOT EXISTS revival_sent TIMESTAMP`);
+    } catch (e) { /* Column might already exist */ }
+
+    // Find leads: emailed 7+ days ago, no clicks, no revival sent
+    const deadLeads = await dbAll(`
+      SELECT DISTINCT ON (e.email)
+        e.id as email_id, e.email, e.sent_at,
+        l.business_name, l.city, l.contact_name,
+        l.google_reviews_count
+      FROM outreach_emails e
+      LEFT JOIN outreach_leads l ON LOWER(e.email) = LOWER(l.email)
+      LEFT JOIN outreach_clicks c ON LOWER(e.email) = LOWER(c.email)
+      WHERE c.email IS NULL
+        AND e.sent_at < NOW() - INTERVAL '7 days'
+        AND e.revival_sent IS NULL
+        ${getTestEmailExcludeClause('e.email')}
+        AND e.email NOT LIKE '%vimeo%'
+      ORDER BY e.email, e.sent_at DESC
+      LIMIT 10
+    `);
+
+    if (deadLeads.length === 0) {
+      return res.json({
+        success: true,
+        sent: 0,
+        message: 'No dead leads to revive (all leads either clicked or already got revival email)',
+      });
+    }
+
+    if (dryRun) {
+      return res.json({
+        success: true,
+        dry_run: true,
+        leads_found: deadLeads.length,
+        leads: deadLeads.map(l => ({ email: l.email, business: l.business_name, city: l.city })),
+        message: `Would revive ${deadLeads.length} dead leads`,
+      });
+    }
+
+    let sent = 0;
+    const results = [];
+
+    for (const lead of deadLeads) {
+      try {
+        const businessName = lead.business_name || 'your restaurant';
+        const city = lead.city || '';
+
+        // Detect German-speaking cities
+        const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Munich', 'Cologne', 'Vienna', 'Zurich', 'Geneva'];
+        const isGerman = germanCities.some(c => city.toLowerCase().includes(c.toLowerCase()));
+
+        let subject, body;
+
+        if (isGerman) {
+          subject = `Problem gelöst?`;
+          body = `Hey,
+
+ich hatte dir letzte Woche geschrieben wegen ${businessName}.
+
+Falls ihr immer noch keine Zeit habt, Reviews zu beantworten - kein Problem. Wollte nur nochmal nachhaken.
+
+Falls doch: Antworte einfach auf diese Email und ich zeige dir wie wir das in 5 Minuten automatisieren können.
+
+Grüße,
+Berend
+
+P.S. Falls kein Interesse, einfach ignorieren - ich nerve nicht weiter.`;
+        } else {
+          subject = `Problem solved?`;
+          body = `Hey,
+
+I reached out last week about ${businessName}.
+
+If you're still too busy to respond to reviews - no worries at all. Just wanted to follow up once.
+
+If you'd like help: Just reply and I'll show you how to automate this in 5 minutes.
+
+Best,
+Berend
+
+P.S. If not interested, just ignore this - I won't bug you again.`;
+        }
+
+        // Send via Brevo or Resend
+        if (brevoApi) {
+          await brevoApi.sendTransacEmail({
+            sender: { name: 'Berend @ ReviewResponder', email: OUTREACH_FROM_EMAIL.replace(/.*<|>.*/g, '') },
+            to: [{ email: lead.email }],
+            subject: subject,
+            textContent: body,
+            tags: ['revival', 'night_automation'],
+          });
+        } else if (resend) {
+          await resend.emails.send({
+            from: OUTREACH_FROM_EMAIL,
+            to: lead.email,
+            subject: subject,
+            text: body,
+            tags: [{ name: 'campaign', value: 'revival' }],
+          });
+        }
+
+        // Mark as revival sent
+        await dbQuery(
+          `UPDATE outreach_emails SET revival_sent = NOW() WHERE id = $1`,
+          [lead.email_id]
+        );
+
+        sent++;
+        results.push({ email: lead.email, business: businessName });
+        console.log(`💀➡️✉️ Revival sent to ${lead.email} (${businessName})`);
+
+        await new Promise(r => setTimeout(r, 500));
+      } catch (err) {
+        console.error(`Failed to send revival to ${lead.email}:`, err.message);
+      }
+    }
+
+    res.json({
+      success: true,
+      sent,
+      leads_revived: results,
+      message: sent > 0 ? `Revived ${sent} dead leads with "Problem solved?" email` : 'No emails sent',
+    });
+  } catch (error) {
+    console.error('Dead lead revival error:', error);
+    res.status(500).json({ error: 'Failed to revive dead leads' });
+  }
+});
+
+// GET /api/cron/ab-test-evaluate - Evaluate A/B tests and select winners
+// Added 14.01.2026: Part of night automation system
+app.all('/api/cron/ab-test-evaluate', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Ensure table exists
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS email_ab_tests (
+        id SERIAL PRIMARY KEY,
+        test_name TEXT NOT NULL,
+        test_type TEXT NOT NULL,
+        variant_a TEXT NOT NULL,
+        variant_b TEXT NOT NULL,
+        sends_a INT DEFAULT 0,
+        clicks_a INT DEFAULT 0,
+        sends_b INT DEFAULT 0,
+        clicks_b INT DEFAULT 0,
+        winner TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        ended_at TIMESTAMP
+      )
+    `);
+
+    // Find tests ready for evaluation (at least 50 sends per variant)
+    const testsToEvaluate = await dbAll(`
+      SELECT * FROM email_ab_tests
+      WHERE winner IS NULL
+        AND ended_at IS NULL
+        AND sends_a >= 50
+        AND sends_b >= 50
+    `);
+
+    const evaluated = [];
+
+    for (const test of testsToEvaluate || []) {
+      const ctrA = test.sends_a > 0 ? (test.clicks_a / test.sends_a * 100).toFixed(2) : 0;
+      const ctrB = test.sends_b > 0 ? (test.clicks_b / test.sends_b * 100).toFixed(2) : 0;
+
+      // Winner is variant with higher CTR (need at least 20% relative difference to declare winner)
+      let winner = null;
+      const relativeDiff = Math.abs(ctrA - ctrB) / Math.max(ctrA, ctrB, 0.01);
+
+      if (relativeDiff >= 0.2) {
+        winner = parseFloat(ctrA) > parseFloat(ctrB) ? 'A' : 'B';
+      }
+
+      if (winner) {
+        await dbQuery(
+          `UPDATE email_ab_tests SET winner = $1, ended_at = NOW() WHERE id = $2`,
+          [winner, test.id]
+        );
+
+        evaluated.push({
+          test_name: test.test_name,
+          winner,
+          variant_a: test.variant_a,
+          variant_b: test.variant_b,
+          ctr_a: `${ctrA}%`,
+          ctr_b: `${ctrB}%`,
+        });
+
+        console.log(`🏆 A/B Test Winner: ${test.test_name} - Variant ${winner} (${winner === 'A' ? ctrA : ctrB}% CTR)`);
+      }
+    }
+
+    // Get current active tests
+    const activeTests = await dbAll(`
+      SELECT test_name, test_type, variant_a, variant_b, sends_a, clicks_a, sends_b, clicks_b
+      FROM email_ab_tests
+      WHERE winner IS NULL AND ended_at IS NULL
+    `);
+
+    res.json({
+      success: true,
+      evaluated: evaluated.length,
+      winners: evaluated,
+      active_tests: activeTests || [],
+      message: evaluated.length > 0
+        ? `Found ${evaluated.length} A/B test winner(s)`
+        : 'No tests ready for evaluation yet (need 50+ sends per variant)',
+    });
+  } catch (error) {
+    console.error('A/B test evaluation error:', error);
+    res.status(500).json({ error: 'Failed to evaluate A/B tests' });
+  }
+});
+
+// POST /api/admin/create-ab-test - Create a new A/B test
+// Added 14.01.2026: Admin endpoint for setting up tests
+app.post('/api/admin/create-ab-test', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { test_name, test_type, variant_a, variant_b } = req.body;
+
+  if (!test_name || !test_type || !variant_a || !variant_b) {
+    return res.status(400).json({ error: 'Missing required fields: test_name, test_type, variant_a, variant_b' });
+  }
+
+  try {
+    // Ensure table exists
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS email_ab_tests (
+        id SERIAL PRIMARY KEY,
+        test_name TEXT NOT NULL,
+        test_type TEXT NOT NULL,
+        variant_a TEXT NOT NULL,
+        variant_b TEXT NOT NULL,
+        sends_a INT DEFAULT 0,
+        clicks_a INT DEFAULT 0,
+        sends_b INT DEFAULT 0,
+        clicks_b INT DEFAULT 0,
+        winner TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        ended_at TIMESTAMP
+      )
+    `);
+
+    const result = await dbQuery(
+      `INSERT INTO email_ab_tests (test_name, test_type, variant_a, variant_b)
+       VALUES ($1, $2, $3, $4) RETURNING id`,
+      [test_name, test_type, variant_a, variant_b]
+    );
+
+    res.json({
+      success: true,
+      test_id: result.rows?.[0]?.id || result.id,
+      message: `A/B test "${test_name}" created`,
+      test: { test_name, test_type, variant_a, variant_b },
+    });
+  } catch (error) {
+    console.error('Create A/B test error:', error);
+    res.status(500).json({ error: 'Failed to create A/B test' });
+  }
+});
+
+// GET /api/admin/ab-tests - List all A/B tests
+app.get('/api/admin/ab-tests', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const tests = await dbAll(`
+      SELECT *,
+        CASE WHEN sends_a > 0 THEN ROUND(clicks_a::numeric / sends_a * 100, 2) ELSE 0 END as ctr_a,
+        CASE WHEN sends_b > 0 THEN ROUND(clicks_b::numeric / sends_b * 100, 2) ELSE 0 END as ctr_b
+      FROM email_ab_tests
+      ORDER BY created_at DESC
+    `);
+
+    res.json({
+      success: true,
+      tests: tests || [],
+      active: (tests || []).filter(t => !t.winner).length,
+      completed: (tests || []).filter(t => t.winner).length,
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get A/B tests' });
+  }
+});
+
 // GET /api/cron/enrich-g2-leads - Find domain and email for G2 competitor leads
 // Changed from POST to GET for cron-job.org compatibility (14.01.2026)
 app.get('/api/cron/enrich-g2-leads', async (req, res) => {
