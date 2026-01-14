@@ -11203,9 +11203,9 @@ app.post('/api/outreach/test-review-alert', async (req, res) => {
       ai_response_draft: aiDraft,
     };
 
-    // Get review alert template
+    // Get review alert template (use no_demo version since we don't generate a demo page for tests)
     const lang = detectLanguage(testCity);
-    const templateKey = lang === 'de' ? 'review_alert_de' : 'review_alert';
+    const templateKey = lang === 'de' ? 'review_alert_no_demo_de' : 'review_alert_no_demo';
     const template = fillEmailTemplate(EMAIL_TEMPLATES[templateKey], testLead);
 
     // Send email
