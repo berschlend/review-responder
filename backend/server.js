@@ -6041,6 +6041,192 @@ app.post('/api/public/demo/:token/convert', async (req, res) => {
   }
 });
 
+// ==========================================
+// TRY BEFORE SIGNUP - Public Demo Generator
+// ==========================================
+// Zero-context AI response generation for homepage demo
+// Rate limited: 3 per IP per day to prevent abuse
+
+// Rate limiter for try endpoint (stricter)
+const tryRateLimiter = rateLimit({
+  windowMs: 24 * 60 * 60 * 1000, // 24 hours
+  max: 3, // 3 requests per IP per day
+  message: {
+    error: 'Daily limit reached',
+    message: "You've used all 3 free tries for today. Sign up for 20 free responses/month!",
+    signup_url: 'https://tryreviewresponder.com/register',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: req => req.ip || req.headers['x-forwarded-for'] || 'unknown',
+});
+
+// POST /api/public/try - Generate AI response without signup
+app.post('/api/public/try', tryRateLimiter, async (req, res) => {
+  try {
+    const { reviewText, tone = 'professional' } = req.body;
+
+    if (!reviewText || reviewText.trim().length < 10) {
+      return res.status(400).json({ error: 'Please enter a review (at least 10 characters)' });
+    }
+
+    if (reviewText.length > 2000) {
+      return res.status(400).json({ error: 'Review text too long (max 2000 characters)' });
+    }
+
+    // Zero-context system prompt (optimized for demo without business context)
+    const toneDescription =
+      tone === 'friendly'
+        ? 'Warm and casual'
+        : tone === 'formal'
+          ? 'Polite and formal'
+          : tone === 'apologetic'
+            ? 'Sincere and apologetic'
+            : 'Professional but warm';
+
+    const systemPrompt = `<system>
+You generate professional review responses for businesses.
+
+<context>
+This is a DEMO without business context. The user has NOT set up their profile yet.
+Extract ALL useful information directly from the review text itself:
+- Language (respond in same language as review)
+- Sentiment (positive/negative/mixed)
+- Specific details mentioned (food, service, rooms, staff names, etc.)
+- Reviewer name (if apparent from the review text)
+- Business type hints (restaurant, hotel, clinic, salon, etc.)
+</context>
+
+<output_format>
+- Length: 2-4 sentences (short and impactful for demo)
+- Tone: ${toneDescription}
+- Structure:
+  1. Address reviewer by name if known, otherwise start directly
+  2. Reference ONE specific detail from their review
+  3. For negative: Express understanding + commitment to improve (general)
+  4. For positive: Genuine thanks + hope to see them again
+- Sign-off: None (user will add their own later)
+</output_format>
+
+<voice>
+Write like a thoughtful business owner who genuinely cares, not a corporate PR team.
+Natural, conversational language. No stiff formality.
+Match the energy of the review - enthusiastic for positive, calm and empathetic for negative.
+</voice>
+
+<style_guide>
+DO:
+- Start with the reviewer's name if you can identify it
+- Reference specific details they mentioned
+- Keep it SHORT - this is a demo, we want to impress quickly
+- Sound human and genuine
+
+AVOID these AI patterns:
+- "Thank you for taking the time to share your feedback"
+- "We truly appreciate your kind words"
+- "Your satisfaction is our top priority"
+- "We strive to..." or "We are committed to..."
+- Starting with "Thank you for your review"
+- Exclamation marks at the end of every sentence
+- Generic corporate language
+</style_guide>
+
+<few_shot_examples>
+<example>
+<review>
+The pizza was cold and the waiter was rude. Waited 45 minutes for food. Never coming back.
+- Mike
+</review>
+<response>
+Mike, I'm sorry your evening went this way. A 45-minute wait and cold pizza is not the experience we want anyone to have. I'll be looking into what happened with our kitchen and front-of-house team this week.
+</response>
+</example>
+
+<example>
+<review>
+Best haircut I've had in years! Maria really understood what I wanted and the salon had such a nice vibe. Will definitely be back.
+</review>
+<response>
+So glad Maria nailed the cut for you! She's got a real talent for listening to what people actually want. Looking forward to your next visit.
+</response>
+</example>
+
+<example>
+<review>
+Das Hotel war okay, aber das Frühstück war enttäuschend. Für den Preis hatte ich mehr erwartet.
+- Thomas K.
+</review>
+<response>
+Thomas, danke für die ehrliche Rückmeldung. Das Frühstück sollte den Preis definitiv rechtfertigen - ich nehme das mit ins Team. Bei Ihrem nächsten Aufenthalt möchten wir, dass Sie rundum zufrieden sind.
+</response>
+</example>
+</few_shot_examples>
+</system>
+
+Write the response directly. No quotes. No "Response:" prefix. Just the review response text.`;
+
+    let generatedResponse;
+
+    // Use GPT-4o-mini to save costs (this is free demo traffic)
+    if (openai) {
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `[Review]\n${reviewText.trim()}` },
+        ],
+        max_tokens: 250,
+        temperature: 0.7,
+      });
+      generatedResponse = completion.choices[0].message.content.trim();
+
+      // Log API call for cost tracking
+      await logApiCall({
+        provider: 'openai',
+        model: 'gpt-4o-mini',
+        endpoint: '/api/public/try',
+        inputTokens: completion.usage?.prompt_tokens || 0,
+        outputTokens: completion.usage?.completion_tokens || 0,
+        status: 'success',
+      });
+    } else {
+      return res.status(500).json({ error: 'AI service temporarily unavailable' });
+    }
+
+    // Clean AI slop if function exists
+    if (typeof cleanAISlop === 'function') {
+      generatedResponse = cleanAISlop(generatedResponse);
+    }
+
+    // Track try usage for analytics (optional - create table if needed)
+    try {
+      await dbQuery(
+        `INSERT INTO public_try_usage (ip_hash, review_length, tone, created_at)
+         VALUES ($1, $2, $3, NOW())
+         ON CONFLICT DO NOTHING`,
+        [
+          crypto.createHash('sha256').update(req.ip || 'unknown').digest('hex').substring(0, 16),
+          reviewText.length,
+          tone,
+        ]
+      );
+    } catch (trackError) {
+      // Table might not exist yet, ignore
+    }
+
+    res.json({
+      success: true,
+      response: generatedResponse,
+      tone: tone,
+      message: 'Like this response? Sign up for 20 free responses/month!',
+      signup_url: 'https://tryreviewresponder.com/register',
+    });
+  } catch (error) {
+    console.error('[/api/public/try] Error:', error.message);
+    res.status(500).json({ error: 'Failed to generate response. Please try again.' });
+  }
+});
+
 // Helper: Send demo email
 async function sendDemoEmail(toEmail, businessName, demos, demoToken, totalReviews) {
   if (!resend) {
