@@ -3079,9 +3079,7 @@ const PricingCards = ({ showFree = true }) => {
       yearlyPrice: 0,
       responses: 20,
       features: [
-        '✨ 3 Smart AI responses',
-        '⚡ 17 Standard responses',
-        '20 total per month',
+        '20 AI responses/month',
         'All 4 tone options',
         '50+ languages',
         'Chrome Extension (all platforms)',
@@ -3095,9 +3093,7 @@ const PricingCards = ({ showFree = true }) => {
       yearlyPrice: 23.2, // 20% off
       responses: 300,
       features: [
-        '✨ 100 Smart AI responses',
-        '⚡ 200 Standard responses',
-        '300 total per month',
+        '300 AI responses/month',
         'Response history',
         'CSV/PDF export',
         'Chrome Extension (all platforms)',
@@ -3111,9 +3107,7 @@ const PricingCards = ({ showFree = true }) => {
       yearlyPrice: 39.2, // 20% off
       responses: 800,
       features: [
-        '✨ 300 Smart AI responses',
-        '⚡ 500 Standard responses',
-        '800 total per month',
+        '800 AI responses/month',
         'Bulk generation (20 at once)',
         'Analytics dashboard',
         'Team members (3)',
@@ -3130,8 +3124,7 @@ const PricingCards = ({ showFree = true }) => {
       yearlyPrice: 79.2, // 20% off
       responses: 'Unlimited',
       features: [
-        '✨ Unlimited Smart AI',
-        '⚡ Unlimited Standard',
+        'Unlimited AI responses',
         'All Pro features',
         'Team members (10)',
         'API access',
@@ -19498,12 +19491,10 @@ const PricingPage = () => {
     },
   ];
 
-  // Feature comparison data - Updated with Hybrid AI limits (Smart + Standard)
+  // Feature comparison data
   const features = [
-    { name: 'Monthly Responses', free: '20', starter: '300', pro: '800', unlimited: 'Unlimited' },
+    { name: 'AI Responses', free: '20', starter: '300', pro: '800', unlimited: 'Unlimited' },
     { name: 'Chrome Extension', free: true, starter: true, pro: true, unlimited: true },
-    { name: 'Smart AI', free: '3', starter: '100', pro: '300', unlimited: 'Unlimited' },
-    { name: 'Standard AI', free: '17', starter: '200', pro: '500', unlimited: 'Unlimited' },
     { name: 'AI Tone Options', free: true, starter: true, pro: true, unlimited: true },
     { name: '50+ Languages', free: true, starter: true, pro: true, unlimited: true },
     { name: 'Response History', free: false, starter: true, pro: true, unlimited: true },
