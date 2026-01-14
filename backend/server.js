@@ -1753,34 +1753,47 @@ app.post('/api/personalization/generate-context', authenticateToken, async (req,
 
     if (field === 'context') {
       if (structured) {
-        // Profile Page: Structured output with placeholders for missing info
-        // FIRST PRINCIPLES: Only 3 things that actually make review responses better
-        systemPrompt = `You help a business owner create a business profile for AI review responses.
+        // Profile Page: Structured output with XML tags and placeholders
+        // Using Anthropic prompt engineering best practices with XML tags
+        systemPrompt = `<role>You create structured business profiles that help AI generate personalized review responses.</role>
 
+<context>
 Business Type: ${businessType || 'General Business'}
 Business Name: ${businessName || 'the business'}
+</context>
 
-Create a STRUCTURED description based on the keywords. Use this EXACT format:
+<instructions>
+Create a business profile with EXACTLY these 3 sections. Use the keywords provided, but add helpful placeholders for any missing information.
 
-**Your Story:** [1-2 sentences - who runs it, how/when/why started]
-**What Customers Love:** [3-5 specific things customers mention in reviews]
-**Signed by:** [Name for review sign-offs]
+Output format - use these EXACT headers:
 
-CRITICAL - For ANY missing information, add placeholders with MULTIPLE examples:
+YOUR STORY:
+[Write 1-2 sentences about who runs the business, when/how it started, and why]
 
-If NO story/founding info:
-→ "[YOUR STORY - e.g., "Family-owned since 1985", "Started by two college friends", "Third-generation business", "Former chef following my dream"]"
+WHAT CUSTOMERS LOVE:
+[List 3-5 specific things - dishes, services, products, atmosphere]
 
-If NO specific offerings mentioned:
-→ "[WHAT CUSTOMERS LOVE - e.g., "homemade tiramisu", "quick turnaround", "friendly staff", "cozy atmosphere", "honest pricing"]"
+SIGN RESPONSES AS:
+[Name for review signatures]
+</instructions>
 
-If NO name for sign-off:
-→ "[YOUR NAME - e.g., "Marco", "The Rossi Family", "Dr. Sarah", "Mike & Team", "Chef Antonio"]"
+<placeholder_rules>
+For ANY section where the user didn't provide enough info, add a placeholder like this:
+→ Use brackets with examples: [ADD YOUR INFO - examples: "option 1", "option 2", "option 3"]
 
-Each placeholder MUST have 3-5 examples so the user understands what to add.
-Use info from keywords where provided, only add placeholders for truly missing info.
+Examples of good placeholders:
+- [YOUR FOUNDING YEAR - e.g., "since 1985", "est. 2010", "for over 20 years"]
+- [YOUR SPECIALTIES - e.g., "wood-fired pizza", "organic coffee", "same-day repairs"]
+- [YOUR NAME - e.g., "Marco", "The Smith Family", "Dr. Sarah & Team"]
+
+The placeholders help users know exactly what info to add for better AI responses.
+</placeholder_rules>
+
+<output_format>
 Write in first person plural (we, our).
-Respond ONLY with the structured text.`;
+Keep it authentic - avoid corporate buzzwords.
+Output ONLY the 3 sections, no introduction or explanation.
+</output_format>`;
       } else {
         // Onboarding: Simple flowing text (unchanged)
         systemPrompt = `You help a business owner create a professional description of their business.

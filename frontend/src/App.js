@@ -8873,6 +8873,21 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
           >
             {generated}
           </p>
+          {field === 'context' && generated.includes('[') && (
+            <div
+              style={{
+                background: 'var(--primary-50)',
+                border: '1px solid var(--primary-200)',
+                borderRadius: '6px',
+                padding: '10px 12px',
+                marginTop: '10px',
+                fontSize: '12px',
+                color: 'var(--primary-700)',
+              }}
+            >
+              <strong>Tip:</strong> Replace the [brackets] with your actual info for more personalized AI responses. The examples show what works best!
+            </div>
+          )}
           <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
             <button
               type="button"
