@@ -1,13 +1,82 @@
 /**
  * Industry-Specific Few-Shot Examples for Review Response Generation
  *
- * Based on Anthropic Best Practices:
+ * Based on Anthropic Prompt Engineering Best Practices (2025):
+ * - XML tags for clear structure (<example>, <review>, <response>)
+ * - Attributes for metadata (type, industry, rating)
  * - Examples should match the desired output context
- * - More relevant examples = better quality responses
  *
+ * @see https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/use-xml-tags
  * @see https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-4-best-practices
  */
 
+// ============ AI SLOP BLACKLIST (Anthropic Official) ============
+const AI_SLOP_WORDS = [
+  // Generic AI-sounding words
+  'thrilled',
+  'delighted',
+  'amazing',
+  'incredible',
+  'wonderful',
+  'fantastic',
+  'exceptional',
+  // Corporate speak
+  'leverage',
+  'embark',
+  'journey',
+  'vital',
+  'crucial',
+  'paramount',
+  // Anthropic 2025 additions
+  'navigate',
+  'landscape',
+  'unpack',
+  'dive into',
+  'at its core',
+  'game-changer',
+  'revolutionary',
+  'transform',
+  'unlock',
+  'skyrocket',
+  'elevate',
+  'seamless',
+  'robust',
+  'cutting-edge',
+];
+
+const AI_SLOP_PHRASES = [
+  'Thank you for your feedback',
+  'We appreciate you taking the time',
+  'Sorry for any inconvenience',
+  'We value your input',
+  'We take all feedback seriously',
+  'Your satisfaction is our priority',
+  'We strive to provide',
+  'We are committed to',
+  'Rest assured',
+  "Here's the thing",
+  "Here's a",
+  'Let me tell you',
+  'Did you know',
+  'The truth is',
+  "Let's be honest",
+  'The uncomfortable truth is',
+  'Make no mistake',
+  'Full stop',
+];
+
+const AI_SLOP_STARTS = [
+  "Here's",
+  'Let me',
+  'Did you know',
+  'The truth is',
+  "I'm excited to",
+  'I want to start by',
+  'First and foremost',
+  "It's worth noting",
+];
+
+// ============ INDUSTRY EXAMPLES (XML Format) ============
 const industryExamples = {
   restaurant: {
     positive: {
@@ -243,9 +312,32 @@ function getIndustryExamples(businessType) {
 }
 
 /**
- * Get formatted few-shot examples for the prompt
+ * Get formatted few-shot examples in XML format for the prompt
+ * Following Anthropic Best Practices for structured examples
+ *
  * @param {string|null} businessType - The business type from user profile
- * @returns {Object} Object with positive and negative examples in prompt format
+ * @returns {string} XML-formatted examples string for direct inclusion in prompt
+ */
+function getFewShotExamplesXML(businessType) {
+  const matched = getIndustryExamples(businessType);
+  const industry = businessType || 'generic';
+
+  return `<examples>
+<example type="positive" industry="${industry}">
+<review rating="5">${matched.positive.review}</review>
+<response>${matched.positive.response}</response>
+</example>
+
+<example type="negative" industry="${industry}">
+<review rating="2">${matched.negative.review}</review>
+<response>${matched.negative.response}</response>
+</example>
+</examples>`;
+}
+
+/**
+ * Legacy function for backward compatibility
+ * @deprecated Use getFewShotExamplesXML for new implementations
  */
 function getFewShotExamples(businessType) {
   const matched = getIndustryExamples(businessType);
@@ -261,8 +353,48 @@ function getFewShotExamples(businessType) {
   };
 }
 
+/**
+ * Check AI response for "slop" patterns
+ * @param {string} response - The generated AI response
+ * @returns {Object} { slopCount, phraseCount, startsWithSlop, passed, issues }
+ */
+function checkAISlop(response) {
+  const lowerResponse = response.toLowerCase();
+
+  // Check for slop words
+  const foundWords = AI_SLOP_WORDS.filter(word => lowerResponse.includes(word.toLowerCase()));
+
+  // Check for slop phrases
+  const foundPhrases = AI_SLOP_PHRASES.filter(phrase =>
+    lowerResponse.includes(phrase.toLowerCase())
+  );
+
+  // Check for slop starts
+  const startsWithSlop = AI_SLOP_STARTS.some(start =>
+    response.trim().toLowerCase().startsWith(start.toLowerCase())
+  );
+
+  const issues = [];
+  if (foundWords.length > 0) issues.push(`Words: ${foundWords.join(', ')}`);
+  if (foundPhrases.length > 0) issues.push(`Phrases: ${foundPhrases.join(', ')}`);
+  if (startsWithSlop) issues.push('Starts with AI-typical opening');
+
+  return {
+    slopCount: foundWords.length,
+    phraseCount: foundPhrases.length,
+    startsWithSlop,
+    passed: foundPhrases.length === 0 && foundWords.length <= 1 && !startsWithSlop,
+    issues,
+  };
+}
+
 module.exports = {
   industryExamples,
   getIndustryExamples,
   getFewShotExamples,
+  getFewShotExamplesXML,
+  checkAISlop,
+  AI_SLOP_WORDS,
+  AI_SLOP_PHRASES,
+  AI_SLOP_STARTS,
 };

@@ -607,6 +607,24 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
     - Dynamisches Matching basierend auf `business_type`
   - **Aktualisierte Prompts:** Main Generator, Public API, Bulk Generation
   - Ergebnis: Responses klingen natürlicher, weniger "AI slop"
+- [x] **Early Access Banner verbessert** - Klarere Kommunikation der 50% Rabatt-Bedingung
+  - Neuer Text: "50% off for your first year" (statt "Early Access - 50% OFF!")
+  - Cleaner Design passend zum Rest der Seite
+  - Code EARLY50 automatisch angewendet mit klarer Info
+- [x] **Settings Page UX verbessert** - Bessere Guidance für Custom Instructions
+  - "Generate with AI" Button prominenter gestaltet (filled, green) + "RECOMMENDED" Badge
+  - XML Tags Beispiele in Placeholders für Custom Instructions und Style Instructions
+  - `<rules>`, `<always>`, `<never>`, `<style>` Tags für besseres Prompt Engineering
+  - "(optional)" Label bei Style Instructions entfernt
+  - "Synced with Dashboard & Extension" Badge hinzugefügt
+- [x] **Onboarding Flow optimiert** - Keine Auto-Speicherung von Business Context mehr
+  - Problem: User sahen nicht mehr den "Set up your AI" Banner weil Context auto-gespeichert wurde
+  - Fix: `saveBusinessProfile()` speichert nur noch businessName + businessType (nicht Context)
+  - Keywords werden via localStorage an Settings übergeben für Pre-fill
+  - User konfiguriert AI bewusst in Settings mit den neuen XML-Tag Guides
+- [x] **Custom Instructions Sync** - Dashboard lädt Custom Instructions aus User Settings
+  - `customInstructions` State initialisiert mit `user?.responseStyle || ''`
+  - User kann in Settings einmal konfigurieren, dann ist es überall verfügbar
 
 ### ERLEDIGT (13.01.2026):
 - [x] **Cron Jobs gefixt** - Alle 3 Cron Jobs liefen auf "Ausgabe zu groß" Fehler
