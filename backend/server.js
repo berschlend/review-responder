@@ -700,6 +700,23 @@ async function initDatabase() {
       )
     `);
 
+    // Personalized discount links
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS discount_links (
+        id SERIAL PRIMARY KEY,
+        token TEXT UNIQUE NOT NULL,
+        discount_code TEXT NOT NULL,
+        recipient_name TEXT,
+        business_name TEXT,
+        email TEXT,
+        expires_at TIMESTAMP,
+        views INTEGER DEFAULT 0,
+        claimed BOOLEAN DEFAULT FALSE,
+        source TEXT DEFAULT 'outreach',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // Pre-registration drip email tracking
     await dbQuery(`
       CREATE TABLE IF NOT EXISTS pre_registration_drips (
@@ -5128,6 +5145,121 @@ app.post('/api/capture-email', async (req, res) => {
   } catch (error) {
     console.error('Email capture error:', error);
     res.status(500).json({ error: 'Failed to save email' });
+  }
+});
+
+// ============ PERSONALIZED DISCOUNT LINKS ============
+
+// Generate a short unique token
+const generateDiscountToken = () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  let token = '';
+  for (let i = 0; i < 8; i++) {
+    token += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return token;
+};
+
+// Create personalized discount link
+app.post('/api/discount-links', async (req, res) => {
+  try {
+    const { discountCode, recipientName, businessName, email, source = 'outreach', expiresInHours = 48 } = req.body;
+
+    if (!discountCode) {
+      return res.status(400).json({ error: 'discountCode is required' });
+    }
+
+    // Generate unique token
+    let token = generateDiscountToken();
+    let attempts = 0;
+    while (attempts < 10) {
+      const existing = await dbGet('SELECT id FROM discount_links WHERE token = $1', [token]);
+      if (!existing) break;
+      token = generateDiscountToken();
+      attempts++;
+    }
+
+    // Calculate expiry
+    const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
+
+    // Insert link
+    await dbQuery(
+      `INSERT INTO discount_links (token, discount_code, recipient_name, business_name, email, expires_at, source)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [token, discountCode.toUpperCase(), recipientName || null, businessName || null, email || null, expiresAt, source]
+    );
+
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://tryreviewresponder.com';
+
+    console.log(`🔗 Discount link created: ${token} for ${recipientName || email || 'anonymous'}`);
+
+    res.json({
+      success: true,
+      token,
+      url: `${FRONTEND_URL}/claim/${token}`,
+      expiresAt: expiresAt.toISOString(),
+    });
+  } catch (error) {
+    console.error('Discount link creation error:', error);
+    res.status(500).json({ error: 'Failed to create discount link' });
+  }
+});
+
+// Get discount link data (public endpoint for claim page)
+app.get('/api/discount-links/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    const link = await dbGet('SELECT * FROM discount_links WHERE token = $1', [token]);
+
+    if (!link) {
+      return res.status(404).json({ error: 'Discount link not found', valid: false });
+    }
+
+    // Increment views
+    await dbQuery('UPDATE discount_links SET views = views + 1 WHERE token = $1', [token]);
+
+    // Check if expired
+    const isExpired = link.expires_at && new Date(link.expires_at) < new Date();
+
+    // Discount info
+    const discountInfo = {
+      EARLY50: { percent: 50, label: 'Early Access', duration: '12 months' },
+      HUNTLAUNCH: { percent: 60, label: 'Product Hunt Special', duration: '12 months' },
+      DEMOFOLLOWUP: { percent: 30, label: 'Demo Special', duration: '3 months' },
+      SAVE20: { percent: 20, label: 'Special Offer', duration: '12 months' },
+    };
+
+    const discount = discountInfo[link.discount_code] || { percent: 20, label: 'Special Offer', duration: '12 months' };
+
+    res.json({
+      valid: true,
+      token: link.token,
+      discountCode: link.discount_code,
+      recipientName: link.recipient_name,
+      businessName: link.business_name,
+      expiresAt: link.expires_at,
+      isExpired,
+      claimed: link.claimed,
+      discount,
+    });
+  } catch (error) {
+    console.error('Discount link fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch discount link' });
+  }
+});
+
+// Mark discount link as claimed
+app.post('/api/discount-links/:token/claim', async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    await dbQuery('UPDATE discount_links SET claimed = true WHERE token = $1', [token]);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Discount claim error:', error);
+    res.status(500).json({ error: 'Failed to mark as claimed' });
   }
 });
 

@@ -19994,42 +19994,72 @@ const PricingPage = () => {
   );
 };
 
-// Claim Discount Page - Beautiful landing for discount links
+// Claim Discount Page - Personalized landing for discount links
 const ClaimDiscountPage = () => {
   const { code } = useParams();
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [linkData, setLinkData] = useState(null);
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isExpired, setIsExpired] = useState(false);
 
-  // Discount info for each code
-  const discountInfo = {
+  // Static discount info for fallback (direct codes like EARLY50)
+  const staticDiscountInfo = {
     EARLY50: { percent: 50, label: 'Early Access', duration: '12 months' },
     HUNTLAUNCH: { percent: 60, label: 'Product Hunt Special', duration: '12 months' },
     DEMOFOLLOWUP: { percent: 30, label: 'Demo Special', duration: '3 months' },
     SAVE20: { percent: 20, label: 'Special Offer', duration: '12 months' },
   };
 
-  const upperCode = code?.toUpperCase();
-  const discount = discountInfo[upperCode];
-  const isValidCode = !!discount;
+  // Check if code is a token (8 chars) or a discount code
+  const isToken = code && code.length === 8 && !staticDiscountInfo[code.toUpperCase()];
 
   useEffect(() => {
-    if (!isValidCode) return;
+    const fetchLinkData = async () => {
+      if (isToken) {
+        // Fetch personalized link data from backend
+        try {
+          const res = await api.get(`/discount-links/${code}`);
+          setLinkData(res.data);
+          setIsExpired(res.data.isExpired);
+        } catch (error) {
+          setLinkData({ valid: false });
+        }
+      } else {
+        // Use static discount info
+        const upperCode = code?.toUpperCase();
+        const staticDiscount = staticDiscountInfo[upperCode];
+        if (staticDiscount) {
+          // Get or set expiry from localStorage
+          const storageKey = `discount_expiry_${upperCode}`;
+          let expiresAt = localStorage.getItem(storageKey);
+          if (!expiresAt) {
+            expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+            localStorage.setItem(storageKey, expiresAt);
+          }
+          setLinkData({
+            valid: true,
+            discountCode: upperCode,
+            discount: staticDiscount,
+            expiresAt,
+            isExpired: new Date(expiresAt) < new Date(),
+          });
+        } else {
+          setLinkData({ valid: false });
+        }
+      }
+      setLoading(false);
+    };
 
-    // Get or set the expiry time (48h from first visit)
-    const storageKey = `discount_expiry_${upperCode}`;
-    let expiryTime = localStorage.getItem(storageKey);
+    fetchLinkData();
+  }, [code, isToken]);
 
-    if (!expiryTime) {
-      // First visit - set 48h from now
-      expiryTime = Date.now() + 48 * 60 * 60 * 1000;
-      localStorage.setItem(storageKey, expiryTime.toString());
-    } else {
-      expiryTime = parseInt(expiryTime);
-    }
+  // Timer effect
+  useEffect(() => {
+    if (!linkData?.expiresAt || linkData.isExpired) return;
 
     const updateTimer = () => {
       const now = Date.now();
+      const expiryTime = new Date(linkData.expiresAt).getTime();
       const diff = expiryTime - now;
 
       if (diff <= 0) {
@@ -20038,43 +20068,40 @@ const ClaimDiscountPage = () => {
         return;
       }
 
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      setTimeLeft({ hours, minutes, seconds });
+      setTimeLeft({
+        hours: Math.floor(diff / (1000 * 60 * 60)),
+        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((diff % (1000 * 60)) / 1000),
+      });
     };
 
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
-
     return () => clearInterval(interval);
-  }, [upperCode, isValidCode]);
+  }, [linkData]);
 
-  // Invalid code
-  if (!isValidCode) {
+  // Loading state
+  if (loading) {
+    return (
+      <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="spinner" style={{ width: '40px', height: '40px', border: '3px solid var(--border-color)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+      </div>
+    );
+  }
+
+  // Invalid link
+  if (!linkData?.valid) {
     return (
       <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
         <div style={{ textAlign: 'center', maxWidth: '500px' }}>
           <div style={{ fontSize: '64px', marginBottom: '24px' }}>🔗</div>
           <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px', color: 'var(--text-primary)' }}>
-            Invalid Discount Code
+            Link Not Found
           </h1>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>
             This discount link is not valid or has expired.
           </p>
-          <Link
-            to="/pricing"
-            style={{
-              display: 'inline-block',
-              padding: '14px 32px',
-              background: 'var(--primary)',
-              color: 'white',
-              borderRadius: '8px',
-              textDecoration: 'none',
-              fontWeight: '600',
-            }}
-          >
+          <Link to="/pricing" style={{ display: 'inline-block', padding: '14px 32px', background: 'var(--primary)', color: 'white', borderRadius: '8px', textDecoration: 'none', fontWeight: '600' }}>
             View Plans
           </Link>
         </div>
@@ -20082,69 +20109,171 @@ const ClaimDiscountPage = () => {
     );
   }
 
+  const { discount, discountCode, recipientName, businessName } = linkData;
+  const firstName = recipientName?.split(' ')[0];
+
   return (
-    <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-      <div style={{ textAlign: 'center', maxWidth: '600px' }}>
-        {/* Badge */}
-        <div
-          style={{
-            display: 'inline-block',
-            padding: '6px 16px',
-            background: 'linear-gradient(135deg, #10b981, #059669)',
-            color: 'white',
-            borderRadius: '20px',
-            fontSize: '13px',
-            fontWeight: '600',
-            marginBottom: '24px',
-          }}
-        >
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Animated background glow */}
+      <div style={{
+        position: 'absolute',
+        top: '20%',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '600px',
+        height: '600px',
+        background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)',
+        pointerEvents: 'none'
+      }} />
+
+      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '80px 24px', textAlign: 'center', position: 'relative', zIndex: 1 }}>
+
+        {/* Exclusive badge */}
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '6px 14px',
+          background: 'rgba(255,255,255,0.1)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255,255,255,0.2)',
+          borderRadius: '100px',
+          fontSize: '12px',
+          fontWeight: '500',
+          marginBottom: '32px',
+          color: 'rgba(255,255,255,0.9)',
+          letterSpacing: '0.5px',
+          textTransform: 'uppercase'
+        }}>
+          <span style={{ width: '6px', height: '6px', background: '#10b981', borderRadius: '50%', animation: 'pulse 2s infinite' }} />
           {discount.label}
         </div>
 
-        {/* Main heading */}
-        <h1 style={{ fontSize: '42px', fontWeight: '800', marginBottom: '16px', color: 'var(--text-primary)', lineHeight: '1.1' }}>
-          Your Exclusive{' '}
-          <span style={{ background: 'linear-gradient(135deg, #10b981, #059669)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            {discount.percent}% Off
-          </span>
-        </h1>
+        {/* Personalized greeting */}
+        {firstName && (
+          <p style={{
+            fontSize: '18px',
+            color: 'rgba(255,255,255,0.7)',
+            marginBottom: '12px',
+            fontWeight: '400'
+          }}>
+            Hey {firstName}, this one's for you
+          </p>
+        )}
 
-        <p style={{ fontSize: '18px', color: 'var(--text-secondary)', marginBottom: '32px' }}>
-          Save on ReviewResponder for {discount.duration}. AI-powered review responses in seconds.
+        {/* Giant discount number */}
+        <div style={{ marginBottom: '24px' }}>
+          <span style={{
+            fontSize: '120px',
+            fontWeight: '900',
+            background: 'linear-gradient(135deg, #10b981 0%, #34d399 50%, #6ee7b7 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            lineHeight: '1',
+            display: 'block',
+            letterSpacing: '-4px',
+            textShadow: '0 0 80px rgba(16, 185, 129, 0.5)'
+          }}>
+            {discount.percent}%
+          </span>
+          <span style={{
+            fontSize: '28px',
+            fontWeight: '600',
+            color: 'rgba(255,255,255,0.9)',
+            letterSpacing: '8px',
+            textTransform: 'uppercase',
+            display: 'block',
+            marginTop: '-8px'
+          }}>
+            OFF
+          </span>
+        </div>
+
+        {/* Business name - premium card */}
+        {businessName && (
+          <div style={{
+            display: 'inline-block',
+            padding: '16px 32px',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '16px',
+            marginBottom: '32px',
+            border: '1px solid rgba(255,255,255,0.15)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+          }}>
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px 0', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: '500' }}>Reserved exclusively for</p>
+            <p style={{ fontSize: '20px', fontWeight: '700', color: 'white', margin: 0 }}>{businessName}</p>
+          </div>
+        )}
+
+        <p style={{
+          fontSize: '18px',
+          color: 'rgba(255,255,255,0.6)',
+          marginBottom: '48px',
+          maxWidth: '480px',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          lineHeight: '1.6'
+        }}>
+          AI-powered review responses in seconds. Save hours every week on Google, Yelp, TripAdvisor and more.
         </p>
 
-        {/* Timer */}
+        {/* Timer - Urgent countdown with glow */}
         {!isExpired ? (
-          <div style={{ marginBottom: '32px' }}>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '12px' }}>
-              Offer expires in:
+          <div style={{ marginBottom: '48px' }}>
+            <p style={{
+              fontSize: '11px',
+              fontWeight: '600',
+              color: '#f87171',
+              marginBottom: '20px',
+              textTransform: 'uppercase',
+              letterSpacing: '3px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}>
+              <span style={{ display: 'inline-block', width: '8px', height: '8px', background: '#f87171', borderRadius: '50%', animation: 'pulse 1s infinite' }} />
+              Offer expires in
             </p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
               {[
                 { value: timeLeft.hours, label: 'Hours' },
-                { value: timeLeft.minutes, label: 'Minutes' },
-                { value: timeLeft.seconds, label: 'Seconds' },
+                { value: timeLeft.minutes, label: 'Min' },
+                { value: timeLeft.seconds, label: 'Sec' },
               ].map((item, i) => (
                 <div key={i} style={{ textAlign: 'center' }}>
-                  <div
-                    style={{
-                      width: '72px',
-                      height: '72px',
-                      background: 'var(--bg-secondary)',
-                      borderRadius: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '28px',
-                      fontWeight: '700',
-                      color: 'var(--text-primary)',
-                      fontFamily: 'monospace',
-                      border: '1px solid var(--border-color)',
-                    }}
-                  >
+                  <div style={{
+                    width: '90px',
+                    height: '90px',
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)',
+                    backdropFilter: 'blur(20px)',
+                    borderRadius: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '36px',
+                    fontWeight: '700',
+                    color: 'white',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1)'
+                  }}>
                     {String(item.value).padStart(2, '0')}
                   </div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' }}>
+                  <div style={{
+                    fontSize: '10px',
+                    fontWeight: '600',
+                    color: 'rgba(255,255,255,0.4)',
+                    marginTop: '10px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px'
+                  }}>
                     {item.label}
                   </div>
                 </div>
@@ -20152,60 +20281,140 @@ const ClaimDiscountPage = () => {
             </div>
           </div>
         ) : (
-          <div style={{ marginBottom: '32px', padding: '16px', background: '#fef2f2', borderRadius: '8px', color: '#dc2626' }}>
-            This offer has expired. View our regular pricing below.
+          <div style={{
+            marginBottom: '48px',
+            padding: '20px 32px',
+            background: 'rgba(239,68,68,0.2)',
+            borderRadius: '16px',
+            color: '#fca5a5',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '12px',
+            border: '1px solid rgba(239,68,68,0.3)'
+          }}>
+            <span style={{ fontSize: '24px' }}>⏰</span>
+            <span style={{ fontWeight: '600' }}>This offer has expired</span>
           </div>
         )}
 
-        {/* CTA Button */}
+        {/* Premium CTA Button */}
         <Link
-          to={isExpired ? '/pricing' : `/pricing?discount=${upperCode}`}
+          to={isExpired ? '/pricing' : `/pricing?discount=${discountCode}`}
           style={{
             display: 'inline-block',
-            padding: '18px 48px',
-            background: isExpired ? 'var(--text-muted)' : 'linear-gradient(135deg, #10b981, #059669)',
+            padding: '22px 64px',
+            background: isExpired ? 'rgba(255,255,255,0.1)' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
             color: 'white',
-            borderRadius: '12px',
+            borderRadius: '16px',
             textDecoration: 'none',
             fontWeight: '700',
             fontSize: '18px',
-            boxShadow: isExpired ? 'none' : '0 8px 24px rgba(16, 185, 129, 0.3)',
-            transition: 'transform 0.2s, box-shadow 0.2s',
+            boxShadow: isExpired ? 'none' : '0 0 60px rgba(16, 185, 129, 0.4), 0 20px 40px rgba(16, 185, 129, 0.3)',
+            transition: 'all 0.3s ease',
+            border: isExpired ? '1px solid rgba(255,255,255,0.2)' : 'none',
+            position: 'relative',
+            overflow: 'hidden'
           }}
           onMouseOver={e => {
             if (!isExpired) {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 12px 32px rgba(16, 185, 129, 0.4)';
+              e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+              e.currentTarget.style.boxShadow = '0 0 80px rgba(16, 185, 129, 0.5), 0 24px 48px rgba(16, 185, 129, 0.4)';
             }
           }}
           onMouseOut={e => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = isExpired ? 'none' : '0 8px 24px rgba(16, 185, 129, 0.3)';
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = isExpired ? 'none' : '0 0 60px rgba(16, 185, 129, 0.4), 0 20px 40px rgba(16, 185, 129, 0.3)';
           }}
         >
-          {isExpired ? 'View Plans' : `Claim ${discount.percent}% Off Now`}
+          {isExpired ? 'View Regular Pricing' : `Claim Your ${discount.percent}% Discount`}
         </Link>
 
-        {/* Benefits */}
-        <div style={{ marginTop: '48px', display: 'flex', justifyContent: 'center', gap: '32px', flexWrap: 'wrap' }}>
+        {/* Trust indicators with icons */}
+        <div style={{ marginTop: '56px', display: 'flex', justifyContent: 'center', gap: '40px', flexWrap: 'wrap' }}>
           {[
-            { icon: '⚡', text: 'AI responses in seconds' },
+            { icon: '⚡', text: 'Instant responses' },
             { icon: '🌍', text: '50+ languages' },
-            { icon: '🔌', text: 'Chrome Extension' },
+            { icon: '💳', text: 'Cancel anytime' },
           ].map((item, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)' }}>
-              <span>{item.icon}</span>
-              <span style={{ fontSize: '14px' }}>{item.text}</span>
+            <div key={i} style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              color: 'rgba(255,255,255,0.5)',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}>
+              <span style={{ fontSize: '18px' }}>{item.icon}</span>
+              <span>{item.text}</span>
             </div>
           ))}
         </div>
 
-        {/* Code display */}
-        <div style={{ marginTop: '48px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px dashed var(--border-color)' }}>
-          <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Your discount code</p>
-          <p style={{ fontSize: '20px', fontWeight: '700', fontFamily: 'monospace', color: 'var(--primary)' }}>{upperCode}</p>
+        {/* Discount code - elegant display */}
+        <div style={{
+          marginTop: '56px',
+          padding: '24px 40px',
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '16px',
+          border: '1px solid rgba(255,255,255,0.1)',
+          display: 'inline-block',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+        }}>
+          <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginBottom: '8px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '2px' }}>Your exclusive code</p>
+          <p style={{
+            fontSize: '28px',
+            fontWeight: '800',
+            fontFamily: 'monospace',
+            background: 'linear-gradient(135deg, #a78bfa 0%, #818cf8 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            margin: 0,
+            letterSpacing: '4px'
+          }}>{discountCode}</p>
+          <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '8px', fontWeight: '500' }}>Valid for {discount.duration}</p>
         </div>
+
+        {/* Social proof */}
+        <div style={{
+          marginTop: '48px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '12px'
+        }}>
+          <div style={{ display: 'flex' }}>
+            {['#4f46e5', '#10b981', '#f59e0b', '#ef4444'].map((color, i) => (
+              <div key={i} style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                background: color,
+                border: '2px solid #1e1b4b',
+                marginLeft: i > 0 ? '-10px' : '0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '14px'
+              }}>
+                {['B', 'M', 'S', 'R'][i]}
+              </div>
+            ))}
+          </div>
+          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>
+            Trusted by <span style={{ color: 'white', fontWeight: '600' }}>500+</span> businesses
+          </p>
+        </div>
+
       </div>
+
+      {/* CSS for pulse animation */}
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
     </div>
   );
 };
