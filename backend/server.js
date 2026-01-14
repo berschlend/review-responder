@@ -5088,13 +5088,42 @@ app.get('/api/public/blog/:slug', async (req, res) => {
 // ============== DEMO GENERATOR SYSTEM ==============
 // Personalized demos for cold outreach: scrape reviews, generate AI responses
 
-// Helper: Scrape Google reviews via SerpAPI
-async function scrapeGoogleReviews(placeId, limit = 10) {
-  if (!process.env.SERPAPI_KEY) {
-    throw new Error('SERPAPI_KEY not configured');
+// SerpAPI Key Rotation - supports multiple keys for scaling
+// Keys: SERPAPI_KEY, SERPAPI_KEY_2, SERPAPI_KEY_3, etc.
+let serpApiKeyIndex = 0;
+function getNextSerpApiKey() {
+  const keys = [
+    process.env.SERPAPI_KEY,
+    process.env.SERPAPI_KEY_2,
+    process.env.SERPAPI_KEY_3,
+  ].filter(Boolean); // Remove undefined keys
+
+  if (keys.length === 0) {
+    return null;
   }
 
-  const url = `https://serpapi.com/search.json?engine=google_maps_reviews&place_id=${placeId}&hl=en&api_key=${process.env.SERPAPI_KEY}`;
+  // Round-robin rotation
+  const key = keys[serpApiKeyIndex % keys.length];
+  serpApiKeyIndex++;
+  return key;
+}
+
+function getSerpApiKeyCount() {
+  return [
+    process.env.SERPAPI_KEY,
+    process.env.SERPAPI_KEY_2,
+    process.env.SERPAPI_KEY_3,
+  ].filter(Boolean).length;
+}
+
+// Helper: Scrape Google reviews via SerpAPI
+async function scrapeGoogleReviews(placeId, limit = 10) {
+  const apiKey = getNextSerpApiKey();
+  if (!apiKey) {
+    throw new Error('No SERPAPI_KEY configured');
+  }
+
+  const url = `https://serpapi.com/search.json?engine=google_maps_reviews&place_id=${placeId}&hl=en&api_key=${apiKey}`;
 
   const response = await fetch(url);
   const data = await response.json();
@@ -10683,8 +10712,8 @@ GREAT RESPONSES:
 // Returns { demo_url, demo_token, reviews_processed } or null if failed
 async function generateDemoForLead(lead) {
   try {
-    // Need SerpAPI for review scraping
-    if (!process.env.SERPAPI_KEY || !process.env.GOOGLE_PLACES_API_KEY) {
+    // Need SerpAPI for review scraping (supports multiple keys via rotation)
+    if (getSerpApiKeyCount() === 0 || !process.env.GOOGLE_PLACES_API_KEY) {
       console.log('Missing API keys for demo generation');
       return null;
     }
@@ -15621,18 +15650,20 @@ app.get('/api/admin/automation-health', async (req, res) => {
 
     // 6. Check for errors/warnings
     const alerts = [];
+    const serpApiKeyCount = getSerpApiKeyCount();
+    const effectiveSerpApiLimit = serpApiKeyCount * 100; // 100 per key on free tier
 
-    if (serpApiUsageEstimate > serpApiLimit * 0.8) {
+    if (serpApiUsageEstimate > effectiveSerpApiLimit * 0.8) {
       alerts.push({
         type: 'warning',
-        message: `SerpAPI usage high: ~${serpApiUsageEstimate}/mo (limit: ${serpApiLimit})`
+        message: `SerpAPI usage high: ~${serpApiUsageEstimate}/mo (limit: ${effectiveSerpApiLimit} with ${serpApiKeyCount} key${serpApiKeyCount > 1 ? 's' : ''})`
       });
     }
 
-    if (!process.env.SERPAPI_KEY) {
+    if (serpApiKeyCount === 0) {
       alerts.push({
         type: 'error',
-        message: 'SERPAPI_KEY not configured - demos will fail!'
+        message: 'No SERPAPI_KEY configured - demos will fail!'
       });
     }
 
@@ -15674,9 +15705,10 @@ app.get('/api/admin/automation-health', async (req, res) => {
       api_usage: {
         serpapi: {
           estimated_monthly: serpApiUsageEstimate,
-          limit: serpApiLimit,
-          percent: Math.round(serpApiUsageEstimate / serpApiLimit * 100),
-          configured: !!process.env.SERPAPI_KEY
+          limit: effectiveSerpApiLimit,
+          key_count: serpApiKeyCount,
+          percent: Math.round(serpApiUsageEstimate / effectiveSerpApiLimit * 100),
+          note: serpApiKeyCount > 1 ? `${serpApiKeyCount} keys rotating (${effectiveSerpApiLimit} total searches/mo)` : null
         },
         google_places: {
           estimated_monthly_cost_usd: Math.round(googlePlacesCostEstimate * 100) / 100,
