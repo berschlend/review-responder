@@ -488,6 +488,34 @@ https://review-responder.onrender.com/api/cron/ENDPOINT?secret=CRON_SECRET
 2. Cold Email Kampagne mit gesammelten Leads starten
 3. Hunter.io für Email-Adressen der Restaurant-Leads
 
+### LinkedIn Automation via Chrome MCP
+
+**So funktioniert's:**
+1. Claude mit `claude --chrome` starten
+2. Im Browser bei LinkedIn eingeloggt sein
+3. `/linkedin-connect` ausführen
+
+**Claude macht dann automatisch:**
+- Navigiert zu LinkedIn Profilen
+- Klickt "Vernetzen" → "Nachricht hinzufügen"
+- Fügt personalisierte Demo-Note ein
+- Sendet Connection Request
+- Markiert in DB als gesendet
+
+**LinkedIn Limits (Free Account):**
+- ~5 personalisierte Notes/Monat
+- 20 Connection Requests/Tag
+- 100 Connection Requests/Woche
+
+**Commands:**
+- `/linkedin-connect` - Sendet pending Demo-Leads
+- `/linkedin-connect followup` - Prüft Acceptances + sendet Follow-ups
+
+**API Endpoints:**
+- `GET /api/outreach/linkedin-pending` - Pending Leads mit Demo-URLs
+- `PUT /api/outreach/linkedin-demo/:id/sent` - Markiert als gesendet
+- `PUT /api/outreach/linkedin-demo/:id/accepted` - Markiert als akzeptiert
+
 ### HEUTE ERLEDIGT (14.01.2026):
 - [x] **Chrome MCP Lead Scraper Session** - 5 neue TripAdvisor Leads gesammelt
   - Schiller Bräu, Steinheil 16, Trattoria Da Fausto

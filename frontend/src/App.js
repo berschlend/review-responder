@@ -11745,22 +11745,26 @@ const DemoPage = () => {
   // Live Preview - Generate AI response for user's review
   const generateLiveResponse = async () => {
     if (!liveReview.trim() || liveLoading) return;
+    if (liveReview.trim().length < 10) {
+      setLiveResponse('Please enter at least 10 characters.');
+      return;
+    }
     setLiveLoading(true);
     try {
-      const response = await fetch(`${API_URL}/generate`, {
+      const response = await fetch(`${API_URL}/public/try`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          review: liveReview,
+          reviewText: liveReview,
           tone: 'professional',
-          platform: 'google',
-          businessName: demo?.business_name || 'Your Business',
-          businessContext: '',
-          isDemo: true
-        })
+        }),
       });
       const data = await response.json();
-      setLiveResponse(data.response || 'Unable to generate response. Please try again.');
+      if (data.error) {
+        setLiveResponse(data.error);
+      } else {
+        setLiveResponse(data.response || 'Unable to generate response. Please try again.');
+      }
     } catch (err) {
       setLiveResponse('Unable to generate response. Sign up for free to try!');
     } finally {
