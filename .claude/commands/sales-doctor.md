@@ -38,6 +38,38 @@ curl -s --max-time 10 "https://review-responder.onrender.com/api/outreach/dashbo
 curl -s --max-time 10 -H "X-Admin-Key: ADMIN_KEY" "https://review-responder.onrender.com/api/admin/stats"
 ```
 
+### 1.4 Pipeline Health (KRITISCH!)
+```bash
+# Umfassender Pipeline Check - Leads, Demos, Emails, Funnel
+curl -s --max-time 10 "https://review-responder.onrender.com/api/admin/pipeline-health?key=ADMIN_KEY"
+```
+
+**Dieser Endpoint liefert:**
+- **Leads:** Total, mit Email, in Queue, contacted, needs Demo
+- **Demos:** Total, heute erstellt, letzte Demo wann?
+- **Emails:** Heute gesendet, Drip heute, Follow-ups heute
+- **Funnel:** Conversion Rates (Lead→Email→Click→Signup→Paid)
+- **Health Status:** overall, leadQueue, demoGeneration, emailDelivery
+
+**Schwellwerte (automatisch berechnet):**
+| Check | OK | WARNING | CRITICAL |
+|-------|-----|---------|----------|
+| Lead Queue | >100 | 20-100 | <20 |
+| Leads mit Email | >100 | 50-100 | <50 |
+| Letzte Demo | <24h | 24-48h | >48h |
+| Letzte Email | <24h | 24-48h | >48h |
+
+**Beispiel Response:**
+```json
+{
+  "leads": { "total": 528, "withEmail": 326, "inQueue": 42, "queueStatus": "warning" },
+  "demos": { "total": 200, "today": 5, "lastCreatedHoursAgo": 8, "status": "ok" },
+  "emails": { "today": 35, "dripToday": 12, "status": "ok" },
+  "funnel": { "clickRate": 3, "signupRate": 0, "paidRate": 0 },
+  "health": { "overall": "warning" }
+}
+```
+
 ---
 
 ## PHASE 2: CRON JOBS CHECK (CHROME MCP)
@@ -87,29 +119,39 @@ Fehlende Jobs → Dem User mitteilen zum Eintragen
 
 ## PHASE 4: DIAGNOSE REPORT
 
-Erstelle einen kompakten Report:
+Erstelle einen kompakten Report basierend auf `/api/admin/pipeline-health`:
 
 ```
 === SALES DOCTOR REPORT ===
 
-BACKEND STATUS:
-[ ] Health Endpoint: OK/FEHLER
-[ ] Database: OK/FEHLER
-[ ] API Credits: OK/WARNING/CRITICAL
+SYSTEM HEALTH: [OK/WARNING/CRITICAL]
+
+BACKEND:
+[OK/X] Health Endpoint
+[OK/X] Database Connection
+[OK/X] API Credits
+
+PIPELINE HEALTH:
+[OK/WARNING/CRITICAL] Lead Queue: XX Leads warten (>100=OK, 20-100=WARNING, <20=CRITICAL)
+[OK/WARNING/CRITICAL] Demo Generation: Letzte Demo vor X Stunden
+[OK/WARNING/CRITICAL] Email Delivery: Letzte Email vor X Stunden
+[OK/WARNING/CRITICAL] Lead Sources: XX mit Email (>100=OK)
 
 CRON JOBS:
-[ ] X von Y Jobs OK
-[ ] Fehlgeschlagene: [Liste]
+[OK/X] X von Y Jobs erfolgreich
+Fehlgeschlagen: [Liste mit Fehlergrund]
 
-OUTREACH METRIKEN:
-- Leads: XXX (davon XX mit Email)
-- Emails gesendet: XXX
-- Click Rate: X.X%
-- Conversions: X
+CONVERSION FUNNEL:
+Leads Total    → XXX
+With Email     → XXX (XX% Email-Find-Rate)
+Contacted      → XXX (XX% Contact-Rate)
+Clicks         → XXX (XX% Click-Rate)
+Signups        → XXX (XX% Signup-Rate)
+Paid           → XXX (XX% Paid-Rate) ← HAUPTMETRIK!
 
-LEAD-QUELLEN STATUS:
-- Daily Outreach: OK/LOW/CRITICAL
-- LinkedIn: OK/LOW/CRITICAL (Anzahl pending)
+LEAD-QUELLEN:
+- Daily Outreach: OK/LOW/CRITICAL (Google Places)
+- LinkedIn: OK/LOW/CRITICAL (X pending Demos)
 - TripAdvisor: OK/LOW/CRITICAL
 - G2: OK/LOW/CRITICAL
 - Yelp: OK/LOW/CRITICAL
@@ -193,25 +235,43 @@ OPTIONAL:
 ```
 START
   │
-  ├─ Backend Health OK?
+  ├─ Backend Health OK? (via /api/health)
   │   ├─ NEIN → KRITISCH: Backend down, Render Dashboard checken
   │   └─ JA → Weiter
   │
-  ├─ Cron Jobs alle gruen?
+  ├─ Pipeline Health abrufen (via /api/admin/pipeline-health)
+  │   │
+  │   ├─ Lead Queue Status?
+  │   │   ├─ CRITICAL (<20) → Berend: SOFORT neue Leads scrapen!
+  │   │   ├─ WARNING (20-100) → Berend: Heute noch scrapen
+  │   │   └─ OK (>100) → Weiter
+  │   │
+  │   ├─ Demo Generation Status?
+  │   │   ├─ CRITICAL (>48h) → Pruefe /api/cron/generate-demos, Cron Job aktiv?
+  │   │   ├─ WARNING (24-48h) → Beobachten
+  │   │   └─ OK (<24h) → Weiter
+  │   │
+  │   ├─ Email Delivery Status?
+  │   │   ├─ CRITICAL (>48h) → Pruefe Daily Outreach, Brevo/Resend Credits
+  │   │   ├─ WARNING (24-48h) → Beobachten
+  │   │   └─ OK (<24h) → Weiter
+  │   │
+  │   └─ Conversion Funnel?
+  │       ├─ 0% Paid Rate → HAUPTPROBLEM: Analysiere warum keine Conversions
+  │       ├─ 0% Signup Rate → Problem: Clicks fuehren nicht zu Signups
+  │       ├─ <1% Click Rate → Problem: Emails werden nicht geklickt
+  │       └─ OK → Weiter
+  │
+  ├─ Cron Jobs alle gruen? (via Chrome MCP)
   │   ├─ NEIN → Fehler analysieren, automatisch fixen wenn moeglich
   │   └─ JA → Weiter
   │
-  ├─ Lead-Quellen gesund?
-  │   ├─ CRITICAL → Berend: SOFORT scrapen
-  │   ├─ LOW → Berend: Heute noch scrapen
-  │   └─ OK → Weiter
-  │
-  ├─ API Credits OK?
+  ├─ API Credits OK? (via /api/admin/api-credits)
   │   ├─ EXHAUSTED → Berend: Keys erneuern
-  │   ├─ CRITICAL → Berend: Bald erneuern
+  │   ├─ CRITICAL (>90%) → Berend: Bald erneuern
   │   └─ OK → Weiter
   │
-  └─ Alles OK → "System healthy!"
+  └─ Alles OK → "System healthy! Conversion ist das Hauptproblem."
 ```
 
 ---

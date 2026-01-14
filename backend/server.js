@@ -14130,6 +14130,156 @@ app.get('/api/admin/api-credits', async (req, res) => {
   }
 });
 
+// Pipeline Health - Comprehensive health check for sales automation
+// Used by /sales-doctor command to diagnose system health
+app.get('/api/admin/pipeline-health', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!process.env.ADMIN_SECRET || !safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // 1. Lead Pipeline Stats
+    const leadsResult = await dbQuery(`
+      SELECT
+        COUNT(*) as total,
+        COUNT(*) FILTER (WHERE email IS NOT NULL) as with_email,
+        COUNT(*) FILTER (WHERE contacted = FALSE AND email IS NOT NULL) as in_queue,
+        COUNT(*) FILTER (WHERE contacted = TRUE) as contacted,
+        COUNT(*) FILTER (WHERE demo_url IS NULL AND email IS NOT NULL) as needs_demo
+      FROM outreach_leads
+    `);
+    const leads = leadsResult.rows[0] || {};
+
+    // 2. Demo Generation Stats
+    const demosResult = await dbQuery(`
+      SELECT
+        COUNT(*) as total,
+        COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE) as today,
+        COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '7 days') as week,
+        MAX(created_at) as last_created
+      FROM demo_pages
+    `);
+    const demos = demosResult.rows[0] || {};
+
+    // 3. Email Stats
+    const emailsResult = await dbQuery(`
+      SELECT
+        COUNT(*) FILTER (WHERE sent_at >= CURRENT_DATE) as today,
+        COUNT(*) FILTER (WHERE sent_at >= CURRENT_DATE - INTERVAL '7 days') as week,
+        MAX(sent_at) as last_sent,
+        COUNT(*) FILTER (WHERE campaign LIKE '%drip%' AND sent_at >= CURRENT_DATE) as drip_today,
+        COUNT(*) FILTER (WHERE campaign LIKE '%followup%' AND sent_at >= CURRENT_DATE) as followup_today
+      FROM email_logs
+    `);
+    const emails = emailsResult.rows[0] || {};
+
+    // 4. Conversion Funnel
+    const funnelResult = await dbQuery(`
+      SELECT
+        (SELECT COUNT(*) FROM outreach_leads) as leads_total,
+        (SELECT COUNT(*) FROM outreach_leads WHERE email IS NOT NULL) as leads_with_email,
+        (SELECT COUNT(*) FROM outreach_leads WHERE contacted = TRUE) as leads_contacted,
+        (SELECT COUNT(*) FROM email_clicks) as clicks,
+        (SELECT COUNT(*) FROM users WHERE source = 'outreach') as signups_from_outreach,
+        (SELECT COUNT(*) FROM users WHERE subscription_plan != 'free' AND source = 'outreach') as paid_from_outreach
+    `);
+    const funnel = funnelResult.rows[0] || {};
+
+    // 5. Calculate health status
+    const getStatus = (value, warningThreshold, criticalThreshold, higherIsBetter = true) => {
+      if (higherIsBetter) {
+        if (value < criticalThreshold) return 'critical';
+        if (value < warningThreshold) return 'warning';
+        return 'ok';
+      } else {
+        if (value > criticalThreshold) return 'critical';
+        if (value > warningThreshold) return 'warning';
+        return 'ok';
+      }
+    };
+
+    const leadQueueStatus = getStatus(parseInt(leads.in_queue) || 0, 100, 20);
+    const leadEmailStatus = getStatus(parseInt(leads.with_email) || 0, 100, 50);
+
+    // Demo health: Check if demos were created recently
+    const lastDemoAge = demos.last_created
+      ? Math.floor((Date.now() - new Date(demos.last_created).getTime()) / (1000 * 60 * 60))
+      : 999;
+    const demoStatus = lastDemoAge > 48 ? 'critical' : lastDemoAge > 24 ? 'warning' : 'ok';
+
+    // Email health: Check if emails were sent recently
+    const lastEmailAge = emails.last_sent
+      ? Math.floor((Date.now() - new Date(emails.last_sent).getTime()) / (1000 * 60 * 60))
+      : 999;
+    const emailStatus = lastEmailAge > 48 ? 'critical' : lastEmailAge > 24 ? 'warning' : 'ok';
+
+    // Overall health
+    const statuses = [leadQueueStatus, leadEmailStatus, demoStatus, emailStatus];
+    const overallHealth = statuses.includes('critical') ? 'critical'
+      : statuses.includes('warning') ? 'warning' : 'ok';
+
+    res.json({
+      leads: {
+        total: parseInt(leads.total) || 0,
+        withEmail: parseInt(leads.with_email) || 0,
+        inQueue: parseInt(leads.in_queue) || 0,
+        contacted: parseInt(leads.contacted) || 0,
+        needsDemo: parseInt(leads.needs_demo) || 0,
+        queueStatus: leadQueueStatus,
+        emailStatus: leadEmailStatus,
+      },
+      demos: {
+        total: parseInt(demos.total) || 0,
+        today: parseInt(demos.today) || 0,
+        week: parseInt(demos.week) || 0,
+        lastCreated: demos.last_created,
+        lastCreatedHoursAgo: lastDemoAge,
+        status: demoStatus,
+      },
+      emails: {
+        today: parseInt(emails.today) || 0,
+        week: parseInt(emails.week) || 0,
+        lastSent: emails.last_sent,
+        lastSentHoursAgo: lastEmailAge,
+        dripToday: parseInt(emails.drip_today) || 0,
+        followupToday: parseInt(emails.followup_today) || 0,
+        status: emailStatus,
+      },
+      funnel: {
+        leadsTotal: parseInt(funnel.leads_total) || 0,
+        leadsWithEmail: parseInt(funnel.leads_with_email) || 0,
+        leadsContacted: parseInt(funnel.leads_contacted) || 0,
+        clicks: parseInt(funnel.clicks) || 0,
+        signups: parseInt(funnel.signups_from_outreach) || 0,
+        paid: parseInt(funnel.paid_from_outreach) || 0,
+        // Conversion rates
+        emailFindRate: funnel.leads_total > 0
+          ? Math.round((funnel.leads_with_email / funnel.leads_total) * 100) : 0,
+        contactRate: funnel.leads_with_email > 0
+          ? Math.round((funnel.leads_contacted / funnel.leads_with_email) * 100) : 0,
+        clickRate: funnel.leads_contacted > 0
+          ? Math.round((funnel.clicks / funnel.leads_contacted) * 100) : 0,
+        signupRate: funnel.clicks > 0
+          ? Math.round((funnel.signups_from_outreach / funnel.clicks) * 100) : 0,
+        paidRate: funnel.signups_from_outreach > 0
+          ? Math.round((funnel.paid_from_outreach / funnel.signups_from_outreach) * 100) : 0,
+      },
+      health: {
+        overall: overallHealth,
+        leadQueue: leadQueueStatus,
+        leadEmails: leadEmailStatus,
+        demoGeneration: demoStatus,
+        emailDelivery: emailStatus,
+      },
+      lastUpdated: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('[pipeline-health] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Usage Analytics - Understand Free User behavior for conversion optimization
 app.get('/api/admin/usage-analytics', async (req, res) => {
   const adminKey = req.headers['x-admin-key'] || req.query.key;
