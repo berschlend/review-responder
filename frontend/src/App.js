@@ -11319,7 +11319,7 @@ const DemoPage = () => {
               Start Responding Like a Pro
             </h2>
             <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.9)', marginBottom: '28px', maxWidth: '500px', margin: '0 auto 28px' }}>
-              Join thousands of businesses saving hours on review management. No credit card required.
+              20 free responses every month. No credit card required.
             </p>
             <a
               href={demo.cta_url}
@@ -11416,7 +11416,7 @@ const SupportPage = () => {
     },
     {
       q: 'How fast are the responses generated?',
-      a: 'Most responses are generated in under 10 seconds. Our AI analyzes your review and generates a contextual, personalized response instantly.',
+      a: 'Our AI analyzes your review and generates a contextual, personalized response in seconds.',
     },
     {
       q: 'Do you store my review data?',
@@ -11603,6 +11603,41 @@ const SupportPage = () => {
 );
 };
 
+// Reusable Chrome Extension How-To Component for Landing Pages
+const ChromeExtensionHowTo = ({ platform = 'Google Maps', color = '#4285f4' }) => (
+  <div
+    style={{
+      marginTop: '60px',
+      background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+      borderRadius: '16px',
+      padding: '40px',
+      border: '1px solid #bae6fd',
+    }}
+  >
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+      <Chrome size={28} style={{ color }} />
+      <h2 style={{ fontSize: '24px', fontWeight: '700', margin: 0 }}>
+        One-Click with Chrome Extension
+      </h2>
+    </div>
+    <ol style={{ lineHeight: '2.2', color: 'var(--gray-700)', marginBottom: '24px' }}>
+      <li><strong>Install the Chrome Extension</strong> (free)</li>
+      <li><strong>Open {platform}</strong> and find any review</li>
+      <li><strong>Click the ReviewResponder button</strong> that appears</li>
+      <li><strong>Done!</strong> Your AI response is ready to post</li>
+    </ol>
+    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+      <a href="/extension" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+        <Chrome size={18} />
+        Get Chrome Extension
+      </a>
+      <span style={{ color: 'var(--gray-500)', fontSize: '14px' }}>
+        Works on: Google Maps, Yelp, TripAdvisor, Facebook, Booking.com, Trustpilot
+      </span>
+    </div>
+  </div>
+);
+
 // SEO Landing Page Component - Google Review Response Generator
 const GoogleReviewPage = () => {
   const location = useLocation();
@@ -11776,42 +11811,14 @@ const GoogleReviewPage = () => {
           </div>
         </div>
 
-        <div
-          style={{
-            marginTop: '60px',
-            background: 'var(--gray-50)',
-            borderRadius: '16px',
-            padding: '40px',
-          }}
-        >
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
-            How to Respond to Google Reviews with AI
-          </h2>
-          <ol style={{ lineHeight: '2', color: 'var(--gray-700)' }}>
-            <li>
-              <strong>Copy the review</strong> from Google Maps
-            </li>
-            <li>
-              <strong>Paste it</strong> into ReviewResponder
-            </li>
-            <li>
-              <strong>Select your tone</strong> (Professional, Friendly, Formal, or Apologetic)
-            </li>
-            <li>
-              <strong>Click Generate</strong> and get your personalized response instantly
-            </li>
-            <li>
-              <strong>Copy & paste</strong> the response back to Google
-            </li>
-          </ol>
-        </div>
+        <ChromeExtensionHowTo platform="Google Maps" color="#4285f4" />
 
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Start Responding to Google Reviews Today
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            Join thousands of businesses using AI to manage their Google reputation.
+            20 free responses/month included. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -11996,8 +12003,7 @@ const YelpReviewPage = () => {
               97% Read Responses
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Studies show 97% of consumers who read reviews also read business responses. Make
-              yours count.
+              97% of consumers who read reviews also read business responses — <a href="https://www.brightlocal.com/research/local-consumer-review-survey/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gray-500)', fontSize: '14px' }}>BrightLocal</a>. Make yours count.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -12016,8 +12022,7 @@ const YelpReviewPage = () => {
               Respond in 30 Seconds
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Stop agonizing over the perfect response. Our AI crafts professional Yelp replies
-              instantly.
+              Stop agonizing over the perfect response. Our AI crafts professional Yelp replies in seconds.
             </p>
           </div>
         </div>
@@ -12297,8 +12302,7 @@ const RestaurantReviewPage = () => {
               Reviews Make or Break You
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              94% of diners choose restaurants based on online reviews. Your responses show you
-              care.
+              94% of diners choose restaurants based on reviews — <a href="https://www.brightlocal.com/research/local-consumer-review-survey/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gray-500)', fontSize: '14px' }}>BrightLocal</a>. Your responses show you care.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -12917,8 +12921,7 @@ const LocalBusinessReviewPage = () => {
               30 Seconds Per Review
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Stop spending 10+ minutes crafting the perfect response. Our AI generates professional
-              replies instantly.
+              Stop spending minutes crafting the perfect response. Our AI generates professional replies in seconds.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -13172,11 +13175,10 @@ const NegativeReviewPage = () => {
           <div className="card" style={{ padding: '24px' }}>
             <TrendingUp size={32} style={{ color: '#D32F2F', marginBottom: '16px' }} />
             <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
-              70% Change Their Mind
+              Turn Critics Into Fans
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Customers who see thoughtful responses to complaints are 70% more likely to give your
-              business another chance.
+              A thoughtful response to a negative review can change minds. Many customers give businesses another chance after seeing a professional reply.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -13185,8 +13187,7 @@ const NegativeReviewPage = () => {
               Others Are Watching
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              94% of consumers read review responses. How you handle criticism shapes how new
-              customers see your business.
+              94% of consumers read review responses — <a href="https://www.brightlocal.com/research/local-consumer-review-survey/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gray-500)', fontSize: '14px' }}>BrightLocal</a>. How you handle criticism shapes how new customers see you.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -13452,42 +13453,14 @@ const TripAdvisorReviewPage = () => {
           </div>
         </div>
 
-        <div
-          style={{
-            marginTop: '60px',
-            background: 'var(--gray-50)',
-            borderRadius: '16px',
-            padding: '40px',
-          }}
-        >
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
-            How to Respond to TripAdvisor Reviews
-          </h2>
-          <ol style={{ lineHeight: '2', color: 'var(--gray-700)' }}>
-            <li>
-              <strong>Copy the review</strong> from your TripAdvisor management center
-            </li>
-            <li>
-              <strong>Paste it</strong> into ReviewResponder
-            </li>
-            <li>
-              <strong>Select your tone</strong> (Professional, Friendly, Formal, or Apologetic)
-            </li>
-            <li>
-              <strong>Click Generate</strong> and get your personalized response
-            </li>
-            <li>
-              <strong>Post it</strong> on TripAdvisor as your official management response
-            </li>
-          </ol>
-        </div>
+        <ChromeExtensionHowTo platform="TripAdvisor" color="#00AF87" />
 
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Start Winning on TripAdvisor Today
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            Join hospitality businesses using AI to manage their TripAdvisor reputation.
+            20 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -13688,42 +13661,14 @@ const BookingReviewPage = () => {
           </div>
         </div>
 
-        <div
-          style={{
-            marginTop: '60px',
-            background: 'var(--gray-50)',
-            borderRadius: '16px',
-            padding: '40px',
-          }}
-        >
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
-            How to Respond to Booking.com Reviews
-          </h2>
-          <ol style={{ lineHeight: '2', color: 'var(--gray-700)' }}>
-            <li>
-              <strong>Copy the guest review</strong> from your Booking.com extranet
-            </li>
-            <li>
-              <strong>Paste it</strong> into ReviewResponder
-            </li>
-            <li>
-              <strong>Select your tone</strong> (Professional for complaints, Friendly for praise)
-            </li>
-            <li>
-              <strong>Click Generate</strong> and customize if needed
-            </li>
-            <li>
-              <strong>Post</strong> the response in your Booking.com extranet
-            </li>
-          </ol>
-        </div>
+        <ChromeExtensionHowTo platform="Booking.com" color="#003580" />
 
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Improve Your Booking.com Performance
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            Join properties worldwide using AI to manage their Booking.com reviews.
+            20 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -13923,42 +13868,14 @@ const FacebookReviewPage = () => {
           </div>
         </div>
 
-        <div
-          style={{
-            marginTop: '60px',
-            background: 'var(--gray-50)',
-            borderRadius: '16px',
-            padding: '40px',
-          }}
-        >
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
-            How to Respond to Facebook Reviews
-          </h2>
-          <ol style={{ lineHeight: '2', color: 'var(--gray-700)' }}>
-            <li>
-              <strong>Copy the review</strong> from your Facebook business page
-            </li>
-            <li>
-              <strong>Paste it</strong> into ReviewResponder
-            </li>
-            <li>
-              <strong>Select your tone</strong> (Friendly works great for Facebook's casual vibe)
-            </li>
-            <li>
-              <strong>Click Generate</strong> and personalize if needed
-            </li>
-            <li>
-              <strong>Reply</strong> directly on your Facebook page
-            </li>
-          </ol>
-        </div>
+        <ChromeExtensionHowTo platform="Facebook" color="#1877f2" />
 
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Grow Your Facebook Business Presence
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            Join businesses using AI to manage their Facebook reviews efficiently.
+            20 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -15222,25 +15139,14 @@ const TrustpilotReviewPage = () => {
           </div>
         </div>
 
-        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
-            How to Respond to Trustpilot Reviews
-          </h2>
-          <ol style={{ lineHeight: '2', color: 'var(--gray-700)' }}>
-            <li><strong>Copy the review</strong> from your Trustpilot business dashboard</li>
-            <li><strong>Paste it</strong> into ReviewResponder</li>
-            <li><strong>Select your tone</strong> (Professional, Friendly, Formal, or Apologetic)</li>
-            <li><strong>Click Generate</strong> and get your personalized response</li>
-            <li><strong>Post it</strong> on Trustpilot to engage your customers</li>
-          </ol>
-        </div>
+        <ChromeExtensionHowTo platform="Trustpilot" color="#00b67a" />
 
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Boost Your Trustpilot Score Today
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            Join businesses using AI to manage their Trustpilot reputation.
+            20 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -15621,25 +15527,14 @@ const RealEstateReviewPage = () => {
           </div>
         </div>
 
-        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
-            How to Respond to Real Estate Reviews
-          </h2>
-          <ol style={{ lineHeight: '2', color: 'var(--gray-700)' }}>
-            <li><strong>Copy the review</strong> from Zillow, Realtor.com, or Google</li>
-            <li><strong>Paste it</strong> into ReviewResponder</li>
-            <li><strong>Select your tone</strong> (Professional, Friendly, or Grateful)</li>
-            <li><strong>Click Generate</strong> and personalize if needed</li>
-            <li><strong>Post your response</strong> and build your reputation</li>
-          </ol>
-        </div>
+        <ChromeExtensionHowTo platform="Zillow, Realtor.com, or Google" color="#2d5a87" />
 
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Close More Deals with Better Reviews
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            Join real estate agents using AI to build their online reputation.
+            20 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -17701,7 +17596,7 @@ const AppStoreReviewPage = () => {
         </div>
         <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
           <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to improve your app reviews?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join thousands of app developers using AI to manage their reviews.</p>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>20 free responses/month. No credit card required.</p>
           <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
         </div>
       </section>
@@ -17765,7 +17660,7 @@ const IndeedReviewPage = () => {
         </div>
         <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
           <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to improve your employer brand?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join thousands of HR teams using AI to manage Indeed reviews.</p>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>20 free responses/month. No credit card required.</p>
           <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
         </div>
       </section>
@@ -17819,7 +17714,7 @@ const ZillowReviewPage = () => {
           <div className="card">
             <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 106, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#006AFF' }} /></div>
             <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>More Listings & Sales</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>94% of home buyers read agent reviews before choosing a realtor. Stand out with thoughtful, professional responses.</p>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Most home buyers read agent reviews before choosing a realtor — <a href="https://www.brightlocal.com/research/local-consumer-review-survey/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gray-500)', fontSize: '14px' }}>BrightLocal</a>. Stand out with professional responses.</p>
           </div>
           <div className="card">
             <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 106, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><MessageSquare size={24} style={{ color: '#006AFF' }} /></div>
@@ -17829,7 +17724,7 @@ const ZillowReviewPage = () => {
         </div>
         <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
           <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to grow your real estate business?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join thousands of realtors using AI to manage their Zillow reviews.</p>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>20 free responses/month. No credit card required.</p>
           <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
         </div>
       </section>
@@ -17957,7 +17852,7 @@ const ThumbtackReviewPage = () => {
         </div>
         <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
           <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to get more Thumbtack leads?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join thousands of service pros using AI to manage their reviews.</p>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>20 free responses/month. No credit card required.</p>
           <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
         </div>
       </section>
