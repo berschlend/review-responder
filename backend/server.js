@@ -7259,6 +7259,44 @@ app.get('/api/admin/testimonials', async (req, res) => {
   }
 });
 
+/**
+ * Clean display name from usernames with numbers
+ * andrehoellering1732004 -> Andre
+ * TiniwiDE -> Tiniwi DE
+ * Mati -> Mati
+ * 12345 -> null
+ */
+function cleanDisplayName(userName) {
+  if (!userName) return null;
+
+  // Remove trailing numbers (andrehoellering1732004 -> andrehoellering)
+  let cleaned = userName.replace(/\d+$/g, '').trim();
+
+  // If empty after removing numbers, return null
+  if (!cleaned || cleaned.length < 2) return null;
+
+  // Handle camelCase usernames (TiniwiDE -> Tiniwi DE)
+  if (/[a-z][A-Z]/.test(cleaned)) {
+    cleaned = cleaned.replace(/([a-z])([A-Z])/g, '$1 $2');
+  }
+
+  // If all lowercase (likely a username), capitalize first letter
+  if (/^[a-z]+$/.test(cleaned)) {
+    cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  }
+
+  // Extract first name only if it looks like "firstname lastname"
+  if (cleaned.includes(' ')) {
+    const firstName = cleaned.split(' ')[0];
+    // Only use first name if it's reasonable (2-15 chars)
+    if (firstName.length >= 2 && firstName.length <= 15) {
+      return firstName;
+    }
+  }
+
+  return cleaned;
+}
+
 // Helper: Generate AI response for a testimonial (used by both auto and admin)
 async function generateAIResponseForTestimonial(testimonialId, rating, comment, userName) {
   // ReviewResponder's own business context (open source)
@@ -7366,7 +7404,21 @@ Never be defensive about criticism.
 - Length: 2-4 sentences maximum
 - Sign off: "Thanks, Berend" or "- The ReviewResponder Team"
 - Keep it natural and direct
+- Address the reviewer by first name only (not full usernames)
+- If name looks like a username with numbers, use "you" instead
 </style_rules>
+
+<examples>
+<example type="positive" industry="SaaS">
+<review rating="5" author="Sarah">Great tool! Saves me hours every week on review responses.</review>
+<response>Really glad it's saving you time, Sarah. That's exactly why I built it. Thanks, Berend</response>
+</example>
+
+<example type="positive" industry="SaaS">
+<review rating="5" author="a customer">Nice tool. Helps deal with customers quickly.</review>
+<response>That's exactly what I was going for - so business owners can get back to running their business instead of writing responses all day. Thanks, Berend</response>
+</example>
+</examples>
 
 <avoid_patterns>
 <forbidden_phrases>
@@ -7384,7 +7436,11 @@ No quotes around the response.
 No "Response:" prefix.
 </output_format>`;
 
-  const userMessage = `<review rating="${rating}" author="${userName || 'a customer'}">
+  // Clean the display name (removes numbers from usernames like andrehoellering1732004 -> Andre)
+  const cleanedName = cleanDisplayName(userName);
+  const displayAuthor = cleanedName || 'a customer';
+
+  const userMessage = `<review rating="${rating}" author="${displayAuthor}">
 ${comment}
 </review>
 
