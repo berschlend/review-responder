@@ -1863,7 +1863,7 @@ SIGN OFF:
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Settings size={18} />
-            OUR SETTINGS (Example) — Yours will look like this (you won't type all this)
+            OUR SETTINGS (Example) | Yours will look like this
           </span>
           <ChevronDown
             size={20}
@@ -1876,36 +1876,25 @@ SIGN OFF:
 
         {isContextExpanded && (
           <div style={{ padding: '20px', borderTop: '1px solid var(--gray-200)' }}>
-            {/* How we set this up - minimal explanation */}
+            {/* Setup hint - one line */}
             <div
               style={{
                 background: '#fefce8',
                 border: '1px solid #fef08a',
                 borderRadius: '8px',
-                padding: '12px 16px',
+                padding: '10px 14px',
                 marginBottom: '16px',
                 fontSize: '13px',
                 color: '#854d0e',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
               }}
             >
-              <div
-                style={{
-                  fontWeight: '600',
-                  marginBottom: '6px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}
-              >
-                <Lightbulb size={14} />
-                How we set this up:
-              </div>
-              <div style={{ paddingLeft: '20px', lineHeight: '1.6' }}>
-                Business name + type + a few keywords
-                <br />
-                → AI expanded into full context
-                <br />→ We added personal details (name, email)
-              </div>
+              <Lightbulb size={14} style={{ flexShrink: 0 }} />
+              <span>
+                <strong>Setup:</strong> name + type + keywords → AI expands → add your details
+              </span>
             </div>
 
             {/* BUSINESS CONTEXT */}
