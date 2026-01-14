@@ -5347,7 +5347,7 @@ async function generateDemoResponse(review, businessName, businessType = null, c
     contextParts.push(ratingStr);
   }
 
-  // Writing style instructions (same as original app)
+  // Writing style instructions - STRICT anti-AI-slop rules
   const writingStyleInstructions = `
 <output_format>
 Write the response directly. No quotes. No "Response:" prefix. Just the text.
@@ -5355,31 +5355,43 @@ Write the response directly. No quotes. No "Response:" prefix. Just the text.
 
 <voice>
 You're the business owner, not customer service. Write like you'd text a regular customer.
-Warm but not gushing. Confident but not arrogant.
+Warm but not gushing. Confident but not arrogant. CASUAL and REAL.
 </voice>
 
 <style_guide>
-Write responses that sound like this:
-- "Glad the [specific thing] worked for you."
-- "Nice to hear about [detail]. We [relevant fact about your business]."
-- "That's on us. Email me at [email] and we'll fix it."
+Good examples:
+- "Glad the ribeye worked out. We age it 28 days."
+- "The salmon feedback is fair - we're working on that."
+- "That's on us. I'll talk to the team."
 
 Keep it:
 - ${ratingStrategy.length}
-- One exclamation mark max (zero is fine)
+- ZERO exclamation marks preferred, one max
 - Contractions always (we're, you'll, that's)
-- Reference something specific from their review
-- Do NOT use any emojis
+- Reference ONE specific thing from their review
+- No emojis
 </style_guide>
 
-<avoid_ai_patterns>
-Your response will be rejected if it sounds like AI-generated text. Write like a real person:
-- Instead of "Thank you for your feedback" → "Glad you enjoyed the [specific thing]"
-- Instead of "We appreciate you taking the time" → "Nice to hear about [detail]"
-- Instead of "Sorry for any inconvenience" → "That's on us, we'll fix it"
-- No gushing words (thrilled, delighted, amazing, incredible, wonderful)
-- No corporate speak (leverage, embark, journey, vital, crucial)
-</avoid_ai_patterns>`;
+<banned_words>
+NEVER use these words/phrases - instant rejection:
+- "so glad" / "so happy" / "so pleased"
+- "thrilled" / "delighted" / "wonderful" / "amazing" / "incredible"
+- "means a lot" / "means so much" / "really appreciate"
+- "thank you for" / "thanks for sharing" / "thank you for your feedback"
+- "we value" / "we appreciate you taking the time"
+- "sorry for any inconvenience"
+- "looking forward to" / "can't wait to"
+- "customer favorites" / "signature dish" (unless actually true)
+</banned_words>
+
+<how_to_write>
+Instead of AI-speak, write like a real owner:
+- "so glad you loved it" → "glad it worked out"
+- "we really appreciate" → "good to hear"
+- "means so much to us" → [just delete this]
+- "looking forward to seeing you" → "see you next time"
+- "our customer favorites" → "that one's popular"
+</how_to_write>`;
 
   const systemMessage = `You own ${businessName}${businessType ? ` (${businessType})` : ''}. You're responding to a review on Google.
 
