@@ -89,6 +89,7 @@ import {
   PlayCircle,
   Video,
   Loader,
+  Lightbulb,
   ShoppingCart,
   Coffee,
   Home,
@@ -1727,20 +1728,12 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
 const DogfoodingSection = ({ testimonials }) => {
   const [isContextExpanded, setIsContextExpanded] = useState(false);
 
-  // ReviewResponder's business context - shows WHAT WE TYPED vs WHAT AI GENERATED
+  // ReviewResponder's business context - used for dogfooding our own product
   const REVIEWRESPONDER_CONTEXT = {
     businessName: 'ReviewResponder',
     businessType: 'SaaS / AI Software Tool',
 
-    // What we ACTUALLY typed (to show users it's easy!)
-    whatWeTyped: {
-      business: 'ReviewResponder',
-      type: 'SaaS / Software Tool',
-      keywords:
-        'Chrome extension, review responses, saves time, Google Maps, Yelp, TripAdvisor, Trustpilot, Booking.com, 50+ languages, 4 tone options, bulk generation, response history',
-    },
-
-    // What the AI GENERATED from those keywords (impressive!)
+    // Our business context
     businessContext: `ReviewResponder helps business owners respond to customer reviews quickly and professionally.
 
 WHO WE ARE:
@@ -1871,7 +1864,7 @@ SIGN OFF:
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Settings size={18} />
-            OUR SETTINGS (Example) — Yours will look like this after entering a few keywords
+            OUR SETTINGS (Example)
           </span>
           <ChevronDown
             size={20}

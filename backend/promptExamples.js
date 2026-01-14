@@ -63,6 +63,17 @@ const AI_SLOP_PHRASES = [
   'The uncomfortable truth is',
   'Make no mistake',
   'Full stop',
+  // Claude-specific overused phrases (2025)
+  'hit the spot',
+  'hits the spot',
+  'glad it worked out',
+  'good to hear',
+  'nice to hear',
+  'sounds like',
+  'glad you enjoyed',
+  'hope to see you',
+  'swing by',
+  'stop by again',
 ];
 
 const AI_SLOP_STARTS = [
@@ -106,7 +117,7 @@ const industryExamples = {
     positive: {
       review: 'Beautiful room with an amazing view. Breakfast was excellent and staff very helpful.',
       response:
-        'Glad the view and breakfast worked out. We put a lot of thought into both. Hope to see you again.',
+        'The river view from that room is one of our favorites too. See you next time.',
     },
     negative: {
       review: 'Room was not clean when we arrived. Had to wait for housekeeping to come back.',
@@ -183,7 +194,7 @@ const industryExamples = {
   generic: {
     positive: {
       review: 'Great service! Staff was helpful and the quality exceeded my expectations.',
-      response: 'Glad everything worked out. We put a lot of effort into getting the details right.',
+      response: 'The details matter to us. See you again soon.',
     },
     negative: {
       review: 'Poor experience. Service was slow and staff seemed uninterested.',
