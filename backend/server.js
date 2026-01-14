@@ -6009,6 +6009,9 @@ app.post('/api/demo/generate', async (req, res) => {
           rating: review.rating,
           author: review.author,
           date: review.date,
+          source: review.source || 'google',
+          review_link: review.review_link || null,
+          review_id: review.review_id || null,
         },
         ai_response: aiResponse,
       });
@@ -6419,7 +6422,15 @@ app.post('/api/cron/generate-demos', async (req, res) => {
         for (const review of targetReviews) {
           const aiResponse = await generateDemoResponse(review, lead.business_name, lead.business_type, lead.city, placeInfo.rating, placeInfo.totalReviews);
           demos.push({
-            review: { text: review.text, rating: review.rating, author: review.author, date: review.date },
+            review: {
+              text: review.text,
+              rating: review.rating,
+              author: review.author,
+              date: review.date,
+              source: review.source || 'google',
+              review_link: review.review_link || null,
+              review_id: review.review_id || null,
+            },
             ai_response: aiResponse,
           });
         }
@@ -12002,6 +12013,9 @@ async function generateDemoForLead(lead) {
           rating: review.rating,
           author: review.author,
           date: review.date,
+          source: review.source || 'google',
+          review_link: review.review_link || null,
+          review_id: review.review_id || null,
         },
         ai_response: aiResponse,
       });
