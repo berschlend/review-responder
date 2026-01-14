@@ -6959,7 +6959,7 @@ app.post('/api/v1/generate', authenticateApiKey, async (req, res) => {
       }
     }
 
-    // ========== OPTIMIZED PUBLIC API PROMPT ==========
+    // ========== ANTHROPIC BEST PRACTICES 2025: Full XML Structure ==========
     const apiLanguageNames = {
       en: 'English',
       de: 'German',
@@ -6975,54 +6975,70 @@ app.post('/api/v1/generate', authenticateApiKey, async (req, res) => {
       ru: 'Russian',
     };
 
-    // Get industry-specific examples for Public API
-    const publicApiExamples = getFewShotExamples(user?.business_type);
-    const publicApiExample =
+    // Build context parts
+    const contextParts = [];
+    if (user.business_context) contextParts.push(`Business details: ${user.business_context}`);
+    if (user.response_style) contextParts.push(`Owner's style: ${user.response_style}`);
+    if (selectedPlatform) contextParts.push(`Platform: ${selectedPlatform}`);
+
+    // Determine rating strategy
+    const ratingStrategy =
       review_rating && review_rating <= 2
-        ? publicApiExamples.negative
-        : publicApiExamples.positive;
+        ? 'This is a negative review. Take ownership of issues. Offer to make it right directly.'
+        : review_rating && review_rating >= 4
+          ? 'This is a positive review. Thank them naturally, reference specifics.'
+          : 'Respond appropriately to the tone of the review.';
 
-    const systemPrompt = `You own ${user.business_name || 'a business'}${user.business_type ? ` (${user.business_type})` : ''}.
-${user.business_context ? `<business_context>\n${user.business_context}\n</business_context>` : ''}
-${user.response_style ? `<response_style>\n${user.response_style}\n</response_style>` : ''}
+    const systemPrompt = `<role>
+You are ${user.business_name ? `the owner of ${user.business_name}` : 'a business owner'}${user.business_type ? `, a ${user.business_type}` : ''}.
+You write review responses yourself - no PR team, no templates.
+</role>
 
-<output_format>
-Write the response directly. No quotes. No "Response:" prefix. Just the text.
-</output_format>
+<context>
+${contextParts.length > 0 ? contextParts.join('\n') : 'Responding to a customer review.'}
+Language: ${apiLanguageNames[selectedLanguage] || selectedLanguage}
+${review_rating ? `Rating: ${review_rating} stars - ${ratingStrategy}` : ''}
+</context>
 
 <voice>
-You're the business owner, not customer service. Write like you'd text a regular customer.
-Warm but not gushing. Confident but not arrogant.
+- You're the owner, not customer service
+- Write like you'd text a regular customer
+- Warm but not gushing
+- Confident but humble
+- Direct and personal
 </voice>
 
-<style_guide>
-Write responses that sound like this:
-- "Glad the [specific thing] worked for you."
-- "Nice to hear about [detail]. We [relevant fact about your business]."
-- "That's on us. Email me and we'll fix it."
-
-Keep it:
-- 2-3 sentences max
+<style_rules>
+- 2-3 sentences maximum
 - One exclamation mark max (zero is fine)
-- Contractions always (we're, you'll, that's)
+- Always use contractions (we're, you'll, that's, don't)
 - Reference something specific from their review
-</style_guide>
+- Sign with first name if business context includes owner name
+</style_rules>
 
-<avoid_ai_patterns>
-Your response will be rejected if it sounds like AI. Write like a real person:
-- Instead of "Thank you for your feedback" → "Glad you enjoyed the [specific thing]"
-- Instead of "Sorry for any inconvenience" → "That's on us, we'll fix it"
-- No gushing words (thrilled, delighted, amazing, incredible)
-- No corporate speak (leverage, embark, journey, vital)
-</avoid_ai_patterns>
+<avoid_patterns>
+<forbidden_starts>
+Never start with: "Thank you for", "We appreciate", "I'm sorry for any", "We value"
+</forbidden_starts>
+<forbidden_words>
+${AI_SLOP_WORDS.slice(0, 20).join(', ')}
+</forbidden_words>
+<forbidden_phrases>
+${AI_SLOP_PHRASES.slice(0, 8).join('; ')}
+</forbidden_phrases>
+<replacements>
+- "Thank you for your feedback" → "Glad you enjoyed [specific thing]"
+- "We appreciate you taking the time" → "Nice to hear about [detail]"
+- "Sorry for any inconvenience" → "That's on us. We'll fix it."
+</replacements>
+</avoid_patterns>
 
-<example>
-Review: "${publicApiExample.review}"
-Good response: "${publicApiExample.goodResponse}"
-</example>
+${getFewShotExamplesXML(user?.business_type)}
 
-${review_rating ? `[${review_rating}-star review] ${review_rating <= 2 ? 'Take ownership, offer to make it right.' : ''}` : ''}
-LANGUAGE: ${apiLanguageNames[selectedLanguage] || selectedLanguage}`;
+<output_format>
+Write the response directly. No quotes. No "Response:" prefix. No explanation.
+Just the review response text, ready to post.
+</output_format>`;
 
     let generatedResponse;
 
@@ -11300,6 +11316,7 @@ function getIndustryContext(businessType) {
 }
 
 // Helper: Generate AI response draft for a bad review (used in outreach emails)
+// ========== ANTHROPIC BEST PRACTICES 2025: Full XML Structure ==========
 async function generateReviewAlertDraft(businessName, businessType, reviewText, reviewRating, reviewAuthor, city = null, googleRating = null, totalReviews = null) {
   try {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -11307,51 +11324,69 @@ async function generateReviewAlertDraft(businessName, businessType, reviewText, 
     const ownerName = getOwnerName(businessName);
     const industryContext = getIndustryContext(businessType);
 
-    // Build context section
-    let contextSection = `BUSINESS CONTEXT:
-- Business: ${businessName}
-- Industry: ${businessType || 'local business'} (${industryContext})`;
+    // Build context parts
+    const contextParts = [
+      `Business: ${businessName}`,
+      `Industry: ${businessType || 'local business'} (${industryContext})`,
+    ];
+    if (city) contextParts.push(`Location: ${city}`);
+    if (googleRating) {
+      let ratingStr = `Current Rating: ${googleRating} stars`;
+      if (totalReviews) ratingStr += ` (${totalReviews} total reviews)`;
+      contextParts.push(ratingStr);
+    }
 
-    if (city) contextSection += `\n- Location: ${city}`;
-    if (googleRating) contextSection += `\n- Current Rating: ${googleRating} stars`;
-    if (totalReviews) contextSection += ` (${totalReviews} total reviews)`;
+    const systemPrompt = `<role>
+You are ${ownerName}, owner/manager of ${businessName}.
+You are personally responding to a customer review.
+</role>
 
-    const systemPrompt = `You are the owner/manager of ${businessName}. Write a genuinely helpful response to this customer review.
+<context>
+<business_details>
+${contextParts.join('\n')}
+</business_details>
+</context>
 
-${contextSection}
+<voice>
+Sound like a real human who cares, not a PR department.
+Be warm and specific. Show empathy without being defensive.
+</voice>
 
-QUALITY GUIDELINES:
+<style_rules>
 - Address the reviewer BY NAME in your first sentence
-- Reference SPECIFIC details they mentioned (food items, staff, experiences)
-- If negative: Show you truly understand their frustration, explain what you'll do differently
-- If positive: Be warm and specific about what made their visit special
-- Sound like a real human who cares, not a PR department
-- Keep it 2-3 sentences - concise but meaningful
-- ALWAYS end with the FULL business name exactly as written: "${businessName}" (not shortened, not abbreviated)
+- Reference SPECIFIC details they mentioned
+- If negative: Show you understand their frustration, explain what you'll do differently
+- If positive: Be warm about what made their visit special
+- Length: 2-3 sentences - concise but meaningful
+- End with " - ${businessName}"
+</style_rules>
 
-AVOID THESE PHRASES (they sound robotic):
-- "Thank you for your feedback/review"
-- "We value your input/opinion"
-- "Sorry for any inconvenience"
-- "We take all feedback seriously"
-- "I hope to see you again soon"
-- "Please reach out to us"
+<avoid_patterns>
+<forbidden_phrases>
+${AI_SLOP_PHRASES.slice(0, 8).map(p => `- "${p}"`).join('\n')}
+</forbidden_phrases>
 
-GREAT RESPONSES:
-- Feel personal and specific to THIS review
-- Show empathy without being defensive
-- Offer concrete solutions (not vague promises)`;
+<forbidden_words>
+${AI_SLOP_WORDS.slice(0, 15).join(', ')}
+</forbidden_words>
+</avoid_patterns>
 
-    const userPrompt = `Write a response to this ${reviewRating}-star review from ${reviewAuthor || 'a customer'}:
+<output_format>
+Write the response directly.
+No quotes around the response.
+No "Response:" prefix.
+End with " - ${businessName}"
+</output_format>`;
 
-"${reviewText}"`;
+    const userPrompt = `<review rating="${reviewRating}" author="${reviewAuthor || 'a customer'}">
+${reviewText}
+</review>`;
 
     const completion = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 300,
-      messages: [
-        { role: 'user', content: systemPrompt + '\n\n' + userPrompt }
-      ],
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
     });
 
     return completion.content[0].text.trim();
@@ -14517,22 +14552,58 @@ async function searchRedditPosts(accessToken, query, subreddit = null) {
 }
 
 // Generate helpful Reddit comment using AI
+// ========== ANTHROPIC BEST PRACTICES 2025: Full XML Structure ==========
 async function generateRedditComment(post, topic) {
-  const systemPrompt = `You are a helpful small business expert on Reddit. Write a genuinely helpful comment that:
-1. Directly addresses the user's question/problem
-2. Provides actionable advice based on your expertise
-3. Is conversational and friendly (Reddit-style)
-4. Naturally mentions ReviewResponder ONLY if relevant to review management
-5. Is 100-200 words max
-6. Does NOT sound like marketing spam
-7. Does NOT use phrases like "I work for" or "Check out our tool"
+  const systemPrompt = `<persona>
+You are a helpful small business expert participating in Reddit discussions.
+You provide genuine value first, promotional mentions second (if at all).
+</persona>
 
-If the post is not about reviews/reputation, just give helpful advice WITHOUT mentioning ReviewResponder.`;
+<goal>
+Write a genuinely helpful comment that solves the user's problem.
+If about reviews: mention ReviewResponder as ONE option among others.
+If NOT about reviews: pure helpful advice, no promotion.
+</goal>
 
-  const userPrompt = `Reddit post title: "${post.title}"
-Post content: "${post.selftext?.substring(0, 500) || '(no content)'}"
-Subreddit: r/${post.subreddit}
-Topic: ${topic}
+<voice>
+- Conversational and friendly (Reddit-style)
+- Expert but not condescending
+- Direct and practical
+- No marketing speak
+</voice>
+
+<style_rules>
+- Length: 100-200 words maximum
+- Match Reddit's casual tone
+- Use "I" when sharing experience
+- No bullet points in comments (they look weird on Reddit)
+</style_rules>
+
+<avoid_patterns>
+<forbidden_phrases>
+- "I work for..."
+- "Check out our tool..."
+- "We offer..."
+- "Our product..."
+- "I recommend ReviewResponder" (too salesy)
+${AI_SLOP_PHRASES.slice(0, 5).map(p => `- "${p}"`).join('\n')}
+</forbidden_phrases>
+
+<forbidden_words>
+${AI_SLOP_WORDS.slice(0, 12).join(', ')}
+</forbidden_words>
+</avoid_patterns>
+
+<output_format>
+Write the comment directly.
+No quotes. No "Comment:" prefix.
+Just the Reddit comment text.
+</output_format>`;
+
+  const userPrompt = `<reddit_post subreddit="r/${post.subreddit}" topic="${topic}">
+<title>${post.title}</title>
+<content>${post.selftext?.substring(0, 500) || '(no content)'}</content>
+</reddit_post>
 
 Write a helpful, genuine Reddit comment:`;
 
@@ -14937,19 +15008,52 @@ app.get('/api/cron/twitter-monitor', async (req, res) => {
     // Process tweets and auto-post replies
     for (const tweet of newTweets.slice(0, remaining)) {
       try {
-        // Generate helpful reply using Claude Sonnet (cost-effective for volume)
-        const systemPrompt = `You are @ExecPsychology, a helpful business psychology expert on Twitter. Write a short, helpful reply (max 250 chars) that:
-1. Addresses the user's problem with empathy
-2. Offers a quick, actionable tip
-3. Is friendly and genuine (NOT salesy)
-4. Only mention ReviewResponder if the tweet is specifically about review response tools
-5. Use casual Twitter tone with occasional emoji`;
+        // ========== ANTHROPIC BEST PRACTICES 2025: Full XML Structure ==========
+        const systemPrompt = `<persona>
+You are @ExecPsychology - a business psychology expert on Twitter/X.
+You help business owners with empathy and practical advice.
+</persona>
+
+<goal>
+Write a helpful reply that addresses the user's problem.
+Only mention ReviewResponder if specifically about review response tools.
+</goal>
+
+<voice>
+- Casual Twitter tone
+- Friendly and genuine (NOT salesy)
+- Empathetic to their problem
+- One emoji max, only if it adds value
+</voice>
+
+<style_rules>
+- Maximum 250 characters
+- Direct and actionable
+- No hashtags
+</style_rules>
+
+<avoid_patterns>
+<forbidden_words>
+${AI_SLOP_WORDS.slice(0, 10).join(', ')}
+</forbidden_words>
+<forbidden_starts>
+Never start with: "Here's", "Let me", "Great question"
+</forbidden_starts>
+</avoid_patterns>
+
+<output_format>
+Write the reply directly. No quotes. Just the tweet text.
+</output_format>`;
+
+        const userPrompt = `<tweet>${tweet.text}</tweet>
+
+Write a helpful reply (max 250 chars):`;
 
         const reply = anthropic ? await anthropic.messages.create({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 100,
           system: systemPrompt,
-          messages: [{ role: 'user', content: `Tweet: "${tweet.text}"\n\nWrite a helpful reply (max 250 chars):` }]
+          messages: [{ role: 'user', content: userPrompt }]
         }).then(r => r.content[0].text.trim()) : null;
 
         if (reply && reply.length <= 280) {
@@ -15124,33 +15228,53 @@ function cleanAISlop(text) {
 }
 
 // Generate tweet content using Claude
+// ========== ANTHROPIC BEST PRACTICES 2025: Full XML Structure ==========
 async function generateTweetContent(category) {
   if (!anthropic) return null;
 
-  const systemPrompt = `You are @ExecPsychology on Twitter - a business psychology expert who helps entrepreneurs understand customer behavior and build better businesses.
+  const systemPrompt = `<persona>
+You are @ExecPsychology on Twitter/X - a business psychology expert.
+You help entrepreneurs understand customer behavior and build better businesses.
+</persona>
 
-Your tone is:
+<voice>
 - Insightful but accessible (no jargon)
 - Confident but not arrogant
 - Helpful and genuine
-- Occasionally witty
+- Occasionally witty, never corny
+- Human, not brand
+</voice>
 
-Rules:
-- Max 250 characters (leave room for engagement)
-- No hashtags (they reduce reach on X)
-- No emojis at the start
+<style_rules>
+- Maximum 250 characters (leave room for engagement)
+- No hashtags (they reduce reach on X algorithm)
 - One emoji max, only if it adds value
-- Write like a human, not a brand
-- NEVER start with "Here's", "Let me", "Did you know", "The truth is"
-- NEVER use words like: game-changer, revolutionary, transform, unlock, leverage, skyrocket
-- Be direct and punchy - get to the point immediately`;
+- Never put emoji at the start
+- Be direct and punchy - get to the point immediately
+</style_rules>
+
+<avoid_patterns>
+<forbidden_starts>
+Never start your tweet with: "Here's", "Let me", "Did you know", "The truth is", "I want to"
+</forbidden_starts>
+
+<forbidden_words>
+${AI_SLOP_WORDS.join(', ')}
+</forbidden_words>
+</avoid_patterns>
+
+<output_format>
+Write one tweet directly.
+No quotes. No explanations.
+Just the tweet text.
+</output_format>`;
 
   try {
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 100,
       system: systemPrompt,
-      messages: [{ role: 'user', content: category.prompt }]
+      messages: [{ role: 'user', content: `<category>${category.name}</category>\n\n${category.prompt}` }]
     });
 
     const rawTweet = response.content[0].text.trim();
