@@ -15631,16 +15631,9 @@ app.get('/api/cron/linkedin-demo-daily', async (req, res) => {
             ]);
 
             // Save to linkedin_outreach (without LinkedIn URL - user needs to find it)
-            const connectionNote = `Hi [NAME],
-
-Saw ${place.name} has ${place.rating} stars on Google - nice work!
-
-I made you something: ${demoUrl}
-
-(${targetReviews.length} AI-generated responses to your toughest reviews)
-
-Cheers,
-Berend`;
+            // Simple connection note template - user replaces [NAME] when sending
+            const shortBizName = place.name.split(' ').slice(0, 2).join(' ');
+            const connectionNote = `Hey [NAME]! Made you something for ${shortBizName}: ${demoUrl} - Berend`;
 
             const inserted = await dbGet(`
               INSERT INTO linkedin_outreach
