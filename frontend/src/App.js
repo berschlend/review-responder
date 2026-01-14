@@ -3724,15 +3724,15 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
     const finalBusinessType = businessType === 'Other' ? customBusinessType.trim() : businessType;
 
     try {
+      // Only save business name and type - NOT the context
+      // User should customize context themselves in Settings for better results
       await api.put('/auth/profile', {
         businessName: businessName.trim(),
         businessType: finalBusinessType,
-        businessContext: generatedContext,
       });
       updateUser({
         businessName: businessName.trim(),
         businessType: finalBusinessType,
-        businessContext: generatedContext,
       });
       setCurrentStep(3);
     } catch (error) {
@@ -4071,9 +4071,11 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
               <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
                 You're all set!
               </h3>
+              <p style={{ color: 'var(--gray-600)', marginBottom: '16px', fontSize: '14px' }}>
+                Go to <strong>Settings</strong> to customize your AI responses with your business details.
+              </p>
               <p style={{ color: 'var(--gray-600)', marginBottom: '24px', fontSize: '14px' }}>
-                Want to make responding even faster? Install our Chrome extension to respond
-                directly from Google Reviews, Yelp, and more.
+                Want to respond even faster? Install our Chrome extension.
               </p>
 
               <div
