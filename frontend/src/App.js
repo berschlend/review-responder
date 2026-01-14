@@ -1746,12 +1746,12 @@ The ReviewResponder Chrome Extension works directly on review platforms:
 - AI creates a personalized response in seconds
 - One click to copy or paste directly
 
-KEY FEATURES:
-- Automatic language detection (50+ languages)
-- 4 tone options: Professional, Friendly, Apologetic, Enthusiastic
-- Business context - AI knows your specific business details
-- Bulk generation for catching up on multiple reviews
-- Response history to track what you've responded to
+WHAT WE SOLVE:
+- No more 10 minutes per response - done in 10 seconds
+- Never stare at a blank screen wondering what to write
+- Negative reviews? Respond professionally without getting defensive
+- 50+ reviews piling up? Bulk mode handles them in minutes
+- Sound like YOU, not a robot - AI learns your voice
 
 WHY I BUILT THIS:
 Small business owners shouldn't have to choose between ignoring reviews and spending hours writing responses. Every review deserves a thoughtful reply - but it shouldn't take 10 minutes to write one.
