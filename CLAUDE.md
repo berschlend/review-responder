@@ -116,38 +116,21 @@ CLAUDE.md lesen → TODO.md checken → Task → Testen → Git push → CLAUDE.
 | Drip Emails | 10:00 täglich |
 | Pre-Reg Drip | 11:00 täglich |
 | Demo Follow-Up | 12:00 täglich |
-| **Night-Blast** | **22:00, 02:00, 06:00 (auto via node-cron)** |
+| **Night Loop** | **22:00-06:00 stündlich** |
 
 ### Night Automation (NEU 14.01.2026)
-**VOLLAUTOMATISCH via node-cron** - Keine externen Cron-Jobs nötig!
+Läuft autonom ohne User-Input:
+- **22:00** - Hot Lead Follow-Ups (Demos für Klicker)
+- **23:00** - Second Follow-Up ("1 Monat gratis")
+- **00:00** - Stats Collection
+- **01:00** - Dead Lead Revival ("Problem solved?")
+- **02:00** - A/B Test Evaluation
+- **03:00-06:00** - Idle
 
-**Night-Blast (3x/Nacht):**
-- **22:00 Berlin** - Multi-City Scraping + alle Follow-ups
-- **02:00 Berlin** - Multi-City Scraping + alle Follow-ups
-- **06:00 Berlin** - Multi-City Scraping + alle Follow-ups
-
-**Was Night-Blast tut (pro Lauf):**
-1. 5 Städte scrapen (100 Leads)
-2. Emails finden (50 neue)
-3. Demos generieren (20 neue)
-4. Hot Lead Follow-ups
-5. Second Follow-ups
-6. Demo Follow-ups
-7. G2 Enrichment
-8. Source-specific Emails
-
-**Weitere Endpoints:**
-- `/api/cron/night-loop` - Alternative stündliche Orchestrierung
+**Endpoints:**
+- `/api/cron/night-loop` - Master Endpoint (orchestriert alles)
 - `/api/cron/revive-dead-leads` - Reaktiviert 7+ Tage alte Leads
-- `/api/cron/reengage-clickers` - Magic Links an Clicker ohne Account
-- `/api/cron/demo-expiration-emails` - Urgency Emails (Tag 3, 5)
-- `/api/auth/magic-login/:token` - Passwordless Login
-
-**Ergebnis pro Nacht:**
-- ~300 neue Leads
-- ~150 Emails gefunden
-- ~60 Demos generiert
-- Alle Follow-ups automatisch
+- `/api/cron/ab-test-evaluate` - Bewertet A/B Tests automatisch
 
 ---
 
@@ -170,14 +153,42 @@ CLAUDE.md lesen → TODO.md checken → Task → Testen → Git push → CLAUDE.
 - **46+ live** (Plattformen + Branchen)
 - Email-Capture → 4-Email Drip über 14 Tage
 
-### Outreach Metriken (14.01 - BEREINIGT)
-- **528 Leads**, **499 Emails**
-- **~0% echte Opens** (26% sind Bot-Scans, ~3 Sek nach Versand)
-- **3.4% Click Rate** (17 echte Klicks)
+### Outreach Metriken (14.01 Nacht - AKTUELL)
+- **640 Leads**, **364 mit Email**
+- **18 Klicks** (Click Rate wichtiger als Opens!)
 - **0 Conversions** ← HAUPTPROBLEM
 
-**Erkenntnis:** Open-Rate ist unzuverlässig (Email-Server scannen Pixel).
-Click-Rate ist die echte Metrik. 17 Leute haben geklickt → Demo Attack!
+**Erkenntnis:** Open-Rate ist unzuverlässig (Bot-Scans).
+Click-Rate ist die echte Metrik.
+
+---
+
+## LINKEDIN OUTREACH STATUS (14.01.2026)
+
+> **WICHTIG für neue Claude Sessions:** Diese Daten VOR LinkedIn-Aktionen checken!
+
+### Pending Connections (DB: `linkedin_leads`)
+| Name | Company | Demo URL | Connection Sent |
+|------|---------|----------|-----------------|
+| Max T. | Nachtcafé Dortmund | rr-demo-6f4a2d | **JA (14.01)** |
+| Bjoern F. | Augustiner Klosterwirt | rr-demo-7b3e8c | **JA (14.01)** |
+| Issa | Oceans Kassel | rr-demo-8a2f5d | **JA (14.01)** |
+| Katharina P. | Augustiner am Platzl | rr-demo-9c1d4e | **JA (14.01)** |
+| Lena F. | Luisenbad | rr-demo-3e7b2a | **JA (14.01)** |
+
+**ACHTUNG:** DB-Feld `connection_sent` ist NICHT zuverlässig!
+→ IMMER LinkedIn direkt checken unter: linkedin.com/mynetwork/invitation-manager/sent/
+
+### Follow-Up Workflow
+1. **Gesendete Invitations checken** → linkedin.com/mynetwork/invitation-manager/sent/
+2. **Accepted?** → Wenn ja: Follow-Up Message mit Demo-URL senden
+3. **DB updaten:** `PUT /api/outreach/linkedin-demo/[ID]/accepted`
+
+### LinkedIn API Limits (KRITISCH!)
+- MAX 20-25 Connection Requests/Tag
+- MAX 100 Connection Requests/Woche
+- MAX 50-100 Messages/Tag
+- Bei Warnung: SOFORT STOPPEN!
 
 ---
 
@@ -220,10 +231,16 @@ Click-Rate ist die echte Metrik. 17 Leute haben geklickt → Demo Attack!
 - "45 minutes is way too long. That's on us."
 - "Fair point about the noise. We're looking at that."
 
-### API Limits
-- Google Places: nur 5 Reviews → SerpAPI nutzen
+### API Limits (KRITISCH 14.01.2026!)
+- **SerpAPI: 960% ÜBER LIMIT** ← Demo-Generierung schlägt fehl!
+- **Outscraper: 500/Monat** (Primary, auch am Limit)
+- Google Places: nur 5 Reviews → nicht nutzbar
 - Hunter.io: 25/Monat → Website Scraper als Primary
-- Outscraper: 500/Monat (Primary für Reviews)
+
+**WORKAROUND wenn APIs am Limit:**
+1. TripAdvisor Scraping funktioniert noch (`/scrape-leads`)
+2. Chrome MCP für manuelles Scraping (instabil aber möglich)
+3. Demo-Generierung ohne Reviews → Fallback-Template
 
 ---
 
@@ -314,31 +331,20 @@ Click-Rate ist die echte Metrik. 17 Leute haben geklickt → Demo Attack!
 
 ---
 
-## KÜRZLICH ERLEDIGT (14.01 Nacht - Magic Link System)
+## KÜRZLICH ERLEDIGT (15.01 Früh)
 
-- **Magic Link Authentication** - Passwordless Login für Hot Leads
-  - `/api/auth/magic-login/:token` - Auto-Create Account + Instant Login
-  - `magic_links` DB Table - Tracking von Token, Email, Expiration
-  - Frontend: `MagicLoginPage` Component verarbeitet Token
-  - User landet direkt im Dashboard ohne Passwort-Eingabe
-
-- **Re-Engagement Cron für Hot Leads**
-  - `/api/cron/reengage-clickers` - Magic Links an Clicker ohne Account
-  - Target: Leute die auf Email geklickt haben aber nie registriert
-  - DE/EN Detection für personalisierte Emails
-  - `reengagement_emails` DB Table für Tracking
-
-- **Demo Expiration Urgency System**
-  - `/api/cron/demo-expiration-emails` - Urgency Emails
-  - Tag 3: "Your demo expires in 4 days"
-  - Tag 5: "Last chance - demo expires TOMORROW"
-  - Tag 7: Auto-expire (Demo wird als `expired` markiert)
-  - Neue DB Columns: `expiration_email_day3`, `expiration_email_day5`, `expired`
-
-- **First-Principles Approach:**
-  - Problem: 17 Clicker, 0 Conversions (Demo gibt alles weg ohne Gegenleistung)
-  - Lösung: Frictionless Signup mit Magic Links statt mehr Leads scrapen
-  - "Fix the bucket before pouring more water"
+- **TripAdvisor Boston Scraping** - 4 neue Leads mit Email:
+  - Terramia Ristorante (terramia93@gmail.com)
+  - Antico Forno (office@anticofornoboston.com)
+  - Carmelinas (info@carmelinasboston.com)
+  - Mamma Maria (info@mammamaria.com)
+- **LinkedIn Connection Requests gesendet** - 5 deutsche Restaurant-Owner
+  - Alle haben personalisierte Demo-URLs bekommen
+  - DB-Feld `connection_sent` ist NICHT zuverlässig → LinkedIn direkt checken!
+- **CLAUDE.md dokumentiert** - LinkedIn Status + API Limits für zukünftige Sessions
+- **API Limit Problem** - SerpAPI bei 960%, alle Hot Lead Demos schlugen fehl
+  - 14 Hot Leads konnten keine Demos bekommen (keine Reviews)
+  - Workaround: TripAdvisor + manuelles Scraping
 
 ---
 
