@@ -494,6 +494,13 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
 ```
 
 ### HEUTE ERLEDIGT (14.01.2026):
+- [x] **API Costs Dashboard im Admin Panel** - Übersicht über alle externe API-Kosten
+  - Neue DB-Tabelle: `api_call_logs` (Provider, Model, Tokens, Cost, Endpoint)
+  - `logApiCall()` Funktion mit automatischer Kostenberechnung
+  - Geloggte APIs: Claude, GPT-4o, Gemini, Google Places, Hunter, SerpAPI, Brevo, Resend
+  - Admin Endpoint: `GET /api/admin/api-costs`
+  - Frontend: Neuer "API Costs" Tab mit Summary Cards, Breakdown-Tabelle, Pricing Reference
+  - Kosten starten bei $0 (historische Daten fehlen - Tracking beginnt ab jetzt)
 - [x] **Pricing Page Optimierung** - First-Principles Analyse für bessere Conversion
   - Chrome Extension zu allen Plänen hinzugefügt (war vorher nicht gelistet)
   - Response History von Free → Starter+ verschoben (echte Differenzierung)
