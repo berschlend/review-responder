@@ -11298,12 +11298,12 @@ const DemoPage = () => {
           ))}
         </div>
 
-        {/* Social Proof */}
+        {/* Features - honest stats */}
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '32px', padding: '32px', background: 'var(--bg-secondary)', borderRadius: '16px', marginBottom: '48px', border: '1px solid var(--border-color)' }}>
           {[
-            { value: '500K+', label: 'Responses Generated' },
-            { value: '10K+', label: 'Happy Businesses' },
-            { value: '4.8/5', label: 'User Rating' },
+            { value: '20 Free', label: 'Responses/Month' },
+            { value: '50+', label: 'Languages' },
+            { value: '4 Tones', label: 'To Choose From' },
             { value: '<5 sec', label: 'Generation Time' },
           ].map((stat, i) => (
             <div key={i} style={{ textAlign: 'center', minWidth: '120px' }}>
