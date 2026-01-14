@@ -5562,7 +5562,7 @@ const DashboardPage = () => {
             />
           </div>
           <p className="mt-1" style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
-            Fast & reliable
+            Slightly faster
           </p>
         </div>
 
@@ -20568,6 +20568,8 @@ const AdminPage = () => {
   const [salesLoading, setSalesLoading] = useState(false);
   const [emailData, setEmailData] = useState(null);
   const [emailLoading, setEmailLoading] = useState(false);
+  const [scraperData, setScraperData] = useState(null);
+  const [scraperLoading, setScraperLoading] = useState(false);
 
   // Use the same API_URL as the rest of the app (already includes /api)
   // Remove /api suffix if present to build admin URLs correctly
@@ -20706,6 +20708,35 @@ const AdminPage = () => {
     }
   };
 
+  const loadScraperData = async key => {
+    const keyToUse = key || adminKey;
+    if (!keyToUse) return;
+    setScraperLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/admin/scraper-status?key=${keyToUse}`);
+      setScraperData(res.data);
+    } catch (err) {
+      console.error('Scraper load error:', err);
+      toast.error('Failed to load scraper data');
+    } finally {
+      setScraperLoading(false);
+    }
+  };
+
+  const testScraperAlert = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/api/cron/scraper-alerts?secret=${adminKey}&force=true`);
+      toast.success(`Alert sent: ${res.data.critical || 0} critical, ${res.data.low || 0} low`);
+    } catch (err) {
+      toast.error('Failed to send test alert');
+    }
+  };
+
+  const copyCommand = cmd => {
+    navigator.clipboard.writeText(cmd);
+    toast.success('Command copied!');
+  };
+
   const updateStatus = async (id, status, note = '') => {
     setActionLoading(true);
     try {
@@ -20774,6 +20805,9 @@ const AdminPage = () => {
       }
       if (activeAdminTab === 'email' && !emailData) {
         loadEmailData();
+      }
+      if (activeAdminTab === 'scraper' && !scraperData) {
+        loadScraperData();
       }
     }
   }, [activeAdminTab, isAuthenticated, adminKey]);
@@ -20882,6 +20916,12 @@ const AdminPage = () => {
           onClick={() => setActiveAdminTab('email')}
         >
           Email
+        </button>
+        <button
+          className={`btn ${activeAdminTab === 'scraper' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('scraper')}
+        >
+          Scraper
         </button>
       </div>
 
@@ -22148,6 +22188,280 @@ const AdminPage = () => {
                 Could not load email data
               </p>
               <button className="btn btn-primary" onClick={() => loadEmailData()}>
+                Retry
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Scraper Status Tab */}
+      {activeAdminTab === 'scraper' && (
+        <div>
+          {scraperLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading scraper data...</div>
+          ) : scraperData ? (
+            <>
+              {/* Summary */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h2 style={{ fontSize: '20px', fontWeight: '600', margin: 0 }}>Scraper Status</h2>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => {
+                        setScraperData(null);
+                        loadScraperData();
+                      }}
+                    >
+                      Refresh
+                    </button>
+                    <button className="btn btn-primary" onClick={testScraperAlert}>
+                      Test Alert Email
+                    </button>
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '16px' }}>
+                  <div style={{ padding: '16px', background: 'var(--gray-50)', borderRadius: '8px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--primary-color)' }}>
+                      {scraperData.summary?.total_leads || 0}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Total Leads</div>
+                  </div>
+                  <div style={{ padding: '16px', background: '#FEE2E2', borderRadius: '8px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#DC2626' }}>
+                      {scraperData.summary?.critical_count || 0}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#DC2626' }}>Critical</div>
+                  </div>
+                  <div style={{ padding: '16px', background: '#FEF3C7', borderRadius: '8px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#D97706' }}>
+                      {scraperData.summary?.low_count || 0}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#D97706' }}>Low</div>
+                  </div>
+                  <div style={{ padding: '16px', background: '#D1FAE5', borderRadius: '8px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#059669' }}>
+                      {scraperData.summary?.automatic_sources || 0}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#059669' }}>Auto Running</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recommendations */}
+              {scraperData.recommendations?.length > 0 && (
+                <div className="card" style={{ marginBottom: '24px', background: '#FEF3C7', border: '1px solid #F59E0B' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', color: '#D97706' }}>
+                    Recommended Actions
+                  </h3>
+                  {scraperData.recommendations.map((rec, idx) => (
+                    <div key={idx} style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '12px',
+                      background: 'white',
+                      borderRadius: '8px',
+                      marginBottom: '8px'
+                    }}>
+                      <div>
+                        <span style={{
+                          fontSize: '10px',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          background: rec.priority === 'high' ? '#DC2626' : '#D97706',
+                          color: 'white',
+                          marginRight: '8px'
+                        }}>
+                          {rec.priority.toUpperCase()}
+                        </span>
+                        <strong>{rec.source}</strong>: {rec.leads} leads (need {rec.threshold})
+                      </div>
+                      <button
+                        className="btn btn-secondary"
+                        style={{ fontSize: '12px', padding: '4px 12px' }}
+                        onClick={() => copyCommand(rec.command)}
+                      >
+                        Copy Command
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Tier 1: Automatic */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
+                  TIER 1 - Automatic Systems
+                </h3>
+                <div style={{ display: 'grid', gap: '12px' }}>
+                  {scraperData.sources?.filter(s => s.tier === 1).map((source, idx) => (
+                    <div key={idx} style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '12px 16px',
+                      background: '#D1FAE5',
+                      borderRadius: '8px',
+                      borderLeft: '4px solid #059669'
+                    }}>
+                      <div>
+                        <div style={{ fontWeight: '600' }}>{source.name}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{source.priority_reason}</div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        {source.leads_total !== undefined && (
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontWeight: '600' }}>{source.leads_total}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>leads</div>
+                          </div>
+                        )}
+                        {source.emails_today !== undefined && (
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontWeight: '600' }}>{source.emails_today}/50</div>
+                            <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>today</div>
+                          </div>
+                        )}
+                        <div style={{
+                          fontSize: '20px',
+                          color: '#059669'
+                        }}>
+                          ✓
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tier 2: Manual + High ROI */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
+                  TIER 2 - Manual (High ROI)
+                </h3>
+                <div style={{ display: 'grid', gap: '12px' }}>
+                  {scraperData.sources?.filter(s => s.tier === 2).map((source, idx) => (
+                    <div key={idx} style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '12px 16px',
+                      background: source.status === 'critical' ? '#FEE2E2' : source.status === 'low' ? '#FEF3C7' : '#F3F4F6',
+                      borderRadius: '8px',
+                      borderLeft: `4px solid ${source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#9CA3AF'}`
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: '600' }}>{source.name}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{source.priority_reason}</div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontWeight: '600' }}>{source.leads_total || 0}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
+                            / {source.threshold_low} threshold
+                          </div>
+                        </div>
+                        {source.by_competitor && (
+                          <div style={{ textAlign: 'right', fontSize: '11px' }}>
+                            <div>Birdeye: {source.by_competitor.birdeye}</div>
+                            <div>Podium: {source.by_competitor.podium}</div>
+                          </div>
+                        )}
+                        {source.connections_accepted !== undefined && (
+                          <div style={{ textAlign: 'right', fontSize: '11px' }}>
+                            <div>{source.connections_accepted} accepted</div>
+                            <div>{source.demos_viewed || 0} demos viewed</div>
+                          </div>
+                        )}
+                        <div style={{
+                          fontSize: '16px',
+                          color: source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#059669'
+                        }}>
+                          {source.status === 'critical' ? '!' : source.status === 'low' ? '⚠' : '✓'}
+                        </div>
+                        {source.command && (
+                          <button
+                            className="btn btn-secondary"
+                            style={{ fontSize: '11px', padding: '4px 8px' }}
+                            onClick={() => copyCommand(source.command)}
+                          >
+                            Copy
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tier 3: Experimental */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
+                  TIER 3 - Experimental
+                </h3>
+                <div style={{ display: 'grid', gap: '12px' }}>
+                  {scraperData.sources?.filter(s => s.tier === 3).map((source, idx) => (
+                    <div key={idx} style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '12px 16px',
+                      background: source.status === 'critical' ? '#FEE2E2' : source.status === 'low' ? '#FEF3C7' : '#F3F4F6',
+                      borderRadius: '8px',
+                      borderLeft: `4px solid ${source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#9CA3AF'}`
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: '600' }}>{source.name}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{source.priority_reason}</div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontWeight: '600' }}>{source.leads_total || 0}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
+                            / {source.threshold_low} threshold
+                          </div>
+                        </div>
+                        <div style={{
+                          fontSize: '16px',
+                          color: source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#059669'
+                        }}>
+                          {source.status === 'critical' ? '!' : source.status === 'low' ? '⚠' : '✓'}
+                        </div>
+                        {source.command && (
+                          <button
+                            className="btn btn-secondary"
+                            style={{ fontSize: '11px', padding: '4px 8px' }}
+                            onClick={() => copyCommand(source.command)}
+                          >
+                            Copy
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Notifications Info */}
+              <div className="card" style={{ background: '#EFF6FF', border: '1px solid #3B82F6' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '20px' }}>📧</span>
+                  <div>
+                    <div style={{ fontWeight: '600' }}>Email Alerts Active</div>
+                    <div style={{ fontSize: '12px', color: 'var(--gray-600)' }}>
+                      Daily alerts sent to {scraperData.notifications?.email} when sources are critical
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+                Could not load scraper data
+              </p>
+              <button className="btn btn-primary" onClick={() => loadScraperData()}>
                 Retry
               </button>
             </div>

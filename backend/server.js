@@ -14640,6 +14640,333 @@ app.get('/api/sales/dashboard', async (req, res) => {
   }
 });
 
+// GET /api/admin/scraper-status - Scraper status dashboard with priorities
+app.get('/api/admin/scraper-status', async (req, res) => {
+  const authKey = req.headers['x-api-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Define thresholds for each source
+    const thresholds = {
+      g2_competitors: { low: 30, critical: 15 },
+      tripadvisor: { low: 20, critical: 10 },
+      linkedin: { low: 50, critical: 25 },
+      yelp: { low: 20, critical: 10 },
+      agency: { low: 10, critical: 5 }
+    };
+
+    // Query all lead sources in parallel
+    const [
+      outreachLeads,
+      competitorLeads,
+      linkedinLeads,
+      yelpLeads,
+      agencyLeads,
+      emailsToday,
+      lastCronRun
+    ] = await Promise.all([
+      // Main outreach leads (Daily Outreach)
+      dbGet(`
+        SELECT
+          COUNT(*) as total,
+          COUNT(*) FILTER (WHERE status = 'new') as not_contacted,
+          COUNT(*) FILTER (WHERE email IS NOT NULL) as with_email
+        FROM outreach_leads
+      `),
+      // G2 Competitor leads
+      dbGet(`
+        SELECT
+          COUNT(*) as total,
+          COUNT(*) FILTER (WHERE email_sent = FALSE) as not_contacted,
+          COUNT(*) FILTER (WHERE competitor = 'birdeye') as birdeye,
+          COUNT(*) FILTER (WHERE competitor = 'podium') as podium
+        FROM competitor_leads
+      `),
+      // LinkedIn leads
+      dbGet(`
+        SELECT
+          COUNT(*) as total,
+          COUNT(*) FILTER (WHERE connection_sent = FALSE) as pending,
+          COUNT(*) FILTER (WHERE connection_accepted = TRUE) as accepted,
+          COUNT(*) FILTER (WHERE demo_viewed_at IS NOT NULL) as demos_viewed
+        FROM linkedin_outreach
+      `),
+      // Yelp leads
+      dbGet(`
+        SELECT
+          COUNT(*) as total,
+          COUNT(*) FILTER (WHERE email_sent = FALSE) as not_contacted,
+          COUNT(*) FILTER (WHERE email IS NOT NULL) as with_email
+        FROM yelp_leads
+      `),
+      // Agency leads
+      dbGet(`
+        SELECT
+          COUNT(*) as total,
+          COUNT(*) FILTER (WHERE email_sequence = 0) as not_contacted
+        FROM agency_leads
+      `),
+      // Emails sent today
+      dbGet(`
+        SELECT COUNT(*) as count
+        FROM outreach_emails
+        WHERE DATE(sent_at) = CURRENT_DATE
+      `),
+      // Last cron run (from email_logs)
+      dbGet(`
+        SELECT MAX(sent_at) as last_run
+        FROM email_logs
+        WHERE campaign = 'main' OR campaign = 'review_alert'
+      `)
+    ]);
+
+    // Helper function to determine status
+    const getStatus = (count, threshold) => {
+      if (count < threshold.critical) return 'critical';
+      if (count < threshold.low) return 'low';
+      return 'ok';
+    };
+
+    // Build sources array
+    const sources = [
+      // Tier 1: Automatic
+      {
+        tier: 1,
+        name: 'Daily Outreach',
+        type: 'automatic',
+        command: null,
+        leads_total: parseInt(outreachLeads?.total || 0),
+        leads_not_contacted: parseInt(outreachLeads?.not_contacted || 0),
+        leads_with_email: parseInt(outreachLeads?.with_email || 0),
+        emails_today: parseInt(emailsToday?.count || 0),
+        status: 'ok',
+        last_run: lastCronRun?.last_run || null,
+        priority_reason: '70% aller Leads, automatisch'
+      },
+      {
+        tier: 1,
+        name: 'Drip Emails',
+        type: 'automatic',
+        command: null,
+        status: 'ok',
+        priority_reason: 'Nurturing, automatisch'
+      },
+      {
+        tier: 1,
+        name: 'Blog Generation',
+        type: 'automatic',
+        command: null,
+        status: 'ok',
+        priority_reason: 'SEO Traffic, 3x/Woche'
+      },
+      // Tier 2: Manual + High ROI
+      {
+        tier: 2,
+        name: 'G2 Competitors',
+        type: 'manual',
+        command: '/g2-miner birdeye',
+        leads_total: parseInt(competitorLeads?.total || 0),
+        leads_not_contacted: parseInt(competitorLeads?.not_contacted || 0),
+        by_competitor: {
+          birdeye: parseInt(competitorLeads?.birdeye || 0),
+          podium: parseInt(competitorLeads?.podium || 0)
+        },
+        threshold_low: thresholds.g2_competitors.low,
+        threshold_critical: thresholds.g2_competitors.critical,
+        status: getStatus(parseInt(competitorLeads?.not_contacted || 0), thresholds.g2_competitors),
+        priority_reason: 'Pain Point Leads - bereits unzufrieden'
+      },
+      {
+        tier: 2,
+        name: 'TripAdvisor',
+        type: 'manual',
+        command: '/scrape-leads auto',
+        leads_total: parseInt(outreachLeads?.total || 0),
+        leads_with_email: parseInt(outreachLeads?.with_email || 0),
+        threshold_low: thresholds.tripadvisor.low,
+        threshold_critical: thresholds.tripadvisor.critical,
+        status: getStatus(parseInt(outreachLeads?.not_contacted || 0), thresholds.tripadvisor),
+        priority_reason: 'Restaurants = Hauptzielgruppe'
+      },
+      {
+        tier: 2,
+        name: 'LinkedIn',
+        type: 'manual',
+        command: '/linkedin-connect "Restaurant Owner" Germany',
+        leads_total: parseInt(linkedinLeads?.total || 0),
+        connections_pending: parseInt(linkedinLeads?.pending || 0),
+        connections_accepted: parseInt(linkedinLeads?.accepted || 0),
+        demos_viewed: parseInt(linkedinLeads?.demos_viewed || 0),
+        threshold_low: thresholds.linkedin.low,
+        threshold_critical: thresholds.linkedin.critical,
+        status: getStatus(parseInt(linkedinLeads?.total || 0), thresholds.linkedin),
+        priority_reason: 'Direkte Entscheider'
+      },
+      // Tier 3: Experimental
+      {
+        tier: 3,
+        name: 'Yelp Audit',
+        type: 'manual',
+        command: '/yelp-audit Berlin restaurants',
+        leads_total: parseInt(yelpLeads?.total || 0),
+        leads_not_contacted: parseInt(yelpLeads?.not_contacted || 0),
+        leads_with_email: parseInt(yelpLeads?.with_email || 0),
+        threshold_low: thresholds.yelp.low,
+        threshold_critical: thresholds.yelp.critical,
+        status: getStatus(parseInt(yelpLeads?.total || 0), thresholds.yelp),
+        priority_reason: 'Experimentell - niedrige Response Rate Businesses'
+      },
+      {
+        tier: 3,
+        name: 'Agency Recruiter',
+        type: 'manual',
+        command: '/agency-recruiter local-seo',
+        leads_total: parseInt(agencyLeads?.total || 0),
+        leads_not_contacted: parseInt(agencyLeads?.not_contacted || 0),
+        threshold_low: thresholds.agency.low,
+        threshold_critical: thresholds.agency.critical,
+        status: getStatus(parseInt(agencyLeads?.total || 0), thresholds.agency),
+        priority_reason: 'White-Label Partners = recurring revenue'
+      }
+    ];
+
+    // Generate recommendations for critical/low sources
+    const recommendations = sources
+      .filter(s => s.type === 'manual' && (s.status === 'critical' || s.status === 'low'))
+      .sort((a, b) => {
+        // Sort by tier first, then by status severity
+        if (a.tier !== b.tier) return a.tier - b.tier;
+        if (a.status === 'critical' && b.status !== 'critical') return -1;
+        return 1;
+      })
+      .map(s => ({
+        priority: s.status === 'critical' ? 'high' : 'medium',
+        source: s.name,
+        leads: s.leads_total,
+        threshold: s.threshold_low,
+        action: `Starte ${s.command} - nur ${s.leads_total} Leads`,
+        command: s.command
+      }));
+
+    // Summary stats
+    const summary = {
+      automatic_sources: sources.filter(s => s.type === 'automatic').length,
+      manual_sources: sources.filter(s => s.type === 'manual').length,
+      critical_count: sources.filter(s => s.status === 'critical').length,
+      low_count: sources.filter(s => s.status === 'low').length,
+      total_leads: sources.reduce((sum, s) => sum + (s.leads_total || 0), 0)
+    };
+
+    res.json({
+      sources,
+      recommendations,
+      summary,
+      notifications: {
+        enabled: true,
+        email: 'berend.mainz@web.de'
+      }
+    });
+  } catch (error) {
+    console.error('Scraper status error:', error);
+    res.status(500).json({ error: 'Failed to get scraper status' });
+  }
+});
+
+// GET /api/cron/scraper-alerts - Send email alerts for low lead sources
+app.get('/api/cron/scraper-alerts', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  const force = req.query.force === 'true';
+
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Check if we already sent an alert today (unless force=true)
+    if (!force) {
+      const lastAlert = await dbGet(`
+        SELECT sent_at FROM email_logs
+        WHERE campaign = 'scraper-alert'
+        AND DATE(sent_at) = CURRENT_DATE
+        LIMIT 1
+      `);
+      if (lastAlert) {
+        return res.json({ ok: true, message: 'Alert already sent today', skipped: true });
+      }
+    }
+
+    // Get scraper status
+    const statusResponse = await fetch(`${process.env.BACKEND_URL || 'https://review-responder.onrender.com'}/api/admin/scraper-status?key=${process.env.ADMIN_SECRET}`);
+    const status = await statusResponse.json();
+
+    // Filter for critical and low sources
+    const criticalSources = status.sources.filter(s => s.status === 'critical' && s.type === 'manual');
+    const lowSources = status.sources.filter(s => s.status === 'low' && s.type === 'manual');
+
+    if (criticalSources.length === 0 && lowSources.length === 0) {
+      return res.json({ ok: true, message: 'All sources healthy', alerts: 0 });
+    }
+
+    // Build email content
+    let emailBody = `Hallo Berend,\n\nDeine wichtigsten manuellen Lead-Quellen brauchen Aufmerksamkeit:\n\n`;
+
+    if (criticalSources.length > 0) {
+      emailBody += `KRITISCH:\n`;
+      emailBody += `${'─'.repeat(40)}\n`;
+      for (const s of criticalSources) {
+        emailBody += `[!] ${s.name}: ${s.leads_total} Leads (Threshold: ${s.threshold_low})\n`;
+        emailBody += `    → ${s.command}\n`;
+        emailBody += `    → Warum wichtig: ${s.priority_reason}\n\n`;
+      }
+    }
+
+    if (lowSources.length > 0) {
+      emailBody += `\nNIEDRIG:\n`;
+      emailBody += `${'─'.repeat(40)}\n`;
+      for (const s of lowSources) {
+        emailBody += `[*] ${s.name}: ${s.leads_total} Leads (Threshold: ${s.threshold_low})\n`;
+        emailBody += `    → ${s.command}\n\n`;
+      }
+    }
+
+    // Add automatic systems status
+    const autoSources = status.sources.filter(s => s.type === 'automatic');
+    emailBody += `\nAutomatische Systeme:\n`;
+    emailBody += `${'─'.repeat(40)}\n`;
+    for (const s of autoSources) {
+      const leadsInfo = s.leads_total ? ` (${s.leads_total} Leads)` : '';
+      emailBody += `[OK] ${s.name}${leadsInfo}\n`;
+    }
+
+    emailBody += `\n\nDashboard: https://tryreviewresponder.com/admin\n`;
+
+    // Send email
+    const subject = criticalSources.length > 0
+      ? `Scraper Alert: ${criticalSources.length} kritische Lead-Quelle(n)`
+      : `Scraper Alert: ${lowSources.length} Lead-Quelle(n) niedrig`;
+
+    await sendEmail({
+      to: 'berend.mainz@web.de',
+      subject,
+      text: emailBody,
+      type: 'transactional',
+      campaign: 'scraper-alert'
+    });
+
+    res.json({
+      ok: true,
+      message: 'Alert sent',
+      critical: criticalSources.length,
+      low: lowSources.length
+    });
+  } catch (error) {
+    console.error('Scraper alerts error:', error);
+    res.status(500).json({ error: error.message?.substring(0, 100) });
+  }
+});
+
 // POST /api/cron/send-yelp-emails - Send emails to Yelp leads
 app.post('/api/cron/send-yelp-emails', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
