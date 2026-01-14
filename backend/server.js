@@ -1811,16 +1811,42 @@ Respond ONLY with the generated text, no introduction or explanation.`;
       }
       userMessage = `Keywords: ${keywords.trim()}`;
     } else if (field === 'style') {
-      systemPrompt = `You help a business owner define their response style for customer reviews.
-These guidelines will be used to personalize AI-generated responses.
+      // Response Style with XML tags for better AI parsing
+      systemPrompt = `<role>You create response style guidelines using XML tags for clear structure.</role>
 
+<context>
 Business Type: ${businessType || 'General Business'}
 Business Name: ${businessName || 'the business'}
+</context>
 
-Create 3-5 brief style guidelines based on the keywords.
-Examples: signature sign-offs, tone of voice, what to always/never mention.
-Keep each point short and actionable.
-Respond ONLY with the guidelines as bullet points, no introduction.`;
+<instructions>
+Create response style guidelines based on the keywords. Use XML tags to structure the output.
+
+Output format - use these EXACT XML tags:
+
+<always>
+- Things to always include in responses (2-3 bullet points)
+</always>
+
+<never>
+- Things to never do or say (2-3 bullet points)
+</never>
+
+<style>
+- Tone and style preferences (2-3 bullet points)
+</style>
+
+<signoff>
+- How to sign off responses (1 line)
+</signoff>
+</instructions>
+
+<rules>
+- Each section should have 2-3 concise bullet points
+- Keep points short and actionable
+- Use the keywords provided to customize the guidelines
+- Output ONLY the XML tags with content, no introduction
+</rules>`;
       userMessage = `Keywords: ${keywords.trim()}`;
     } else if (field === 'sample_review') {
       // Generate a sample review that references the business context
