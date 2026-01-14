@@ -254,14 +254,15 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 |-----|----------|--------|----------------|
 | **Keep-Alive** | alle 15 Min | OK | Verhindert Cold Start |
 | Blog Auto-Generation | 06:00 Mo/Mi/Fr | OK | - |
-| **Demo Generation + Email (NEU!)** | 08:00 täglich | OK | Personalisierte Demo-Emails |
+| **Scraper Alerts (NEU!)** | 08:00 täglich | OK | Lead-Quellen Monitoring |
+| **Demo Generation + Email** | 08:00 täglich | OK | Personalisierte Demo-Emails |
 | Twitter Auto-Post Morning | 09:00 täglich | OK | - |
 | Weekly Summary | 09:00 Montags | OK | - |
 | Daily Outreach | 09:00 täglich | OK | - |
 | Drip Emails | 10:00 täglich | OK | - |
 | TripAdvisor Email Sender | 09:00 täglich | OK | - |
 | Pre-Registration Drip | 11:00 täglich | OK | - |
-| **Demo Follow-Up (NEU!)** | 12:00 täglich | TODO | Follow-Up an Demo-Viewer |
+| **Demo Follow-Up (NEU!)** | 12:00 täglich | OK | Follow-Up an Demo-Viewer |
 
 **Root Cause "Ausgabe zu groß" (13.01):**
 - Render Free Tier schläft nach 15 Min Inaktivität
@@ -517,6 +518,9 @@ https://review-responder.onrender.com/api/cron/ENDPOINT?secret=CRON_SECRET
 - `PUT /api/outreach/linkedin-demo/:id/accepted` - Markiert als akzeptiert
 
 ### HEUTE ERLEDIGT (14.01.2026):
+- [x] **2 Cron Jobs angelegt** (cron-job.org)
+  - **Demo Follow-Up**: 12:00 täglich - Follow-Up Emails an Demo-Viewer
+  - **Scraper Alerts**: 08:00 täglich - Monitoring wenn Lead-Quellen ausfallen
 - [x] **Chrome MCP Lead Scraper Session** - 5 neue TripAdvisor Leads gesammelt
   - Schiller Bräu, Steinheil 16, Trattoria Da Fausto
   - Little London Bar & Grill (MICHELIN, #2)
