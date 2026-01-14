@@ -4530,6 +4530,10 @@ const DashboardPage = () => {
   // Keyboard shortcuts help modal
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
 
+  // Upgrade Modal state (when user hits limit)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [exitSurveyReason, setExitSurveyReason] = useState(null);
+
   // Dashboard error state
   const [dashboardError, setDashboardError] = useState(null);
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
@@ -5400,18 +5404,43 @@ const DashboardPage = () => {
       // Check if user should see feedback popup
       checkFeedbackStatus();
     } catch (error) {
-      if (error.response?.data?.error) {
+      if (error.response?.data?.showUpgradeModal || error.response?.data?.upgrade) {
+        // Show upgrade modal instead of just a toast
+        setShowUpgradeModal(true);
+        setExitSurveyReason(null); // Reset survey state
+      } else if (error.response?.data?.error) {
         toast.error(error.response.data.error);
         if (error.response.data.suggestion) {
           toast.info(error.response.data.suggestion, { duration: 5000 });
         }
-      } else if (error.response?.data?.upgrade) {
-        toast.error(error.response.data.message);
       } else {
         toast.error('Failed to generate response');
       }
     } finally {
       setGenerating(false);
+    }
+  };
+
+  // Track exit survey response
+  const trackExitSurvey = async reason => {
+    try {
+      await api.post('/analytics/exit-survey', { reason });
+    } catch (err) {
+      console.error('Failed to track exit survey:', err);
+    }
+    setShowUpgradeModal(false);
+    setExitSurveyReason(null);
+  };
+
+  // Buy response pack (micro-pricing)
+  const handleBuyResponsePack = async () => {
+    try {
+      const res = await api.post('/billing/buy-responses');
+      if (res.data.url) {
+        window.location.href = res.data.url;
+      }
+    } catch (error) {
+      toast.error('Failed to start checkout');
     }
   };
 
@@ -11648,30 +11677,7 @@ const DemoPage = () => {
   const [liveResponse, setLiveResponse] = useState('');
   const [liveLoading, setLiveLoading] = useState(false);
 
-  // Testimonial Slider State
-  const [testimonialIndex, setTestimonialIndex] = useState(0);
-
-  // Real testimonials
-  const testimonials = [
-    {
-      quote: "Saves me at least 2 hours every week. The responses sound exactly like something I would write.",
-      author: "Sarah M.",
-      business: "Restaurant Owner, Munich",
-      rating: 5
-    },
-    {
-      quote: "Finally I can respond to reviews quickly without stressing about what to say. Game changer!",
-      author: "Marco T.",
-      business: "Hotel Manager, Vienna",
-      rating: 5
-    },
-    {
-      quote: "The AI understands context perfectly. Even handles difficult negative reviews professionally.",
-      author: "Lisa K.",
-      business: "Dental Practice, Berlin",
-      rating: 5
-    }
-  ];
+  // No fake testimonials - removed to maintain honesty
 
   useEffect(() => {
     fetchDemo();
