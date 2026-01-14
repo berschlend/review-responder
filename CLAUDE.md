@@ -494,6 +494,23 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
   - Brevo API bestätigt: `"event":"delivered"`
 - [x] **Open Tracking Pixel hinzugefügt** - Outreach Emails tracken jetzt Opens
 - [x] **Email-Logs Admin Endpoint** - `/api/admin/email-logs` zeigt alle gesendeten Emails
+- [x] **Follow-up Emails für TripAdvisor** - 4 Tage nach Erst-Email automatisch
+  - Query: `sequence_number = 1` + `sent_at < NOW() - 4 days` + keine `sequence_number = 2`
+  - Personalisiert mit Demo-URL falls vorhanden
+  - Logging in `outreach_emails` Tabelle
+- [x] **Follow-up Emails für G2 Competitor Leads** - Gleiche Logik
+  - `POST /api/cron/send-g2-emails` sendet First + Follow-ups
+  - Neue Columns: `followup_sent`, `followup_sent_at`
+- [x] **LinkedIn Limits Tracking** - Dashboard zeigt Tages/Wochen-Limits
+  - Connections heute: X/20 mit Progress-Bar
+  - Connections Woche: X/100 mit Progress-Bar
+  - Messages heute: X/50 mit Progress-Bar
+  - Farbcodes: grün (ok), orange (warning bei 75%+), rot (limit reached)
+  - Verhindert LinkedIn Account-Sperrung
+- [x] **G2/LinkedIn/TripAdvisor komplett automatisiert**
+  - `/g2-miner birdeye` → scraped + findet Emails + sendet + Demo
+  - `/linkedin-connect followup` → prüft Acceptances + sendet Follow-ups
+  - `/scrape-leads restaurants munich` → scraped + Cron sendet Emails
 
 ### ERLEDIGT (13.01.2026):
 - [x] **Cron Jobs gefixt** - Alle 3 Cron Jobs liefen auf "Ausgabe zu groß" Fehler
