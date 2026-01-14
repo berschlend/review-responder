@@ -16,7 +16,13 @@ const Anthropic = require('@anthropic-ai/sdk');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { TwitterApi } = require('twitter-api-v2');
 const SibApiV3Sdk = require('@getbrevo/brevo');
-const { getFewShotExamples } = require('./promptExamples');
+const {
+  getFewShotExamples,
+  getFewShotExamplesXML,
+  checkAISlop,
+  AI_SLOP_WORDS,
+  AI_SLOP_PHRASES,
+} = require('./promptExamples');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -3010,39 +3016,67 @@ async function generateResponseHandler(req, res) {
       ? 'You MAY include 1-2 relevant emojis if appropriate.'
       : 'Do NOT use any emojis.';
 
-    // ========== ANTHROPIC BEST PRACTICES: Positive Framing + XML Tags ==========
-    const writingStyleInstructions = `
-<output_format>
-Write the response directly. No quotes. No "Response:" prefix. Just the text.
-</output_format>
+    // ========== ANTHROPIC BEST PRACTICES 2025: Full XML Structure ==========
+    // @see https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-4-best-practices
+    // @see https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/use-xml-tags
 
-<voice>
-You're the business owner, not customer service. Write like you'd text a regular customer.
-Warm but not gushing. Confident but not arrogant.
-</voice>
+    // Build AI-Slop avoidance section with explicit examples
+    const avoidPatternsSection = `
+<avoid_patterns>
+CRITICAL: Your response will be rejected if it sounds AI-generated.
 
-<style_guide>
-Write responses that sound like this:
-- "Glad the [specific thing] worked for you."
-- "Nice to hear about [detail]. We [relevant fact about your business]."
-- "That's on us. Email me at [email] and we'll fix it."
+<forbidden_phrases>
+${AI_SLOP_PHRASES.slice(0, 8).map(p => `- "${p}"`).join('\n')}
+</forbidden_phrases>
 
-Keep it:
-- ${lengthInstruction}
-- One exclamation mark max (zero is fine)
-- Contractions always (we're, you'll, that's)
-- Reference something specific from their review
-- ${emojiInstruction}
-</style_guide>
+<forbidden_words>
+${AI_SLOP_WORDS.join(', ')}
+</forbidden_words>
 
-<avoid_ai_patterns>
-Your response will be rejected if it sounds like AI-generated text. Write like a real person:
-- Instead of "Thank you for your feedback" → "Glad you enjoyed the [specific thing]"
+<replacements>
+- Instead of "Thank you for your feedback" → "Glad you enjoyed [specific thing]"
 - Instead of "We appreciate you taking the time" → "Nice to hear about [detail]"
 - Instead of "Sorry for any inconvenience" → "That's on us, we'll fix it"
-- No gushing words (thrilled, delighted, amazing, incredible, wonderful)
-- No corporate speak (leverage, embark, journey, vital, crucial)
-</avoid_ai_patterns>`;
+- Instead of "We value your input" → Just address the specific issue
+</replacements>
+
+<forbidden_starts>
+Never start your response with: "Here's", "Let me", "I want to", "First", "Thank you for"
+</forbidden_starts>
+</avoid_patterns>`;
+
+    const writingStyleInstructions = `
+<voice>
+You are the business owner speaking directly to a customer.
+Write like you'd text a regular who just left a review.
+Warm but not gushing. Confident but not arrogant. Human, not corporate.
+</voice>
+
+<style_rules>
+- Length: ${lengthInstruction}
+- Maximum one exclamation mark (zero is fine)
+- Always use contractions (we're, you'll, that's, don't)
+- Reference something specific from their review
+- ${emojiInstruction}
+</style_rules>
+
+<good_response_patterns>
+These sound human:
+- "Glad the [specific thing] worked for you."
+- "Nice to hear about [detail]. We [relevant fact]."
+- "That's on us. Email me directly and we'll fix it."
+- "[Name] will love hearing this."
+</good_response_patterns>
+
+${avoidPatternsSection}
+
+<output_format>
+Write the response directly.
+No quotes around the response.
+No "Response:" prefix.
+No explanations.
+Just the text you would post as the review response.
+</output_format>`;
 
     // Get rating strategy
     const getRatingStrategy = rating => {
@@ -3087,24 +3121,39 @@ Your response will be rejected if it sounds like AI-generated text. Write like a
     const contextUser = isTeamMember ? usageOwner : user;
 
     // Industry-specific examples - matches business type for better relevance
-    // See promptExamples.js for full list of industry examples
-    const fewShotExamples = getFewShotExamples(contextUser?.business_type);
-    const exampleToUse = isNegative ? fewShotExamples.negative : fewShotExamples.positive;
+    // Now using XML format per Anthropic Best Practices
+    const fewShotExamplesXMLContent = getFewShotExamplesXML(contextUser?.business_type);
 
-    // ========== OPTIMIZED SYSTEM + USER MESSAGE STRUCTURE ==========
+    // ========== ANTHROPIC BEST PRACTICES: Full XML System Message ==========
+    // Claude 4 follows instructions literally - be explicit about everything
 
-    const systemMessage = `You own ${businessName || contextUser.business_name || 'a business'}${contextUser.business_type ? ` (${contextUser.business_type})` : ''}. You're responding to a review on ${platform || 'Google'}.
-${contextUser.business_context ? `\n<business_context>\n${contextUser.business_context}\n</business_context>` : ''}
-${contextUser.response_style ? `\n<response_style>\n${contextUser.response_style}\n</response_style>` : ''}
-${templateContent ? `\nTEMPLATE STYLE GUIDE: Use this template as a style reference. Match its tone, structure, and approach, but adapt the content to address the specific review:\n"${templateContent}"` : ''}
+    const effectiveBusinessName = businessName || contextUser.business_name || 'a business';
+    const effectiveBusinessType = contextUser.business_type || 'local business';
 
+    const systemMessage = `<role>
+You are the owner of ${effectiveBusinessName}, a ${effectiveBusinessType}.
+You are personally responding to a customer review on ${platform || 'Google'}.
+</role>
+
+<context>
+Platform: ${platform || 'Google'}
+Review Rating: ${reviewRating ? `${reviewRating} stars` : 'Not specified'}
+${contextUser.business_context ? `\n<business_details>\n${contextUser.business_context}\n</business_details>` : ''}
+${contextUser.response_style ? `\n<custom_style>\n${contextUser.response_style}\n</custom_style>` : ''}
+</context>
+
+${templateContent ? `<template_reference>
+Use this as a style guide. Match its tone and structure:
+"${templateContent}"
+</template_reference>
+` : ''}
 ${writingStyleInstructions}
 
-EXAMPLE:
-Customer: "${exampleToUse.review}"
-You: ${exampleToUse.goodResponse}
+${fewShotExamplesXMLContent}
 
-LANGUAGE: ${languageInstruction}`;
+<language_instruction>
+${languageInstruction}
+</language_instruction>`;
 
     const userMessage = `${reviewRating ? `[${reviewRating} stars] ` : ''}${reviewText}${ratingStrategy ? `\n\n(${ratingStrategy.length})` : ''}${customInstructions ? `\n\nIMPORTANT - Follow these instructions: ${customInstructions}` : ''}`;
 
@@ -5570,85 +5619,88 @@ async function generateDemoResponse(review, businessName, businessType = null, c
   const ratingStrategy = ratingStrategies[reviewRating] || ratingStrategies[3];
   const isNegative = reviewRating && reviewRating <= 2;
 
-  // Get industry-specific examples
-  const fewShotExamples = getFewShotExamples(businessType);
-  const exampleToUse = isNegative ? fewShotExamples.negative : fewShotExamples.positive;
+  // Get industry-specific examples in XML format (Anthropic Best Practices 2025)
+  const fewShotExamplesXMLContent = getFewShotExamplesXML(businessType);
 
-  // Build context
-  const contextParts = [`Business: ${businessName}`];
-  if (businessType) contextParts.push(`Type: ${businessType}`);
+  // Build context parts for XML
+  const contextParts = [];
+  if (businessType) contextParts.push(`Industry: ${businessType}`);
   if (city) contextParts.push(`Location: ${city}`);
   if (googleRating) {
-    let ratingStr = `Rating: ${googleRating}/5`;
-    if (totalReviews) ratingStr += ` (${totalReviews.toLocaleString()} reviews)`;
+    let ratingStr = `Current Rating: ${googleRating}/5`;
+    if (totalReviews) ratingStr += ` (${totalReviews.toLocaleString()} total reviews)`;
     contextParts.push(ratingStr);
   }
 
-  // Writing style instructions - STRICT anti-AI-slop rules
-  const writingStyleInstructions = `
-<output_format>
-Write the response directly. No quotes. No "Response:" prefix. Just the text.
-</output_format>
+  // ========== ANTHROPIC BEST PRACTICES 2025: Full XML Structure ==========
+  const systemMessage = `<role>
+You are the owner of ${businessName}${businessType ? `, a ${businessType}` : ''}.
+You are personally responding to a Google review.
+</role>
 
-<voice>
-You're the business owner, not customer service. Write like you'd text a regular customer.
-Warm but not gushing. Confident but not arrogant. CASUAL and REAL.
-</voice>
-
-<style_guide>
-Good examples:
-- "Glad the ribeye worked out. We age it 28 days."
-- "The salmon feedback is fair - we're working on that."
-- "That's on us. I'll talk to the team."
-
-Keep it:
-- ${ratingStrategy.length}
-- ZERO exclamation marks preferred, one max
-- Contractions always (we're, you'll, that's)
-- Reference ONE specific thing from their review
-- No emojis
-</style_guide>
-
-<banned_words>
-NEVER use these words/phrases - instant rejection:
-- "so glad" / "so happy" / "so pleased"
-- "thrilled" / "delighted" / "wonderful" / "amazing" / "incredible"
-- "means a lot" / "means so much" / "really appreciate"
-- "thank you for" / "thanks for sharing" / "thank you for your feedback"
-- "we value" / "we appreciate you taking the time"
-- "sorry for any inconvenience"
-- "looking forward to" / "can't wait to"
-- "customer favorites" / "signature dish" (unless actually true)
-</banned_words>
-
-<how_to_write>
-Instead of AI-speak, write like a real owner:
-- "so glad you loved it" → "glad it worked out"
-- "we really appreciate" → "good to hear"
-- "means so much to us" → [just delete this]
-- "looking forward to seeing you" → "see you next time"
-- "our customer favorites" → "that one's popular"
-</how_to_write>`;
-
-  const systemMessage = `You own ${businessName}${businessType ? ` (${businessType})` : ''}. You're responding to a review on Google.
-
-<business_context>
+<context>
+<business_details>
+Business: ${businessName}
 ${contextParts.join('\n')}
-</business_context>
+</business_details>
 
 <rating_strategy>
+This is a ${reviewRating}-star review.
 Goal: ${ratingStrategy.goal}
 Approach: ${ratingStrategy.approach}
 Avoid: ${ratingStrategy.avoid}
 </rating_strategy>
+</context>
 
-${writingStyleInstructions}
+<voice>
+You're the business owner, not customer service.
+Write like you'd text a regular customer.
+Warm but not gushing. Confident but not arrogant. CASUAL and REAL.
+</voice>
 
-EXAMPLE:
-Customer: "${exampleToUse.review}"
-You: ${exampleToUse.goodResponse}
+<style_rules>
+- Length: ${ratingStrategy.length}
+- ZERO exclamation marks preferred, one max
+- Always use contractions (we're, you'll, that's)
+- Reference ONE specific thing from their review
+- No emojis
+- End with " - ${businessName}"
+</style_rules>
 
-SIGNATURE: End with " - ${businessName}"`;
+<good_response_patterns>
+These sound human:
+- "Glad the ribeye worked out. We age it 28 days."
+- "The salmon feedback is fair - we're working on that."
+- "That's on us. I'll talk to the team."
+</good_response_patterns>
+
+<avoid_patterns>
+CRITICAL: Response will be rejected if it sounds AI-generated.
+
+<forbidden_phrases>
+${AI_SLOP_PHRASES.slice(0, 8).map(p => `- "${p}"`).join('\n')}
+</forbidden_phrases>
+
+<forbidden_words>
+${AI_SLOP_WORDS.join(', ')}
+</forbidden_words>
+
+<replacements>
+- "so glad you loved it" → "glad it worked out"
+- "we really appreciate" → "good to hear"
+- "means so much to us" → [just delete this]
+- "looking forward to seeing you" → "see you next time"
+</replacements>
+</avoid_patterns>
+
+${fewShotExamplesXMLContent}
+
+<output_format>
+Write the response directly.
+No quotes around the response.
+No "Response:" prefix.
+Just the text ending with " - ${businessName}"
+</output_format>`;
 
   const userMessage = `[${reviewRating} stars] ${review.author}: "${review.text}"
 
@@ -7272,18 +7324,55 @@ SIGN OFF:
 - Keep it natural and direct`,
   };
 
-  // Generate AI response using Claude (Smart AI)
-  const systemMessage = `You are responding to a customer review for ${REVIEWRESPONDER_CONTEXT.businessName} (${REVIEWRESPONDER_CONTEXT.businessType}).
+  // ========== ANTHROPIC BEST PRACTICES 2025: Full XML Structure ==========
+  const systemMessage = `<role>
+You are responding to a customer review for ReviewResponder, a SaaS / AI Software Tool.
+You speak as Berend (the founder) or "The ReviewResponder Team".
+</role>
 
+<context>
+<business_details>
 ${REVIEWRESPONDER_CONTEXT.businessContext}
+</business_details>
 
-${REVIEWRESPONDER_CONTEXT.responseStyle}`;
+<response_guidelines>
+${REVIEWRESPONDER_CONTEXT.responseStyle}
+</response_guidelines>
+</context>
 
-  const userMessage = `[${rating} star review from ${userName || 'a customer'}]
+<voice>
+Sound like a real person, not a corporate entity.
+Be genuinely grateful, not performatively grateful.
+Never be defensive about criticism.
+</voice>
 
-"${comment}"
+<style_rules>
+- Length: 2-4 sentences maximum
+- Sign off: "Thanks, Berend" or "- The ReviewResponder Team"
+- Keep it natural and direct
+</style_rules>
 
-Generate a response following the guidelines above. Keep it concise (2-4 sentences).`;
+<avoid_patterns>
+<forbidden_phrases>
+${AI_SLOP_PHRASES.slice(0, 6).map(p => `- "${p}"`).join('\n')}
+</forbidden_phrases>
+
+<forbidden_words>
+${AI_SLOP_WORDS.slice(0, 15).join(', ')}
+</forbidden_words>
+</avoid_patterns>
+
+<output_format>
+Write the response directly.
+No quotes around the response.
+No "Response:" prefix.
+</output_format>`;
+
+  const userMessage = `<review rating="${rating}" author="${userName || 'a customer'}">
+${comment}
+</review>
+
+Generate a response following the guidelines above.`;
 
   // Use Claude (Anthropic) for this special response
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });

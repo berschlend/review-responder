@@ -9383,6 +9383,20 @@ const SettingsPage = () => {
             (auto-saves as you type)
           </span>
         </p>
+        <span
+          style={{
+            display: 'inline-block',
+            marginTop: '8px',
+            background: 'var(--primary-100)',
+            color: 'var(--primary-700)',
+            padding: '3px 10px',
+            borderRadius: '4px',
+            fontSize: '11px',
+            fontWeight: '600',
+          }}
+        >
+          Synced with Dashboard & Extension
+        </span>
       </div>
 
       <form onSubmit={handleSave}>
@@ -9483,23 +9497,9 @@ const SettingsPage = () => {
         </div>
 
         <div className="card" style={{ marginBottom: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>
-              Response Style Preferences
-            </h2>
-            <span
-              style={{
-                background: 'var(--primary-100)',
-                color: 'var(--primary-700)',
-                padding: '3px 10px',
-                borderRadius: '4px',
-                fontSize: '11px',
-                fontWeight: '600',
-              }}
-            >
-              Synced with Dashboard & Extension
-            </span>
-          </div>
+          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+            Response Style Preferences
+          </h2>
           <p style={{ fontSize: '14px', color: 'var(--gray-500)', marginBottom: '16px' }}>
             Any specific instructions for how you want responses written
           </p>
