@@ -395,6 +395,17 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 2. Aktive Tabs **pinnen** wenn sie länger offen bleiben sollen
 3. Nur **eine** Claude Session mit `--chrome` für Browser-Tasks, andere ohne
 
+**📋 PLAN MODE REGEL:**
+> Im Plan Mode **IMMER** fett markieren ob Chrome MCP genutzt wird!
+>
+> Beispiel am Plan-Anfang:
+> - **🌐 CHROME MCP: JA** - Dieser Plan nutzt Browser Automation
+> - **🌐 CHROME MCP: NEIN** - Kein Browser nötig
+>
+> **Wichtig:** Chrome MCP ist erwünscht und soll aktiv genutzt werden!
+> Damit lässt sich viel mehr automatisieren. Die Markierung dient nur
+> dazu, dass User bei parallelen Claudes den Überblick behält.
+
 ### Chrome MCP Lead Scraper (WIP)
 
 **Status:** ~25 Leads gesammelt, Session 13.01.2026 abgeschlossen

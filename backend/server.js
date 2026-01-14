@@ -5470,6 +5470,14 @@ app.post('/api/cron/generate-demos', async (req, res) => {
       }
     }
 
+    // Log for sales state tracking
+    if (results.success > 0) {
+      await logSalesAction('demo_generated', 'outreach', {
+        count: results.success,
+        emails_sent: sendEmails ? results.success : 0,
+      });
+    }
+
     res.json({
       success: true,
       message: `Generated ${results.success} demos from ${results.processed} leads`,
@@ -8303,6 +8311,32 @@ app.post('/api/admin/affiliates/:id/payout', authenticateAdmin, async (req, res)
   }
 });
 
+// GET /api/admin/sales-state - Get sales automation state for Claude sessions
+app.get('/api/admin/sales-state', authenticateAdmin, async (req, res) => {
+  try {
+    const state = await getSalesState();
+    res.json(state);
+  } catch (error) {
+    console.error('Error getting sales state:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/admin/sales-note - Add a note for next Claude session
+app.post('/api/admin/sales-note', authenticateAdmin, async (req, res) => {
+  try {
+    const { note } = req.body;
+    if (!note) {
+      return res.status(400).json({ error: 'Note is required' });
+    }
+    await addSessionNote(note);
+    res.json({ ok: true, message: 'Note added' });
+  } catch (error) {
+    console.error('Error adding sales note:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // GET /api/admin/stats - Get overall admin stats
 app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
   try {
@@ -9897,6 +9931,20 @@ async function initOutreachTables() {
       ON CONFLICT (test_name) DO NOTHING
     `);
 
+    // Sales Automation Log - tracks all sales actions across Claude sessions
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS sales_automation_log (
+        id SERIAL PRIMARY KEY,
+        action_type VARCHAR(50) NOT NULL,
+        action_category VARCHAR(30) NOT NULL,
+        details JSONB,
+        session_id VARCHAR(50),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await dbQuery(`CREATE INDEX IF NOT EXISTS idx_sal_type_date ON sales_automation_log(action_type, created_at DESC)`);
+    await dbQuery(`CREATE INDEX IF NOT EXISTS idx_sal_category ON sales_automation_log(action_category)`);
+
     console.log('✅ Outreach tables initialized');
   } catch (error) {
     console.error('Error initializing outreach tables:', error);
@@ -9905,6 +9953,128 @@ async function initOutreachTables() {
 
 // Call this after main initDatabase
 initOutreachTables();
+
+// ============================================
+// SALES AUTOMATION STATE HELPERS
+// ============================================
+
+// Log a sales automation action
+async function logSalesAction(actionType, category, details = {}) {
+  try {
+    const sessionId = process.env.CLAUDE_SESSION || 'unknown';
+    await dbQuery(
+      `INSERT INTO sales_automation_log (action_type, action_category, details, session_id)
+       VALUES ($1, $2, $3, $4)`,
+      [actionType, category, JSON.stringify(details), sessionId]
+    );
+  } catch (error) {
+    console.error('Error logging sales action:', error);
+  }
+}
+
+// Get consolidated sales state for Claude sessions
+async function getSalesState() {
+  try {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - 7);
+
+    // Today's actions by type
+    const todayActions = await dbQuery(
+      `SELECT action_type, COUNT(*) as count, SUM((details->>'count')::int) as total_count
+       FROM sales_automation_log
+       WHERE created_at >= $1
+       GROUP BY action_type`,
+      [todayStart]
+    );
+
+    // Last 10 actions
+    const lastActions = await dbQuery(
+      `SELECT action_type, action_category, details, session_id, created_at
+       FROM sales_automation_log
+       ORDER BY created_at DESC
+       LIMIT 10`
+    );
+
+    // Session notes (action_type = 'session_note')
+    const notes = await dbQuery(
+      `SELECT details->>'note' as note, created_at
+       FROM sales_automation_log
+       WHERE action_type = 'session_note'
+       ORDER BY created_at DESC
+       LIMIT 5`
+    );
+
+    // Pending LinkedIn connections
+    const pendingLinkedIn = await dbQuery(
+      `SELECT COUNT(*) as count FROM linkedin_outreach
+       WHERE connection_sent = false AND demo_token IS NOT NULL`
+    );
+
+    // Leads without email sent
+    const pendingLeads = await dbQuery(
+      `SELECT COUNT(*) as count FROM outreach_leads
+       WHERE email IS NOT NULL AND status = 'new'`
+    );
+
+    // Week stats from existing tables
+    const weekEmails = await dbQuery(
+      `SELECT COUNT(*) as sent,
+              SUM(CASE WHEN opened_at IS NOT NULL THEN 1 ELSE 0 END) as opened
+       FROM outreach_emails
+       WHERE sent_at >= $1`,
+      [weekStart]
+    );
+
+    // Format today's stats
+    const today = {};
+    for (const row of todayActions.rows) {
+      today[row.action_type] = parseInt(row.total_count || row.count) || 0;
+    }
+
+    return {
+      today: {
+        leads_scraped: today.scrape_leads || 0,
+        emails_sent: today.send_emails || 0,
+        twitter_posts: today.twitter_post || 0,
+        linkedin_demos: today.linkedin_demo_created || 0,
+        demos_generated: today.demo_generated || 0,
+      },
+      this_week: {
+        emails_sent: parseInt(weekEmails.rows[0]?.sent) || 0,
+        emails_opened: parseInt(weekEmails.rows[0]?.opened) || 0,
+        open_rate: weekEmails.rows[0]?.sent > 0
+          ? ((weekEmails.rows[0]?.opened / weekEmails.rows[0]?.sent) * 100).toFixed(1) + '%'
+          : '0%',
+      },
+      pending: {
+        linkedin_connections: parseInt(pendingLinkedIn.rows[0]?.count) || 0,
+        leads_not_emailed: parseInt(pendingLeads.rows[0]?.count) || 0,
+      },
+      last_actions: lastActions.rows.map(row => ({
+        type: row.action_type,
+        category: row.action_category,
+        details: row.details,
+        session: row.session_id,
+        at: row.created_at,
+      })),
+      notes_from_previous_sessions: notes.rows.map(row => ({
+        note: row.note,
+        at: row.created_at,
+      })),
+    };
+  } catch (error) {
+    console.error('Error getting sales state:', error);
+    return { error: error.message };
+  }
+}
+
+// Add a note for next Claude session
+async function addSessionNote(note) {
+  await logSalesAction('session_note', 'meta', { note });
+}
 
 // German-speaking cities for language detection
 const GERMAN_CITIES = [
@@ -12556,6 +12726,21 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
 
     console.log('✅ Daily outreach completed:', results);
 
+    // Log sales actions for state tracking
+    if (results.scraping?.leads_added > 0) {
+      await logSalesAction('scrape_leads', 'outreach', {
+        count: results.scraping.leads_added,
+        city: results.scraping.city,
+        industry: results.scraping.industry,
+      });
+    }
+    if (results.sending?.sent > 0) {
+      await logSalesAction('send_emails', 'outreach', {
+        count: results.sending.sent,
+        campaign: 'daily_outreach',
+      });
+    }
+
     // Minimal response for cron-job.org (has size limit)
     res.json({
       ok: true,
@@ -13779,6 +13964,13 @@ app.get('/api/cron/twitter-post', async (req, res) => {
           INSERT INTO twitter_scheduled_posts (tweet_text, tweet_id, category, posted, posted_at)
           VALUES ($1, $2, $3, TRUE, NOW())
         `, [tweetText, postResult.tweetId, category.name]);
+
+        // Log for sales state tracking
+        await logSalesAction('twitter_post', 'social', {
+          count: 1,
+          category: category.name,
+          tweet_id: postResult.tweetId,
+        });
 
         console.log(`[Twitter] Posted tweet: "${tweetText.substring(0, 50)}..."`);
       } else {

@@ -2947,21 +2947,61 @@ const PricingCards = ({ showFree = true }) => {
           style={{
             background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
             color: 'white',
-            padding: '16px 24px',
-            borderRadius: '12px',
-            marginBottom: '24px',
+            padding: '24px 32px',
+            borderRadius: '16px',
+            marginBottom: '32px',
             textAlign: 'center',
-            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+            boxShadow: '0 8px 32px rgba(16, 185, 129, 0.4)',
+            border: '2px solid rgba(255, 255, 255, 0.2)',
+            position: 'relative',
+            overflow: 'hidden',
           }}
         >
-          <div style={{ fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>
-            ✨ Early Access - {currentDiscount.percent}% OFF!
+          {/* Animated background shimmer */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: '-100%',
+              width: '200%',
+              height: '100%',
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)',
+              animation: 'shimmer 3s infinite',
+            }}
+          />
+          <div
+            style={{
+              display: 'inline-block',
+              background: 'rgba(255, 255, 255, 0.2)',
+              padding: '4px 12px',
+              borderRadius: '20px',
+              fontSize: '11px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              marginBottom: '12px',
+              textTransform: 'uppercase',
+            }}
+          >
+            Limited Time Offer
           </div>
-          <div style={{ fontSize: '14px', opacity: 0.9 }}>
-            Code <strong>{activeDiscount}</strong> will be applied at checkout
+          <div style={{ fontSize: '32px', fontWeight: '800', marginBottom: '8px', position: 'relative' }}>
+            <span style={{ fontSize: '24px', verticalAlign: 'middle' }}>✨</span>{' '}
+            <span style={{ color: '#fef3c7' }}>{currentDiscount.percent}% OFF</span> for your first year!{' '}
+            <span style={{ fontSize: '24px', verticalAlign: 'middle' }}>✨</span>
+          </div>
+          <div style={{ fontSize: '15px', opacity: 0.95, position: 'relative' }}>
+            Code <strong style={{ background: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '4px' }}>{activeDiscount}</strong> applied automatically (valid for 12 months)
           </div>
         </div>
       )}
+      <style>
+        {`
+          @keyframes shimmer {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(50%); }
+          }
+        `}
+      </style>
 
       {/* Billing Toggle */}
       <div
