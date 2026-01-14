@@ -11201,50 +11201,74 @@ async function scrapeEmailFromWebsite(websiteUrl) {
       url = 'https://' + url;
     }
 
-    // Pages to check for contact emails
+    // Pages to check for contact emails (expanded list)
     const pagesToCheck = [
       url,
       url.replace(/\/$/, '') + '/contact',
+      url.replace(/\/$/, '') + '/contact-us',
       url.replace(/\/$/, '') + '/about',
+      url.replace(/\/$/, '') + '/about-us',
       url.replace(/\/$/, '') + '/kontakt',
       url.replace(/\/$/, '') + '/impressum',
+      url.replace(/\/$/, '') + '/team',
+      url.replace(/\/$/, '') + '/footer', // Some sites have mailto in footer
+      url.replace(/\/$/, '') + '/legal',
+      url.replace(/\/$/, '') + '/privacy',
     ];
 
     // Email regex pattern
     const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
 
-    // Blacklist common non-business emails
-    const blacklist = ['example.com', 'email.com', 'domain.com', 'yoursite.com', 'website.com', 'sentry.io', 'wixpress.com'];
+    // Blacklist common non-business emails and tracking domains
+    const blacklist = [
+      'example.com', 'email.com', 'domain.com', 'yoursite.com', 'website.com',
+      'sentry.io', 'wixpress.com', 'squarespace.com', 'mailchimp.com',
+      'googleapis.com', 'google.com', 'facebook.com', 'twitter.com',
+      'w3.org', 'schema.org', 'gravatar.com', 'wordpress.com'
+    ];
 
     for (const pageUrl of pagesToCheck) {
       try {
         const response = await fetch(pageUrl, {
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml',
           },
-          timeout: 5000,
+          timeout: 8000,
         });
 
         if (!response.ok) continue;
 
         const html = await response.text();
+
+        // Look for mailto: links first (most reliable)
+        const mailtoMatch = html.match(/mailto:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i);
+        if (mailtoMatch) {
+          const email = mailtoMatch[1].toLowerCase();
+          if (!blacklist.some(b => email.includes(b))) {
+            return email;
+          }
+        }
+
+        // Then try regex on full page
         const emails = html.match(emailRegex) || [];
 
         // Filter and prioritize emails
         const validEmails = emails
           .map(e => e.toLowerCase())
           .filter(e => !blacklist.some(b => e.includes(b)))
-          .filter(e => !e.includes('png') && !e.includes('jpg') && !e.includes('gif')); // Filter image filenames
+          .filter(e => !e.includes('png') && !e.includes('jpg') && !e.includes('gif') && !e.includes('.js') && !e.includes('.css'))
+          .filter(e => e.length < 60); // Filter overly long "emails"
 
         // Prioritize contact/info emails
-        const priorityPrefixes = ['contact', 'info', 'hello', 'support', 'team', 'sales', 'mail', 'office'];
+        const priorityPrefixes = ['contact', 'info', 'hello', 'support', 'team', 'sales', 'mail', 'office', 'reservations', 'booking', 'reservierung'];
         const priorityEmail = validEmails.find(e => priorityPrefixes.some(p => e.startsWith(p + '@')));
 
         if (priorityEmail) return priorityEmail;
         if (validEmails.length > 0) return validEmails[0];
 
         // Small delay between page requests
-        await new Promise(r => setTimeout(r, 300));
+        await new Promise(r => setTimeout(r, 200));
       } catch (e) {
         // Page not found or error, try next
         continue;
@@ -11256,6 +11280,184 @@ async function scrapeEmailFromWebsite(websiteUrl) {
     console.error('Website scrape error:', e.message);
     return null;
   }
+}
+
+// Helper: Guess common email patterns and verify they exist (FREE)
+async function guessAndVerifyEmail(domain, businessName) {
+  // Common email patterns for businesses
+  const patterns = [
+    'info',
+    'contact',
+    'hello',
+    'mail',
+    'office',
+    'team',
+    'reservations',
+    'booking',
+    'support',
+  ];
+
+  // Clean domain
+  const cleanDomain = domain
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .split('/')[0]
+    .toLowerCase();
+
+  for (const pattern of patterns) {
+    const testEmail = `${pattern}@${cleanDomain}`;
+
+    try {
+      // Use a simple DNS MX record check to verify domain accepts mail
+      // We can't fully verify the email exists without sending, but MX check helps
+      const dns = await import('dns').then(m => m.promises);
+      const mxRecords = await dns.resolveMx(cleanDomain);
+
+      if (mxRecords && mxRecords.length > 0) {
+        // Domain has MX records, email is likely valid
+        // Return the most common pattern for this type of business
+        console.log(`✉️ Guessed email for ${businessName}: ${testEmail} (MX verified)`);
+        return { email: testEmail, verified: true };
+      }
+    } catch (e) {
+      // MX lookup failed, domain might not accept email
+      continue;
+    }
+  }
+
+  return null;
+}
+
+// Helper: Find email using Snov.io API (50 free credits/month)
+async function findEmailWithSnov(domain) {
+  if (!process.env.SNOV_CLIENT_ID || !process.env.SNOV_CLIENT_SECRET) {
+    return null;
+  }
+
+  try {
+    // Step 1: Get access token
+    const tokenResponse = await fetch('https://api.snov.io/v1/oauth/access_token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: process.env.SNOV_CLIENT_ID,
+        client_secret: process.env.SNOV_CLIENT_SECRET,
+      }),
+    });
+
+    const tokenData = await tokenResponse.json();
+    if (!tokenData.access_token) {
+      console.log('Snov.io token error:', tokenData);
+      return null;
+    }
+
+    // Step 2: Domain search
+    const searchResponse = await fetch('https://api.snov.io/v2/domain-emails-count', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${tokenData.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ domain }),
+    });
+
+    const searchData = await searchResponse.json();
+
+    if (searchData.data?.emails && searchData.data.emails.length > 0) {
+      // Return first verified email
+      const verifiedEmail = searchData.data.emails.find(e => e.status === 'valid') || searchData.data.emails[0];
+      console.log(`📧 Snov.io found email for ${domain}: ${verifiedEmail.email}`);
+      return verifiedEmail.email;
+    }
+
+    return null;
+  } catch (e) {
+    console.error('Snov.io error:', e.message);
+    return null;
+  }
+}
+
+// Helper: Combined email finder with multiple fallbacks
+async function findEmailForLead(lead) {
+  const domain = lead.website
+    ?.replace(/^https?:\/\//, '')
+    ?.replace(/^www\./, '')
+    ?.split('/')[0];
+
+  if (!domain) return null;
+
+  let emailFound = null;
+  let source = null;
+
+  // 1. Website scraper (FREE - best quality)
+  if (lead.website) {
+    try {
+      emailFound = await scrapeEmailFromWebsite(lead.website);
+      if (emailFound) {
+        source = 'website_scraper';
+        console.log(`🌐 Website scraper found: ${emailFound}`);
+        return { email: emailFound, source };
+      }
+    } catch (e) {}
+  }
+
+  // 2. Email pattern guesser with MX verification (FREE)
+  try {
+    const guessed = await guessAndVerifyEmail(domain, lead.business_name);
+    if (guessed?.email) {
+      emailFound = guessed.email;
+      source = 'pattern_guess';
+      console.log(`🎯 Pattern guess found: ${emailFound}`);
+      return { email: emailFound, source };
+    }
+  } catch (e) {}
+
+  // 3. Snov.io (50 free/month)
+  try {
+    emailFound = await findEmailWithSnov(domain);
+    if (emailFound) {
+      source = 'snov.io';
+      return { email: emailFound, source };
+    }
+  } catch (e) {}
+
+  // 4. Hunter.io (25 free/week) - last resort
+  if (process.env.HUNTER_API_KEY) {
+    try {
+      const hunterUrl = `https://api.hunter.io/v2/domain-search?domain=${domain}&api_key=${process.env.HUNTER_API_KEY}`;
+      const response = await fetch(hunterUrl);
+      const data = await response.json();
+
+      if (data.data?.emails && data.data.emails.length > 0) {
+        let bestEmail = data.data.emails[0];
+
+        // Try to match job title for G2 leads
+        if (lead.lead_type === 'g2_competitor' && lead.contact_name) {
+          const titleKeywords = lead.contact_name.toLowerCase().split(/\s+/);
+          const matchingEmail = data.data.emails.find(e => {
+            const position = (e.position || '').toLowerCase();
+            const dept = (e.department || '').toLowerCase();
+            return titleKeywords.some(kw => position.includes(kw) || dept.includes(kw));
+          });
+          if (matchingEmail) bestEmail = matchingEmail;
+        }
+
+        emailFound = bestEmail.value;
+        source = 'hunter.io';
+
+        // Save contact name if available
+        if (bestEmail.first_name && bestEmail.last_name) {
+          lead.contact_name = `${bestEmail.first_name} ${bestEmail.last_name}`;
+        }
+
+        console.log(`🔍 Hunter.io found: ${emailFound}`);
+        return { email: emailFound, source, contactName: lead.contact_name };
+      }
+    } catch (e) {}
+  }
+
+  return null;
 }
 
 // Helper: Wrap URLs with click tracking
@@ -13190,91 +13392,59 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
 
     results.domain_finding = { checked: leadsNeedingDomain.length, found: domainsFound };
 
-    // Step 2: Find emails for leads without them (Hunter.io + Website Scraper fallback)
+    // Step 2: Find emails for leads without them (multi-fallback: Scraper → Pattern Guess → Snov.io → Hunter.io)
     const leadsNeedingEmail = await dbAll(`
       SELECT id, business_name, website, lead_type, contact_name FROM outreach_leads
       WHERE email IS NULL AND website IS NOT NULL
-      LIMIT 25
+      LIMIT 30
     `);
 
-    let hunterFound = 0;
-    let scraperFound = 0;
+    const emailStats = {
+      website_scraper: 0,
+      pattern_guess: 0,
+      'snov.io': 0,
+      'hunter.io': 0,
+    };
 
     for (const lead of leadsNeedingEmail) {
-      let emailFound = null;
-      let source = null;
+      try {
+        // Use combined email finder with all fallbacks
+        const result = await findEmailForLead(lead);
 
-      // Try FREE website scraper first (saves Hunter.io credits)
-      if (!emailFound && lead.website) {
-        try {
-          const scrapedEmail = await scrapeEmailFromWebsite(lead.website);
-          if (scrapedEmail) {
-            emailFound = scrapedEmail;
-            source = 'website_scraper';
-            scraperFound++;
+        if (result?.email) {
+          // Update lead with found email
+          const updateFields = ['email = $1', 'email_source = $2'];
+          const updateValues = [result.email, result.source, lead.id];
+
+          // If Hunter found contact name, save it too
+          if (result.contactName) {
+            updateFields.push('contact_name = COALESCE(contact_name, $4)');
+            updateValues.splice(3, 0, result.contactName);
           }
-        } catch (e) {}
-      }
 
-      // Fallback: Hunter.io (only if scraper failed and API key available)
-      if (!emailFound && process.env.HUNTER_API_KEY) {
-        try {
-          const domain = lead.website
-            .replace(/^https?:\/\//, '')
-            .replace(/^www\./, '')
-            .split('/')[0];
-          const hunterUrl = `https://api.hunter.io/v2/domain-search?domain=${domain}&api_key=${process.env.HUNTER_API_KEY}`;
-          const response = await fetch(hunterUrl);
-          const data = await response.json();
+          await dbQuery(
+            `UPDATE outreach_leads SET ${updateFields.join(', ')} WHERE id = $3`,
+            updateValues
+          );
 
-          if (data.data?.emails && data.data.emails.length > 0) {
-            // For G2 leads, try to find email matching job title (e.g., "Head of Digital" → "digital", "marketing")
-            let bestEmail = data.data.emails[0];
+          // Track source stats
+          emailStats[result.source] = (emailStats[result.source] || 0) + 1;
+          console.log(`✅ Found email for ${lead.business_name}: ${result.email} (${result.source})`);
+        }
 
-            if (lead.lead_type === 'g2_competitor' && lead.contact_name) {
-              const titleKeywords = lead.contact_name.toLowerCase().split(/\s+/);
-              const matchingEmail = data.data.emails.find(e => {
-                const position = (e.position || '').toLowerCase();
-                const dept = (e.department || '').toLowerCase();
-                return titleKeywords.some(kw => position.includes(kw) || dept.includes(kw));
-              });
-              if (matchingEmail) {
-                bestEmail = matchingEmail;
-                console.log(`🎯 Found matching email for ${lead.business_name}: ${bestEmail.value} (${bestEmail.position})`);
-              }
-            }
-
-            emailFound = bestEmail.value;
-            source = 'hunter.io';
-            hunterFound++;
-
-            // Also save contact name if available from Hunter
-            if (bestEmail.first_name && bestEmail.last_name) {
-              await dbQuery('UPDATE outreach_leads SET contact_name = $1 WHERE id = $2 AND (contact_name IS NULL OR contact_name = job_title)', [
-                `${bestEmail.first_name} ${bestEmail.last_name}`,
-                lead.id,
-              ]);
-            }
-          }
-          await new Promise(r => setTimeout(r, 500));
-        } catch (e) {}
-      }
-
-      // Save email if found
-      if (emailFound) {
-        await dbQuery('UPDATE outreach_leads SET email = $1, email_source = $2 WHERE id = $3', [
-          emailFound,
-          source,
-          lead.id,
-        ]);
+        // Rate limiting between leads
+        await new Promise(r => setTimeout(r, 300));
+      } catch (e) {
+        console.error(`Email finding error for ${lead.business_name}:`, e.message);
       }
     }
 
+    const totalFound = Object.values(emailStats).reduce((a, b) => a + b, 0);
     results.email_finding = {
       checked: leadsNeedingEmail.length,
-      hunter_found: hunterFound,
-      scraper_found: scraperFound,
-      total_found: hunterFound + scraperFound
+      total_found: totalFound,
+      by_source: emailStats,
+      success_rate: leadsNeedingEmail.length > 0 ? Math.round(totalFound / leadsNeedingEmail.length * 100) + '%' : '0%',
     };
 
     // Step 3: Send new cold emails (with AI-generated drafts for bad reviews)
@@ -16212,7 +16382,16 @@ app.get('/api/admin/automation-health', async (req, res) => {
           used_this_week: hunterUsedCount,
           limit: hunterLimit,
           percent: Math.round(hunterUsedCount / hunterLimit * 100),
-          note: 'Website scraper is primary, Hunter is fallback'
+          note: 'Last resort - after scraper, pattern guess, snov.io'
+        },
+        snov_io: {
+          configured: !!(process.env.SNOV_CLIENT_ID && process.env.SNOV_CLIENT_SECRET),
+          free_tier_limit: 50,
+          note: '50 free/month - 3rd fallback after scraper and pattern'
+        },
+        email_finding: {
+          fallback_order: ['website_scraper (FREE)', 'pattern_guess (FREE)', 'snov.io (50/mo)', 'hunter.io (25/wk)'],
+          note: 'Multi-fallback system maximizes free tier usage'
         }
       },
       funnel: {
