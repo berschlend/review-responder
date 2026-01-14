@@ -131,11 +131,38 @@ Click-Rate ist die echte Metrik. 17 Leute haben geklickt → Demo Attack!
 - "Hey" statt "Hallo" → Primary Inbox
 - Keine Emojis, keine Marketing-Floskeln
 
-### AI Response Qualität
-1. Reviewer BY NAME ansprechen
-2. SPEZIFISCHE Details aus Review
-3. VOLLER Business Name am Ende
-4. AI-Slop vermeiden
+### AI Response Qualität (Anti-Slop System)
+
+**Datei:** `backend/server.js` → `generateDemoResponse()`
+**Blacklist:** `backend/promptExamples.js` → `AI_SLOP_PHRASES`, `AI_SLOP_WORDS`
+
+**Core Principles:**
+1. Reviewer BY NAME ansprechen (firstName extrahieren)
+2. EINE spezifische Sache aus Review referenzieren
+3. VOLLER Business Name am Ende (" - Business Name")
+4. Kurz: 1-2 Sätze (positiv), 2-3 Sätze (negativ)
+5. Keine Exclamation Marks, immer Contractions
+
+**Blacklisted Phrases (instant rejection):**
+- Gratitude Slop: "Thank you for your feedback", "We appreciate..."
+- Corporate Speak: "We strive to...", "Your satisfaction is our priority"
+- Emotional: "thrilled", "delighted", "amazing", "wonderful"
+- Claude-spezifisch: "hit the spot", "glad it worked out", "good to hear", "swing by"
+
+**Mental Model im Prompt:**
+> "Imagine: You just read this review on your phone while waiting for coffee.
+> You have 20 seconds to tap out a quick response. What would you actually type?"
+
+**Before/After Examples:**
+- "Thank you for your feedback" → [delete - just respond]
+- "We're thrilled" → "Nice" oder "Glad"
+- "We sincerely apologize" → "That's on us"
+- "looking forward to seeing you" → "See you next time"
+
+**Gute Response-Patterns:**
+- "The mushroom risotto is our chef's favorite too."
+- "45 minutes is way too long. That's on us."
+- "Fair point about the noise. We're looking at that."
 
 ### API Limits
 - Google Places: nur 5 Reviews → SerpAPI nutzen
