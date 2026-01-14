@@ -22991,11 +22991,59 @@ const AdminPage = () => {
             <div style={{ textAlign: 'center', padding: '40px' }}>Loading outreach data...</div>
           ) : outreachData ? (
             <>
-              {/* Outreach Stats Cards */}
+              {/* Info Banner */}
+              <div
+                className="card"
+                style={{
+                  marginBottom: '16px',
+                  background: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)',
+                  border: '1px solid #C7D2FE',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <strong>OUTREACH</strong> = Cold Emails an potenzielle Kunden (Sales Pipeline)
+                    <div style={{ fontSize: '12px', color: 'var(--gray-600)', marginTop: '4px' }}>
+                      Unterschied zu EMAIL Tab: Dort sind transaktionale Emails (Passwort-Reset, Drips etc.)
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <a
+                      href="https://resend.com/emails"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-secondary"
+                      style={{ fontSize: '12px', padding: '6px 12px' }}
+                    >
+                      Resend Dashboard
+                    </a>
+                    <a
+                      href="https://app.brevo.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-secondary"
+                      style={{ fontSize: '12px', padding: '6px 12px' }}
+                    >
+                      Brevo Dashboard
+                    </a>
+                    <a
+                      href="https://console.cron-job.org"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-secondary"
+                      style={{ fontSize: '12px', padding: '6px 12px' }}
+                    >
+                      Cron Jobs
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Outreach Stats Cards with Explanations */}
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                   gap: '16px',
                   marginBottom: '24px',
                 }}
@@ -23004,31 +23052,55 @@ const AdminPage = () => {
                   <div style={{ fontSize: '32px', fontWeight: '700', color: 'var(--primary)' }}>
                     {outreachData.stats?.total_leads || 0}
                   </div>
-                  <div style={{ color: 'var(--gray-600)' }}>Total Leads</div>
+                  <div style={{ color: 'var(--gray-600)', fontWeight: '600' }}>Total Leads</div>
+                  <div style={{ fontSize: '11px', color: 'var(--gray-500)', marginTop: '4px' }}>
+                    Businesses in der Sales Pipeline
+                  </div>
                 </div>
                 <div className="card" style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '32px', fontWeight: '700', color: '#10B981' }}>
                     {outreachData.stats?.leads_with_email || 0}
                   </div>
-                  <div style={{ color: 'var(--gray-600)' }}>With Email</div>
+                  <div style={{ color: 'var(--gray-600)', fontWeight: '600' }}>With Email</div>
+                  <div style={{ fontSize: '11px', color: 'var(--gray-500)', marginTop: '4px' }}>
+                    Leads mit gefundener Email-Adresse
+                  </div>
                 </div>
                 <div className="card" style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '32px', fontWeight: '700', color: '#F59E0B' }}>
                     {outreachData.stats?.emails_sent || 0}
                   </div>
-                  <div style={{ color: 'var(--gray-600)' }}>Emails Sent</div>
+                  <div style={{ color: 'var(--gray-600)', fontWeight: '600' }}>Emails Sent</div>
+                  <div style={{ fontSize: '11px', color: 'var(--gray-500)', marginTop: '4px' }}>
+                    Versendete Cold Outreach Emails
+                  </div>
                 </div>
                 <div className="card" style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '32px', fontWeight: '700', color: '#8B5CF6' }}>
                     {outreachData.stats?.emails_opened || 0}
                   </div>
-                  <div style={{ color: 'var(--gray-600)' }}>Opened</div>
+                  <div style={{ color: 'var(--gray-600)', fontWeight: '600' }}>Opened</div>
+                  <div style={{ fontSize: '11px', color: 'var(--gray-500)', marginTop: '4px' }}>
+                    Via Tracking-Pixel erkannt
+                  </div>
                 </div>
                 <div className="card" style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '32px', fontWeight: '700', color: '#EC4899' }}>
                     {outreachData.stats?.open_rate || '0%'}
                   </div>
-                  <div style={{ color: 'var(--gray-600)' }}>Open Rate</div>
+                  <div style={{ color: 'var(--gray-600)', fontWeight: '600' }}>Open Rate</div>
+                  <div style={{ fontSize: '11px', color: 'var(--gray-500)', marginTop: '4px' }}>
+                    Branchenschnitt: 15-25%
+                  </div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '32px', fontWeight: '700', color: '#06B6D4' }}>
+                    {outreachData.stats?.click_rate || '0%'}
+                  </div>
+                  <div style={{ color: 'var(--gray-600)', fontWeight: '600' }}>Click Rate</div>
+                  <div style={{ fontSize: '11px', color: 'var(--gray-500)', marginTop: '4px' }}>
+                    Branchenschnitt: 2-5%
+                  </div>
                 </div>
               </div>
 
@@ -23166,6 +23238,45 @@ const AdminPage = () => {
             <div style={{ textAlign: 'center', padding: '40px' }}>Loading email data...</div>
           ) : emailData ? (
             <>
+              {/* Info Banner */}
+              <div
+                className="card"
+                style={{
+                  marginBottom: '16px',
+                  background: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)',
+                  border: '1px solid #FCD34D',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <strong>EMAIL</strong> = Transaktionale Emails (Passwort-Reset, Drip Sequences, Willkommens-Mails)
+                    <div style={{ fontSize: '12px', color: 'var(--gray-600)', marginTop: '4px' }}>
+                      Unterschied zu OUTREACH Tab: Dort sind Cold Sales Emails an Leads
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <a
+                      href="https://resend.com/emails"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-secondary"
+                      style={{ fontSize: '12px', padding: '6px 12px' }}
+                    >
+                      Resend
+                    </a>
+                    <a
+                      href="https://app.brevo.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-secondary"
+                      style={{ fontSize: '12px', padding: '6px 12px' }}
+                    >
+                      Brevo
+                    </a>
+                  </div>
+                </div>
+              </div>
+
               {/* Provider Summary Cards */}
               <div
                 style={{

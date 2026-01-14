@@ -114,6 +114,91 @@ const API_PRICING = {
   twitter: { per_request: 0 }, // Free Tier
 };
 
+// ==========================================
+// TEST EMAIL FILTERING - Zentrale Konfiguration
+// ==========================================
+// Alle Test-Emails werden aus Analytics ausgeschlossen
+
+// Explizite Test-Email-Adressen (manuell gepflegt)
+const TEST_EMAILS = [
+  'breihosen@gmail.com',
+  'reviewer@tryreviewresponder.com',
+  'weviewvbtetsmail@gmail.com',
+  'testemailsjsjdj@gmail.com',
+  'testemaicewl@gmail.com',
+  'testemailwvev@gmail.com',
+  'testemaildw@gmail.com',
+  'contestmail@gmail.com',
+  'testemaiccecel@gmail.com',
+  'testemail@gmail.com',
+].map(e => e.toLowerCase());
+
+// SQL LIKE Patterns für Test-Emails
+const TEST_EMAIL_PATTERNS = [
+  '%@web.de',        // Owner's domain
+  'test%',           // Starts with test
+  '%test@%',         // Contains test@
+  'asdf%',           // Keyboard spam
+  'qwer%',           // Keyboard spam
+  'asd@%',           // Keyboard spam
+  '%@test.%',        // @test.* domain
+  '%@example.%',     // @example.* domain
+  'admin@%',         // admin@ prefix
+  '%fake%',          // Contains fake
+  'a@%',             // Single char a@
+  'aa@%',            // Double char aa@
+  'aaa@%',           // Triple char aaa@
+];
+
+/**
+ * Generate SQL WHERE clause to exclude test emails
+ * @param {string} emailColumn - Column name (default: 'email')
+ * @returns {string} SQL AND clause
+ */
+function getTestEmailExcludeClause(emailColumn = 'email') {
+  const patternClauses = TEST_EMAIL_PATTERNS.map(p =>
+    `${emailColumn} NOT LIKE '${p}'`
+  ).join(' AND ');
+
+  const explicitClauses = TEST_EMAILS.map(e =>
+    `LOWER(${emailColumn}) != '${e}'`
+  ).join(' AND ');
+
+  return `AND ${patternClauses} AND ${explicitClauses}`;
+}
+
+/**
+ * Check if an email is a test email (JavaScript version)
+ * @param {string} email
+ * @returns {boolean}
+ */
+function isTestEmail(email) {
+  if (!email) return false;
+  const lowerEmail = email.toLowerCase();
+
+  // Check explicit list
+  if (TEST_EMAILS.includes(lowerEmail)) return true;
+
+  // Check patterns (convert SQL LIKE to regex)
+  const patternChecks = [
+    /@web\.de$/i,
+    /^test/i,
+    /test@/i,
+    /^asdf/i,
+    /^qwer/i,
+    /^asd@/i,
+    /@test\./i,
+    /@example\./i,
+    /^admin@/i,
+    /fake/i,
+    /^a@/i,
+    /^aa@/i,
+    /^aaa@/i,
+  ];
+
+  return patternChecks.some(regex => regex.test(lowerEmail));
+}
+
 /**
  * Log API call for cost tracking
  * @param {Object} params
@@ -9455,22 +9540,8 @@ app.post('/api/admin/sales-note', authenticateAdmin, async (req, res) => {
 // GET /api/admin/stats - Get overall admin stats
 app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
   try {
-    // Exclude test/fake emails from stats (admin's own accounts + obvious fakes)
-    const excludeEmailsClause = `
-      AND email NOT LIKE '%@web.de'
-      AND email NOT LIKE 'test%'
-      AND email NOT LIKE '%test@%'
-      AND email NOT LIKE 'asdf%'
-      AND email NOT LIKE 'qwer%'
-      AND email NOT LIKE 'asd@%'
-      AND email NOT LIKE '%@test.%'
-      AND email NOT LIKE '%@example.%'
-      AND email NOT LIKE 'admin@%'
-      AND email NOT LIKE '%fake%'
-      AND email NOT LIKE 'a@%'
-      AND email NOT LIKE 'aa@%'
-      AND email NOT LIKE 'aaa@%'
-    `;
+    // Use central test email filter
+    const excludeEmailsClause = getTestEmailExcludeClause('email');
 
     // User stats - this should always work
     let userStats = { total_users: 0, paying_users: 0, new_users_week: 0, new_users_month: 0 };
@@ -9551,22 +9622,8 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
 // GET /api/admin/sales-dashboard - Comprehensive sales dashboard data
 app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
   try {
-    // Exclude test emails pattern
-    const excludeEmailsClause = `
-      AND email NOT LIKE '%@web.de'
-      AND email NOT LIKE 'test%'
-      AND email NOT LIKE '%test@%'
-      AND email NOT LIKE 'asdf%'
-      AND email NOT LIKE 'qwer%'
-      AND email NOT LIKE 'asd@%'
-      AND email NOT LIKE '%@test.%'
-      AND email NOT LIKE '%@example.%'
-      AND email NOT LIKE 'admin@%'
-      AND email NOT LIKE '%fake%'
-      AND email NOT LIKE 'a@%'
-      AND email NOT LIKE 'aa@%'
-      AND email NOT LIKE 'aaa@%'
-    `;
+    // Use central test email filter
+    const excludeEmailsClause = getTestEmailExcludeClause('email');
 
     // ========== REVENUE METRICS ==========
     // MRR calculation: Starter $29, Pro $49, Unlimited $99
@@ -10001,26 +10058,10 @@ app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
       LIMIT 100
     `);
 
-    // Detect test accounts in JS (more reliable than SQL CASE)
-    const testPatterns = [
-      /@web\.de$/i,
-      /^test/i,
-      /test@/i,
-      /^asdf/i,
-      /^qwer/i,
-      /^asd@/i,
-      /@test\./i,
-      /@example\./i,
-      /^admin@/i,
-      /fake/i,
-      /^a@/i,
-      /^aa@/i,
-      /^aaa@/i,
-    ];
-
+    // Use central isTestEmail function for consistent detection
     const usersWithFlag = users.map(u => ({
       ...u,
-      is_test_account: testPatterns.some(p => p.test(u.email))
+      is_test_account: isTestEmail(u.email)
     }));
 
     const realUsers = usersWithFlag.filter(u => !u.is_test_account);
@@ -10101,7 +10142,8 @@ app.delete('/api/admin/cleanup-test-accounts', authenticateAdmin, async (req, re
 // Admin: Delete all test accounts except specified real users
 app.delete('/api/admin/cleanup-all-tests', authenticateAdmin, async (req, res) => {
   try {
-    // These are the ONLY real users to keep
+    // These are the ONLY real users to keep (owner accounts + verified real users)
+    // NOTE: breihosen@gmail.com was a test account, removed from whitelist
     const realEmails = [
       'berend.mainz@gmail.com',
       'berend.mainz@web.de',
@@ -10112,7 +10154,7 @@ app.delete('/api/admin/cleanup-all-tests', authenticateAdmin, async (req, res) =
       'matiasaseff@hotmail.com',
       'clvalentini24@gmail.com',
       'penelopefier@gmail.com',
-      'breihosen@gmail.com',
+      // breihosen@gmail.com - REMOVED: was a test account
     ];
 
     const emailList = realEmails.map(e => `'${e.toLowerCase()}'`).join(', ');
@@ -10170,6 +10212,94 @@ app.delete('/api/admin/cleanup-all-tests', authenticateAdmin, async (req, res) =
   } catch (error) {
     console.error('Cleanup all tests error:', error);
     res.status(500).json({ error: 'Failed to cleanup', details: error.message });
+  }
+});
+
+// Admin: Preview and cleanup test data from outreach tables (without deleting users)
+// GET = preview what would be cleaned, POST = actually clean
+app.all('/api/admin/cleanup-outreach-tests', authenticateAdmin, async (req, res) => {
+  try {
+    const isDryRun = req.method === 'GET';
+
+    // Find test emails in outreach tables
+    const testEmailsInOutreach = await dbAll(`
+      SELECT DISTINCT email FROM outreach_emails
+      WHERE 1=1 ${getTestEmailExcludeClause('email').replace(/AND /g, 'OR NOT ')}
+    `);
+
+    const testEmailsInClicks = await dbAll(`
+      SELECT DISTINCT email FROM outreach_clicks
+      WHERE 1=1 ${getTestEmailExcludeClause('email').replace(/AND /g, 'OR NOT ')}
+    `);
+
+    const testEmailsInTracking = await dbAll(`
+      SELECT DISTINCT email FROM outreach_tracking
+      WHERE 1=1 ${getTestEmailExcludeClause('email').replace(/AND /g, 'OR NOT ')}
+    `);
+
+    // Simpler approach: use the explicit TEST_EMAILS list
+    const testEmailsList = TEST_EMAILS.map(e => `'${e}'`).join(', ');
+
+    // Count affected rows
+    const emailsCount = await dbGet(`
+      SELECT COUNT(*) as count FROM outreach_emails
+      WHERE LOWER(email) IN (${testEmailsList})
+    `);
+
+    const clicksCount = await dbGet(`
+      SELECT COUNT(*) as count FROM outreach_clicks
+      WHERE LOWER(email) IN (${testEmailsList})
+    `);
+
+    const trackingCount = await dbGet(`
+      SELECT COUNT(*) as count FROM outreach_tracking
+      WHERE LOWER(email) IN (${testEmailsList})
+    `);
+
+    if (isDryRun) {
+      return res.json({
+        mode: 'preview',
+        message: 'This shows what would be deleted. Use POST to actually delete.',
+        affected: {
+          outreach_emails: parseInt(emailsCount?.count || 0),
+          outreach_clicks: parseInt(clicksCount?.count || 0),
+          outreach_tracking: parseInt(trackingCount?.count || 0),
+        },
+        test_emails: TEST_EMAILS,
+      });
+    }
+
+    // Actually delete
+    const deletedEmails = await dbQuery(`
+      DELETE FROM outreach_emails
+      WHERE LOWER(email) IN (${testEmailsList})
+      RETURNING email
+    `);
+
+    const deletedClicks = await dbQuery(`
+      DELETE FROM outreach_clicks
+      WHERE LOWER(email) IN (${testEmailsList})
+      RETURNING email
+    `);
+
+    const deletedTracking = await dbQuery(`
+      DELETE FROM outreach_tracking
+      WHERE LOWER(email) IN (${testEmailsList})
+      RETURNING email
+    `);
+
+    res.json({
+      mode: 'executed',
+      message: 'Test data cleaned from outreach tables',
+      deleted: {
+        outreach_emails: deletedEmails.rows?.length || 0,
+        outreach_clicks: deletedClicks.rows?.length || 0,
+        outreach_tracking: deletedTracking.rows?.length || 0,
+      },
+    });
+  } catch (error) {
+    console.error('Outreach cleanup error:', error);
+    res.status(500).json({ error: 'Failed to cleanup outreach data', details: error.message });
   }
 });
 
@@ -10720,8 +10850,7 @@ app.all('/api/cron/followup-clickers', async (req, res) => {
       LEFT JOIN outreach_leads l ON LOWER(c.email) = LOWER(l.email)
       LEFT JOIN clicker_followups f ON LOWER(c.email) = LOWER(f.email)
       WHERE f.id IS NULL
-        AND c.email NOT LIKE '%@test.%'
-        AND c.email NOT LIKE '%berend%'
+        ${getTestEmailExcludeClause('c.email')}
       ORDER BY c.clicked_at DESC
       LIMIT 10
     `);
@@ -10818,8 +10947,7 @@ app.get('/api/cron/demo-followup', async (req, res) => {
         AND d.followup_sent_at IS NULL
         AND d.demo_page_viewed_at < NOW() - INTERVAL '24 hours'
         AND l.email IS NOT NULL
-        AND l.email NOT LIKE '%@test.%'
-        AND l.email NOT LIKE '%berend%'
+        ${getTestEmailExcludeClause('l.email')}
       ORDER BY d.demo_page_viewed_at DESC
       LIMIT 10
     `);
@@ -15168,11 +15296,8 @@ app.get('/api/outreach/dashboard', async (req, res) => {
   }
 
   try {
-    // Filter out test emails from metrics
-    const TEST_EMAIL_FILTER = `
-      AND email NOT LIKE '%berend%'
-      AND (campaign IS NULL OR campaign NOT LIKE 'test%')
-    `;
+    // Use central test email filter for accurate stats
+    const TEST_EMAIL_FILTER = getTestEmailExcludeClause('email');
 
     const totalLeads = await dbGet('SELECT COUNT(*) as count FROM outreach_leads');
     const leadsWithEmail = await dbGet(
@@ -15189,7 +15314,7 @@ app.get('/api/outreach/dashboard', async (req, res) => {
     // Click tracking stats (also filter test emails)
     let emailsClicked = { count: 0 };
     try {
-      emailsClicked = await dbGet(`SELECT COUNT(DISTINCT email) as count FROM outreach_clicks WHERE email NOT LIKE '%berend%'`) || { count: 0 };
+      emailsClicked = await dbGet(`SELECT COUNT(DISTINCT email) as count FROM outreach_clicks WHERE 1=1 ${TEST_EMAIL_FILTER}`) || { count: 0 };
     } catch (e) {
       // Table might not exist yet
     }
@@ -15255,11 +15380,8 @@ app.get('/api/outreach/funnel', async (req, res) => {
     // ========== FUNNEL METRICS ==========
     const funnel = {};
 
-    // Filter out test emails from metrics
-    const TEST_EMAIL_FILTER = `
-      AND email NOT LIKE '%berend%'
-      AND (campaign IS NULL OR campaign NOT LIKE 'test%')
-    `;
+    // Use central test email filter
+    const TEST_EMAIL_FILTER = getTestEmailExcludeClause('email');
 
     // Stage 1: Leads
     const totalLeads = await dbGet('SELECT COUNT(*) as count FROM outreach_leads');
@@ -15284,8 +15406,8 @@ app.get('/api/outreach/funnel', async (req, res) => {
     // Stage 4: Clicks (excluding test emails)
     let clicksData = { count: 0, unique: 0 };
     try {
-      const totalClicks = await dbGet(`SELECT COUNT(*) as count FROM outreach_clicks WHERE email NOT LIKE '%berend%'`);
-      const uniqueClicks = await dbGet(`SELECT COUNT(DISTINCT email) as count FROM outreach_clicks WHERE email NOT LIKE '%berend%'`);
+      const totalClicks = await dbGet(`SELECT COUNT(*) as count FROM outreach_clicks WHERE 1=1 ${TEST_EMAIL_FILTER}`);
+      const uniqueClicks = await dbGet(`SELECT COUNT(DISTINCT email) as count FROM outreach_clicks WHERE 1=1 ${TEST_EMAIL_FILTER}`);
       clicksData = {
         count: parseInt(totalClicks?.count || 0),
         unique: parseInt(uniqueClicks?.count || 0)
