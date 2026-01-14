@@ -5634,6 +5634,74 @@ async function lookupPlaceId(businessName, city) {
   };
 }
 
+// Helper: Get extended Place Details from Google (editorial summary, website, etc.)
+async function getPlaceDetails(placeId) {
+  if (!process.env.GOOGLE_PLACES_API_KEY || !placeId) {
+    return null;
+  }
+
+  try {
+    // Request editorial_summary (Google's description) + website + phone
+    const fields = 'editorial_summary,website,formatted_phone_number,opening_hours';
+    const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=${fields}&key=${process.env.GOOGLE_PLACES_API_KEY}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.status !== 'OK' || !data.result) {
+      return null;
+    }
+
+    const result = data.result;
+    return {
+      description: result.editorial_summary?.overview || null,
+      website: result.website || null,
+      phone: result.formatted_phone_number || null,
+      isOpen: result.opening_hours?.open_now || null,
+    };
+  } catch (err) {
+    console.log('Place Details API error:', err.message);
+    return null;
+  }
+}
+
+// Helper: Get Google Knowledge Panel info via SerpAPI
+async function getKnowledgePanel(businessName, city) {
+  const serpApiKey = getNextSerpApiKey();
+  if (!serpApiKey) {
+    return null;
+  }
+
+  try {
+    const query = encodeURIComponent(`${businessName} ${city}`);
+    const url = `https://serpapi.com/search.json?engine=google&q=${query}&api_key=${serpApiKey}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.error) {
+      throw new Error(data.error);
+    }
+
+    // Extract from Knowledge Graph
+    const kg = data.knowledge_graph;
+    if (!kg) {
+      return null;
+    }
+
+    return {
+      description: kg.description || kg.snippet || null,
+      ownerName: kg.owner?.name || null,
+      foundedYear: kg.founded?.match(/\d{4}/)?.[0] || null,
+      website: kg.website || null,
+      attributes: kg.attributes || {},
+    };
+  } catch (err) {
+    console.log('Knowledge Panel error:', err.message);
+    return null;
+  }
+}
+
 // Helper: Extract readable business type from Google types array
 function extractBusinessType(types) {
   const typeMap = {

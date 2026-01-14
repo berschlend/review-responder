@@ -2117,7 +2117,7 @@ const LandingPage = () => {
     setTryError('');
     setTryResponse('');
     try {
-      const res = await axios.post(`${API_URL}/api/public/try`, {
+      const res = await axios.post(`${API_URL}/public/try`, {
         reviewText: tryReviewText,
         tone: tryTone,
       });
