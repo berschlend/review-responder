@@ -3210,6 +3210,9 @@ ${languageInstruction}
       }
     }
 
+    // Apply AI slop filter to clean up typical AI phrases
+    generatedResponse = cleanAISlop(generatedResponse);
+
     // Check if this is an onboarding demo request (don't count usage or save to history)
     const isOnboardingDemo = req.body.isOnboarding === true && user.onboarding_completed === false;
 
@@ -3425,7 +3428,8 @@ app.post('/api/generate-variations', authenticateToken, async (req, res) => {
         temperature: style.temp,
       });
 
-      const generatedResponse = completion.choices[0].message.content.trim();
+      const rawResponse = completion.choices[0].message.content.trim();
+      const generatedResponse = cleanAISlop(rawResponse);
       const quality = evaluateResponseQuality(generatedResponse, reviewText, tone, reviewRating);
 
       return {
@@ -3736,6 +3740,9 @@ LANGUAGE: ${bulkLanguageInstruction}`;
             outputTokens: completion.usage?.completion_tokens || 0,
           });
         }
+
+        // Apply AI slop filter to clean up typical AI phrases
+        generatedResponse = cleanAISlop(generatedResponse);
 
         // Save to database with AI model
         await dbQuery(
@@ -7067,6 +7074,9 @@ Just the review response text, ready to post.
       generatedResponse = completion.choices[0].message.content.trim();
       if (useModel === 'smart' && !anthropic) useModel = 'standard';
     }
+
+    // Apply AI slop filter to clean up typical AI phrases
+    generatedResponse = cleanAISlop(generatedResponse);
 
     // Save to responses table with AI model
     await dbQuery(

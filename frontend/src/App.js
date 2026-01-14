@@ -12555,6 +12555,120 @@ const ChromeExtensionHowTo = ({ platform = 'Google Maps', color = '#4285f4' }) =
   </div>
 );
 
+// Reusable Demo Video Section Component for Landing Pages
+const DemoVideoSection = ({ platform = 'review platforms' }) => {
+  const [showVideo, setShowVideo] = useState(false);
+
+  return (
+    <div
+      style={{
+        marginTop: '60px',
+        background: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)',
+        borderRadius: '16px',
+        padding: '40px',
+        border: '1px solid #e9d5ff',
+        textAlign: 'center',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '16px' }}>
+        <Play size={28} style={{ color: '#9333ea' }} />
+        <h2 style={{ fontSize: '24px', fontWeight: '700', margin: 0 }}>
+          See It In Action
+        </h2>
+      </div>
+      <p style={{ color: 'var(--gray-600)', marginBottom: '24px', maxWidth: '500px', margin: '0 auto 24px' }}>
+        Watch how easy it is to respond to {platform} reviews with ReviewResponder
+      </p>
+
+      <div
+        style={{
+          position: 'relative',
+          maxWidth: '640px',
+          margin: '0 auto',
+          borderRadius: '12px',
+          overflow: 'hidden',
+          boxShadow: '0 10px 40px rgba(147, 51, 234, 0.15)',
+        }}
+      >
+        {showVideo ? (
+          <iframe
+            src="https://www.youtube.com/embed/6lujm4Z_Q_Y?autoplay=1&rel=0"
+            title="ReviewResponder Demo - Chrome Extension for Review Responses"
+            style={{
+              width: '100%',
+              aspectRatio: '16/9',
+              border: 'none',
+              display: 'block',
+            }}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        ) : (
+          <div
+            onClick={() => setShowVideo(true)}
+            style={{
+              position: 'relative',
+              cursor: 'pointer',
+              aspectRatio: '16/9',
+              background: '#1a1a1a',
+            }}
+          >
+            <img
+              src="https://img.youtube.com/vi/6lujm4Z_Q_Y/maxresdefault.jpg"
+              alt="ReviewResponder Demo Video Thumbnail"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                opacity: 0.9,
+              }}
+              onError={(e) => {
+                e.target.src = 'https://img.youtube.com/vi/6lujm4Z_Q_Y/hqdefault.jpg';
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '80px',
+                height: '80px',
+                background: 'rgba(147, 51, 234, 0.95)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 20px rgba(147, 51, 234, 0.4)',
+                transition: 'transform 0.2s ease',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1.1)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1)'}
+            >
+              <Play size={36} fill="white" color="white" style={{ marginLeft: '4px' }} />
+            </div>
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '16px',
+                left: '16px',
+                background: 'rgba(0,0,0,0.7)',
+                color: 'white',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                fontSize: '13px',
+                fontWeight: '500',
+              }}
+            >
+              2:00 Demo
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // SEO Landing Page Component - Google Review Response Generator
 const GoogleReviewPage = () => {
   const location = useLocation();
@@ -12729,6 +12843,8 @@ const GoogleReviewPage = () => {
         </div>
 
         <ChromeExtensionHowTo platform="Google Maps" color="#4285f4" />
+
+        <DemoVideoSection platform="Google Maps" />
 
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
@@ -12979,6 +13095,8 @@ const YelpReviewPage = () => {
           </div>
         </div>
 
+        <DemoVideoSection platform="Yelp" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Start Managing Your Yelp Reputation Today
@@ -12987,37 +13105,6 @@ const YelpReviewPage = () => {
             <Sparkles size={20} />
             Try Free - 20 Responses Included
           </Link>
-        </div>
-
-        <div
-          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
-        >
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>
-              ReviewResponder
-            </Link>{' '}
-            •
-            <Link
-              to="/google-review-response-generator"
-              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
-            >
-              Google Reviews
-            </Link>{' '}
-            •
-            <Link
-              to="/restaurant-review-responses"
-              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
-            >
-              Restaurant Reviews
-            </Link>{' '}
-            •
-            <Link
-              to="/hotel-review-management"
-              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
-            >
-              Hotel Reviews
-            </Link>
-          </p>
         </div>
       </section>
       <Footer />
