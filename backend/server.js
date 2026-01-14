@@ -6588,8 +6588,9 @@ Unsubscribe: https://tryreviewresponder.com/unsubscribe?email=${encodeURICompone
   });
 }
 
-// POST /api/cron/generate-demos - Batch generate demos for leads
-app.post('/api/cron/generate-demos', async (req, res) => {
+// GET /api/cron/generate-demos - Batch generate demos for leads
+// Changed from POST to GET for cron-job.org compatibility (14.01.2026)
+app.get('/api/cron/generate-demos', async (req, res) => {
   const cronSecret = req.query.secret || req.headers['x-cron-secret'];
   if (!safeCompare(cronSecret || '', process.env.CRON_SECRET || '')) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -8886,7 +8887,8 @@ app.get('/api/admin/test-pre-reg-drip', async (req, res) => {
 
 // Weekly Summary Email Campaign - Send weekly stats to users who opted in
 // Call this endpoint via cron job (e.g., every Monday at 9am)
-app.post('/api/cron/send-weekly-summary', async (req, res) => {
+// Changed from POST to GET for cron-job.org compatibility (14.01.2026)
+app.get('/api/cron/send-weekly-summary', async (req, res) => {
   // Accept both header and query parameter for secret
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
   if (
@@ -11174,8 +11176,9 @@ P.S. Use code DEMOFOLLOWUP for 30% off if you upgrade within 48h.`;
   }
 });
 
-// POST /api/cron/enrich-g2-leads - Find domain and email for G2 competitor leads
-app.post('/api/cron/enrich-g2-leads', async (req, res) => {
+// GET /api/cron/enrich-g2-leads - Find domain and email for G2 competitor leads
+// Changed from POST to GET for cron-job.org compatibility (14.01.2026)
+app.get('/api/cron/enrich-g2-leads', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
   if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -15025,9 +15028,10 @@ const AUTO_BLOG_TOPICS = [
   },
 ];
 
-// POST /api/cron/generate-blog-article - Auto-generate SEO blog article
+// GET /api/cron/generate-blog-article - Auto-generate SEO blog article
 // Call via cron-job.org: Mon/Wed/Fri at 6:00 UTC
-app.post('/api/cron/generate-blog-article', async (req, res) => {
+// Changed from POST to GET for cron-job.org compatibility (14.01.2026)
+app.get('/api/cron/generate-blog-article', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
   if (
     !safeCompare(cronSecret, process.env.CRON_SECRET) &&
@@ -18584,8 +18588,9 @@ app.get('/api/admin/test-review-scraper', async (req, res) => {
   }
 });
 
-// POST /api/cron/send-yelp-emails - Send emails to Yelp leads
-app.post('/api/cron/send-yelp-emails', async (req, res) => {
+// GET /api/cron/send-yelp-emails - Send emails to Yelp leads
+// Changed from POST to GET for cron-job.org compatibility (14.01.2026)
+app.get('/api/cron/send-yelp-emails', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
   if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -18648,8 +18653,9 @@ app.post('/api/cron/send-yelp-emails', async (req, res) => {
   }
 });
 
-// POST /api/cron/send-g2-emails - Send emails + follow-ups to G2 competitor leads
-app.post('/api/cron/send-g2-emails', async (req, res) => {
+// GET /api/cron/send-g2-emails - Send emails + follow-ups to G2 competitor leads
+// Changed from POST to GET for cron-job.org compatibility (14.01.2026)
+app.get('/api/cron/send-g2-emails', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
   if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -18753,8 +18759,9 @@ Berend`;
   }
 });
 
-// POST /api/cron/send-agency-emails - Send partnership emails to agencies
-app.post('/api/cron/send-agency-emails', async (req, res) => {
+// GET /api/cron/send-agency-emails - Send partnership emails to agencies
+// Changed from POST to GET for cron-job.org compatibility (14.01.2026)
+app.get('/api/cron/send-agency-emails', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
   if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
     return res.status(401).json({ error: 'Unauthorized' });

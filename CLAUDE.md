@@ -239,11 +239,21 @@ Click-Rate ist die echte Metrik. 17 Leute haben geklickt → Demo Attack!
 - One-Click Response, Business Context
 
 ### Marketing Automation
-- Daily Outreach + Drip Emails
-- Demo Generation + Follow-Up
-- Twitter Auto-Post
-- LinkedIn Outreach
-- Click/Open Tracking
+- Daily Outreach + Drip Emails (VOLLAUTOMATISCH)
+- Demo Generation + Follow-Up (VOLLAUTOMATISCH)
+- Twitter Auto-Post (VOLLAUTOMATISCH)
+- LinkedIn Outreach (SEMI-MANUELL - siehe unten)
+- Click/Open Tracking (VOLLAUTOMATISCH)
+
+### Automation Status (14.01.2026)
+**VOLLAUTOMATISCH (läuft 24/7):**
+- Daily Outreach, Drip Emails, Demo Follow-Up, Twitter, Blog Generation
+
+**SEMI-MANUELL (erfordert `claude --chrome`):**
+- `/linkedin-connect` - Demos werden auto-generiert, Connection Requests manuell
+- `/scrape-leads` - TripAdvisor Scraping
+- `/g2-miner` - G2 Competitor Mining
+- `/yelp-audit` - Yelp Lead Auditing
 
 ---
 
