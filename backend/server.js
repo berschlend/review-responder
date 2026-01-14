@@ -14379,6 +14379,13 @@ Berend`;
       `, [searchName, placeId, googleRating, totalReviews, JSON.stringify(scrapedReviews), demoToken, JSON.stringify(generatedResponses)]);
     }
 
+    // Log for sales state tracking
+    await logSalesAction('linkedin_demo_created', 'outreach', {
+      count: 1,
+      business: searchName,
+      has_reviews: scrapedReviews.length > 0,
+    });
+
     res.json({
       success: true,
       demo_token: demoToken,

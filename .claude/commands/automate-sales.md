@@ -37,6 +37,37 @@ curl -s "https://review-responder.onrender.com/api/public/blog?limit=5"
 ### 3. Aktuelles Datum notieren
 Heute ist: **$DATE** (ersetze mit aktuellem Datum)
 
+---
+
+## SCHRITT 0.5: VORHERIGE AKTIONEN CHECKEN (KRITISCH!)
+
+**BEVOR du irgendetwas planst, pruefe was bereits gemacht wurde:**
+
+```bash
+curl -s "https://review-responder.onrender.com/api/admin/sales-state?key=KEY"
+```
+
+Die Antwort zeigt dir:
+- **today**: Was wurde HEUTE bereits gemacht? (leads_scraped, emails_sent, twitter_posts, etc.)
+- **this_week**: Wochenstatistiken (emails_sent, open_rate)
+- **pending**: Was steht noch aus? (linkedin_connections, leads_not_emailed)
+- **last_actions**: Letzte 10 Aktionen mit Details
+- **notes_from_previous_sessions**: Notizen von vorherigen Claude Sessions
+
+**WICHTIG - Keine Duplikate!**
+- Wenn heute schon 50 Leads gescraped wurden → NICHT nochmal scrapen
+- Wenn heute schon 20 Emails gesendet wurden → Tagesbudget beachten
+- Wenn Twitter schon 2 Posts hat → Daily Limit erreicht
+
+**Notiz fuer naechste Session hinterlassen:**
+```bash
+curl -X POST "https://review-responder.onrender.com/api/admin/sales-note?key=KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"note": "Tony Quach replied - follow up manually"}'
+```
+
+---
+
 ### 4. Zeit-Kontext verstehen
 - **Launch:** Januar 2026 (SEHR NEU!)
 - **Chrome Extension:** Im Web Store Review seit 13.01.2026
