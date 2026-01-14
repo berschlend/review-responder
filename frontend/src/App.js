@@ -12139,9 +12139,9 @@ const DemoPage = () => {
           </p>
         </div>
 
-        {/* Demo Cards - RESPONSE GATE: Only show 2 initially */}
+        {/* Demo Cards - RESPONSE GATE: Only show 1 initially, gate the rest */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '48px' }}>
-          {demo.demos && demo.demos.slice(0, showAllResponses ? demo.demos.length : 2).map((item, index) => (
+          {demo.demos && demo.demos.slice(0, showAllResponses ? demo.demos.length : 1).map((item, index) => (
             <div
               key={index}
               style={{
@@ -12267,8 +12267,8 @@ const DemoPage = () => {
             </div>
           ))}
 
-          {/* RESPONSE GATE: Show unlock button if more responses available */}
-          {demo.demos && demo.demos.length > 2 && !showAllResponses && (
+          {/* RESPONSE GATE: Show unlock button if more responses available (now shows after 1st) */}
+          {demo.demos && demo.demos.length > 1 && !showAllResponses && (
             <div
               onClick={() => {
                 if (!emailCaptured) {
@@ -12298,7 +12298,7 @@ const DemoPage = () => {
                 </svg>
               </div>
               <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '8px' }}>
-                {demo.demos.length - 2} More AI Responses Available
+                {demo.demos.length - 1} More AI Responses Available
               </h3>
               <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '16px' }}>
                 {emailCaptured ? 'Click to reveal all responses' : 'Enter your email to unlock all responses'}
