@@ -8735,42 +8735,49 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
 
   if (!showGenerator) {
     return (
-      <button
-        type="button"
-        onClick={() => setShowGenerator(true)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          padding: '10px 16px',
-          background: 'linear-gradient(135deg, var(--primary-500), var(--primary-600))',
-          border: 'none',
-          borderRadius: '8px',
-          cursor: 'pointer',
-          fontSize: '14px',
-          fontWeight: '600',
-          color: 'white',
-          marginBottom: '12px',
-          transition: 'all 0.2s',
-          boxShadow: '0 2px 8px rgba(99, 102, 241, 0.3)',
-        }}
-      >
-        <Sparkles size={16} />
-        Generate with AI
-        <span
+      <div style={{ marginBottom: '12px' }}>
+        <button
+          type="button"
+          onClick={() => setShowGenerator(true)}
           style={{
-            background: 'rgba(255, 255, 255, 0.2)',
-            padding: '2px 8px',
-            borderRadius: '4px',
-            fontSize: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 16px',
+            background: 'linear-gradient(135deg, var(--primary-500), var(--primary-600))',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
             fontWeight: '600',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
+            color: 'white',
+            marginBottom: '6px',
+            transition: 'all 0.2s',
+            boxShadow: '0 2px 8px rgba(99, 102, 241, 0.3)',
           }}
         >
-          Recommended
-        </span>
-      </button>
+          <Sparkles size={16} />
+          Generate with AI
+          <span
+            style={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              padding: '2px 8px',
+              borderRadius: '4px',
+              fontSize: '10px',
+              fontWeight: '600',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}
+          >
+            Recommended
+          </span>
+        </button>
+        <p style={{ fontSize: '12px', color: 'var(--gray-500)', margin: 0 }}>
+          {field === 'context'
+            ? 'Enter a few keywords and AI creates a structured profile you can edit'
+            : 'Enter a few keywords and AI creates style guidelines with XML tags'}
+        </p>
+      </div>
     );
   }
 
@@ -8895,21 +8902,22 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
           >
             {generated}
           </p>
-          {field === 'context' && generated.includes('[') && (
-            <div
-              style={{
-                background: 'var(--primary-50)',
-                border: '1px solid var(--primary-200)',
-                borderRadius: '6px',
-                padding: '10px 12px',
-                marginTop: '10px',
-                fontSize: '12px',
-                color: 'var(--primary-700)',
-              }}
-            >
-              <strong>Tip:</strong> Replace the [brackets] with your actual info for more personalized AI responses. The examples show what works best!
-            </div>
-          )}
+          <div
+            style={{
+              background: 'var(--primary-50)',
+              border: '1px solid var(--primary-200)',
+              borderRadius: '6px',
+              padding: '10px 12px',
+              marginTop: '10px',
+              fontSize: '12px',
+              color: 'var(--primary-700)',
+            }}
+          >
+            <strong>Next:</strong> Click "Apply & Edit" to copy this to the edit field below.{' '}
+            {generated.includes('[') && (
+              <>Then replace the [brackets] with your actual info for better AI responses.</>
+            )}
+          </div>
           <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
             <button
               type="button"
@@ -8923,7 +8931,7 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
             </button>
             <button type="button" onClick={handleAccept} className="btn btn-primary btn-sm">
               <Check size={14} style={{ marginRight: '4px' }} />
-              Apply
+              Apply & Edit
             </button>
           </div>
         </div>
