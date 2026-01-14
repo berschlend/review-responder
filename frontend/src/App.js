@@ -14556,6 +14556,8 @@ const BookingReviewPage = () => {
 
         <ChromeExtensionHowTo platform="Booking.com" color="#003580" />
 
+        <DemoVideoSection platform="Booking.com" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Improve Your Booking.com Performance
@@ -14567,28 +14569,6 @@ const BookingReviewPage = () => {
             <Sparkles size={20} />
             Try Free - No Credit Card
           </Link>
-        </div>
-
-        <div
-          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
-        >
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>
-              ReviewResponder
-            </Link>{' '}
-            •
-            <Link to="/hotel-review-management" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Hotel Reviews
-            </Link>{' '}
-            •
-            <Link to="/tripadvisor-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              TripAdvisor Reviews
-            </Link>{' '}
-            •
-            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Google Reviews
-            </Link>
-          </p>
         </div>
       </section>
       <Footer />
