@@ -11872,7 +11872,7 @@ async function generateDemoForLead(lead) {
       return null;
     }
 
-    // === NEW: Scrape business context from website ===
+    // === BUSINESS CONTEXT: Multi-Source Fallback System ===
     let scrapedContext = {
       description: null,
       specialties: [],
@@ -11881,20 +11881,71 @@ async function generateDemoForLead(lead) {
       usps: [],
     };
 
-    if (lead.website) {
+    // Source 1: Website Scraping (FREE - try first)
+    const websiteToScrape = lead.website;
+    if (websiteToScrape) {
       try {
-        console.log(`Scraping business context from ${lead.website}...`);
-        scrapedContext = await scrapeBusinessContext(lead.website);
-        if (scrapedContext.description || scrapedContext.ownerName) {
-          console.log(`✓ Found context: ${scrapedContext.description?.slice(0, 50) || 'no description'}${scrapedContext.ownerName ? `, owner: ${scrapedContext.ownerName}` : ''}`);
+        console.log(`[1/3] Scraping website: ${websiteToScrape}...`);
+        scrapedContext = await scrapeBusinessContext(websiteToScrape);
+        if (scrapedContext.description) {
+          console.log(`✓ Website: Found description (${scrapedContext.description.slice(0, 40)}...)`);
         }
       } catch (err) {
-        console.log(`Website scrape failed for ${lead.business_name}:`, err.message);
-        // Continue without website context - graceful fallback
+        console.log(`✗ Website scrape failed: ${err.message}`);
       }
     }
 
-    // === NEW: Generate auto instructions and context ===
+    // Source 2: Google Places Details API (if no description yet)
+    if (!scrapedContext.description && placeId) {
+      try {
+        console.log(`[2/3] Trying Google Places Details API...`);
+        const placeDetails = await getPlaceDetails(placeId);
+        if (placeDetails?.description) {
+          scrapedContext.description = placeDetails.description;
+          console.log(`✓ Google Places: Found editorial summary`);
+        }
+        // Also grab website if we didn't have one
+        if (!websiteToScrape && placeDetails?.website) {
+          // Try scraping the newly discovered website
+          try {
+            const websiteContext = await scrapeBusinessContext(placeDetails.website);
+            if (websiteContext.ownerName) scrapedContext.ownerName = websiteContext.ownerName;
+            if (websiteContext.foundedYear) scrapedContext.foundedYear = websiteContext.foundedYear;
+            if (websiteContext.specialties?.length) scrapedContext.specialties = websiteContext.specialties;
+          } catch {
+            // Ignore website scrape errors
+          }
+        }
+      } catch (err) {
+        console.log(`✗ Places Details failed: ${err.message}`);
+      }
+    }
+
+    // Source 3: Google Knowledge Panel via SerpAPI (last resort)
+    if (!scrapedContext.description) {
+      try {
+        console.log(`[3/3] Trying Google Knowledge Panel...`);
+        const kgData = await getKnowledgePanel(lead.business_name, lead.city || '');
+        if (kgData?.description) {
+          scrapedContext.description = kgData.description;
+          console.log(`✓ Knowledge Panel: Found description`);
+        }
+        if (!scrapedContext.ownerName && kgData?.ownerName) {
+          scrapedContext.ownerName = kgData.ownerName;
+        }
+        if (!scrapedContext.foundedYear && kgData?.foundedYear) {
+          scrapedContext.foundedYear = kgData.foundedYear;
+        }
+      } catch (err) {
+        console.log(`✗ Knowledge Panel failed: ${err.message}`);
+      }
+    }
+
+    // Log final context status
+    const contextFound = scrapedContext.description || scrapedContext.ownerName || scrapedContext.specialties?.length;
+    console.log(`Context result for ${lead.business_name}: ${contextFound ? '✓ Found' : '✗ None'} (desc: ${!!scrapedContext.description}, owner: ${!!scrapedContext.ownerName}, specialties: ${scrapedContext.specialties?.length || 0})`);
+
+    // === Generate auto instructions and context ===
     const autoInstructions = generateAutoInstructions(lead, scrapedContext);
     const autoContext = generateAutoContext(lead, scrapedContext, allReviews);
 
