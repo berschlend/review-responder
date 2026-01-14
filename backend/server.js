@@ -2914,9 +2914,11 @@ async function generateResponseHandler(req, res) {
     const standardUsed = usageOwner.standard_responses_used || 0;
     const smartRemaining = planLimits.smartResponses - smartUsed;
     const standardRemaining = planLimits.standardResponses - standardUsed;
+    const bonusRemaining = usageOwner.bonus_responses || 0; // Micro-pricing: $5 for 10 responses
 
     // Determine which AI model to use
     let useModel = 'standard'; // Default: GPT-4o-mini
+    let useBonusResponse = false; // Track if we're using a bonus response
 
     if (aiModel === 'smart') {
       // User explicitly wants Smart AI (Claude)
@@ -2925,7 +2927,8 @@ async function generateResponseHandler(req, res) {
           error: 'No Smart AI responses remaining',
           smartRemaining: 0,
           standardRemaining,
-          suggestion: standardRemaining > 0 ? 'Switch to Standard AI' : 'Upgrade your plan',
+          bonusRemaining,
+          suggestion: standardRemaining > 0 ? 'Switch to Standard AI' : (bonusRemaining > 0 ? 'Use bonus responses' : 'Upgrade your plan'),
         });
       }
       useModel = 'smart';
@@ -2934,25 +2937,39 @@ async function generateResponseHandler(req, res) {
       useModel = smartRemaining > 0 ? 'smart' : 'standard';
 
       if (useModel === 'standard' && standardRemaining <= 0) {
-        return res.status(403).json({
-          error: 'No responses remaining',
-          smartRemaining: 0,
-          standardRemaining: 0,
-          upgrade: !isTeamMember,
-          message: isTeamMember
-            ? 'Your team has reached the monthly response limit. Contact your team owner.'
-            : 'You have reached your monthly response limit. Please upgrade your plan to continue.',
-        });
+        // Check if user has bonus responses from micro-pricing
+        if (bonusRemaining > 0) {
+          useBonusResponse = true;
+          // Still use standard model but deduct from bonus pool
+        } else {
+          return res.status(403).json({
+            error: 'No responses remaining',
+            smartRemaining: 0,
+            standardRemaining: 0,
+            bonusRemaining: 0,
+            upgrade: !isTeamMember,
+            showUpgradeModal: true, // Frontend should show the upgrade modal
+            message: isTeamMember
+              ? 'Your team has reached the monthly response limit. Contact your team owner.'
+              : 'You have reached your monthly response limit. Please upgrade your plan to continue.',
+          });
+        }
       }
     } else {
       // Standard explicitly chosen
       if (standardRemaining <= 0) {
-        return res.status(403).json({
-          error: 'No Standard responses remaining',
-          smartRemaining,
-          standardRemaining: 0,
-          suggestion: smartRemaining > 0 ? 'Switch to Smart AI' : 'Upgrade your plan',
-        });
+        // Check bonus responses as fallback
+        if (bonusRemaining > 0) {
+          useBonusResponse = true;
+        } else {
+          return res.status(403).json({
+            error: 'No Standard responses remaining',
+            smartRemaining,
+            standardRemaining: 0,
+            bonusRemaining: 0,
+            suggestion: smartRemaining > 0 ? 'Switch to Smart AI' : 'Upgrade your plan',
+          });
+        }
       }
     }
 
@@ -3261,7 +3278,13 @@ ${languageInstruction}
       );
 
       // Update the correct usage counter
-      if (useModel === 'smart') {
+      if (useBonusResponse) {
+        // Deduct from bonus responses (micro-pricing)
+        await dbQuery(
+          'UPDATE users SET bonus_responses = GREATEST(0, bonus_responses - 1), responses_used = responses_used + 1 WHERE id = $1',
+          [usageOwnerId]
+        );
+      } else if (useModel === 'smart') {
         await dbQuery(
           'UPDATE users SET smart_responses_used = smart_responses_used + 1, responses_used = responses_used + 1 WHERE id = $1',
           [usageOwnerId]
@@ -3319,6 +3342,7 @@ ${languageInstruction}
       response: generatedResponse,
       aiModel: useModel,
       quality, // NEW: Quality score object
+      usedBonusResponse: useBonusResponse, // Track if bonus response was used
       usage: {
         smart: {
           used: updatedOwner.smart_responses_used || 0,
@@ -3327,6 +3351,9 @@ ${languageInstruction}
         standard: {
           used: updatedOwner.standard_responses_used || 0,
           limit: updatedPlanLimits.standardResponses,
+        },
+        bonus: {
+          remaining: updatedOwner.bonus_responses || 0, // Micro-pricing bonus
         },
         total: {
           used: totalUsed,
@@ -5663,7 +5690,7 @@ function extractPlaceIdFromUrl(url) {
 
 // Helper: Generate AI response for a review (for demo purposes)
 // Uses SAME prompt system as original /api/generate for high-quality responses
-async function generateDemoResponse(review, businessName, businessType = null, city = null, googleRating = null, totalReviews = null) {
+async function generateDemoResponse(review, businessName, businessType = null, city = null, googleRating = null, totalReviews = null, businessContext = null, customInstructions = null) {
   if (!anthropic) {
     throw new Error('ANTHROPIC_API_KEY not configured');
   }
@@ -5782,6 +5809,15 @@ ${AI_SLOP_WORDS.join(', ')}
 </avoid_patterns>
 
 ${fewShotExamplesXMLContent}
+
+${businessContext ? `<business_context>
+${businessContext}
+</business_context>` : ''}
+
+${customInstructions ? `<custom_instructions>
+IMPORTANT - Follow these additional guidelines:
+${customInstructions}
+</custom_instructions>` : ''}
 
 <output_format>
 Write the response directly.
@@ -11582,6 +11618,36 @@ async function generateDemoForLead(lead) {
       return null;
     }
 
+    // === NEW: Scrape business context from website ===
+    let scrapedContext = {
+      description: null,
+      specialties: [],
+      ownerName: null,
+      foundedYear: null,
+      usps: [],
+    };
+
+    if (lead.website) {
+      try {
+        console.log(`Scraping business context from ${lead.website}...`);
+        scrapedContext = await scrapeBusinessContext(lead.website);
+        if (scrapedContext.description || scrapedContext.ownerName) {
+          console.log(`✓ Found context: ${scrapedContext.description?.slice(0, 50) || 'no description'}${scrapedContext.ownerName ? `, owner: ${scrapedContext.ownerName}` : ''}`);
+        }
+      } catch (err) {
+        console.log(`Website scrape failed for ${lead.business_name}:`, err.message);
+        // Continue without website context - graceful fallback
+      }
+    }
+
+    // === NEW: Generate auto instructions and context ===
+    const autoInstructions = generateAutoInstructions(lead, scrapedContext);
+    const autoContext = generateAutoContext(lead, scrapedContext, allReviews);
+
+    if (autoInstructions || autoContext) {
+      console.log(`✓ Generated auto context/instructions for ${lead.business_name}`);
+    }
+
     // Filter and sort reviews - prioritize negative (1-3 stars)
     const targetReviews = allReviews
       .filter(r => r.rating <= 3)
@@ -11601,7 +11667,7 @@ async function generateDemoForLead(lead) {
       return null;
     }
 
-    // Generate AI responses for each review
+    // Generate AI responses for each review (with auto context/instructions)
     const demos = [];
     for (const review of targetReviews) {
       const aiResponse = await generateDemoResponse(
@@ -11610,7 +11676,9 @@ async function generateDemoForLead(lead) {
         lead.business_type,
         lead.city,
         googleRating,
-        totalReviews
+        totalReviews,
+        autoContext,       // NEW: Pass auto-generated business context
+        autoInstructions   // NEW: Pass auto-generated custom instructions
       );
       demos.push({
         review: {
@@ -11844,6 +11912,249 @@ async function findEmailWithSnov(domain) {
     console.error('Snov.io error:', e.message);
     return null;
   }
+}
+
+// ============== AUTO BUSINESS CONTEXT FOR DEMOS ==============
+// Scrape website + analyze reviews to generate high-quality demo responses
+
+// Helper: Scrape business context from website About/Contact pages
+async function scrapeBusinessContext(websiteUrl) {
+  const result = {
+    description: null,
+    specialties: [],
+    ownerName: null,
+    foundedYear: null,
+    usps: [],
+  };
+
+  if (!websiteUrl) return result;
+
+  try {
+    // Normalize URL
+    let baseUrl = websiteUrl;
+    if (!baseUrl.startsWith('http')) {
+      baseUrl = 'https://' + baseUrl;
+    }
+    baseUrl = baseUrl.replace(/\/$/, '');
+
+    // Pages to check for business info
+    const pagesToCheck = [
+      baseUrl + '/about',
+      baseUrl + '/about-us',
+      baseUrl + '/ueber-uns',
+      baseUrl + '/team',
+      baseUrl + '/our-story',
+      baseUrl, // Homepage as fallback
+    ];
+
+    for (const pageUrl of pagesToCheck) {
+      try {
+        const response = await fetch(pageUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            Accept: 'text/html,application/xhtml+xml',
+          },
+          timeout: 8000,
+        });
+
+        if (!response.ok) continue;
+
+        const html = await response.text();
+
+        // Extract meta description as fallback
+        if (!result.description) {
+          const metaMatch = html.match(/<meta\s+name=["']description["']\s+content=["']([^"']{20,300})["']/i);
+          if (metaMatch) {
+            result.description = metaMatch[1].trim();
+          }
+        }
+
+        // Look for "About" section content
+        // Common patterns: <p> after "About Us", <div class="about">, etc.
+        const aboutPatterns = [
+          /<(?:div|section)[^>]*class=["'][^"']*about[^"']*["'][^>]*>([\s\S]{50,500}?)<\/(?:div|section)>/i,
+          /<p[^>]*>((?:We are|Our (?:restaurant|hotel|practice|company)|Since \d{4}|Founded in)[^<]{30,400})<\/p>/i,
+          /(?:About Us|Our Story|Who We Are)<\/(?:h\d|strong)[^>]*>[\s\S]*?<p[^>]*>([^<]{50,400})<\/p>/i,
+        ];
+
+        for (const pattern of aboutPatterns) {
+          const match = html.match(pattern);
+          if (match && match[1]) {
+            // Clean HTML tags and excess whitespace
+            const cleanText = match[1]
+              .replace(/<[^>]+>/g, ' ')
+              .replace(/\s+/g, ' ')
+              .trim()
+              .slice(0, 500);
+            if (cleanText.length > 50 && !result.description) {
+              result.description = cleanText;
+            }
+          }
+        }
+
+        // Look for founded year
+        const yearMatch = html.match(/(?:founded|established|since|seit)\s*(?:in\s*)?(\d{4})/i);
+        if (yearMatch) {
+          result.foundedYear = yearMatch[1];
+        }
+
+        // Look for owner/chef/founder name
+        const ownerPatterns = [
+          /(?:owner|founder|chef|inhaber|gesch.ftsf.hrer)[:\s]+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i,
+          /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?),?\s+(?:owner|founder|chef|inhaber)/i,
+        ];
+        for (const pattern of ownerPatterns) {
+          const ownerMatch = html.match(pattern);
+          if (ownerMatch && ownerMatch[1]) {
+            result.ownerName = ownerMatch[1].trim();
+            break;
+          }
+        }
+
+        // Look for specialties/services lists
+        const listMatches = html.match(/<li[^>]*>([^<]{5,60})<\/li>/gi);
+        if (listMatches && listMatches.length >= 3) {
+          const items = listMatches
+            .slice(0, 10)
+            .map((m) => m.replace(/<[^>]+>/g, '').trim())
+            .filter((item) => item.length > 3 && item.length < 50)
+            .filter((item) => !item.toLowerCase().includes('privacy') && !item.toLowerCase().includes('cookie'));
+          if (items.length >= 3) {
+            result.specialties = items.slice(0, 5);
+          }
+        }
+
+        // If we found good content, stop searching
+        if (result.description && result.description.length > 100) {
+          break;
+        }
+
+        await new Promise((r) => setTimeout(r, 200));
+      } catch {
+        continue;
+      }
+    }
+  } catch (e) {
+    console.error('Business context scrape error:', e.message);
+  }
+
+  return result;
+}
+
+// Helper: Extract frequently mentioned items/services from positive reviews
+function extractMentionedItems(reviews) {
+  if (!reviews || reviews.length === 0) return [];
+
+  // Common patterns that indicate a mentioned item
+  const patterns = [
+    /the ([a-z]+(?: [a-z]+)?) (?:was|is|were) (?:amazing|excellent|great|delicious|perfect|fantastic)/gi,
+    /loved(?: the)? ([a-z]+(?: [a-z]+)?)/gi,
+    /(?:best|amazing|excellent|great) ([a-z]+(?: [a-z]+)?)/gi,
+    /try(?: the)? ([a-z]+(?: [a-z]+)?)/gi,
+    /recommend(?: the)? ([a-z]+(?: [a-z]+)?)/gi,
+  ];
+
+  const mentions = {};
+
+  for (const review of reviews) {
+    if (!review.text) continue;
+    const text = review.text.toLowerCase();
+
+    for (const pattern of patterns) {
+      let match;
+      // Reset regex lastIndex for each review
+      pattern.lastIndex = 0;
+      while ((match = pattern.exec(text)) !== null) {
+        const item = match[1]?.trim();
+        // Filter out generic words
+        const genericWords = [
+          'food', 'service', 'staff', 'place', 'restaurant', 'hotel', 'experience',
+          'it', 'they', 'them', 'this', 'that', 'everything', 'all', 'we', 'i',
+        ];
+        if (item && item.length > 2 && item.length < 30 && !genericWords.includes(item)) {
+          mentions[item] = (mentions[item] || 0) + 1;
+        }
+      }
+    }
+  }
+
+  // Return items mentioned 2+ times, sorted by frequency
+  return Object.entries(mentions)
+    .filter(([, count]) => count >= 2)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([item]) => item);
+}
+
+// Helper: Generate custom instructions from lead data
+function generateAutoInstructions(lead, scrapedContext) {
+  const instructions = [];
+
+  // 1. Owner Name for sign-off
+  const ownerName = scrapedContext.ownerName || lead.contact_name;
+  if (ownerName) {
+    instructions.push(`Sign responses as "${ownerName}" instead of the business name`);
+  }
+
+  // 2. Business Specialties (from website or reviews)
+  if (scrapedContext.specialties?.length > 0) {
+    instructions.push(`When relevant, mention these specialties: ${scrapedContext.specialties.slice(0, 3).join(', ')}`);
+  }
+
+  // 3. Founded Year (adds authenticity)
+  if (scrapedContext.foundedYear) {
+    const yearsInBusiness = new Date().getFullYear() - parseInt(scrapedContext.foundedYear);
+    if (yearsInBusiness > 5) {
+      instructions.push(`We've been serving customers for ${yearsInBusiness}+ years`);
+    }
+  }
+
+  // 4. Pain Points (G2/Competitor leads) - avoid these topics
+  if (lead.pain_points?.length > 0) {
+    instructions.push(`Avoid mentioning: ${lead.pain_points.join(', ')}`);
+  }
+
+  // 5. Regional touch for certain cities
+  const localCities = ['Munich', 'München', 'Berlin', 'Vienna', 'Wien', 'Zurich', 'Zürich'];
+  if (lead.city && localCities.some((c) => lead.city.toLowerCase().includes(c.toLowerCase()))) {
+    instructions.push(`Add subtle local ${lead.city} flair when natural`);
+  }
+
+  return instructions.length > 0 ? instructions.join('\n') : null;
+}
+
+// Helper: Generate business context from scraped data and reviews
+function generateAutoContext(lead, scrapedContext, reviews) {
+  const contextParts = [];
+
+  // 1. Business Description from website
+  if (scrapedContext.description) {
+    contextParts.push(`About: ${scrapedContext.description.slice(0, 300)}`);
+  }
+
+  // 2. Popular items from positive reviews
+  const positiveReviews = reviews?.filter((r) => r.rating >= 4) || [];
+  const mentionedItems = extractMentionedItems(positiveReviews);
+  if (mentionedItems.length > 0) {
+    contextParts.push(`Popular with customers: ${mentionedItems.join(', ')}`);
+  }
+
+  // 3. Owner/Team info
+  if (scrapedContext.ownerName) {
+    contextParts.push(`Owner: ${scrapedContext.ownerName}`);
+  }
+
+  // 4. Unique Selling Points from website
+  if (scrapedContext.usps?.length > 0) {
+    contextParts.push(`What makes us special: ${scrapedContext.usps.join(', ')}`);
+  }
+
+  // 5. Specialties from website
+  if (scrapedContext.specialties?.length > 0 && contextParts.length < 3) {
+    contextParts.push(`Our specialties: ${scrapedContext.specialties.join(', ')}`);
+  }
+
+  return contextParts.length > 0 ? contextParts.join('\n') : null;
 }
 
 // Helper: Combined email finder with multiple fallbacks
