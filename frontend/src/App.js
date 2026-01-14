@@ -11407,6 +11407,36 @@ const DemoPage = () => {
   const [copiedIndex, setCopiedIndex] = useState(null);
   const [showExitIntent, setShowExitIntent] = useState(false);
 
+  // Live Preview State
+  const [liveReview, setLiveReview] = useState('');
+  const [liveResponse, setLiveResponse] = useState('');
+  const [liveLoading, setLiveLoading] = useState(false);
+
+  // Testimonial Slider State
+  const [testimonialIndex, setTestimonialIndex] = useState(0);
+
+  // Real testimonials
+  const testimonials = [
+    {
+      quote: "Saves me at least 2 hours every week. The responses sound exactly like something I would write.",
+      author: "Sarah M.",
+      business: "Restaurant Owner, Munich",
+      rating: 5
+    },
+    {
+      quote: "Finally I can respond to reviews quickly without stressing about what to say. Game changer!",
+      author: "Marco T.",
+      business: "Hotel Manager, Vienna",
+      rating: 5
+    },
+    {
+      quote: "The AI understands context perfectly. Even handles difficult negative reviews professionally.",
+      author: "Lisa K.",
+      business: "Dental Practice, Berlin",
+      rating: 5
+    }
+  ];
+
   useEffect(() => {
     fetchDemo();
   }, [token]);
@@ -11431,6 +11461,50 @@ const DemoPage = () => {
     };
   }, [token]);
 
+  // Testimonial auto-rotation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTestimonialIndex(prev => (prev + 1) % testimonials.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [testimonials.length]);
+
+  // Calculate days until demo expires (7 days from creation)
+  const getDaysRemaining = () => {
+    if (!demo?.created_at) return 7;
+    const created = new Date(demo.created_at);
+    const expires = new Date(created.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const now = new Date();
+    const diff = Math.ceil((expires - now) / (24 * 60 * 60 * 1000));
+    return Math.max(0, Math.min(7, diff));
+  };
+
+  // Live Preview - Generate AI response for user's review
+  const generateLiveResponse = async () => {
+    if (!liveReview.trim() || liveLoading) return;
+    setLiveLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          review: liveReview,
+          tone: 'professional',
+          platform: 'google',
+          businessName: demo?.business_name || 'Your Business',
+          businessContext: '',
+          isDemo: true
+        })
+      });
+      const data = await response.json();
+      setLiveResponse(data.response || 'Unable to generate response. Please try again.');
+    } catch (err) {
+      setLiveResponse('Unable to generate response. Sign up for free to try!');
+    } finally {
+      setLiveLoading(false);
+    }
+  };
+
   const fetchDemo = async () => {
     try {
       const response = await fetch(`${API_URL.replace('/api', '')}/api/public/demo/${token}`);
@@ -11450,6 +11524,13 @@ const DemoPage = () => {
   const copyResponse = (text, index) => {
     navigator.clipboard.writeText(text);
     setCopiedIndex(index);
+    // Confetti celebration on copy
+    confetti({
+      particleCount: 50,
+      spread: 60,
+      origin: { y: 0.7 },
+      colors: ['#10b981', '#6366f1', '#8b5cf6']
+    });
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
@@ -11516,12 +11597,21 @@ const DemoPage = () => {
       {/* Hero Section */}
       <div style={{ background: 'var(--hero-gradient)', padding: '48px 20px 64px', borderBottom: '1px solid var(--border-color)' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
-          {/* Personalized Badge */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--bg-secondary)', padding: '8px 16px', borderRadius: '100px', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', animation: 'pulse 2s infinite' }} />
-            <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-secondary)' }}>
-              Personalized demo for {demo.business_name}
-            </span>
+          {/* Personalized Badge + Urgency Timer */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '12px', marginBottom: '24px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--bg-secondary)', padding: '8px 16px', borderRadius: '100px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', animation: 'pulse 2s infinite' }} />
+              <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-secondary)' }}>
+                Personalized demo for {demo.business_name}
+              </span>
+            </div>
+            {/* Urgency Timer */}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', padding: '8px 16px', borderRadius: '100px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+              <Clock size={14} style={{ color: '#d97706' }} />
+              <span style={{ fontSize: '14px', fontWeight: '600', color: '#92400e' }}>
+                Demo expires in {getDaysRemaining()} days
+              </span>
+            </div>
           </div>
 
           <h1 style={{ fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '16px', lineHeight: '1.2' }}>

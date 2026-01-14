@@ -598,6 +598,15 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
   - automation-health zeigt jetzt alle Email-Quellen
   - **USER TODO: Snov.io API Keys holen:** https://snov.io → Settings → API
     - In Render hinzufügen: `SNOV_CLIENT_ID`, `SNOV_CLIENT_SECRET`
+- [x] **AI Response Prompts refactored** - Anthropic Best Practices + XML Tags
+  - First-Principles Analyse: Defensive "BANNED:" Listen führen zu "constraint anxiety"
+  - Neuer Ansatz: Positive Framing statt Verbote (Anthropic-Empfehlung)
+  - XML Tags: `<output_format>`, `<voice>`, `<style_guide>`, `<avoid_ai_patterns>`
+  - **Neue Datei:** `backend/promptExamples.js` - Industry-spezifische Few-Shot Examples
+    - 10 Branchen: Restaurant, Dental, Hotel, Salon, Medical, Automotive, Fitness, Legal, Retail, Generic
+    - Dynamisches Matching basierend auf `business_type`
+  - **Aktualisierte Prompts:** Main Generator, Public API, Bulk Generation
+  - Ergebnis: Responses klingen natürlicher, weniger "AI slop"
 
 ### ERLEDIGT (13.01.2026):
 - [x] **Cron Jobs gefixt** - Alle 3 Cron Jobs liefen auf "Ausgabe zu groß" Fehler
