@@ -18635,6 +18635,53 @@ app.get('/api/admin/cleanup-test-data', async (req, res) => {
   }
 });
 
+// GET /api/admin/reset-test-opens - Reset opened_at for test emails
+app.get('/api/admin/reset-test-opens', async (req, res) => {
+  const { key, dryrun } = req.query;
+  const adminSecret = process.env.ADMIN_SECRET;
+
+  if (!adminSecret || !safeCompare(key, adminSecret)) {
+    return res.status(401).json({ error: 'Invalid admin key' });
+  }
+
+  const isDryRun = dryrun === 'true';
+
+  try {
+    // Count emails with opened_at for test patterns
+    const testPatterns = [
+      "email LIKE '%berend%'",
+      "email LIKE '%@test.%'",
+      "email LIKE '%@tryreviewresponder.com%'",
+      "email LIKE 'reviewer@%'",
+    ];
+    const whereClause = testPatterns.join(' OR ');
+
+    const countBefore = await pool.query(`SELECT COUNT(*) FROM outreach_emails WHERE opened_at IS NOT NULL AND (${whereClause})`);
+    const totalOpened = await pool.query(`SELECT COUNT(*) FROM outreach_emails WHERE opened_at IS NOT NULL`);
+
+    if (!isDryRun) {
+      await pool.query(`UPDATE outreach_emails SET opened_at = NULL WHERE opened_at IS NOT NULL AND (${whereClause})`);
+    }
+
+    const totalOpenedAfter = await pool.query(`SELECT COUNT(*) FROM outreach_emails WHERE opened_at IS NOT NULL`);
+    const totalEmails = await pool.query(`SELECT COUNT(*) FROM outreach_emails`);
+
+    res.json({
+      dryrun: isDryRun,
+      test_opens_reset: parseInt(countBefore.rows[0].count),
+      opens_before: parseInt(totalOpened.rows[0].count),
+      opens_after: parseInt(totalOpenedAfter.rows[0].count),
+      total_emails: parseInt(totalEmails.rows[0].count),
+      new_open_rate: totalEmails.rows[0].count > 0
+        ? ((totalOpenedAfter.rows[0].count / totalEmails.rows[0].count) * 100).toFixed(1) + '%'
+        : '0%',
+    });
+  } catch (error) {
+    console.error('Reset opens error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Start server
 initDatabase()
   .then(() => {
