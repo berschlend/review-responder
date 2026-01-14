@@ -2210,8 +2210,8 @@ const LandingPage = () => {
           </h1>
 
           <p className="hero-subtitle" style={{ maxWidth: '540px', margin: '0 auto 32px', fontSize: '1.05rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
-            AI-powered responses for Google, Yelp, and TripAdvisor.
-            Professional replies in one click. 20 free responses/month.
+            AI-powered responses for Google, Yelp, TripAdvisor & 10+ platforms.
+            Professional replies in one click.
           </p>
 
           <div
@@ -2326,10 +2326,13 @@ const LandingPage = () => {
         >
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '48px', alignItems: 'start' }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
                 <Chrome size={20} color="var(--primary)" strokeWidth={2.5} />
                 <span style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.05em', color: 'var(--primary)', textTransform: 'uppercase', background: 'rgba(79, 70, 229, 0.08)', padding: '2px 8px', borderRadius: '4px' }}>
                   Official Extension
+                </span>
+                <span style={{ fontSize: '10px', fontWeight: '600', color: '#059669', background: 'rgba(5, 150, 105, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>
+                  Chrome Web Store - Coming Soon
                 </span>
               </div>
               <h2 style={{ fontSize: '22px', fontWeight: '600', marginBottom: '12px', letterSpacing: '-0.01em' }}>
@@ -2864,6 +2867,7 @@ const PricingCards = ({ showFree = true }) => {
         'All 4 tone options',
         '50+ languages',
         'Response history',
+        'Chrome Extension (all platforms)',
       ],
       buttonText: 'Get Started',
       plan: 'free',
@@ -2880,6 +2884,7 @@ const PricingCards = ({ showFree = true }) => {
         'Response templates',
         'CSV/PDF export',
         'Email support',
+        'Chrome Extension (all platforms)',
       ],
       buttonText: 'Subscribe',
       plan: 'starter',
@@ -2897,6 +2902,7 @@ const PricingCards = ({ showFree = true }) => {
         'Analytics dashboard',
         'Team members (3)',
         'Priority support',
+        'Chrome Extension (all platforms)',
       ],
       buttonText: 'Subscribe',
       plan: 'professional',
@@ -2914,6 +2920,8 @@ const PricingCards = ({ showFree = true }) => {
         'Team members (10)',
         'API access',
         'Dedicated support',
+        'Chrome Extension (all platforms)',
+        'Priority feature requests',
       ],
       buttonText: 'Subscribe',
       plan: 'unlimited',
@@ -2939,18 +2947,21 @@ const PricingCards = ({ showFree = true }) => {
           style={{
             background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
             color: 'white',
-            padding: '16px 24px',
+            padding: '20px 28px',
             borderRadius: '12px',
-            marginBottom: '24px',
+            marginBottom: '28px',
             textAlign: 'center',
-            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+            boxShadow: '0 4px 16px rgba(16, 185, 129, 0.25)',
           }}
         >
-          <div style={{ fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>
-            ✨ Early Access - {currentDiscount.percent}% OFF!
+          <div style={{ fontSize: '11px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase', opacity: 0.9, marginBottom: '6px' }}>
+            Early Access
+          </div>
+          <div style={{ fontSize: '22px', fontWeight: '700', marginBottom: '6px' }}>
+            {currentDiscount.percent}% off for your first year
           </div>
           <div style={{ fontSize: '14px', opacity: 0.9 }}>
-            Code <strong>{activeDiscount}</strong> will be applied at checkout
+            Code <strong>{activeDiscount}</strong> applied automatically
           </div>
         </div>
       )}
@@ -3346,7 +3357,7 @@ const RegisterPage = () => {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Sparkles size={12} style={{ color: 'var(--gray-400)' }} />
-            <span style={{ fontSize: '12px', color: 'var(--gray-400)' }}>20 free responses</span>
+            <span style={{ fontSize: '12px', color: 'var(--gray-400)' }}>20 free responses/month</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Shield size={12} style={{ color: 'var(--gray-400)' }} />
@@ -5514,7 +5525,7 @@ const DashboardPage = () => {
             />
           </div>
           <p className="mt-1" style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
-            Fast & reliable
+            Slightly faster
           </p>
         </div>
 
@@ -11271,7 +11282,7 @@ const DemoPage = () => {
               Start Responding Like a Pro
             </h2>
             <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.9)', marginBottom: '28px', maxWidth: '500px', margin: '0 auto 28px' }}>
-              Join thousands of businesses saving hours on review management. No credit card required.
+              20 free responses every month. No credit card required.
             </p>
             <a
               href={demo.cta_url}
@@ -11368,7 +11379,7 @@ const SupportPage = () => {
     },
     {
       q: 'How fast are the responses generated?',
-      a: 'Most responses are generated in under 10 seconds. Our AI analyzes your review and generates a contextual, personalized response instantly.',
+      a: 'Our AI analyzes your review and generates a contextual, personalized response in seconds.',
     },
     {
       q: 'Do you store my review data?',
@@ -11555,6 +11566,41 @@ const SupportPage = () => {
 );
 };
 
+// Reusable Chrome Extension How-To Component for Landing Pages
+const ChromeExtensionHowTo = ({ platform = 'Google Maps', color = '#4285f4' }) => (
+  <div
+    style={{
+      marginTop: '60px',
+      background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+      borderRadius: '16px',
+      padding: '40px',
+      border: '1px solid #bae6fd',
+    }}
+  >
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+      <Chrome size={28} style={{ color }} />
+      <h2 style={{ fontSize: '24px', fontWeight: '700', margin: 0 }}>
+        One-Click with Chrome Extension
+      </h2>
+    </div>
+    <ol style={{ lineHeight: '2.2', color: 'var(--gray-700)', marginBottom: '24px' }}>
+      <li><strong>Install the Chrome Extension</strong> (free)</li>
+      <li><strong>Open {platform}</strong> and find any review</li>
+      <li><strong>Click the ReviewResponder button</strong> that appears</li>
+      <li><strong>Done!</strong> Your AI response is ready to post</li>
+    </ol>
+    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+      <a href="/extension" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+        <Chrome size={18} />
+        Get Chrome Extension
+      </a>
+      <span style={{ color: 'var(--gray-500)', fontSize: '14px' }}>
+        Works on: Google Maps, Yelp, TripAdvisor, Facebook, Booking.com, Trustpilot
+      </span>
+    </div>
+  </div>
+);
+
 // SEO Landing Page Component - Google Review Response Generator
 const GoogleReviewPage = () => {
   const location = useLocation();
@@ -11728,42 +11774,14 @@ const GoogleReviewPage = () => {
           </div>
         </div>
 
-        <div
-          style={{
-            marginTop: '60px',
-            background: 'var(--gray-50)',
-            borderRadius: '16px',
-            padding: '40px',
-          }}
-        >
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
-            How to Respond to Google Reviews with AI
-          </h2>
-          <ol style={{ lineHeight: '2', color: 'var(--gray-700)' }}>
-            <li>
-              <strong>Copy the review</strong> from Google Maps
-            </li>
-            <li>
-              <strong>Paste it</strong> into ReviewResponder
-            </li>
-            <li>
-              <strong>Select your tone</strong> (Professional, Friendly, Formal, or Apologetic)
-            </li>
-            <li>
-              <strong>Click Generate</strong> and get your personalized response instantly
-            </li>
-            <li>
-              <strong>Copy & paste</strong> the response back to Google
-            </li>
-          </ol>
-        </div>
+        <ChromeExtensionHowTo platform="Google Maps" color="#4285f4" />
 
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Start Responding to Google Reviews Today
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            Join thousands of businesses using AI to manage their Google reputation.
+            20 free responses/month included. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -11948,8 +11966,7 @@ const YelpReviewPage = () => {
               97% Read Responses
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Studies show 97% of consumers who read reviews also read business responses. Make
-              yours count.
+              97% of consumers who read reviews also read business responses — <a href="https://www.brightlocal.com/research/local-consumer-review-survey/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gray-500)', fontSize: '14px' }}>BrightLocal</a>. Make yours count.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -11968,8 +11985,7 @@ const YelpReviewPage = () => {
               Respond in 30 Seconds
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Stop agonizing over the perfect response. Our AI crafts professional Yelp replies
-              instantly.
+              Stop agonizing over the perfect response. Our AI crafts professional Yelp replies in seconds.
             </p>
           </div>
         </div>
@@ -12249,8 +12265,7 @@ const RestaurantReviewPage = () => {
               Reviews Make or Break You
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              94% of diners choose restaurants based on online reviews. Your responses show you
-              care.
+              94% of diners choose restaurants based on reviews — <a href="https://www.brightlocal.com/research/local-consumer-review-survey/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gray-500)', fontSize: '14px' }}>BrightLocal</a>. Your responses show you care.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -12869,8 +12884,7 @@ const LocalBusinessReviewPage = () => {
               30 Seconds Per Review
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Stop spending 10+ minutes crafting the perfect response. Our AI generates professional
-              replies instantly.
+              Stop spending minutes crafting the perfect response. Our AI generates professional replies in seconds.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -13124,11 +13138,10 @@ const NegativeReviewPage = () => {
           <div className="card" style={{ padding: '24px' }}>
             <TrendingUp size={32} style={{ color: '#D32F2F', marginBottom: '16px' }} />
             <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
-              70% Change Their Mind
+              Turn Critics Into Fans
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Customers who see thoughtful responses to complaints are 70% more likely to give your
-              business another chance.
+              A thoughtful response to a negative review can change minds. Many customers give businesses another chance after seeing a professional reply.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -13137,8 +13150,7 @@ const NegativeReviewPage = () => {
               Others Are Watching
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              94% of consumers read review responses. How you handle criticism shapes how new
-              customers see your business.
+              94% of consumers read review responses — <a href="https://www.brightlocal.com/research/local-consumer-review-survey/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gray-500)', fontSize: '14px' }}>BrightLocal</a>. How you handle criticism shapes how new customers see you.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -13404,42 +13416,14 @@ const TripAdvisorReviewPage = () => {
           </div>
         </div>
 
-        <div
-          style={{
-            marginTop: '60px',
-            background: 'var(--gray-50)',
-            borderRadius: '16px',
-            padding: '40px',
-          }}
-        >
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
-            How to Respond to TripAdvisor Reviews
-          </h2>
-          <ol style={{ lineHeight: '2', color: 'var(--gray-700)' }}>
-            <li>
-              <strong>Copy the review</strong> from your TripAdvisor management center
-            </li>
-            <li>
-              <strong>Paste it</strong> into ReviewResponder
-            </li>
-            <li>
-              <strong>Select your tone</strong> (Professional, Friendly, Formal, or Apologetic)
-            </li>
-            <li>
-              <strong>Click Generate</strong> and get your personalized response
-            </li>
-            <li>
-              <strong>Post it</strong> on TripAdvisor as your official management response
-            </li>
-          </ol>
-        </div>
+        <ChromeExtensionHowTo platform="TripAdvisor" color="#00AF87" />
 
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Start Winning on TripAdvisor Today
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            Join hospitality businesses using AI to manage their TripAdvisor reputation.
+            20 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -13640,42 +13624,14 @@ const BookingReviewPage = () => {
           </div>
         </div>
 
-        <div
-          style={{
-            marginTop: '60px',
-            background: 'var(--gray-50)',
-            borderRadius: '16px',
-            padding: '40px',
-          }}
-        >
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
-            How to Respond to Booking.com Reviews
-          </h2>
-          <ol style={{ lineHeight: '2', color: 'var(--gray-700)' }}>
-            <li>
-              <strong>Copy the guest review</strong> from your Booking.com extranet
-            </li>
-            <li>
-              <strong>Paste it</strong> into ReviewResponder
-            </li>
-            <li>
-              <strong>Select your tone</strong> (Professional for complaints, Friendly for praise)
-            </li>
-            <li>
-              <strong>Click Generate</strong> and customize if needed
-            </li>
-            <li>
-              <strong>Post</strong> the response in your Booking.com extranet
-            </li>
-          </ol>
-        </div>
+        <ChromeExtensionHowTo platform="Booking.com" color="#003580" />
 
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Improve Your Booking.com Performance
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            Join properties worldwide using AI to manage their Booking.com reviews.
+            20 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -13875,42 +13831,14 @@ const FacebookReviewPage = () => {
           </div>
         </div>
 
-        <div
-          style={{
-            marginTop: '60px',
-            background: 'var(--gray-50)',
-            borderRadius: '16px',
-            padding: '40px',
-          }}
-        >
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
-            How to Respond to Facebook Reviews
-          </h2>
-          <ol style={{ lineHeight: '2', color: 'var(--gray-700)' }}>
-            <li>
-              <strong>Copy the review</strong> from your Facebook business page
-            </li>
-            <li>
-              <strong>Paste it</strong> into ReviewResponder
-            </li>
-            <li>
-              <strong>Select your tone</strong> (Friendly works great for Facebook's casual vibe)
-            </li>
-            <li>
-              <strong>Click Generate</strong> and personalize if needed
-            </li>
-            <li>
-              <strong>Reply</strong> directly on your Facebook page
-            </li>
-          </ol>
-        </div>
+        <ChromeExtensionHowTo platform="Facebook" color="#1877f2" />
 
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Grow Your Facebook Business Presence
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            Join businesses using AI to manage their Facebook reviews efficiently.
+            20 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -15174,25 +15102,14 @@ const TrustpilotReviewPage = () => {
           </div>
         </div>
 
-        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
-            How to Respond to Trustpilot Reviews
-          </h2>
-          <ol style={{ lineHeight: '2', color: 'var(--gray-700)' }}>
-            <li><strong>Copy the review</strong> from your Trustpilot business dashboard</li>
-            <li><strong>Paste it</strong> into ReviewResponder</li>
-            <li><strong>Select your tone</strong> (Professional, Friendly, Formal, or Apologetic)</li>
-            <li><strong>Click Generate</strong> and get your personalized response</li>
-            <li><strong>Post it</strong> on Trustpilot to engage your customers</li>
-          </ol>
-        </div>
+        <ChromeExtensionHowTo platform="Trustpilot" color="#00b67a" />
 
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Boost Your Trustpilot Score Today
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            Join businesses using AI to manage their Trustpilot reputation.
+            20 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -15573,25 +15490,14 @@ const RealEstateReviewPage = () => {
           </div>
         </div>
 
-        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
-            How to Respond to Real Estate Reviews
-          </h2>
-          <ol style={{ lineHeight: '2', color: 'var(--gray-700)' }}>
-            <li><strong>Copy the review</strong> from Zillow, Realtor.com, or Google</li>
-            <li><strong>Paste it</strong> into ReviewResponder</li>
-            <li><strong>Select your tone</strong> (Professional, Friendly, or Grateful)</li>
-            <li><strong>Click Generate</strong> and personalize if needed</li>
-            <li><strong>Post your response</strong> and build your reputation</li>
-          </ol>
-        </div>
+        <ChromeExtensionHowTo platform="Zillow, Realtor.com, or Google" color="#2d5a87" />
 
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Close More Deals with Better Reviews
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            Join real estate agents using AI to build their online reputation.
+            20 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -17653,7 +17559,7 @@ const AppStoreReviewPage = () => {
         </div>
         <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
           <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to improve your app reviews?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join thousands of app developers using AI to manage their reviews.</p>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>20 free responses/month. No credit card required.</p>
           <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
         </div>
       </section>
@@ -17717,7 +17623,7 @@ const IndeedReviewPage = () => {
         </div>
         <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
           <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to improve your employer brand?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join thousands of HR teams using AI to manage Indeed reviews.</p>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>20 free responses/month. No credit card required.</p>
           <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
         </div>
       </section>
@@ -17771,7 +17677,7 @@ const ZillowReviewPage = () => {
           <div className="card">
             <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 106, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#006AFF' }} /></div>
             <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>More Listings & Sales</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>94% of home buyers read agent reviews before choosing a realtor. Stand out with thoughtful, professional responses.</p>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Most home buyers read agent reviews before choosing a realtor — <a href="https://www.brightlocal.com/research/local-consumer-review-survey/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gray-500)', fontSize: '14px' }}>BrightLocal</a>. Stand out with professional responses.</p>
           </div>
           <div className="card">
             <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 106, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><MessageSquare size={24} style={{ color: '#006AFF' }} /></div>
@@ -17781,7 +17687,7 @@ const ZillowReviewPage = () => {
         </div>
         <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
           <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to grow your real estate business?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join thousands of realtors using AI to manage their Zillow reviews.</p>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>20 free responses/month. No credit card required.</p>
           <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
         </div>
       </section>
@@ -17909,7 +17815,391 @@ const ThumbtackReviewPage = () => {
         </div>
         <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
           <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to get more Thumbtack leads?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join thousands of service pros using AI to manage their reviews.</p>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>20 free responses/month. No credit card required.</p>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - LinkedIn Recommendations
+const LinkedInReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/linkedin-recommendations' };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'LinkedIn Recommendation Response Generator | Professional Thank You Messages | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional thank you responses to LinkedIn recommendations with AI. Reply to colleagues and build your professional reputation.');
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - LinkedIn Recommendation Response Generator', description: 'AI tool to respond professionally to LinkedIn recommendations', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #0A66C2 0%, #004182 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <Linkedin size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>B2B Professionals</span>
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>LinkedIn Recommendation Response Generator</h1>
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Never leave a LinkedIn recommendation unanswered. Generate thoughtful thank you responses that strengthen your professional network.</p>
+          <LandingEmailCapture buttonColor="#0A66C2" />
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={16} /> Build Your Network</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Briefcase size={16} /> Professional Tone</span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '80px 0' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why LinkedIn Recommendations Matter</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(10, 102, 194, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Linkedin size={24} style={{ color: '#0A66C2' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>900M+ Professionals</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>LinkedIn is the world's largest professional network. Recommendations boost your credibility and visibility.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(10, 102, 194, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#0A66C2' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Career Growth</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Responding to recommendations shows gratitude and strengthens relationships that can lead to new opportunities.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(10, 102, 194, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><MessageSquare size={24} style={{ color: '#0A66C2' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Reciprocity</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>A thoughtful response often leads to reciprocal recommendations, building your profile further.</p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to build your LinkedIn reputation?</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Generate professional thank you responses in seconds.</p>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - Angi (Angie's List) Contractor Reviews
+const AngiReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/angie-list-contractor-reviews' };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'Angi Review Response Generator | Contractor Review Replies | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Angi (Angie\'s List) review responses with AI. Contractors can reply to customer reviews and get more leads.');
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Angi Review Response Generator', description: 'AI tool to respond professionally to Angi contractor reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #00A651 0%, #007336 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <Hammer size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Home Service Contractors</span>
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Angi Review Response Generator</h1>
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Win more jobs on Angi with professional AI-generated review responses. Build your contractor reputation and get more leads.</p>
+          <LandingEmailCapture buttonColor="#00A651" />
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Award size={16} /> Top Pro Status</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><TrendingUp size={16} /> More Leads</span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '80px 0' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Angi Contractors Choose ReviewResponder</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 166, 81, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Hammer size={24} style={{ color: '#00A651' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Built for Contractors</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Plumbers, electricians, roofers, landscapers - AI generates responses that match your trade and expertise.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 166, 81, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Award size={24} style={{ color: '#00A651' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Boost Your Rating</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Responding to reviews shows professionalism and can help you achieve Top Pro status on Angi.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 166, 81, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Clock size={24} style={{ color: '#00A651' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Save Time</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Stop spending hours writing review responses. AI generates professional replies between jobs in seconds.</p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to get more Angi leads?</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join contractors using AI to manage their Angi reviews.</p>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - Chiropractor Reviews
+const ChiropractorReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/chiropractor-reviews' };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'Chiropractor Review Response Generator | Chiropractic Practice Reviews | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional chiropractor review responses with AI. Reply to patient reviews and grow your chiropractic practice.');
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Chiropractor Review Response Generator', description: 'AI tool to respond professionally to chiropractic practice reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #5C6BC0 0%, #3949AB 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <Activity size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Chiropractic Practices</span>
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Chiropractor Review Response Generator</h1>
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build patient trust with professional AI-generated review responses. Grow your chiropractic practice with better online reputation.</p>
+          <LandingEmailCapture buttonColor="#5C6BC0" />
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Heart size={16} /> HIPAA Aware</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={16} /> More Patients</span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '80px 0' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Chiropractors Choose ReviewResponder</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(92, 107, 192, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Activity size={24} style={{ color: '#5C6BC0' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Healthcare Focused</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI understands chiropractic care terminology and patient sensitivity. Responses are professional and HIPAA-aware.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(92, 107, 192, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#5C6BC0' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Attract New Patients</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>93% of patients read online reviews before choosing a chiropractor. Professional responses build trust.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(92, 107, 192, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Shield size={24} style={{ color: '#5C6BC0' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Handle Negative Reviews</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Turn negative feedback into positive outcomes with thoughtful, professional responses.</p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to grow your practice?</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join chiropractors using AI to manage patient reviews.</p>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - Barber/Barbershop Reviews
+const BarberReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/barber-barbershop-reviews' };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'Barbershop Review Response Generator | Barber Shop Reviews | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional barbershop review responses with AI. Reply to customer reviews and get more clients for your barber shop.');
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Barbershop Review Response Generator', description: 'AI tool to respond professionally to barbershop reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #D32F2F 0%, #B71C1C 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <Scissors size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Barbershops & Barbers</span>
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Barbershop Review Response Generator</h1>
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Keep your chair full with professional AI-generated review responses. Build loyalty and attract new clients to your barbershop.</p>
+          <LandingEmailCapture buttonColor="#D32F2F" />
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Scissors size={16} /> Built for Barbers</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><TrendingUp size={16} /> More Clients</span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '80px 0' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Barbers Choose ReviewResponder</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(211, 47, 47, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Scissors size={24} style={{ color: '#D32F2F' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Built for Barbershops</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI understands barbershop culture and terminology. Responses sound authentic, not robotic.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(211, 47, 47, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Users size={24} style={{ color: '#D32F2F' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Build Client Loyalty</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Thank regulars for their reviews and turn first-timers into repeat clients with thoughtful responses.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(211, 47, 47, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Clock size={24} style={{ color: '#D32F2F' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Save Time</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Respond between cuts instead of after closing. AI generates professional replies in seconds.</p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to fill your chair?</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join barbers using AI to build their online reputation.</p>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - Dermatologist Reviews
+const DermatologistReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/dermatologist-reviews' };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'Dermatologist Review Response Generator | Dermatology Practice Reviews | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional dermatologist review responses with AI. Reply to patient reviews and grow your dermatology practice.');
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Dermatologist Review Response Generator', description: 'AI tool to respond professionally to dermatology practice reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #26A69A 0%, #00897B 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <Sparkles size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Dermatology Practices</span>
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Dermatologist Review Response Generator</h1>
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build patient confidence with professional AI-generated review responses. Grow your dermatology practice with better online reputation.</p>
+          <LandingEmailCapture buttonColor="#26A69A" />
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Heart size={16} /> HIPAA Aware</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={16} /> More Patients</span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '80px 0' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Dermatologists Choose ReviewResponder</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(38, 166, 154, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Sparkles size={24} style={{ color: '#26A69A' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Medical & Cosmetic</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI handles both medical dermatology and cosmetic procedure reviews with appropriate professional tone.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(38, 166, 154, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Shield size={24} style={{ color: '#26A69A' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>HIPAA Compliant</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Responses never reveal patient information. Professional, private, and compliant with healthcare regulations.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(38, 166, 154, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#26A69A' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Build Trust</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Patients research extensively before choosing a dermatologist. Professional responses establish credibility.</p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to grow your practice?</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join dermatologists using AI to manage patient reviews.</p>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
+// SEO Landing Page - Massage Therapist Reviews
+const MassageTherapistReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/massage-therapist-reviews' };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'Massage Therapist Review Response Generator | Spa & Massage Reviews | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional massage therapist review responses with AI. Reply to client reviews and grow your massage therapy practice.');
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Massage Therapist Review Response Generator', description: 'AI tool to respond professionally to massage therapy reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #8E24AA 0%, #6A1B9A 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <Heart size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Massage & Wellness</span>
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Massage Therapist Review Response Generator</h1>
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Keep your schedule full with professional AI-generated review responses. Build client relationships and attract new bookings.</p>
+          <LandingEmailCapture buttonColor="#8E24AA" />
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free Responses</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Heart size={16} /> Warm & Personal</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={16} /> More Bookings</span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '80px 0' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Massage Therapists Choose ReviewResponder</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(142, 36, 170, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Heart size={24} style={{ color: '#8E24AA' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Warm & Personal</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI generates responses that feel genuine and caring - matching the personal nature of massage therapy.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(142, 36, 170, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Users size={24} style={{ color: '#8E24AA' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Client Retention</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Personal thank you responses turn one-time clients into regulars. Build lasting relationships.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(142, 36, 170, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#8E24AA' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Grow Your Practice</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>New clients check reviews before booking. Professional responses build trust and attract bookings.</p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to fill your schedule?</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join massage therapists using AI to build their client base.</p>
           <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
         </div>
       </section>
@@ -17932,6 +18222,11 @@ const ExtensionPage = () => {
           Install Chrome Extension
         </h1>
         <p style={{ color: 'var(--gray-600)' }}>3 simple steps - takes less than 1 minute</p>
+        <div style={{ background: 'rgba(5, 150, 105, 0.1)', padding: '12px 20px', borderRadius: '8px', marginTop: '16px', display: 'inline-block' }}>
+          <p style={{ margin: 0, fontSize: '14px', color: '#059669', fontWeight: '500' }}>
+            Coming soon to Chrome Web Store! For now, install manually below.
+          </p>
+        </div>
       </div>
 
       <div className="card" style={{ marginBottom: '24px' }}>
@@ -18162,6 +18457,7 @@ const PricingPage = () => {
   // Feature comparison data - Updated with Hybrid AI limits (Smart + Standard)
   const features = [
     { name: 'Monthly Responses', free: '20', starter: '300', pro: '800', unlimited: 'Unlimited' },
+    { name: 'Chrome Extension', free: true, starter: true, pro: true, unlimited: true },
     { name: 'Smart AI', free: '3', starter: '100', pro: '300', unlimited: 'Unlimited' },
     { name: 'Standard AI', free: '17', starter: '200', pro: '500', unlimited: 'Unlimited' },
     { name: 'AI Tone Options', free: true, starter: true, pro: true, unlimited: true },
@@ -18173,8 +18469,9 @@ const PricingPage = () => {
     { name: 'Analytics Dashboard', free: false, starter: false, pro: true, unlimited: true },
     { name: 'Team Members', free: '-', starter: '-', pro: '3', unlimited: '10' },
     { name: 'API Access', free: false, starter: false, pro: false, unlimited: true },
-    { name: 'Email Support', free: false, starter: true, pro: true, unlimited: true },
+    { name: 'Email Support', free: true, starter: true, pro: true, unlimited: true },
     { name: 'Priority Support', free: false, starter: false, pro: true, unlimited: true },
+    { name: 'Priority Feature Requests', free: false, starter: false, pro: false, unlimited: true },
   ];
 
   return (
@@ -20234,6 +20531,8 @@ const AdminPage = () => {
   const [salesLoading, setSalesLoading] = useState(false);
   const [emailData, setEmailData] = useState(null);
   const [emailLoading, setEmailLoading] = useState(false);
+  const [scraperData, setScraperData] = useState(null);
+  const [scraperLoading, setScraperLoading] = useState(false);
 
   // Use the same API_URL as the rest of the app (already includes /api)
   // Remove /api suffix if present to build admin URLs correctly
@@ -20372,6 +20671,35 @@ const AdminPage = () => {
     }
   };
 
+  const loadScraperData = async key => {
+    const keyToUse = key || adminKey;
+    if (!keyToUse) return;
+    setScraperLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/admin/scraper-status?key=${keyToUse}`);
+      setScraperData(res.data);
+    } catch (err) {
+      console.error('Scraper load error:', err);
+      toast.error('Failed to load scraper data');
+    } finally {
+      setScraperLoading(false);
+    }
+  };
+
+  const testScraperAlert = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/api/cron/scraper-alerts?secret=${adminKey}&force=true`);
+      toast.success(`Alert sent: ${res.data.critical || 0} critical, ${res.data.low || 0} low`);
+    } catch (err) {
+      toast.error('Failed to send test alert');
+    }
+  };
+
+  const copyCommand = cmd => {
+    navigator.clipboard.writeText(cmd);
+    toast.success('Command copied!');
+  };
+
   const updateStatus = async (id, status, note = '') => {
     setActionLoading(true);
     try {
@@ -20440,6 +20768,9 @@ const AdminPage = () => {
       }
       if (activeAdminTab === 'email' && !emailData) {
         loadEmailData();
+      }
+      if (activeAdminTab === 'scraper' && !scraperData) {
+        loadScraperData();
       }
     }
   }, [activeAdminTab, isAuthenticated, adminKey]);
@@ -20548,6 +20879,12 @@ const AdminPage = () => {
           onClick={() => setActiveAdminTab('email')}
         >
           Email
+        </button>
+        <button
+          className={`btn ${activeAdminTab === 'scraper' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('scraper')}
+        >
+          Scraper
         </button>
       </div>
 
@@ -21814,6 +22151,280 @@ const AdminPage = () => {
                 Could not load email data
               </p>
               <button className="btn btn-primary" onClick={() => loadEmailData()}>
+                Retry
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Scraper Status Tab */}
+      {activeAdminTab === 'scraper' && (
+        <div>
+          {scraperLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading scraper data...</div>
+          ) : scraperData ? (
+            <>
+              {/* Summary */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h2 style={{ fontSize: '20px', fontWeight: '600', margin: 0 }}>Scraper Status</h2>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => {
+                        setScraperData(null);
+                        loadScraperData();
+                      }}
+                    >
+                      Refresh
+                    </button>
+                    <button className="btn btn-primary" onClick={testScraperAlert}>
+                      Test Alert Email
+                    </button>
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '16px' }}>
+                  <div style={{ padding: '16px', background: 'var(--gray-50)', borderRadius: '8px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--primary-color)' }}>
+                      {scraperData.summary?.total_leads || 0}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Total Leads</div>
+                  </div>
+                  <div style={{ padding: '16px', background: '#FEE2E2', borderRadius: '8px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#DC2626' }}>
+                      {scraperData.summary?.critical_count || 0}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#DC2626' }}>Critical</div>
+                  </div>
+                  <div style={{ padding: '16px', background: '#FEF3C7', borderRadius: '8px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#D97706' }}>
+                      {scraperData.summary?.low_count || 0}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#D97706' }}>Low</div>
+                  </div>
+                  <div style={{ padding: '16px', background: '#D1FAE5', borderRadius: '8px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#059669' }}>
+                      {scraperData.summary?.automatic_sources || 0}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#059669' }}>Auto Running</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recommendations */}
+              {scraperData.recommendations?.length > 0 && (
+                <div className="card" style={{ marginBottom: '24px', background: '#FEF3C7', border: '1px solid #F59E0B' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', color: '#D97706' }}>
+                    Recommended Actions
+                  </h3>
+                  {scraperData.recommendations.map((rec, idx) => (
+                    <div key={idx} style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '12px',
+                      background: 'white',
+                      borderRadius: '8px',
+                      marginBottom: '8px'
+                    }}>
+                      <div>
+                        <span style={{
+                          fontSize: '10px',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          background: rec.priority === 'high' ? '#DC2626' : '#D97706',
+                          color: 'white',
+                          marginRight: '8px'
+                        }}>
+                          {rec.priority.toUpperCase()}
+                        </span>
+                        <strong>{rec.source}</strong>: {rec.leads} leads (need {rec.threshold})
+                      </div>
+                      <button
+                        className="btn btn-secondary"
+                        style={{ fontSize: '12px', padding: '4px 12px' }}
+                        onClick={() => copyCommand(rec.command)}
+                      >
+                        Copy Command
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Tier 1: Automatic */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
+                  TIER 1 - Automatic Systems
+                </h3>
+                <div style={{ display: 'grid', gap: '12px' }}>
+                  {scraperData.sources?.filter(s => s.tier === 1).map((source, idx) => (
+                    <div key={idx} style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '12px 16px',
+                      background: '#D1FAE5',
+                      borderRadius: '8px',
+                      borderLeft: '4px solid #059669'
+                    }}>
+                      <div>
+                        <div style={{ fontWeight: '600' }}>{source.name}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{source.priority_reason}</div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        {source.leads_total !== undefined && (
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontWeight: '600' }}>{source.leads_total}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>leads</div>
+                          </div>
+                        )}
+                        {source.emails_today !== undefined && (
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontWeight: '600' }}>{source.emails_today}/50</div>
+                            <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>today</div>
+                          </div>
+                        )}
+                        <div style={{
+                          fontSize: '20px',
+                          color: '#059669'
+                        }}>
+                          ✓
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tier 2: Manual + High ROI */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
+                  TIER 2 - Manual (High ROI)
+                </h3>
+                <div style={{ display: 'grid', gap: '12px' }}>
+                  {scraperData.sources?.filter(s => s.tier === 2).map((source, idx) => (
+                    <div key={idx} style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '12px 16px',
+                      background: source.status === 'critical' ? '#FEE2E2' : source.status === 'low' ? '#FEF3C7' : '#F3F4F6',
+                      borderRadius: '8px',
+                      borderLeft: `4px solid ${source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#9CA3AF'}`
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: '600' }}>{source.name}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{source.priority_reason}</div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontWeight: '600' }}>{source.leads_total || 0}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
+                            / {source.threshold_low} threshold
+                          </div>
+                        </div>
+                        {source.by_competitor && (
+                          <div style={{ textAlign: 'right', fontSize: '11px' }}>
+                            <div>Birdeye: {source.by_competitor.birdeye}</div>
+                            <div>Podium: {source.by_competitor.podium}</div>
+                          </div>
+                        )}
+                        {source.connections_accepted !== undefined && (
+                          <div style={{ textAlign: 'right', fontSize: '11px' }}>
+                            <div>{source.connections_accepted} accepted</div>
+                            <div>{source.demos_viewed || 0} demos viewed</div>
+                          </div>
+                        )}
+                        <div style={{
+                          fontSize: '16px',
+                          color: source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#059669'
+                        }}>
+                          {source.status === 'critical' ? '!' : source.status === 'low' ? '⚠' : '✓'}
+                        </div>
+                        {source.command && (
+                          <button
+                            className="btn btn-secondary"
+                            style={{ fontSize: '11px', padding: '4px 8px' }}
+                            onClick={() => copyCommand(source.command)}
+                          >
+                            Copy
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tier 3: Experimental */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
+                  TIER 3 - Experimental
+                </h3>
+                <div style={{ display: 'grid', gap: '12px' }}>
+                  {scraperData.sources?.filter(s => s.tier === 3).map((source, idx) => (
+                    <div key={idx} style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '12px 16px',
+                      background: source.status === 'critical' ? '#FEE2E2' : source.status === 'low' ? '#FEF3C7' : '#F3F4F6',
+                      borderRadius: '8px',
+                      borderLeft: `4px solid ${source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#9CA3AF'}`
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: '600' }}>{source.name}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{source.priority_reason}</div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontWeight: '600' }}>{source.leads_total || 0}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
+                            / {source.threshold_low} threshold
+                          </div>
+                        </div>
+                        <div style={{
+                          fontSize: '16px',
+                          color: source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#059669'
+                        }}>
+                          {source.status === 'critical' ? '!' : source.status === 'low' ? '⚠' : '✓'}
+                        </div>
+                        {source.command && (
+                          <button
+                            className="btn btn-secondary"
+                            style={{ fontSize: '11px', padding: '4px 8px' }}
+                            onClick={() => copyCommand(source.command)}
+                          >
+                            Copy
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Notifications Info */}
+              <div className="card" style={{ background: '#EFF6FF', border: '1px solid #3B82F6' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '20px' }}>📧</span>
+                  <div>
+                    <div style={{ fontWeight: '600' }}>Email Alerts Active</div>
+                    <div style={{ fontSize: '12px', color: 'var(--gray-600)' }}>
+                      Daily alerts sent to {scraperData.notifications?.email} when sources are critical
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+                Could not load scraper data
+              </p>
+              <button className="btn btn-primary" onClick={() => loadScraperData()}>
                 Retry
               </button>
             </div>

@@ -245,17 +245,18 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 ### Cron Jobs Status (cron-job.org)
 
-**Stand: 13.01.2026**
+**Stand: 14.01.2026**
 
 | Job | Schedule | Status | Letzter Fehler |
 |-----|----------|--------|----------------|
-| **Keep-Alive (NEU!)** | alle 15 Min | OK | Verhindert Cold Start |
+| **Keep-Alive** | alle 15 Min | OK | Verhindert Cold Start |
 | Blog Auto-Generation | 06:00 Mo/Mi/Fr | OK | - |
+| **Demo Generation + Email (NEU!)** | 08:00 täglich | OK | Personalisierte Demo-Emails |
 | Twitter Auto-Post Morning | 09:00 täglich | OK | - |
 | Weekly Summary | 09:00 Montags | OK | - |
-| Daily Outreach | 09:00 täglich | OK | Cold Start (gefixt) |
-| Drip Emails | 10:00 täglich | OK | Cold Start (gefixt) |
-| TripAdvisor Email Sender | 09:00 täglich | OK | Cold Start (gefixt) |
+| Daily Outreach | 09:00 täglich | OK | - |
+| Drip Emails | 10:00 täglich | OK | - |
+| TripAdvisor Email Sender | 09:00 täglich | OK | - |
 | Pre-Registration Drip | 11:00 täglich | OK | - |
 
 **Root Cause "Ausgabe zu groß" (13.01):**
@@ -385,6 +386,26 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 | **Chrome MCP Lead Scraper fortsetzen** | Mittel | Memory MCP |
 | **Landing Pages Tier 2 erstellen** | Einfach | frontend/src/App.js |
 
+### Chrome MCP Best Practices
+
+**Problem:** Mehrere parallel Claude `--chrome` Sessions → viele Tabs → RAM voll → Crashes
+
+**Lösung:**
+1. **Tab Wrangler Extension** installiert - schließt Tabs nach 30 Min Inaktivität automatisch
+2. Aktive Tabs **pinnen** wenn sie länger offen bleiben sollen
+3. Nur **eine** Claude Session mit `--chrome` für Browser-Tasks, andere ohne
+
+**📋 PLAN MODE REGEL:**
+> Im Plan Mode **IMMER** fett markieren ob Chrome MCP genutzt wird!
+>
+> Beispiel am Plan-Anfang:
+> - **🌐 CHROME MCP: JA** - Dieser Plan nutzt Browser Automation
+> - **🌐 CHROME MCP: NEIN** - Kein Browser nötig
+>
+> **Wichtig:** Chrome MCP ist erwünscht und soll aktiv genutzt werden!
+> Damit lässt sich viel mehr automatisieren. Die Markierung dient nur
+> dazu, dass User bei parallelen Claudes den Überblick behält.
+
 ### Chrome MCP Lead Scraper (WIP)
 
 **Status:** ~25 Leads gesammelt, Session 13.01.2026 abgeschlossen
@@ -425,6 +446,29 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
 ```
 
 ### HEUTE ERLEDIGT (14.01.2026):
+- [x] **Scraper Status Dashboard** - Admin Panel zeigt alle Lead-Quellen mit Prioritaet
+  - Neuer Tab "Scraper" im Admin Panel
+  - 3 Tiers: Automatisch (Daily Outreach, Drip, Blog), Manuell High-ROI (G2, TripAdvisor, LinkedIn), Experimentell (Yelp, Agency)
+  - Status-Farben: OK (gruen), Low (gelb), Critical (rot)
+  - Copy-Button fuer Commands direkt in Clipboard
+  - `GET /api/admin/scraper-status` - Liefert alle Lead-Counts und Status
+  - `GET /api/cron/scraper-alerts` - Taegliche Email-Alerts bei kritischen Quellen
+  - **USER TODO: Cron Job "Scraper Alerts" anlegen** auf cron-job.org
+    - URL: `https://review-responder.onrender.com/api/cron/scraper-alerts?secret=mein-geheimer-cron-key-biwbqevpbACN`
+    - Schedule: `0 8 * * *` (taeglich 08:00 Berlin)
+- [x] **Outreach Emails: Preview + Demo-Link** - Bessere Conversion durch "Preview + More"
+  - Problem: Tony Quach (erste Antwort!) bekam generische AI-Response ohne Business Context
+  - Fix: System Prompt jetzt mit Owner Name, Industry Context, City, Rating
+  - Neue Helper: `getOwnerName()` (z.B. "Tony Quach & Co" → "Tony"), `getIndustryContext()`
+  - Email zeigt jetzt 1 AI-Antwort als Preview + Link zu Demo Page mit 2 weiteren
+  - Daily Outreach ruft `generateDemoForLead()` statt nur `generateReviewAlertDraft()`
+  - Fallback: Wenn Demo-Generation fehlschlägt → Single AI Draft wie vorher
+  - DB: `outreach_leads` hat jetzt `demo_token` und `demo_url` Columns
+- [x] **Demo Generation Cron Job** - Automatische personalisierte Demo-Emails
+  - Cron Job auf cron-job.org angelegt: 08:00 täglich
+  - POST `/api/cron/generate-demos?send_emails=true&limit=10`
+  - Findet Leads mit 20+ Reviews → Scraped negative Reviews → AI-Antworten → Demo-Email
+  - Duplikat gelöscht (versehentlich 2x erstellt)
 - [x] **Brevo Email Delivery gefixt** - Domain verifiziert, Emails werden jetzt zugestellt
   - Problem: Emails zeigten "sent" aber wurden nicht delivered (Sender not valid)
   - Fix: DKIM Records in Namecheap für Brevo konfiguriert

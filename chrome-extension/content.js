@@ -2252,6 +2252,9 @@ async function createResponsePanel() {
           <button class="rr-undo-btn hidden" title="Undo last edit">↩️ Undo</button>
         </div>
 
+        <!-- Edit Hint -->
+        <div class="rr-edit-hint">Ready to copy — or edit anytime</div>
+
         <div class="rr-action-buttons">
           <!-- Primary row - Big buttons -->
           <div class="rr-action-primary">
@@ -3472,15 +3475,15 @@ function initPanelEvents(panel) {
     exportBatchAsCSV(panel);
   });
 
-  // Paste batch response (ins Textfeld ohne Submit)
+  // Paste batch response (into text field without submit)
   const batchPasteBtn = panel.querySelector('.rr-batch-paste');
   if (batchPasteBtn) {
     batchPasteBtn.addEventListener('click', async () => {
       const text = panel.querySelector('.rr-batch-response-textarea').value;
       if (text) {
-        await autoPasteToReviewField(text, panel, false); // autoSubmit = false
+        await autoPasteToReviewField(text, panel, false);
       } else {
-        showToast('⚠️ No response to paste', 'warning');
+        showToast('Nothing to paste', 'warning');
       }
     });
   }
@@ -3491,9 +3494,9 @@ function initPanelEvents(panel) {
     batchSubmitBtn.addEventListener('click', async () => {
       const text = panel.querySelector('.rr-batch-response-textarea').value;
       if (text) {
-        await autoPasteToReviewField(text, panel, true); // autoSubmit = true
+        await autoPasteToReviewField(text, panel, true);
       } else {
-        showToast('⚠️ No response to submit', 'warning');
+        showToast('Nothing to submit', 'warning');
       }
     });
   }
