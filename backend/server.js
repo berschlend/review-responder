@@ -13013,22 +13013,28 @@ app.get('/api/outreach/dashboard', async (req, res) => {
   }
 
   try {
+    // Filter out test emails from metrics
+    const TEST_EMAIL_FILTER = `
+      AND email NOT LIKE '%berend%'
+      AND (campaign IS NULL OR campaign NOT LIKE 'test%')
+    `;
+
     const totalLeads = await dbGet('SELECT COUNT(*) as count FROM outreach_leads');
     const leadsWithEmail = await dbGet(
       'SELECT COUNT(*) as count FROM outreach_leads WHERE email IS NOT NULL'
     );
     const emailsSent = await dbGet(
-      'SELECT COUNT(*) as count FROM outreach_emails WHERE status = $1',
+      `SELECT COUNT(*) as count FROM outreach_emails WHERE status = $1 ${TEST_EMAIL_FILTER}`,
       ['sent']
     );
     const emailsOpened = await dbGet(
-      'SELECT COUNT(*) as count FROM outreach_emails WHERE opened_at IS NOT NULL'
+      `SELECT COUNT(*) as count FROM outreach_emails WHERE opened_at IS NOT NULL ${TEST_EMAIL_FILTER}`
     );
 
-    // Click tracking stats
+    // Click tracking stats (also filter test emails)
     let emailsClicked = { count: 0 };
     try {
-      emailsClicked = await dbGet('SELECT COUNT(DISTINCT email) as count FROM outreach_clicks') || { count: 0 };
+      emailsClicked = await dbGet(`SELECT COUNT(DISTINCT email) as count FROM outreach_clicks WHERE email NOT LIKE '%berend%'`) || { count: 0 };
     } catch (e) {
       // Table might not exist yet
     }
@@ -13094,6 +13100,12 @@ app.get('/api/outreach/funnel', async (req, res) => {
     // ========== FUNNEL METRICS ==========
     const funnel = {};
 
+    // Filter out test emails from metrics
+    const TEST_EMAIL_FILTER = `
+      AND email NOT LIKE '%berend%'
+      AND (campaign IS NULL OR campaign NOT LIKE 'test%')
+    `;
+
     // Stage 1: Leads
     const totalLeads = await dbGet('SELECT COUNT(*) as count FROM outreach_leads');
     const leadsWithEmail = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE email IS NOT NULL');
@@ -13103,22 +13115,22 @@ app.get('/api/outreach/funnel', async (req, res) => {
       email_rate: totalLeads?.count > 0 ? ((leadsWithEmail?.count / totalLeads?.count) * 100).toFixed(1) + '%' : '0%'
     };
 
-    // Stage 2: Emails Sent
-    const emailsSent = await dbGet('SELECT COUNT(*) as count FROM outreach_emails WHERE status = $1', ['sent']);
+    // Stage 2: Emails Sent (excluding test emails)
+    const emailsSent = await dbGet(`SELECT COUNT(*) as count FROM outreach_emails WHERE status = $1 ${TEST_EMAIL_FILTER}`, ['sent']);
     funnel.emails_sent = parseInt(emailsSent?.count || 0);
 
-    // Stage 3: Opens
-    const emailsOpened = await dbGet('SELECT COUNT(*) as count FROM outreach_emails WHERE opened_at IS NOT NULL');
+    // Stage 3: Opens (excluding test emails)
+    const emailsOpened = await dbGet(`SELECT COUNT(*) as count FROM outreach_emails WHERE opened_at IS NOT NULL ${TEST_EMAIL_FILTER}`);
     funnel.opens = {
       count: parseInt(emailsOpened?.count || 0),
       rate: funnel.emails_sent > 0 ? ((emailsOpened?.count / funnel.emails_sent) * 100).toFixed(1) + '%' : '0%'
     };
 
-    // Stage 4: Clicks
+    // Stage 4: Clicks (excluding test emails)
     let clicksData = { count: 0, unique: 0 };
     try {
-      const totalClicks = await dbGet('SELECT COUNT(*) as count FROM outreach_clicks');
-      const uniqueClicks = await dbGet('SELECT COUNT(DISTINCT email) as count FROM outreach_clicks');
+      const totalClicks = await dbGet(`SELECT COUNT(*) as count FROM outreach_clicks WHERE email NOT LIKE '%berend%'`);
+      const uniqueClicks = await dbGet(`SELECT COUNT(DISTINCT email) as count FROM outreach_clicks WHERE email NOT LIKE '%berend%'`);
       clicksData = {
         count: parseInt(totalClicks?.count || 0),
         unique: parseInt(uniqueClicks?.count || 0)
