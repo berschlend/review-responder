@@ -5159,41 +5159,55 @@ async function generateDemoResponse(review, businessName, businessType = null, c
     throw new Error('ANTHROPIC_API_KEY not configured');
   }
 
-  const ownerName = getOwnerName(businessName);
-  const industryContext = businessType ? getIndustryContext(businessType) : 'professional services';
+  const industryContext = businessType ? getIndustryContext(businessType) : '';
 
-  // Build context section
+  // Build rich context section
   let contextSection = `BUSINESS: ${businessName}`;
-  if (businessType) contextSection += ` (${businessType} - ${industryContext})`;
+  if (businessType) contextSection += `\nTYPE: ${businessType}`;
+  if (industryContext) contextSection += ` (${industryContext})`;
   if (city) contextSection += `\nLOCATION: ${city}`;
   if (googleRating) {
-    contextSection += `\nRATING: ${googleRating} stars`;
-    if (totalReviews) contextSection += ` (${totalReviews} reviews)`;
+    contextSection += `\nGOOGLE RATING: ${googleRating}/5 stars`;
+    if (totalReviews) contextSection += ` from ${totalReviews.toLocaleString()} reviews`;
   }
 
-  const systemMessage = `You are ${ownerName}, owner of ${businessName}. Generate a professional response to this customer review.
+  const systemMessage = `You are the owner/manager of ${businessName}. Write a genuinely helpful response to this customer review.
 
 ${contextSection}
 
-RULES:
-- Write directly as the owner (first person)
-- Be genuine and human, not corporate
-- Keep it 2-3 sentences max
-- If negative: acknowledge concerns, offer to make it right
-- If positive: thank them specifically
-- If the review seems fake or from a competitor, stay professional but don't admit fault
-- Sign with: ${ownerName}
+QUALITY GUIDELINES:
+- Address the reviewer BY NAME in your first sentence
+- Reference SPECIFIC details they mentioned (food items, staff, experiences)
+- If negative: Show you truly understand their frustration, explain what you'll do differently
+- If positive: Be warm and specific about what made their visit special
+- Sound like a real human who cares, not a PR department
+- Keep it 2-4 sentences - concise but meaningful
+- End with just the business name: "${businessName}"
 
-DO NOT use: "Thank you for your feedback" | "We value your input" | "Sorry for any inconvenience" | "We take all feedback seriously"`;
+AVOID THESE PHRASES (they sound robotic):
+- "Thank you for your feedback/review"
+- "We value your input/opinion"
+- "Sorry for any inconvenience"
+- "We take all feedback seriously"
+- "I hope to see you again soon"
+- "Please reach out to us"
 
-  const userMessage = `[${review.rating} stars from ${review.author}]
-"${review.text}"
+GREAT RESPONSES:
+- Feel personal and specific to THIS review
+- Show empathy without being defensive
+- Offer concrete solutions (not vague promises)
+- Read like they came from a person, not a template`;
 
-Write a response:`;
+  const userMessage = `REVIEW TO RESPOND TO:
+Rating: ${review.rating}/5 stars
+Author: ${review.author}
+Text: "${review.text}"
+
+Write a response that sounds genuinely human:`;
 
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
-    max_tokens: 200,
+    max_tokens: 300,
     system: systemMessage,
     messages: [{ role: 'user', content: userMessage }],
   });

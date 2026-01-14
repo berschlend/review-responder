@@ -11471,6 +11471,25 @@ const DemoPage = () => {
           ))}
         </div>
 
+        {/* Demo Video */}
+        <div style={{ marginBottom: '48px', textAlign: 'center' }}>
+          <h3 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '16px' }}>
+            See It In Action
+          </h3>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
+            Watch how our Chrome extension responds to reviews in seconds
+          </p>
+          <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}>
+            <iframe
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+              src="https://www.youtube.com/embed/6lujm4Z_Q_Y"
+              title="ReviewResponder Chrome Extension Demo"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+
         {/* CTA Section */}
         <div style={{
           background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
