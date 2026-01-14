@@ -5288,13 +5288,56 @@ function extractPlaceIdFromUrl(url) {
 }
 
 // Helper: Generate AI response for a review (for demo purposes)
-// Optimized with Anthropic Prompt Engineering best practices
+// Uses SAME prompt system as original /api/generate for high-quality responses
 async function generateDemoResponse(review, businessName, businessType = null, city = null, googleRating = null, totalReviews = null) {
   if (!anthropic) {
     throw new Error('ANTHROPIC_API_KEY not configured');
   }
 
-  // Build context with all available data
+  // Rating-specific strategies (same as original app)
+  const ratingStrategies = {
+    5: {
+      goal: 'Reinforce positive feelings, encourage return visit',
+      approach: 'Express genuine gratitude, mention something specific from their review, invite them back',
+      length: '2-3 sentences',
+      avoid: 'Being too generic or effusive',
+    },
+    4: {
+      goal: 'Thank them while subtly showing you care about perfection',
+      approach: 'Appreciate their feedback, acknowledge room for improvement without being defensive',
+      length: '2-3 sentences',
+      avoid: 'Ignoring their slight criticism',
+    },
+    3: {
+      goal: 'Show you take feedback seriously',
+      approach: 'Acknowledge their mixed experience, express desire to do better, invite them to give you another chance',
+      length: '3-4 sentences',
+      avoid: 'Being dismissive or overly apologetic',
+    },
+    2: {
+      goal: 'Recover the relationship',
+      approach: 'Sincerely acknowledge disappointment, take responsibility, offer concrete resolution',
+      length: '3-4 sentences',
+      avoid: 'Making excuses or being defensive',
+    },
+    1: {
+      goal: 'Damage control, show professionalism to future readers',
+      approach: 'Acknowledge frustration, take ownership, apologize specifically, offer direct contact to resolve',
+      length: '4-5 sentences',
+      avoid: 'Arguing, making excuses, passive-aggressive tone',
+    },
+  };
+
+  // Get rating strategy
+  const reviewRating = review.rating;
+  const ratingStrategy = ratingStrategies[reviewRating] || ratingStrategies[3];
+  const isNegative = reviewRating && reviewRating <= 2;
+
+  // Get industry-specific examples
+  const fewShotExamples = getFewShotExamples(businessType);
+  const exampleToUse = isNegative ? fewShotExamples.negative : fewShotExamples.positive;
+
+  // Build context
   const contextParts = [`Business: ${businessName}`];
   if (businessType) contextParts.push(`Type: ${businessType}`);
   if (city) contextParts.push(`Location: ${city}`);
@@ -5304,41 +5347,67 @@ async function generateDemoResponse(review, businessName, businessType = null, c
     contextParts.push(ratingStr);
   }
 
-  const systemMessage = `You write review responses as the owner of ${businessName}${businessType ? ` (${businessType})` : ''}.
+  // Writing style instructions (same as original app)
+  const writingStyleInstructions = `
+<output_format>
+Write the response directly. No quotes. No "Response:" prefix. Just the text.
+</output_format>
 
-<context>
+<voice>
+You're the business owner, not customer service. Write like you'd text a regular customer.
+Warm but not gushing. Confident but not arrogant.
+</voice>
+
+<style_guide>
+Write responses that sound like this:
+- "Glad the [specific thing] worked for you."
+- "Nice to hear about [detail]. We [relevant fact about your business]."
+- "That's on us. Email me at [email] and we'll fix it."
+
+Keep it:
+- ${ratingStrategy.length}
+- One exclamation mark max (zero is fine)
+- Contractions always (we're, you'll, that's)
+- Reference something specific from their review
+- Do NOT use any emojis
+</style_guide>
+
+<avoid_ai_patterns>
+Your response will be rejected if it sounds like AI-generated text. Write like a real person:
+- Instead of "Thank you for your feedback" → "Glad you enjoyed the [specific thing]"
+- Instead of "We appreciate you taking the time" → "Nice to hear about [detail]"
+- Instead of "Sorry for any inconvenience" → "That's on us, we'll fix it"
+- No gushing words (thrilled, delighted, amazing, incredible, wonderful)
+- No corporate speak (leverage, embark, journey, vital, crucial)
+</avoid_ai_patterns>`;
+
+  const systemMessage = `You own ${businessName}${businessType ? ` (${businessType})` : ''}. You're responding to a review on Google.
+
+<business_context>
 ${contextParts.join('\n')}
-</context>
+</business_context>
 
-<rules>
-1. Start with reviewer's name
-2. Reference ONE specific detail from their review
-3. 2-3 sentences MAX - be concise
-4. Sign off with business name: "${businessName}"
-</rules>
+<rating_strategy>
+Goal: ${ratingStrategy.goal}
+Approach: ${ratingStrategy.approach}
+Avoid: ${ratingStrategy.avoid}
+</rating_strategy>
 
-<banned_phrases>
-- Thank you for your feedback
-- We value your input
-- Sorry for any inconvenience
-- We take all feedback seriously
-- Please reach out
-- We hope to see you
-</banned_phrases>
+${writingStyleInstructions}
 
-<examples>
-REVIEW: 4 stars from Maria - "Great pizza but the waiter was rude and slow"
-RESPONSE: Maria, I'm sorry the service didn't match our pizza quality - that's not okay. I've spoken with our team about this. Hope you'll give us another shot - Bella Italia.
+EXAMPLE:
+Customer: "${exampleToUse.review}"
+You: ${exampleToUse.goodResponse}
 
-REVIEW: 5 stars from Tom - "Best haircut I've ever had! Sarah was amazing"
-RESPONSE: Tom, so glad Sarah took care of you! She's been with us 8 years and it shows. See you next time - Elite Cuts.
-</examples>`;
+SIGNATURE: End with " - ${businessName}"`;
 
-  const userMessage = `${review.rating} stars from ${review.author}: "${review.text}"`;
+  const userMessage = `[${reviewRating} stars] ${review.author}: "${review.text}"
+
+(${ratingStrategy.length})`;
 
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
-    max_tokens: 250,
+    max_tokens: 350,
     system: systemMessage,
     messages: [{ role: 'user', content: userMessage }],
   });
