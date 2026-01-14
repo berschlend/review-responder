@@ -1002,10 +1002,16 @@ async function initDatabase() {
         email_sent BOOLEAN DEFAULT FALSE,
         email_sent_at TIMESTAMP,
         email_opened BOOLEAN DEFAULT FALSE,
+        followup_sent BOOLEAN DEFAULT FALSE,
+        followup_sent_at TIMESTAMP,
         replied BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Add followup columns if missing (migration)
+    await dbQuery(`ALTER TABLE competitor_leads ADD COLUMN IF NOT EXISTS followup_sent BOOLEAN DEFAULT FALSE`);
+    await dbQuery(`ALTER TABLE competitor_leads ADD COLUMN IF NOT EXISTS followup_sent_at TIMESTAMP`);
 
     // LinkedIn Outreach Tracking
     await dbQuery(`
@@ -11978,10 +11984,97 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
       }
     }
 
-    console.log(`✅ TripAdvisor cron complete: ${results.emails_sent}/${results.total} emails sent`);
+    console.log(`✅ TripAdvisor first emails complete: ${results.emails_sent}/${results.total} emails sent`);
+
+    // ==========================================
+    // FOLLOW-UP EMAILS (4 days after first email)
+    // ==========================================
+    const followupResults = { sent: 0, errors: [] };
+
+    // Find leads that:
+    // 1. Got first email (sequence_number = 1) more than 4 days ago
+    // 2. Haven't received follow-up yet (no sequence_number = 2)
+    // 3. Haven't replied/clicked (status still 'contacted')
+    const followupLeads = await dbAll(`
+      SELECT DISTINCT ol.*, oe.sent_at as first_email_sent
+      FROM outreach_leads ol
+      JOIN outreach_emails oe ON oe.lead_id = ol.id
+      WHERE ol.source = 'tripadvisor'
+        AND ol.status = 'contacted'
+        AND oe.sequence_number = 1
+        AND oe.sent_at < NOW() - INTERVAL '4 days'
+        AND NOT EXISTS (
+          SELECT 1 FROM outreach_emails oe2
+          WHERE oe2.lead_id = ol.id AND oe2.sequence_number = 2
+        )
+      ORDER BY oe.sent_at ASC
+      LIMIT 20
+    `);
+
+    if (followupLeads.length > 0) {
+      console.log(`📧 Sending ${followupLeads.length} TripAdvisor follow-up emails...`);
+
+      for (const lead of followupLeads) {
+        try {
+          // Get owner name or business name
+          const ownerName = getOwnerName(lead.business_name);
+          const firstName = ownerName.split(' ')[0] || 'there';
+
+          const subject = `Re: ${lead.business_name} - quick question`;
+          const followupBody = `Hey ${firstName},
+
+Quick follow-up on my last email - did you get a chance to check out the AI review response tool?
+
+I noticed ${lead.business_name} has ${lead.google_reviews_count || 'several'} reviews on Google. With our tool, you could respond to all of them in minutes instead of hours.
+
+Here's a personalized demo showing how it works for ${lead.business_name}:
+${lead.demo_url || 'https://tryreviewresponder.com?ref=tripadvisor-followup'}
+
+20 free responses, no credit card needed. Takes 30 seconds to try.
+
+Let me know if you have any questions!
+
+Berend`;
+
+          await sendOutreachEmail({
+            to: lead.email,
+            subject,
+            html: followupBody.replace(/\n/g, '<br>'),
+            campaign: 'tripadvisor-followup',
+            tags: [
+              { name: 'source', value: 'tripadvisor' },
+              { name: 'sequence', value: '2' }
+            ]
+          });
+
+          // Log the follow-up email
+          await dbQuery(`
+            INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign, provider)
+            VALUES ($1, $2, 2, $3, $4, 'sent', NOW(), 'tripadvisor-followup', 'resend')
+          `, [lead.id, lead.email, subject, followupBody]);
+
+          followupResults.sent++;
+          console.log(`📧 TripAdvisor follow-up sent to: ${lead.email} (${lead.business_name})`);
+
+          // Delay between emails
+          await new Promise(resolve => setTimeout(resolve, 500));
+
+        } catch (followupError) {
+          followupResults.errors.push(`Followup failed for ${lead.business_name}: ${followupError.message}`);
+          console.error(`Follow-up error for ${lead.email}:`, followupError.message);
+        }
+      }
+    }
+
+    console.log(`✅ TripAdvisor cron complete: ${results.emails_sent} first, ${followupResults.sent} followups`);
 
     // Minimal response for cron-job.org (has size limit)
-    res.json({ ok: true, sent: results.emails_sent, err: results.errors.length });
+    res.json({
+      ok: true,
+      first: results.emails_sent,
+      followup: followupResults.sent,
+      err: results.errors.length + followupResults.errors.length
+    });
   } catch (error) {
     console.error('TripAdvisor cron error:', error);
     res.status(500).json({ ok: false, err: error.message?.slice(0, 100) });
@@ -15248,13 +15341,17 @@ app.get('/api/admin/scraper-status', async (req, res) => {
           COUNT(*) FILTER (WHERE competitor = 'podium') as podium
         FROM competitor_leads
       `),
-      // LinkedIn leads
+      // LinkedIn leads + limits tracking
       dbGet(`
         SELECT
           COUNT(*) as total,
           COUNT(*) FILTER (WHERE connection_sent = FALSE) as pending,
           COUNT(*) FILTER (WHERE connection_accepted = TRUE) as accepted,
-          COUNT(*) FILTER (WHERE demo_viewed_at IS NOT NULL) as demos_viewed
+          COUNT(*) FILTER (WHERE demo_viewed_at IS NOT NULL) as demos_viewed,
+          -- Daily/Weekly limits tracking
+          COUNT(*) FILTER (WHERE DATE(connection_sent_at) = CURRENT_DATE) as connections_today,
+          COUNT(*) FILTER (WHERE connection_sent_at >= NOW() - INTERVAL '7 days') as connections_this_week,
+          COUNT(*) FILTER (WHERE DATE(message_sent_at) = CURRENT_DATE) as messages_today
         FROM linkedin_outreach
       `),
       // Yelp leads
@@ -15395,6 +15492,21 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         connections_pending: parseInt(linkedinLeads?.pending || 0),
         connections_accepted: parseInt(linkedinLeads?.accepted || 0),
         demos_viewed: parseInt(linkedinLeads?.demos_viewed || 0),
+        // LinkedIn Limits Tracking
+        limits: {
+          connections_today: parseInt(linkedinLeads?.connections_today || 0),
+          connections_today_max: 20,
+          connections_today_remaining: Math.max(0, 20 - parseInt(linkedinLeads?.connections_today || 0)),
+          connections_this_week: parseInt(linkedinLeads?.connections_this_week || 0),
+          connections_week_max: 100,
+          connections_week_remaining: Math.max(0, 100 - parseInt(linkedinLeads?.connections_this_week || 0)),
+          messages_today: parseInt(linkedinLeads?.messages_today || 0),
+          messages_today_max: 50,
+          messages_today_remaining: Math.max(0, 50 - parseInt(linkedinLeads?.messages_today || 0)),
+          // Status indicators
+          daily_status: parseInt(linkedinLeads?.connections_today || 0) >= 20 ? 'limit_reached' : parseInt(linkedinLeads?.connections_today || 0) >= 15 ? 'warning' : 'ok',
+          weekly_status: parseInt(linkedinLeads?.connections_this_week || 0) >= 100 ? 'limit_reached' : parseInt(linkedinLeads?.connections_this_week || 0) >= 80 ? 'warning' : 'ok'
+        },
         threshold_low: thresholds.linkedin.low,
         threshold_critical: thresholds.linkedin.critical,
         status: getStatus(parseInt(linkedinLeads?.total || 0), thresholds.linkedin),
@@ -15402,8 +15514,8 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         workflow: [
           '1. Starte: claude --chrome',
           '2. Tippe: /linkedin-connect "Restaurant Owner" Germany',
-          '3. Claude verbindet automatisch',
-          '4. Follow-up mit Demo-Link'
+          '3. Claude verbindet automatisch (max 20/Tag)',
+          '4. Follow-up: /linkedin-connect followup'
         ]
       },
       // Tier 3: Experimental
@@ -15823,7 +15935,7 @@ app.post('/api/cron/send-yelp-emails', async (req, res) => {
   }
 });
 
-// POST /api/cron/send-g2-emails - Send emails to G2 competitor leads
+// POST /api/cron/send-g2-emails - Send emails + follow-ups to G2 competitor leads
 app.post('/api/cron/send-g2-emails', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
   if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
@@ -15831,54 +15943,100 @@ app.post('/api/cron/send-g2-emails', async (req, res) => {
   }
 
   try {
-    const leads = await dbAll(`
+    const results = { first_emails: 0, followups: 0, failed: 0 };
+
+    // 1. Send first emails to new leads
+    const newLeads = await dbAll(`
       SELECT * FROM competitor_leads
       WHERE email IS NOT NULL AND email_sent = FALSE
       ORDER BY created_at DESC
-      LIMIT 15
+      LIMIT 10
     `);
 
-    if (leads.length === 0) {
-      return res.json({ message: 'No G2 leads to email', sent: 0 });
-    }
-
-    let sent = 0;
-    let failed = 0;
-
-    for (const lead of leads) {
+    for (const lead of newLeads) {
       try {
-        const contactName = lead.reviewer_name || 'there';
-        const subject = SALES_EMAIL_TEMPLATES.g2_switcher.subject
-          .replace('{competitor}', lead.competitor);
+        const firstName = lead.reviewer_name?.split(' ')[0] || 'there';
+        const subject = `${lead.company_name} - saw your ${lead.competitor} review`;
+        const body = `Hey ${firstName},
 
-        const body = SALES_EMAIL_TEMPLATES.g2_switcher.body
-          .replace('{contact_name}', contactName)
-          .replace(/{competitor}/g, lead.competitor)
-          .replace('{complaint_summary}', lead.complaint_summary || 'your concerns with the product');
+Saw your G2 review about ${lead.competitor}. "${(lead.complaint_summary || 'the issues you mentioned')?.slice(0, 80)}..." - I totally get it.
 
-        if (resend || brevoApi) {
-          await sendEmail({
-            to: lead.email,
-            subject: subject,
-            text: body,
-            type: 'outreach',
-            campaign: 'g2-switcher',
-            from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
-          });
+Built something simpler. No contracts, no hidden fees. AI-powered review responses that actually sound human.
 
-          await dbQuery('UPDATE competitor_leads SET email_sent = TRUE, email_sent_at = NOW() WHERE id = $1', [lead.id]);
-          sent++;
-        }
-      } catch (emailError) {
-        console.error(`Failed to send email to ${lead.email}:`, emailError.message);
-        failed++;
+20 free responses, no credit card:
+https://tryreviewresponder.com?ref=g2-${lead.competitor}
+
+Cheers,
+Berend`;
+
+        await sendEmail({
+          to: lead.email,
+          subject,
+          text: body,
+          type: 'outreach',
+          campaign: `g2-switcher-${lead.competitor}`,
+          from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
+        });
+
+        await dbQuery('UPDATE competitor_leads SET email_sent = TRUE, email_sent_at = NOW() WHERE id = $1', [lead.id]);
+        results.first_emails++;
+      } catch (err) {
+        console.error(`G2 first email failed for ${lead.email}:`, err.message);
+        results.failed++;
       }
     }
 
-    res.json({ success: true, sent, failed, total: leads.length });
+    // 2. Send follow-ups (4 days after first email, no reply)
+    const followupLeads = await dbAll(`
+      SELECT * FROM competitor_leads
+      WHERE email IS NOT NULL
+        AND email_sent = TRUE
+        AND followup_sent = FALSE
+        AND replied = FALSE
+        AND email_sent_at < NOW() - INTERVAL '4 days'
+      ORDER BY email_sent_at ASC
+      LIMIT 10
+    `);
+
+    for (const lead of followupLeads) {
+      try {
+        const firstName = lead.reviewer_name?.split(' ')[0] || 'there';
+        const subject = `Re: ${lead.company_name}`;
+        const body = `Hey ${firstName},
+
+Quick follow-up - did you get a chance to check out the review response tool?
+
+I know switching from ${lead.competitor} feels like a hassle, but honestly it takes 2 minutes to try:
+https://tryreviewresponder.com?ref=g2-followup
+
+No signup needed for the first 20 responses.
+
+Let me know if you have any questions!
+
+Berend`;
+
+        await sendEmail({
+          to: lead.email,
+          subject,
+          text: body,
+          type: 'outreach',
+          campaign: `g2-followup-${lead.competitor}`,
+          from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
+        });
+
+        await dbQuery('UPDATE competitor_leads SET followup_sent = TRUE, followup_sent_at = NOW() WHERE id = $1', [lead.id]);
+        results.followups++;
+      } catch (err) {
+        console.error(`G2 followup failed for ${lead.email}:`, err.message);
+        results.failed++;
+      }
+    }
+
+    console.log(`G2 cron: ${results.first_emails} first, ${results.followups} followups, ${results.failed} failed`);
+    res.json({ ok: true, ...results });
   } catch (error) {
     console.error('G2 email cron error:', error);
-    res.status(500).json({ error: 'G2 email cron failed' });
+    res.status(500).json({ ok: false, err: error.message?.slice(0, 100) });
   }
 });
 

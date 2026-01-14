@@ -22760,6 +22760,85 @@ const AdminPage = () => {
                         )}
                       </div>
 
+                      {/* LinkedIn Limits Tracking */}
+                      {source.limits && (
+                        <div style={{
+                          background: 'rgba(59, 130, 246, 0.1)',
+                          border: '1px solid rgba(59, 130, 246, 0.3)',
+                          borderRadius: '6px',
+                          padding: '12px',
+                          marginBottom: '8px'
+                        }}>
+                          <div style={{ fontSize: '11px', fontWeight: '600', color: '#2563EB', marginBottom: '8px' }}>
+                            LinkedIn Limits (verhindert Account-Sperrung)
+                          </div>
+                          <div style={{ display: 'grid', gap: '8px' }}>
+                            {/* Daily Connections */}
+                            <div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '2px' }}>
+                                <span>Connections heute</span>
+                                <span style={{
+                                  fontWeight: '600',
+                                  color: source.limits.daily_status === 'limit_reached' ? '#DC2626' : source.limits.daily_status === 'warning' ? '#D97706' : '#059669'
+                                }}>
+                                  {source.limits.connections_today}/{source.limits.connections_today_max}
+                                  {source.limits.daily_status === 'limit_reached' && ' LIMIT!'}
+                                </span>
+                              </div>
+                              <div style={{ background: '#E5E7EB', borderRadius: '4px', height: '6px', overflow: 'hidden' }}>
+                                <div style={{
+                                  width: `${(source.limits.connections_today / source.limits.connections_today_max) * 100}%`,
+                                  height: '100%',
+                                  background: source.limits.daily_status === 'limit_reached' ? '#DC2626' : source.limits.daily_status === 'warning' ? '#D97706' : '#10B981',
+                                  transition: 'width 0.3s'
+                                }} />
+                              </div>
+                            </div>
+                            {/* Weekly Connections */}
+                            <div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '2px' }}>
+                                <span>Connections diese Woche</span>
+                                <span style={{
+                                  fontWeight: '600',
+                                  color: source.limits.weekly_status === 'limit_reached' ? '#DC2626' : source.limits.weekly_status === 'warning' ? '#D97706' : '#059669'
+                                }}>
+                                  {source.limits.connections_this_week}/{source.limits.connections_week_max}
+                                  {source.limits.weekly_status === 'limit_reached' && ' LIMIT!'}
+                                </span>
+                              </div>
+                              <div style={{ background: '#E5E7EB', borderRadius: '4px', height: '6px', overflow: 'hidden' }}>
+                                <div style={{
+                                  width: `${(source.limits.connections_this_week / source.limits.connections_week_max) * 100}%`,
+                                  height: '100%',
+                                  background: source.limits.weekly_status === 'limit_reached' ? '#DC2626' : source.limits.weekly_status === 'warning' ? '#D97706' : '#10B981',
+                                  transition: 'width 0.3s'
+                                }} />
+                              </div>
+                            </div>
+                            {/* Daily Messages */}
+                            <div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '2px' }}>
+                                <span>Messages heute</span>
+                                <span style={{ fontWeight: '600', color: source.limits.messages_today >= 50 ? '#DC2626' : '#059669' }}>
+                                  {source.limits.messages_today}/{source.limits.messages_today_max}
+                                </span>
+                              </div>
+                              <div style={{ background: '#E5E7EB', borderRadius: '4px', height: '6px', overflow: 'hidden' }}>
+                                <div style={{
+                                  width: `${(source.limits.messages_today / source.limits.messages_today_max) * 100}%`,
+                                  height: '100%',
+                                  background: source.limits.messages_today >= 50 ? '#DC2626' : '#10B981',
+                                  transition: 'width 0.3s'
+                                }} />
+                              </div>
+                            </div>
+                          </div>
+                          <div style={{ fontSize: '10px', color: 'var(--gray-500)', marginTop: '8px' }}>
+                            Verbleibend: {source.limits.connections_today_remaining} heute, {source.limits.connections_week_remaining} diese Woche
+                          </div>
+                        </div>
+                      )}
+
                       {/* Last Activity */}
                       {(source.last_scraped || source.last_email_sent) && (
                         <div style={{ fontSize: '11px', color: 'var(--gray-500)', marginBottom: '8px' }}>
