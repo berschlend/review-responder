@@ -18553,38 +18553,33 @@ app.get('/api/admin/cleanup-test-data', async (req, res) => {
       const userIds = testUsers.rows.map(r => r.id);
 
       if (userIds.length > 0) {
-        // Delete all FK-dependent data in correct order
-        try {
-          // referrals (both referrer_id and referred_user_id)
-          await pool.query(`DELETE FROM referrals WHERE referrer_id = ANY($1) OR referred_user_id = ANY($1)`, [userIds]);
-          // affiliate_payouts
-          await pool.query(`DELETE FROM affiliate_payouts WHERE affiliate_id IN (SELECT id FROM affiliates WHERE user_id = ANY($1))`, [userIds]);
-          // affiliates
-          await pool.query(`DELETE FROM affiliates WHERE user_id = ANY($1)`, [userIds]);
-          // api_keys
-          await pool.query(`DELETE FROM api_keys WHERE user_id = ANY($1)`, [userIds]);
-          // team_members
-          await pool.query(`DELETE FROM team_members WHERE team_owner_id = ANY($1) OR member_user_id = ANY($1)`, [userIds]);
-          // user_settings
-          await pool.query(`DELETE FROM user_settings WHERE user_id = ANY($1)`, [userIds]);
-          // responses
-          const responsesDeleted = await pool.query(`DELETE FROM responses WHERE user_id = ANY($1) RETURNING id`, [userIds]);
-          results.deleted.responses = responsesDeleted.rowCount;
-          // templates
-          const templatesDeleted = await pool.query(`DELETE FROM templates WHERE user_id = ANY($1) RETURNING id`, [userIds]);
-          results.deleted.templates = templatesDeleted.rowCount;
-          // drip_emails
-          await pool.query(`DELETE FROM drip_emails WHERE user_id = ANY($1)`, [userIds]);
-          // pre_registration_drips (if column exists)
-          await pool.query(`DELETE FROM pre_registration_drips WHERE email IN (SELECT email FROM users WHERE id = ANY($1))`, [userIds]).catch(() => {});
-          // Clear referred_by references
-          await pool.query(`UPDATE users SET referred_by = NULL WHERE referred_by = ANY($1)`, [userIds]);
-          // Finally delete users
-          await pool.query(`DELETE FROM users WHERE id = ANY($1)`, [userIds]);
-        } catch (deleteError) {
-          console.error('User cascade delete error:', deleteError);
-          results.errors.push('User delete: ' + deleteError.message);
-        }
+        // Delete all FK-dependent data - each with try-catch to continue on error
+        const safeDelete = async (table, query, params) => {
+          try {
+            const result = await pool.query(query, params);
+            return result.rowCount || 0;
+          } catch (e) {
+            console.log(`Skipping ${table}: ${e.message}`);
+            return 0;
+          }
+        };
+
+        // Delete in reverse FK order
+        await safeDelete('referrals', `DELETE FROM referrals WHERE referrer_id = ANY($1) OR referred_user_id = ANY($1)`, [userIds]);
+        await safeDelete('affiliate_payouts', `DELETE FROM affiliate_payouts WHERE affiliate_id IN (SELECT id FROM affiliates WHERE user_id = ANY($1))`, [userIds]);
+        await safeDelete('affiliates', `DELETE FROM affiliates WHERE user_id = ANY($1)`, [userIds]);
+        await safeDelete('api_keys', `DELETE FROM api_keys WHERE user_id = ANY($1)`, [userIds]);
+        await safeDelete('team_members', `DELETE FROM team_members WHERE team_owner_id = ANY($1) OR member_user_id = ANY($1)`, [userIds]);
+        await safeDelete('user_settings', `DELETE FROM user_settings WHERE user_id = ANY($1)`, [userIds]);
+        results.deleted.responses = await safeDelete('responses', `DELETE FROM responses WHERE user_id = ANY($1)`, [userIds]);
+        results.deleted.templates = await safeDelete('templates', `DELETE FROM templates WHERE user_id = ANY($1)`, [userIds]);
+        await safeDelete('drip_emails', `DELETE FROM drip_emails WHERE user_id = ANY($1)`, [userIds]);
+        await safeDelete('pre_registration_drips', `DELETE FROM pre_registration_drips WHERE email IN (SELECT email FROM users WHERE id = ANY($1))`, [userIds]);
+        await safeDelete('linkedin_outreach', `DELETE FROM linkedin_outreach WHERE user_id = ANY($1)`, [userIds]);
+        // Clear referred_by references
+        await safeDelete('users_referred', `UPDATE users SET referred_by = NULL WHERE referred_by = ANY($1)`, [userIds]);
+        // Finally delete users
+        await safeDelete('users', `DELETE FROM users WHERE id = ANY($1)`, [userIds]);
       }
     }
 
