@@ -281,7 +281,28 @@ Click-Rate ist die echte Metrik. 17 Leute haben geklickt → Demo Attack!
 
 ---
 
-## KÜRZLICH ERLEDIGT (14.01)
+## KÜRZLICH ERLEDIGT (14.01 Abend)
+
+- **Hot Lead Auto-Demo System** - Personalisierte Demos für Clicker
+  - `/api/cron/followup-clickers` generiert jetzt automatisch Demos
+  - Demo mit echten Reviews + AI Responses direkt in Follow-Up Email
+  - Neuer Endpoint `/api/admin/send-hot-lead-demos` für bestehende Hot Leads
+  - Fallback Email wenn Demo-Generierung fehlschlägt
+- **Second Follow-Up verbessert** - Inkludiert Demo-URL wenn vorhanden
+  - "Last chance" Messaging mit 1 Monat Free Offer
+  - German/English Detection bleibt erhalten
+- **Demo Page Sticky CTA** - Conversion-Optimierung
+  - Sticky Bar am unteren Rand für alle Geräte (nicht nur Mobile)
+  - 30% OFF Badge prominent sichtbar
+  - "Start Free Trial" statt generischem CTA
+- **API Limit Problem erkannt** - SerpAPI bei 960% vom Limit
+  - Outscraper ist Primary, aber beide APIs scheinen am Limit
+  - Neue Demos werden ohne Reviews generiert
+  - TODO: Mehr API Keys oder alternative Scraping-Methode
+
+---
+
+## KÜRZLICH ERLEDIGT (14.01 Vormittag)
 
 - **Conversion Funnel für Ersten Sale** - 3 Quick Wins implementiert:
   - Welcome Email mit WELCOME30 (30% off, 7-Tage Urgency)
