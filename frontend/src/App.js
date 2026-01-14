@@ -11767,6 +11767,209 @@ const DemoPage = () => {
           ))}
         </div>
 
+        {/* Live Preview - Try It Yourself */}
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%)',
+          borderRadius: '20px',
+          padding: '32px',
+          marginBottom: '48px',
+          border: '1px solid var(--border-color)'
+        }}>
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--primary)', color: 'white', padding: '6px 14px', borderRadius: '100px', marginBottom: '16px', fontSize: '13px', fontWeight: '600' }}>
+              <Sparkles size={14} />
+              Try It Yourself
+            </div>
+            <h3 style={{ fontSize: '22px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '8px' }}>
+              Type Any Review, See the AI Response
+            </h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '15px' }}>
+              Experience how ReviewResponder handles your reviews
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+            {/* Input */}
+            <div>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                Your Review
+              </label>
+              <textarea
+                value={liveReview}
+                onChange={(e) => setLiveReview(e.target.value)}
+                placeholder="Paste any review here... Try a negative one!"
+                style={{
+                  width: '100%',
+                  minHeight: '120px',
+                  padding: '14px',
+                  borderRadius: '12px',
+                  border: '1px solid var(--border-color)',
+                  background: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  fontSize: '15px',
+                  resize: 'vertical',
+                  fontFamily: 'inherit'
+                }}
+              />
+              <button
+                onClick={generateLiveResponse}
+                disabled={!liveReview.trim() || liveLoading}
+                style={{
+                  width: '100%',
+                  marginTop: '12px',
+                  padding: '14px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: liveLoading ? 'var(--gray-400)' : 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
+                  color: 'white',
+                  fontWeight: '600',
+                  fontSize: '15px',
+                  cursor: liveLoading ? 'wait' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                {liveLoading ? (
+                  <>
+                    <Loader size={18} className="animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Zap size={18} />
+                    Generate Response
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Output */}
+            <div>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                AI Response
+              </label>
+              <div style={{
+                minHeight: '120px',
+                padding: '14px',
+                borderRadius: '12px',
+                border: '1px solid var(--border-color)',
+                background: liveResponse ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%)' : 'var(--bg-secondary)',
+                color: liveResponse ? 'var(--text-primary)' : 'var(--text-muted)',
+                fontSize: '15px',
+                lineHeight: '1.6'
+              }}>
+                {liveResponse || 'Your AI-generated response will appear here...'}
+              </div>
+              {liveResponse && (
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(liveResponse);
+                    confetti({ particleCount: 30, spread: 50, origin: { y: 0.8 } });
+                    toast.success('Response copied!');
+                  }}
+                  style={{
+                    width: '100%',
+                    marginTop: '12px',
+                    padding: '12px',
+                    borderRadius: '10px',
+                    border: '1px solid var(--border-color)',
+                    background: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    fontWeight: '500',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  <Copy size={16} />
+                  Copy Response
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Testimonial Slider */}
+        <div style={{
+          background: 'var(--bg-secondary)',
+          borderRadius: '16px',
+          padding: '32px',
+          marginBottom: '48px',
+          border: '1px solid var(--border-color)',
+          textAlign: 'center'
+        }}>
+          <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '24px' }}>
+            Trusted by Business Owners
+          </h3>
+
+          <div style={{ position: 'relative', minHeight: '140px' }}>
+            {testimonials.map((t, i) => (
+              <div
+                key={i}
+                style={{
+                  position: i === testimonialIndex ? 'relative' : 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  opacity: i === testimonialIndex ? 1 : 0,
+                  transform: i === testimonialIndex ? 'translateY(0)' : 'translateY(10px)',
+                  transition: 'all 0.5s ease-out',
+                  pointerEvents: i === testimonialIndex ? 'auto' : 'none'
+                }}
+              >
+                {/* Stars */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '4px', marginBottom: '16px' }}>
+                  {[1,2,3,4,5].map(star => (
+                    <Star key={star} size={20} fill="#FBBC04" color="#FBBC04" />
+                  ))}
+                </div>
+
+                {/* Quote */}
+                <p style={{
+                  fontSize: '18px',
+                  color: 'var(--text-primary)',
+                  fontStyle: 'italic',
+                  lineHeight: '1.6',
+                  maxWidth: '600px',
+                  margin: '0 auto 16px'
+                }}>
+                  "{t.quote}"
+                </p>
+
+                {/* Author */}
+                <div>
+                  <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{t.author}</div>
+                  <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{t.business}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Dots */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '20px' }}>
+            {testimonials.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setTestimonialIndex(i)}
+                style={{
+                  width: '10px',
+                  height: '10px',
+                  borderRadius: '50%',
+                  border: 'none',
+                  background: i === testimonialIndex ? 'var(--primary)' : 'var(--gray-300)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
         {/* Features - honest stats */}
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '32px', padding: '32px', background: 'var(--bg-secondary)', borderRadius: '16px', marginBottom: '48px', border: '1px solid var(--border-color)' }}>
           {[
@@ -11871,6 +12074,56 @@ const DemoPage = () => {
             AI-powered review responses for busy business owners
           </p>
         </div>
+      </div>
+
+      {/* Sticky CTA Bar - Mobile Only */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: 'var(--bg-primary)',
+          borderTop: '1px solid var(--border-color)',
+          padding: '12px 16px',
+          display: 'none',
+          zIndex: 90,
+          boxShadow: '0 -4px 20px rgba(0,0,0,0.1)'
+        }}
+        className="mobile-sticky-cta"
+      >
+        <style>{`
+          @media (max-width: 768px) {
+            .mobile-sticky-cta { display: flex !important; }
+          }
+        `}</style>
+        <div style={{ flex: 1, marginRight: '12px' }}>
+          <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)' }}>
+            20 Free Responses
+          </div>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+            No credit card required
+          </div>
+        </div>
+        <a
+          href={demo?.cta_url}
+          style={{
+            background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
+            color: 'white',
+            padding: '12px 24px',
+            borderRadius: '10px',
+            textDecoration: 'none',
+            fontWeight: '600',
+            fontSize: '14px',
+            whiteSpace: 'nowrap',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          Try Free
+          <ArrowRight size={16} />
+        </a>
       </div>
 
       {/* Exit Intent Popup */}
