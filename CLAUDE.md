@@ -452,6 +452,18 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
 ```
 
 ### HEUTE ERLEDIGT (14.01.2026):
+- [x] **Review Alert System komplett gefixt** - Personalisierte Demos funktionieren jetzt
+  - **Problem 1:** Demo wurde nicht generiert - Bedingung `has_bad_review && worst_review_text` zu restriktiv
+  - **Fix:** Geändert zu `!lead.demo_url` → Demo für ALLE Leads ohne Demo
+  - **Problem 2:** Email-Variablen leer (Rating, Author, Text fehlten)
+  - **Fix:** `generateDemoForLead()` gibt jetzt `first_review` zurück für Email-Template
+  - **Problem 3:** Email landete in Gmail Promotions Tab
+  - **Fix:** Deutsche Email-Template komplett umgeschrieben, persönlicher Ton ("Hey" statt "Hi")
+  - **Problem 4:** Fake Claims auf Demo-Seite ("500K+ responses", "10K+ businesses")
+  - **Fix:** Ersetzt durch ehrliche Feature-Stats ("20 Free Responses", "50+ Languages", etc.)
+  - **Problem 5:** AI-Antworten zu generisch, falsches Sign-off ("Cafe" statt "Cafe Einstein")
+  - **Fix:** System Prompt verbessert - spezifische Details, Reviewer by name, VOLLER Business Name
+  - **NEU:** Chrome Extension Demo Video auf jeder Demo-Seite eingebettet
 - [x] **Scraper Status Dashboard** - Admin Panel zeigt alle Lead-Quellen mit Prioritaet
   - Neuer Tab "Scraper" im Admin Panel
   - 3 Tiers: Automatisch (Daily Outreach, Drip, Blog), Manuell High-ROI (G2, TripAdvisor, LinkedIn), Experimentell (Yelp, Agency)
@@ -677,6 +689,42 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
 
 ### BEKANNTE BUGS:
 Keine offenen Bugs.
+
+---
+
+## LEARNINGS (Review Alert System)
+
+**Wichtige Erkenntnisse für zukünftige Sessions:**
+
+### Google Places API Limits
+- Google Places API gibt nur **5 Reviews** zurück (max)
+- `has_bad_review` wird selten `true` weil oft keine 1-2 Sterne Reviews dabei
+- **Lösung:** SerpAPI für Review-Scraping nutzen (gibt mehr Reviews)
+- **Best Practice:** Demo für ALLE Leads generieren, nicht nur für solche mit schlechten Reviews
+
+### Email Deliverability (Primary vs Promotions)
+- Marketing-Sprache → Promotions Tab
+- Persönlicher Ton → Primary Inbox
+- **Was hilft:**
+  - "Hey" statt "Hallo/Hi"
+  - Konversationeller Stil wie eine echte Person
+  - Keine Emojis
+  - Keine Marketing-Floskeln ("kostenlos testen", "jetzt anfangen")
+  - Direkt zum Punkt kommen
+
+### AI Response Qualität
+- Generische Antworten = niedrige Conversion
+- **Qualitäts-Checklist für System Prompts:**
+  1. Reviewer BY NAME ansprechen
+  2. SPEZIFISCHE Details aus Review erwähnen
+  3. Bei negativ: Zeigen dass man Frustration versteht + was man ändern wird
+  4. VOLLER Business Name am Ende (nicht abgekürzt!)
+  5. AI-Slop vermeiden ("Thank you for your feedback", "We appreciate")
+
+### Hunter.io Limits
+- 25 Email-Suchen/Monat im Free Tier
+- **Fallback:** Website-Scraper (findet Email im Footer/Impressum)
+- Priorität: Website → Hunter.io → Skip
 
 ---
 
