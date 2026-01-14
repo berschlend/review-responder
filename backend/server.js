@@ -5641,12 +5641,18 @@ app.get('/api/public/demo/:token', async (req, res) => {
       await dbQuery('UPDATE demo_generations SET demo_page_viewed_at = NOW() WHERE id = $1', [demo.id]);
     }
 
+    // Generate Google Reviews URL from place_id
+    const googleReviewsUrl = demo.google_place_id
+      ? `https://search.google.com/local/reviews?placeid=${demo.google_place_id}`
+      : demo.google_maps_url || null;
+
     res.json({
       business_name: demo.business_name,
       city: demo.city,
       google_rating: parseFloat(demo.google_rating) || null,
       total_reviews: demo.total_reviews,
       demos: demo.generated_responses,
+      google_reviews_url: googleReviewsUrl,
       cta_url: `https://tryreviewresponder.com/register?ref=demo_${demo.demo_token}`,
     });
   } catch (error) {
@@ -15179,31 +15185,16 @@ app.post('/api/outreach/linkedin-demo', async (req, res) => {
     const demoToken = generateDemoToken();
     const demoUrl = `https://tryreviewresponder.com/demo/${demoToken}`;
 
-    // Generate connection note (LinkedIn limit: 200 chars) - CONTEXT-AWARE
+    // Generate connection note (LinkedIn limit: 200 chars) - SIMPLE & PERSONAL
     let connectionNote;
-    if (scrapedReviews.length > 0 && googleRating) {
-      // Format review count (10898 -> "10K+")
-      const reviewCountStr = totalReviews >= 1000
-        ? `${Math.floor(totalReviews / 1000)}K+`
-        : `${totalReviews}`;
-
+    if (scrapedReviews.length > 0) {
       // Short business name (first 2 words max)
       const shortBizName = searchName.split(' ').slice(0, 2).join(' ');
-
-      // Context-aware templates based on rating
-      if (googleRating >= 4.5 && totalReviews >= 1000) {
-        // High performer: acknowledge success
-        connectionNote = `Hey ${contactFirstName}! ${googleRating}⭐ with ${reviewCountStr} reviews - impressive. Made you 3 AI drafts for the tough ones: ${demoUrl}`;
-      } else if (googleRating >= 4.0) {
-        // Good rating: focus on maintaining it
-        connectionNote = `Hey ${contactFirstName}! ${shortBizName} has ${googleRating}⭐ - nice work. Made you 3 AI responses for your critics: ${demoUrl}`;
-      } else {
-        // Lower rating: focus on improvement
-        connectionNote = `Hey ${contactFirstName}! Those tough reviews at ${shortBizName} deserve good answers - made you 3 drafts: ${demoUrl}`;
-      }
+      // Simple, mysterious, personal
+      connectionNote = `Hey ${contactFirstName}! Made you something for ${shortBizName}: ${demoUrl} - Berend`;
     } else {
-      // Fallback without demo (~140 chars)
-      connectionNote = `Hey ${contactFirstName}! Built a tool that writes review responses in 10 sec. Would love your feedback: tryreviewresponder.com`;
+      // Fallback without demo
+      connectionNote = `Hey ${contactFirstName}! Made something for review responses - would love your take: tryreviewresponder.com - Berend`;
     }
 
     // Save to database (update existing or insert new)
