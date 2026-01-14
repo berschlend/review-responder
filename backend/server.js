@@ -12407,6 +12407,127 @@ P.S. Use code DEMO30 for 30% off if you upgrade.`;
   }
 });
 
+// GET /api/cron/yelp-harvest - Harvest leads from Yelp Fusion API (FREE 5000 calls/day trial)
+// Added 14.01.2026: Part of Night Turbo Automation System
+// Requires: YELP_API_KEY environment variable
+app.get('/api/cron/yelp-harvest', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!process.env.YELP_API_KEY) {
+    return res.status(500).json({
+      error: 'Yelp API not configured',
+      setup: 'Get free API key at https://www.yelp.com/developers/v3/manage_app',
+      env_var: 'YELP_API_KEY',
+    });
+  }
+
+  console.log('🍽️ Starting Yelp Harvest...');
+
+  // Cities to harvest - focus on US where Yelp is strongest
+  const cities = [
+    'New York, NY', 'Los Angeles, CA', 'Chicago, IL', 'Houston, TX', 'Miami, FL',
+    'San Francisco, CA', 'Seattle, WA', 'Boston, MA', 'Denver, CO', 'Austin, TX',
+  ];
+
+  // Categories that need review responses
+  const categories = ['restaurants', 'hotels', 'dentists', 'beautysvc', 'autorepair'];
+
+  // Pick city and category based on day rotation
+  const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+  const todayCity = req.query.city || cities[dayOfYear % cities.length];
+  const todayCategory = req.query.category || categories[Math.floor(dayOfYear / cities.length) % categories.length];
+
+  let totalHarvested = 0;
+  let totalSkipped = 0;
+  const results = [];
+
+  try {
+    // Yelp Fusion API Business Search
+    const yelpUrl = `https://api.yelp.com/v3/businesses/search?location=${encodeURIComponent(todayCity)}&categories=${todayCategory}&limit=50&sort_by=review_count`;
+
+    const response = await fetch(yelpUrl, {
+      headers: {
+        'Authorization': `Bearer ${process.env.YELP_API_KEY}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      return res.status(response.status).json({
+        error: 'Yelp API error',
+        status: response.status,
+        details: errorText,
+      });
+    }
+
+    const data = await response.json();
+
+    if (data.businesses) {
+      for (const biz of data.businesses) {
+        try {
+          // Skip if already exists
+          const existing = await dbGet(
+            'SELECT id FROM outreach_leads WHERE LOWER(business_name) = LOWER($1) AND LOWER(city) = LOWER($2)',
+            [biz.name, todayCity.split(',')[0].trim()]
+          );
+
+          if (existing) {
+            totalSkipped++;
+            continue;
+          }
+
+          // Extract website domain from Yelp URL if no direct website
+          const website = biz.url ? biz.url : null;
+
+          await dbQuery(
+            `INSERT INTO outreach_leads (business_name, business_type, city, address, phone, website, google_rating, google_reviews_count, source)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'yelp_harvest')
+             ON CONFLICT (business_name, city) DO NOTHING`,
+            [
+              biz.name,
+              todayCategory,
+              todayCity.split(',')[0].trim(),
+              biz.location?.display_address?.join(', ') || null,
+              biz.phone || null,
+              website,
+              biz.rating || null,
+              biz.review_count || null,
+            ]
+          );
+
+          totalHarvested++;
+          results.push({
+            name: biz.name,
+            rating: biz.rating,
+            reviews: biz.review_count,
+            phone: biz.phone ? 'Yes' : 'No',
+          });
+        } catch (err) {
+          console.error(`Failed to save Yelp business ${biz.name}:`, err.message);
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      city: todayCity,
+      category: todayCategory,
+      harvested: totalHarvested,
+      skipped: totalSkipped,
+      businesses: results.slice(0, 10), // Show first 10
+      total_found: data.businesses?.length || 0,
+      message: `🍽️ Harvested ${totalHarvested} new leads from Yelp (${todayCity}, ${todayCategory})`,
+      api_info: 'Yelp Fusion: 5000 calls/day on free trial',
+    });
+  } catch (error) {
+    console.error('Yelp harvest error:', error);
+    res.status(500).json({ error: 'Failed to harvest from Yelp' });
+  }
+});
+
 // GET /api/cron/demo-followup - Send follow-up to people who viewed demo but didn't convert
 app.get('/api/cron/demo-followup', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
