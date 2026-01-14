@@ -11189,7 +11189,219 @@ app.get('/api/admin/clicker-followups-debug', async (req, res) => {
   }
 });
 
-// GET/POST /api/cron/followup-clickers - Auto-send demo offer to people who clicked
+// POST /api/admin/send-hot-lead-demos - Send personalized demos to existing hot leads who never got one
+// Added 14.01.2026: For hot leads who already received first followup but without a demo
+app.post('/api/admin/send-hot-lead-demos', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend && !brevoApi) {
+    return res.status(500).json({ error: 'Email service not configured' });
+  }
+
+  try {
+    // Find hot leads who got first followup but no demo_token
+    const hotLeads = await dbAll(`
+      SELECT f.email, f.sent_at,
+        l.id as lead_id, l.business_name, l.city, l.google_reviews_count
+      FROM clicker_followups f
+      LEFT JOIN outreach_leads l ON LOWER(f.email) = LOWER(l.email)
+      WHERE f.demo_token IS NULL
+        AND f.converted = FALSE
+        AND l.business_name IS NOT NULL
+        AND l.city IS NOT NULL
+        ${getTestEmailExcludeClause('f.email')}
+        AND f.email NOT LIKE '%vimeo%'
+      ORDER BY f.sent_at DESC
+      LIMIT 20
+    `);
+
+    if (hotLeads.length === 0) {
+      return res.json({
+        success: true,
+        sent: 0,
+        message: 'No hot leads without demos found',
+      });
+    }
+
+    let sent = 0;
+    let demosGenerated = 0;
+    const results = [];
+
+    for (const lead of hotLeads) {
+      try {
+        const businessName = lead.business_name;
+        const city = lead.city;
+
+        // Detect German-speaking cities
+        const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Brüssel', 'Munich', 'Cologne', 'Vienna', 'Zurich', 'Geneva'];
+        const isGerman = germanCities.some(c => city.toLowerCase().includes(c.toLowerCase()));
+
+        // Generate personalized demo
+        console.log(`🎯 Generating demo for existing hot lead: ${businessName}, ${city}`);
+
+        const placeInfo = await lookupPlaceId(businessName, city);
+        if (!placeInfo.placeId) {
+          console.log(`⚠️ Could not find place ID for ${businessName}`);
+          results.push({ email: lead.email, business: businessName, error: 'Place not found' });
+          continue;
+        }
+
+        // Scrape reviews
+        const reviewData = await scrapeGoogleReviews(placeInfo.placeId, 5);
+        const reviews = reviewData.reviews || [];
+
+        if (reviews.length === 0) {
+          console.log(`⚠️ No reviews found for ${businessName}`);
+          results.push({ email: lead.email, business: businessName, error: 'No reviews' });
+          continue;
+        }
+
+        // Generate AI responses
+        const reviewsToProcess = reviews.slice(0, 3);
+        const demos = [];
+
+        for (const review of reviewsToProcess) {
+          try {
+            const response = await generateDemoResponse(
+              review.text || review.snippet || '',
+              review.rating || 3,
+              placeInfo.name || businessName
+            );
+            demos.push({
+              review: review.text || review.snippet || '',
+              rating: review.rating || 3,
+              author: review.author || review.author_name || 'Anonymous',
+              response: response,
+              review_link: review.review_link || review.link || null,
+            });
+          } catch (e) {
+            console.error(`Failed to generate response:`, e.message);
+          }
+        }
+
+        if (demos.length === 0) {
+          results.push({ email: lead.email, business: businessName, error: 'Demo generation failed' });
+          continue;
+        }
+
+        // Save demo
+        const demoToken = generateDemoToken();
+        await dbQuery(
+          `INSERT INTO demo_generations
+           (business_name, google_place_id, city, google_rating, total_reviews, scraped_reviews, demo_token, generated_responses, lead_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+          [
+            placeInfo.name || businessName,
+            placeInfo.placeId,
+            city,
+            placeInfo.rating || null,
+            placeInfo.totalReviews || lead.google_reviews_count,
+            JSON.stringify(reviews),
+            demoToken,
+            JSON.stringify(demos),
+            lead.lead_id,
+          ]
+        );
+
+        const demoUrl = `https://tryreviewresponder.com/demo/${demoToken}`;
+        demosGenerated++;
+        console.log(`✅ Demo generated: ${demoUrl}`);
+
+        // Update clicker_followups with demo_token
+        await dbQuery(
+          `UPDATE clicker_followups SET demo_token = $1 WHERE LOWER(email) = LOWER($2)`,
+          [demoToken, lead.email]
+        );
+
+        // Send email with demo
+        let subject, body;
+        if (isGerman) {
+          subject = `Hab mal was für ${businessName} gebaut`;
+          body = `Hey,
+
+ich hab mir gedacht, statt nochmal nach einem Call zu fragen, zeig ich euch einfach was ReviewResponder kann.
+
+Hier sind 3 AI-generierte Antworten auf eure echten Google Bewertungen:
+${demoUrl}
+
+Dauert 30 Sekunden zu checken ob der Ton passt.
+
+Falls es gefällt: 20 Antworten/Monat sind kostenlos.
+Falls nicht: Kein Problem.
+
+Grüße,
+Berend`;
+        } else {
+          subject = `Built something for ${businessName}`;
+          body = `Hey,
+
+Instead of asking for another call, I figured I'd just show you what ReviewResponder can do.
+
+Here are 3 AI-generated responses to your actual Google reviews:
+${demoUrl}
+
+Takes 30 seconds to see if the tone matches your brand.
+
+If you like it: 20 responses/month are free.
+If not: No worries.
+
+Best,
+Berend`;
+        }
+
+        // Send via Brevo (to avoid hitting Resend limits)
+        if (brevoApi) {
+          await brevoApi.sendTransacEmail({
+            sender: { name: 'Berend from ReviewResponder', email: 'outreach@tryreviewresponder.com' },
+            to: [{ email: lead.email }],
+            subject: subject,
+            textContent: body,
+            tags: ['hot_lead_demo'],
+          });
+        } else if (resend) {
+          await resend.emails.send({
+            from: OUTREACH_FROM_EMAIL,
+            to: lead.email,
+            subject: subject,
+            text: body,
+            tags: [{ name: 'campaign', value: 'hot_lead_demo' }],
+          });
+        }
+
+        sent++;
+        results.push({
+          email: lead.email,
+          business: businessName,
+          demo_url: demoUrl,
+          success: true,
+        });
+
+        // Rate limit
+        await new Promise(r => setTimeout(r, 3000));
+      } catch (err) {
+        console.error(`Failed to process hot lead ${lead.email}:`, err.message);
+        results.push({ email: lead.email, error: err.message });
+      }
+    }
+
+    res.json({
+      success: true,
+      hot_leads_found: hotLeads.length,
+      demos_generated: demosGenerated,
+      emails_sent: sent,
+      results: results,
+    });
+  } catch (error) {
+    console.error('Send hot lead demos error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET/POST /api/cron/followup-clickers - Auto-send PERSONALIZED DEMO to people who clicked
+// Updated 14.01.2026: Now generates actual demo with AI responses instead of asking for Zoom call
 app.all('/api/cron/followup-clickers', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
   if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
@@ -11212,10 +11424,15 @@ app.all('/api/cron/followup-clickers', async (req, res) => {
       )
     `);
 
+    // Add demo_token column if not exists
+    try {
+      await dbQuery(`ALTER TABLE clicker_followups ADD COLUMN IF NOT EXISTS demo_token TEXT`);
+    } catch (e) { /* Column might already exist */ }
+
     // Find clickers who haven't received follow-up yet
     const clickers = await dbAll(`
       SELECT DISTINCT c.email, c.clicked_at,
-        l.business_name, l.contact_name, l.city, l.phone,
+        l.id as lead_id, l.business_name, l.contact_name, l.city, l.phone,
         l.google_reviews_count, l.website
       FROM outreach_clicks c
       LEFT JOIN outreach_leads l ON LOWER(c.email) = LOWER(l.email)
@@ -11223,10 +11440,11 @@ app.all('/api/cron/followup-clickers', async (req, res) => {
       WHERE f.id IS NULL
         ${getTestEmailExcludeClause('c.email')}
       ORDER BY c.clicked_at DESC
-      LIMIT 10
+      LIMIT 5
     `);
 
     let sent = 0;
+    let demosGenerated = 0;
     const results = [];
 
     for (const clicker of clickers) {
@@ -11239,52 +11457,169 @@ app.all('/api/cron/followup-clickers', async (req, res) => {
         const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Brüssel', 'Munich', 'Cologne', 'Vienna', 'Zurich', 'Geneva'];
         const isGerman = germanCities.some(c => city.toLowerCase().includes(c.toLowerCase()));
 
+        // Try to generate a personalized demo for this business
+        let demoUrl = null;
+        let demoToken = null;
+        let demoGenerated = false;
+
+        if (businessName && businessName !== 'your restaurant' && city) {
+          try {
+            // Check if demo already exists for this lead
+            const existingDemo = await dbGet(
+              'SELECT demo_token FROM demo_generations WHERE lead_id = $1',
+              [clicker.lead_id]
+            );
+
+            if (existingDemo?.demo_token) {
+              demoToken = existingDemo.demo_token;
+              demoUrl = `https://tryreviewresponder.com/demo/${demoToken}`;
+              console.log(`📋 Using existing demo for ${businessName}: ${demoUrl}`);
+            } else {
+              // Generate new demo
+              console.log(`🎯 Generating demo for hot lead: ${businessName}, ${city}`);
+
+              // Lookup place ID
+              const placeInfo = await lookupPlaceId(businessName, city);
+              if (placeInfo.placeId) {
+                // Scrape reviews
+                const reviewData = await scrapeGoogleReviews(placeInfo.placeId, 5);
+                const reviews = reviewData.reviews || [];
+
+                if (reviews.length > 0) {
+                  // Generate AI responses for up to 3 reviews
+                  const reviewsToProcess = reviews.slice(0, 3);
+                  const demos = [];
+
+                  for (const review of reviewsToProcess) {
+                    try {
+                      const response = await generateDemoResponse(
+                        review.text || review.snippet || '',
+                        review.rating || 3,
+                        placeInfo.name || businessName
+                      );
+                      demos.push({
+                        review: review.text || review.snippet || '',
+                        rating: review.rating || 3,
+                        author: review.author || review.author_name || 'Anonymous',
+                        response: response,
+                        review_link: review.review_link || review.link || null,
+                      });
+                    } catch (e) {
+                      console.error(`Failed to generate response for review:`, e.message);
+                    }
+                  }
+
+                  if (demos.length > 0) {
+                    // Save demo to database
+                    demoToken = generateDemoToken();
+                    await dbQuery(
+                      `INSERT INTO demo_generations
+                       (business_name, google_place_id, city, google_rating, total_reviews, scraped_reviews, demo_token, generated_responses, lead_id)
+                       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+                      [
+                        placeInfo.name || businessName,
+                        placeInfo.placeId,
+                        city,
+                        placeInfo.rating || null,
+                        placeInfo.totalReviews || reviewCount,
+                        JSON.stringify(reviews),
+                        demoToken,
+                        JSON.stringify(demos),
+                        clicker.lead_id,
+                      ]
+                    );
+
+                    demoUrl = `https://tryreviewresponder.com/demo/${demoToken}`;
+                    demoGenerated = true;
+                    demosGenerated++;
+                    console.log(`✅ Demo generated for ${businessName}: ${demoUrl}`);
+                  }
+                }
+              }
+            }
+          } catch (demoError) {
+            console.error(`Failed to generate demo for ${businessName}:`, demoError.message);
+          }
+        }
+
         let subject, body;
 
-        if (isGerman) {
-          // German email
-          const reviewText = reviewCount ? `Mit über ${reviewCount.toLocaleString('de-DE')} Google Bewertungen` : 'Mit so vielen Bewertungen';
-          subject = reviewCount
-            ? `Kurze Frage zu euren ${reviewCount.toLocaleString('de-DE')}+ Google Bewertungen`
-            : `Kurze Frage zu ${businessName}`;
+        if (demoUrl) {
+          // Email WITH personalized demo link - much better conversion!
+          if (isGerman) {
+            subject = `3 AI-Antworten für ${businessName} – schon fertig`;
+            body = `Hey,
 
-          body = `Hey,
+ich hab gesehen, dass ihr auf meine Email geklickt habt.
 
-ich hab gesehen, dass ihr auf meine Email geklickt habt – dachte ich meld mich nochmal persönlich.
+Statt lange zu reden, hab ich einfach mal gemacht: Hier sind 3 AI-generierte Antworten auf eure echten Google Bewertungen:
 
-${reviewText} seid ihr wahrscheinlich einer der meistbewerteten Betriebe in ${city}. Respekt! Aber ich kann mir vorstellen, dass da einiges an Arbeit anfällt beim Beantworten.
+${demoUrl}
 
-Habt ihr gerade 15 Minuten? Ich zeig euch kurz wie ReviewResponder funktioniert – live, an einer eurer echten Bewertungen. Kein Sales-Pitch, nur Demo.
+Schaut euch an ob der Ton passt. Dauert 30 Sekunden.
 
-Oder soll ich euch einfach 3 Antworten auf eure neuesten Bewertungen schicken? Dann seht ihr direkt ob es zu eurem Ton passt.
+Falls es gefällt: 20 Antworten/Monat sind kostenlos. Falls nicht: Kein Problem, einfach ignorieren.
 
 Grüße,
-Berend
+Berend`;
+          } else {
+            subject = `3 AI responses for ${businessName} – already done`;
+            body = `Hey,
 
-P.S. Falls ihr kein Interesse habt – kein Thema, einfach ignorieren.`;
-        } else {
-          // English email
-          const reviewText = reviewCount ? `${reviewCount.toLocaleString()} reviews` : 'hundreds of reviews';
-          subject = reviewCount
-            ? `Quick follow-up – ${reviewCount.toLocaleString()}+ reviews is impressive`
-            : `Quick follow-up about ${businessName}`;
+I noticed someone from ${businessName} clicked on my email.
 
-          body = `Hey,
+Instead of asking for a call, I just went ahead and made this for you: 3 AI-generated responses to your actual Google reviews:
 
-I noticed someone from ${businessName} clicked on my email – figured I'd reach out personally.
+${demoUrl}
 
-With ${reviewText}, you're clearly doing something right. But I imagine the review management is a lot of work.
+Takes 30 seconds to see if the tone matches your brand.
 
-Quick question: How are you handling responses right now? Responding to all, just negatives, or not at all?
-
-If you're curious, I'd love to show you how ReviewResponder works – 15 min Zoom, no pitch. Or I can just send you 3 sample responses to your latest reviews so you can see if it matches your brand voice.
-
-Let me know either way.
+If you like it: 20 responses/month are free. If not: No worries, just ignore this.
 
 Best,
-Berend
+Berend`;
+          }
+        } else {
+          // Fallback email WITHOUT demo (if demo generation failed)
+          if (isGerman) {
+            const reviewText = reviewCount ? `Mit über ${reviewCount.toLocaleString('de-DE')} Google Bewertungen` : 'Mit so vielen Bewertungen';
+            subject = reviewCount
+              ? `${reviewCount.toLocaleString('de-DE')}+ Bewertungen – wie antwortet ihr?`
+              : `Kurze Frage zu ${businessName}`;
 
-P.S. If this isn't relevant right now, no worries – just ignore this.`;
+            body = `Hey,
+
+ich hab gesehen, dass ihr auf meine Email geklickt habt.
+
+${reviewText} habt ihr wahrscheinlich einiges zu tun beim Beantworten. ReviewResponder macht das in Sekunden statt Minuten.
+
+Hier könnt ihr es direkt an euren echten Bewertungen testen:
+https://tryreviewresponder.com?ref=hot_lead
+
+20 Antworten/Monat kostenlos, keine Kreditkarte.
+
+Grüße,
+Berend`;
+          } else {
+            const reviewText = reviewCount ? `${reviewCount.toLocaleString()} reviews` : 'hundreds of reviews';
+            subject = reviewCount
+              ? `${reviewCount.toLocaleString()}+ reviews – how do you respond?`
+              : `Quick question about ${businessName}`;
+
+            body = `Hey,
+
+I noticed someone from ${businessName} clicked on my email.
+
+With ${reviewText}, responding to all of them takes time. ReviewResponder does it in seconds instead of minutes.
+
+Try it on your actual reviews here:
+https://tryreviewresponder.com?ref=hot_lead
+
+20 responses/month free, no credit card.
+
+Best,
+Berend`;
+          }
         }
 
         await resend.emails.send({
@@ -11295,16 +11630,22 @@ P.S. If this isn't relevant right now, no worries – just ignore this.`;
           tags: [{ name: 'campaign', value: 'clicker_followup' }],
         });
 
-        // Track that we sent follow-up
+        // Track that we sent follow-up (with demo token if generated)
         await dbQuery(
-          `INSERT INTO clicker_followups (email) VALUES ($1) ON CONFLICT (email) DO NOTHING`,
-          [clicker.email]
+          `INSERT INTO clicker_followups (email, demo_token) VALUES ($1, $2) ON CONFLICT (email) DO UPDATE SET demo_token = $2`,
+          [clicker.email, demoToken]
         );
 
         sent++;
-        results.push({ email: clicker.email, business: businessName });
+        results.push({
+          email: clicker.email,
+          business: businessName,
+          demo_url: demoUrl,
+          demo_generated: demoGenerated,
+        });
 
-        await new Promise(r => setTimeout(r, 500));
+        // Longer delay between emails due to demo generation
+        await new Promise(r => setTimeout(r, 2000));
       } catch (err) {
         console.error(`Failed to send followup to ${clicker.email}:`, err.message);
       }
@@ -11313,8 +11654,9 @@ P.S. If this isn't relevant right now, no worries – just ignore this.`;
     res.json({
       success: true,
       sent: sent,
+      demos_generated: demosGenerated,
       followups_sent: results,
-      message: sent > 0 ? `Sent ${sent} demo offers to hot leads!` : 'No new clickers to follow up',
+      message: sent > 0 ? `Sent ${sent} personalized demos to hot leads!` : 'No new clickers to follow up',
     });
   } catch (error) {
     console.error('Clicker followup error:', error);
@@ -11343,8 +11685,9 @@ app.all('/api/cron/second-followup', async (req, res) => {
     const forceNow = req.query.force === 'true';
 
     // Find clickers who received first followup but not second, and haven't converted
+    // Include demo_token from first followup to reference their personalized demo
     const clickers = await dbAll(`
-      SELECT f.email, f.sent_at as first_followup_sent,
+      SELECT f.email, f.sent_at as first_followup_sent, f.demo_token,
         l.business_name, l.contact_name, l.city,
         l.google_reviews_count
       FROM clicker_followups f
@@ -11383,6 +11726,7 @@ app.all('/api/cron/second-followup', async (req, res) => {
       try {
         const businessName = clicker.business_name || 'your restaurant';
         const city = clicker.city || '';
+        const demoUrl = clicker.demo_token ? `https://tryreviewresponder.com/demo/${clicker.demo_token}` : null;
 
         // Detect German-speaking cities
         const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Brüssel', 'Munich', 'Cologne', 'Vienna', 'Zurich', 'Geneva'];
@@ -11391,41 +11735,45 @@ app.all('/api/cron/second-followup', async (req, res) => {
         let subject, body;
 
         if (isGerman) {
-          // German second follow-up
-          subject = `Letzte Frage zu ${businessName}`;
+          // German second follow-up - with demo link if available
+          subject = `Letzte Chance: 1 Monat gratis für ${businessName}`;
+          const demoLine = demoUrl
+            ? `\nFalls ihr die Demo noch nicht gesehen habt:\n${demoUrl}\n`
+            : '';
           body = `Hey,
 
-kurze Frage: Was hält euch davon ab, ReviewResponder auszuprobieren?
+ich melde mich ein letztes Mal.
+${demoLine}
+Mein Angebot: 1 VOLLER MONAT KOSTENLOS für ${businessName}.
 
-Ich würde euch gerne anbieten:
-- 1 VOLLER MONAT KOSTENLOS (nicht nur 20 Antworten - unbegrenzt!)
-- Ich richte es persönlich für euch ein
-- 15-Minuten Zoom wo ich alles erkläre
+Nicht 20 Antworten – unbegrenzt. Ich richte es für euch ein.
 
-Antwortet einfach auf diese Email mit einem Zeitvorschlag.
+Interesse? Einfach auf diese Email antworten.
 
 Grüße,
 Berend
 
-P.S. Falls Review-Management gerade keine Priorität hat - kein Problem, sagt einfach Bescheid und ich melde mich nicht mehr.`;
+P.S. Keine Antwort = kein Interesse. Kein Problem, dann höre ich auf.`;
         } else {
-          // English second follow-up
-          subject = `Quick question about ${businessName}`;
+          // English second follow-up - with demo link if available
+          subject = `Last chance: 1 month free for ${businessName}`;
+          const demoLine = demoUrl
+            ? `\nIf you haven't seen the demo yet:\n${demoUrl}\n`
+            : '';
           body = `Hey,
 
-Quick question: What's holding you back from trying ReviewResponder?
+Last email from me.
+${demoLine}
+My offer: 1 FULL MONTH FREE for ${businessName}.
 
-I'd like to offer you:
-- 1 FULL MONTH FREE (not just 20 responses - unlimited!)
-- I'll set it up for you personally
-- 15-min Zoom call where I explain everything
+Not 20 responses – unlimited. I'll set it up for you.
 
-Just reply to this email with a time that works.
+Interested? Just reply to this email.
 
 Best,
 Berend
 
-P.S. If review management isn't a priority right now, no worries - just let me know and I won't follow up again.`;
+P.S. No reply = no interest. No problem, I'll stop reaching out.`;
         }
 
         await brevoApi.sendTransacEmail({
