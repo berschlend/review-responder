@@ -13951,6 +13951,8 @@ const LocalBusinessReviewPage = () => {
           </div>
         </div>
 
+        <DemoVideoSection platform="local business" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Stop Ignoring Reviews. Start Growing Your Business.
@@ -13962,37 +13964,6 @@ const LocalBusinessReviewPage = () => {
             <Sparkles size={20} />
             Start Free - No Credit Card
           </Link>
-        </div>
-
-        <div
-          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
-        >
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>
-              ReviewResponder
-            </Link>{' '}
-            •
-            <Link
-              to="/google-review-response-generator"
-              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
-            >
-              Google Reviews
-            </Link>{' '}
-            •
-            <Link
-              to="/restaurant-review-responses"
-              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
-            >
-              Restaurants
-            </Link>{' '}
-            •
-            <Link
-              to="/hotel-review-management"
-              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
-            >
-              Hotels
-            </Link>
-          </p>
         </div>
       </section>
       <Footer />
@@ -14209,6 +14180,8 @@ const NegativeReviewPage = () => {
           </div>
         </div>
 
+        <DemoVideoSection platform="negative" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Turn Criticism Into Opportunity
@@ -14220,28 +14193,6 @@ const NegativeReviewPage = () => {
             <Sparkles size={20} />
             Start Free - No Credit Card
           </Link>
-        </div>
-
-        <div
-          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
-        >
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>
-              ReviewResponder
-            </Link>{' '}
-            •
-            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Google Reviews
-            </Link>{' '}
-            •
-            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Yelp Reviews
-            </Link>{' '}
-            •
-            <Link to="/restaurant-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Restaurants
-            </Link>
-          </p>
         </div>
       </section>
       <Footer />
@@ -14417,6 +14368,8 @@ const TripAdvisorReviewPage = () => {
 
         <ChromeExtensionHowTo platform="TripAdvisor" color="#00AF87" />
 
+        <DemoVideoSection platform="TripAdvisor" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Start Winning on TripAdvisor Today
@@ -14428,28 +14381,6 @@ const TripAdvisorReviewPage = () => {
             <Sparkles size={20} />
             Try Free - No Credit Card
           </Link>
-        </div>
-
-        <div
-          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
-        >
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>
-              ReviewResponder
-            </Link>{' '}
-            •
-            <Link to="/hotel-review-management" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Hotel Reviews
-            </Link>{' '}
-            •
-            <Link to="/restaurant-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Restaurant Reviews
-            </Link>{' '}
-            •
-            <Link to="/booking-review-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Booking.com Reviews
-            </Link>
-          </p>
         </div>
       </section>
       <Footer />
