@@ -5208,7 +5208,9 @@ async function lookupPlaceId(businessName, city) {
   }
 
   const query = encodeURIComponent(`${businessName} ${city}`);
-  const url = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${query}&inputtype=textquery&fields=place_id,name,rating,user_ratings_total&key=${process.env.GOOGLE_PLACES_API_KEY}`;
+  // Extended fields for richer context
+  const fields = 'place_id,name,rating,user_ratings_total,types,formatted_address,website,price_level';
+  const url = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${query}&inputtype=textquery&fields=${fields}&key=${process.env.GOOGLE_PLACES_API_KEY}`;
 
   const response = await fetch(url);
   const data = await response.json();
@@ -5218,12 +5220,60 @@ async function lookupPlaceId(businessName, city) {
   }
 
   const place = data.candidates[0];
+
+  // Extract business type from Google types
+  const businessType = extractBusinessType(place.types || []);
+
   return {
     placeId: place.place_id,
     name: place.name,
     rating: place.rating,
     totalReviews: place.user_ratings_total,
+    businessType,
+    address: place.formatted_address,
+    website: place.website,
+    priceLevel: place.price_level, // 0-4 scale
   };
+}
+
+// Helper: Extract readable business type from Google types array
+function extractBusinessType(types) {
+  const typeMap = {
+    'restaurant': 'Restaurant',
+    'cafe': 'Café',
+    'bar': 'Bar',
+    'bakery': 'Bakery',
+    'hotel': 'Hotel',
+    'lodging': 'Hotel',
+    'dentist': 'Dental Practice',
+    'doctor': 'Medical Practice',
+    'hospital': 'Hospital',
+    'pharmacy': 'Pharmacy',
+    'veterinary_care': 'Veterinary Clinic',
+    'hair_care': 'Hair Salon',
+    'beauty_salon': 'Beauty Salon',
+    'spa': 'Spa',
+    'gym': 'Fitness Center',
+    'car_repair': 'Auto Shop',
+    'car_dealer': 'Car Dealership',
+    'real_estate_agency': 'Real Estate Agency',
+    'lawyer': 'Law Firm',
+    'accounting': 'Accounting Firm',
+    'insurance_agency': 'Insurance Agency',
+    'store': 'Retail Store',
+    'clothing_store': 'Clothing Store',
+    'electronics_store': 'Electronics Store',
+    'home_goods_store': 'Home Goods Store',
+    'plumber': 'Plumbing Service',
+    'electrician': 'Electrical Service',
+    'roofing_contractor': 'Roofing Company',
+    'general_contractor': 'Contractor',
+  };
+
+  for (const type of types) {
+    if (typeMap[type]) return typeMap[type];
+  }
+  return null; // Unknown type
 }
 
 // Helper: Extract place_id from Google Maps URL
@@ -5241,60 +5291,57 @@ function extractPlaceIdFromUrl(url) {
 }
 
 // Helper: Generate AI response for a review (for demo purposes)
+// Optimized with Anthropic Prompt Engineering best practices
 async function generateDemoResponse(review, businessName, businessType = null, city = null, googleRating = null, totalReviews = null) {
   if (!anthropic) {
     throw new Error('ANTHROPIC_API_KEY not configured');
   }
 
-  const industryContext = businessType ? getIndustryContext(businessType) : '';
-
-  // Build rich context section
-  let contextSection = `BUSINESS: ${businessName}`;
-  if (businessType) contextSection += `\nTYPE: ${businessType}`;
-  if (industryContext) contextSection += ` (${industryContext})`;
-  if (city) contextSection += `\nLOCATION: ${city}`;
+  // Build context with all available data
+  const contextParts = [`Business: ${businessName}`];
+  if (businessType) contextParts.push(`Type: ${businessType}`);
+  if (city) contextParts.push(`Location: ${city}`);
   if (googleRating) {
-    contextSection += `\nGOOGLE RATING: ${googleRating}/5 stars`;
-    if (totalReviews) contextSection += ` from ${totalReviews.toLocaleString()} reviews`;
+    let ratingStr = `Rating: ${googleRating}/5`;
+    if (totalReviews) ratingStr += ` (${totalReviews.toLocaleString()} reviews)`;
+    contextParts.push(ratingStr);
   }
 
-  const systemMessage = `You are the owner/manager of ${businessName}. Write a genuinely helpful response to this customer review.
+  const systemMessage = `You write review responses as the owner of ${businessName}${businessType ? ` (${businessType})` : ''}.
 
-${contextSection}
+<context>
+${contextParts.join('\n')}
+</context>
 
-QUALITY GUIDELINES:
-- Address the reviewer BY NAME in your first sentence
-- Reference SPECIFIC details they mentioned (food items, staff, experiences)
-- If negative: Show you truly understand their frustration, explain what you'll do differently
-- If positive: Be warm and specific about what made their visit special
-- Sound like a real human who cares, not a PR department
-- Keep it 2-4 sentences - concise but meaningful
-- ALWAYS end with the FULL business name exactly as written: "${businessName}" (not shortened, not abbreviated)
+<rules>
+1. Start with reviewer's name
+2. Reference ONE specific detail from their review
+3. 2-3 sentences MAX - be concise
+4. Sign off with business name: "${businessName}"
+</rules>
 
-AVOID THESE PHRASES (they sound robotic):
-- "Thank you for your feedback/review"
-- "We value your input/opinion"
-- "Sorry for any inconvenience"
-- "We take all feedback seriously"
-- "I hope to see you again soon"
-- "Please reach out to us"
+<banned_phrases>
+- Thank you for your feedback
+- We value your input
+- Sorry for any inconvenience
+- We take all feedback seriously
+- Please reach out
+- We hope to see you
+</banned_phrases>
 
-GREAT RESPONSES:
-- Feel personal and specific to THIS review
-- Show empathy without being defensive
-- Offer concrete solutions (not vague promises)
-- Read like they came from a person, not a template`;
+<examples>
+REVIEW: 4 stars from Maria - "Great pizza but the waiter was rude and slow"
+RESPONSE: Maria, I'm sorry the service didn't match our pizza quality - that's not okay. I've spoken with our team about this. Hope you'll give us another shot - Bella Italia.
 
-  const userMessage = `REVIEW TO RESPOND TO:
-Rating: ${review.rating}/5 stars
-Author: ${review.author}
-Text: "${review.text}"
+REVIEW: 5 stars from Tom - "Best haircut I've ever had! Sarah was amazing"
+RESPONSE: Tom, so glad Sarah took care of you! She's been with us 8 years and it shows. See you next time - Elite Cuts.
+</examples>`;
 
-Write a response that sounds genuinely human:`;
+  const userMessage = `${review.rating} stars from ${review.author}: "${review.text}"`;
 
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
-    max_tokens: 350,
+    max_tokens: 250,
     system: systemMessage,
     messages: [{ role: 'user', content: userMessage }],
   });
@@ -14883,30 +14930,14 @@ app.post('/api/outreach/linkedin-demo', async (req, res) => {
     const demoToken = generateDemoToken();
     const demoUrl = `https://tryreviewresponder.com/demo/${demoToken}`;
 
-    // Generate connection note
+    // Generate connection note (LinkedIn limit: 200 chars)
     let connectionNote;
     if (scrapedReviews.length > 0 && googleRating) {
-      connectionNote = `Hi ${contactFirstName},
-
-Saw ${searchName} has ${googleRating} stars on Google - nice work!
-
-I made you something: ${demoUrl}
-
-(3 AI-generated responses to your toughest reviews)
-
-Cheers,
-Berend`;
+      // ~95 chars + URL = ~175 total
+      connectionNote = `Hey ${contactFirstName}! Saw your Google reviews - made you 3 free AI responses for the tough ones: ${demoUrl}`;
     } else {
-      // Fallback note without demo
-      connectionNote = `Hi ${contactFirstName},
-
-Love what you're doing at ${contactCompany}.
-
-Built a tool that writes review responses in 10 seconds.
-Would love your feedback: tryreviewresponder.com
-
-Cheers,
-Berend`;
+      // Fallback without demo (~140 chars)
+      connectionNote = `Hey ${contactFirstName}! Built a tool that writes review responses in 10 sec. Would love your feedback: tryreviewresponder.com`;
     }
 
     // Save to database (update existing or insert new)
