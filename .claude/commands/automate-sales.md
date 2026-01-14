@@ -1,72 +1,81 @@
 # Sales Automatisierung mit Claude Superpowers
 
-**OUTPUT-REGEL:** Kurze, kompakte Plaene. Max 3-5 Bullet Points pro Sektion.
+**OUTPUT-REGEL:** Kurze, kompakte Pläne. Keine langen Tabellen. Max 3-5 Bullet Points pro Sektion.
 
 ---
 
-## SCHRITT 0: LIVE-DATEN HOLEN (IMMER ZUERST!)
+## SCHRITT 0: ADMIN DASHBOARD CHECK (AUTOMATISCH!)
 
-**AUTOMATISCH am Anfang diese Daten holen:**
+**ZUERST API Key holen und alle Status-Endpoints checken:**
 
+```bash
+# 1. Key holen
+cat .claude/secrets.local
+
+# 2. Scraper-Status checken (Lead-Quellen)
+curl -s -H "X-Admin-Key: KEY" "https://review-responder.onrender.com/api/admin/scraper-status"
+
+# 3. Automation Health checken
+curl -s "https://review-responder.onrender.com/api/admin/automation-health?key=KEY"
 ```
-1. WebFetch: https://review-responder.onrender.com/api/outreach/dashboard?key=KEY
-   → Zeigt: Leads, Emails, Clicks, Click-Rate, HOT LEADS (Clicker!)
 
-2. KEY aus: .claude/secrets.local (ADMIN_SECRET)
-```
+**AUTOMATISCHE LEAD-GENERIERUNG wenn noetig:**
 
-**Dashboard zeigt jetzt:**
-- `stats.total_leads` - Anzahl Leads
-- `stats.emails_sent` - Gesendete Emails
-- `stats.clicks` - Echte Klicks (gefiltert)
-- `stats.click_rate` - Echte Click-Rate
-- `hot_leads` - **WICHTIG: Liste der Businesses die geklickt haben!**
-- `hot_leads_count` - Anzahl Hot Leads
+| Status | Aktion |
+|--------|--------|
+| `critical` | SOFORT Leads generieren (< 10-15 Leads) |
+| `low` | Heute noch Leads generieren (< 20-30 Leads) |
+| `healthy` | Nichts tun |
 
-**HINWEIS:** Open-Rate wurde entfernt - ist unzuverlaessig (Bot-Scans).
-Click-Rate ist die einzige echte Metrik!
+**Wenn manuelle Quellen kritisch/low sind:**
+1. Scraper-Command aus Response nutzen (steht bei jeder Quelle)
+2. Chrome MCP starten wenn Scraper Browser braucht
+3. Nach Scraping: Status erneut pruefen
 
----
-
-## SCHRITT 1: QUICK ANALYSIS (3 Saetze max)
-
-- **Outreach:** X Leads, Y Emails, Z% Click-Rate
-- **Hot Leads:** X Businesses haben geklickt (LISTE ZEIGEN!)
-- **Bottleneck:** Clicks → Signups → Paid
+**WICHTIG:** Autonome Systeme (Daily Outreach, Drip Emails) brauchen Leads zum Funktionieren!
 
 ---
 
-## SCHRITT 2: HOT LEADS PRIORISIEREN
+## SCHRITT 1: ZEIT-AWARENESS
 
-**Diese Leads haben ECHTES Interesse gezeigt:**
+**BEVOR du Panik schiebst oder Aenderungen vorschlaegst:**
 
-Aus `hot_leads` Array:
-- Business Name, Stadt, Email
-- Sortiert nach clicked_at (neueste zuerst)
-
-**Aktionen fuer Hot Leads:**
-1. Demo generieren (personalisiert)
-2. Follow-Up Email mit Demo-Link
-3. LinkedIn Connection Request
-
----
-
-## SCHRITT 3: ZEIT-AWARENESS
-
-**BEVOR du Panik schiebst:**
-
-1. **Wann gestartet?** Check erste Email-Timestamps
+1. **Wann gestartet?** Check `last_reset` oder erste Email-Timestamps
 2. **Realistische Timelines:**
    - Cold Email: 7-14 Tage bis erste Antworten
+   - Follow-ups: Wirken ab Tag 5-7
    - Conversions: Fruehestens nach 2-3 Wochen
-3. **Wenn < 7 Tage:** NICHT anfassen, nur beobachten
+3. **Wenn < 7 Tage:** System laeuft → NICHT anfassen, nur beobachten
+4. **Wenn < 14 Tage:** Nur kleine Tweaks, keine grossen Aenderungen
+
+**REGEL:** Keine Panik bei niedrigen Zahlen wenn System erst kurz laeuft!
+
+---
+
+## SCHRITT 2: OUTREACH-STATS HOLEN
+
+```bash
+# Outreach Dashboard (Emails, Opens, Clicks)
+curl -s "https://review-responder.onrender.com/api/outreach/dashboard?key=KEY"
+
+# Admin Stats (User, Revenue)
+curl -s -H "X-Admin-Key: KEY" "https://review-responder.onrender.com/api/admin/stats"
+```
+
+---
+
+## SCHRITT 3: QUICK ANALYSIS (3 Saetze max)
+
+- **Funnel:** X User, Y Paying, Z% Conversion
+- **Outreach:** X Leads, Y% Open, Z% Click
+- **Bottleneck:** [Der EINE Engpass]
 
 ---
 
 ## SCHRITT 4: FIRST-PRINCIPLES (Kompakt!)
 
 **5x Warum → Root Cause:**
-> Warum kauft niemand? → [1 Satz]
+> Warum kauft niemand? → [1 Satz Antwort]
 
 **Annahme zerstoeren:**
 > [1 Annahme die FALSCH sein koennte]
@@ -75,28 +84,21 @@ Aus `hot_leads` Array:
 
 ## SCHRITT 5: TOP 3 IDEEN
 
-1. **Hot Lead Follow-Up** - Die X Clicker direkt kontaktieren
-2. **[Idee]** - Basierend auf Daten
-3. **[Idee]** - Basierend auf Bottleneck
+Nur Ideen die den Kunden-Filter bestehen:
+1. **[Idee]** - Weil Kunde X will
+2. **[Idee]** - Weil Kunde Y braucht
+3. **[Idee]** - Weil es Problem Z loest
 
 **ANTI-PATTERNS (nie vorschlagen):**
+- Branding auf Kunden-Content
 - Mehr Spam statt bessere Emails
 - Features ohne Kunden-Feedback
-- Panik-Aktionen bei < 7 Tage alten Daten
 
 ---
 
-## SCHRITT 6: ONE THING
+## SCHRITT 6: EXECUTION (Max 3 Tasks)
 
-> Was ist der EINE naechste Schritt?
-
-**Kleinster Test:** [1 Satz - was testen wir HEUTE]
-
----
-
-## SCHRITT 7: EXECUTION (Max 3 Tasks)
-
-- [ ] **Task 1:** Hot Leads kontaktieren
+- [ ] **Task 1:** ...
 - [ ] **Task 2:** ...
 - [ ] **Task 3:** ...
 
@@ -107,6 +109,5 @@ Aus `hot_leads` Array:
 ## KONTEXT
 
 - **Ziel:** $1000/Mo (30 Kunden)
-- **Status:** 0 zahlende Kunden, aber ~17 Hot Leads (Clicker)
-- **Regel:** Hot Leads ZUERST, dann neue Leads
-- **Echte Metrik:** Click-Rate (nicht Open-Rate!)
+- **Status:** Product-Market-Fit noch nicht validiert
+- **Regel:** Keine Skalierung vor erstem zahlenden Kunden

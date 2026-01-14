@@ -12405,11 +12405,21 @@ async function scrapeEmailFromWebsite(websiteUrl) {
           .filter(e => !e.includes('png') && !e.includes('jpg') && !e.includes('gif') && !e.includes('.js') && !e.includes('.css'))
           .filter(e => e.length < 60); // Filter overly long "emails"
 
-        // Prioritize contact/info emails
-        const priorityPrefixes = ['contact', 'info', 'hello', 'support', 'team', 'sales', 'mail', 'office', 'reservations', 'booking', 'reservierung'];
-        const priorityEmail = validEmails.find(e => priorityPrefixes.some(p => e.startsWith(p + '@')));
+        // NEUE PRIORISIERUNG: Personal emails first, generic as fallback
+        // Generic prefixes (lower priority - these go to receptionists)
+        const genericPrefixes = ['contact', 'info', 'hello', 'support', 'team', 'sales', 'mail', 'office', 'reservations', 'booking', 'reservierung', 'service', 'anfrage', 'kontakt'];
 
-        if (priorityEmail) return priorityEmail;
+        // Find personal email (NOT starting with generic prefix)
+        const personalEmail = validEmails.find(e => !genericPrefixes.some(p => e.startsWith(p + '@')));
+
+        // Fallback to generic if no personal found
+        const genericEmail = validEmails.find(e => genericPrefixes.some(p => e.startsWith(p + '@')));
+
+        if (personalEmail) {
+          console.log(`📧 Found personal email: ${personalEmail} (preferred over generic)`);
+          return personalEmail;
+        }
+        if (genericEmail) return genericEmail;
         if (validEmails.length > 0) return validEmails[0];
 
         // Small delay between page requests
@@ -12467,6 +12477,86 @@ async function guessAndVerifyEmail(domain, businessName) {
     } catch (e) {
       // MX lookup failed, domain might not accept email
       continue;
+    }
+  }
+
+  return null;
+}
+
+// Helper: Generate personal emails from team member names (FREE)
+// Converts "Max Müller" → max@domain.com, max.mueller@domain.com, etc.
+async function generatePersonalEmails(domain, teamMembers) {
+  if (!teamMembers || teamMembers.length === 0) return null;
+
+  // Clean domain
+  const cleanDomain = domain
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .split('/')[0]
+    .toLowerCase();
+
+  // Helper: Convert German umlauts to ASCII
+  const normalizeUmlauts = (str) =>
+    str
+      .toLowerCase()
+      .replace(/ä/g, 'ae')
+      .replace(/ö/g, 'oe')
+      .replace(/ü/g, 'ue')
+      .replace(/ß/g, 'ss')
+      .replace(/[^a-z]/g, ''); // Remove any other special chars
+
+  // Helper: Generate email patterns from a name
+  const generatePatterns = (fullName) => {
+    const parts = fullName.trim().split(/\s+/);
+    if (parts.length < 1) return [];
+
+    const firstName = normalizeUmlauts(parts[0]);
+    const lastName = parts.length > 1 ? normalizeUmlauts(parts[parts.length - 1]) : '';
+
+    const patterns = [];
+    if (firstName) {
+      patterns.push(`${firstName}@${cleanDomain}`); // max@domain.com
+    }
+    if (firstName && lastName) {
+      patterns.push(`${firstName}.${lastName}@${cleanDomain}`); // max.mueller@domain.com
+      patterns.push(`${firstName[0]}.${lastName}@${cleanDomain}`); // m.mueller@domain.com
+      patterns.push(`${firstName}${lastName}@${cleanDomain}`); // maxmueller@domain.com
+      patterns.push(`${firstName[0]}${lastName}@${cleanDomain}`); // mmueller@domain.com
+      patterns.push(`${lastName}@${cleanDomain}`); // mueller@domain.com
+    }
+    return patterns;
+  };
+
+  // Check if domain has MX records (can receive email)
+  let hasMxRecords = false;
+  try {
+    const dns = await import('dns').then((m) => m.promises);
+    const mxRecords = await dns.resolveMx(cleanDomain);
+    hasMxRecords = mxRecords && mxRecords.length > 0;
+  } catch {
+    // MX lookup failed, domain might not accept email
+    return null;
+  }
+
+  if (!hasMxRecords) return null;
+
+  // Generate emails for team members (prioritized by role already)
+  for (const member of teamMembers.slice(0, 3)) {
+    // Max 3 members
+    const patterns = generatePatterns(member.name);
+
+    if (patterns.length > 0) {
+      // Return the first pattern (firstname@domain is most common)
+      const email = patterns[0];
+      console.log(
+        `👤 Generated personal email for ${member.name} (${member.role}): ${email} (MX verified)`
+      );
+      return {
+        email,
+        source: 'personal_generated',
+        contactName: member.name,
+        role: member.role,
+      };
     }
   }
 
@@ -12534,6 +12624,7 @@ async function scrapeBusinessContext(websiteUrl) {
     ownerName: null,
     foundedYear: null,
     usps: [],
+    teamMembers: [], // NEU: Array of { name, role } for personal email generation
   };
 
   if (!websiteUrl) return result;
@@ -12607,18 +12698,155 @@ async function scrapeBusinessContext(websiteUrl) {
           result.foundedYear = yearMatch[1];
         }
 
-        // Look for owner/chef/founder name
+        // Look for owner/chef/founder name (STRICTER: requires first + last name)
         const ownerPatterns = [
-          /(?:owner|founder|chef|inhaber|gesch.ftsf.hrer)[:\s]+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i,
-          /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?),?\s+(?:owner|founder|chef|inhaber)/i,
+          /(?:owner|founder|chef|inhaber|geschäftsführer)[:\s]+([A-Z][a-zäöüß]+\s+[A-Z][a-zäöüß]+)/i,
+          /([A-Z][a-zäöüß]+\s+[A-Z][a-zäöüß]+),?\s+(?:owner|founder|chef|inhaber)/i,
         ];
         for (const pattern of ownerPatterns) {
           const ownerMatch = html.match(pattern);
           if (ownerMatch && ownerMatch[1]) {
-            result.ownerName = ownerMatch[1].trim();
-            break;
+            const potentialName = ownerMatch[1].trim();
+            // Basic validation: must be 2+ words, reasonable length
+            const words = potentialName.split(/\s+/);
+            if (words.length >= 2 && potentialName.length >= 5 && potentialName.length < 40) {
+              result.ownerName = potentialName;
+              break;
+            }
           }
         }
+
+        // NEU: Extract team members with roles for personal email generation
+        // Priority roles for review management (in order of importance)
+        const priorityRoles = [
+          'owner', 'founder', 'ceo', 'geschäftsführer', 'inhaber', 'chef',
+          'marketing', 'customer success', 'customer experience', 'customer service',
+          'manager', 'general manager', 'operations', 'director',
+        ];
+
+        // Blacklist: Words that look like names but aren't (single-word matches)
+        const nameBlacklist = [
+          'manager', 'director', 'owner', 'founder', 'chef', 'team', 'about', 'lead',
+          'agent', 'design', 'marketing', 'operations', 'customer', 'integration',
+          'president', 'executive', 'officer', 'head', 'specialist', 'coordinator',
+          'the', 'and', 'for', 'with', 'from', 'into', 'what', 'how', 'our', 'your',
+          'across', 'between', 'through', 'within', 'directly', 'immediately',
+        ];
+
+        // Helper: Validate if a string is likely a real person name
+        const isValidPersonName = (name) => {
+          if (!name) return false;
+          const words = name.trim().split(/\s+/);
+          // Must have at least 2 words (first + last name)
+          if (words.length < 2) return false;
+          // First word must start with capital letter
+          if (!/^[A-ZÄÖÜ]/.test(words[0])) return false;
+          // No blacklisted words
+          if (words.some((w) => nameBlacklist.includes(w.toLowerCase()))) return false;
+          // No all-lowercase words (except common German particles like "von", "de")
+          const allowedLower = ['von', 'van', 'de', 'la', 'le', 'du', 'der', 'den'];
+          if (words.some((w) => /^[a-z]+$/.test(w) && !allowedLower.includes(w))) return false;
+          // Reasonable length per word
+          if (words.some((w) => w.length < 2 || w.length > 20)) return false;
+          return true;
+        };
+
+        // Pattern 1: "Role: Name" or "Name, Role" format - STRICTER
+        // Only match patterns like "Owner: Max Müller" or "Max Müller, Owner"
+        const roleNamePatterns = [
+          /(?:owner|founder|ceo|geschäftsführer|inhaber|chef)[:\s]+([A-Z][a-zäöüß]+\s+[A-Z][a-zäöüß]+(?:\s+[A-Z][a-zäöüß]+)?)/gi,
+          /([A-Z][a-zäöüß]+\s+[A-Z][a-zäöüß]+(?:\s+[A-Z][a-zäöüß]+)?),?\s*[-–—]\s*(?:owner|founder|ceo|geschäftsführer|inhaber|chef)/gi,
+        ];
+
+        for (const pattern of roleNamePatterns) {
+          let match;
+          pattern.lastIndex = 0;
+          while ((match = pattern.exec(html)) !== null) {
+            const name = match[1]?.trim();
+            if (isValidPersonName(name) && !name.includes('<')) {
+              // Extract role from match context
+              const context = match[0].toLowerCase();
+              let role = 'unknown';
+              for (const r of priorityRoles) {
+                if (context.includes(r)) {
+                  role = r;
+                  break;
+                }
+              }
+              // Avoid duplicates
+              if (!result.teamMembers.some((m) => m.name === name)) {
+                result.teamMembers.push({ name, role });
+              }
+            }
+          }
+        }
+
+        // Pattern 2: Team member cards (common HTML structure)
+        // <div class="team-member"><h3>Max Müller</h3><p>Owner</p></div>
+        const teamCardPattern = /<(?:div|article)[^>]*class=["'][^"']*(?:team|staff|member|employee)[^"']*["'][^>]*>[\s\S]*?<(?:h[2-4]|strong|span)[^>]*>([A-Z][a-zäöüß]+(?:\s+[A-Z][a-zäöüß]+){1,2})<\/(?:h[2-4]|strong|span)>[\s\S]*?<(?:p|span|div)[^>]*>([^<]{3,50})<\/(?:p|span|div)>/gi;
+        let cardMatch;
+        while ((cardMatch = teamCardPattern.exec(html)) !== null) {
+          const name = cardMatch[1]?.trim();
+          const roleText = cardMatch[2]?.trim().toLowerCase();
+          if (isValidPersonName(name) && roleText && !name.includes('<')) {
+            let role = 'unknown';
+            for (const r of priorityRoles) {
+              if (roleText.includes(r)) {
+                role = r;
+                break;
+              }
+            }
+            if (!result.teamMembers.some((m) => m.name === name)) {
+              result.teamMembers.push({ name, role });
+            }
+          }
+        }
+
+        // Pattern 3: JSON-LD structured data (most reliable)
+        const jsonLdMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+        if (jsonLdMatch) {
+          for (const ldScript of jsonLdMatch) {
+            try {
+              const jsonContent = ldScript.replace(/<\/?script[^>]*>/gi, '');
+              const data = JSON.parse(jsonContent);
+              // Look for Person or Employee types
+              const persons = Array.isArray(data) ? data : [data];
+              for (const item of persons) {
+                if (item['@type'] === 'Person' && item.name) {
+                  const role = item.jobTitle?.toLowerCase() || 'unknown';
+                  if (!result.teamMembers.some((m) => m.name === item.name)) {
+                    result.teamMembers.push({ name: item.name, role });
+                  }
+                }
+                // Check for employee array
+                if (item.employee && Array.isArray(item.employee)) {
+                  for (const emp of item.employee) {
+                    if (emp.name) {
+                      const role = emp.jobTitle?.toLowerCase() || 'unknown';
+                      if (!result.teamMembers.some((m) => m.name === emp.name)) {
+                        result.teamMembers.push({ name: emp.name, role });
+                      }
+                    }
+                  }
+                }
+              }
+            } catch {
+              // Invalid JSON, skip
+            }
+          }
+        }
+
+        // If we found ownerName but no team members, add owner
+        if (result.ownerName && result.teamMembers.length === 0) {
+          result.teamMembers.push({ name: result.ownerName, role: 'owner' });
+        }
+
+        // Sort team members by role priority
+        result.teamMembers.sort((a, b) => {
+          const aIdx = priorityRoles.findIndex((r) => a.role.includes(r));
+          const bIdx = priorityRoles.findIndex((r) => b.role.includes(r));
+          return (aIdx === -1 ? 999 : aIdx) - (bIdx === -1 ? 999 : bIdx);
+        });
 
         // Look for specialties/services lists
         const listMatches = html.match(/<li[^>]*>([^<]{5,60})<\/li>/gi);
@@ -12778,7 +13006,34 @@ async function findEmailForLead(lead) {
   let emailFound = null;
   let source = null;
 
-  // 1. Website scraper (FREE - best quality)
+  // 0. NEU: Team-Seiten scrapen für Personal Emails (HIGHEST PRIORITY)
+  // Personal emails (max@domain.com) are much more effective than generic (info@)
+  if (lead.website) {
+    try {
+      const businessContext = await scrapeBusinessContext(lead.website);
+      if (businessContext.teamMembers && businessContext.teamMembers.length > 0) {
+        console.log(`👥 Found ${businessContext.teamMembers.length} team members:`, businessContext.teamMembers.slice(0, 3));
+
+        const personalResult = await generatePersonalEmails(lead.website, businessContext.teamMembers);
+        if (personalResult?.email) {
+          // Update lead with contact info
+          if (personalResult.contactName) {
+            lead.contact_name = personalResult.contactName;
+          }
+          console.log(`✅ Personal email generated: ${personalResult.email} for ${personalResult.contactName} (${personalResult.role})`);
+          return {
+            email: personalResult.email,
+            source: 'personal_generated',
+            contactName: personalResult.contactName,
+          };
+        }
+      }
+    } catch (e) {
+      console.log('Team member extraction failed:', e.message);
+    }
+  }
+
+  // 1. Website scraper (FREE - best quality, now with personal-first priority)
   if (lead.website) {
     try {
       emailFound = await scrapeEmailFromWebsite(lead.website);
@@ -15166,6 +15421,7 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
     `);
 
     const emailStats = {
+      personal_generated: 0, // NEU: Personal emails from team member names
       website_scraper: 0,
       pattern_guess: 0,
       'snov.io': 0,
