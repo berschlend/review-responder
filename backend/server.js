@@ -15008,11 +15008,28 @@ app.post('/api/outreach/linkedin-demo', async (req, res) => {
     const demoToken = generateDemoToken();
     const demoUrl = `https://tryreviewresponder.com/demo/${demoToken}`;
 
-    // Generate connection note (LinkedIn limit: 200 chars)
+    // Generate connection note (LinkedIn limit: 200 chars) - CONTEXT-AWARE
     let connectionNote;
     if (scrapedReviews.length > 0 && googleRating) {
-      // ~95 chars + URL = ~175 total
-      connectionNote = `Hey ${contactFirstName}! Saw your Google reviews - made you 3 free AI responses for the tough ones: ${demoUrl}`;
+      // Format review count (10898 -> "10K+")
+      const reviewCountStr = totalReviews >= 1000
+        ? `${Math.floor(totalReviews / 1000)}K+`
+        : `${totalReviews}`;
+
+      // Short business name (first 2 words max)
+      const shortBizName = searchName.split(' ').slice(0, 2).join(' ');
+
+      // Context-aware templates based on rating
+      if (googleRating >= 4.5 && totalReviews >= 1000) {
+        // High performer: acknowledge success
+        connectionNote = `Hey ${contactFirstName}! ${googleRating}⭐ with ${reviewCountStr} reviews - impressive. Made you 3 AI drafts for the tough ones: ${demoUrl}`;
+      } else if (googleRating >= 4.0) {
+        // Good rating: focus on maintaining it
+        connectionNote = `Hey ${contactFirstName}! ${shortBizName} has ${googleRating}⭐ - nice work. Made you 3 AI responses for your critics: ${demoUrl}`;
+      } else {
+        // Lower rating: focus on improvement
+        connectionNote = `Hey ${contactFirstName}! Those tough reviews at ${shortBizName} deserve good answers - made you 3 drafts: ${demoUrl}`;
+      }
     } else {
       // Fallback without demo (~140 chars)
       connectionNote = `Hey ${contactFirstName}! Built a tool that writes review responses in 10 sec. Would love your feedback: tryreviewresponder.com`;
