@@ -16,6 +16,7 @@ const Anthropic = require('@anthropic-ai/sdk');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { TwitterApi } = require('twitter-api-v2');
 const SibApiV3Sdk = require('@getbrevo/brevo');
+const cron = require('node-cron');
 const {
   getFewShotExamples,
   getFewShotExamplesXML,
@@ -22454,11 +22455,60 @@ app.get('/api/admin/reset-test-opens', async (req, res) => {
   }
 });
 
+// ============== NIGHT-BLAST SCHEDULER ==============
+// Automatic night-time sales automation - runs without external cron jobs
+// Uses node-cron for in-process scheduling
+
+// Helper function to call night-blast endpoint internally
+async function runNightBlast(source) {
+  console.log(`🌙 [${source}] Starting Night-Blast at ${new Date().toISOString()}`);
+  try {
+    const baseUrl = process.env.BACKEND_URL || `http://localhost:${PORT}`;
+    const response = await fetch(`${baseUrl}/api/cron/night-blast?secret=${process.env.CRON_SECRET}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const result = await response.json();
+    console.log(`🌙 [${source}] Night-Blast completed:`, JSON.stringify(result.summary || result, null, 2));
+    return result;
+  } catch (error) {
+    console.error(`🌙 [${source}] Night-Blast error:`, error.message);
+    return { error: error.message };
+  }
+}
+
+// Schedule Night-Blast jobs (Berlin timezone = UTC+1, but using UTC for simplicity)
+// These times are in UTC:
+// - 21:00 UTC = 22:00 Berlin (Winter) / 23:00 Berlin (Summer)
+// - 01:00 UTC = 02:00 Berlin (Winter) / 03:00 Berlin (Summer)
+// - 05:00 UTC = 06:00 Berlin (Winter) / 07:00 Berlin (Summer)
+
+// Night-Blast 1: 21:00 UTC (22:00 Berlin)
+cron.schedule('0 21 * * *', () => runNightBlast('Scheduled-21:00-UTC'), {
+  scheduled: true,
+  timezone: 'UTC'
+});
+
+// Night-Blast 2: 01:00 UTC (02:00 Berlin)
+cron.schedule('0 1 * * *', () => runNightBlast('Scheduled-01:00-UTC'), {
+  scheduled: true,
+  timezone: 'UTC'
+});
+
+// Night-Blast 3: 05:00 UTC (06:00 Berlin)
+cron.schedule('0 5 * * *', () => runNightBlast('Scheduled-05:00-UTC'), {
+  scheduled: true,
+  timezone: 'UTC'
+});
+
+console.log('🌙 Night-Blast Scheduler initialized: 21:00, 01:00, 05:00 UTC');
+
 // Start server
 initDatabase()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`✅ Server running on port ${PORT}`);
+      console.log('🌙 Night-Blast jobs scheduled: 21:00, 01:00, 05:00 UTC (22:00, 02:00, 06:00 Berlin)');
     });
   })
   .catch(err => {
