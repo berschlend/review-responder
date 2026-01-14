@@ -3301,24 +3301,48 @@ ${languageInstruction}
     let generatedResponse;
 
     if (useModel === 'smart' && anthropic) {
-      // Use Claude for Smart AI
-      const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 350,
-        system: systemMessage,
-        messages: [{ role: 'user', content: userMessage }],
-      });
-      generatedResponse = response.content[0].text.trim();
+      // Use Claude for Smart AI - with auto-fallback to GPT-4o-mini on error
+      try {
+        const response = await anthropic.messages.create({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 350,
+          system: systemMessage,
+          messages: [{ role: 'user', content: userMessage }],
+        });
+        generatedResponse = response.content[0].text.trim();
 
-      // Log API call for cost tracking
-      logApiCall({
-        provider: 'anthropic',
-        model: 'claude-sonnet-4-20250514',
-        endpoint: '/api/generate',
-        userId: req.user?.id,
-        inputTokens: response.usage?.input_tokens || 0,
-        outputTokens: response.usage?.output_tokens || 0,
-      });
+        // Log API call for cost tracking
+        logApiCall({
+          provider: 'anthropic',
+          model: 'claude-sonnet-4-20250514',
+          endpoint: '/api/generate',
+          userId: req.user?.id,
+          inputTokens: response.usage?.input_tokens || 0,
+          outputTokens: response.usage?.output_tokens || 0,
+        });
+      } catch (claudeError) {
+        // Auto-fallback to GPT-4o-mini if Claude fails (out of credits, rate limit, etc.)
+        console.warn(`[Claude Fallback] ${claudeError.message} - using GPT-4o-mini`);
+        useModel = 'standard';
+        const completion = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: systemMessage },
+            { role: 'user', content: userMessage },
+          ],
+          max_tokens: 350,
+          temperature: 0.6,
+        });
+        generatedResponse = completion.choices[0].message.content.trim();
+        logApiCall({
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+          endpoint: '/api/generate (claude-fallback)',
+          userId: req.user?.id,
+          inputTokens: completion.usage?.prompt_tokens || 0,
+          outputTokens: completion.usage?.completion_tokens || 0,
+        });
+      }
     } else {
       // Use GPT-4o-mini for Standard AI (or fallback if no Anthropic key)
       const completion = await openai.chat.completions.create({
@@ -3847,24 +3871,46 @@ LANGUAGE: ${bulkLanguageInstruction}`;
         let generatedResponse;
 
         if (useModel === 'smart' && anthropic) {
-          // Use Claude for Smart AI
-          const response = await anthropic.messages.create({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 350,
-            system: bulkSystemMessage,
-            messages: [{ role: 'user', content: bulkUserMessage }],
-          });
-          generatedResponse = response.content[0].text.trim();
+          // Use Claude for Smart AI - with auto-fallback
+          try {
+            const response = await anthropic.messages.create({
+              model: 'claude-sonnet-4-20250514',
+              max_tokens: 350,
+              system: bulkSystemMessage,
+              messages: [{ role: 'user', content: bulkUserMessage }],
+            });
+            generatedResponse = response.content[0].text.trim();
 
-          // Log API call for cost tracking
-          logApiCall({
-            provider: 'anthropic',
-            model: 'claude-sonnet-4-20250514',
-            endpoint: '/api/generate-bulk',
-            userId: req.user?.id,
-            inputTokens: response.usage?.input_tokens || 0,
-            outputTokens: response.usage?.output_tokens || 0,
-          });
+            logApiCall({
+              provider: 'anthropic',
+              model: 'claude-sonnet-4-20250514',
+              endpoint: '/api/generate-bulk',
+              userId: req.user?.id,
+              inputTokens: response.usage?.input_tokens || 0,
+              outputTokens: response.usage?.output_tokens || 0,
+            });
+          } catch (claudeError) {
+            console.warn(`[Claude Fallback] Bulk: ${claudeError.message} - using GPT-4o-mini`);
+            useModel = 'standard';
+            const completion = await openai.chat.completions.create({
+              model: 'gpt-4o-mini',
+              messages: [
+                { role: 'system', content: bulkSystemMessage },
+                { role: 'user', content: bulkUserMessage },
+              ],
+              max_tokens: 350,
+              temperature: 0.6,
+            });
+            generatedResponse = completion.choices[0].message.content.trim();
+            logApiCall({
+              provider: 'openai',
+              model: 'gpt-4o-mini',
+              endpoint: '/api/generate-bulk (claude-fallback)',
+              userId: req.user?.id,
+              inputTokens: completion.usage?.prompt_tokens || 0,
+              outputTokens: completion.usage?.completion_tokens || 0,
+            });
+          }
         } else {
           // Use GPT-4o-mini for Standard AI
           const completion = await openai.chat.completions.create({
@@ -6279,23 +6325,44 @@ Rewrite until it sounds like a real person.
 
 Write ${ratingStrategy.length}. Be specific. Sound human.`;
 
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 300,
-    system: systemMessage,
-    messages: [{ role: 'user', content: userMessage }],
-  });
+  // Try Claude first, fallback to GPT-4o-mini on error
+  try {
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 300,
+      system: systemMessage,
+      messages: [{ role: 'user', content: userMessage }],
+    });
 
-  // Log API call for cost tracking
-  logApiCall({
-    provider: 'anthropic',
-    model: 'claude-sonnet-4-20250514',
-    endpoint: '/api/demo/generate',
-    inputTokens: response.usage?.input_tokens || 0,
-    outputTokens: response.usage?.output_tokens || 0,
-  });
+    logApiCall({
+      provider: 'anthropic',
+      model: 'claude-sonnet-4-20250514',
+      endpoint: '/api/demo/generate',
+      inputTokens: response.usage?.input_tokens || 0,
+      outputTokens: response.usage?.output_tokens || 0,
+    });
 
-  return response.content[0].text.trim();
+    return response.content[0].text.trim();
+  } catch (claudeError) {
+    console.warn(`[Claude Fallback] Demo: ${claudeError.message} - using GPT-4o-mini`);
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemMessage },
+        { role: 'user', content: userMessage },
+      ],
+      max_tokens: 300,
+      temperature: 0.6,
+    });
+    logApiCall({
+      provider: 'openai',
+      model: 'gpt-4o-mini',
+      endpoint: '/api/demo/generate (claude-fallback)',
+      inputTokens: completion.usage?.prompt_tokens || 0,
+      outputTokens: completion.usage?.output_tokens || 0,
+    });
+    return completion.choices[0].message.content.trim();
+  }
 }
 
 // Helper: Generate demo token
