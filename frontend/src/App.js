@@ -2100,6 +2100,39 @@ const LandingPage = () => {
   const [showLandingVideo, setShowLandingVideo] = useState(false);
   const [showDemoVideo, setShowDemoVideo] = useState(false);
 
+  // Try Before Signup - Hero Demo State
+  const [tryReviewText, setTryReviewText] = useState('');
+  const [tryResponse, setTryResponse] = useState('');
+  const [tryLoading, setTryLoading] = useState(false);
+  const [tryTone, setTryTone] = useState('professional');
+  const [tryError, setTryError] = useState('');
+
+  // Try Before Signup - Generate Response
+  const handleTryGenerate = async () => {
+    if (!tryReviewText.trim() || tryReviewText.trim().length < 10) {
+      setTryError('Please enter a review (at least 10 characters)');
+      return;
+    }
+    setTryLoading(true);
+    setTryError('');
+    setTryResponse('');
+    try {
+      const res = await axios.post(`${API_URL}/api/public/try`, {
+        reviewText: tryReviewText,
+        tone: tryTone,
+      });
+      setTryResponse(res.data.response);
+    } catch (err) {
+      if (err.response?.status === 429) {
+        setTryError(err.response?.data?.message || 'Daily limit reached. Sign up for 20 free/month!');
+      } else {
+        setTryError(err.response?.data?.error || 'Something went wrong. Please try again.');
+      }
+    } finally {
+      setTryLoading(false);
+    }
+  };
+
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
@@ -2213,7 +2246,7 @@ const LandingPage = () => {
               border: '1px solid var(--border-color)'
             }}>
               <Shield size={12} style={{ color: 'var(--primary)' }} />
-              Enterprise-Grade Review Management
+              Professional Review Management
             </span>
           </div>
           <div style={{ marginBottom: '24px', transform: 'scale(0.85)', opacity: 0.9 }}>
@@ -2228,7 +2261,7 @@ const LandingPage = () => {
             color: 'var(--text-primary)',
             fontWeight: '700'
           }}>
-            Respond to Reviews <span style={{ color: 'var(--primary)' }}>in Seconds</span>, Not Hours
+            Never stress about <span style={{ color: 'var(--primary)' }}>negative reviews</span> again
           </h1>
 
           <p className="hero-subtitle" style={{ maxWidth: '540px', margin: '0 auto 32px', fontSize: '1.05rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
@@ -2236,39 +2269,170 @@ const LandingPage = () => {
             Professional replies in one click.
           </p>
 
-          <div
-            className="hero-buttons"
-            style={{ display: 'flex', flexDirection: 'column', gap: '32px', alignItems: 'center' }}
-          >
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
-              <Link
-                to={user ? '/dashboard' : '/register'}
-                className="btn btn-primary"
-                style={{ padding: '0 20px', height: '44px', display: 'flex', alignItems: 'center', borderRadius: '6px', fontWeight: '600', fontSize: '14px' }}
-              >
-                Get Started Free
-              </Link>
-              <a
-                href="#demo"
-                className="btn btn-secondary"
-                style={{ padding: '0 20px', height: '44px', display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '6px', fontWeight: '600', fontSize: '14px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
-              >
-                <PlayCircle size={16} />
-                Watch Demo
-              </a>
+          {/* Try Before Signup - Demo Box */}
+          <div style={{
+            maxWidth: '600px',
+            margin: '0 auto',
+            width: '100%'
+          }}>
+            {/* Input Section */}
+            <div style={{
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '12px',
+              padding: '20px',
+              marginBottom: '16px'
+            }}>
+              <textarea
+                value={tryReviewText}
+                onChange={(e) => setTryReviewText(e.target.value)}
+                placeholder="Paste a customer review here to see how we respond..."
+                style={{
+                  width: '100%',
+                  minHeight: '100px',
+                  padding: '12px',
+                  fontSize: '14px',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  background: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  resize: 'vertical',
+                  fontFamily: 'inherit',
+                  marginBottom: '12px'
+                }}
+              />
+
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {['professional', 'friendly', 'formal', 'apologetic'].map((tone) => (
+                    <button
+                      key={tone}
+                      onClick={() => setTryTone(tone)}
+                      style={{
+                        padding: '6px 12px',
+                        fontSize: '12px',
+                        borderRadius: '6px',
+                        border: tryTone === tone ? '1px solid var(--primary)' : '1px solid var(--border-color)',
+                        background: tryTone === tone ? 'var(--primary-light)' : 'var(--bg-primary)',
+                        color: tryTone === tone ? 'var(--primary)' : 'var(--text-secondary)',
+                        cursor: 'pointer',
+                        fontWeight: '500',
+                        textTransform: 'capitalize'
+                      }}
+                    >
+                      {tone}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleTryGenerate}
+                  disabled={tryLoading || !tryReviewText.trim()}
+                  className="btn btn-primary"
+                  style={{
+                    padding: '10px 20px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    opacity: tryLoading || !tryReviewText.trim() ? 0.7 : 1
+                  }}
+                >
+                  {tryLoading ? (
+                    <>
+                      <div className="spinner" style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={16} />
+                      Generate Response
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap' }}>
-              {[
-                { icon: <CreditCard size={14} />, text: "No credit card required" },
-                { icon: <Clock size={14} />, text: "Setup in 2 minutes" },
-                { icon: <Check size={14} />, text: "20 free responses/month" }
-              ].map((item, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '13px' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>{item.icon}</span>
-                  {item.text}
+            {/* Error Message */}
+            {tryError && (
+              <div style={{
+                padding: '12px 16px',
+                background: tryError.includes('Sign up') ? 'var(--primary-light)' : '#FEF2F2',
+                border: tryError.includes('Sign up') ? '1px solid var(--primary)' : '1px solid #FCA5A5',
+                borderRadius: '8px',
+                marginBottom: '16px',
+                color: tryError.includes('Sign up') ? 'var(--primary)' : '#DC2626',
+                fontSize: '13px',
+                textAlign: 'center'
+              }}>
+                {tryError}
+                {tryError.includes('Sign up') && (
+                  <Link to="/register" style={{ marginLeft: '8px', fontWeight: '600', textDecoration: 'underline' }}>
+                    Sign up free
+                  </Link>
+                )}
+              </div>
+            )}
+
+            {/* Generated Response */}
+            {tryResponse && (
+              <div style={{
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--primary)',
+                borderRadius: '12px',
+                padding: '20px',
+                marginBottom: '16px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  <Sparkles size={16} style={{ color: 'var(--primary)' }} />
+                  <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    AI Response
+                  </span>
                 </div>
-              ))}
+                <p style={{
+                  fontSize: '14px',
+                  lineHeight: '1.6',
+                  color: 'var(--text-primary)',
+                  margin: 0,
+                  whiteSpace: 'pre-wrap'
+                }}>
+                  {tryResponse}
+                </p>
+
+                <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                  <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                    Like this? Get 20 free responses/month
+                  </span>
+                  <Link
+                    to="/register"
+                    className="btn btn-primary"
+                    style={{ padding: '8px 16px', fontSize: '13px', fontWeight: '600', borderRadius: '6px' }}
+                  >
+                    Sign Up Free
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {/* Trust Badges */}
+            <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '12px' }}>
+                <Check size={14} style={{ color: 'var(--text-secondary)' }} />
+                No signup required
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '12px' }}>
+                <Sparkles size={14} style={{ color: 'var(--text-secondary)' }} />
+                See results instantly
+              </div>
+              <a
+                href="#demo"
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '12px', textDecoration: 'none' }}
+              >
+                <PlayCircle size={14} style={{ color: 'var(--text-secondary)' }} />
+                Watch Demo
+              </a>
             </div>
           </div>
         </div>
