@@ -4272,7 +4272,7 @@ const DashboardPage = () => {
   const [history, setHistory] = useState([]);
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState('');
-  const [customInstructions, setCustomInstructions] = useState('');
+  const [customInstructions, setCustomInstructions] = useState(user?.responseStyle || '');
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
   const [templateName, setTemplateName] = useState('');
   const [savingTemplate, setSavingTemplate] = useState(false);
@@ -9483,9 +9483,23 @@ const SettingsPage = () => {
         </div>
 
         <div className="card" style={{ marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
-            Response Style Preferences
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>
+              Response Style Preferences
+            </h2>
+            <span
+              style={{
+                background: 'var(--primary-100)',
+                color: 'var(--primary-700)',
+                padding: '3px 10px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: '600',
+              }}
+            >
+              Synced with Dashboard & Extension
+            </span>
+          </div>
           <p style={{ fontSize: '14px', color: 'var(--gray-500)', marginBottom: '16px' }}>
             Any specific instructions for how you want responses written
           </p>
@@ -21125,6 +21139,8 @@ const AdminPage = () => {
   const [claudeStateData, setClaudeStateData] = useState(null);
   const [claudeStateLoading, setClaudeStateLoading] = useState(false);
   const [newNote, setNewNote] = useState('');
+  const [costsData, setCostsData] = useState(null);
+  const [costsLoading, setCostsLoading] = useState(false);
 
   // Use the same API_URL as the rest of the app (already includes /api)
   // Remove /api suffix if present to build admin URLs correctly
@@ -21295,6 +21311,21 @@ const AdminPage = () => {
     }
   };
 
+  const loadCostsData = async key => {
+    const keyToUse = key || adminKey;
+    if (!keyToUse) return;
+    setCostsLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/admin/api-costs?key=${keyToUse}`);
+      setCostsData(res.data);
+    } catch (err) {
+      console.error('Costs load error:', err);
+      toast.error('Failed to load API costs');
+    } finally {
+      setCostsLoading(false);
+    }
+  };
+
   const addClaudeNote = async () => {
     if (!newNote.trim()) {
       toast.error('Please enter a note');
@@ -21402,6 +21433,9 @@ const AdminPage = () => {
       }
       if (activeAdminTab === 'claude' && !claudeStateData) {
         loadClaudeStateData();
+      }
+      if (activeAdminTab === 'costs' && !costsData) {
+        loadCostsData();
       }
     }
   }, [activeAdminTab, isAuthenticated, adminKey]);
@@ -21522,6 +21556,12 @@ const AdminPage = () => {
           onClick={() => setActiveAdminTab('claude')}
         >
           Claude State
+        </button>
+        <button
+          className={`btn ${activeAdminTab === 'costs' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('costs')}
+        >
+          API Costs
         </button>
       </div>
 
@@ -23450,6 +23490,175 @@ const AdminPage = () => {
                 Could not load Claude state
               </p>
               <button className="btn btn-primary" onClick={() => loadClaudeStateData()}>
+                Retry
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* API Costs Tab */}
+      {activeAdminTab === 'costs' && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h2 style={{ margin: 0 }}>API Costs Dashboard</h2>
+            <button
+              className="btn btn-secondary"
+              onClick={() => { setCostsData(null); loadCostsData(); }}
+              style={{ padding: '6px 12px', fontSize: '13px' }}
+            >
+              Refresh
+            </button>
+          </div>
+
+          {costsLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading API costs...</div>
+          ) : costsData ? (
+            <>
+              {/* Cost Summary Cards */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                  gap: '16px',
+                  marginBottom: '24px',
+                }}
+              >
+                <div className="card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: 'white' }}>
+                  <div style={{ fontSize: '28px', fontWeight: '700' }}>
+                    ${parseFloat(costsData.totals?.today || 0).toFixed(2)}
+                  </div>
+                  <div style={{ opacity: 0.9, fontSize: '14px' }}>Today</div>
+                  <div style={{ opacity: 0.7, fontSize: '12px' }}>{costsData.totals?.calls_today || 0} calls</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', color: 'white' }}>
+                  <div style={{ fontSize: '28px', fontWeight: '700' }}>
+                    ${parseFloat(costsData.totals?.this_month || 0).toFixed(2)}
+                  </div>
+                  <div style={{ opacity: 0.9, fontSize: '14px' }}>This Month</div>
+                  <div style={{ opacity: 0.7, fontSize: '12px' }}>{costsData.totals?.calls_this_month || 0} calls</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)', color: 'white' }}>
+                  <div style={{ fontSize: '28px', fontWeight: '700' }}>
+                    ${parseFloat(costsData.totals?.all_time || 0).toFixed(2)}
+                  </div>
+                  <div style={{ opacity: 0.9, fontSize: '14px' }}>All Time</div>
+                  <div style={{ opacity: 0.7, fontSize: '12px' }}>{costsData.totals?.calls_all_time || 0} calls</div>
+                </div>
+              </div>
+
+              {/* This Month Breakdown */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ marginTop: 0, marginBottom: '16px' }}>This Month by Provider</h3>
+                {costsData.thisMonth?.length > 0 ? (
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
+                        <th style={{ textAlign: 'left', padding: '8px 12px' }}>Provider</th>
+                        <th style={{ textAlign: 'left', padding: '8px 12px' }}>Model</th>
+                        <th style={{ textAlign: 'right', padding: '8px 12px' }}>Calls</th>
+                        <th style={{ textAlign: 'right', padding: '8px 12px' }}>Tokens</th>
+                        <th style={{ textAlign: 'right', padding: '8px 12px' }}>Cost</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {costsData.thisMonth.map((row, i) => (
+                        <tr key={i} style={{ borderBottom: '1px solid var(--gray-100)' }}>
+                          <td style={{ padding: '8px 12px' }}>
+                            <span style={{
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontSize: '12px',
+                              fontWeight: '500',
+                              background: row.provider === 'anthropic' ? '#F3E8FF' :
+                                         row.provider === 'openai' ? '#DCFCE7' :
+                                         row.provider === 'google' ? '#FEF3C7' :
+                                         row.provider === 'google_places' ? '#DBEAFE' :
+                                         '#F3F4F6',
+                              color: row.provider === 'anthropic' ? '#7C3AED' :
+                                    row.provider === 'openai' ? '#16A34A' :
+                                    row.provider === 'google' ? '#D97706' :
+                                    row.provider === 'google_places' ? '#2563EB' :
+                                    '#374151'
+                            }}>
+                              {row.provider}
+                            </span>
+                          </td>
+                          <td style={{ padding: '8px 12px', color: 'var(--gray-600)', fontSize: '14px' }}>
+                            {row.model || '-'}
+                          </td>
+                          <td style={{ padding: '8px 12px', textAlign: 'right' }}>{row.calls}</td>
+                          <td style={{ padding: '8px 12px', textAlign: 'right', color: 'var(--gray-600)' }}>
+                            {parseInt(row.tokens || 0).toLocaleString()}
+                          </td>
+                          <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: '600' }}>
+                            ${parseFloat(row.cost || 0).toFixed(4)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p style={{ color: 'var(--gray-500)', textAlign: 'center' }}>No API calls this month yet</p>
+                )}
+              </div>
+
+              {/* Today's Breakdown */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Today's Calls</h3>
+                {costsData.today?.length > 0 ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {costsData.today.map((row, i) => (
+                      <div key={i} style={{
+                        padding: '8px 12px',
+                        background: 'var(--gray-50)',
+                        borderRadius: '6px',
+                        fontSize: '13px'
+                      }}>
+                        <strong>{row.provider}</strong>
+                        {row.model && <span style={{ color: 'var(--gray-500)' }}> ({row.model})</span>}
+                        : {row.calls} calls, ${parseFloat(row.cost || 0).toFixed(4)}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ color: 'var(--gray-500)', textAlign: 'center' }}>No API calls today yet</p>
+                )}
+              </div>
+
+              {/* Pricing Reference */}
+              <div className="card">
+                <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Pricing Reference</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', fontSize: '13px' }}>
+                  <div>
+                    <strong>Anthropic Claude</strong>
+                    <div style={{ color: 'var(--gray-600)' }}>Sonnet: $3/$15 per 1M tokens</div>
+                    <div style={{ color: 'var(--gray-600)' }}>Opus: $15/$75 per 1M tokens</div>
+                  </div>
+                  <div>
+                    <strong>OpenAI</strong>
+                    <div style={{ color: 'var(--gray-600)' }}>GPT-4o-mini: $0.15/$0.60 per 1M</div>
+                  </div>
+                  <div>
+                    <strong>Google</strong>
+                    <div style={{ color: 'var(--gray-600)' }}>Gemini: Free (Student)</div>
+                    <div style={{ color: 'var(--gray-600)' }}>Places API: $17/1000 requests</div>
+                  </div>
+                  <div>
+                    <strong>Free Services</strong>
+                    <div style={{ color: 'var(--gray-600)' }}>Brevo: 300/day free</div>
+                    <div style={{ color: 'var(--gray-600)' }}>Hunter: 50/mo free</div>
+                    <div style={{ color: 'var(--gray-600)' }}>SerpAPI: 100/mo free</div>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+                Could not load API costs
+              </p>
+              <button className="btn btn-primary" onClick={() => loadCostsData()}>
                 Retry
               </button>
             </div>
