@@ -8693,7 +8693,7 @@ const ConfirmEmailPage = () => {
   );
 };
 
-// Helper: Get context placeholder examples based on business type
+// Helper: Get context placeholder examples based on business type (for keywords input)
 const getContextPlaceholder = businessType => {
   const examples = {
     Restaurant: 'e.g. Italian, family-owned, since 1985, homemade pasta, cozy terrace',
@@ -8713,6 +8713,127 @@ const getContextPlaceholder = businessType => {
     'Home Services': 'e.g. plumbing, licensed, same-day service, fair pricing, family-owned',
   };
   return examples[businessType] || 'e.g. family-owned, since 1985, quality service, friendly team';
+};
+
+// Helper: Get full textarea placeholder examples based on business type
+const getTextareaPlaceholder = businessType => {
+  const examples = {
+    Restaurant: `Examples:
+• We're a family-owned Italian restaurant since 1985
+• Our signature dishes are homemade pasta and wood-fired pizza
+• Our chef Marco trained in Naples
+• We have a cozy outdoor terrace
+• We're known for our Sunday brunch specials
+• Our manager Sarah handles customer service`,
+    'Cafe / Coffee Shop': `Examples:
+• We're an independent coffee shop since 2015
+• We roast our own beans from single-origin farms
+• Our baristas are certified by SCA
+• We have a cozy reading corner with local art
+• We're known for our homemade pastries
+• Our owner Lisa greets every regular by name`,
+    'Hotel / Accommodation': `Examples:
+• We're a boutique hotel in the city center since 2010
+• Our rooms feature stunning city views
+• We offer complimentary breakfast with local products
+• Our concierge team speaks 5 languages
+• We're known for our rooftop bar
+• General Manager Thomas ensures every detail is perfect`,
+    'Bar / Nightclub': `Examples:
+• We're a craft cocktail bar with industrial vibe
+• Our mixologists create custom drinks
+• We feature live jazz every Thursday
+• We source premium spirits from around the world
+• We're known for our signature Old Fashioned
+• Owner Mike brings 20 years of hospitality experience`,
+    'Spa / Wellness': `Examples:
+• We're a holistic wellness center since 2008
+• Our therapists are certified in multiple modalities
+• We use organic, locally-sourced products
+• We have a tranquil meditation garden
+• We're known for our signature hot stone massage
+• Director Anna personally designs treatment plans`,
+    'Hair Salon / Barbershop': `Examples:
+• We're a classic barbershop with modern edge since 2012
+• Our master barbers have 15+ years experience
+• We offer hot towel shaves and beard grooming
+• We use premium products from Baxter of California
+• We're known for our fade cuts and attention to detail
+• Owner Jake creates a relaxed, friendly atmosphere`,
+    'Dental Practice': `Examples:
+• We're a family dental practice serving the community since 1995
+• Dr. Smith specializes in gentle, anxiety-free care
+• We use the latest digital imaging technology
+• We offer same-day emergency appointments
+• We're known for our comfortable, modern office
+• Our hygienist Maria makes every patient feel at ease`,
+    'Medical Practice': `Examples:
+• We're a primary care practice with 20+ years in the community
+• Dr. Johnson takes time to listen to every patient
+• We offer same-day sick visits
+• We use a patient portal for easy communication
+• We're known for our thorough, personalized care
+• Our staff creates a warm, welcoming environment`,
+    'Auto Repair / Service': `Examples:
+• We're an independent auto shop specializing in European cars
+• Our mechanics are ASE certified with 30+ years combined experience
+• We offer free loaner cars for major repairs
+• We use OEM parts and stand behind our work
+• We're known for honest pricing and clear explanations
+• Owner Mike personally inspects every vehicle`,
+    'Gym / Fitness Studio': `Examples:
+• We're a boutique fitness studio since 2018
+• Our trainers are nationally certified with specialties in strength and mobility
+• We offer small group classes for personalized attention
+• We have state-of-the-art equipment and 24/7 access
+• We're known for our supportive community
+• Owner Sarah creates programs for all fitness levels`,
+    'Retail Store': `Examples:
+• We're a local boutique curating unique finds since 2010
+• We source products from local artisans and small brands
+• Our staff knows every product personally
+• We offer complimentary gift wrapping
+• We're known for our personalized shopping experience
+• Owner Emma hand-selects every item in our collection`,
+    'E-commerce': `Examples:
+• We're an online store focused on quality and fast shipping
+• We ship same-day on orders before 2pm
+• We have a hassle-free 30-day return policy
+• Our customer support responds within 2 hours
+• We're known for our carefully curated selection
+• Our team personally quality-checks every order`,
+    'Professional Services': `Examples:
+• We're a CPA firm serving small businesses since 2005
+• We specialize in tax planning and bookkeeping
+• Our team responds to every inquiry within 24 hours
+• We use cloud-based tools for easy collaboration
+• We're known for making accounting understandable
+• Partner David has 25 years of experience`,
+    'Real Estate': `Examples:
+• We're local real estate experts with 15 years in this market
+• We specialize in first-time homebuyers and families
+• We provide neighborhood insights you won't find online
+• We're available evenings and weekends
+• We're known for our honest, no-pressure approach
+• Agent Jennifer treats every client like family`,
+    'Home Services': `Examples:
+• We're a family-owned plumbing company since 1990
+• Our technicians are licensed and background-checked
+• We offer same-day service and upfront pricing
+• We stand behind our work with a 2-year warranty
+• We're known for arriving on time and cleaning up after
+• Owner Bob personally follows up on every job`,
+  };
+  return (
+    examples[businessType] ||
+    `Examples:
+• We're a family-owned business since 1985
+• Our team brings 20+ years of combined experience
+• We pride ourselves on quality service
+• We're known for our attention to detail
+• Our manager Sarah ensures every customer is satisfied
+• We treat every customer like family`
+  );
 };
 
 // AI Context Generator Component
@@ -9187,13 +9308,7 @@ const SettingsPage = () => {
               className="form-textarea"
               value={businessContext}
               onChange={e => setBusinessContext(e.target.value)}
-              placeholder={`Examples:
-• We're a family-owned Italian restaurant since 1985
-• Our signature dishes are homemade pasta and wood-fired pizza
-• Our chef Marco trained in Naples
-• We have a cozy outdoor terrace
-• We're known for our Sunday brunch specials
-• Our manager Sarah handles customer service`}
+              placeholder={getTextareaPlaceholder(businessType)}
               rows={8}
             />
             <p style={{ fontSize: '12px', color: 'var(--gray-400)', marginTop: '8px' }}>
