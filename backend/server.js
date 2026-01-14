@@ -6694,6 +6694,57 @@ Write the response directly. No quotes. No "Response:" prefix. Just the review r
   }
 });
 
+// POST /api/public/demo-email-capture - Capture email from demo page gate
+app.post('/api/public/demo-email-capture', async (req, res) => {
+  try {
+    const { email, demo_token, business_name } = req.body;
+
+    if (!email || !email.includes('@')) {
+      return res.status(400).json({ error: 'Valid email required' });
+    }
+
+    console.log(`[Demo Email Capture] ${email} from demo ${demo_token} (${business_name})`);
+
+    // Check if this email already exists as a lead
+    const existingLead = await pool.query(
+      'SELECT id FROM outreach_leads WHERE email = $1',
+      [email.toLowerCase()]
+    );
+
+    if (existingLead.rows.length === 0) {
+      // Add as a new lead with source = demo_gate
+      await pool.query(`
+        INSERT INTO outreach_leads (email, business_name, source, status, created_at)
+        VALUES ($1, $2, 'demo_gate', 'warm_lead', NOW())
+        ON CONFLICT (email) DO UPDATE SET status = 'warm_lead', updated_at = NOW()
+      `, [email.toLowerCase(), business_name || 'Demo Visitor']);
+    } else {
+      // Upgrade existing lead to warm_lead
+      await pool.query(
+        `UPDATE outreach_leads SET status = 'warm_lead', updated_at = NOW() WHERE email = $1`,
+        [email.toLowerCase()]
+      );
+    }
+
+    // Track the demo token view if provided (silently fail if column doesn't exist)
+    if (demo_token) {
+      try {
+        await pool.query(
+          `UPDATE outreach_demos SET updated_at = NOW() WHERE token = $1`,
+          [demo_token]
+        );
+      } catch (e) {
+        // Column might not exist, ignore
+      }
+    }
+
+    res.json({ success: true, message: 'Email captured' });
+  } catch (error) {
+    console.error('[Demo Email Capture] Error:', error.message);
+    res.status(500).json({ error: 'Failed to capture email' });
+  }
+});
+
 // Helper: Send demo email
 async function sendDemoEmail(toEmail, businessName, demos, demoToken, totalReviews) {
   if (!resend) {

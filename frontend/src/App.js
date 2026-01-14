@@ -11740,6 +11740,53 @@ const DemoPage = () => {
   const [liveResponse, setLiveResponse] = useState('');
   const [liveLoading, setLiveLoading] = useState(false);
 
+  // EMAIL GATE: Require email before allowing copy
+  const [emailCaptured, setEmailCaptured] = useState(() => {
+    return localStorage.getItem('demo_email_captured') === 'true';
+  });
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [captureEmail, setCaptureEmail] = useState('');
+  const [pendingCopyIndex, setPendingCopyIndex] = useState(null);
+  const [showAllResponses, setShowAllResponses] = useState(false);
+
+  // COUNTDOWN TIMER: 24h urgency timer
+  const [countdown, setCountdown] = useState({ hours: 23, minutes: 59, seconds: 59 });
+
+  useEffect(() => {
+    // Get or set countdown expiry time
+    const storageKey = `demo_countdown_${token}`;
+    let expiryTime = localStorage.getItem(storageKey);
+
+    if (!expiryTime) {
+      // First visit - set 24h from now
+      expiryTime = Date.now() + 24 * 60 * 60 * 1000;
+      localStorage.setItem(storageKey, expiryTime.toString());
+    } else {
+      expiryTime = parseInt(expiryTime);
+    }
+
+    const updateCountdown = () => {
+      const now = Date.now();
+      const diff = Math.max(0, expiryTime - now);
+
+      if (diff <= 0) {
+        setCountdown({ hours: 0, minutes: 0, seconds: 0 });
+        return;
+      }
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setCountdown({ hours, minutes, seconds });
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+
+    return () => clearInterval(interval);
+  }, [token]);
+
   // No fake testimonials - removed to maintain honesty
 
   useEffect(() => {
@@ -11831,10 +11878,47 @@ const DemoPage = () => {
     }
   };
 
-  const copyResponse = (text, index) => {
+  // EMAIL GATE: Handle email capture for copy access
+  const handleEmailCapture = async (e) => {
+    e.preventDefault();
+    if (!captureEmail.trim() || !captureEmail.includes('@')) {
+      toast.error('Please enter a valid email');
+      return;
+    }
+
+    // Track email capture
+    try {
+      await fetch(`${API_URL}/public/demo-email-capture`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: captureEmail,
+          demo_token: token,
+          business_name: demo?.business_name
+        }),
+      });
+    } catch (err) {
+      // Silent fail - still allow access
+    }
+
+    localStorage.setItem('demo_email_captured', 'true');
+    setEmailCaptured(true);
+    setShowEmailModal(false);
+    toast.success('Email saved! You can now copy responses.');
+
+    // If there was a pending copy, execute it
+    if (pendingCopyIndex !== null) {
+      const item = demo?.demos?.[pendingCopyIndex];
+      if (item) {
+        actualCopyResponse(item.ai_response, pendingCopyIndex);
+      }
+      setPendingCopyIndex(null);
+    }
+  };
+
+  const actualCopyResponse = (text, index) => {
     navigator.clipboard.writeText(text);
     setCopiedIndex(index);
-    // Confetti celebration on copy
     confetti({
       particleCount: 50,
       spread: 60,
@@ -11842,6 +11926,16 @@ const DemoPage = () => {
       colors: ['#10b981', '#6366f1', '#8b5cf6']
     });
     setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  const copyResponse = (text, index) => {
+    // EMAIL GATE: Check if email is captured
+    if (!emailCaptured) {
+      setPendingCopyIndex(index);
+      setShowEmailModal(true);
+      return;
+    }
+    actualCopyResponse(text, index);
   };
 
   const GoogleStars = ({ rating }) => (
@@ -11887,6 +11981,71 @@ const DemoPage = () => {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
+      {/* EMAIL GATE MODAL */}
+      {showEmailModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', zIndex: 1000, padding: '20px'
+        }}>
+          <div style={{
+            background: 'var(--bg-primary)', borderRadius: '20px', padding: '32px',
+            maxWidth: '420px', width: '100%', textAlign: 'center',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+          }}>
+            <div style={{
+              width: '64px', height: '64px', borderRadius: '50%',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 20px'
+            }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+              </svg>
+            </div>
+            <h3 style={{ fontSize: '22px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '8px' }}>
+              Copy This Response
+            </h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '24px', lineHeight: '1.6' }}>
+              Enter your email to unlock copy functionality and get 30% OFF your first month.
+            </p>
+            <form onSubmit={handleEmailCapture}>
+              <input
+                type="email"
+                value={captureEmail}
+                onChange={(e) => setCaptureEmail(e.target.value)}
+                placeholder="your@email.com"
+                style={{
+                  width: '100%', padding: '14px 16px', borderRadius: '10px',
+                  border: '1px solid var(--border-color)', background: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)', fontSize: '15px', marginBottom: '12px'
+                }}
+                autoFocus
+              />
+              <button
+                type="submit"
+                style={{
+                  width: '100%', padding: '14px', borderRadius: '10px', border: 'none',
+                  background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
+                  color: 'white', fontWeight: '600', fontSize: '15px', cursor: 'pointer'
+                }}
+              >
+                Unlock Copy + 30% OFF
+              </button>
+            </form>
+            <button
+              onClick={() => { setShowEmailModal(false); setPendingCopyIndex(null); }}
+              style={{
+                marginTop: '16px', background: 'none', border: 'none',
+                color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px'
+              }}
+            >
+              Maybe later
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Floating Header */}
       <div style={{ position: 'sticky', top: 0, zIndex: 100, background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', backdropFilter: 'blur(8px)' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -11965,9 +12124,9 @@ const DemoPage = () => {
           </p>
         </div>
 
-        {/* Demo Cards */}
+        {/* Demo Cards - RESPONSE GATE: Only show 2 initially */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '48px' }}>
-          {demo.demos && demo.demos.map((item, index) => (
+          {demo.demos && demo.demos.slice(0, showAllResponses ? demo.demos.length : 2).map((item, index) => (
             <div
               key={index}
               style={{
@@ -12092,6 +12251,53 @@ const DemoPage = () => {
               </div>
             </div>
           ))}
+
+          {/* RESPONSE GATE: Show unlock button if more responses available */}
+          {demo.demos && demo.demos.length > 2 && !showAllResponses && (
+            <div
+              onClick={() => {
+                if (!emailCaptured) {
+                  setShowEmailModal(true);
+                } else {
+                  setShowAllResponses(true);
+                }
+              }}
+              style={{
+                background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
+                borderRadius: '16px',
+                border: '2px dashed var(--primary)',
+                padding: '32px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              <div style={{
+                width: '48px', height: '48px', borderRadius: '50%',
+                background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 16px'
+              }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                  <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
+                </svg>
+              </div>
+              <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '8px' }}>
+                {demo.demos.length - 2} More AI Responses Available
+              </h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '16px' }}>
+                {emailCaptured ? 'Click to reveal all responses' : 'Enter your email to unlock all responses'}
+              </p>
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
+                color: 'white', padding: '10px 20px', borderRadius: '8px',
+                fontWeight: '600', fontSize: '14px'
+              }}>
+                {emailCaptured ? 'Show All Responses' : 'Unlock with Email'}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Live Preview - Try It Yourself */}
@@ -12350,10 +12556,16 @@ const DemoPage = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '15px', fontWeight: '600', color: 'white' }}>
-              Like what you see?
+              30% OFF expires in
             </span>
-            <span style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '6px', fontSize: '13px', fontWeight: '700', color: 'white' }}>
-              30% OFF
+            {/* COUNTDOWN TIMER */}
+            <span style={{
+              background: countdown.hours === 0 && countdown.minutes < 30 ? '#ef4444' : 'rgba(255,255,255,0.2)',
+              padding: '4px 10px', borderRadius: '6px', fontSize: '13px', fontWeight: '700', color: 'white',
+              fontFamily: 'monospace', minWidth: '80px', textAlign: 'center',
+              animation: countdown.hours === 0 && countdown.minutes < 30 ? 'pulse 1s infinite' : 'none'
+            }}>
+              {String(countdown.hours).padStart(2, '0')}:{String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}
             </span>
           </div>
           <a
@@ -12373,7 +12585,7 @@ const DemoPage = () => {
               boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
             }}
           >
-            Start Free Trial
+            Claim 30% OFF
             <ArrowRight size={18} />
           </a>
         </div>
