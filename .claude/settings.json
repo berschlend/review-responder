@@ -1,4 +1,11 @@
 {
+  "mcpServers": {
+    "gemini": {
+      "command": "gemini-mcp",
+      "args": [],
+      "env": { "GEMINI_API_KEY": "AIzaSyBbANWPv3uaxDiEUHnxZv_sRd9QM7vjXaw" }
+    }
+  },
   "hooks": {
     "PostToolUse": [
       {

@@ -2,6 +2,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useRef,
   createContext,
   useContext,
   Suspense,
@@ -1754,8 +1755,8 @@ Small business owners shouldn't have to choose between ignoring reviews and spen
 
 PRICING (honest and simple):
 - Free: 20 responses/month - enough to try it properly
-- Starter $29/mo: 300 responses
-- Pro $49/mo: 800 responses + team access for 3 people
+- Starter $29/mo: 300 responses/month
+- Pro $49/mo: 800 responses/month + team access for 3 people
 - Unlimited $99/mo: No limits + API for developers
 - 20% off yearly billing on all plans
 
@@ -2866,7 +2867,6 @@ const PricingCards = ({ showFree = true }) => {
         '20 total per month',
         'All 4 tone options',
         '50+ languages',
-        'Response history',
         'Chrome Extension (all platforms)',
       ],
       buttonText: 'Get Started',
@@ -2881,9 +2881,8 @@ const PricingCards = ({ showFree = true }) => {
         '✨ 100 Smart AI responses',
         '⚡ 200 Standard responses',
         '300 total per month',
-        'Response templates',
+        'Response history',
         'CSV/PDF export',
-        'Email support',
         'Chrome Extension (all platforms)',
       ],
       buttonText: 'Subscribe',
@@ -3074,7 +3073,7 @@ const PricingCards = ({ showFree = true }) => {
               )}
               <p style={{ color: 'var(--gray-500)', marginTop: '8px' }}>
                 {typeof plan.responses === 'number'
-                  ? `${plan.responses} responses`
+                  ? `${plan.responses} responses/month`
                   : plan.responses}
               </p>
               <ul className="pricing-features">
@@ -3140,7 +3139,24 @@ const LoginPage = () => {
       toast.success('Welcome back!');
       navigate('/dashboard');
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Login failed');
+      const errorMsg = error.response?.data?.error || 'Login failed';
+      // Show helpful message for invalid credentials
+      if (errorMsg.toLowerCase().includes('invalid') || errorMsg.toLowerCase().includes('credentials') || errorMsg.toLowerCase().includes('not found')) {
+        toast.error(
+          <div>
+            {errorMsg}
+            <div style={{ marginTop: '8px', fontSize: '13px' }}>
+              No account?{' '}
+              <a href="/register" style={{ color: 'var(--primary-500)', fontWeight: '600' }}>
+                Sign up free →
+              </a>
+            </div>
+          </div>,
+          { duration: 5000 }
+        );
+      } else {
+        toast.error(errorMsg);
+      }
     } finally {
       setLoading(false);
     }
@@ -3945,7 +3961,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                     <input
                       type="text"
                       className="form-input"
-                      placeholder="e.g., italian, family-owned, homemade pasta"
+                      placeholder={getContextPlaceholder(businessType)}
                       value={keywords}
                       onChange={e => setKeywords(e.target.value)}
                     />
@@ -4020,16 +4036,29 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                     </p>
                   </div>
 
-                  <p
+                  {/* Go to Settings hint */}
+                  <div
                     style={{
-                      fontSize: '12px',
-                      color: 'var(--gray-500)',
+                      background: 'linear-gradient(135deg, var(--primary-50), #eff6ff)',
+                      border: '1px solid var(--primary-200)',
+                      borderRadius: '8px',
+                      padding: '12px',
                       marginTop: '12px',
-                      textAlign: 'center',
                     }}
                   >
-                    See how the AI uses your business details? Click Next to continue.
-                  </p>
+                    <p
+                      style={{
+                        fontSize: '13px',
+                        color: 'var(--primary-700)',
+                        margin: 0,
+                        textAlign: 'center',
+                      }}
+                    >
+                      <strong>💡 Pro Tip:</strong> After setup, go to{' '}
+                      <strong>Settings → Generate with AI</strong> to add more details and get even
+                      better responses!
+                    </p>
+                  </div>
                 </>
               )}
             </div>
@@ -5278,6 +5307,7 @@ const DashboardPage = () => {
   const canUseBlog = ['professional', 'unlimited'].includes(effectivePlan);
   const canUseApi = effectivePlan === 'unlimited';
   const canExport = ['starter', 'professional', 'unlimited'].includes(effectivePlan);
+  const canUseHistory = ['starter', 'professional', 'unlimited'].includes(effectivePlan);
 
   // Load blog data when switching to blog tab
   useEffect(() => {
@@ -5446,26 +5476,65 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {!user?.businessContext && (
+      {/* Business Context Setup Banner - show if context is empty or very short */}
+      {(!user?.businessContext || user?.businessContext?.length < 50) && (
         <div
-          className="card"
           style={{
             marginBottom: '24px',
-            background: 'linear-gradient(135deg, var(--primary-50), var(--gray-50))',
-            border: '1px solid var(--primary-200)',
+            background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+            border: '2px solid #f59e0b',
+            borderRadius: '12px',
+            padding: '20px',
+            boxShadow: '0 4px 12px rgba(245, 158, 11, 0.2)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Building size={24} style={{ color: 'var(--primary-600)' }} />
-            <div style={{ flex: 1 }}>
-              <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>
-                Improve Your Responses
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+            <div
+              style={{
+                background: '#f59e0b',
+                borderRadius: '50%',
+                padding: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Sparkles size={28} style={{ color: 'white' }} />
+            </div>
+            <div style={{ flex: 1, minWidth: '200px' }}>
+              <h3
+                style={{
+                  fontSize: '18px',
+                  fontWeight: '700',
+                  marginBottom: '4px',
+                  color: '#92400e',
+                }}
+              >
+                ⚡ Set Up Your Business Profile
               </h3>
-              <p style={{ fontSize: '14px', color: 'var(--gray-600)' }}>
-                Add information about your business to get more personalized AI responses.
+              <p style={{ fontSize: '14px', color: '#a16207', margin: 0 }}>
+                Add your business details to get <strong>personalized AI responses</strong> that
+                mention your specific services, team members, and unique selling points.
               </p>
             </div>
-            <Link to="/settings" className="btn btn-primary" style={{ padding: '8px 16px' }}>
+            <Link
+              to="/settings"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '12px 24px',
+                background: '#92400e',
+                color: 'white',
+                borderRadius: '8px',
+                fontWeight: '600',
+                fontSize: '15px',
+                textDecoration: 'none',
+                boxShadow: '0 2px 8px rgba(146, 64, 14, 0.3)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <Settings size={18} />
               Set Up Now
             </Link>
           </div>
@@ -6101,12 +6170,19 @@ const DashboardPage = () => {
                     className="form-textarea"
                     value={customInstructions}
                     onChange={e => setCustomInstructions(e.target.value)}
-                    placeholder="Add specific instructions for the AI, e.g.: 'Always mention our 24/7 support' or 'Include a discount code SAVE10'"
-                    rows={2}
-                    style={{ resize: 'vertical', minHeight: '60px' }}
+                    placeholder={`<rules>
+- Always mention our 24/7 support
+- Keep responses under 100 words
+</rules>
+<style>
+- Friendly and warm tone
+- Use customer's name if mentioned
+</style>`}
+                    rows={4}
+                    style={{ resize: 'vertical', minHeight: '100px', fontFamily: 'monospace', fontSize: '12px' }}
                   />
                   <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
-                    Guide the AI with specific requirements for your response
+                    Use XML tags like {'<rules>'}, {'<style>'}, {'<always>'}, {'<never>'} for better AI understanding
                   </p>
                 </div>
               </div>
@@ -6578,91 +6654,121 @@ Food was amazing, will definitely come back!`}
 
       {/* History Tab */}
       {activeTab === 'history' && (
-        <div className="card">
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '16px',
-              flexWrap: 'wrap',
-              gap: '12px',
-            }}
-          >
-            <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>
-              <Clock size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-              Response History
-            </h2>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <input
-                type="date"
-                value={exportDateFrom}
-                onChange={e => setExportDateFrom(e.target.value)}
+        <div>
+          {!canUseHistory ? (
+            <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
+              <div
                 style={{
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  border: '1px solid var(--gray-300)',
-                  fontSize: '13px',
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '50%',
+                  background: 'var(--primary-light)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 16px',
                 }}
-              />
-              <span style={{ color: 'var(--gray-400)' }}>to</span>
-              <input
-                type="date"
-                value={exportDateTo}
-                onChange={e => setExportDateTo(e.target.value)}
-                style={{
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  border: '1px solid var(--gray-300)',
-                  fontSize: '13px',
-                }}
-              />
-              <button
-                onClick={exportToCSV}
-                disabled={exporting || allHistory.length === 0}
-                className="btn btn-secondary"
-                style={{ padding: '6px 12px', fontSize: '13px' }}
               >
-                <Download size={14} /> CSV
-              </button>
-              <button
-                onClick={exportToPDF}
-                disabled={exporting || allHistory.length === 0}
-                className="btn btn-primary"
-                style={{ padding: '6px 12px', fontSize: '13px' }}
-              >
-                <Download size={14} /> PDF
-              </button>
-            </div>
-          </div>
-          {allHistory.length > 0 && (
-            <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginBottom: '16px' }}>
-              {allHistory.length} responses available for export
-            </p>
-          )}
-
-          {history.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--gray-500)' }}>
-              <FileText size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-              <p>No responses generated yet. Start by generating your first response!</p>
+                <Clock size={32} style={{ color: 'var(--primary)' }} />
+              </div>
+              <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+                Response History is a Starter Feature
+              </h3>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '24px', maxWidth: '400px', margin: '0 auto 24px' }}>
+                Keep track of all your generated responses. Access your history anytime, export to CSV/PDF, and never lose a response.
+              </p>
+              <Link to="/pricing" className="btn btn-primary">
+                Upgrade to Starter - $29/month
+              </Link>
             </div>
           ) : (
-            history.map(item => (
-              <div key={item.id} className="history-item">
-                <div className="history-review">
-                  <strong>Review:</strong> {item.review_text.substring(0, 150)}
-                  {item.review_text.length > 150 && '...'}
-                </div>
-                <div className="history-response">
-                  <strong>Response:</strong> {item.generated_response}
-                </div>
-                <div className="history-meta">
-                  {item.review_rating && <span>{item.review_rating} stars</span>}
-                  <span>{item.review_platform}</span>
-                  <span>{new Date(item.created_at).toLocaleDateString()}</span>
+            <div className="card">
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '16px',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                }}
+              >
+                <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>
+                  <Clock size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                  Response History
+                </h2>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <input
+                    type="date"
+                    value={exportDateFrom}
+                    onChange={e => setExportDateFrom(e.target.value)}
+                    style={{
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--gray-300)',
+                      fontSize: '13px',
+                    }}
+                  />
+                  <span style={{ color: 'var(--gray-400)' }}>to</span>
+                  <input
+                    type="date"
+                    value={exportDateTo}
+                    onChange={e => setExportDateTo(e.target.value)}
+                    style={{
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--gray-300)',
+                      fontSize: '13px',
+                    }}
+                  />
+                  <button
+                    onClick={exportToCSV}
+                    disabled={exporting || allHistory.length === 0}
+                    className="btn btn-secondary"
+                    style={{ padding: '6px 12px', fontSize: '13px', opacity: !canExport ? 0.5 : 1 }}
+                  >
+                    <Download size={14} /> CSV
+                  </button>
+                  <button
+                    onClick={exportToPDF}
+                    disabled={exporting || allHistory.length === 0}
+                    className="btn btn-primary"
+                    style={{ padding: '6px 12px', fontSize: '13px', opacity: !canExport ? 0.5 : 1 }}
+                  >
+                    <Download size={14} /> PDF
+                  </button>
                 </div>
               </div>
-            ))
+              {allHistory.length > 0 && (
+                <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginBottom: '16px' }}>
+                  {allHistory.length} responses available for export
+                </p>
+              )}
+
+              {history.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--gray-500)' }}>
+                  <FileText size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+                  <p>No responses generated yet. Start by generating your first response!</p>
+                </div>
+              ) : (
+                history.map(item => (
+                  <div key={item.id} className="history-item">
+                    <div className="history-review">
+                      <strong>Review:</strong> {item.review_text.substring(0, 150)}
+                      {item.review_text.length > 150 && '...'}
+                    </div>
+                    <div className="history-response">
+                      <strong>Response:</strong> {item.generated_response}
+                    </div>
+                    <div className="history-meta">
+                      {item.review_rating && <span>{item.review_rating} stars</span>}
+                      <span>{item.review_platform}</span>
+                      <span>{new Date(item.created_at).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           )}
         </div>
       )}
@@ -8686,13 +8792,155 @@ const ConfirmEmailPage = () => {
   );
 };
 
-// AI Context Generator Component
+// Helper: Get context placeholder examples based on business type (for keywords input)
+const getContextPlaceholder = businessType => {
+  const examples = {
+    Restaurant: 'e.g. Italian, family-owned, since 1985, homemade pasta, cozy terrace',
+    'Cafe / Coffee Shop': 'e.g. specialty coffee, local roasters, cozy atmosphere, vegan options',
+    'Hotel / Accommodation': 'e.g. boutique hotel, city center, rooftop bar, since 2010',
+    'Bar / Nightclub': 'e.g. craft cocktails, live music, industrial vibe, late night',
+    'Spa / Wellness': 'e.g. holistic treatments, certified therapists, relaxation focus',
+    'Hair Salon / Barbershop': 'e.g. master barber, hot towel shave, modern cuts, walk-ins welcome',
+    'Dental Practice': 'e.g. family dentistry, gentle care, modern equipment, Dr. Smith',
+    'Medical Practice': 'e.g. primary care, same-day appointments, caring staff, 20+ years',
+    'Auto Repair / Service': 'e.g. European cars, honest pricing, certified mechanics, loaner cars',
+    'Gym / Fitness Studio': 'e.g. personal training, group classes, 24/7 access, modern equipment',
+    'Retail Store': 'e.g. local boutique, curated selection, friendly staff, unique finds',
+    'E-commerce': 'e.g. fast shipping, easy returns, quality products, great support',
+    'Professional Services': 'e.g. accounting firm, CPA certified, small business focus, responsive',
+    'Real Estate': 'e.g. local expert, first-time buyers, 15 years experience, personal touch',
+    'Home Services': 'e.g. plumbing, licensed, same-day service, fair pricing, family-owned',
+  };
+  return examples[businessType] || 'e.g. family-owned, since 1985, quality service, friendly team';
+};
+
+// Helper: Get full textarea placeholder examples based on business type
+const getTextareaPlaceholder = businessType => {
+  const examples = {
+    Restaurant: `Examples:
+• We're a family-owned Italian restaurant since 1985
+• Our signature dishes are homemade pasta and wood-fired pizza
+• Our chef Marco trained in Naples
+• We have a cozy outdoor terrace
+• We're known for our Sunday brunch specials
+• Our manager Sarah handles customer service`,
+    'Cafe / Coffee Shop': `Examples:
+• We're an independent coffee shop since 2015
+• We roast our own beans from single-origin farms
+• Our baristas are certified by SCA
+• We have a cozy reading corner with local art
+• We're known for our homemade pastries
+• Our owner Lisa greets every regular by name`,
+    'Hotel / Accommodation': `Examples:
+• We're a boutique hotel in the city center since 2010
+• Our rooms feature stunning city views
+• We offer complimentary breakfast with local products
+• Our concierge team speaks 5 languages
+• We're known for our rooftop bar
+• General Manager Thomas ensures every detail is perfect`,
+    'Bar / Nightclub': `Examples:
+• We're a craft cocktail bar with industrial vibe
+• Our mixologists create custom drinks
+• We feature live jazz every Thursday
+• We source premium spirits from around the world
+• We're known for our signature Old Fashioned
+• Owner Mike brings 20 years of hospitality experience`,
+    'Spa / Wellness': `Examples:
+• We're a holistic wellness center since 2008
+• Our therapists are certified in multiple modalities
+• We use organic, locally-sourced products
+• We have a tranquil meditation garden
+• We're known for our signature hot stone massage
+• Director Anna personally designs treatment plans`,
+    'Hair Salon / Barbershop': `Examples:
+• We're a classic barbershop with modern edge since 2012
+• Our master barbers have 15+ years experience
+• We offer hot towel shaves and beard grooming
+• We use premium products from Baxter of California
+• We're known for our fade cuts and attention to detail
+• Owner Jake creates a relaxed, friendly atmosphere`,
+    'Dental Practice': `Examples:
+• We're a family dental practice serving the community since 1995
+• Dr. Smith specializes in gentle, anxiety-free care
+• We use the latest digital imaging technology
+• We offer same-day emergency appointments
+• We're known for our comfortable, modern office
+• Our hygienist Maria makes every patient feel at ease`,
+    'Medical Practice': `Examples:
+• We're a primary care practice with 20+ years in the community
+• Dr. Johnson takes time to listen to every patient
+• We offer same-day sick visits
+• We use a patient portal for easy communication
+• We're known for our thorough, personalized care
+• Our staff creates a warm, welcoming environment`,
+    'Auto Repair / Service': `Examples:
+• We're an independent auto shop specializing in European cars
+• Our mechanics are ASE certified with 30+ years combined experience
+• We offer free loaner cars for major repairs
+• We use OEM parts and stand behind our work
+• We're known for honest pricing and clear explanations
+• Owner Mike personally inspects every vehicle`,
+    'Gym / Fitness Studio': `Examples:
+• We're a boutique fitness studio since 2018
+• Our trainers are nationally certified with specialties in strength and mobility
+• We offer small group classes for personalized attention
+• We have state-of-the-art equipment and 24/7 access
+• We're known for our supportive community
+• Owner Sarah creates programs for all fitness levels`,
+    'Retail Store': `Examples:
+• We're a local boutique curating unique finds since 2010
+• We source products from local artisans and small brands
+• Our staff knows every product personally
+• We offer complimentary gift wrapping
+• We're known for our personalized shopping experience
+• Owner Emma hand-selects every item in our collection`,
+    'E-commerce': `Examples:
+• We're an online store focused on quality and fast shipping
+• We ship same-day on orders before 2pm
+• We have a hassle-free 30-day return policy
+• Our customer support responds within 2 hours
+• We're known for our carefully curated selection
+• Our team personally quality-checks every order`,
+    'Professional Services': `Examples:
+• We're a CPA firm serving small businesses since 2005
+• We specialize in tax planning and bookkeeping
+• Our team responds to every inquiry within 24 hours
+• We use cloud-based tools for easy collaboration
+• We're known for making accounting understandable
+• Partner David has 25 years of experience`,
+    'Real Estate': `Examples:
+• We're local real estate experts with 15 years in this market
+• We specialize in first-time homebuyers and families
+• We provide neighborhood insights you won't find online
+• We're available evenings and weekends
+• We're known for our honest, no-pressure approach
+• Agent Jennifer treats every client like family`,
+    'Home Services': `Examples:
+• We're a family-owned plumbing company since 1990
+• Our technicians are licensed and background-checked
+• We offer same-day service and upfront pricing
+• We stand behind our work with a 2-year warranty
+• We're known for arriving on time and cleaning up after
+• Owner Bob personally follows up on every job`,
+  };
+  return (
+    examples[businessType] ||
+    `Examples:
+• We're a family-owned business since 1985
+• Our team brings 20+ years of combined experience
+• We pride ourselves on quality service
+• We're known for our attention to detail
+• Our manager Sarah ensures every customer is satisfied
+• We treat every customer like family`
+  );
+};
+
+// AI Context Generator Component - Always visible, no collapse
 const AIContextGenerator = ({ field, businessType, businessName, currentValue, onGenerated }) => {
   const [keywords, setKeywords] = useState('');
   const [generating, setGenerating] = useState(false);
   const [generated, setGenerated] = useState('');
   const [remaining, setRemaining] = useState(null);
-  const [showGenerator, setShowGenerator] = useState(false);
 
   const handleGenerate = async () => {
     if (!keywords.trim()) {
@@ -8707,6 +8955,7 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
         businessType,
         businessName,
         field,
+        structured: field === 'context', // Profile Page gets structured output with placeholders
       });
       setGenerated(res.data.generated);
       setRemaining(res.data.remaining);
@@ -8721,120 +8970,81 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
     onGenerated(generated);
     setKeywords('');
     setGenerated('');
-    setShowGenerator(false);
     toast.success('Text applied!');
   };
 
-  if (!showGenerator) {
-    return (
-      <button
-        type="button"
-        onClick={() => setShowGenerator(true)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          padding: '8px 12px',
-          background: 'linear-gradient(135deg, var(--primary-50), var(--primary-100))',
-          border: '1px solid var(--primary-200)',
-          borderRadius: '8px',
-          cursor: 'pointer',
-          fontSize: '13px',
-          color: 'var(--primary-700)',
-          marginBottom: '12px',
-          transition: 'all 0.2s',
-        }}
-      >
-        <Sparkles size={14} />
-        Generate with AI
-      </button>
-    );
-  }
-
   return (
-    <div
-      style={{
-        background: 'linear-gradient(135deg, var(--primary-50), #f0f7ff)',
-        border: '1px solid var(--primary-200)',
-        borderRadius: '12px',
-        padding: '16px',
-        marginBottom: '16px',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '12px',
-        }}
-      >
-        <span
-          style={{
-            fontWeight: '600',
-            fontSize: '14px',
-            color: 'var(--primary-700)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
-        >
-          <Sparkles size={16} />
-          {field === 'context' ? 'Generate Business Context' : 'Generate Response Style'}
-        </span>
-        <button
-          type="button"
-          onClick={() => setShowGenerator(false)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
-        >
-          <X size={16} style={{ color: 'var(--gray-500)' }} />
-        </button>
-      </div>
-
-      <div style={{ marginBottom: '12px' }}>
-        <label
-          style={{
-            fontSize: '13px',
-            color: 'var(--gray-600)',
-            marginBottom: '6px',
-            display: 'block',
-          }}
-        >
-          Enter keywords (comma-separated):
-        </label>
+    <div style={{ marginBottom: '16px' }}>
+      {/* Clean input + Generate button layout */}
+      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '6px' }}>
         <input
           type="text"
           className="form-input"
           value={keywords}
           onChange={e => setKeywords(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && keywords.trim() && handleGenerate()}
           placeholder={
             field === 'context'
-              ? 'e.g. Italian, family-owned, 1985, homemade pasta, terrace'
+              ? getContextPlaceholder(businessType)
               : 'e.g. friendly, short, with greeting, casual'
           }
-          style={{ fontSize: '14px' }}
+          style={{ flex: 1, fontSize: '14px' }}
         />
+        <button
+          type="button"
+          onClick={handleGenerate}
+          disabled={generating || !keywords.trim()}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 16px',
+            background:
+              generating || !keywords.trim()
+                ? '#d1d5db'
+                : 'linear-gradient(135deg, #6366f1, #4f46e5)',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: generating || !keywords.trim() ? 'not-allowed' : 'pointer',
+            fontSize: '14px',
+            fontWeight: '600',
+            color: '#ffffff',
+            whiteSpace: 'nowrap',
+            boxShadow:
+              generating || !keywords.trim() ? 'none' : '0 2px 8px rgba(99, 102, 241, 0.3)',
+          }}
+        >
+          {generating ? (
+            <>
+              <Loader size={16} className="spin" />
+              Generating...
+            </>
+          ) : (
+            <>
+              <Sparkles size={16} />
+              Generate
+              <span
+                style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}
+              >
+                Recommended
+              </span>
+            </>
+          )}
+        </button>
       </div>
-
-      <button
-        type="button"
-        onClick={handleGenerate}
-        disabled={generating || !keywords.trim()}
-        className="btn btn-primary btn-sm"
-        style={{ marginBottom: generated ? '12px' : '0' }}
-      >
-        {generating ? (
-          <>
-            <Loader size={14} className="spin" style={{ marginRight: '6px' }} />
-            Generating...
-          </>
-        ) : (
-          <>
-            <Sparkles size={14} style={{ marginRight: '6px' }} />
-            Generate
-          </>
-        )}
-      </button>
+      <p style={{ fontSize: '12px', color: 'var(--gray-500)', margin: 0 }}>
+        {field === 'context'
+          ? 'Enter a few keywords and AI creates a structured profile you can edit'
+          : 'Enter a few keywords and AI creates style guidelines'}
+      </p>
 
       {remaining !== null && remaining < 10 && (
         <span style={{ fontSize: '12px', color: 'var(--gray-500)', marginLeft: '8px' }}>
@@ -8872,6 +9082,22 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
           >
             {generated}
           </p>
+          <div
+            style={{
+              background: 'var(--primary-50)',
+              border: '1px solid var(--primary-200)',
+              borderRadius: '6px',
+              padding: '10px 12px',
+              marginTop: '10px',
+              fontSize: '12px',
+              color: 'var(--primary-700)',
+            }}
+          >
+            <strong>Next:</strong> Click "Apply & Edit" to copy this to the edit field below.{' '}
+            {generated.includes('[') && (
+              <>Then replace the [brackets] with your actual info for better AI responses.</>
+            )}
+          </div>
           <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
             <button
               type="button"
@@ -8885,7 +9111,7 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
             </button>
             <button type="button" onClick={handleAccept} className="btn btn-primary btn-sm">
               <Check size={14} style={{ marginRight: '4px' }} />
-              Apply
+              Apply & Edit
             </button>
           </div>
         </div>
@@ -8898,13 +9124,20 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
 const SettingsPage = () => {
   const { user, updateUser } = useAuth();
   const [businessName, setBusinessName] = useState(user?.businessName || '');
-  const [businessType, setBusinessType] = useState(user?.businessType || '');
+  // Load businessType from localStorage first (draft), then fallback to user data
+  const [businessType, setBusinessType] = useState(() => {
+    const cached = localStorage.getItem('draft_businessType');
+    return cached || user?.businessType || '';
+  });
   const [customBusinessType, setCustomBusinessType] = useState('');
   const [businessContext, setBusinessContext] = useState(user?.businessContext || '');
   const [responseStyle, setResponseStyle] = useState(user?.responseStyle || '');
   const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
   const [apiKeys, setApiKeys] = useState([]);
   const [loadingKeys, setLoadingKeys] = useState(false);
+  const autoSaveTimeoutRef = useRef(null);
+  const isInitialMount = useRef(true);
 
   const businessTypes = [
     'Restaurant',
@@ -8987,11 +9220,11 @@ const SettingsPage = () => {
     }
   }, [user]);
 
-  const handleSave = async e => {
-    e.preventDefault();
+  // Core save function (used by both auto-save and manual save)
+  const doSave = async (showToast = false) => {
     setSaving(true);
+    setSaveStatus('saving');
 
-    // Use custom type if "Other" is selected, otherwise use dropdown value
     const finalBusinessType = businessType === 'Other' ? customBusinessType.trim() : businessType;
 
     try {
@@ -9002,12 +9235,56 @@ const SettingsPage = () => {
         responseStyle,
       });
       updateUser(res.data.user);
-      toast.success('Settings saved! Your responses will now be more personalized.');
+      localStorage.removeItem('draft_businessType');
+      setSaveStatus('saved');
+      if (showToast) {
+        toast.success('Settings saved!');
+      }
+      // Reset to idle after 2 seconds
+      setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
-      toast.error('Failed to save settings');
+      setSaveStatus('error');
+      if (showToast) {
+        toast.error('Failed to save settings');
+      }
     } finally {
       setSaving(false);
     }
+  };
+
+  // Auto-save when fields change (debounced 1.5 seconds)
+  useEffect(() => {
+    // Skip initial mount to avoid saving on page load
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    // Clear existing timeout
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+
+    // Set new timeout for auto-save
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      doSave(false);
+    }, 1500);
+
+    // Cleanup on unmount
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [businessName, businessType, customBusinessType, businessContext, responseStyle]);
+
+  // Manual save handler (for the button)
+  const handleSave = async e => {
+    e.preventDefault();
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    await doSave(true);
   };
 
   return (
@@ -9029,12 +9306,49 @@ const SettingsPage = () => {
         >
           ← Back to Dashboard
         </Link>
-        <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
-          <Settings size={28} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-          Business Settings
-        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <h1 style={{ fontSize: '28px', fontWeight: '700', margin: 0 }}>
+            <Settings size={28} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+            Business Settings
+          </h1>
+          {/* Auto-save status indicator */}
+          <span
+            style={{
+              fontSize: '13px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              color:
+                saveStatus === 'saving'
+                  ? 'var(--gray-500)'
+                  : saveStatus === 'saved'
+                    ? 'var(--green-600)'
+                    : saveStatus === 'error'
+                      ? 'var(--red-500)'
+                      : 'transparent',
+              transition: 'color 0.2s',
+            }}
+          >
+            {saveStatus === 'saving' && (
+              <>
+                <Loader size={14} className="spin" />
+                Saving...
+              </>
+            )}
+            {saveStatus === 'saved' && (
+              <>
+                <Check size={14} />
+                Saved
+              </>
+            )}
+            {saveStatus === 'error' && <>Save failed</>}
+          </span>
+        </div>
         <p style={{ color: 'var(--gray-600)' }}>
           Add details about your business to get more personalized AI responses
+          <span style={{ marginLeft: '8px', fontSize: '12px', color: 'var(--gray-400)' }}>
+            (auto-saves as you type)
+          </span>
         </p>
       </div>
 
@@ -9071,8 +9385,15 @@ const SettingsPage = () => {
               className="form-select"
               value={businessType}
               onChange={e => {
-                setBusinessType(e.target.value);
-                if (e.target.value !== 'Other') {
+                const newType = e.target.value;
+                setBusinessType(newType);
+                // Cache in localStorage as draft
+                if (newType) {
+                  localStorage.setItem('draft_businessType', newType);
+                } else {
+                  localStorage.removeItem('draft_businessType');
+                }
+                if (newType !== 'Other') {
                   setCustomBusinessType('');
                 }
               }}
@@ -9119,13 +9440,7 @@ const SettingsPage = () => {
               className="form-textarea"
               value={businessContext}
               onChange={e => setBusinessContext(e.target.value)}
-              placeholder={`Examples:
-• We're a family-owned Italian restaurant since 1985
-• Our signature dishes are homemade pasta and wood-fired pizza
-• Our chef Marco trained in Naples
-• We have a cozy outdoor terrace
-• We're known for our Sunday brunch specials
-• Our manager Sarah handles customer service`}
+              placeholder={getTextareaPlaceholder(businessType)}
               rows={8}
             />
             <p style={{ fontSize: '12px', color: 'var(--gray-400)', marginTop: '8px' }}>
@@ -9156,31 +9471,53 @@ const SettingsPage = () => {
               className="form-textarea"
               value={responseStyle}
               onChange={e => setResponseStyle(e.target.value)}
-              placeholder={`Examples:
-• Always sign off with "The [Business Name] Team"
-• Use casual language, we're a beach bar
-• Never offer discounts or compensation
-• Always invite them to contact us directly at (555) 123-4567
-• Keep responses short, max 3 sentences`}
-              rows={5}
+              placeholder={`<always>
+- Sign off with "The [Business Name] Team"
+- Invite to contact us at (555) 123-4567
+</always>
+<never>
+- Offer discounts or compensation
+- Admit fault or liability
+</never>
+<style>
+- Casual and warm tone
+- Max 3 sentences
+</style>`}
+              rows={6}
+              style={{ fontFamily: 'monospace', fontSize: '12px' }}
             />
+            <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
+              Use XML tags for clearer structure: {'<always>'}, {'<never>'}, {'<style>'}
+            </p>
           </div>
         </div>
 
-        <button
-          type="submit"
-          className="btn btn-primary btn-lg"
-          style={{ width: '100%' }}
-          disabled={saving}
-        >
-          {saving ? (
-            'Saving...'
-          ) : (
-            <>
-              <Save size={18} /> Save Settings
-            </>
-          )}
-        </button>
+        {/* Manual save button - backup for auto-save */}
+        <div style={{ textAlign: 'center', marginTop: '8px' }}>
+          <button
+            type="submit"
+            className="btn"
+            style={{
+              background: 'var(--gray-100)',
+              border: '1px solid var(--gray-200)',
+              color: 'var(--gray-600)',
+              padding: '10px 24px',
+            }}
+            disabled={saving}
+          >
+            {saving ? (
+              'Saving...'
+            ) : (
+              <>
+                <Save size={16} style={{ marginRight: '6px' }} />
+                Save Now
+              </>
+            )}
+          </button>
+          <p style={{ fontSize: '12px', color: 'var(--gray-400)', marginTop: '8px' }}>
+            Changes are auto-saved. Use this button if you want to save immediately.
+          </p>
+        </div>
       </form>
 
       {/* API Key Management - Only for Unlimited Plan */}
@@ -10526,7 +10863,7 @@ const NewsletterSignup = ({ compact = false }) => {
           }}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Check size={14} /> No spam
+            <Check size={14} /> Free forever
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <Check size={14} /> Unsubscribe anytime
@@ -11250,19 +11587,38 @@ const DemoPage = () => {
           ))}
         </div>
 
-        {/* Social Proof */}
+        {/* Features - honest stats */}
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '32px', padding: '32px', background: 'var(--bg-secondary)', borderRadius: '16px', marginBottom: '48px', border: '1px solid var(--border-color)' }}>
           {[
-            { value: '500K+', label: 'Responses Generated' },
-            { value: '10K+', label: 'Happy Businesses' },
-            { value: '4.8/5', label: 'User Rating' },
-            { value: '<5 sec', label: 'Generation Time' },
+            { value: 'Google', label: 'Yelp, TripAdvisor & More' },
+            { value: 'One-Click', label: 'Chrome Extension' },
+            { value: '4 Tones', label: 'Professional to Friendly' },
+            { value: 'Copy & Paste', label: 'Ready Responses' },
           ].map((stat, i) => (
             <div key={i} style={{ textAlign: 'center', minWidth: '120px' }}>
               <div style={{ fontSize: '28px', fontWeight: '800', color: 'var(--primary)', marginBottom: '4px' }}>{stat.value}</div>
               <div style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>{stat.label}</div>
             </div>
           ))}
+        </div>
+
+        {/* Demo Video */}
+        <div style={{ marginBottom: '48px', textAlign: 'center' }}>
+          <h3 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '16px' }}>
+            See It In Action
+          </h3>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
+            Watch how our Chrome extension responds to reviews in seconds
+          </p>
+          <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}>
+            <iframe
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+              src="https://www.youtube.com/embed/6lujm4Z_Q_Y"
+              title="ReviewResponder Chrome Extension Demo"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
         </div>
 
         {/* CTA Section */}
@@ -11642,7 +11998,7 @@ const GoogleReviewPage = () => {
         '@type': 'Offer',
         price: '0',
         priceCurrency: 'USD',
-        description: 'Free trial with 20 responses',
+        description: 'Free trial with 20 responses/month',
       },
     });
     document.head.appendChild(script);
@@ -18462,14 +18818,12 @@ const PricingPage = () => {
     { name: 'Standard AI', free: '17', starter: '200', pro: '500', unlimited: 'Unlimited' },
     { name: 'AI Tone Options', free: true, starter: true, pro: true, unlimited: true },
     { name: '50+ Languages', free: true, starter: true, pro: true, unlimited: true },
-    { name: 'Response History', free: true, starter: true, pro: true, unlimited: true },
-    { name: 'Response Templates', free: false, starter: true, pro: true, unlimited: true },
+    { name: 'Response History', free: false, starter: true, pro: true, unlimited: true },
     { name: 'CSV/PDF Export', free: false, starter: true, pro: true, unlimited: true },
     { name: 'Bulk Generation (20)', free: false, starter: false, pro: true, unlimited: true },
     { name: 'Analytics Dashboard', free: false, starter: false, pro: true, unlimited: true },
     { name: 'Team Members', free: '-', starter: '-', pro: '3', unlimited: '10' },
     { name: 'API Access', free: false, starter: false, pro: false, unlimited: true },
-    { name: 'Email Support', free: true, starter: true, pro: true, unlimited: true },
     { name: 'Priority Support', free: false, starter: false, pro: true, unlimited: true },
     { name: 'Priority Feature Requests', free: false, starter: false, pro: false, unlimited: true },
   ];
@@ -18486,29 +18840,28 @@ const PricingPage = () => {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  background: 'linear-gradient(135deg, #10b981, #059669)',
-                  color: 'white',
-                  padding: '6px 16px',
-                  borderRadius: '20px',
-                  fontSize: '14px',
-                  fontWeight: '600',
+                  gap: '6px',
                   marginBottom: '16px',
+                  padding: '4px 10px',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '4px',
+                  color: 'var(--text-muted)',
+                  fontSize: '12px',
+                  fontWeight: '500',
                   textDecoration: 'none',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  transition: 'color 0.2s, border-color 0.2s',
                 }}
                 onMouseOver={e => {
-                  e.currentTarget.style.transform = 'scale(1.05)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(16,185,129,0.4)';
+                  e.currentTarget.style.borderColor = 'var(--text-muted)';
+                  e.currentTarget.style.color = 'var(--text-primary)';
                 }}
                 onMouseOut={e => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.borderColor = 'var(--border-color)';
+                  e.currentTarget.style.color = 'var(--text-muted)';
                 }}
               >
-                Click to Activate 50% OFF
-                <ArrowRight size={14} />
+                <Sparkles size={12} style={{ color: 'var(--primary)' }} />
+                Early Access - 50% Off
               </Link>
             )}
             <h1 className="pricing-title">Simple, Transparent Pricing</h1>
@@ -20533,6 +20886,9 @@ const AdminPage = () => {
   const [emailLoading, setEmailLoading] = useState(false);
   const [scraperData, setScraperData] = useState(null);
   const [scraperLoading, setScraperLoading] = useState(false);
+  const [claudeStateData, setClaudeStateData] = useState(null);
+  const [claudeStateLoading, setClaudeStateLoading] = useState(false);
+  const [newNote, setNewNote] = useState('');
 
   // Use the same API_URL as the rest of the app (already includes /api)
   // Remove /api suffix if present to build admin URLs correctly
@@ -20686,6 +21042,42 @@ const AdminPage = () => {
     }
   };
 
+  const loadClaudeStateData = async key => {
+    const keyToUse = key || adminKey;
+    if (!keyToUse) return;
+    setClaudeStateLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/admin/sales-state`, {
+        headers: { 'X-Admin-Key': keyToUse },
+      });
+      setClaudeStateData(res.data);
+    } catch (err) {
+      console.error('Claude state load error:', err);
+      toast.error('Failed to load Claude state');
+    } finally {
+      setClaudeStateLoading(false);
+    }
+  };
+
+  const addClaudeNote = async () => {
+    if (!newNote.trim()) {
+      toast.error('Please enter a note');
+      return;
+    }
+    try {
+      await axios.post(
+        `${API_BASE}/api/admin/sales-note`,
+        { note: newNote },
+        { headers: { 'X-Admin-Key': adminKey } }
+      );
+      toast.success('Note added');
+      setNewNote('');
+      loadClaudeStateData();
+    } catch (err) {
+      toast.error('Failed to add note');
+    }
+  };
+
   const testScraperAlert = async () => {
     try {
       const res = await axios.get(`${API_BASE}/api/cron/scraper-alerts?secret=${adminKey}&force=true`);
@@ -20771,6 +21163,9 @@ const AdminPage = () => {
       }
       if (activeAdminTab === 'scraper' && !scraperData) {
         loadScraperData();
+      }
+      if (activeAdminTab === 'claude' && !claudeStateData) {
+        loadClaudeStateData();
       }
     }
   }, [activeAdminTab, isAuthenticated, adminKey]);
@@ -20885,6 +21280,12 @@ const AdminPage = () => {
           onClick={() => setActiveAdminTab('scraper')}
         >
           Scraper
+        </button>
+        <button
+          className={`btn ${activeAdminTab === 'claude' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('claude')}
+        >
+          Claude State
         </button>
       </div>
 
@@ -22306,53 +22707,214 @@ const AdminPage = () => {
                 <div style={{ display: 'grid', gap: '12px' }}>
                   {scraperData.sources?.filter(s => s.tier === 2).map((source, idx) => (
                     <div key={idx} style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '12px 16px',
+                      padding: '16px',
                       background: source.status === 'critical' ? '#FEE2E2' : source.status === 'low' ? '#FEF3C7' : '#F3F4F6',
                       borderRadius: '8px',
                       borderLeft: `4px solid ${source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#9CA3AF'}`
                     }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: '600' }}>{source.name}</div>
-                        <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{source.priority_reason}</div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontWeight: '600' }}>{source.leads_total || 0}</div>
-                          <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
-                            / {source.threshold_low} threshold
-                          </div>
+                      {/* Header Row */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontWeight: '600' }}>{source.name}</span>
+                          {source.requires_chrome_mcp && (
+                            <span style={{
+                              background: '#8B5CF6',
+                              color: 'white',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontSize: '10px',
+                              fontWeight: '600'
+                            }}>
+                              CHROME MCP
+                            </span>
+                          )}
+                          <span style={{
+                            fontSize: '16px',
+                            color: source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#059669'
+                          }}>
+                            {source.status === 'critical' ? '!' : source.status === 'low' ? '!' : '!'}
+                          </span>
                         </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontWeight: '600', fontSize: '18px' }}>{source.leads_not_contacted || source.leads_total || 0}</span>
+                          <span style={{ fontSize: '12px', color: 'var(--gray-500)' }}>/ {source.threshold_low}</span>
+                        </div>
+                      </div>
+
+                      {/* Stats Row */}
+                      <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: 'var(--gray-600)', marginBottom: '8px' }}>
+                        <span>Total: {source.leads_total || 0}</span>
+                        {source.leads_with_email !== undefined && <span>Mit Email: {source.leads_with_email}</span>}
+                        {source.leads_with_demo !== undefined && <span>Mit Demo: {source.leads_with_demo}</span>}
                         {source.by_competitor && (
-                          <div style={{ textAlign: 'right', fontSize: '11px' }}>
-                            <div>Birdeye: {source.by_competitor.birdeye}</div>
-                            <div>Podium: {source.by_competitor.podium}</div>
-                          </div>
+                          <>
+                            <span>Birdeye: {source.by_competitor.birdeye}</span>
+                            <span>Podium: {source.by_competitor.podium}</span>
+                          </>
                         )}
                         {source.connections_accepted !== undefined && (
-                          <div style={{ textAlign: 'right', fontSize: '11px' }}>
-                            <div>{source.connections_accepted} accepted</div>
-                            <div>{source.demos_viewed || 0} demos viewed</div>
-                          </div>
-                        )}
-                        <div style={{
-                          fontSize: '16px',
-                          color: source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#059669'
-                        }}>
-                          {source.status === 'critical' ? '!' : source.status === 'low' ? '⚠' : '✓'}
-                        </div>
-                        {source.command && (
-                          <button
-                            className="btn btn-secondary"
-                            style={{ fontSize: '11px', padding: '4px 8px' }}
-                            onClick={() => copyCommand(source.command)}
-                          >
-                            Copy
-                          </button>
+                          <>
+                            <span>Accepted: {source.connections_accepted}</span>
+                            <span>Demos viewed: {source.demos_viewed || 0}</span>
+                          </>
                         )}
                       </div>
+
+                      {/* LinkedIn Limits Tracking */}
+                      {source.limits && (
+                        <div style={{
+                          background: 'rgba(59, 130, 246, 0.1)',
+                          border: '1px solid rgba(59, 130, 246, 0.3)',
+                          borderRadius: '6px',
+                          padding: '12px',
+                          marginBottom: '8px'
+                        }}>
+                          <div style={{ fontSize: '11px', fontWeight: '600', color: '#2563EB', marginBottom: '8px' }}>
+                            LinkedIn Limits (verhindert Account-Sperrung)
+                          </div>
+                          <div style={{ display: 'grid', gap: '8px' }}>
+                            {/* Daily Connections */}
+                            <div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '2px' }}>
+                                <span>Connections heute</span>
+                                <span style={{
+                                  fontWeight: '600',
+                                  color: source.limits.daily_status === 'limit_reached' ? '#DC2626' : source.limits.daily_status === 'warning' ? '#D97706' : '#059669'
+                                }}>
+                                  {source.limits.connections_today}/{source.limits.connections_today_max}
+                                  {source.limits.daily_status === 'limit_reached' && ' LIMIT!'}
+                                </span>
+                              </div>
+                              <div style={{ background: '#E5E7EB', borderRadius: '4px', height: '6px', overflow: 'hidden' }}>
+                                <div style={{
+                                  width: `${(source.limits.connections_today / source.limits.connections_today_max) * 100}%`,
+                                  height: '100%',
+                                  background: source.limits.daily_status === 'limit_reached' ? '#DC2626' : source.limits.daily_status === 'warning' ? '#D97706' : '#10B981',
+                                  transition: 'width 0.3s'
+                                }} />
+                              </div>
+                            </div>
+                            {/* Weekly Connections */}
+                            <div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '2px' }}>
+                                <span>Connections diese Woche</span>
+                                <span style={{
+                                  fontWeight: '600',
+                                  color: source.limits.weekly_status === 'limit_reached' ? '#DC2626' : source.limits.weekly_status === 'warning' ? '#D97706' : '#059669'
+                                }}>
+                                  {source.limits.connections_this_week}/{source.limits.connections_week_max}
+                                  {source.limits.weekly_status === 'limit_reached' && ' LIMIT!'}
+                                </span>
+                              </div>
+                              <div style={{ background: '#E5E7EB', borderRadius: '4px', height: '6px', overflow: 'hidden' }}>
+                                <div style={{
+                                  width: `${(source.limits.connections_this_week / source.limits.connections_week_max) * 100}%`,
+                                  height: '100%',
+                                  background: source.limits.weekly_status === 'limit_reached' ? '#DC2626' : source.limits.weekly_status === 'warning' ? '#D97706' : '#10B981',
+                                  transition: 'width 0.3s'
+                                }} />
+                              </div>
+                            </div>
+                            {/* Daily Messages */}
+                            <div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '2px' }}>
+                                <span>Messages heute</span>
+                                <span style={{ fontWeight: '600', color: source.limits.messages_today >= 50 ? '#DC2626' : '#059669' }}>
+                                  {source.limits.messages_today}/{source.limits.messages_today_max}
+                                </span>
+                              </div>
+                              <div style={{ background: '#E5E7EB', borderRadius: '4px', height: '6px', overflow: 'hidden' }}>
+                                <div style={{
+                                  width: `${(source.limits.messages_today / source.limits.messages_today_max) * 100}%`,
+                                  height: '100%',
+                                  background: source.limits.messages_today >= 50 ? '#DC2626' : '#10B981',
+                                  transition: 'width 0.3s'
+                                }} />
+                              </div>
+                            </div>
+                          </div>
+                          <div style={{ fontSize: '10px', color: 'var(--gray-500)', marginTop: '8px' }}>
+                            Verbleibend: {source.limits.connections_today_remaining} heute, {source.limits.connections_week_remaining} diese Woche
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Last Activity */}
+                      {(source.last_scraped || source.last_email_sent) && (
+                        <div style={{ fontSize: '11px', color: 'var(--gray-500)', marginBottom: '8px' }}>
+                          {source.last_scraped && <span>Letztes Scrape: {new Date(source.last_scraped).toLocaleDateString('de-DE')} </span>}
+                          {source.last_email_sent && <span>| Letzte Email: {new Date(source.last_email_sent).toLocaleDateString('de-DE')}</span>}
+                        </div>
+                      )}
+
+                      {/* Chrome MCP Instructions */}
+                      {source.requires_chrome_mcp && source.chrome_command && (
+                        <div style={{
+                          background: 'rgba(139, 92, 246, 0.1)',
+                          border: '1px solid rgba(139, 92, 246, 0.3)',
+                          borderRadius: '6px',
+                          padding: '12px',
+                          marginTop: '8px'
+                        }}>
+                          <div style={{ fontSize: '11px', fontWeight: '600', color: '#7C3AED', marginBottom: '6px' }}>
+                            Chrome MCP starten:
+                          </div>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            background: '#1F2937',
+                            color: '#10B981',
+                            padding: '8px 12px',
+                            borderRadius: '4px',
+                            fontFamily: 'monospace',
+                            fontSize: '12px'
+                          }}>
+                            <code style={{ flex: 1 }}>{source.chrome_command}</code>
+                            <button
+                              className="btn"
+                              style={{ fontSize: '10px', padding: '2px 8px', background: '#374151', color: 'white' }}
+                              onClick={() => copyCommand(source.chrome_command)}
+                            >
+                              Copy
+                            </button>
+                          </div>
+                          {source.scrape_prompt && (
+                            <div style={{ marginTop: '8px' }}>
+                              <div style={{ fontSize: '11px', fontWeight: '600', color: '#7C3AED', marginBottom: '4px' }}>
+                                Dann eingeben:
+                              </div>
+                              <div style={{
+                                background: 'white',
+                                padding: '8px',
+                                borderRadius: '4px',
+                                fontSize: '11px',
+                                color: 'var(--gray-700)'
+                              }}>
+                                {source.scrape_prompt}
+                              </div>
+                            </div>
+                          )}
+                          {source.workflow && (
+                            <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--gray-600)' }}>
+                              {source.workflow.map((step, i) => (
+                                <div key={i}>{step}</div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Legacy command button for non-Chrome sources */}
+                      {!source.requires_chrome_mcp && source.command && (
+                        <button
+                          className="btn btn-secondary"
+                          style={{ fontSize: '11px', padding: '4px 8px', marginTop: '8px' }}
+                          onClick={() => copyCommand(source.command)}
+                        >
+                          Copy Command
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -22425,6 +22987,233 @@ const AdminPage = () => {
                 Could not load scraper data
               </p>
               <button className="btn btn-primary" onClick={() => loadScraperData()}>
+                Retry
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Claude State Tab - Sales Automation State */}
+      {activeAdminTab === 'claude' && (
+        <div>
+          {claudeStateLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading Claude state...</div>
+          ) : claudeStateData ? (
+            <>
+              {/* Today's Actions */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
+                  Today's Actions
+                </h3>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                  gap: '16px',
+                }}>
+                  <div style={{ textAlign: 'center', padding: '16px', background: '#F3F4F6', borderRadius: '12px' }}>
+                    <div style={{ fontSize: '32px', fontWeight: '700', color: '#3B82F6' }}>
+                      {claudeStateData.today?.leads_scraped || 0}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Leads Scraped</div>
+                  </div>
+                  <div style={{ textAlign: 'center', padding: '16px', background: '#F3F4F6', borderRadius: '12px' }}>
+                    <div style={{ fontSize: '32px', fontWeight: '700', color: '#10B981' }}>
+                      {claudeStateData.today?.emails_sent || 0}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Emails Sent</div>
+                  </div>
+                  <div style={{ textAlign: 'center', padding: '16px', background: '#F3F4F6', borderRadius: '12px' }}>
+                    <div style={{ fontSize: '32px', fontWeight: '700', color: '#8B5CF6' }}>
+                      {claudeStateData.today?.twitter_posts || 0}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Twitter Posts</div>
+                  </div>
+                  <div style={{ textAlign: 'center', padding: '16px', background: '#F3F4F6', borderRadius: '12px' }}>
+                    <div style={{ fontSize: '32px', fontWeight: '700', color: '#EC4899' }}>
+                      {claudeStateData.today?.linkedin_demos || 0}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>LinkedIn Demos</div>
+                  </div>
+                  <div style={{ textAlign: 'center', padding: '16px', background: '#F3F4F6', borderRadius: '12px' }}>
+                    <div style={{ fontSize: '32px', fontWeight: '700', color: '#F59E0B' }}>
+                      {claudeStateData.today?.demos_generated || 0}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Demos Generated</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* This Week Stats */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
+                  This Week
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#3B82F6' }}>
+                      {claudeStateData.this_week?.emails_sent || 0}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Emails Sent</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#10B981' }}>
+                      {claudeStateData.this_week?.emails_opened || 0}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Emails Opened</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#F59E0B' }}>
+                      {claudeStateData.this_week?.open_rate || '0%'}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Open Rate</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pending Tasks */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
+                  Pending Tasks
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+                  <div style={{
+                    padding: '16px',
+                    background: claudeStateData.pending?.linkedin_connections > 0 ? '#FEF3C7' : '#F3F4F6',
+                    borderRadius: '12px',
+                    borderLeft: `4px solid ${claudeStateData.pending?.linkedin_connections > 0 ? '#F59E0B' : '#9CA3AF'}`,
+                  }}>
+                    <div style={{ fontSize: '24px', fontWeight: '700' }}>
+                      {claudeStateData.pending?.linkedin_connections || 0}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>LinkedIn Pending</div>
+                  </div>
+                  <div style={{
+                    padding: '16px',
+                    background: claudeStateData.pending?.leads_not_emailed > 0 ? '#FEE2E2' : '#F3F4F6',
+                    borderRadius: '12px',
+                    borderLeft: `4px solid ${claudeStateData.pending?.leads_not_emailed > 0 ? '#DC2626' : '#9CA3AF'}`,
+                  }}>
+                    <div style={{ fontSize: '24px', fontWeight: '700' }}>
+                      {claudeStateData.pending?.leads_not_emailed || 0}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Leads Not Emailed</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Last Actions Timeline */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
+                  Last Actions
+                </h3>
+                {claudeStateData.last_actions?.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {claudeStateData.last_actions.map((action, idx) => (
+                      <div key={idx} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px 16px',
+                        background: '#F9FAFB',
+                        borderRadius: '8px',
+                        borderLeft: '4px solid #3B82F6',
+                      }}>
+                        <div style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          background: action.category === 'outreach' ? '#DBEAFE' : action.category === 'social' ? '#E9D5FF' : '#D1FAE5',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '18px',
+                        }}>
+                          {action.category === 'outreach' ? '📧' : action.category === 'social' ? '🐦' : '📝'}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: '600' }}>{action.type}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
+                            {action.details?.count && `Count: ${action.details.count}`}
+                            {action.details?.note && `"${action.details.note}"`}
+                            {action.details?.city && ` | ${action.details.city}`}
+                          </div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
+                            {new Date(action.at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--gray-400)' }}>
+                            {action.session !== 'unknown' ? `Session: ${action.session}` : ''}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ textAlign: 'center', color: 'var(--gray-500)', padding: '20px' }}>
+                    No actions recorded yet today
+                  </div>
+                )}
+              </div>
+
+              {/* Session Notes */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
+                  Notes from Previous Sessions
+                </h3>
+                {claudeStateData.notes_from_previous_sessions?.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                    {claudeStateData.notes_from_previous_sessions.map((note, idx) => (
+                      <div key={idx} style={{
+                        padding: '12px 16px',
+                        background: '#FEF3C7',
+                        borderRadius: '8px',
+                        borderLeft: '4px solid #F59E0B',
+                      }}>
+                        <div>{note.note}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--gray-500)', marginTop: '4px' }}>
+                          {new Date(note.at).toLocaleString('de-DE')}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ textAlign: 'center', color: 'var(--gray-500)', padding: '20px', marginBottom: '16px' }}>
+                    No notes yet
+                  </div>
+                )}
+
+                {/* Add Note Form */}
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="Add a note for the next Claude session..."
+                    value={newNote}
+                    onChange={(e) => setNewNote(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addClaudeNote()}
+                    style={{ flex: 1 }}
+                  />
+                  <button className="btn btn-primary" onClick={addClaudeNote}>
+                    Add Note
+                  </button>
+                </div>
+              </div>
+
+              {/* Refresh Button */}
+              <div style={{ textAlign: 'center' }}>
+                <button className="btn btn-secondary" onClick={() => loadClaudeStateData()}>
+                  Refresh State
+                </button>
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+                Could not load Claude state
+              </p>
+              <button className="btn btn-primary" onClick={() => loadClaudeStateData()}>
                 Retry
               </button>
             </div>

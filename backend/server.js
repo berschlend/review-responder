@@ -1002,10 +1002,16 @@ async function initDatabase() {
         email_sent BOOLEAN DEFAULT FALSE,
         email_sent_at TIMESTAMP,
         email_opened BOOLEAN DEFAULT FALSE,
+        followup_sent BOOLEAN DEFAULT FALSE,
+        followup_sent_at TIMESTAMP,
         replied BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Add followup columns if missing (migration)
+    await dbQuery(`ALTER TABLE competitor_leads ADD COLUMN IF NOT EXISTS followup_sent BOOLEAN DEFAULT FALSE`);
+    await dbQuery(`ALTER TABLE competitor_leads ADD COLUMN IF NOT EXISTS followup_sent_at TIMESTAMP`);
 
     // LinkedIn Outreach Tracking
     await dbQuery(`
@@ -1713,7 +1719,7 @@ app.put('/api/auth/profile', authenticateToken, async (req, res) => {
 // Generate Business Context or Response Style with AI
 app.post('/api/personalization/generate-context', authenticateToken, async (req, res) => {
   try {
-    const { keywords, businessType, businessName, field } = req.body;
+    const { keywords, businessType, businessName, field, structured } = req.body;
 
     if (!keywords || keywords.trim().length === 0) {
       return res.status(400).json({ error: 'Keywords are required' });
@@ -1752,7 +1758,51 @@ app.post('/api/personalization/generate-context', authenticateToken, async (req,
     let userMessage;
 
     if (field === 'context') {
-      systemPrompt = `You help a business owner create a professional description of their business.
+      if (structured) {
+        // Profile Page: Structured output with XML tags and placeholders
+        // Using Anthropic prompt engineering best practices with XML tags
+        systemPrompt = `<role>You create structured business profiles that help AI generate personalized review responses.</role>
+
+<context>
+Business Type: ${businessType || 'General Business'}
+Business Name: ${businessName || 'the business'}
+</context>
+
+<instructions>
+Create a business profile with EXACTLY these 3 sections. Use the keywords provided, but add helpful placeholders for any missing information.
+
+Output format - use these EXACT headers:
+
+YOUR STORY:
+[Write 1-2 sentences about who runs the business, when/how it started, and why]
+
+WHAT CUSTOMERS LOVE:
+[List 3-5 specific things - dishes, services, products, atmosphere]
+
+SIGN RESPONSES AS:
+[Name for review signatures]
+</instructions>
+
+<placeholder_rules>
+For ANY section where the user didn't provide enough info, add a placeholder like this:
+→ Use brackets with examples: [ADD YOUR INFO - examples: "option 1", "option 2", "option 3"]
+
+Examples of good placeholders:
+- [YOUR FOUNDING YEAR - e.g., "since 1985", "est. 2010", "for over 20 years"]
+- [YOUR SPECIALTIES - e.g., "wood-fired pizza", "organic coffee", "same-day repairs"]
+- [YOUR NAME - e.g., "Marco", "The Smith Family", "Dr. Sarah & Team"]
+
+The placeholders help users know exactly what info to add for better AI responses.
+</placeholder_rules>
+
+<output_format>
+Write in first person plural (we, our).
+Keep it authentic - avoid corporate buzzwords.
+Output ONLY the 3 sections, no introduction or explanation.
+</output_format>`;
+      } else {
+        // Onboarding: Simple flowing text (unchanged)
+        systemPrompt = `You help a business owner create a professional description of their business.
 This description will be used to personalize AI-generated responses to customer reviews.
 
 Business Type: ${businessType || 'General Business'}
@@ -1764,18 +1814,45 @@ Keep it authentic and not too promotional.
 AVOID phrases like "We strive" or "We are committed".
 Write in first person plural (we, our).
 Respond ONLY with the generated text, no introduction or explanation.`;
+      }
       userMessage = `Keywords: ${keywords.trim()}`;
     } else if (field === 'style') {
-      systemPrompt = `You help a business owner define their response style for customer reviews.
-These guidelines will be used to personalize AI-generated responses.
+      // Response Style with XML tags for better AI parsing
+      systemPrompt = `<role>You create response style guidelines using XML tags for clear structure.</role>
 
+<context>
 Business Type: ${businessType || 'General Business'}
 Business Name: ${businessName || 'the business'}
+</context>
 
-Create 3-5 brief style guidelines based on the keywords.
-Examples: signature sign-offs, tone of voice, what to always/never mention.
-Keep each point short and actionable.
-Respond ONLY with the guidelines as bullet points, no introduction.`;
+<instructions>
+Create response style guidelines based on the keywords. Use XML tags to structure the output.
+
+Output format - use these EXACT XML tags:
+
+<always>
+- Things to always include in responses (2-3 bullet points)
+</always>
+
+<never>
+- Things to never do or say (2-3 bullet points)
+</never>
+
+<style>
+- Tone and style preferences (2-3 bullet points)
+</style>
+
+<signoff>
+- How to sign off responses (1 line)
+</signoff>
+</instructions>
+
+<rules>
+- Each section should have 2-3 concise bullet points
+- Keep points short and actionable
+- Use the keywords provided to customize the guidelines
+- Output ONLY the XML tags with content, no introduction
+</rules>`;
       userMessage = `Keywords: ${keywords.trim()}`;
     } else if (field === 'sample_review') {
       // Generate a sample review that references the business context
@@ -2863,8 +2940,8 @@ Your response will be rejected if it sounds like AI-generated text. Write like a
     // ========== OPTIMIZED SYSTEM + USER MESSAGE STRUCTURE ==========
 
     const systemMessage = `You own ${businessName || contextUser.business_name || 'a business'}${contextUser.business_type ? ` (${contextUser.business_type})` : ''}. You're responding to a review on ${platform || 'Google'}.
-${contextUser.business_context ? `\nAbout your business: ${contextUser.business_context}` : ''}
-${contextUser.response_style ? `\nIMPORTANT - Follow these custom instructions: ${contextUser.response_style}` : ''}
+${contextUser.business_context ? `\n<business_context>\n${contextUser.business_context}\n</business_context>` : ''}
+${contextUser.response_style ? `\n<response_style>\n${contextUser.response_style}\n</response_style>` : ''}
 ${templateContent ? `\nTEMPLATE STYLE GUIDE: Use this template as a style reference. Match its tone, structure, and approach, but adapt the content to address the specific review:\n"${templateContent}"` : ''}
 
 ${writingStyleInstructions}
@@ -3491,6 +3568,15 @@ LANGUAGE: ${bulkLanguageInstruction}`;
 
 app.get('/api/responses/history', authenticateToken, async (req, res) => {
   try {
+    // Plan-Check: Response History is Starter+ only
+    const user = await dbGet('SELECT subscription_plan FROM users WHERE id = $1', [req.user.id]);
+    if (user.subscription_plan === 'free') {
+      return res.status(403).json({
+        error: 'Response history is available for Starter plans and above',
+        upgrade: true,
+      });
+    }
+
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const offset = (page - 1) * limit;
@@ -5017,30 +5103,102 @@ app.get('/api/public/blog/:slug', async (req, res) => {
 // ============== DEMO GENERATOR SYSTEM ==============
 // Personalized demos for cold outreach: scrape reviews, generate AI responses
 
-// Helper: Scrape Google reviews via SerpAPI
-async function scrapeGoogleReviews(placeId, limit = 10) {
-  if (!process.env.SERPAPI_KEY) {
-    throw new Error('SERPAPI_KEY not configured');
+// SerpAPI Key Rotation - supports multiple keys for scaling
+// Keys: SERPAPI_KEY, SERPAPI_KEY_2, SERPAPI_KEY_3, etc.
+let serpApiKeyIndex = 0;
+function getNextSerpApiKey() {
+  const keys = [
+    process.env.SERPAPI_KEY,
+    process.env.SERPAPI_KEY_2,
+    process.env.SERPAPI_KEY_3,
+  ].filter(Boolean); // Remove undefined keys
+
+  if (keys.length === 0) {
+    return null;
   }
 
-  const url = `https://serpapi.com/search.json?engine=google_maps_reviews&place_id=${placeId}&hl=en&api_key=${process.env.SERPAPI_KEY}`;
+  // Round-robin rotation
+  const key = keys[serpApiKeyIndex % keys.length];
+  serpApiKeyIndex++;
+  return key;
+}
 
-  const response = await fetch(url);
+function getSerpApiKeyCount() {
+  return [
+    process.env.SERPAPI_KEY,
+    process.env.SERPAPI_KEY_2,
+    process.env.SERPAPI_KEY_3,
+  ].filter(Boolean).length;
+}
+
+// Helper: Scrape Google reviews via Outscraper (fallback/alternative to SerpAPI)
+// Free tier: 500 reviews, no phone verification needed
+async function scrapeGoogleReviewsOutscraper(placeId, limit = 10) {
+  if (!process.env.OUTSCRAPER_API_KEY) {
+    throw new Error('OUTSCRAPER_API_KEY not configured');
+  }
+
+  const url = `https://api.app.outscraper.com/maps/reviews-v3?query=${placeId}&reviewsLimit=${limit}&async=false&sort=lowest_rating`;
+
+  const response = await fetch(url, {
+    headers: {
+      'X-API-KEY': process.env.OUTSCRAPER_API_KEY
+    }
+  });
+
   const data = await response.json();
 
-  if (data.error) {
-    throw new Error(`SerpAPI error: ${data.error}`);
+  if (data.status === 'Error' || data.error) {
+    throw new Error(`Outscraper error: ${data.error || data.status_message || 'Unknown error'}`);
   }
 
-  return (
-    data.reviews?.slice(0, limit).map((r) => ({
-      text: r.snippet || r.text || '',
-      rating: r.rating || 0,
-      author: r.user?.name || 'Anonymous',
-      date: r.date || '',
-      source: 'google',
-    })) || []
-  );
+  // Outscraper returns array of places, each with reviews_data
+  const reviews = data.data?.[0]?.reviews_data || [];
+
+  return reviews.slice(0, limit).map((r) => ({
+    text: r.review_text || r.snippet || '',
+    rating: r.review_rating || 0,
+    author: r.author_title || r.reviewer_name || 'Anonymous',
+    date: r.review_datetime_utc || r.review_date || '',
+    source: 'google',
+  }));
+}
+
+// Helper: Scrape Google reviews - tries SerpAPI first, falls back to Outscraper
+async function scrapeGoogleReviews(placeId, limit = 10) {
+  // Try SerpAPI first (if configured)
+  const serpApiKey = getNextSerpApiKey();
+  if (serpApiKey) {
+    try {
+      const url = `https://serpapi.com/search.json?engine=google_maps_reviews&place_id=${placeId}&hl=en&api_key=${serpApiKey}`;
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.error) {
+        console.log(`SerpAPI error, trying Outscraper: ${data.error}`);
+        throw new Error(data.error);
+      }
+
+      return (
+        data.reviews?.slice(0, limit).map((r) => ({
+          text: r.snippet || r.text || '',
+          rating: r.rating || 0,
+          author: r.user?.name || 'Anonymous',
+          date: r.date || '',
+          source: 'google',
+        })) || []
+      );
+    } catch (serpErr) {
+      console.log(`SerpAPI failed: ${serpErr.message}, trying Outscraper fallback...`);
+    }
+  }
+
+  // Fallback to Outscraper
+  if (process.env.OUTSCRAPER_API_KEY) {
+    return scrapeGoogleReviewsOutscraper(placeId, limit);
+  }
+
+  throw new Error('No review scraping API configured (need SERPAPI_KEY or OUTSCRAPER_API_KEY)');
 }
 
 // Helper: Lookup Google Place ID from business name + city
@@ -5088,37 +5246,51 @@ async function generateDemoResponse(review, businessName, businessType = null, c
     throw new Error('ANTHROPIC_API_KEY not configured');
   }
 
-  const ownerName = getOwnerName(businessName);
-  const industryContext = businessType ? getIndustryContext(businessType) : 'professional services';
+  const industryContext = businessType ? getIndustryContext(businessType) : '';
 
-  // Build context section
+  // Build rich context section
   let contextSection = `BUSINESS: ${businessName}`;
-  if (businessType) contextSection += ` (${businessType} - ${industryContext})`;
+  if (businessType) contextSection += `\nTYPE: ${businessType}`;
+  if (industryContext) contextSection += ` (${industryContext})`;
   if (city) contextSection += `\nLOCATION: ${city}`;
   if (googleRating) {
-    contextSection += `\nRATING: ${googleRating} stars`;
-    if (totalReviews) contextSection += ` (${totalReviews} reviews)`;
+    contextSection += `\nGOOGLE RATING: ${googleRating}/5 stars`;
+    if (totalReviews) contextSection += ` from ${totalReviews.toLocaleString()} reviews`;
   }
 
-  const systemMessage = `You are ${ownerName}, owner of ${businessName}. Generate a professional response to this customer review.
+  const systemMessage = `You are the owner/manager of ${businessName}. Write a genuinely helpful response to this customer review.
 
 ${contextSection}
 
-RULES:
-- Write directly as the owner (first person)
-- Be genuine and human, not corporate
-- Keep it 2-3 sentences max
-- If negative: acknowledge concerns, offer to make it right
-- If positive: thank them specifically
-- If the review seems fake or from a competitor, stay professional but don't admit fault
-- Sign with: ${ownerName}
+QUALITY GUIDELINES:
+- Address the reviewer BY NAME in your first sentence
+- Reference SPECIFIC details they mentioned (food items, staff, experiences)
+- If negative: Show you truly understand their frustration, explain what you'll do differently
+- If positive: Be warm and specific about what made their visit special
+- Sound like a real human who cares, not a PR department
+- Keep it 2-4 sentences - concise but meaningful
+- ALWAYS end with the FULL business name exactly as written: "${businessName}" (not shortened, not abbreviated)
 
-DO NOT use: "Thank you for your feedback" | "We value your input" | "Sorry for any inconvenience" | "We take all feedback seriously"`;
+AVOID THESE PHRASES (they sound robotic):
+- "Thank you for your feedback/review"
+- "We value your input/opinion"
+- "Sorry for any inconvenience"
+- "We take all feedback seriously"
+- "I hope to see you again soon"
+- "Please reach out to us"
 
-  const userMessage = `[${review.rating} stars from ${review.author}]
-"${review.text}"
+GREAT RESPONSES:
+- Feel personal and specific to THIS review
+- Show empathy without being defensive
+- Offer concrete solutions (not vague promises)
+- Read like they came from a person, not a template`;
 
-Write a response:`;
+  const userMessage = `REVIEW TO RESPOND TO:
+Rating: ${review.rating}/5 stars
+Author: ${review.author}
+Text: "${review.text}"
+
+Write a response that sounds genuinely human:`;
 
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
@@ -6382,8 +6554,8 @@ app.post('/api/v1/generate', authenticateApiKey, async (req, res) => {
         : publicApiExamples.positive;
 
     const systemPrompt = `You own ${user.business_name || 'a business'}${user.business_type ? ` (${user.business_type})` : ''}.
-${user.business_context ? `About your business: ${user.business_context}` : ''}
-${user.response_style ? `IMPORTANT - Follow these custom instructions: ${user.response_style}` : ''}
+${user.business_context ? `<business_context>\n${user.business_context}\n</business_context>` : ''}
+${user.response_style ? `<response_style>\n${user.response_style}\n</response_style>` : ''}
 
 <output_format>
 Write the response directly. No quotes. No "Response:" prefix. Just the text.
@@ -10259,57 +10431,49 @@ P.S. I'm the founder. Reply if you have questions.`,
 
 // Email templates for REVIEW ALERT outreach - GERMAN
 const REVIEW_ALERT_TEMPLATES_DE = {
-  // With demo link
+  // With demo link - personal, conversational tone
   sequence1: {
-    subject: '{business_name} - hab dir was geschrieben',
-    body: `Hi,
+    subject: 'Kurze Frage zu {business_name}',
+    body: `Hey,
 
-ich habe gesehen dass {business_name} eine {review_rating}-Sterne Bewertung auf Google hat:
+bin gerade auf eine Bewertung von {business_name} gestoßen und dachte mir ich schreib dir mal kurz.
 
-"{review_text_truncated}"
-- {review_author}
+Die hier meine ich:
+"{review_text_truncated}" - {review_author}
 
-Hier ist ein professioneller Antwortvorschlag:
+Hab mal eine Antwort formuliert die du nutzen könntest:
 
----
 {ai_response_draft}
----
 
-Gerne direkt nutzen - ist kostenlos.
+Kannst du einfach so kopieren wenn du magst.
 
-Ich habe noch 2 weitere Antworten auf deine anderen Reviews geschrieben:
+Hab noch ein paar andere Reviews von euch angeschaut und Antworten dafür vorbereitet:
 {demo_url}
 
-Grüße,
-Berend
-
-P.S. Bin der Gründer, bei Fragen einfach antworten.`,
+Viele Grüße
+Berend`,
   },
-  // Fallback without demo
+  // Fallback without demo - personal tone
   sequence1_no_demo: {
-    subject: '{business_name} - Antwort auf Ihre Google-Bewertung',
-    body: `Hi,
+    subject: 'Kurze Frage zu {business_name}',
+    body: `Hey,
 
-ich habe gesehen dass {business_name} eine {review_rating}-Sterne Bewertung auf Google hat:
+bin gerade auf eine Bewertung von {business_name} gestoßen und dachte mir ich schreib dir mal kurz.
 
-"{review_text_truncated}"
-- {review_author}
+Die hier meine ich:
+"{review_text_truncated}" - {review_author}
 
-Hier ist ein professioneller Antwortvorschlag:
+Hab mal eine Antwort formuliert die du nutzen könntest:
 
----
 {ai_response_draft}
----
 
-Diese Antwort ist kostenlos - nutzen Sie sie gerne direkt.
+Kannst du einfach so kopieren wenn du magst.
 
-Falls Sie professionelle Antworten auf alle Reviews möchten, probieren Sie ReviewResponder:
+Falls du öfter Hilfe mit Reviews brauchst, schau mal hier vorbei:
 https://tryreviewresponder.com?ref=alert
 
-Grüße,
-Berend
-
-P.S. Bin der Gründer, bei Fragen einfach antworten.`,
+Viele Grüße
+Berend`,
   },
 };
 
@@ -10579,19 +10743,31 @@ async function generateReviewAlertDraft(businessName, businessType, reviewText, 
     if (googleRating) contextSection += `\n- Current Rating: ${googleRating} stars`;
     if (totalReviews) contextSection += ` (${totalReviews} total reviews)`;
 
-    const systemPrompt = `You are ${ownerName}, owner of ${businessName}.
+    const systemPrompt = `You are the owner/manager of ${businessName}. Write a genuinely helpful response to this customer review.
 
 ${contextSection}
 
-Write a response to this customer review. Rules:
-- Speak directly as the owner (first person)
-- Be genuine and human, not corporate
-- 2-3 sentences maximum
-- If the customer mentions a specific issue, address it directly
-- If the review seems fake or from a competitor, stay professional but don't admit fault for things you didn't do
-- Sign with your name: ${ownerName}
+QUALITY GUIDELINES:
+- Address the reviewer BY NAME in your first sentence
+- Reference SPECIFIC details they mentioned (food items, staff, experiences)
+- If negative: Show you truly understand their frustration, explain what you'll do differently
+- If positive: Be warm and specific about what made their visit special
+- Sound like a real human who cares, not a PR department
+- Keep it 2-3 sentences - concise but meaningful
+- ALWAYS end with the FULL business name exactly as written: "${businessName}" (not shortened, not abbreviated)
 
-DO NOT use these phrases: "Thank you for your feedback" | "We value your input" | "Sorry for any inconvenience" | "We take all feedback seriously"`;
+AVOID THESE PHRASES (they sound robotic):
+- "Thank you for your feedback/review"
+- "We value your input/opinion"
+- "Sorry for any inconvenience"
+- "We take all feedback seriously"
+- "I hope to see you again soon"
+- "Please reach out to us"
+
+GREAT RESPONSES:
+- Feel personal and specific to THIS review
+- Show empathy without being defensive
+- Offer concrete solutions (not vague promises)`;
 
     const userPrompt = `Write a response to this ${reviewRating}-star review from ${reviewAuthor || 'a customer'}:
 
@@ -10616,8 +10792,9 @@ DO NOT use these phrases: "Thank you for your feedback" | "We value your input" 
 // Returns { demo_url, demo_token, reviews_processed } or null if failed
 async function generateDemoForLead(lead) {
   try {
-    // Need SerpAPI for review scraping
-    if (!process.env.SERPAPI_KEY || !process.env.GOOGLE_PLACES_API_KEY) {
+    // Need review scraping API (SerpAPI or Outscraper) + Google Places
+    const hasReviewApi = getSerpApiKeyCount() > 0 || process.env.OUTSCRAPER_API_KEY;
+    if (!hasReviewApi || !process.env.GOOGLE_PLACES_API_KEY) {
       console.log('Missing API keys for demo generation');
       return null;
     }
@@ -10720,6 +10897,7 @@ async function generateDemoForLead(lead) {
       demo_token: demoToken,
       reviews_processed: demos.length,
       first_ai_response: demos[0]?.ai_response || null,
+      first_review: demos[0]?.review || null,
     };
   } catch (error) {
     console.error('Failed to generate demo for lead:', error.message);
@@ -11174,7 +11352,8 @@ app.post('/api/outreach/test-email', async (req, res) => {
   }
 });
 
-// Test Review Alert Email - sends a test review alert email with AI-generated response
+// Test Review Alert Email - sends a test review alert email with personalized demo page
+// Use ?with_demo=true to generate a full demo page with 3 reviews + AI responses
 app.post('/api/outreach/test-review-alert', async (req, res) => {
   const adminKey = req.headers['x-admin-key'];
   if (!process.env.ADMIN_SECRET || !safeCompare(adminKey, process.env.ADMIN_SECRET)) {
@@ -11185,49 +11364,60 @@ app.post('/api/outreach/test-review-alert', async (req, res) => {
     return res.status(500).json({ error: 'No email provider configured' });
   }
 
-  const { email, business_name, city, review_text, review_rating, review_author } = req.body;
+  const { email, business_name, city, with_demo } = req.body;
   if (!email) {
     return res.status(400).json({ error: 'Email required' });
   }
 
   try {
-    // Use provided data or defaults
-    const testBusinessName = business_name || 'Cafe Milano';
+    const testBusinessName = business_name || 'Augustiner-Keller';
     const testCity = city || 'Berlin';
-    const testReviewText = review_text || 'The service was extremely slow and the waiter was rude. We waited 45 minutes for our food and when it arrived, it was cold. Very disappointing experience.';
-    const testReviewRating = review_rating || 1;
-    const testReviewAuthor = review_author || 'Sarah M.';
+    const lang = detectLanguage(testCity);
 
-    // Generate AI response draft
-    const aiDraft = await generateReviewAlertDraft(
-      testBusinessName,
-      'restaurant',
-      testReviewText,
-      testReviewRating,
-      testReviewAuthor
-    );
-
-    if (!aiDraft) {
-      return res.status(500).json({ error: 'Failed to generate AI draft' });
-    }
-
-    // Create test lead with review data
+    // Create test lead object
     const testLead = {
       business_name: testBusinessName,
       business_type: 'restaurant',
       city: testCity,
       email: email,
-      google_reviews_count: 150,
-      has_bad_review: true,
-      worst_review_text: testReviewText,
-      worst_review_rating: testReviewRating,
-      worst_review_author: testReviewAuthor,
-      ai_response_draft: aiDraft,
     };
 
-    // Get review alert template (use no_demo version since we don't generate a demo page for tests)
-    const lang = detectLanguage(testCity);
-    const templateKey = lang === 'de' ? 'review_alert_no_demo_de' : 'review_alert_no_demo';
+    let demoUrl = null;
+    let aiDraftPreview = null;
+    let reviewsProcessed = 0;
+
+    // Generate full demo if requested (default: true for complete testing)
+    if (with_demo !== false) {
+      console.log(`📝 Generating demo for test: ${testBusinessName}...`);
+      const demoResult = await generateDemoForLead(testLead);
+
+      if (demoResult && demoResult.first_ai_response) {
+        testLead.demo_url = demoResult.demo_url;
+        testLead.ai_response_draft = demoResult.first_ai_response;
+        testLead.has_bad_review = true;
+        // Set review fields for email template
+        if (demoResult.first_review) {
+          testLead.worst_review_rating = demoResult.first_review.rating;
+          testLead.worst_review_text = demoResult.first_review.text;
+          testLead.worst_review_author = demoResult.first_review.author;
+        }
+        demoUrl = demoResult.demo_url;
+        aiDraftPreview = demoResult.first_ai_response;
+        reviewsProcessed = demoResult.reviews_processed;
+        console.log(`✅ Demo generated: ${demoUrl} (${reviewsProcessed} reviews)`);
+      } else {
+        console.log(`⚠️ Demo generation failed, using no_demo template`);
+      }
+    }
+
+    // Select template based on whether demo was generated
+    let templateKey;
+    if (testLead.demo_url) {
+      templateKey = lang === 'de' ? 'review_alert_de' : 'review_alert';
+    } else {
+      templateKey = lang === 'de' ? 'review_alert_no_demo_de' : 'review_alert_no_demo';
+    }
+
     const template = fillEmailTemplate(EMAIL_TEMPLATES[templateKey], testLead);
 
     // Send email
@@ -11244,9 +11434,11 @@ app.post('/api/outreach/test-review-alert', async (req, res) => {
       provider: result.provider,
       language: lang,
       business_name: testBusinessName,
-      review_rating: testReviewRating,
-      review_author: testReviewAuthor,
-      ai_draft_preview: aiDraft.substring(0, 200) + '...',
+      demo_generated: !!demoUrl,
+      demo_url: demoUrl,
+      reviews_processed: reviewsProcessed,
+      template_used: templateKey,
+      ai_draft_preview: aiDraftPreview ? aiDraftPreview.substring(0, 200) + '...' : null,
     });
   } catch (err) {
     console.error('Test review alert error:', err);
@@ -11758,22 +11950,62 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
 
     for (const lead of newLeads) {
       try {
-        // Generate AI draft for leads with bad reviews (if not already done)
-        if (lead.has_bad_review && lead.worst_review_text && !lead.ai_response_draft) {
-          console.log(`📝 Generating AI draft for TripAdvisor lead: ${lead.business_name}...`);
-          const aiDraft = await generateReviewAlertDraft(
-            lead.business_name,
-            lead.business_type,
-            lead.worst_review_text,
-            lead.worst_review_rating,
-            lead.worst_review_author,
-            lead.city || null,
-            lead.google_rating || null,
-            lead.google_reviews_count || null
-          );
-          if (aiDraft) {
-            lead.ai_response_draft = aiDraft;
-            await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1 WHERE id = $2', [aiDraft, lead.id]);
+        // Demo-Generation für TripAdvisor (wie Daily Outreach)
+        if (!lead.demo_url && lead.has_bad_review) {
+          console.log(`📝 Generating demo for TripAdvisor lead: ${lead.business_name}...`);
+
+          try {
+            const demoResult = await generateDemoForLead(lead);
+
+            if (demoResult && demoResult.first_ai_response) {
+              // Demo erfolgreich - Update Lead
+              await pool.query(
+                `UPDATE outreach_leads SET
+                  demo_url = $1, demo_token = $2, ai_response_draft = $3,
+                  worst_review_rating = $4, worst_review_text = $5,
+                  worst_review_author = $6, has_bad_review = TRUE
+                WHERE id = $7`,
+                [
+                  demoResult.demo_url,
+                  demoResult.demo_token,
+                  demoResult.first_ai_response,
+                  demoResult.first_review?.rating,
+                  demoResult.first_review?.text,
+                  demoResult.first_review?.author,
+                  lead.id,
+                ]
+              );
+
+              // Update lokales lead Objekt für Template-Selection
+              lead.demo_url = demoResult.demo_url;
+              lead.demo_token = demoResult.demo_token;
+              lead.ai_response_draft = demoResult.first_ai_response;
+              lead.worst_review_rating = demoResult.first_review?.rating;
+              lead.worst_review_text = demoResult.first_review?.text;
+              lead.worst_review_author = demoResult.first_review?.author;
+              console.log(`✅ Demo generated for ${lead.business_name}: ${demoResult.demo_url}`);
+            }
+          } catch (err) {
+            console.error(`Demo generation failed for ${lead.business_name}:`, err.message);
+          }
+
+          // Fallback: wenn Demo fehlgeschlagen und kein ai_response_draft
+          if (!lead.ai_response_draft && lead.worst_review_text) {
+            console.log(`📝 Fallback: Generating AI draft for ${lead.business_name}...`);
+            const aiDraft = await generateReviewAlertDraft(
+              lead.business_name,
+              lead.business_type,
+              lead.worst_review_text,
+              lead.worst_review_rating,
+              lead.worst_review_author,
+              lead.city || null,
+              lead.google_rating || null,
+              lead.google_reviews_count || null
+            );
+            if (aiDraft) {
+              lead.ai_response_draft = aiDraft;
+              await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1 WHERE id = $2', [aiDraft, lead.id]);
+            }
           }
         }
 
@@ -11818,10 +12050,97 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
       }
     }
 
-    console.log(`✅ TripAdvisor cron complete: ${results.emails_sent}/${results.total} emails sent`);
+    console.log(`✅ TripAdvisor first emails complete: ${results.emails_sent}/${results.total} emails sent`);
+
+    // ==========================================
+    // FOLLOW-UP EMAILS (4 days after first email)
+    // ==========================================
+    const followupResults = { sent: 0, errors: [] };
+
+    // Find leads that:
+    // 1. Got first email (sequence_number = 1) more than 4 days ago
+    // 2. Haven't received follow-up yet (no sequence_number = 2)
+    // 3. Haven't replied/clicked (status still 'contacted')
+    const followupLeads = await dbAll(`
+      SELECT DISTINCT ol.*, oe.sent_at as first_email_sent
+      FROM outreach_leads ol
+      JOIN outreach_emails oe ON oe.lead_id = ol.id
+      WHERE ol.source = 'tripadvisor'
+        AND ol.status = 'contacted'
+        AND oe.sequence_number = 1
+        AND oe.sent_at < NOW() - INTERVAL '4 days'
+        AND NOT EXISTS (
+          SELECT 1 FROM outreach_emails oe2
+          WHERE oe2.lead_id = ol.id AND oe2.sequence_number = 2
+        )
+      ORDER BY oe.sent_at ASC
+      LIMIT 20
+    `);
+
+    if (followupLeads.length > 0) {
+      console.log(`📧 Sending ${followupLeads.length} TripAdvisor follow-up emails...`);
+
+      for (const lead of followupLeads) {
+        try {
+          // Get owner name or business name
+          const ownerName = getOwnerName(lead.business_name);
+          const firstName = ownerName.split(' ')[0] || 'there';
+
+          const subject = `Re: ${lead.business_name} - quick question`;
+          const followupBody = `Hey ${firstName},
+
+Quick follow-up on my last email - did you get a chance to check out the AI review response tool?
+
+I noticed ${lead.business_name} has ${lead.google_reviews_count || 'several'} reviews on Google. With our tool, you could respond to all of them in minutes instead of hours.
+
+Here's a personalized demo showing how it works for ${lead.business_name}:
+${lead.demo_url || 'https://tryreviewresponder.com?ref=tripadvisor-followup'}
+
+20 free responses, no credit card needed. Takes 30 seconds to try.
+
+Let me know if you have any questions!
+
+Berend`;
+
+          await sendOutreachEmail({
+            to: lead.email,
+            subject,
+            html: followupBody.replace(/\n/g, '<br>'),
+            campaign: 'tripadvisor-followup',
+            tags: [
+              { name: 'source', value: 'tripadvisor' },
+              { name: 'sequence', value: '2' }
+            ]
+          });
+
+          // Log the follow-up email
+          await dbQuery(`
+            INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign, provider)
+            VALUES ($1, $2, 2, $3, $4, 'sent', NOW(), 'tripadvisor-followup', 'resend')
+          `, [lead.id, lead.email, subject, followupBody]);
+
+          followupResults.sent++;
+          console.log(`📧 TripAdvisor follow-up sent to: ${lead.email} (${lead.business_name})`);
+
+          // Delay between emails
+          await new Promise(resolve => setTimeout(resolve, 500));
+
+        } catch (followupError) {
+          followupResults.errors.push(`Followup failed for ${lead.business_name}: ${followupError.message}`);
+          console.error(`Follow-up error for ${lead.email}:`, followupError.message);
+        }
+      }
+    }
+
+    console.log(`✅ TripAdvisor cron complete: ${results.emails_sent} first, ${followupResults.sent} followups`);
 
     // Minimal response for cron-job.org (has size limit)
-    res.json({ ok: true, sent: results.emails_sent, err: results.errors.length });
+    res.json({
+      ok: true,
+      first: results.emails_sent,
+      followup: followupResults.sent,
+      err: results.errors.length + followupResults.errors.length
+    });
   } catch (error) {
     console.error('TripAdvisor cron error:', error);
     res.status(500).json({ ok: false, err: error.message?.slice(0, 100) });
@@ -12680,8 +12999,9 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
 
       for (const lead of newLeads) {
         try {
-          // For leads with bad reviews, generate full demo with multiple AI responses
-          if (lead.has_bad_review && lead.worst_review_text && !lead.ai_response_draft) {
+          // Generate personalized demo for ALL new leads (not just those with bad reviews)
+          // This creates a custom landing page with 3 of their reviews + AI responses
+          if (!lead.demo_url) {
             console.log(`📝 Generating demo for ${lead.business_name}...`);
 
             const demoResult = await generateDemoForLead(lead);
@@ -12691,34 +13011,58 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
               lead.ai_response_draft = demoResult.first_ai_response;
               lead.demo_url = demoResult.demo_url;
               lead.demo_token = demoResult.demo_token;
+              lead.has_bad_review = true; // Mark as having demo content for template selection
 
-              // Save to database
+              // Set review fields for email template
+              if (demoResult.first_review) {
+                lead.worst_review_rating = demoResult.first_review.rating;
+                lead.worst_review_text = demoResult.first_review.text;
+                lead.worst_review_author = demoResult.first_review.author;
+              }
+
+              // Save to database (including review fields for email template)
               await dbQuery(
-                'UPDATE outreach_leads SET ai_response_draft = $1, demo_url = $2, demo_token = $3 WHERE id = $4',
-                [demoResult.first_ai_response, demoResult.demo_url, demoResult.demo_token, lead.id]
+                `UPDATE outreach_leads SET
+                  ai_response_draft = $1, demo_url = $2, demo_token = $3, has_bad_review = TRUE,
+                  worst_review_rating = $4, worst_review_text = $5, worst_review_author = $6
+                WHERE id = $7`,
+                [
+                  demoResult.first_ai_response,
+                  demoResult.demo_url,
+                  demoResult.demo_token,
+                  demoResult.first_review?.rating || null,
+                  demoResult.first_review?.text || null,
+                  demoResult.first_review?.author || null,
+                  lead.id
+                ]
               );
 
               console.log(`✅ Demo generated: ${demoResult.demo_url} (${demoResult.reviews_processed} reviews)`);
             } else {
-              // Fallback: Generate single AI draft if demo generation fails
-              console.log(`⚠️ Demo failed, generating single AI draft for ${lead.business_name}...`);
-              const aiDraft = await generateReviewAlertDraft(
-                lead.business_name,
-                lead.business_type,
-                lead.worst_review_text,
-                lead.worst_review_rating,
-                lead.worst_review_author,
-                lead.city || null,
-                lead.google_rating || null,
-                lead.google_reviews_count || null
-              );
+              // Fallback: Generate single AI draft if demo generation fails (e.g., no reviews found)
+              console.log(`⚠️ Demo failed for ${lead.business_name}, trying single AI draft...`);
 
-              if (aiDraft) {
-                lead.ai_response_draft = aiDraft;
-                await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1 WHERE id = $2', [
-                  aiDraft,
-                  lead.id,
-                ]);
+              // Try to get a review to generate draft from
+              if (lead.worst_review_text) {
+                const aiDraft = await generateReviewAlertDraft(
+                  lead.business_name,
+                  lead.business_type,
+                  lead.worst_review_text,
+                  lead.worst_review_rating,
+                  lead.worst_review_author,
+                  lead.city || null,
+                  lead.google_rating || null,
+                  lead.google_reviews_count || null
+                );
+
+                if (aiDraft) {
+                  lead.ai_response_draft = aiDraft;
+                  lead.has_bad_review = true;
+                  await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1, has_bad_review = TRUE WHERE id = $2', [
+                    aiDraft,
+                    lead.id,
+                  ]);
+                }
               }
             }
           }
@@ -12866,22 +13210,28 @@ app.get('/api/outreach/dashboard', async (req, res) => {
   }
 
   try {
+    // Filter out test emails from metrics
+    const TEST_EMAIL_FILTER = `
+      AND email NOT LIKE '%berend%'
+      AND (campaign IS NULL OR campaign NOT LIKE 'test%')
+    `;
+
     const totalLeads = await dbGet('SELECT COUNT(*) as count FROM outreach_leads');
     const leadsWithEmail = await dbGet(
       'SELECT COUNT(*) as count FROM outreach_leads WHERE email IS NOT NULL'
     );
     const emailsSent = await dbGet(
-      'SELECT COUNT(*) as count FROM outreach_emails WHERE status = $1',
+      `SELECT COUNT(*) as count FROM outreach_emails WHERE status = $1 ${TEST_EMAIL_FILTER}`,
       ['sent']
     );
     const emailsOpened = await dbGet(
-      'SELECT COUNT(*) as count FROM outreach_emails WHERE opened_at IS NOT NULL'
+      `SELECT COUNT(*) as count FROM outreach_emails WHERE opened_at IS NOT NULL ${TEST_EMAIL_FILTER}`
     );
 
-    // Click tracking stats
+    // Click tracking stats (also filter test emails)
     let emailsClicked = { count: 0 };
     try {
-      emailsClicked = await dbGet('SELECT COUNT(DISTINCT email) as count FROM outreach_clicks') || { count: 0 };
+      emailsClicked = await dbGet(`SELECT COUNT(DISTINCT email) as count FROM outreach_clicks WHERE email NOT LIKE '%berend%'`) || { count: 0 };
     } catch (e) {
       // Table might not exist yet
     }
@@ -12947,6 +13297,12 @@ app.get('/api/outreach/funnel', async (req, res) => {
     // ========== FUNNEL METRICS ==========
     const funnel = {};
 
+    // Filter out test emails from metrics
+    const TEST_EMAIL_FILTER = `
+      AND email NOT LIKE '%berend%'
+      AND (campaign IS NULL OR campaign NOT LIKE 'test%')
+    `;
+
     // Stage 1: Leads
     const totalLeads = await dbGet('SELECT COUNT(*) as count FROM outreach_leads');
     const leadsWithEmail = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE email IS NOT NULL');
@@ -12956,22 +13312,22 @@ app.get('/api/outreach/funnel', async (req, res) => {
       email_rate: totalLeads?.count > 0 ? ((leadsWithEmail?.count / totalLeads?.count) * 100).toFixed(1) + '%' : '0%'
     };
 
-    // Stage 2: Emails Sent
-    const emailsSent = await dbGet('SELECT COUNT(*) as count FROM outreach_emails WHERE status = $1', ['sent']);
+    // Stage 2: Emails Sent (excluding test emails)
+    const emailsSent = await dbGet(`SELECT COUNT(*) as count FROM outreach_emails WHERE status = $1 ${TEST_EMAIL_FILTER}`, ['sent']);
     funnel.emails_sent = parseInt(emailsSent?.count || 0);
 
-    // Stage 3: Opens
-    const emailsOpened = await dbGet('SELECT COUNT(*) as count FROM outreach_emails WHERE opened_at IS NOT NULL');
+    // Stage 3: Opens (excluding test emails)
+    const emailsOpened = await dbGet(`SELECT COUNT(*) as count FROM outreach_emails WHERE opened_at IS NOT NULL ${TEST_EMAIL_FILTER}`);
     funnel.opens = {
       count: parseInt(emailsOpened?.count || 0),
       rate: funnel.emails_sent > 0 ? ((emailsOpened?.count / funnel.emails_sent) * 100).toFixed(1) + '%' : '0%'
     };
 
-    // Stage 4: Clicks
+    // Stage 4: Clicks (excluding test emails)
     let clicksData = { count: 0, unique: 0 };
     try {
-      const totalClicks = await dbGet('SELECT COUNT(*) as count FROM outreach_clicks');
-      const uniqueClicks = await dbGet('SELECT COUNT(DISTINCT email) as count FROM outreach_clicks');
+      const totalClicks = await dbGet(`SELECT COUNT(*) as count FROM outreach_clicks WHERE email NOT LIKE '%berend%'`);
+      const uniqueClicks = await dbGet(`SELECT COUNT(DISTINCT email) as count FROM outreach_clicks WHERE email NOT LIKE '%berend%'`);
       clicksData = {
         count: parseInt(totalClicks?.count || 0),
         unique: parseInt(uniqueClicks?.count || 0)
@@ -14263,7 +14619,7 @@ app.post('/api/sales/yelp-leads', async (req, res) => {
   }
 });
 
-// POST /api/sales/competitor-leads - Submit G2 competitor leads
+// POST /api/sales/competitor-leads - Submit G2 competitor leads with auto demo + email
 app.post('/api/sales/competitor-leads', async (req, res) => {
   const authKey = req.headers['x-api-key'] || req.query.key;
   if (!safeCompare(authKey, process.env.ADMIN_SECRET) && !safeCompare(authKey, process.env.CRON_SECRET)) {
@@ -14271,49 +14627,147 @@ app.post('/api/sales/competitor-leads', async (req, res) => {
   }
 
   try {
-    const { leads } = req.body;
+    const { leads, generate_demos = false, send_emails = false } = req.body;
     if (!Array.isArray(leads) || leads.length === 0) {
       return res.status(400).json({ error: 'leads array required' });
     }
 
-    let inserted = 0;
-    let skipped = 0;
+    const results = {
+      inserted: 0,
+      skipped: 0,
+      emails_found: 0,
+      demos_generated: 0,
+      emails_sent: 0,
+      errors: []
+    };
 
     for (const lead of leads) {
-      // Check if already exists (by company + competitor combo)
-      const existing = await dbGet(
-        'SELECT id FROM competitor_leads WHERE company_name = $1 AND competitor = $2',
-        [lead.company_name, lead.competitor]
-      );
-      if (existing) {
-        skipped++;
-        continue;
-      }
+      try {
+        // Check if already exists (by company + competitor combo)
+        const existing = await dbGet(
+          'SELECT id FROM competitor_leads WHERE company_name = $1 AND competitor = $2',
+          [lead.company_name, lead.competitor]
+        );
+        if (existing) {
+          results.skipped++;
+          continue;
+        }
 
-      await dbQuery(`
-        INSERT INTO competitor_leads (company_name, reviewer_name, reviewer_title, competitor, star_rating, review_title, complaint_summary, review_date, g2_url, website)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      `, [
-        lead.company_name,
-        lead.reviewer_name,
-        lead.reviewer_title,
-        lead.competitor,
-        lead.star_rating,
-        lead.review_title,
-        lead.complaint_summary,
-        lead.review_date,
-        lead.g2_url,
-        lead.website
-      ]);
-      inserted++;
+        // Insert lead with email if provided
+        const insertResult = await dbQuery(`
+          INSERT INTO competitor_leads (company_name, reviewer_name, reviewer_title, competitor, star_rating, review_title, complaint_summary, review_date, g2_url, website, email, email_source)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+          RETURNING id
+        `, [
+          lead.company_name,
+          lead.reviewer_name,
+          lead.reviewer_title,
+          lead.competitor,
+          lead.star_rating,
+          lead.review_title,
+          lead.complaint_summary,
+          lead.review_date,
+          lead.g2_url,
+          lead.website,
+          lead.email || null,
+          lead.email ? 'scraped' : null
+        ]);
+        results.inserted++;
+
+        if (lead.email) {
+          results.emails_found++;
+        }
+
+        const leadId = insertResult.rows?.[0]?.id;
+
+        // Generate demo and send email if requested
+        if (send_emails && lead.email && leadId) {
+          try {
+            // Generate personalized AI response based on their complaint
+            const aiResponse = await generateG2SwitcherResponse(
+              lead.company_name,
+              lead.reviewer_name,
+              lead.competitor,
+              lead.complaint_summary
+            );
+
+            if (aiResponse) {
+              // Send personalized email with their pain point
+              const emailSubject = `${lead.company_name} - saw your ${lead.competitor} review`;
+              const emailBody = `Hey ${lead.reviewer_name?.split(' ')[0] || 'there'},
+
+Saw your G2 review about ${lead.competitor}. "${lead.complaint_summary?.slice(0, 100)}..." - I get it, that's frustrating.
+
+I built something simpler. No contracts, no hidden fees. Just AI-powered review responses that actually sound human.
+
+Here's what a response for your business could look like:
+
+${aiResponse}
+
+Want to try it? 20 free responses, no credit card:
+https://tryreviewresponder.com?ref=g2-${lead.competitor}
+
+Cheers,
+Berend
+
+P.S. Happy to hop on a quick call if you want to see how it compares to ${lead.competitor}.`;
+
+              await sendEmail({
+                to: lead.email,
+                subject: emailSubject,
+                text: emailBody,
+                type: 'outreach',
+                campaign: `g2-switcher-${lead.competitor}`,
+                from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
+              });
+
+              await dbQuery('UPDATE competitor_leads SET email_sent = TRUE, email_sent_at = NOW() WHERE id = $1', [leadId]);
+              results.emails_sent++;
+              results.demos_generated++;
+            }
+          } catch (emailErr) {
+            results.errors.push(`Email failed for ${lead.company_name}: ${emailErr.message}`);
+          }
+        }
+      } catch (leadErr) {
+        results.errors.push(`Lead ${lead.company_name}: ${leadErr.message}`);
+      }
     }
 
-    res.json({ success: true, inserted, skipped, total: leads.length });
+    res.json({ success: true, ...results, total: leads.length });
   } catch (error) {
     console.error('Competitor leads submission error:', error);
     res.status(500).json({ error: 'Failed to submit leads' });
   }
 });
+
+// Helper: Generate personalized G2 switcher response
+async function generateG2SwitcherResponse(companyName, reviewerName, competitor, complaint) {
+  try {
+    const prompt = `Generate a sample review response for a business called "${companyName}".
+This is to show them what our AI review response tool can do.
+
+Create a professional, friendly response to a hypothetical negative review.
+The response should:
+- Be 2-3 sentences
+- Sound human, not robotic
+- Address a common complaint (slow service, quality issue, etc)
+- End with the business name
+
+Do NOT mention ${competitor} or that this is a demo. Just write a great review response.`;
+
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 200,
+      messages: [{ role: 'user', content: prompt }]
+    });
+
+    return response.content[0]?.text?.trim() || null;
+  } catch (err) {
+    console.error('G2 response generation error:', err.message);
+    return null;
+  }
+}
 
 // POST /api/sales/linkedin-leads - Submit LinkedIn leads
 app.post('/api/sales/linkedin-leads', async (req, res) => {
@@ -14588,6 +15042,239 @@ app.get('/api/outreach/linkedin-pending', async (req, res) => {
   }
 });
 
+// GET /api/cron/linkedin-demo-daily - Auto-generate LinkedIn demos and send reminder email
+app.get('/api/cron/linkedin-demo-daily', async (req, res) => {
+  const cronSecret = req.query.secret || req.headers['x-cron-secret'];
+  if (!safeCompare(cronSecret || '', process.env.CRON_SECRET || '')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const limit = parseInt(req.query.limit) || 5;
+    const targetCities = ['Munich', 'Berlin', 'Hamburg', 'Frankfurt', 'Vienna', 'Zurich'];
+
+    const results = {
+      searched: 0,
+      demos_created: 0,
+      demos_failed: 0,
+      leads: []
+    };
+
+    // Strategy 1: Find new restaurants via Google Places (rotate through cities)
+    const today = new Date().getDay(); // 0-6
+    const cityIndex = today % targetCities.length;
+    const targetCity = targetCities[cityIndex];
+
+    console.log(`[LinkedIn Demo Daily] Searching restaurants in ${targetCity}...`);
+
+    // Search for restaurants with many reviews in target city
+    const searchTypes = ['restaurant', 'hotel', 'cafe'];
+    const searchType = searchTypes[today % searchTypes.length];
+
+    try {
+      // Use Google Places Text Search
+      const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${searchType}+in+${encodeURIComponent(targetCity)}&key=${process.env.GOOGLE_PLACES_API_KEY}`;
+      const searchRes = await fetch(searchUrl);
+      const searchData = await searchRes.json();
+
+      if (searchData.results && searchData.results.length > 0) {
+        // Filter for businesses with good review counts
+        const candidates = searchData.results
+          .filter(p => p.user_ratings_total >= 100 && p.rating >= 3.5 && p.rating <= 4.5)
+          .sort((a, b) => b.user_ratings_total - a.user_ratings_total)
+          .slice(0, limit * 2); // Get extra in case some fail
+
+        for (const place of candidates) {
+          if (results.demos_created >= limit) break;
+          results.searched++;
+
+          // Check if we already have this business
+          const existing = await dbGet(
+            'SELECT id FROM linkedin_outreach WHERE business_name = $1 OR google_place_id = $2',
+            [place.name, place.place_id]
+          );
+
+          if (existing) {
+            console.log(`[LinkedIn Demo Daily] Skipping ${place.name} - already exists`);
+            continue;
+          }
+
+          // Also check demo_generations
+          const existingDemo = await dbGet(
+            'SELECT id FROM demo_generations WHERE business_name = $1 OR google_place_id = $2',
+            [place.name, place.place_id]
+          );
+
+          if (existingDemo) {
+            console.log(`[LinkedIn Demo Daily] Skipping ${place.name} - demo already exists`);
+            continue;
+          }
+
+          try {
+            // Scrape reviews via SerpAPI
+            const reviews = await scrapeGoogleReviews(place.place_id, 5);
+
+            // Find reviews to respond to (prefer negative, but take any if none)
+            let targetReviews = reviews
+              .filter(r => r.rating <= 3)
+              .slice(0, 3);
+
+            // If no negative reviews, take the lowest-rated ones available
+            if (targetReviews.length === 0) {
+              targetReviews = reviews
+                .sort((a, b) => a.rating - b.rating)
+                .slice(0, 3);
+            }
+
+            if (targetReviews.length === 0) {
+              console.log(`[LinkedIn Demo Daily] ${place.name} has no reviews at all, skipping`);
+              continue;
+            }
+
+            // Generate AI responses
+            const generatedResponses = [];
+            for (const review of targetReviews) {
+              const aiResponse = await generateDemoResponse(review, place.name);
+              generatedResponses.push({
+                review: {
+                  text: review.text,
+                  rating: review.rating,
+                  author: review.author,
+                  date: review.date,
+                  source: 'google'
+                },
+                ai_response: aiResponse
+              });
+            }
+
+            // Generate demo token and save
+            const demoToken = generateDemoToken();
+            const demoUrl = `https://tryreviewresponder.com/demo/${demoToken}`;
+
+            // Save to demo_generations
+            await dbQuery(`
+              INSERT INTO demo_generations
+              (business_name, google_place_id, city, google_rating, total_reviews, scraped_reviews, demo_token, generated_responses)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            `, [
+              place.name,
+              place.place_id,
+              targetCity,
+              place.rating,
+              place.user_ratings_total,
+              JSON.stringify(reviews),
+              demoToken,
+              JSON.stringify(generatedResponses)
+            ]);
+
+            // Save to linkedin_outreach (without LinkedIn URL - user needs to find it)
+            const connectionNote = `Hi [NAME],
+
+Saw ${place.name} has ${place.rating} stars on Google - nice work!
+
+I made you something: ${demoUrl}
+
+(${targetReviews.length} AI-generated responses to your toughest reviews)
+
+Cheers,
+Berend`;
+
+            const inserted = await dbGet(`
+              INSERT INTO linkedin_outreach
+              (name, company, business_name, google_place_id, google_rating, demo_token, demo_url, connection_note, notes)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+              RETURNING id
+            `, [
+              '[FIND ON LINKEDIN]',
+              place.name,
+              place.name,
+              place.place_id,
+              place.rating,
+              demoToken,
+              demoUrl,
+              connectionNote,
+              `Auto-generated on ${new Date().toISOString().split('T')[0]}. City: ${targetCity}. Reviews: ${place.user_ratings_total}`
+            ]);
+
+            results.demos_created++;
+            results.leads.push({
+              id: inserted.id,
+              business_name: place.name,
+              city: targetCity,
+              rating: place.rating,
+              reviews: place.user_ratings_total,
+              demo_url: demoUrl,
+              negative_reviews: targetReviews.length
+            });
+
+            console.log(`[LinkedIn Demo Daily] Created demo for ${place.name} (${place.rating} stars, ${place.user_ratings_total} reviews)`);
+
+          } catch (demoError) {
+            console.error(`[LinkedIn Demo Daily] Failed to create demo for ${place.name}:`, demoError.message);
+            results.demos_failed++;
+          }
+        }
+      }
+    } catch (searchError) {
+      console.error('[LinkedIn Demo Daily] Google Places search error:', searchError.message);
+    }
+
+    // Send reminder email if we have new leads
+    if (results.leads.length > 0) {
+      try {
+        const leadsList = results.leads.map(l =>
+          `- ${l.business_name} (${l.city}) - ${l.rating} stars, ${l.reviews} reviews\n  Demo: ${l.demo_url}`
+        ).join('\n\n');
+
+        await resend.emails.send({
+          from: 'ReviewResponder <notifications@tryreviewresponder.com>',
+          to: 'berend.mainz@web.de',
+          subject: `${results.leads.length} neue LinkedIn Leads warten auf dich!`,
+          html: `
+            <h2>Neue LinkedIn Demos generiert</h2>
+            <p>Es wurden <strong>${results.leads.length} neue personalisierte Demos</strong> erstellt.</p>
+
+            <h3>Deine Leads f\xFCr heute:</h3>
+            <pre style="background: #f5f5f5; padding: 15px; border-radius: 8px; font-size: 14px;">${leadsList}</pre>
+
+            <h3>N\xE4chste Schritte:</h3>
+            <ol>
+              <li>Finde die Restaurant-Owner auf LinkedIn (suche nach dem Restaurant-Namen)</li>
+              <li>Starte Chrome MCP: <code>claude --chrome</code></li>
+              <li>Claude sendet die Connection Requests mit den Demo-Links</li>
+            </ol>
+
+            <p style="margin-top: 20px;">
+              <a href="https://review-responder.onrender.com/api/outreach/linkedin-pending?key=${process.env.ADMIN_SECRET}"
+                 style="background: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">
+                Alle Pending Leads anzeigen
+              </a>
+            </p>
+
+            <p style="color: #666; font-size: 12px; margin-top: 30px;">
+              Stadt heute: ${targetCity} | Typ: ${searchType} | Gesucht: ${results.searched}
+            </p>
+          `
+        });
+        console.log('[LinkedIn Demo Daily] Reminder email sent');
+      } catch (emailError) {
+        console.error('[LinkedIn Demo Daily] Email error:', emailError.message);
+      }
+    }
+
+    res.json({
+      ok: true,
+      city: targetCity,
+      type: searchType,
+      ...results
+    });
+
+  } catch (error) {
+    console.error('[LinkedIn Demo Daily] Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // POST /api/sales/agency-leads - Submit agency partnership leads
 app.post('/api/sales/agency-leads', async (req, res) => {
   const authKey = req.headers['x-api-key'] || req.query.key;
@@ -14682,20 +15369,34 @@ app.get('/api/admin/scraper-status', async (req, res) => {
     // Query all lead sources in parallel
     const [
       outreachLeads,
+      tripadvisorLeads,
       competitorLeads,
       linkedinLeads,
       yelpLeads,
       agencyLeads,
       emailsToday,
-      lastCronRun
+      lastCronRun,
+      lastTripadvisorScrape
     ] = await Promise.all([
-      // Main outreach leads (Daily Outreach)
+      // Main outreach leads (Daily Outreach - excludes TripAdvisor)
       dbGet(`
         SELECT
           COUNT(*) as total,
           COUNT(*) FILTER (WHERE status = 'new') as not_contacted,
           COUNT(*) FILTER (WHERE email IS NOT NULL) as with_email
         FROM outreach_leads
+        WHERE source != 'tripadvisor' OR source IS NULL
+      `),
+      // TripAdvisor leads (separate source)
+      dbGet(`
+        SELECT
+          COUNT(*) as total,
+          COUNT(*) FILTER (WHERE status = 'new') as not_contacted,
+          COUNT(*) FILTER (WHERE email IS NOT NULL) as with_email,
+          COUNT(*) FILTER (WHERE demo_url IS NOT NULL) as with_demo,
+          MAX(created_at) as last_scraped
+        FROM outreach_leads
+        WHERE source = 'tripadvisor'
       `),
       // G2 Competitor leads
       dbGet(`
@@ -14706,13 +15407,17 @@ app.get('/api/admin/scraper-status', async (req, res) => {
           COUNT(*) FILTER (WHERE competitor = 'podium') as podium
         FROM competitor_leads
       `),
-      // LinkedIn leads
+      // LinkedIn leads + limits tracking
       dbGet(`
         SELECT
           COUNT(*) as total,
           COUNT(*) FILTER (WHERE connection_sent = FALSE) as pending,
           COUNT(*) FILTER (WHERE connection_accepted = TRUE) as accepted,
-          COUNT(*) FILTER (WHERE demo_viewed_at IS NOT NULL) as demos_viewed
+          COUNT(*) FILTER (WHERE demo_viewed_at IS NOT NULL) as demos_viewed,
+          -- Daily/Weekly limits tracking
+          COUNT(*) FILTER (WHERE DATE(connection_sent_at) = CURRENT_DATE) as connections_today,
+          COUNT(*) FILTER (WHERE connection_sent_at >= NOW() - INTERVAL '7 days') as connections_this_week,
+          COUNT(*) FILTER (WHERE DATE(message_sent_at) = CURRENT_DATE) as messages_today
         FROM linkedin_outreach
       `),
       // Yelp leads
@@ -14741,6 +15446,12 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         SELECT MAX(sent_at) as last_run
         FROM email_logs
         WHERE campaign = 'main' OR campaign = 'review_alert'
+      `),
+      // Last TripAdvisor email sent
+      dbGet(`
+        SELECT MAX(sent_at) as last_email
+        FROM outreach_emails
+        WHERE campaign = 'tripadvisor-review-alert' OR campaign = 'tripadvisor-auto'
       `)
     ]);
 
@@ -14788,7 +15499,10 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         tier: 2,
         name: 'G2 Competitors',
         type: 'manual',
-        command: '/g2-miner birdeye',
+        requires_chrome_mcp: true,
+        slash_command: '/g2-miner',
+        chrome_command: 'claude --chrome',
+        scrape_prompt: '/g2-miner birdeye',
         leads_total: parseInt(competitorLeads?.total || 0),
         leads_not_contacted: parseInt(competitorLeads?.not_contacted || 0),
         by_competitor: {
@@ -14798,33 +15512,77 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         threshold_low: thresholds.g2_competitors.low,
         threshold_critical: thresholds.g2_competitors.critical,
         status: getStatus(parseInt(competitorLeads?.not_contacted || 0), thresholds.g2_competitors),
-        priority_reason: 'Pain Point Leads - bereits unzufrieden'
+        priority_reason: 'Pain Point Leads - bereits unzufrieden, Chrome MCP nötig',
+        workflow: [
+          '1. Starte: claude --chrome',
+          '2. Tippe: /g2-miner birdeye (oder podium)',
+          '3. Claude scraped G2 Reviews automatisch',
+          '4. Finde LinkedIn Profiles manuell'
+        ]
       },
       {
         tier: 2,
         name: 'TripAdvisor',
         type: 'manual',
-        command: '/scrape-leads auto',
-        leads_total: parseInt(outreachLeads?.total || 0),
-        leads_with_email: parseInt(outreachLeads?.with_email || 0),
+        requires_chrome_mcp: true,
+        slash_command: '/scrape-leads',
+        chrome_command: 'claude --chrome',
+        scrape_prompt: '/scrape-leads restaurants munich',
+        leads_total: parseInt(tripadvisorLeads?.total || 0),
+        leads_not_contacted: parseInt(tripadvisorLeads?.not_contacted || 0),
+        leads_with_email: parseInt(tripadvisorLeads?.with_email || 0),
+        leads_with_demo: parseInt(tripadvisorLeads?.with_demo || 0),
+        last_scraped: tripadvisorLeads?.last_scraped || null,
+        last_email_sent: lastTripadvisorScrape?.last_email || null,
         threshold_low: thresholds.tripadvisor.low,
         threshold_critical: thresholds.tripadvisor.critical,
-        status: getStatus(parseInt(outreachLeads?.not_contacted || 0), thresholds.tripadvisor),
-        priority_reason: 'Restaurants = Hauptzielgruppe'
+        status: getStatus(parseInt(tripadvisorLeads?.not_contacted || 0), thresholds.tripadvisor),
+        priority_reason: 'Restaurants = Hauptzielgruppe, Chrome MCP nötig',
+        available_cities: ['nyc', 'la', 'chicago', 'miami', 'berlin', 'munich', 'hamburg', 'vienna', 'zurich', 'london', 'paris'],
+        workflow: [
+          '1. Starte: claude --chrome',
+          '2. Tippe: /scrape-leads restaurants [city]',
+          '3. Claude scraped TripAdvisor automatisch',
+          '4. Cron sendet Emails mit Demos (09:00)'
+        ]
       },
       {
         tier: 2,
         name: 'LinkedIn',
         type: 'manual',
-        command: '/linkedin-connect "Restaurant Owner" Germany',
+        requires_chrome_mcp: true,
+        slash_command: '/linkedin-connect',
+        chrome_command: 'claude --chrome',
+        scrape_prompt: '/linkedin-connect "Restaurant Owner" Germany',
         leads_total: parseInt(linkedinLeads?.total || 0),
         connections_pending: parseInt(linkedinLeads?.pending || 0),
         connections_accepted: parseInt(linkedinLeads?.accepted || 0),
         demos_viewed: parseInt(linkedinLeads?.demos_viewed || 0),
+        // LinkedIn Limits Tracking
+        limits: {
+          connections_today: parseInt(linkedinLeads?.connections_today || 0),
+          connections_today_max: 20,
+          connections_today_remaining: Math.max(0, 20 - parseInt(linkedinLeads?.connections_today || 0)),
+          connections_this_week: parseInt(linkedinLeads?.connections_this_week || 0),
+          connections_week_max: 100,
+          connections_week_remaining: Math.max(0, 100 - parseInt(linkedinLeads?.connections_this_week || 0)),
+          messages_today: parseInt(linkedinLeads?.messages_today || 0),
+          messages_today_max: 50,
+          messages_today_remaining: Math.max(0, 50 - parseInt(linkedinLeads?.messages_today || 0)),
+          // Status indicators
+          daily_status: parseInt(linkedinLeads?.connections_today || 0) >= 20 ? 'limit_reached' : parseInt(linkedinLeads?.connections_today || 0) >= 15 ? 'warning' : 'ok',
+          weekly_status: parseInt(linkedinLeads?.connections_this_week || 0) >= 100 ? 'limit_reached' : parseInt(linkedinLeads?.connections_this_week || 0) >= 80 ? 'warning' : 'ok'
+        },
         threshold_low: thresholds.linkedin.low,
         threshold_critical: thresholds.linkedin.critical,
         status: getStatus(parseInt(linkedinLeads?.total || 0), thresholds.linkedin),
-        priority_reason: 'Direkte Entscheider'
+        priority_reason: 'Direkte Entscheider, Chrome MCP nötig',
+        workflow: [
+          '1. Starte: claude --chrome',
+          '2. Tippe: /linkedin-connect "Restaurant Owner" Germany',
+          '3. Claude verbindet automatisch (max 20/Tag)',
+          '4. Follow-up: /linkedin-connect followup'
+        ]
       },
       // Tier 3: Experimental
       {
@@ -14989,6 +15747,201 @@ app.get('/api/cron/scraper-alerts', async (req, res) => {
   }
 });
 
+// GET /api/admin/automation-health - All-in-One Monitoring for Review Alert System
+app.get('/api/admin/automation-health', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // 1. Get last Daily Outreach run info
+    const lastOutreachEmail = await dbGet(`
+      SELECT created_at, campaign FROM outreach_emails
+      WHERE campaign IN ('main', 'review_alert')
+      ORDER BY created_at DESC LIMIT 1
+    `);
+
+    // 2. Get today's stats
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const todayStats = await dbGet(`
+      SELECT
+        COUNT(*) FILTER (WHERE created_at >= $1) as leads_today,
+        COUNT(*) FILTER (WHERE demo_url IS NOT NULL AND created_at >= $1) as demos_today,
+        COUNT(*) FILTER (WHERE demo_url IS NULL AND ai_response_draft IS NOT NULL AND created_at >= $1) as fallbacks_today
+      FROM outreach_leads
+    `, [todayStart.toISOString()]);
+
+    const emailsToday = await dbGet(`
+      SELECT COUNT(*) as count FROM outreach_emails WHERE created_at >= $1
+    `, [todayStart.toISOString()]);
+
+    // 3. Get demo stats
+    const demoStats = await dbGet(`
+      SELECT
+        COUNT(*) as total_demos,
+        COUNT(*) FILTER (WHERE email_sent_at IS NOT NULL) as with_email,
+        COUNT(*) FILTER (WHERE demo_page_viewed_at IS NOT NULL) as viewed,
+        COUNT(*) FILTER (WHERE converted_at IS NOT NULL) as converted
+      FROM demo_generations
+    `);
+
+    // 4. Get overall funnel
+    const funnelStats = await dbGet(`
+      SELECT
+        COUNT(*) as total_leads,
+        COUNT(*) FILTER (WHERE email IS NOT NULL) as with_email,
+        COUNT(*) FILTER (WHERE demo_url IS NOT NULL) as with_demo,
+        COUNT(*) FILTER (WHERE status = 'contacted') as contacted
+      FROM outreach_leads
+    `);
+
+    const openStats = await dbGet(`
+      SELECT COUNT(DISTINCT email) as unique_opens FROM outreach_tracking
+    `);
+
+    const clickStats = await dbGet(`
+      SELECT COUNT(DISTINCT email) as unique_clicks FROM outreach_clicks
+    `);
+
+    // 5. API usage estimates (based on recent activity)
+    const last7Days = new Date();
+    last7Days.setDate(last7Days.getDate() - 7);
+
+    const recentLeads = await dbGet(`
+      SELECT COUNT(*) as count FROM outreach_leads WHERE created_at >= $1
+    `, [last7Days.toISOString()]);
+
+    const recentDemos = await dbGet(`
+      SELECT COUNT(*) as count FROM demo_generations WHERE created_at >= $1
+    `, [last7Days.toISOString()]);
+
+    // Calculate estimated API usage
+    const leadsPerDay = Math.round((parseInt(recentLeads?.count || 0)) / 7);
+    const demosPerDay = Math.round((parseInt(recentDemos?.count || 0)) / 7);
+
+    // SerpAPI: ~1 request per demo attempt
+    const serpApiUsageEstimate = demosPerDay * 30; // Monthly estimate
+    const serpApiLimit = 100; // Free tier
+
+    // Google Places: ~1-2 requests per lead
+    const googlePlacesCostEstimate = leadsPerDay * 0.017 * 30; // $0.017 per request
+
+    // Hunter.io: Using website scraper, so minimal
+    const hunterUsed = await dbGet(`
+      SELECT COUNT(*) as count FROM outreach_leads
+      WHERE email_source = 'hunter' AND created_at >= $1
+    `, [last7Days.toISOString()]);
+
+    // 6. Check for errors/warnings
+    const alerts = [];
+    const serpApiKeyCount = getSerpApiKeyCount();
+    const effectiveSerpApiLimit = serpApiKeyCount * 100; // 100 per key on free tier
+
+    if (serpApiUsageEstimate > effectiveSerpApiLimit * 0.8) {
+      alerts.push({
+        type: 'warning',
+        message: `SerpAPI usage high: ~${serpApiUsageEstimate}/mo (limit: ${effectiveSerpApiLimit} with ${serpApiKeyCount} key${serpApiKeyCount > 1 ? 's' : ''})`
+      });
+    }
+
+    if (serpApiKeyCount === 0 && !process.env.OUTSCRAPER_API_KEY) {
+      alerts.push({
+        type: 'error',
+        message: 'No review scraping API configured (need SERPAPI_KEY or OUTSCRAPER_API_KEY)'
+      });
+    }
+
+    if (!process.env.GOOGLE_PLACES_API_KEY) {
+      alerts.push({
+        type: 'error',
+        message: 'GOOGLE_PLACES_API_KEY not configured - lead scraping will fail!'
+      });
+    }
+
+    const hunterLimit = 25;
+    const hunterUsedCount = parseInt(hunterUsed?.count || 0);
+    if (hunterUsedCount > hunterLimit * 0.7) {
+      alerts.push({
+        type: 'warning',
+        message: `Hunter.io ${Math.round(hunterUsedCount/hunterLimit*100)}% used (${hunterUsedCount}/${hunterLimit})`
+      });
+    }
+
+    // Calculate rates
+    const totalLeads = parseInt(funnelStats?.total_leads || 0);
+    const withEmail = parseInt(funnelStats?.with_email || 0);
+    const contacted = parseInt(funnelStats?.contacted || 0);
+    const uniqueOpens = parseInt(openStats?.unique_opens || 0);
+    const uniqueClicks = parseInt(clickStats?.unique_clicks || 0);
+    const converted = parseInt(demoStats?.converted || 0);
+
+    res.json({
+      daily_outreach: {
+        last_run: lastOutreachEmail?.created_at || null,
+        last_campaign: lastOutreachEmail?.campaign || null,
+        today: {
+          leads_scraped: parseInt(todayStats?.leads_today || 0),
+          demos_generated: parseInt(todayStats?.demos_today || 0),
+          demos_failed_fallback: parseInt(todayStats?.fallbacks_today || 0),
+          emails_sent: parseInt(emailsToday?.count || 0)
+        }
+      },
+      api_usage: {
+        serpapi: {
+          estimated_monthly: serpApiUsageEstimate,
+          limit: effectiveSerpApiLimit,
+          key_count: serpApiKeyCount,
+          percent: effectiveSerpApiLimit > 0 ? Math.round(serpApiUsageEstimate / effectiveSerpApiLimit * 100) : 0,
+          note: serpApiKeyCount > 1 ? `${serpApiKeyCount} keys rotating (${effectiveSerpApiLimit} total searches/mo)` : null
+        },
+        outscraper: {
+          configured: !!process.env.OUTSCRAPER_API_KEY,
+          free_tier_limit: 500,
+          note: 'Fallback when SerpAPI exhausted (500 free reviews)'
+        },
+        google_places: {
+          estimated_monthly_cost_usd: Math.round(googlePlacesCostEstimate * 100) / 100,
+          configured: !!process.env.GOOGLE_PLACES_API_KEY
+        },
+        hunter_io: {
+          used_this_week: hunterUsedCount,
+          limit: hunterLimit,
+          percent: Math.round(hunterUsedCount / hunterLimit * 100),
+          note: 'Website scraper is primary, Hunter is fallback'
+        }
+      },
+      funnel: {
+        total_leads: totalLeads,
+        with_email: withEmail,
+        email_rate: totalLeads > 0 ? `${Math.round(withEmail/totalLeads*100)}%` : '0%',
+        contacted: contacted,
+        unique_opens: uniqueOpens,
+        open_rate: contacted > 0 ? `${Math.round(uniqueOpens/contacted*100)}%` : '0%',
+        unique_clicks: uniqueClicks,
+        click_rate: contacted > 0 ? `${Math.round(uniqueClicks/contacted*100)}%` : '0%',
+        conversions: converted
+      },
+      demos: {
+        total: parseInt(demoStats?.total_demos || 0),
+        emails_sent: parseInt(demoStats?.with_email || 0),
+        pages_viewed: parseInt(demoStats?.viewed || 0),
+        view_rate: parseInt(demoStats?.with_email || 0) > 0
+          ? `${Math.round(parseInt(demoStats?.viewed || 0) / parseInt(demoStats?.with_email || 0) * 100)}%`
+          : '0%',
+        converted: converted
+      },
+      alerts,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Automation health error:', error);
+    res.status(500).json({ error: error.message?.substring(0, 100) });
+  }
+});
+
 // POST /api/cron/send-yelp-emails - Send emails to Yelp leads
 app.post('/api/cron/send-yelp-emails', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
@@ -15053,7 +16006,7 @@ app.post('/api/cron/send-yelp-emails', async (req, res) => {
   }
 });
 
-// POST /api/cron/send-g2-emails - Send emails to G2 competitor leads
+// POST /api/cron/send-g2-emails - Send emails + follow-ups to G2 competitor leads
 app.post('/api/cron/send-g2-emails', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
   if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
@@ -15061,54 +16014,100 @@ app.post('/api/cron/send-g2-emails', async (req, res) => {
   }
 
   try {
-    const leads = await dbAll(`
+    const results = { first_emails: 0, followups: 0, failed: 0 };
+
+    // 1. Send first emails to new leads
+    const newLeads = await dbAll(`
       SELECT * FROM competitor_leads
       WHERE email IS NOT NULL AND email_sent = FALSE
       ORDER BY created_at DESC
-      LIMIT 15
+      LIMIT 10
     `);
 
-    if (leads.length === 0) {
-      return res.json({ message: 'No G2 leads to email', sent: 0 });
-    }
-
-    let sent = 0;
-    let failed = 0;
-
-    for (const lead of leads) {
+    for (const lead of newLeads) {
       try {
-        const contactName = lead.reviewer_name || 'there';
-        const subject = SALES_EMAIL_TEMPLATES.g2_switcher.subject
-          .replace('{competitor}', lead.competitor);
+        const firstName = lead.reviewer_name?.split(' ')[0] || 'there';
+        const subject = `${lead.company_name} - saw your ${lead.competitor} review`;
+        const body = `Hey ${firstName},
 
-        const body = SALES_EMAIL_TEMPLATES.g2_switcher.body
-          .replace('{contact_name}', contactName)
-          .replace(/{competitor}/g, lead.competitor)
-          .replace('{complaint_summary}', lead.complaint_summary || 'your concerns with the product');
+Saw your G2 review about ${lead.competitor}. "${(lead.complaint_summary || 'the issues you mentioned')?.slice(0, 80)}..." - I totally get it.
 
-        if (resend || brevoApi) {
-          await sendEmail({
-            to: lead.email,
-            subject: subject,
-            text: body,
-            type: 'outreach',
-            campaign: 'g2-switcher',
-            from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
-          });
+Built something simpler. No contracts, no hidden fees. AI-powered review responses that actually sound human.
 
-          await dbQuery('UPDATE competitor_leads SET email_sent = TRUE, email_sent_at = NOW() WHERE id = $1', [lead.id]);
-          sent++;
-        }
-      } catch (emailError) {
-        console.error(`Failed to send email to ${lead.email}:`, emailError.message);
-        failed++;
+20 free responses, no credit card:
+https://tryreviewresponder.com?ref=g2-${lead.competitor}
+
+Cheers,
+Berend`;
+
+        await sendEmail({
+          to: lead.email,
+          subject,
+          text: body,
+          type: 'outreach',
+          campaign: `g2-switcher-${lead.competitor}`,
+          from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
+        });
+
+        await dbQuery('UPDATE competitor_leads SET email_sent = TRUE, email_sent_at = NOW() WHERE id = $1', [lead.id]);
+        results.first_emails++;
+      } catch (err) {
+        console.error(`G2 first email failed for ${lead.email}:`, err.message);
+        results.failed++;
       }
     }
 
-    res.json({ success: true, sent, failed, total: leads.length });
+    // 2. Send follow-ups (4 days after first email, no reply)
+    const followupLeads = await dbAll(`
+      SELECT * FROM competitor_leads
+      WHERE email IS NOT NULL
+        AND email_sent = TRUE
+        AND followup_sent = FALSE
+        AND replied = FALSE
+        AND email_sent_at < NOW() - INTERVAL '4 days'
+      ORDER BY email_sent_at ASC
+      LIMIT 10
+    `);
+
+    for (const lead of followupLeads) {
+      try {
+        const firstName = lead.reviewer_name?.split(' ')[0] || 'there';
+        const subject = `Re: ${lead.company_name}`;
+        const body = `Hey ${firstName},
+
+Quick follow-up - did you get a chance to check out the review response tool?
+
+I know switching from ${lead.competitor} feels like a hassle, but honestly it takes 2 minutes to try:
+https://tryreviewresponder.com?ref=g2-followup
+
+No signup needed for the first 20 responses.
+
+Let me know if you have any questions!
+
+Berend`;
+
+        await sendEmail({
+          to: lead.email,
+          subject,
+          text: body,
+          type: 'outreach',
+          campaign: `g2-followup-${lead.competitor}`,
+          from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
+        });
+
+        await dbQuery('UPDATE competitor_leads SET followup_sent = TRUE, followup_sent_at = NOW() WHERE id = $1', [lead.id]);
+        results.followups++;
+      } catch (err) {
+        console.error(`G2 followup failed for ${lead.email}:`, err.message);
+        results.failed++;
+      }
+    }
+
+    console.log(`G2 cron: ${results.first_emails} first, ${results.followups} followups, ${results.failed} failed`);
+    res.json({ ok: true, ...results });
   } catch (error) {
     console.error('G2 email cron error:', error);
-    res.status(500).json({ error: 'G2 email cron failed' });
+    res.status(500).json({ ok: false, err: error.message?.slice(0, 100) });
   }
 });
 

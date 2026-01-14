@@ -14,6 +14,7 @@
 2. Immer committen & pushen nach fertiger Änderung
 3. CLAUDE.md updaten nach jeder Session
 4. User nur fragen wenn nötig
+5. **Nach Deploy immer sagen:** "Deployed! Frontend/Backend live in ~2-3 Min" (Render braucht Zeit)
 
 ### Workflow
 ```
@@ -23,6 +24,8 @@
 ### Wichtige Dateien
 - **CLAUDE.md** - Technische Dokumentation, Code Style, API Endpoints
 - **TODO.md** - Aktuelle Tasks, Videos, Sales Priority, Backlog
+  - ⚠️ **IMMER TODO.md checken** für aktuelle User-Tasks und Prioritäten!
+  - Enthält Sales Priority, Follow-up Checks, Backlog
 
 ---
 
@@ -293,6 +296,11 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 ### USER MUSS MACHEN:
 - [x] Demo-Video aufnehmen (2 Min Walkthrough) - DONE
 - [x] Chrome Web Store einreichen - DONE (13.01.2026)
+- [ ] **Neue Demo-Videos aufnehmen** - Fokus auf maximale Verständlichkeit & Qualität:
+  - [ ] **Main Demo** (60-90 Sek): Zeigt kompletten Flow in Echtzeit, keine Schnitte, super klar
+  - [ ] **Chrome Extension Demo** (30 Sek): One-Click Response auf Google Maps
+  - [ ] **Bulk Generation Demo** (30 Sek): 20 Reviews → 20 Antworten in Sekunden
+  - [ ] **Tipp:** Langsam, deutlich, Zoom auf wichtige UI-Elemente, keine Hintergrundmusik die ablenkt
 - [ ] **Reddit API Keys holen**: Wartet auf Genehmigung → https://www.reddit.com/prefs/apps → App erstellen
 - [ ] **Google Indexierung beantragen (36 URLs)** - Nach und nach (max 5-10/Tag wegen Quota):
   - [ ] `/medical-practice-reviews`
@@ -446,6 +454,18 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
 ```
 
 ### HEUTE ERLEDIGT (14.01.2026):
+- [x] **Review Alert System komplett gefixt** - Personalisierte Demos funktionieren jetzt
+  - **Problem 1:** Demo wurde nicht generiert - Bedingung `has_bad_review && worst_review_text` zu restriktiv
+  - **Fix:** Geändert zu `!lead.demo_url` → Demo für ALLE Leads ohne Demo
+  - **Problem 2:** Email-Variablen leer (Rating, Author, Text fehlten)
+  - **Fix:** `generateDemoForLead()` gibt jetzt `first_review` zurück für Email-Template
+  - **Problem 3:** Email landete in Gmail Promotions Tab
+  - **Fix:** Deutsche Email-Template komplett umgeschrieben, persönlicher Ton ("Hey" statt "Hi")
+  - **Problem 4:** Fake Claims auf Demo-Seite ("500K+ responses", "10K+ businesses")
+  - **Fix:** Ersetzt durch ehrliche Feature-Stats ("20 Free Responses", "50+ Languages", etc.)
+  - **Problem 5:** AI-Antworten zu generisch, falsches Sign-off ("Cafe" statt "Cafe Einstein")
+  - **Fix:** System Prompt verbessert - spezifische Details, Reviewer by name, VOLLER Business Name
+  - **NEU:** Chrome Extension Demo Video auf jeder Demo-Seite eingebettet
 - [x] **Scraper Status Dashboard** - Admin Panel zeigt alle Lead-Quellen mit Prioritaet
   - Neuer Tab "Scraper" im Admin Panel
   - 3 Tiers: Automatisch (Daily Outreach, Drip, Blog), Manuell High-ROI (G2, TripAdvisor, LinkedIn), Experimentell (Yelp, Agency)
@@ -476,6 +496,23 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
   - Brevo API bestätigt: `"event":"delivered"`
 - [x] **Open Tracking Pixel hinzugefügt** - Outreach Emails tracken jetzt Opens
 - [x] **Email-Logs Admin Endpoint** - `/api/admin/email-logs` zeigt alle gesendeten Emails
+- [x] **Follow-up Emails für TripAdvisor** - 4 Tage nach Erst-Email automatisch
+  - Query: `sequence_number = 1` + `sent_at < NOW() - 4 days` + keine `sequence_number = 2`
+  - Personalisiert mit Demo-URL falls vorhanden
+  - Logging in `outreach_emails` Tabelle
+- [x] **Follow-up Emails für G2 Competitor Leads** - Gleiche Logik
+  - `POST /api/cron/send-g2-emails` sendet First + Follow-ups
+  - Neue Columns: `followup_sent`, `followup_sent_at`
+- [x] **LinkedIn Limits Tracking** - Dashboard zeigt Tages/Wochen-Limits
+  - Connections heute: X/20 mit Progress-Bar
+  - Connections Woche: X/100 mit Progress-Bar
+  - Messages heute: X/50 mit Progress-Bar
+  - Farbcodes: grün (ok), orange (warning bei 75%+), rot (limit reached)
+  - Verhindert LinkedIn Account-Sperrung
+- [x] **G2/LinkedIn/TripAdvisor komplett automatisiert**
+  - `/g2-miner birdeye` → scraped + findet Emails + sendet + Demo
+  - `/linkedin-connect followup` → prüft Acceptances + sendet Follow-ups
+  - `/scrape-leads restaurants munich` → scraped + Cron sendet Emails
 
 ### ERLEDIGT (13.01.2026):
 - [x] **Cron Jobs gefixt** - Alle 3 Cron Jobs liefen auf "Ausgabe zu groß" Fehler
@@ -671,6 +708,42 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
 
 ### BEKANNTE BUGS:
 Keine offenen Bugs.
+
+---
+
+## LEARNINGS (Review Alert System)
+
+**Wichtige Erkenntnisse für zukünftige Sessions:**
+
+### Google Places API Limits
+- Google Places API gibt nur **5 Reviews** zurück (max)
+- `has_bad_review` wird selten `true` weil oft keine 1-2 Sterne Reviews dabei
+- **Lösung:** SerpAPI für Review-Scraping nutzen (gibt mehr Reviews)
+- **Best Practice:** Demo für ALLE Leads generieren, nicht nur für solche mit schlechten Reviews
+
+### Email Deliverability (Primary vs Promotions)
+- Marketing-Sprache → Promotions Tab
+- Persönlicher Ton → Primary Inbox
+- **Was hilft:**
+  - "Hey" statt "Hallo/Hi"
+  - Konversationeller Stil wie eine echte Person
+  - Keine Emojis
+  - Keine Marketing-Floskeln ("kostenlos testen", "jetzt anfangen")
+  - Direkt zum Punkt kommen
+
+### AI Response Qualität
+- Generische Antworten = niedrige Conversion
+- **Qualitäts-Checklist für System Prompts:**
+  1. Reviewer BY NAME ansprechen
+  2. SPEZIFISCHE Details aus Review erwähnen
+  3. Bei negativ: Zeigen dass man Frustration versteht + was man ändern wird
+  4. VOLLER Business Name am Ende (nicht abgekürzt!)
+  5. AI-Slop vermeiden ("Thank you for your feedback", "We appreciate")
+
+### Hunter.io Limits
+- 25 Email-Suchen/Monat im Free Tier
+- **Fallback:** Website-Scraper (findet Email im Footer/Impressum)
+- Priorität: Website → Hunter.io → Skip
 
 ---
 
@@ -917,6 +990,8 @@ const PRODUCT_HUNT_CONFIG = {
 2. User sagt "hab" oder "screenshot"
 3. Claude: `powershell -ExecutionPolicy Bypass -File "C:\Users\Berend Mainz\clipboard-screenshot.ps1"`
 4. Read tool für Bild
+
+**Hinweis:** `/screenshot` Skill kann KEINE Nachrichten an User schicken - nur Screenshot laden.
 
 ---
 
