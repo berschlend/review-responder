@@ -11468,10 +11468,10 @@ const DemoPage = () => {
         {/* Features - honest stats */}
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '32px', padding: '32px', background: 'var(--bg-secondary)', borderRadius: '16px', marginBottom: '48px', border: '1px solid var(--border-color)' }}>
           {[
-            { value: '20 Free', label: 'Responses/Month' },
-            { value: '50+', label: 'Languages' },
-            { value: '4 Tones', label: 'To Choose From' },
-            { value: '<5 sec', label: 'Generation Time' },
+            { value: 'Google', label: 'Yelp, TripAdvisor & More' },
+            { value: 'One-Click', label: 'Chrome Extension' },
+            { value: '4 Tones', label: 'Professional to Friendly' },
+            { value: 'Copy & Paste', label: 'Ready Responses' },
           ].map((stat, i) => (
             <div key={i} style={{ textAlign: 'center', minWidth: '120px' }}>
               <div style={{ fontSize: '28px', fontWeight: '800', color: 'var(--primary)', marginBottom: '4px' }}>{stat.value}</div>

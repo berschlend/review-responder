@@ -10634,19 +10634,31 @@ async function generateReviewAlertDraft(businessName, businessType, reviewText, 
     if (googleRating) contextSection += `\n- Current Rating: ${googleRating} stars`;
     if (totalReviews) contextSection += ` (${totalReviews} total reviews)`;
 
-    const systemPrompt = `You are ${ownerName}, owner of ${businessName}.
+    const systemPrompt = `You are the owner/manager of ${businessName}. Write a genuinely helpful response to this customer review.
 
 ${contextSection}
 
-Write a response to this customer review. Rules:
-- Speak directly as the owner (first person)
-- Be genuine and human, not corporate
-- 2-3 sentences maximum
-- If the customer mentions a specific issue, address it directly
-- If the review seems fake or from a competitor, stay professional but don't admit fault for things you didn't do
-- Sign with your name: ${ownerName}
+QUALITY GUIDELINES:
+- Address the reviewer BY NAME in your first sentence
+- Reference SPECIFIC details they mentioned (food items, staff, experiences)
+- If negative: Show you truly understand their frustration, explain what you'll do differently
+- If positive: Be warm and specific about what made their visit special
+- Sound like a real human who cares, not a PR department
+- Keep it 2-3 sentences - concise but meaningful
+- ALWAYS end with the FULL business name exactly as written: "${businessName}" (not shortened, not abbreviated)
 
-DO NOT use these phrases: "Thank you for your feedback" | "We value your input" | "Sorry for any inconvenience" | "We take all feedback seriously"`;
+AVOID THESE PHRASES (they sound robotic):
+- "Thank you for your feedback/review"
+- "We value your input/opinion"
+- "Sorry for any inconvenience"
+- "We take all feedback seriously"
+- "I hope to see you again soon"
+- "Please reach out to us"
+
+GREAT RESPONSES:
+- Feel personal and specific to THIS review
+- Show empathy without being defensive
+- Offer concrete solutions (not vague promises)`;
 
     const userPrompt = `Write a response to this ${reviewRating}-star review from ${reviewAuthor || 'a customer'}:
 
@@ -15177,8 +15189,9 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         name: 'G2 Competitors',
         type: 'manual',
         requires_chrome_mcp: true,
-        chrome_command: '$env:CLAUDE_SESSION = "g2"; claude --chrome',
-        scrape_prompt: 'Gehe zu g2.com/products/birdeye/reviews und finde negative Reviews (1-2 Sterne). Extrahiere Reviewer Name, Company, Pain Points.',
+        slash_command: '/g2-miner',
+        chrome_command: 'claude --chrome',
+        scrape_prompt: '/g2-miner birdeye',
         leads_total: parseInt(competitorLeads?.total || 0),
         leads_not_contacted: parseInt(competitorLeads?.not_contacted || 0),
         by_competitor: {
@@ -15190,10 +15203,10 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         status: getStatus(parseInt(competitorLeads?.not_contacted || 0), thresholds.g2_competitors),
         priority_reason: 'Pain Point Leads - bereits unzufrieden, Chrome MCP nötig',
         workflow: [
-          '1. Starte Claude mit Chrome MCP',
-          '2. Scrape G2 Reviews von Birdeye/Podium',
-          '3. Finde LinkedIn Profiles der Reviewer',
-          '4. Importiere als competitor_leads'
+          '1. Starte: claude --chrome',
+          '2. Tippe: /g2-miner birdeye (oder podium)',
+          '3. Claude scraped G2 Reviews automatisch',
+          '4. Finde LinkedIn Profiles manuell'
         ]
       },
       {
@@ -15201,8 +15214,9 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         name: 'TripAdvisor',
         type: 'manual',
         requires_chrome_mcp: true,
-        chrome_command: '$env:CLAUDE_SESSION = "scraper"; claude --chrome',
-        scrape_prompt: 'Scrape TripAdvisor restaurants in [STADT] mit schlechten Reviews. Finde Name, Rating, Review Count, und falls möglich Email/Website.',
+        slash_command: '/scrape-leads',
+        chrome_command: 'claude --chrome',
+        scrape_prompt: '/scrape-leads restaurants munich',
         leads_total: parseInt(tripadvisorLeads?.total || 0),
         leads_not_contacted: parseInt(tripadvisorLeads?.not_contacted || 0),
         leads_with_email: parseInt(tripadvisorLeads?.with_email || 0),
@@ -15213,11 +15227,12 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         threshold_critical: thresholds.tripadvisor.critical,
         status: getStatus(parseInt(tripadvisorLeads?.not_contacted || 0), thresholds.tripadvisor),
         priority_reason: 'Restaurants = Hauptzielgruppe, Chrome MCP nötig',
+        available_cities: ['nyc', 'la', 'chicago', 'miami', 'berlin', 'munich', 'hamburg', 'vienna', 'zurich', 'london', 'paris'],
         workflow: [
-          '1. Starte Claude mit Chrome MCP (siehe chrome_command)',
-          '2. Gib scrape_prompt ein mit gewünschter Stadt',
-          '3. Claude scraped TripAdvisor und importiert Leads',
-          '4. Cron sendet automatisch Emails mit Demos (09:00 täglich)'
+          '1. Starte: claude --chrome',
+          '2. Tippe: /scrape-leads restaurants [city]',
+          '3. Claude scraped TripAdvisor automatisch',
+          '4. Cron sendet Emails mit Demos (09:00)'
         ]
       },
       {
@@ -15393,6 +15408,193 @@ app.get('/api/cron/scraper-alerts', async (req, res) => {
     });
   } catch (error) {
     console.error('Scraper alerts error:', error);
+    res.status(500).json({ error: error.message?.substring(0, 100) });
+  }
+});
+
+// GET /api/admin/automation-health - All-in-One Monitoring for Review Alert System
+app.get('/api/admin/automation-health', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // 1. Get last Daily Outreach run info
+    const lastOutreachEmail = await dbGet(`
+      SELECT created_at, campaign FROM outreach_emails
+      WHERE campaign IN ('main', 'review_alert')
+      ORDER BY created_at DESC LIMIT 1
+    `);
+
+    // 2. Get today's stats
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const todayStats = await dbGet(`
+      SELECT
+        COUNT(*) FILTER (WHERE created_at >= $1) as leads_today,
+        COUNT(*) FILTER (WHERE demo_url IS NOT NULL AND created_at >= $1) as demos_today,
+        COUNT(*) FILTER (WHERE demo_url IS NULL AND ai_response_draft IS NOT NULL AND created_at >= $1) as fallbacks_today
+      FROM outreach_leads
+    `, [todayStart.toISOString()]);
+
+    const emailsToday = await dbGet(`
+      SELECT COUNT(*) as count FROM outreach_emails WHERE created_at >= $1
+    `, [todayStart.toISOString()]);
+
+    // 3. Get demo stats
+    const demoStats = await dbGet(`
+      SELECT
+        COUNT(*) as total_demos,
+        COUNT(*) FILTER (WHERE email_sent_at IS NOT NULL) as with_email,
+        COUNT(*) FILTER (WHERE demo_page_viewed_at IS NOT NULL) as viewed,
+        COUNT(*) FILTER (WHERE converted_at IS NOT NULL) as converted
+      FROM demo_generations
+    `);
+
+    // 4. Get overall funnel
+    const funnelStats = await dbGet(`
+      SELECT
+        COUNT(*) as total_leads,
+        COUNT(*) FILTER (WHERE email IS NOT NULL) as with_email,
+        COUNT(*) FILTER (WHERE demo_url IS NOT NULL) as with_demo,
+        COUNT(*) FILTER (WHERE status = 'contacted') as contacted
+      FROM outreach_leads
+    `);
+
+    const openStats = await dbGet(`
+      SELECT COUNT(DISTINCT lead_id) as unique_opens FROM outreach_opens
+    `);
+
+    const clickStats = await dbGet(`
+      SELECT COUNT(DISTINCT lead_id) as unique_clicks FROM outreach_clicks
+    `);
+
+    // 5. API usage estimates (based on recent activity)
+    const last7Days = new Date();
+    last7Days.setDate(last7Days.getDate() - 7);
+
+    const recentLeads = await dbGet(`
+      SELECT COUNT(*) as count FROM outreach_leads WHERE created_at >= $1
+    `, [last7Days.toISOString()]);
+
+    const recentDemos = await dbGet(`
+      SELECT COUNT(*) as count FROM demo_generations WHERE created_at >= $1
+    `, [last7Days.toISOString()]);
+
+    // Calculate estimated API usage
+    const leadsPerDay = Math.round((parseInt(recentLeads?.count || 0)) / 7);
+    const demosPerDay = Math.round((parseInt(recentDemos?.count || 0)) / 7);
+
+    // SerpAPI: ~1 request per demo attempt
+    const serpApiUsageEstimate = demosPerDay * 30; // Monthly estimate
+    const serpApiLimit = 100; // Free tier
+
+    // Google Places: ~1-2 requests per lead
+    const googlePlacesCostEstimate = leadsPerDay * 0.017 * 30; // $0.017 per request
+
+    // Hunter.io: Using website scraper, so minimal
+    const hunterUsed = await dbGet(`
+      SELECT COUNT(*) as count FROM outreach_leads
+      WHERE email_source = 'hunter' AND created_at >= $1
+    `, [last7Days.toISOString()]);
+
+    // 6. Check for errors/warnings
+    const alerts = [];
+
+    if (serpApiUsageEstimate > serpApiLimit * 0.8) {
+      alerts.push({
+        type: 'warning',
+        message: `SerpAPI usage high: ~${serpApiUsageEstimate}/mo (limit: ${serpApiLimit})`
+      });
+    }
+
+    if (!process.env.SERPAPI_KEY) {
+      alerts.push({
+        type: 'error',
+        message: 'SERPAPI_KEY not configured - demos will fail!'
+      });
+    }
+
+    if (!process.env.GOOGLE_PLACES_API_KEY) {
+      alerts.push({
+        type: 'error',
+        message: 'GOOGLE_PLACES_API_KEY not configured - lead scraping will fail!'
+      });
+    }
+
+    const hunterLimit = 25;
+    const hunterUsedCount = parseInt(hunterUsed?.count || 0);
+    if (hunterUsedCount > hunterLimit * 0.7) {
+      alerts.push({
+        type: 'warning',
+        message: `Hunter.io ${Math.round(hunterUsedCount/hunterLimit*100)}% used (${hunterUsedCount}/${hunterLimit})`
+      });
+    }
+
+    // Calculate rates
+    const totalLeads = parseInt(funnelStats?.total_leads || 0);
+    const withEmail = parseInt(funnelStats?.with_email || 0);
+    const contacted = parseInt(funnelStats?.contacted || 0);
+    const uniqueOpens = parseInt(openStats?.unique_opens || 0);
+    const uniqueClicks = parseInt(clickStats?.unique_clicks || 0);
+    const converted = parseInt(demoStats?.converted || 0);
+
+    res.json({
+      daily_outreach: {
+        last_run: lastOutreachEmail?.created_at || null,
+        last_campaign: lastOutreachEmail?.campaign || null,
+        today: {
+          leads_scraped: parseInt(todayStats?.leads_today || 0),
+          demos_generated: parseInt(todayStats?.demos_today || 0),
+          demos_failed_fallback: parseInt(todayStats?.fallbacks_today || 0),
+          emails_sent: parseInt(emailsToday?.count || 0)
+        }
+      },
+      api_usage: {
+        serpapi: {
+          estimated_monthly: serpApiUsageEstimate,
+          limit: serpApiLimit,
+          percent: Math.round(serpApiUsageEstimate / serpApiLimit * 100),
+          configured: !!process.env.SERPAPI_KEY
+        },
+        google_places: {
+          estimated_monthly_cost_usd: Math.round(googlePlacesCostEstimate * 100) / 100,
+          configured: !!process.env.GOOGLE_PLACES_API_KEY
+        },
+        hunter_io: {
+          used_this_week: hunterUsedCount,
+          limit: hunterLimit,
+          percent: Math.round(hunterUsedCount / hunterLimit * 100),
+          note: 'Website scraper is primary, Hunter is fallback'
+        }
+      },
+      funnel: {
+        total_leads: totalLeads,
+        with_email: withEmail,
+        email_rate: totalLeads > 0 ? `${Math.round(withEmail/totalLeads*100)}%` : '0%',
+        contacted: contacted,
+        unique_opens: uniqueOpens,
+        open_rate: contacted > 0 ? `${Math.round(uniqueOpens/contacted*100)}%` : '0%',
+        unique_clicks: uniqueClicks,
+        click_rate: contacted > 0 ? `${Math.round(uniqueClicks/contacted*100)}%` : '0%',
+        conversions: converted
+      },
+      demos: {
+        total: parseInt(demoStats?.total_demos || 0),
+        emails_sent: parseInt(demoStats?.with_email || 0),
+        pages_viewed: parseInt(demoStats?.viewed || 0),
+        view_rate: parseInt(demoStats?.with_email || 0) > 0
+          ? `${Math.round(parseInt(demoStats?.viewed || 0) / parseInt(demoStats?.with_email || 0) * 100)}%`
+          : '0%',
+        converted: converted
+      },
+      alerts,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Automation health error:', error);
     res.status(500).json({ error: error.message?.substring(0, 100) });
   }
 });
