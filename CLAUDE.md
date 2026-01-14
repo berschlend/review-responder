@@ -14,6 +14,7 @@
 2. Immer committen & pushen nach fertiger Änderung
 3. CLAUDE.md updaten nach jeder Session
 4. User nur fragen wenn nötig
+5. **Nach Deploy immer sagen:** "Deployed! Frontend/Backend live in ~2-3 Min" (Render braucht Zeit)
 
 ### Workflow
 ```
@@ -293,6 +294,11 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 ### USER MUSS MACHEN:
 - [x] Demo-Video aufnehmen (2 Min Walkthrough) - DONE
 - [x] Chrome Web Store einreichen - DONE (13.01.2026)
+- [ ] **Neue Demo-Videos aufnehmen** - Fokus auf maximale Verständlichkeit & Qualität:
+  - [ ] **Main Demo** (60-90 Sek): Zeigt kompletten Flow in Echtzeit, keine Schnitte, super klar
+  - [ ] **Chrome Extension Demo** (30 Sek): One-Click Response auf Google Maps
+  - [ ] **Bulk Generation Demo** (30 Sek): 20 Reviews → 20 Antworten in Sekunden
+  - [ ] **Tipp:** Langsam, deutlich, Zoom auf wichtige UI-Elemente, keine Hintergrundmusik die ablenkt
 - [ ] **Reddit API Keys holen**: Wartet auf Genehmigung → https://www.reddit.com/prefs/apps → App erstellen
 - [ ] **Google Indexierung beantragen (36 URLs)** - Nach und nach (max 5-10/Tag wegen Quota):
   - [ ] `/medical-practice-reviews`

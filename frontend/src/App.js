@@ -1754,8 +1754,8 @@ Small business owners shouldn't have to choose between ignoring reviews and spen
 
 PRICING (honest and simple):
 - Free: 20 responses/month - enough to try it properly
-- Starter $29/mo: 300 responses
-- Pro $49/mo: 800 responses + team access for 3 people
+- Starter $29/mo: 300 responses/month
+- Pro $49/mo: 800 responses/month + team access for 3 people
 - Unlimited $99/mo: No limits + API for developers
 - 20% off yearly billing on all plans
 
@@ -3074,7 +3074,7 @@ const PricingCards = ({ showFree = true }) => {
               )}
               <p style={{ color: 'var(--gray-500)', marginTop: '8px' }}>
                 {typeof plan.responses === 'number'
-                  ? `${plan.responses} responses`
+                  ? `${plan.responses} responses/month`
                   : plan.responses}
               </p>
               <ul className="pricing-features">
@@ -11642,7 +11642,7 @@ const GoogleReviewPage = () => {
         '@type': 'Offer',
         price: '0',
         priceCurrency: 'USD',
-        description: 'Free trial with 20 responses',
+        description: 'Free trial with 20 responses/month',
       },
     });
     document.head.appendChild(script);
@@ -18486,29 +18486,28 @@ const PricingPage = () => {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  background: 'linear-gradient(135deg, #10b981, #059669)',
-                  color: 'white',
-                  padding: '6px 16px',
-                  borderRadius: '20px',
-                  fontSize: '14px',
-                  fontWeight: '600',
+                  gap: '6px',
                   marginBottom: '16px',
+                  padding: '4px 10px',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '4px',
+                  color: 'var(--text-muted)',
+                  fontSize: '12px',
+                  fontWeight: '500',
                   textDecoration: 'none',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  transition: 'color 0.2s, border-color 0.2s',
                 }}
                 onMouseOver={e => {
-                  e.currentTarget.style.transform = 'scale(1.05)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(16,185,129,0.4)';
+                  e.currentTarget.style.borderColor = 'var(--text-muted)';
+                  e.currentTarget.style.color = 'var(--text-primary)';
                 }}
                 onMouseOut={e => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.borderColor = 'var(--border-color)';
+                  e.currentTarget.style.color = 'var(--text-muted)';
                 }}
               >
-                Click to Activate 50% OFF
-                <ArrowRight size={14} />
+                <Sparkles size={12} style={{ color: 'var(--primary)' }} />
+                Early Access - 50% Off
               </Link>
             )}
             <h1 className="pricing-title">Simple, Transparent Pricing</h1>
