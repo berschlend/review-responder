@@ -28,6 +28,30 @@ CLAUDE.md lesen → TODO.md checken → Task → Testen → Git push → CLAUDE.
 
 ---
 
+## PROJECT TIMELINE
+
+> **Projekt-Start:** 10. Januar 2026 (~5 Tage alt)
+> **Aktuelle Phase:** Launch & First Customers
+
+### Meilensteine
+
+| Datum | Meilenstein | Status |
+|-------|-------------|--------|
+| 10.01.2026 | Projekt gestartet | ✅ |
+| 13.01.2026 | Chrome Extension eingereicht | ✅ |
+| 14.01.2026 | Conversion System 2.0 live | ✅ |
+| TBD | Erster zahlender Kunde | ⏳ |
+| TBD | $100 MRR erreicht | ⏳ |
+| TBD | $1000 MRR Ziel | ⏳ |
+| TBD | Chrome Extension approved | ⏳ |
+
+### Projekt-Alter berechnen
+- **Tag 1:** 10.01.2026
+- **Heute:** Dynamisch (Claude checkt aktuelles Datum)
+- **Formel:** Heute - 10.01.2026 = Projekt-Alter in Tagen
+
+---
+
 ## MCPs & TOOLS
 
 | MCP | Beschreibung |
