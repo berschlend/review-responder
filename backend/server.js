@@ -15473,11 +15473,11 @@ app.get('/api/admin/automation-health', async (req, res) => {
     `);
 
     const openStats = await dbGet(`
-      SELECT COUNT(DISTINCT lead_id) as unique_opens FROM outreach_opens
+      SELECT COUNT(DISTINCT email) as unique_opens FROM outreach_tracking
     `);
 
     const clickStats = await dbGet(`
-      SELECT COUNT(DISTINCT lead_id) as unique_clicks FROM outreach_clicks
+      SELECT COUNT(DISTINCT email) as unique_clicks FROM outreach_clicks
     `);
 
     // 5. API usage estimates (based on recent activity)
