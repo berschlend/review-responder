@@ -178,6 +178,63 @@ Fehlende Jobs → Dem User mitteilen zum Eintragen
 
 ---
 
+## PHASE 3.5: AUTOMATION VS MANUAL CHECK (KRITISCH!)
+
+**Der wichtigste Check:** Was laeuft WIRKLICH automatisch vs. was muss Berend machen?
+
+### Vollautomatische Systeme (Cron Jobs)
+Diese laufen OHNE Berend - aber pruefe ob sie HEUTE wirklich was gemacht haben:
+
+| System | Cron | Check | Problem wenn... |
+|--------|------|-------|-----------------|
+| Daily Outreach | 09:00 | `emails.today > 0` | 0 nach 10:00 UND Queue nicht leer |
+| Demo Generation | 08:00 | `demos.today > 0` | 0 nach 09:00 UND Leads ohne Demo |
+| Drip Emails | 10:00 | `emails.dripToday > 0` | 0 nach 11:00 UND User in Drip |
+| Keep-Alive | */15 | Backend erreichbar | Health Endpoint failed |
+| Blog Generation | Mo/Mi/Fr 06:00 | Neuer Post? | Kein Post diese Woche |
+
+**Entscheidungslogik:**
+```
+Cron "aktiv" ABER Output = 0?
+├─ Queue/Input leer? → OK, nichts zu tun
+└─ Queue/Input voll? → CRON KAPUTT! Fixen!
+```
+
+### Semi-Manuelle Systeme (Chrome MCP erforderlich!)
+Diese laufen NIE automatisch - Berend muss `claude --chrome` starten:
+
+| System | Command | Trigger |
+|--------|---------|---------|
+| LinkedIn Connect | `/linkedin-connect` | linkedIn.pending < 20 |
+| TripAdvisor Scrape | `/scrape-leads` | tripadvisor.leads < 30 |
+| G2 Mining | `/g2-miner` | g2.leads < 20 |
+| Yelp Audit | `/yelp-audit` | yelp.leads < 20 |
+| Agency Recruiter | `/agency-recruiter` | agency.leads < 20 |
+
+**WICHTIG:** Pruefe `/api/admin/scraper-status` fuer jeden Source!
+- Status `critical` → SOFORT in BEREND TODO
+- Status `low` → Heute noch in BEREND TODO
+- Status `healthy` → OK, kein Handlungsbedarf
+
+### Report-Sektion: AUTOMATION STATUS
+```
+=== AUTOMATION STATUS ===
+
+VOLLAUTOMATISCH (laufen ohne Berend):
+[✓/✗] Daily Outreach: X Emails heute (Cron 09:00)
+[✓/✗] Demo Generation: X Demos heute (Cron 08:00)
+[✓/✗] Drip Emails: X Drips heute (Cron 10:00)
+[✓/✗] Keep-Alive: Backend erreichbar (Cron */15)
+
+SEMI-MANUELL (brauchen `claude --chrome`):
+[OK/LOW/CRITICAL] LinkedIn: X pending → /linkedin-connect
+[OK/LOW/CRITICAL] TripAdvisor: X Leads → /scrape-leads
+[OK/LOW/CRITICAL] G2: X Leads → /g2-miner
+[OK/LOW/CRITICAL] Yelp: X Leads → /yelp-audit
+```
+
+---
+
 ## PHASE 4: DIAGNOSE REPORT
 
 Erstelle einen kompakten Report basierend auf allen Health-Endpoints:
@@ -226,6 +283,20 @@ LEAD-QUELLEN:
 - TripAdvisor: OK/LOW/CRITICAL
 - G2: OK/LOW/CRITICAL
 - Yelp: OK/LOW/CRITICAL
+
+=== AUTOMATION STATUS ===
+
+VOLLAUTOMATISCH (laufen ohne Berend):
+[✓/✗] Daily Outreach: X Emails heute (09:00 Cron)
+[✓/✗] Demo Generation: X Demos heute (08:00 Cron)
+[✓/✗] Drip Emails: X Drips heute (10:00 Cron)
+[✓/✗] Keep-Alive: Backend up (*/15 Cron)
+
+SEMI-MANUELL (brauchen `claude --chrome`):
+[OK/LOW/CRITICAL] LinkedIn → /linkedin-connect
+[OK/LOW/CRITICAL] TripAdvisor → /scrape-leads
+[OK/LOW/CRITICAL] G2 → /g2-miner
+[OK/LOW/CRITICAL] Yelp → /yelp-audit
 ```
 
 ---
@@ -410,16 +481,32 @@ OUTREACH STATUS:
 - 528 Leads, 499 Emails, 3.4% Click Rate
 - 0 Conversions (Hauptproblem!)
 
+=== AUTOMATION STATUS ===
+
+VOLLAUTOMATISCH:
+[✓] Daily Outreach: 35 Emails heute (09:00 Cron)
+[✓] Demo Generation: 5 Demos heute (08:00 Cron)
+[✓] Drip Emails: 12 Drips heute (10:00 Cron)
+[✓] Keep-Alive: Backend up (*/15 Cron)
+
+SEMI-MANUELL (brauchen `claude --chrome`):
+[CRITICAL] LinkedIn: 0 pending → /linkedin-connect JETZT!
+[OK] TripAdvisor: 45 Leads
+[LOW] G2: 18 Leads → /g2-miner bald
+[OK] Yelp: 32 Leads
+
 === BEREND TODO ===
 
-DRINGEND:
-[ ] 2 User am Limit kontaktieren fuer Upgrade-Gespraech!
-[ ] `claude --chrome` starten und `/linkedin-connect` ausfuehren
-[ ] 5+ LinkedIn Leads fuer DACH Region connecten
+JETZT (`claude --chrome` starten):
+[ ] /linkedin-connect → 5+ Connections senden
+[ ] /g2-miner → 30 neue Leads scrapen
 
-BALD:
+HEUTE:
+[ ] 2 User am Limit kontaktieren (Upgrade-Gespraech!)
+
+DIESE WOCHE:
 [ ] Demo-Videos aufnehmen (Main 60s, Extension 30s)
-[ ] Google Indexierung fortsetzen (5-10 URLs/Tag)
+[ ] Google Indexierung (5-10 URLs/Tag)
 ```
 
 ---
