@@ -5182,7 +5182,7 @@ QUALITY GUIDELINES:
 - If positive: Be warm and specific about what made their visit special
 - Sound like a real human who cares, not a PR department
 - Keep it 2-4 sentences - concise but meaningful
-- End with just the business name: "${businessName}"
+- ALWAYS end with the FULL business name exactly as written: "${businessName}" (not shortened, not abbreviated)
 
 AVOID THESE PHRASES (they sound robotic):
 - "Thank you for your feedback/review"
