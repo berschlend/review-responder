@@ -116,6 +116,21 @@ CLAUDE.md lesen → TODO.md checken → Task → Testen → Git push → CLAUDE.
 | Drip Emails | 10:00 täglich |
 | Pre-Reg Drip | 11:00 täglich |
 | Demo Follow-Up | 12:00 täglich |
+| **Night Loop** | **22:00-06:00 stündlich** |
+
+### Night Automation (NEU 14.01.2026)
+Läuft autonom ohne User-Input:
+- **22:00** - Hot Lead Follow-Ups (Demos für Klicker)
+- **23:00** - Second Follow-Up ("1 Monat gratis")
+- **00:00** - Stats Collection
+- **01:00** - Dead Lead Revival ("Problem solved?")
+- **02:00** - A/B Test Evaluation
+- **03:00-06:00** - Idle
+
+**Endpoints:**
+- `/api/cron/night-loop` - Master Endpoint (orchestriert alles)
+- `/api/cron/revive-dead-leads` - Reaktiviert 7+ Tage alte Leads
+- `/api/cron/ab-test-evaluate` - Bewertet A/B Tests automatisch
 
 ---
 
@@ -272,12 +287,25 @@ Click-Rate ist die echte Metrik. 17 Leute haben geklickt → Demo Attack!
 ### Automation Status (14.01.2026)
 **VOLLAUTOMATISCH (läuft 24/7):**
 - Daily Outreach, Drip Emails, Demo Follow-Up, Twitter, Blog Generation
+- **NEU: Night Loop** - Autonome Nacht-Sales-Automation (22:00-06:00)
 
 **SEMI-MANUELL (erfordert `claude --chrome`):**
 - `/linkedin-connect` - Demos werden auto-generiert, Connection Requests manuell
 - `/scrape-leads` - TripAdvisor Scraping
 - `/g2-miner` - G2 Competitor Mining
 - `/yelp-audit` - Yelp Lead Auditing
+
+---
+
+## KÜRZLICH ERLEDIGT (14.01 Nacht)
+
+- **Night Automation System** - Läuft autonom die ganze Nacht ohne Chrome/Input
+  - `/api/cron/night-loop` - Master Endpoint orchestriert alle Nacht-Aktionen
+  - `/api/cron/revive-dead-leads` - Reaktiviert 7+ Tage alte Leads
+  - `/api/cron/ab-test-evaluate` - Automatische A/B Test Auswertung
+  - A/B Testing Tabelle + Admin Endpoints
+  - Erster A/B Test erstellt: "Subject Line - Personal vs Business"
+  - **USER TODO:** Night Loop Cron bei cron-job.org einrichten (22:00-06:00 UTC)
 
 ---
 
