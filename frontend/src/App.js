@@ -8693,6 +8693,28 @@ const ConfirmEmailPage = () => {
   );
 };
 
+// Helper: Get context placeholder examples based on business type
+const getContextPlaceholder = businessType => {
+  const examples = {
+    Restaurant: 'e.g. Italian, family-owned, since 1985, homemade pasta, cozy terrace',
+    'Cafe / Coffee Shop': 'e.g. specialty coffee, local roasters, cozy atmosphere, vegan options',
+    'Hotel / Accommodation': 'e.g. boutique hotel, city center, rooftop bar, since 2010',
+    'Bar / Nightclub': 'e.g. craft cocktails, live music, industrial vibe, late night',
+    'Spa / Wellness': 'e.g. holistic treatments, certified therapists, relaxation focus',
+    'Hair Salon / Barbershop': 'e.g. master barber, hot towel shave, modern cuts, walk-ins welcome',
+    'Dental Practice': 'e.g. family dentistry, gentle care, modern equipment, Dr. Smith',
+    'Medical Practice': 'e.g. primary care, same-day appointments, caring staff, 20+ years',
+    'Auto Repair / Service': 'e.g. European cars, honest pricing, certified mechanics, loaner cars',
+    'Gym / Fitness Studio': 'e.g. personal training, group classes, 24/7 access, modern equipment',
+    'Retail Store': 'e.g. local boutique, curated selection, friendly staff, unique finds',
+    'E-commerce': 'e.g. fast shipping, easy returns, quality products, great support',
+    'Professional Services': 'e.g. accounting firm, CPA certified, small business focus, responsive',
+    'Real Estate': 'e.g. local expert, first-time buyers, 15 years experience, personal touch',
+    'Home Services': 'e.g. plumbing, licensed, same-day service, fair pricing, family-owned',
+  };
+  return examples[businessType] || 'e.g. family-owned, since 1985, quality service, friendly team';
+};
+
 // AI Context Generator Component
 const AIContextGenerator = ({ field, businessType, businessName, currentValue, onGenerated }) => {
   const [keywords, setKeywords] = useState('');
@@ -8839,7 +8861,7 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
           onChange={e => setKeywords(e.target.value)}
           placeholder={
             field === 'context'
-              ? 'e.g. Italian, family-owned, 1985, homemade pasta, terrace'
+              ? getContextPlaceholder(businessType)
               : 'e.g. friendly, short, with greeting, casual'
           }
           style={{ fontSize: '14px' }}

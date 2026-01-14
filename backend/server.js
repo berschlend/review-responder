@@ -2934,8 +2934,8 @@ Your response will be rejected if it sounds like AI-generated text. Write like a
     // ========== OPTIMIZED SYSTEM + USER MESSAGE STRUCTURE ==========
 
     const systemMessage = `You own ${businessName || contextUser.business_name || 'a business'}${contextUser.business_type ? ` (${contextUser.business_type})` : ''}. You're responding to a review on ${platform || 'Google'}.
-${contextUser.business_context ? `\nAbout your business: ${contextUser.business_context}` : ''}
-${contextUser.response_style ? `\nIMPORTANT - Follow these custom instructions: ${contextUser.response_style}` : ''}
+${contextUser.business_context ? `\n<business_context>\n${contextUser.business_context}\n</business_context>` : ''}
+${contextUser.response_style ? `\n<response_style>\n${contextUser.response_style}\n</response_style>` : ''}
 ${templateContent ? `\nTEMPLATE STYLE GUIDE: Use this template as a style reference. Match its tone, structure, and approach, but adapt the content to address the specific review:\n"${templateContent}"` : ''}
 
 ${writingStyleInstructions}
@@ -6453,8 +6453,8 @@ app.post('/api/v1/generate', authenticateApiKey, async (req, res) => {
         : publicApiExamples.positive;
 
     const systemPrompt = `You own ${user.business_name || 'a business'}${user.business_type ? ` (${user.business_type})` : ''}.
-${user.business_context ? `About your business: ${user.business_context}` : ''}
-${user.response_style ? `IMPORTANT - Follow these custom instructions: ${user.response_style}` : ''}
+${user.business_context ? `<business_context>\n${user.business_context}\n</business_context>` : ''}
+${user.response_style ? `<response_style>\n${user.response_style}\n</response_style>` : ''}
 
 <output_format>
 Write the response directly. No quotes. No "Response:" prefix. Just the text.
