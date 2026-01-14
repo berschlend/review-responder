@@ -11440,7 +11440,7 @@ app.all('/api/cron/followup-clickers', async (req, res) => {
       WHERE f.id IS NULL
         ${getTestEmailExcludeClause('c.email')}
       ORDER BY c.clicked_at DESC
-      LIMIT 5
+      LIMIT 20
     `);
 
     let sent = 0;
@@ -11561,7 +11561,9 @@ Schaut euch an ob der Ton passt. Dauert 30 Sekunden.
 Falls es gefällt: 20 Antworten/Monat sind kostenlos. Falls nicht: Kein Problem, einfach ignorieren.
 
 Grüße,
-Berend`;
+Berend
+
+P.S. Code CLICKER30 = 30% Rabatt wenn ihr upgraden wollt.`;
           } else {
             subject = `3 AI responses for ${businessName} – already done`;
             body = `Hey,
@@ -11577,7 +11579,9 @@ Takes 30 seconds to see if the tone matches your brand.
 If you like it: 20 responses/month are free. If not: No worries, just ignore this.
 
 Best,
-Berend`;
+Berend
+
+P.S. Use code CLICKER30 for 30% off if you upgrade.`;
           }
         } else {
           // Fallback email WITHOUT demo (if demo generation failed)
@@ -11599,7 +11603,9 @@ https://tryreviewresponder.com?ref=hot_lead
 20 Antworten/Monat kostenlos, keine Kreditkarte.
 
 Grüße,
-Berend`;
+Berend
+
+P.S. Code CLICKER30 = 30% Rabatt wenn ihr upgraden wollt.`;
           } else {
             const reviewText = reviewCount ? `${reviewCount.toLocaleString()} reviews` : 'hundreds of reviews';
             subject = reviewCount
@@ -11618,7 +11624,9 @@ https://tryreviewresponder.com?ref=hot_lead
 20 responses/month free, no credit card.
 
 Best,
-Berend`;
+Berend
+
+P.S. Use code CLICKER30 for 30% off if you upgrade.`;
           }
         }
 
@@ -11809,6 +11817,542 @@ P.S. No reply = no interest. No problem, I'll stop reaching out.`;
   } catch (error) {
     console.error('Second followup error:', error);
     res.status(500).json({ error: 'Failed to send second followups' });
+  }
+});
+
+// GET /api/cron/hot-lead-attack - HIGH FREQUENCY follow-up for recent clickers (every 2 hours)
+// Added 14.01.2026: Part of Night Turbo Automation System
+app.get('/api/cron/hot-lead-attack', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'Email service not configured' });
+  }
+
+  try {
+    // Create hot_lead_attacks tracking table if not exists
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS hot_lead_attacks (
+        id SERIAL PRIMARY KEY,
+        email TEXT NOT NULL,
+        lead_id INTEGER,
+        attack_type TEXT DEFAULT 'immediate',
+        sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        demo_token TEXT,
+        converted_at TIMESTAMP,
+        UNIQUE(email, attack_type)
+      )
+    `);
+
+    // Find clickers from last 4 hours who haven't been attacked yet
+    // This runs every 2 hours, so catches people quickly
+    const hotClickers = await dbAll(`
+      SELECT DISTINCT c.email, c.clicked_at, c.clicked_url,
+        l.id as lead_id, l.business_name, l.contact_name, l.city,
+        l.google_reviews_count, l.website,
+        d.demo_token
+      FROM outreach_clicks c
+      LEFT JOIN outreach_leads l ON LOWER(c.email) = LOWER(l.email)
+      LEFT JOIN demo_generations d ON d.lead_id = l.id
+      LEFT JOIN hot_lead_attacks h ON LOWER(c.email) = LOWER(h.email) AND h.attack_type = 'immediate'
+      WHERE c.clicked_at > NOW() - INTERVAL '4 hours'
+        AND h.id IS NULL
+        ${getTestEmailExcludeClause('c.email')}
+      ORDER BY c.clicked_at DESC
+      LIMIT 30
+    `);
+
+    let sent = 0;
+    const results = [];
+
+    for (const clicker of hotClickers) {
+      try {
+        const businessName = clicker.business_name || 'your business';
+        const city = clicker.city || '';
+        const demoToken = clicker.demo_token;
+        const demoUrl = demoToken ? `https://tryreviewresponder.com/demo/${demoToken}?discount=CLICKER30` : null;
+
+        // Detect German-speaking cities
+        const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Brüssel', 'Munich', 'Cologne', 'Vienna', 'Zurich', 'Geneva'];
+        const isGerman = germanCities.some(gc => city.toLowerCase().includes(gc.toLowerCase()));
+
+        let subject, body;
+
+        if (demoUrl) {
+          // They already have a demo - quick nudge
+          if (isGerman) {
+            subject = `Gesehen aber nicht getestet? 🎯`;
+            body = `Hey,
+
+ich hab gesehen, dass du gerade auf meine Email geklickt hast.
+
+Falls du die Demo verpasst hast - hier nochmal der direkte Link:
+${demoUrl}
+
+30 Sekunden und du weißt ob ReviewResponder zu ${businessName} passt.
+
+Code CLICKER30 = 30% Rabatt wenn du upgraden willst.
+
+Grüße,
+Berend`;
+          } else {
+            subject = `Saw you checking us out 👀`;
+            body = `Hey,
+
+I noticed you just clicked through to ReviewResponder.
+
+In case you missed the demo I made for ${businessName}:
+${demoUrl}
+
+Takes 30 seconds to see if the AI responses match your brand voice.
+
+Use code CLICKER30 for 30% off if you decide to upgrade.
+
+Best,
+Berend`;
+          }
+        } else {
+          // No demo yet - offer to make one
+          if (isGerman) {
+            subject = `Soll ich was für ${businessName} machen?`;
+            body = `Hey,
+
+ich hab gesehen, dass du gerade auf meine Email geklickt hast.
+
+Wenn du willst, mache ich dir eine kostenlose Demo mit echten AI-Antworten auf eure Google Bewertungen.
+
+Antworte einfach mit "Ja" und ich schick dir den Link in 5 Minuten.
+
+Grüße,
+Berend
+
+P.S. Code CLICKER30 = 30% Rabatt wenn du später upgraden willst.`;
+          } else {
+            subject = `Want me to make something for ${businessName}?`;
+            body = `Hey,
+
+I noticed you just clicked on my email.
+
+Want me to create a free demo with real AI responses to your Google reviews?
+
+Just reply "Yes" and I'll send you the link in 5 minutes.
+
+Best,
+Berend
+
+P.S. Use code CLICKER30 for 30% off if you upgrade later.`;
+          }
+        }
+
+        await resend.emails.send({
+          from: OUTREACH_FROM_EMAIL,
+          to: clicker.email,
+          subject: subject,
+          text: body,
+          tags: [{ name: 'campaign', value: 'hot_lead_attack' }],
+        });
+
+        // Track the attack
+        await dbQuery(
+          `INSERT INTO hot_lead_attacks (email, lead_id, attack_type, demo_token)
+           VALUES ($1, $2, 'immediate', $3)
+           ON CONFLICT (email, attack_type) DO NOTHING`,
+          [clicker.email, clicker.lead_id, demoToken]
+        );
+
+        sent++;
+        results.push({
+          email: clicker.email,
+          business: businessName,
+          clicked_at: clicker.clicked_at,
+          has_demo: !!demoUrl,
+        });
+
+        // Rate limit
+        await new Promise(r => setTimeout(r, 500));
+      } catch (err) {
+        console.error(`Failed to attack hot lead ${clicker.email}:`, err.message);
+      }
+    }
+
+    res.json({
+      success: true,
+      sent: sent,
+      hot_leads_attacked: results,
+      message: sent > 0 ? `🔥 Attacked ${sent} hot leads within 4h of clicking!` : 'No hot leads to attack right now',
+      next_run: 'Every 2 hours',
+    });
+  } catch (error) {
+    console.error('Hot lead attack error:', error);
+    res.status(500).json({ error: 'Failed to attack hot leads' });
+  }
+});
+
+// GET /api/cron/turbo-scrape - Wave-based scraping for 6x more leads per day
+// Added 14.01.2026: Part of Night Turbo Automation System
+// Runs 6 times per day at: 00:00, 04:00, 08:00, 12:00, 16:00, 20:00
+app.get('/api/cron/turbo-scrape', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const wave = parseInt(req.query.wave) || 1;
+  console.log(`🌊 Starting Turbo Scrape Wave ${wave}...`);
+
+  // Wave-based city distribution for global coverage
+  const waveConfig = {
+    1: { // 00:00 UTC - DACH Region
+      cities: ['Berlin', 'München', 'Hamburg', 'Wien', 'Zürich'],
+      name: 'DACH Night',
+    },
+    2: { // 04:00 UTC - US East Coast
+      cities: ['New York', 'Boston', 'Philadelphia', 'Miami', 'Chicago'],
+      name: 'US East',
+    },
+    3: { // 08:00 UTC - US West Coast
+      cities: ['Los Angeles', 'San Francisco', 'Seattle', 'Denver', 'Phoenix'],
+      name: 'US West',
+    },
+    4: { // 12:00 UTC - UK & Ireland
+      cities: ['London', 'Dublin', 'Manchester', 'Edinburgh', 'Birmingham'],
+      name: 'UK Ireland',
+    },
+    5: { // 16:00 UTC - Benelux & Scandinavia
+      cities: ['Amsterdam', 'Brüssel', 'Copenhagen', 'Stockholm', 'Oslo'],
+      name: 'Benelux Nordic',
+    },
+    6: { // 20:00 UTC - Random rotation of all other cities
+      cities: ['Leipzig', 'Dresden', 'Salzburg', 'Graz', 'Basel', 'Austin', 'Portland', 'Atlanta'],
+      name: 'Random Mix',
+    },
+  };
+
+  const config = waveConfig[wave] || waveConfig[1];
+  const cities = config.cities;
+
+  // Rotate through 3 industries per wave (20 total industries / 6 waves ≈ 3 per wave)
+  const industries = [
+    'restaurant', 'hotel', 'dental office', 'law firm', 'auto repair shop',
+    'hair salon', 'gym', 'real estate agency', 'medical clinic', 'retail store',
+    'spa', 'veterinary clinic', 'physiotherapy', 'accounting firm', 'bakery',
+    'coffee shop', 'car dealership', 'optician', 'pharmacy', 'florist'
+  ];
+
+  // Pick 3 industries based on wave number
+  const industryStartIdx = ((wave - 1) * 3) % industries.length;
+  const waveIndustries = [
+    industries[industryStartIdx % industries.length],
+    industries[(industryStartIdx + 1) % industries.length],
+    industries[(industryStartIdx + 2) % industries.length],
+  ];
+
+  let totalScraped = 0;
+  let totalSkipped = 0;
+  const results = [];
+
+  if (!process.env.GOOGLE_PLACES_API_KEY) {
+    return res.status(500).json({ error: 'Google Places API not configured' });
+  }
+
+  try {
+    // Scrape each city + industry combination
+    for (const city of cities) {
+      for (const industry of waveIndustries) {
+        try {
+          const scrapeUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(industry + ' in ' + city)}&key=${process.env.GOOGLE_PLACES_API_KEY}`;
+          const response = await fetch(scrapeUrl);
+          const data = await response.json();
+
+          if (data.results) {
+            let cityScraped = 0;
+            let citySkipped = 0;
+
+            for (const place of data.results.slice(0, 10)) { // 10 per combo to save API costs
+              try {
+                // Check if lead already exists (dedup)
+                const existing = await dbGet(
+                  'SELECT id FROM outreach_leads WHERE LOWER(business_name) = LOWER($1) AND LOWER(city) = LOWER($2)',
+                  [place.name, city]
+                );
+
+                if (existing) {
+                  citySkipped++;
+                  continue;
+                }
+
+                // Fetch Place Details
+                const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,reviews&key=${process.env.GOOGLE_PLACES_API_KEY}`;
+                const detailsResponse = await fetch(detailsUrl);
+                const details = await detailsResponse.json();
+
+                if (details.status === 'OK') {
+                  const result = details.result;
+
+                  // Find worst review for personalization
+                  let worstReview = null;
+                  if (result.reviews && result.reviews.length > 0) {
+                    const badReviews = result.reviews.filter(r => r.rating <= 2);
+                    if (badReviews.length > 0) {
+                      worstReview = badReviews.reduce((worst, current) =>
+                        (current.text?.length || 0) > (worst.text?.length || 0) ? current : worst
+                      );
+                    }
+                  }
+
+                  await dbQuery(
+                    `INSERT INTO outreach_leads (business_name, business_type, city, address, phone, website, google_rating, google_reviews_count, source, worst_review_text, worst_review_rating, worst_review_author, has_bad_review)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'turbo_scrape', $9, $10, $11, $12)
+                     ON CONFLICT (business_name, city) DO NOTHING`,
+                    [
+                      result.name,
+                      industry,
+                      city,
+                      result.formatted_address || null,
+                      result.formatted_phone_number || null,
+                      result.website || null,
+                      result.rating || null,
+                      result.user_ratings_total || null,
+                      worstReview?.text || null,
+                      worstReview?.rating || null,
+                      worstReview?.author_name || null,
+                      worstReview !== null,
+                    ]
+                  );
+                  cityScraped++;
+                  totalScraped++;
+                }
+
+                // Rate limiting
+                await new Promise(r => setTimeout(r, 150));
+              } catch (e) {
+                console.error(`Place details error for ${place.name}:`, e.message);
+              }
+            }
+
+            results.push({
+              city,
+              industry,
+              scraped: cityScraped,
+              skipped: citySkipped,
+            });
+            totalSkipped += citySkipped;
+          }
+
+          // Rate limit between searches
+          await new Promise(r => setTimeout(r, 300));
+        } catch (e) {
+          console.error(`Scrape error for ${city} ${industry}:`, e.message);
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      wave: wave,
+      wave_name: config.name,
+      cities: cities,
+      industries: waveIndustries,
+      total_scraped: totalScraped,
+      total_skipped: totalSkipped,
+      breakdown: results,
+      message: `🌊 Wave ${wave} complete: Scraped ${totalScraped} new leads, skipped ${totalSkipped} existing`,
+      next_wave: wave < 6 ? wave + 1 : 1,
+    });
+  } catch (error) {
+    console.error('Turbo scrape error:', error);
+    res.status(500).json({ error: 'Failed to run turbo scrape' });
+  }
+});
+
+// GET /api/cron/turbo-email - Wave-based email sending for 4x more emails per day
+// Added 14.01.2026: Part of Night Turbo Automation System
+// Runs 4 times per day at: 07:00, 13:00, 14:00, 20:00 UTC
+app.get('/api/cron/turbo-email', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const wave = parseInt(req.query.wave) || 1;
+  console.log(`📧 Starting Turbo Email Wave ${wave}...`);
+
+  // Wave-based geographic targeting for optimal delivery times
+  const waveConfig = {
+    1: { // 07:00 UTC = 08:00 CET - DACH Morning
+      regions: ['Berlin', 'München', 'Hamburg', 'Wien', 'Zürich', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf'],
+      name: 'DACH Morning',
+      limit: 100,
+    },
+    2: { // 13:00 UTC = 14:00 CET - DACH Afternoon
+      regions: ['Leipzig', 'Dresden', 'Salzburg', 'Graz', 'Basel', 'Bern', 'Amsterdam', 'Brüssel'],
+      name: 'DACH Afternoon',
+      limit: 100,
+    },
+    3: { // 14:00 UTC = 09:00 EST - US Morning
+      regions: ['New York', 'Boston', 'Philadelphia', 'Miami', 'Chicago', 'Atlanta', 'Washington'],
+      name: 'US East Morning',
+      limit: 100,
+    },
+    4: { // 20:00 UTC = 15:00 EST = 12:00 PST - US Afternoon
+      regions: ['Los Angeles', 'San Francisco', 'Seattle', 'Denver', 'Phoenix', 'Portland', 'Las Vegas'],
+      name: 'US West Afternoon',
+      limit: 100,
+    },
+  };
+
+  const config = waveConfig[wave] || waveConfig[1];
+
+  if (!resend && !brevoApi) {
+    return res.status(500).json({ error: 'No email service configured' });
+  }
+
+  try {
+    // Find leads with emails that haven't been emailed yet, filtered by region
+    const regionFilter = config.regions.map(r => `'${r.replace(/'/g, "''")}'`).join(',');
+    const leads = await dbAll(`
+      SELECT l.id, l.business_name, l.email, l.contact_name, l.city, l.website,
+        l.google_rating, l.google_reviews_count, l.worst_review_text, l.worst_review_author,
+        d.demo_token
+      FROM outreach_leads l
+      LEFT JOIN outreach_emails oe ON LOWER(l.email) = LOWER(oe.email)
+      LEFT JOIN demo_generations d ON d.lead_id = l.id
+      WHERE l.email IS NOT NULL
+        AND oe.id IS NULL
+        AND l.city IN (${regionFilter})
+        ${getTestEmailExcludeClause('l.email')}
+      ORDER BY RANDOM()
+      LIMIT ${config.limit}
+    `);
+
+    let sent = 0;
+    let failed = 0;
+    const results = [];
+
+    for (const lead of leads) {
+      try {
+        const businessName = lead.business_name || 'your business';
+        const firstName = lead.contact_name?.split(' ')[0] || '';
+        const city = lead.city || '';
+
+        // Detect German-speaking cities
+        const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Brüssel', 'Leipzig', 'Dresden', 'Salzburg', 'Graz', 'Basel', 'Bern', 'Amsterdam', 'Munich', 'Cologne', 'Vienna', 'Zurich', 'Geneva'];
+        const isGerman = germanCities.some(gc => city.toLowerCase().includes(gc.toLowerCase()));
+
+        // Build demo URL with discount if available
+        const demoUrl = lead.demo_token
+          ? `https://tryreviewresponder.com/demo/${lead.demo_token}?discount=DEMO30`
+          : 'https://tryreviewresponder.com?ref=turbo_email';
+
+        let subject, body;
+
+        if (isGerman) {
+          // A/B test subjects based on wave
+          const subjects = [
+            `${businessName} - AI antwortet auf Bewertungen`,
+            `Automatische Antworten für ${businessName}?`,
+            `30 Sekunden pro Bewertung statt 5 Minuten`,
+          ];
+          subject = subjects[(wave - 1) % subjects.length];
+
+          body = `Hey${firstName ? ` ${firstName}` : ''},
+
+ich hab ReviewResponder gebaut - AI die auf Google Bewertungen antwortet. Klingt simpel, spart aber 80% Zeit.
+
+${lead.demo_token ? `Hier ist eine Demo für ${businessName}:\n${demoUrl}` : `Teste es direkt:\n${demoUrl}`}
+
+20 Antworten/Monat kostenlos, keine Kreditkarte.
+
+Grüße,
+Berend
+
+P.S. Code DEMO30 = 30% Rabatt wenn du upgraden willst.`;
+        } else {
+          // A/B test subjects based on wave
+          const subjects = [
+            `${businessName} - AI replies to reviews`,
+            `Automated responses for ${businessName}?`,
+            `30 seconds per review instead of 5 minutes`,
+          ];
+          subject = subjects[(wave - 1) % subjects.length];
+
+          body = `Hey${firstName ? ` ${firstName}` : ''},
+
+I built ReviewResponder - AI that replies to Google reviews. Sounds simple, saves 80% of time.
+
+${lead.demo_token ? `Here's a demo for ${businessName}:\n${demoUrl}` : `Try it directly:\n${demoUrl}`}
+
+20 responses/month free, no credit card.
+
+Best,
+Berend
+
+P.S. Use code DEMO30 for 30% off if you upgrade.`;
+        }
+
+        // Use Resend for first 100, Brevo as backup
+        const emailService = sent < 50 && resend ? 'resend' : 'brevo';
+
+        if (emailService === 'resend' && resend) {
+          await resend.emails.send({
+            from: OUTREACH_FROM_EMAIL,
+            to: lead.email,
+            subject: subject,
+            text: body,
+            tags: [{ name: 'campaign', value: `turbo_email_wave${wave}` }],
+          });
+        } else if (brevoApi) {
+          await brevoApi.sendTransacEmail({
+            sender: { name: 'Berend from ReviewResponder', email: 'outreach@tryreviewresponder.com' },
+            to: [{ email: lead.email }],
+            subject: subject,
+            textContent: body,
+            tags: [`turbo_email_wave${wave}`],
+          });
+        }
+
+        // Track the email
+        await dbQuery(
+          `INSERT INTO outreach_emails (email, subject, body, campaign, lead_id)
+           VALUES ($1, $2, $3, $4, $5)
+           ON CONFLICT (email) DO NOTHING`,
+          [lead.email, subject, body, `turbo_email_wave${wave}`, lead.id]
+        );
+
+        sent++;
+        results.push({
+          email: lead.email,
+          business: businessName,
+          city: city,
+          has_demo: !!lead.demo_token,
+        });
+
+        // Rate limit
+        await new Promise(r => setTimeout(r, 300));
+      } catch (err) {
+        console.error(`Failed to send turbo email to ${lead.email}:`, err.message);
+        failed++;
+      }
+    }
+
+    res.json({
+      success: true,
+      wave: wave,
+      wave_name: config.name,
+      regions: config.regions,
+      sent: sent,
+      failed: failed,
+      leads_found: leads.length,
+      emails_sent: results,
+      message: `📧 Wave ${wave} complete: Sent ${sent} emails to ${config.name} region`,
+      daily_limit_info: 'Brevo: 300/day, Resend: 100/day = 400 total',
+    });
+  } catch (error) {
+    console.error('Turbo email error:', error);
+    res.status(500).json({ error: 'Failed to run turbo email' });
   }
 });
 
