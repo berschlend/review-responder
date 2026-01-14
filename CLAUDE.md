@@ -540,6 +540,18 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
   - Email enthält AI-Response Preview + `DEMOFOLLOWUP` Code (30% off für 3 Monate)
   - **USER TODO: Cron Job anlegen:** `0 12 * * *` (12:00 täglich)
     - URL: `https://review-responder.onrender.com/api/cron/demo-followup?secret=...`
+- [x] **Multi-Fallback Email System** - Hunter.io Bottleneck gelöst!
+  - Problem: Hunter.io Credits aufgebraucht, 100 Leads ohne Email
+  - Lösung: 4-stufiges Fallback-System (FREE First!)
+  - **Reihenfolge:**
+    1. Website Scraper (FREE) - Verbessert: mehr Pages, mailto: Erkennung
+    2. Pattern Guesser (FREE) - Testet info@, contact@, etc. mit MX-Check
+    3. Snov.io (50/Monat) - Neuer Fallback
+    4. Hunter.io (25/Woche) - Nur noch Last Resort
+  - `findEmailForLead()` - Neue kombinierte Funktion
+  - automation-health zeigt jetzt alle Email-Quellen
+  - **USER TODO: Snov.io API Keys holen:** https://snov.io → Settings → API
+    - In Render hinzufügen: `SNOV_CLIENT_ID`, `SNOV_CLIENT_SECRET`
 
 ### ERLEDIGT (13.01.2026):
 - [x] **Cron Jobs gefixt** - Alle 3 Cron Jobs liefen auf "Ausgabe zu groß" Fehler
