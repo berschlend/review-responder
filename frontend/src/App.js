@@ -8935,21 +8935,12 @@ const getTextareaPlaceholder = businessType => {
   );
 };
 
-// AI Context Generator Component
+// AI Context Generator Component - Always visible, no collapse
 const AIContextGenerator = ({ field, businessType, businessName, currentValue, onGenerated }) => {
   const [keywords, setKeywords] = useState('');
   const [generating, setGenerating] = useState(false);
   const [generated, setGenerated] = useState('');
   const [remaining, setRemaining] = useState(null);
-  // Show generator by default if no content exists yet
-  const [showGenerator, setShowGenerator] = useState(!currentValue);
-
-  // Auto-collapse when user already has content
-  useEffect(() => {
-    if (currentValue && currentValue.length > 50) {
-      setShowGenerator(false);
-    }
-  }, [currentValue]);
 
   const handleGenerate = async () => {
     if (!keywords.trim()) {
@@ -8979,159 +8970,81 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
     onGenerated(generated);
     setKeywords('');
     setGenerated('');
-    setShowGenerator(false);
     toast.success('Text applied!');
   };
 
-  if (!showGenerator) {
-    return (
-      <div style={{ marginBottom: '12px' }}>
+  return (
+    <div style={{ marginBottom: '16px' }}>
+      {/* Clean input + Generate button layout */}
+      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '6px' }}>
+        <input
+          type="text"
+          className="form-input"
+          value={keywords}
+          onChange={e => setKeywords(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && keywords.trim() && handleGenerate()}
+          placeholder={
+            field === 'context'
+              ? getContextPlaceholder(businessType)
+              : 'e.g. friendly, short, with greeting, casual'
+          }
+          style={{ flex: 1, fontSize: '14px' }}
+        />
         <button
           type="button"
-          onClick={() => setShowGenerator(true)}
+          onClick={handleGenerate}
+          disabled={generating || !keywords.trim()}
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
             padding: '10px 16px',
-            background: 'linear-gradient(135deg, var(--primary-500), var(--primary-600))',
+            background:
+              generating || !keywords.trim()
+                ? 'var(--gray-300)'
+                : 'linear-gradient(135deg, var(--primary-500), var(--primary-600))',
             border: 'none',
             borderRadius: '8px',
-            cursor: 'pointer',
+            cursor: generating || !keywords.trim() ? 'not-allowed' : 'pointer',
             fontSize: '14px',
             fontWeight: '600',
             color: 'white',
-            marginBottom: '6px',
-            transition: 'all 0.2s',
-            boxShadow: '0 2px 8px rgba(99, 102, 241, 0.3)',
-          }}
-        >
-          <Sparkles size={16} />
-          Generate with AI
-          <span
-            style={{
-              background: 'rgba(255, 255, 255, 0.2)',
-              padding: '2px 8px',
-              borderRadius: '4px',
-              fontSize: '10px',
-              fontWeight: '600',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}
-          >
-            Recommended
-          </span>
-        </button>
-        <p style={{ fontSize: '12px', color: 'var(--gray-500)', margin: 0 }}>
-          {field === 'context'
-            ? 'Enter a few keywords and AI creates a structured profile you can edit'
-            : 'Enter a few keywords and AI creates style guidelines with XML tags'}
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ marginBottom: '16px' }}>
-      {/* Label with Step indicator + Recommended badge */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          marginBottom: '8px',
-          flexWrap: 'wrap',
-        }}
-      >
-        <span
-          style={{
-            background: 'var(--primary-500)',
-            color: 'white',
-            fontSize: '10px',
-            fontWeight: '700',
-            padding: '3px 8px',
-            borderRadius: '4px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-          }}
-        >
-          Step 1
-        </span>
-        <span
-          style={{
-            background: 'var(--green-100)',
-            color: 'var(--green-700)',
-            fontSize: '10px',
-            fontWeight: '600',
-            padding: '3px 8px',
-            borderRadius: '4px',
-            border: '1px solid var(--green-200)',
-          }}
-        >
-          Recommended
-        </span>
-      </div>
-      <p style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '10px', marginTop: '0' }}>
-        Enter a few keywords and AI generates a profile you can edit
-      </p>
-
-      {/* Input + Button inline - clean design */}
-      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-        <div style={{ flex: 1, position: 'relative' }}>
-          <Sparkles
-            size={16}
-            style={{
-              position: 'absolute',
-              left: '12px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: 'var(--primary-400)',
-            }}
-          />
-          <input
-            type="text"
-            className="form-input"
-            value={keywords}
-            onChange={e => setKeywords(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && keywords.trim() && handleGenerate()}
-            placeholder={
-              field === 'context'
-                ? getContextPlaceholder(businessType)
-                : 'e.g. friendly, short, with greeting, casual'
-            }
-            style={{
-              fontSize: '14px',
-              paddingLeft: '36px',
-              borderColor: 'var(--primary-200)',
-            }}
-          />
-        </div>
-        <button
-          type="button"
-          onClick={handleGenerate}
-          disabled={generating || !keywords.trim()}
-          className="btn btn-primary"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
             whiteSpace: 'nowrap',
-            opacity: generating || !keywords.trim() ? 0.6 : 1,
+            boxShadow:
+              generating || !keywords.trim() ? 'none' : '0 2px 8px rgba(99, 102, 241, 0.3)',
           }}
         >
           {generating ? (
             <>
-              <Loader size={14} className="spin" />
+              <Loader size={16} className="spin" />
               Generating...
             </>
           ) : (
             <>
-              <Sparkles size={14} />
+              <Sparkles size={16} />
               Generate
+              <span
+                style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}
+              >
+                Recommended
+              </span>
             </>
           )}
         </button>
       </div>
+      <p style={{ fontSize: '12px', color: 'var(--gray-500)', margin: 0 }}>
+        {field === 'context'
+          ? 'Enter a few keywords and AI creates a structured profile you can edit'
+          : 'Enter a few keywords and AI creates style guidelines'}
+      </p>
 
       {remaining !== null && remaining < 10 && (
         <span style={{ fontSize: '12px', color: 'var(--gray-500)', marginLeft: '8px' }}>
