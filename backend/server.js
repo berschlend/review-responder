@@ -14422,7 +14422,7 @@ app.post('/api/sales/yelp-leads', async (req, res) => {
   }
 });
 
-// POST /api/sales/competitor-leads - Submit G2 competitor leads
+// POST /api/sales/competitor-leads - Submit G2 competitor leads with auto demo + email
 app.post('/api/sales/competitor-leads', async (req, res) => {
   const authKey = req.headers['x-api-key'] || req.query.key;
   if (!safeCompare(authKey, process.env.ADMIN_SECRET) && !safeCompare(authKey, process.env.CRON_SECRET)) {
@@ -14430,49 +14430,147 @@ app.post('/api/sales/competitor-leads', async (req, res) => {
   }
 
   try {
-    const { leads } = req.body;
+    const { leads, generate_demos = false, send_emails = false } = req.body;
     if (!Array.isArray(leads) || leads.length === 0) {
       return res.status(400).json({ error: 'leads array required' });
     }
 
-    let inserted = 0;
-    let skipped = 0;
+    const results = {
+      inserted: 0,
+      skipped: 0,
+      emails_found: 0,
+      demos_generated: 0,
+      emails_sent: 0,
+      errors: []
+    };
 
     for (const lead of leads) {
-      // Check if already exists (by company + competitor combo)
-      const existing = await dbGet(
-        'SELECT id FROM competitor_leads WHERE company_name = $1 AND competitor = $2',
-        [lead.company_name, lead.competitor]
-      );
-      if (existing) {
-        skipped++;
-        continue;
-      }
+      try {
+        // Check if already exists (by company + competitor combo)
+        const existing = await dbGet(
+          'SELECT id FROM competitor_leads WHERE company_name = $1 AND competitor = $2',
+          [lead.company_name, lead.competitor]
+        );
+        if (existing) {
+          results.skipped++;
+          continue;
+        }
 
-      await dbQuery(`
-        INSERT INTO competitor_leads (company_name, reviewer_name, reviewer_title, competitor, star_rating, review_title, complaint_summary, review_date, g2_url, website)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      `, [
-        lead.company_name,
-        lead.reviewer_name,
-        lead.reviewer_title,
-        lead.competitor,
-        lead.star_rating,
-        lead.review_title,
-        lead.complaint_summary,
-        lead.review_date,
-        lead.g2_url,
-        lead.website
-      ]);
-      inserted++;
+        // Insert lead with email if provided
+        const insertResult = await dbQuery(`
+          INSERT INTO competitor_leads (company_name, reviewer_name, reviewer_title, competitor, star_rating, review_title, complaint_summary, review_date, g2_url, website, email, email_source)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+          RETURNING id
+        `, [
+          lead.company_name,
+          lead.reviewer_name,
+          lead.reviewer_title,
+          lead.competitor,
+          lead.star_rating,
+          lead.review_title,
+          lead.complaint_summary,
+          lead.review_date,
+          lead.g2_url,
+          lead.website,
+          lead.email || null,
+          lead.email ? 'scraped' : null
+        ]);
+        results.inserted++;
+
+        if (lead.email) {
+          results.emails_found++;
+        }
+
+        const leadId = insertResult.rows?.[0]?.id;
+
+        // Generate demo and send email if requested
+        if (send_emails && lead.email && leadId) {
+          try {
+            // Generate personalized AI response based on their complaint
+            const aiResponse = await generateG2SwitcherResponse(
+              lead.company_name,
+              lead.reviewer_name,
+              lead.competitor,
+              lead.complaint_summary
+            );
+
+            if (aiResponse) {
+              // Send personalized email with their pain point
+              const emailSubject = `${lead.company_name} - saw your ${lead.competitor} review`;
+              const emailBody = `Hey ${lead.reviewer_name?.split(' ')[0] || 'there'},
+
+Saw your G2 review about ${lead.competitor}. "${lead.complaint_summary?.slice(0, 100)}..." - I get it, that's frustrating.
+
+I built something simpler. No contracts, no hidden fees. Just AI-powered review responses that actually sound human.
+
+Here's what a response for your business could look like:
+
+${aiResponse}
+
+Want to try it? 20 free responses, no credit card:
+https://tryreviewresponder.com?ref=g2-${lead.competitor}
+
+Cheers,
+Berend
+
+P.S. Happy to hop on a quick call if you want to see how it compares to ${lead.competitor}.`;
+
+              await sendEmail({
+                to: lead.email,
+                subject: emailSubject,
+                text: emailBody,
+                type: 'outreach',
+                campaign: `g2-switcher-${lead.competitor}`,
+                from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
+              });
+
+              await dbQuery('UPDATE competitor_leads SET email_sent = TRUE, email_sent_at = NOW() WHERE id = $1', [leadId]);
+              results.emails_sent++;
+              results.demos_generated++;
+            }
+          } catch (emailErr) {
+            results.errors.push(`Email failed for ${lead.company_name}: ${emailErr.message}`);
+          }
+        }
+      } catch (leadErr) {
+        results.errors.push(`Lead ${lead.company_name}: ${leadErr.message}`);
+      }
     }
 
-    res.json({ success: true, inserted, skipped, total: leads.length });
+    res.json({ success: true, ...results, total: leads.length });
   } catch (error) {
     console.error('Competitor leads submission error:', error);
     res.status(500).json({ error: 'Failed to submit leads' });
   }
 });
+
+// Helper: Generate personalized G2 switcher response
+async function generateG2SwitcherResponse(companyName, reviewerName, competitor, complaint) {
+  try {
+    const prompt = `Generate a sample review response for a business called "${companyName}".
+This is to show them what our AI review response tool can do.
+
+Create a professional, friendly response to a hypothetical negative review.
+The response should:
+- Be 2-3 sentences
+- Sound human, not robotic
+- Address a common complaint (slow service, quality issue, etc)
+- End with the business name
+
+Do NOT mention ${competitor} or that this is a demo. Just write a great review response.`;
+
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 200,
+      messages: [{ role: 'user', content: prompt }]
+    });
+
+    return response.content[0]?.text?.trim() || null;
+  } catch (err) {
+    console.error('G2 response generation error:', err.message);
+    return null;
+  }
+}
 
 // POST /api/sales/linkedin-leads - Submit LinkedIn leads
 app.post('/api/sales/linkedin-leads', async (req, res) => {
