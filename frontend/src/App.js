@@ -11391,9 +11391,30 @@ const DemoPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [copiedIndex, setCopiedIndex] = useState(null);
+  const [showExitIntent, setShowExitIntent] = useState(false);
 
   useEffect(() => {
     fetchDemo();
+  }, [token]);
+
+  // Exit Intent Detection
+  useEffect(() => {
+    const exitIntentKey = `demo_exit_${token}`;
+
+    const handleMouseLeave = (e) => {
+      // Only trigger when mouse leaves through the top of the page
+      if (e.clientY <= 0 && !sessionStorage.getItem(exitIntentKey)) {
+        setShowExitIntent(true);
+        sessionStorage.setItem(exitIntentKey, 'shown');
+      }
+    };
+
+    // Desktop: mouseleave event
+    document.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      document.removeEventListener('mouseleave', handleMouseLeave);
+    };
   }, [token]);
 
   const fetchDemo = async () => {
@@ -11747,6 +11768,166 @@ const DemoPage = () => {
           </p>
         </div>
       </div>
+
+      {/* Exit Intent Popup */}
+      {showExitIntent && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px',
+            animation: 'fadeIn 0.3s ease-out',
+          }}
+          onClick={() => setShowExitIntent(false)}
+        >
+          <div
+            style={{
+              background: 'var(--bg-primary)',
+              borderRadius: '20px',
+              maxWidth: '460px',
+              width: '100%',
+              overflow: 'hidden',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+              animation: 'slideUp 0.3s ease-out',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header with gradient */}
+            <div style={{
+              background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
+              padding: '32px 24px',
+              textAlign: 'center',
+              position: 'relative',
+            }}>
+              <button
+                onClick={() => setShowExitIntent(false)}
+                style={{
+                  position: 'absolute',
+                  top: '12px',
+                  right: '12px',
+                  background: 'rgba(255,255,255,0.2)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                }}
+              >
+                <X size={18} />
+              </button>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+              }}>
+                <Sparkles size={32} color="white" />
+              </div>
+              <h2 style={{ color: 'white', fontSize: '24px', fontWeight: '800', marginBottom: '8px' }}>
+                Wait! Your Responses Are Ready
+              </h2>
+              <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '15px' }}>
+                We just created {demo?.demos?.length || 3} AI responses for {demo?.business_name}
+              </p>
+            </div>
+
+            {/* Content */}
+            <div style={{ padding: '24px' }}>
+              {/* Value Props */}
+              <div style={{ marginBottom: '24px' }}>
+                {[
+                  { icon: <Check size={16} />, text: '20 free responses every month' },
+                  { icon: <Check size={16} />, text: 'No credit card required' },
+                  { icon: <Check size={16} />, text: 'Works with Google, Yelp, TripAdvisor' },
+                ].map((item, i) => (
+                  <div key={i} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '10px 0',
+                    borderBottom: i < 2 ? '1px solid var(--border-light)' : 'none',
+                  }}>
+                    <div style={{
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      background: 'rgba(16, 185, 129, 0.1)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#10b981',
+                    }}>
+                      {item.icon}
+                    </div>
+                    <span style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: '500' }}>
+                      {item.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA Button */}
+              <a
+                href={demo?.cta_url}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  width: '100%',
+                  background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
+                  color: 'white',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  textDecoration: 'none',
+                  fontWeight: '700',
+                  fontSize: '16px',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  boxShadow: '0 4px 14px rgba(99, 102, 241, 0.4)',
+                }}
+              >
+                Claim Your Free Account
+                <ArrowRight size={18} />
+              </a>
+
+              {/* Dismiss Link */}
+              <button
+                onClick={() => setShowExitIntent(false)}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  fontSize: '13px',
+                  padding: '16px 0 0',
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                }}
+              >
+                No thanks, I'll respond manually
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -82,6 +82,96 @@ const OUTREACH_FROM_EMAIL =
   process.env.OUTREACH_FROM_EMAIL || 'Berend von ReviewResponder <outreach@tryreviewresponder.com>';
 
 // ==========================================
+// API COST TRACKING
+// ==========================================
+// Pricing per 1M tokens (input/output) or per request
+
+const API_PRICING = {
+  anthropic: {
+    'claude-sonnet-4-20250514': { input: 3, output: 15 },
+    'claude-opus-4-5-20250514': { input: 15, output: 75 },
+    'claude-opus-4-20250514': { input: 15, output: 75 },
+  },
+  openai: {
+    'gpt-4o-mini': { input: 0.15, output: 0.60 },
+    'gpt-4o': { input: 2.5, output: 10 },
+  },
+  google: {
+    'gemini-3-pro-preview': { input: 0, output: 0 }, // Free Tier / Student
+    'gemini-2.5-pro': { input: 0, output: 0 },
+  },
+  google_places: { per_request: 0.017 }, // $17/1000 requests
+  hunter: { per_request: 0.04 }, // After 50 free/mo
+  serpapi: { per_request: 0.10 }, // After 100 free/mo
+  brevo: { per_request: 0 }, // Free 300/day
+  resend: { per_request: 0 }, // Free 100/day
+  twitter: { per_request: 0 }, // Free Tier
+};
+
+/**
+ * Log API call for cost tracking
+ * @param {Object} params
+ * @param {string} params.provider - 'anthropic', 'openai', 'google', 'google_places', etc.
+ * @param {string} params.model - Model name (e.g., 'claude-sonnet-4-20250514')
+ * @param {string} params.endpoint - API endpoint that triggered the call
+ * @param {number} params.userId - User ID (null for system/cron calls)
+ * @param {number} params.inputTokens - Input tokens used
+ * @param {number} params.outputTokens - Output tokens used
+ * @param {string} params.status - 'success' or 'error'
+ * @param {string} params.error - Error message if failed
+ * @param {Object} params.metadata - Additional metadata
+ */
+async function logApiCall({
+  provider,
+  model = null,
+  endpoint = null,
+  userId = null,
+  inputTokens = 0,
+  outputTokens = 0,
+  status = 'success',
+  error = null,
+  metadata = null,
+}) {
+  try {
+    const totalTokens = (inputTokens || 0) + (outputTokens || 0);
+    let estimatedCost = 0;
+
+    // Calculate cost based on provider
+    if (provider === 'anthropic' || provider === 'openai' || provider === 'google') {
+      const pricing = API_PRICING[provider]?.[model];
+      if (pricing) {
+        estimatedCost =
+          ((inputTokens || 0) / 1_000_000) * pricing.input +
+          ((outputTokens || 0) / 1_000_000) * pricing.output;
+      }
+    } else if (API_PRICING[provider]?.per_request) {
+      estimatedCost = API_PRICING[provider].per_request;
+    }
+
+    await pool.query(
+      `INSERT INTO api_call_logs (provider, model, endpoint, user_id, input_tokens, output_tokens, total_tokens, estimated_cost, status, error_message, metadata)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [
+        provider,
+        model,
+        endpoint,
+        userId,
+        inputTokens || 0,
+        outputTokens || 0,
+        totalTokens,
+        estimatedCost,
+        status,
+        error,
+        metadata ? JSON.stringify(metadata) : null,
+      ]
+    );
+  } catch (logError) {
+    // Non-blocking - don't fail the main request if logging fails
+    console.error('[logApiCall] Failed to log API call:', logError.message);
+  }
+}
+
+// ==========================================
 // UNIFIED EMAIL SYSTEM - Central Router
 // ==========================================
 // Routes emails to Brevo (marketing) or Resend (transactional)
@@ -748,6 +838,34 @@ async function initDatabase() {
       await dbQuery(`CREATE INDEX IF NOT EXISTS idx_email_logs_provider ON email_logs(provider)`);
       await dbQuery(`CREATE INDEX IF NOT EXISTS idx_email_logs_sent_at ON email_logs(sent_at)`);
       await dbQuery(`CREATE INDEX IF NOT EXISTS idx_email_logs_campaign ON email_logs(campaign)`);
+    } catch (error) {
+      // Indexes might already exist
+    }
+
+    // API Call Logs for cost tracking
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS api_call_logs (
+        id SERIAL PRIMARY KEY,
+        provider VARCHAR(50) NOT NULL,
+        model VARCHAR(100),
+        endpoint VARCHAR(255),
+        user_id INTEGER REFERENCES users(id),
+        input_tokens INTEGER DEFAULT 0,
+        output_tokens INTEGER DEFAULT 0,
+        total_tokens INTEGER DEFAULT 0,
+        estimated_cost DECIMAL(10,6) DEFAULT 0,
+        status VARCHAR(20) DEFAULT 'success',
+        error_message TEXT,
+        metadata JSONB,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Indexes for API call logs
+    try {
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_api_logs_provider ON api_call_logs(provider)`);
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_api_logs_created ON api_call_logs(created_at)`);
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_api_logs_user ON api_call_logs(user_id)`);
     } catch (error) {
       // Indexes might already exist
     }
@@ -2995,6 +3113,16 @@ LANGUAGE: ${languageInstruction}`;
         messages: [{ role: 'user', content: userMessage }],
       });
       generatedResponse = response.content[0].text.trim();
+
+      // Log API call for cost tracking
+      logApiCall({
+        provider: 'anthropic',
+        model: 'claude-sonnet-4-20250514',
+        endpoint: '/api/generate',
+        userId: req.user?.id,
+        inputTokens: response.usage?.input_tokens || 0,
+        outputTokens: response.usage?.output_tokens || 0,
+      });
     } else {
       // Use GPT-4o-mini for Standard AI (or fallback if no Anthropic key)
       const completion = await openai.chat.completions.create({
@@ -3009,6 +3137,17 @@ LANGUAGE: ${languageInstruction}`;
         frequency_penalty: 0.1,
       });
       generatedResponse = completion.choices[0].message.content.trim();
+
+      // Log API call for cost tracking
+      logApiCall({
+        provider: 'openai',
+        model: 'gpt-4o-mini',
+        endpoint: '/api/generate',
+        userId: req.user?.id,
+        inputTokens: completion.usage?.prompt_tokens || 0,
+        outputTokens: completion.usage?.completion_tokens || 0,
+      });
+
       // If we intended smart but fell back, mark as standard
       if (useModel === 'smart' && !anthropic) {
         useModel = 'standard';
@@ -3490,6 +3629,16 @@ LANGUAGE: ${bulkLanguageInstruction}`;
             messages: [{ role: 'user', content: bulkUserMessage }],
           });
           generatedResponse = response.content[0].text.trim();
+
+          // Log API call for cost tracking
+          logApiCall({
+            provider: 'anthropic',
+            model: 'claude-sonnet-4-20250514',
+            endpoint: '/api/generate-bulk',
+            userId: req.user?.id,
+            inputTokens: response.usage?.input_tokens || 0,
+            outputTokens: response.usage?.output_tokens || 0,
+          });
         } else {
           // Use GPT-4o-mini for Standard AI
           const completion = await openai.chat.completions.create({
@@ -3504,6 +3653,16 @@ LANGUAGE: ${bulkLanguageInstruction}`;
             frequency_penalty: 0.1,
           });
           generatedResponse = completion.choices[0].message.content.trim();
+
+          // Log API call for cost tracking
+          logApiCall({
+            provider: 'openai',
+            model: 'gpt-4o-mini',
+            endpoint: '/api/generate-bulk',
+            userId: req.user?.id,
+            inputTokens: completion.usage?.prompt_tokens || 0,
+            outputTokens: completion.usage?.completion_tokens || 0,
+          });
         }
 
         // Save to database with AI model
@@ -5477,6 +5636,15 @@ SIGNATURE: End with " - ${businessName}"`;
     max_tokens: 350,
     system: systemMessage,
     messages: [{ role: 'user', content: userMessage }],
+  });
+
+  // Log API call for cost tracking
+  logApiCall({
+    provider: 'anthropic',
+    model: 'claude-sonnet-4-20250514',
+    endpoint: '/api/demo/generate',
+    inputTokens: response.usage?.input_tokens || 0,
+    outputTokens: response.usage?.output_tokens || 0,
   });
 
   return response.content[0].text.trim();
@@ -11966,6 +12134,82 @@ app.get('/api/admin/email-logs', async (req, res) => {
   }
 });
 
+// API Costs Dashboard - Track all external API expenses
+app.get('/api/admin/api-costs', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!process.env.ADMIN_SECRET || !safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Today's costs by provider/model
+    const today = await dbQuery(`
+      SELECT provider, model, COUNT(*) as calls,
+             COALESCE(SUM(total_tokens), 0) as tokens,
+             COALESCE(SUM(estimated_cost), 0) as cost
+      FROM api_call_logs
+      WHERE created_at >= CURRENT_DATE
+      GROUP BY provider, model
+      ORDER BY cost DESC
+    `);
+
+    // This month's costs by provider/model
+    const thisMonth = await dbQuery(`
+      SELECT provider, model, COUNT(*) as calls,
+             COALESCE(SUM(total_tokens), 0) as tokens,
+             COALESCE(SUM(estimated_cost), 0) as cost
+      FROM api_call_logs
+      WHERE created_at >= DATE_TRUNC('month', CURRENT_DATE)
+      GROUP BY provider, model
+      ORDER BY cost DESC
+    `);
+
+    // Daily trend (last 30 days)
+    const trend = await dbQuery(`
+      SELECT DATE(created_at) as date, provider,
+             COALESCE(SUM(estimated_cost), 0) as cost,
+             COUNT(*) as calls
+      FROM api_call_logs
+      WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
+      GROUP BY DATE(created_at), provider
+      ORDER BY date
+    `);
+
+    // Totals summary
+    const totals = await dbQuery(`
+      SELECT
+        COALESCE(SUM(CASE WHEN created_at >= CURRENT_DATE THEN estimated_cost ELSE 0 END), 0) as today,
+        COALESCE(SUM(CASE WHEN created_at >= DATE_TRUNC('month', CURRENT_DATE) THEN estimated_cost ELSE 0 END), 0) as this_month,
+        COALESCE(SUM(estimated_cost), 0) as all_time,
+        COUNT(CASE WHEN created_at >= CURRENT_DATE THEN 1 END) as calls_today,
+        COUNT(CASE WHEN created_at >= DATE_TRUNC('month', CURRENT_DATE) THEN 1 END) as calls_this_month,
+        COUNT(*) as calls_all_time
+      FROM api_call_logs
+    `);
+
+    // Recent errors (last 24h)
+    const errors = await dbQuery(`
+      SELECT provider, model, endpoint, error_message, created_at
+      FROM api_call_logs
+      WHERE status = 'error' AND created_at >= NOW() - INTERVAL '24 hours'
+      ORDER BY created_at DESC
+      LIMIT 10
+    `);
+
+    res.json({
+      totals: totals.rows[0] || { today: 0, this_month: 0, all_time: 0 },
+      today: today.rows,
+      thisMonth: thisMonth.rows,
+      trend: trend.rows,
+      recentErrors: errors.rows,
+      pricing: API_PRICING
+    });
+  } catch (err) {
+    console.error('[api-costs] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Test Usage Alert Email
 app.post('/api/admin/test-usage-alert', async (req, res) => {
   const adminKey = req.headers['x-admin-key'];
@@ -13132,6 +13376,14 @@ Lines 4+: The full article content in Markdown format (start directly with conte
 
     const result = await model.generateContent(prompt);
     const fullResponse = result.response.text();
+
+    // Log API call for cost tracking (Gemini doesn't provide exact token counts in response)
+    logApiCall({
+      provider: 'google',
+      model: 'gemini-3-pro-preview',
+      endpoint: '/api/cron/generate-blog-article',
+      metadata: { topic, promptLength: prompt.length, responseLength: fullResponse.length },
+    });
 
     // Parse the response
     const lines = fullResponse.split('\n');
