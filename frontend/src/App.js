@@ -12103,9 +12103,9 @@ const DemoPage = () => {
                         </>
                       )}
                     </button>
-                    {demo.google_reviews_url && (
+                    {(item.review.review_link || demo.google_reviews_url) && (
                       <a
-                        href={demo.google_reviews_url}
+                        href={item.review.review_link || demo.google_reviews_url}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{
