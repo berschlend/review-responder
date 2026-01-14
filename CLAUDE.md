@@ -318,16 +318,49 @@ Click-Rate ist die echte Metrik.
 - LinkedIn Outreach (SEMI-MANUELL - siehe unten)
 - Click/Open Tracking (VOLLAUTOMATISCH)
 
-### Automation Status (14.01.2026)
+### Automation Status (15.01.2026)
 **VOLLAUTOMATISCH (läuft 24/7):**
 - Daily Outreach, Drip Emails, Demo Follow-Up, Twitter, Blog Generation
-- **NEU: Night Loop** - Autonome Nacht-Sales-Automation (22:00-06:00)
+- **Night-Blast** - Lead Scraping + Email Finding + Outreach (21:00, 01:00, 05:00 UTC)
+- **Night-Loop** - Hourly Tasks via node-cron:
+  - Hour 0 (23:00 UTC): Demo Expiration Emails (Day 3, Day 5)
+  - Hour 2 (01:05 UTC): Magic Link Re-Engagement für Hot Leads
 
 **SEMI-MANUELL (erfordert `claude --chrome`):**
 - `/linkedin-connect` - Demos werden auto-generiert, Connection Requests manuell
 - `/scrape-leads` - TripAdvisor Scraping
 - `/g2-miner` - G2 Competitor Mining
 - `/yelp-audit` - Yelp Lead Auditing
+
+---
+
+## KÜRZLICH ERLEDIGT (15.01 Nacht)
+
+- **Magic Link Authentication System** - Passwordless Login für Hot Leads
+  - `GET /api/auth/magic-login/:token` - Auto-create Account + JWT Login
+  - `POST /api/auth/create-magic-link` - Generate 7-day valid token
+  - Frontend: `/magic-login` Route mit auto-redirect zu Dashboard
+  - Click-Tracking: `reengagement_emails.clicked_at`
+
+- **Re-Engagement Cron** - Automatische Magic Links für unregistrierte Clicker
+  - `GET /api/cron/reengage-clickers` - Findet Hot Leads die nicht registriert sind
+  - DE/EN Email Detection basierend auf Stadt
+  - Läuft automatisch um 01:05 UTC (02:05 Berlin)
+
+- **Demo Expiration System** - Urgency Emails für expirierende Demos
+  - `GET /api/cron/demo-expiration-emails`
+  - Day 3: "Your demo expires in 4 days"
+  - Day 5: "Last chance - demo expires tomorrow"
+  - Day 7+: Demo marked as expired, Frontend zeigt "Expired" State
+  - Läuft automatisch um 23:00 UTC (00:00 Berlin)
+
+- **Dashboard Stats erweitert** - Magic Link & Demo Expiration Tracking
+  - `magic_links`: sent, clicked, converted
+  - `demo_expiration`: total, expired, day3_sent, day5_sent
+
+- **Internal Scheduler** - node-cron für komplette Autonomie
+  - Night-Loop läuft jetzt ohne externe cron-job.org
+  - Alle Tasks vollautomatisch über Nacht
 
 ---
 
