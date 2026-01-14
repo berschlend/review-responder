@@ -15050,20 +15050,34 @@ app.get('/api/admin/scraper-status', async (req, res) => {
     // Query all lead sources in parallel
     const [
       outreachLeads,
+      tripadvisorLeads,
       competitorLeads,
       linkedinLeads,
       yelpLeads,
       agencyLeads,
       emailsToday,
-      lastCronRun
+      lastCronRun,
+      lastTripadvisorScrape
     ] = await Promise.all([
-      // Main outreach leads (Daily Outreach)
+      // Main outreach leads (Daily Outreach - excludes TripAdvisor)
       dbGet(`
         SELECT
           COUNT(*) as total,
           COUNT(*) FILTER (WHERE status = 'new') as not_contacted,
           COUNT(*) FILTER (WHERE email IS NOT NULL) as with_email
         FROM outreach_leads
+        WHERE source != 'tripadvisor' OR source IS NULL
+      `),
+      // TripAdvisor leads (separate source)
+      dbGet(`
+        SELECT
+          COUNT(*) as total,
+          COUNT(*) FILTER (WHERE status = 'new') as not_contacted,
+          COUNT(*) FILTER (WHERE email IS NOT NULL) as with_email,
+          COUNT(*) FILTER (WHERE demo_url IS NOT NULL) as with_demo,
+          MAX(created_at) as last_scraped
+        FROM outreach_leads
+        WHERE source = 'tripadvisor'
       `),
       // G2 Competitor leads
       dbGet(`
@@ -15109,6 +15123,12 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         SELECT MAX(sent_at) as last_run
         FROM email_logs
         WHERE campaign = 'main' OR campaign = 'review_alert'
+      `),
+      // Last TripAdvisor email sent
+      dbGet(`
+        SELECT MAX(sent_at) as last_email
+        FROM outreach_emails
+        WHERE campaign = 'tripadvisor-review-alert' OR campaign = 'tripadvisor-auto'
       `)
     ]);
 
@@ -15156,7 +15176,9 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         tier: 2,
         name: 'G2 Competitors',
         type: 'manual',
-        command: '/g2-miner birdeye',
+        requires_chrome_mcp: true,
+        chrome_command: '$env:CLAUDE_SESSION = "g2"; claude --chrome',
+        scrape_prompt: 'Gehe zu g2.com/products/birdeye/reviews und finde negative Reviews (1-2 Sterne). Extrahiere Reviewer Name, Company, Pain Points.',
         leads_total: parseInt(competitorLeads?.total || 0),
         leads_not_contacted: parseInt(competitorLeads?.not_contacted || 0),
         by_competitor: {
@@ -15166,19 +15188,37 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         threshold_low: thresholds.g2_competitors.low,
         threshold_critical: thresholds.g2_competitors.critical,
         status: getStatus(parseInt(competitorLeads?.not_contacted || 0), thresholds.g2_competitors),
-        priority_reason: 'Pain Point Leads - bereits unzufrieden'
+        priority_reason: 'Pain Point Leads - bereits unzufrieden, Chrome MCP nötig',
+        workflow: [
+          '1. Starte Claude mit Chrome MCP',
+          '2. Scrape G2 Reviews von Birdeye/Podium',
+          '3. Finde LinkedIn Profiles der Reviewer',
+          '4. Importiere als competitor_leads'
+        ]
       },
       {
         tier: 2,
         name: 'TripAdvisor',
         type: 'manual',
-        command: '/scrape-leads auto',
-        leads_total: parseInt(outreachLeads?.total || 0),
-        leads_with_email: parseInt(outreachLeads?.with_email || 0),
+        requires_chrome_mcp: true,
+        chrome_command: '$env:CLAUDE_SESSION = "scraper"; claude --chrome',
+        scrape_prompt: 'Scrape TripAdvisor restaurants in [STADT] mit schlechten Reviews. Finde Name, Rating, Review Count, und falls möglich Email/Website.',
+        leads_total: parseInt(tripadvisorLeads?.total || 0),
+        leads_not_contacted: parseInt(tripadvisorLeads?.not_contacted || 0),
+        leads_with_email: parseInt(tripadvisorLeads?.with_email || 0),
+        leads_with_demo: parseInt(tripadvisorLeads?.with_demo || 0),
+        last_scraped: tripadvisorLeads?.last_scraped || null,
+        last_email_sent: lastTripadvisorScrape?.last_email || null,
         threshold_low: thresholds.tripadvisor.low,
         threshold_critical: thresholds.tripadvisor.critical,
-        status: getStatus(parseInt(outreachLeads?.not_contacted || 0), thresholds.tripadvisor),
-        priority_reason: 'Restaurants = Hauptzielgruppe'
+        status: getStatus(parseInt(tripadvisorLeads?.not_contacted || 0), thresholds.tripadvisor),
+        priority_reason: 'Restaurants = Hauptzielgruppe, Chrome MCP nötig',
+        workflow: [
+          '1. Starte Claude mit Chrome MCP (siehe chrome_command)',
+          '2. Gib scrape_prompt ein mit gewünschter Stadt',
+          '3. Claude scraped TripAdvisor und importiert Leads',
+          '4. Cron sendet automatisch Emails mit Demos (09:00 täglich)'
+        ]
       },
       {
         tier: 2,

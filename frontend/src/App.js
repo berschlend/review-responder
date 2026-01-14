@@ -22585,53 +22585,135 @@ const AdminPage = () => {
                 <div style={{ display: 'grid', gap: '12px' }}>
                   {scraperData.sources?.filter(s => s.tier === 2).map((source, idx) => (
                     <div key={idx} style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '12px 16px',
+                      padding: '16px',
                       background: source.status === 'critical' ? '#FEE2E2' : source.status === 'low' ? '#FEF3C7' : '#F3F4F6',
                       borderRadius: '8px',
                       borderLeft: `4px solid ${source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#9CA3AF'}`
                     }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: '600' }}>{source.name}</div>
-                        <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{source.priority_reason}</div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontWeight: '600' }}>{source.leads_total || 0}</div>
-                          <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
-                            / {source.threshold_low} threshold
-                          </div>
+                      {/* Header Row */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontWeight: '600' }}>{source.name}</span>
+                          {source.requires_chrome_mcp && (
+                            <span style={{
+                              background: '#8B5CF6',
+                              color: 'white',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontSize: '10px',
+                              fontWeight: '600'
+                            }}>
+                              CHROME MCP
+                            </span>
+                          )}
+                          <span style={{
+                            fontSize: '16px',
+                            color: source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#059669'
+                          }}>
+                            {source.status === 'critical' ? '!' : source.status === 'low' ? '!' : '!'}
+                          </span>
                         </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontWeight: '600', fontSize: '18px' }}>{source.leads_not_contacted || source.leads_total || 0}</span>
+                          <span style={{ fontSize: '12px', color: 'var(--gray-500)' }}>/ {source.threshold_low}</span>
+                        </div>
+                      </div>
+
+                      {/* Stats Row */}
+                      <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: 'var(--gray-600)', marginBottom: '8px' }}>
+                        <span>Total: {source.leads_total || 0}</span>
+                        {source.leads_with_email !== undefined && <span>Mit Email: {source.leads_with_email}</span>}
+                        {source.leads_with_demo !== undefined && <span>Mit Demo: {source.leads_with_demo}</span>}
                         {source.by_competitor && (
-                          <div style={{ textAlign: 'right', fontSize: '11px' }}>
-                            <div>Birdeye: {source.by_competitor.birdeye}</div>
-                            <div>Podium: {source.by_competitor.podium}</div>
-                          </div>
+                          <>
+                            <span>Birdeye: {source.by_competitor.birdeye}</span>
+                            <span>Podium: {source.by_competitor.podium}</span>
+                          </>
                         )}
                         {source.connections_accepted !== undefined && (
-                          <div style={{ textAlign: 'right', fontSize: '11px' }}>
-                            <div>{source.connections_accepted} accepted</div>
-                            <div>{source.demos_viewed || 0} demos viewed</div>
-                          </div>
-                        )}
-                        <div style={{
-                          fontSize: '16px',
-                          color: source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#059669'
-                        }}>
-                          {source.status === 'critical' ? '!' : source.status === 'low' ? '⚠' : '✓'}
-                        </div>
-                        {source.command && (
-                          <button
-                            className="btn btn-secondary"
-                            style={{ fontSize: '11px', padding: '4px 8px' }}
-                            onClick={() => copyCommand(source.command)}
-                          >
-                            Copy
-                          </button>
+                          <>
+                            <span>Accepted: {source.connections_accepted}</span>
+                            <span>Demos viewed: {source.demos_viewed || 0}</span>
+                          </>
                         )}
                       </div>
+
+                      {/* Last Activity */}
+                      {(source.last_scraped || source.last_email_sent) && (
+                        <div style={{ fontSize: '11px', color: 'var(--gray-500)', marginBottom: '8px' }}>
+                          {source.last_scraped && <span>Letztes Scrape: {new Date(source.last_scraped).toLocaleDateString('de-DE')} </span>}
+                          {source.last_email_sent && <span>| Letzte Email: {new Date(source.last_email_sent).toLocaleDateString('de-DE')}</span>}
+                        </div>
+                      )}
+
+                      {/* Chrome MCP Instructions */}
+                      {source.requires_chrome_mcp && source.chrome_command && (
+                        <div style={{
+                          background: 'rgba(139, 92, 246, 0.1)',
+                          border: '1px solid rgba(139, 92, 246, 0.3)',
+                          borderRadius: '6px',
+                          padding: '12px',
+                          marginTop: '8px'
+                        }}>
+                          <div style={{ fontSize: '11px', fontWeight: '600', color: '#7C3AED', marginBottom: '6px' }}>
+                            Chrome MCP starten:
+                          </div>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            background: '#1F2937',
+                            color: '#10B981',
+                            padding: '8px 12px',
+                            borderRadius: '4px',
+                            fontFamily: 'monospace',
+                            fontSize: '12px'
+                          }}>
+                            <code style={{ flex: 1 }}>{source.chrome_command}</code>
+                            <button
+                              className="btn"
+                              style={{ fontSize: '10px', padding: '2px 8px', background: '#374151', color: 'white' }}
+                              onClick={() => copyCommand(source.chrome_command)}
+                            >
+                              Copy
+                            </button>
+                          </div>
+                          {source.scrape_prompt && (
+                            <div style={{ marginTop: '8px' }}>
+                              <div style={{ fontSize: '11px', fontWeight: '600', color: '#7C3AED', marginBottom: '4px' }}>
+                                Dann eingeben:
+                              </div>
+                              <div style={{
+                                background: 'white',
+                                padding: '8px',
+                                borderRadius: '4px',
+                                fontSize: '11px',
+                                color: 'var(--gray-700)'
+                              }}>
+                                {source.scrape_prompt}
+                              </div>
+                            </div>
+                          )}
+                          {source.workflow && (
+                            <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--gray-600)' }}>
+                              {source.workflow.map((step, i) => (
+                                <div key={i}>{step}</div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Legacy command button for non-Chrome sources */}
+                      {!source.requires_chrome_mcp && source.command && (
+                        <button
+                          className="btn btn-secondary"
+                          style={{ fontSize: '11px', padding: '4px 8px', marginTop: '8px' }}
+                          onClick={() => copyCommand(source.command)}
+                        >
+                          Copy Command
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
