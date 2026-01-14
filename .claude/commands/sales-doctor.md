@@ -9,12 +9,14 @@
 ## PHASE 1: SYSTEM HEALTH CHECK (AUTOMATISCH)
 
 ### 1.1 Secrets & Config laden
+
 ```bash
 # Admin Keys holen (NICHT ausgeben, nur nutzen)
 cat .claude/secrets.local 2>/dev/null || echo "WARNUNG: secrets.local nicht gefunden"
 ```
 
 ### 1.2 Backend Health Check
+
 ```bash
 # Health Endpoint (Keep-Alive)
 curl -s --max-time 10 "https://review-responder.onrender.com/api/health"
@@ -30,6 +32,7 @@ curl -s --max-time 10 "https://review-responder.onrender.com/api/admin/api-credi
 ```
 
 ### 1.3 Outreach Metriken
+
 ```bash
 # Outreach Dashboard
 curl -s --max-time 10 "https://review-responder.onrender.com/api/outreach/dashboard?key=ADMIN_KEY"
@@ -39,12 +42,14 @@ curl -s --max-time 10 -H "X-Admin-Key: ADMIN_KEY" "https://review-responder.onre
 ```
 
 ### 1.4 Pipeline Health (KRITISCH!)
+
 ```bash
 # Umfassender Pipeline Check - Leads, Demos, Emails, Funnel
 curl -s --max-time 10 "https://review-responder.onrender.com/api/admin/pipeline-health?key=ADMIN_KEY"
 ```
 
 **Dieser Endpoint liefert:**
+
 - **Leads:** Total, mit Email, in Queue, contacted, needs Demo
 - **Demos:** Total, heute erstellt, letzte Demo wann?
 - **Emails:** Heute gesendet, Drip heute, Follow-ups heute
@@ -60,6 +65,7 @@ curl -s --max-time 10 "https://review-responder.onrender.com/api/admin/pipeline-
 | Letzte Email | <24h | 24-48h | >48h |
 
 **Beispiel Response:**
+
 ```json
 {
   "leads": { "total": 528, "withEmail": 326, "inQueue": 42, "queueStatus": "warning" },
@@ -71,12 +77,14 @@ curl -s --max-time 10 "https://review-responder.onrender.com/api/admin/pipeline-
 ```
 
 ### 1.5 AI/Product Health (KRITISCH!)
+
 ```bash
 # AI Response Generator Check - Funktioniert das Kernprodukt?
 curl -s --max-time 10 "https://review-responder.onrender.com/api/admin/ai-health?key=ADMIN_KEY"
 ```
 
 **Dieser Endpoint liefert:**
+
 - **Generations:** Heute, diese Woche, letzte Generation wann?
 - **Errors:** Fehlerrate der AI-Calls
 - **Latency:** Durchschnittliche Antwortzeit
@@ -92,12 +100,14 @@ curl -s --max-time 10 "https://review-responder.onrender.com/api/admin/ai-health
 **WICHTIG:** Wenn AI nicht funktioniert, ist das Produkt tot!
 
 ### 1.6 Payment Health
+
 ```bash
 # Stripe & Checkout Check - Können User bezahlen?
 curl -s --max-time 10 "https://review-responder.onrender.com/api/admin/payment-health?key=ADMIN_KEY"
 ```
 
 **Dieser Endpoint liefert:**
+
 - **Stripe Config:** Sind alle Keys konfiguriert?
 - **Subscriptions:** Verteilung nach Plan (Free, Starter, Pro, Unlimited)
 - **Payment Events:** Letzte erfolgreiche Zahlung wann?
@@ -110,12 +120,14 @@ curl -s --max-time 10 "https://review-responder.onrender.com/api/admin/payment-h
 | Letzte Zahlung | <7 Tage | 7-30 Tage | >30 Tage |
 
 ### 1.7 User Activity Health
+
 ```bash
 # User Engagement Check - Nutzen User das Produkt?
 curl -s --max-time 10 "https://review-responder.onrender.com/api/admin/user-activity?key=ADMIN_KEY"
 ```
 
 **Dieser Endpoint liefert:**
+
 - **DAU/WAU/MAU:** Daily/Weekly/Monthly Active Users
 - **Responses:** Heute, diese Woche generiert
 - **Limit Hits:** User die ans Limit stossen (Upgrade-Potenzial!)
@@ -157,6 +169,7 @@ curl -s --max-time 10 "https://review-responder.onrender.com/api/admin/user-acti
 ## PHASE 3: CODE HEALTH CHECK
 
 ### 3.1 Cron Endpoints pruefen
+
 ```bash
 # Alle Cron Endpoints im Code finden
 grep -n "app\.\(get\|post\).*\/api\/cron" backend/server.js
@@ -165,12 +178,15 @@ grep -n "app\.\(get\|post\).*\/api\/cron" backend/server.js
 **Regel:** ALLE Cron Endpoints muessen GET sein (cron-job.org macht GET)!
 
 Falls POST Endpoints gefunden:
+
 1. Automatisch auf GET aendern
 2. Kommentar hinzufuegen: `// Changed from POST to GET for cron-job.org compatibility`
 3. Git commit + push
 
 ### 3.2 Fehlende Cron Jobs identifizieren
+
 Vergleiche:
+
 - Endpoints im Code (`/api/cron/*`)
 - Jobs in cron-job.org
 
@@ -183,17 +199,19 @@ Fehlende Jobs → Dem User mitteilen zum Eintragen
 **Der wichtigste Check:** Was laeuft WIRKLICH automatisch vs. was muss Berend machen?
 
 ### Vollautomatische Systeme (Cron Jobs)
+
 Diese laufen OHNE Berend - aber pruefe ob sie HEUTE wirklich was gemacht haben:
 
-| System | Cron | Check | Problem wenn... |
-|--------|------|-------|-----------------|
-| Daily Outreach | 09:00 | `emails.today > 0` | 0 nach 10:00 UND Queue nicht leer |
-| Demo Generation | 08:00 | `demos.today > 0` | 0 nach 09:00 UND Leads ohne Demo |
-| Drip Emails | 10:00 | `emails.dripToday > 0` | 0 nach 11:00 UND User in Drip |
-| Keep-Alive | */15 | Backend erreichbar | Health Endpoint failed |
-| Blog Generation | Mo/Mi/Fr 06:00 | Neuer Post? | Kein Post diese Woche |
+| System          | Cron           | Check                  | Problem wenn...                   |
+| --------------- | -------------- | ---------------------- | --------------------------------- |
+| Daily Outreach  | 09:00          | `emails.today > 0`     | 0 nach 10:00 UND Queue nicht leer |
+| Demo Generation | 08:00          | `demos.today > 0`      | 0 nach 09:00 UND Leads ohne Demo  |
+| Drip Emails     | 10:00          | `emails.dripToday > 0` | 0 nach 11:00 UND User in Drip     |
+| Keep-Alive      | \*/15          | Backend erreichbar     | Health Endpoint failed            |
+| Blog Generation | Mo/Mi/Fr 06:00 | Neuer Post?            | Kein Post diese Woche             |
 
 **Entscheidungslogik:**
+
 ```
 Cron "aktiv" ABER Output = 0?
 ├─ Queue/Input leer? → OK, nichts zu tun
@@ -201,22 +219,25 @@ Cron "aktiv" ABER Output = 0?
 ```
 
 ### Semi-Manuelle Systeme (Chrome MCP erforderlich!)
+
 Diese laufen NIE automatisch - Berend muss `claude --chrome` starten:
 
-| System | Command | Trigger |
-|--------|---------|---------|
-| LinkedIn Connect | `/linkedin-connect` | linkedIn.pending < 20 |
-| TripAdvisor Scrape | `/scrape-leads` | tripadvisor.leads < 30 |
-| G2 Mining | `/g2-miner` | g2.leads < 20 |
-| Yelp Audit | `/yelp-audit` | yelp.leads < 20 |
-| Agency Recruiter | `/agency-recruiter` | agency.leads < 20 |
+| System             | Command             | Trigger                |
+| ------------------ | ------------------- | ---------------------- |
+| LinkedIn Connect   | `/linkedin-connect` | linkedIn.pending < 20  |
+| TripAdvisor Scrape | `/scrape-leads`     | tripadvisor.leads < 30 |
+| G2 Mining          | `/g2-miner`         | g2.leads < 20          |
+| Yelp Audit         | `/yelp-audit`       | yelp.leads < 20        |
+| Agency Recruiter   | `/agency-recruiter` | agency.leads < 20      |
 
 **WICHTIG:** Pruefe `/api/admin/scraper-status` fuer jeden Source!
+
 - Status `critical` → SOFORT in BEREND TODO
 - Status `low` → Heute noch in BEREND TODO
 - Status `healthy` → OK, kein Handlungsbedarf
 
 ### Report-Sektion: AUTOMATION STATUS
+
 ```
 === AUTOMATION STATUS ===
 
@@ -338,16 +359,19 @@ OPTIONAL:
 ### Typische manuelle Aktionen:
 
 **Lead Scraping (wenn Quellen LOW/CRITICAL):**
+
 - `/scrape-leads` - TripAdvisor Leads scrapen
 - `/g2-miner` - G2 Competitor Leads scrapen
 - `/yelp-audit` - Yelp Leads scrapen
 - `/linkedin-connect` - LinkedIn Connection Requests senden
 
 **Cron Jobs eintragen (wenn fehlend):**
+
 - Link: https://console.cron-job.org/jobs/create
 - URL Format: `https://review-responder.onrender.com/api/cron/ENDPOINT?secret=CRON_SECRET`
 
 **API Keys erneuern (wenn Limits erreicht):**
+
 - SerpAPI: https://serpapi.com/dashboard
 - Hunter.io: https://hunter.io/api-keys
 - Snov.io: https://app.snov.io/integration
@@ -521,6 +545,7 @@ Wenn neue Features zum automate-sales System hinzukommen:
 4. **Neuer manueller Prozess?** → Zu "Manuelle Aktionen" hinzufuegen
 
 Der Doctor passt sich automatisch an weil er:
+
 - Endpoints dynamisch aus dem Code liest
 - Scraper-Status API nutzt (aktualisiert sich automatisch)
 - API-Credits API nutzt (aktualisiert sich automatisch)

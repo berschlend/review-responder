@@ -8,42 +8,43 @@
 
 ### Verfügbare Videos
 
-| Video | Pfad | Status |
-|-------|------|--------|
-| `walkthrough-video-v2.mp4` | frontend/public/ | Aktuell auf Landing Page |
-| `demo-video.mp4` | frontend/public/ | Backup |
-| `extension-demo-final.mp4` | content/video-scripts/ | Extension Demo |
-| `demo-video-final.mp4` | content/video-scripts/ | FALSCHE AUDIO |
-| `extension-demo.mp4` | scripts/generate-demo-video/ | Alt |
+| Video                      | Pfad                         | Status                   |
+| -------------------------- | ---------------------------- | ------------------------ |
+| `walkthrough-video-v2.mp4` | frontend/public/             | Aktuell auf Landing Page |
+| `demo-video.mp4`           | frontend/public/             | Backup                   |
+| `extension-demo-final.mp4` | content/video-scripts/       | Extension Demo           |
+| `demo-video-final.mp4`     | content/video-scripts/       | FALSCHE AUDIO            |
+| `extension-demo.mp4`       | scripts/generate-demo-video/ | Alt                      |
 
 ### Upload-Ziele
 
-| Plattform | Video | Status | URL/Notes |
-|-----------|-------|--------|-----------|
-| **YouTube (ungelistet)** | walkthrough-video-v2.mp4 | [ ] TODO | Für Embedding |
-| **YouTube (ungelistet)** | extension-demo-final.mp4 | [ ] TODO | Für Embedding |
-| **Chrome Web Store** | extension-demo-final.mp4 | [ ] TODO | Max 30 Sek, 1280x800 |
-| **Capterra** | walkthrough-video-v2.mp4 | [ ] TODO | Software Listing |
-| **G2** | walkthrough-video-v2.mp4 | [ ] TODO | Software Listing |
-| **GetApp** | walkthrough-video-v2.mp4 | [ ] TODO | Software Listing |
-| **Product Hunt** | walkthrough-video-v2.mp4 | [ ] TODO | Launch Day |
-| **Landing Page** | walkthrough-video-v2.mp4 | [x] DONE | tryreviewresponder.com |
+| Plattform                | Video                    | Status   | URL/Notes              |
+| ------------------------ | ------------------------ | -------- | ---------------------- |
+| **YouTube (ungelistet)** | walkthrough-video-v2.mp4 | [ ] TODO | Für Embedding          |
+| **YouTube (ungelistet)** | extension-demo-final.mp4 | [ ] TODO | Für Embedding          |
+| **Chrome Web Store**     | extension-demo-final.mp4 | [ ] TODO | Max 30 Sek, 1280x800   |
+| **Capterra**             | walkthrough-video-v2.mp4 | [ ] TODO | Software Listing       |
+| **G2**                   | walkthrough-video-v2.mp4 | [ ] TODO | Software Listing       |
+| **GetApp**               | walkthrough-video-v2.mp4 | [ ] TODO | Software Listing       |
+| **Product Hunt**         | walkthrough-video-v2.mp4 | [ ] TODO | Launch Day             |
+| **Landing Page**         | walkthrough-video-v2.mp4 | [x] DONE | tryreviewresponder.com |
 
 ### Video-Anforderungen pro Plattform
 
-| Plattform | Max Länge | Format | Auflösung |
-|-----------|-----------|--------|-----------|
-| YouTube | Unbegrenzt | MP4 | 1080p+ |
-| Chrome Web Store | 30 Sek | MP4/WebM | 1280x800 |
-| Capterra | 3 Min | YouTube Link | - |
-| G2 | 2 Min | YouTube Link | - |
-| Product Hunt | 2 Min | YouTube/Direct | - |
+| Plattform        | Max Länge  | Format         | Auflösung |
+| ---------------- | ---------- | -------------- | --------- |
+| YouTube          | Unbegrenzt | MP4            | 1080p+    |
+| Chrome Web Store | 30 Sek     | MP4/WebM       | 1280x800  |
+| Capterra         | 3 Min      | YouTube Link   | -         |
+| G2               | 2 Min      | YouTube Link   | -         |
+| Product Hunt     | 2 Min      | YouTube/Direct | -         |
 
 ---
 
 ## NEUES UPDATE: Google Sign-In für Extension (11.01.2026)
 
 ### Was Claude gerade erledigt hat:
+
 - [x] **Google Sign-In Button** - Hinzugefügt zu Extension Popup
 - [x] **OAuth Flow implementiert** - `chrome.identity.launchWebAuthFlow()`
 - [x] **identity Permission** - Manifest.json aktualisiert
@@ -75,9 +76,11 @@
 ## 🟠 AKTUELL IN ARBEIT
 
 ### ✅ Stripe Zahlungsmethoden - ERLEDIGT (14.01.2026)
+
 - [x] PayPal, SEPA etc. im Stripe Dashboard aktiviert
 
 ### Chrome Extension Release v1.5.2
+
 - [x] Extension fertig testen - CLAUDE HAT GETESTET
 - [x] Google Sign-In hinzugefügt - FERTIG
 - [ ] 3 Screenshots machen (1280x800 px, sauberer Browser) - **DU MUSST MACHEN**
@@ -87,6 +90,7 @@
 - [x] Chrome Developer Account: Vorhanden
 
 ### Videos (nach Extension Release)
+
 - [ ] **Video 1:** Extension Demo (30-60 Sek) → ExtensionPromoCard
 - [ ] **Video 2:** Full Walkthrough (2 Min) → Landing Page
   - 0:00-0:30 Extension installieren & erste Review
@@ -99,6 +103,7 @@
 ## 🔴 SALES PRIORITY - Erste Kunden bekommen!
 
 ### 1. Automated Outreach System aktivieren
+
 - [ ] **API Keys in Render prüfen:**
   - [ ] `GOOGLE_PLACES_API_KEY` - Haben wir schon? Sonst: console.cloud.google.com
   - [ ] `HUNTER_API_KEY` - ✅ Haben wir (für Outreach)
@@ -109,18 +114,21 @@
 - [ ] **Cron-Job läuft?** Täglich 10:00 Uhr Berlin → scrapen + emails senden
 
 ### 2. Google Ads starten ($50-100 Test)
+
 - [ ] Google Ads Account erstellen
 - [ ] Kampagne für "google review response generator" Keywords
 - [ ] Landing Pages sind fertig: `/google-review-response-generator`, `/restaurant-review-responses`
 - [ ] Budget: $50 für 1 Woche testen
 
 ### 3. Product Hunt Launch
+
 - [ ] Launch-Tag festlegen (Dienstag oder Mittwoch beste Tage)
 - [ ] `PRODUCT_HUNT_CONFIG.isLaunched = true` setzen
 - [ ] Upvote-Netzwerk aktivieren (Freunde, LinkedIn Kontakte)
 - [ ] HUNTLAUNCH Coupon (60% off) ist schon im Code
 
 ### 4. LinkedIn Outreach (manuell)
+
 - [ ] 25 Connection Requests pro Tag an Restaurant/Hotel Owner
 - [ ] Templates sind fertig in `content/outreach/linkedin-messages.md`
 - [ ] Ziel: 5 Conversations → 1-2 Demos pro Woche
@@ -133,17 +141,20 @@
 ## 🟡 FOLLOW-UP CHECKS
 
 ### Morgen (14.01.2026) checken:
+
 - [ ] **Cron Jobs in cron-job.org** - Sollten jetzt funktionieren nach POST→GET Fix
   - daily-outreach (09:00)
   - send-drip-emails (10:00)
   - send-tripadvisor-emails (09:00)
 
 ### Täglich prüfen:
+
 - [ ] Outreach Dashboard: Neue Leads? Emails gesendet?
 - [ ] Resend: Werden Emails zugestellt? Bounces?
 - [ ] Stripe Dashboard: Neue Kunden?
 
 ### Wöchentlich prüfen:
+
 - [ ] Google Search Console: Impressionen? Klicks? Keywords?
 - [ ] Analytics: Welche Landing Pages konvertieren?
 
@@ -218,21 +229,23 @@
 ## 📋 BACKLOG (Später)
 
 ### Chrome Extension
+
 - [ ] Chrome Web Store Screenshots (3 weitere)
 - [ ] Chrome Web Store Einreichung (ZIP + Listing fertig)
 - [ ] Tone Preview (Beispiel-Snippets für jeden Tone)
 - [ ] Weitere Plattformen fixen wenn nötig (TripAdvisor, Trustpilot, Booking, Facebook)
 
 ### Content
+
 - [ ] Demo-Video aufnehmen (2 Min Walkthrough)
 - [ ] Blog-Artikel schreiben (SEO)
-
 
 ---
 
 ## HEUTE möglicherweise ERLEDIGT bzw angegangen (10.01.2026)
 
 ### Chrome Extension v1.4.0 - 6 neue Features
+
 - [x] Response Quality Score (AI-Bewertung: Excellent/Good/Needs Work)
 - [x] Response Variations (3 Optionen auf einmal: A/B/C Tabs)
 - [x] Analytics Widget (Wochenstatistik + Sparkline-Chart)
@@ -246,6 +259,7 @@
 - [x] Language Bug GEFIXT (antwortet jetzt in Review-Sprache)
 
 ### Dashboard & Backend
+
 - [x] Google Sign-In aktiviert (OAuth Consent Screen + Client ID)
 - [x] Hybrid AI System (Smart AI Claude + Standard GPT-4o-mini)
 - [x] Admin Plan-Wechsel Fix (Dashboard zeigt korrekte Daten)
@@ -255,6 +269,7 @@
 - [x] /admin Route mit ProtectedRoute geschützt
 
 ### Infrastructure
+
 - [x] Custom Domain LIVE (https://tryreviewresponder.com)
 - [x] Outreach-Emails von outreach@tryreviewresponder.com
 - [x] Cron-Job läuft täglich 10:00 Uhr Berlin
@@ -264,6 +279,7 @@
 ## ✅ FRÜHER evt. ERLEDIGT
 
 ### 09.01.2026
+
 - [x] PostgreSQL Migration
 - [x] Password Reset Flow
 - [x] Jahres-Abos (20% Rabatt)
@@ -281,6 +297,7 @@
 - [x] Admin Panel
 
 ### 10.01.2026 (früher am Tag)
+
 - [x] Cold Email System
 - [x] Product Hunt Launch Automation
 - [x] Google Ads Landing Pages (5 Seiten) brauchen noch improvment und adds dann halt noch schalten
@@ -292,24 +309,24 @@
 
 **$1000/Monat** durch ~30 zahlende Kunden
 
-| Metrik | Aktuell | Ziel |
-|--------|---------|------|
-| Zahlende Kunden | 0 | 30 |
-| MRR | $0 | $1000 |
-| Free Users | 0 | 100+ |
+| Metrik          | Aktuell | Ziel  |
+| --------------- | ------- | ----- |
+| Zahlende Kunden | 0       | 30    |
+| MRR             | $0      | $1000 |
+| Free Users      | 0       | 100+  |
 
 ---
 
 ## 🔗 Quick Links
 
-| Link | URL |
-|------|-----|
-| **Live App** | https://tryreviewresponder.com |
-| **Backend API** | https://review-responder.onrender.com |
-| **Outreach Dashboard** | Siehe `.claude/secrets.local` |
-| **Render Dashboard** | https://dashboard.render.com |
-| **Stripe Dashboard** | https://dashboard.stripe.com |
-| **Resend Logs** | https://resend.com/emails |
+| Link                   | URL                                   |
+| ---------------------- | ------------------------------------- |
+| **Live App**           | https://tryreviewresponder.com        |
+| **Backend API**        | https://review-responder.onrender.com |
+| **Outreach Dashboard** | Siehe `.claude/secrets.local`         |
+| **Render Dashboard**   | https://dashboard.render.com          |
+| **Stripe Dashboard**   | https://dashboard.stripe.com          |
+| **Resend Logs**        | https://resend.com/emails             |
 
 ---
 

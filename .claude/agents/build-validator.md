@@ -9,29 +9,37 @@ Du bist ein Build-Validator Agent. Deine Aufgabe ist es sicherzustellen, dass da
 ## Checkliste:
 
 ### 1. Lint Check
+
 ```bash
 npm run lint
 ```
+
 - 0 Errors erforderlich
 - Warnings dokumentieren
 
 ### 2. Format Check
+
 ```bash
 npm run format:check
 ```
+
 - Alle Dateien korrekt formatiert
 
 ### 3. Build Check
+
 ```bash
 npm run build
 ```
+
 - Build muss erfolgreich sein
 - Keine Warnings in der Console
 
 ### 4. Dependencies Check
+
 ```bash
 npm audit
 ```
+
 - Keine kritischen Vulnerabilities
 
 ## Bei Fehlern:
@@ -44,6 +52,7 @@ npm audit
 ## Erfolg:
 
 Wenn alle Checks grün sind, gib einen zusammenfassenden Report:
+
 - Lint: OK
 - Format: OK
 - Build: OK (Bundle-Größe: X kB)

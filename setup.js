@@ -12,10 +12,10 @@ const readline = require('readline');
 
 const rl = readline.createInterface({
   input: process.stdin,
-  output: process.stdout
+  output: process.stdout,
 });
 
-const question = (prompt) => new Promise((resolve) => rl.question(prompt, resolve));
+const question = prompt => new Promise(resolve => rl.question(prompt, resolve));
 
 const generateSecret = () => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -60,8 +60,12 @@ async function main() {
   console.log('After creating each product, copy the Price ID (starts with price_)\n');
 
   const starterPriceId = await question('Starter Plan Price ID (or press Enter to skip for now): ');
-  const proPriceId = await question('Professional Plan Price ID (or press Enter to skip for now): ');
-  const unlimitedPriceId = await question('Unlimited Plan Price ID (or press Enter to skip for now): ');
+  const proPriceId = await question(
+    'Professional Plan Price ID (or press Enter to skip for now): '
+  );
+  const unlimitedPriceId = await question(
+    'Unlimited Plan Price ID (or press Enter to skip for now): '
+  );
 
   console.log('\n--- Stripe Webhook ---\n');
   console.log('For production, you need to set up a webhook at:');
@@ -69,10 +73,14 @@ async function main() {
   console.log('Webhook endpoint: https://your-domain.com/api/webhooks/stripe');
   console.log('Events to select: checkout.session.completed, customer.subscription.updated,');
   console.log('                  customer.subscription.deleted, invoice.paid\n');
-  const webhookSecret = await question('Stripe Webhook Secret (starts with whsec_, or press Enter to skip): ');
+  const webhookSecret = await question(
+    'Stripe Webhook Secret (starts with whsec_, or press Enter to skip): '
+  );
 
   console.log('\n--- Deployment Configuration ---\n');
-  const frontendUrl = await question('Frontend URL (press Enter for http://localhost:3000): ') || 'http://localhost:3000';
+  const frontendUrl =
+    (await question('Frontend URL (press Enter for http://localhost:3000): ')) ||
+    'http://localhost:3000';
 
   // Generate JWT secret
   const jwtSecret = generateSecret();

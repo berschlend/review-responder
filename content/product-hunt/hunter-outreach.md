@@ -5,6 +5,7 @@
 Ein "Hunter" auf Product Hunt ist jemand, der Produkte einreicht. Wenn ein bekannter Hunter mit vielen Followern dein Produkt "hunted", bekommst du automatisch Visibility bei seinen Followern.
 
 **Vorteile eines guten Hunters:**
+
 - Ihre Follower werden über den Launch benachrichtigt
 - Mehr initiale Upvotes
 - Höhere Credibility
@@ -15,29 +16,33 @@ Ein "Hunter" auf Product Hunt ist jemand, der Produkte einreicht. Wenn ein bekan
 ## Top Hunter kontaktieren
 
 ### Tier 1: Super-Influencer (10k+ Follower)
+
 Diese sind schwer zu erreichen, aber der Versuch lohnt sich:
 
-| Hunter | Follower | Fokus | Kontakt |
-|--------|----------|-------|---------|
-| Chris Messina | 40k+ | Tech General | @chrismessina (Twitter) |
-| Mubashar Iqbal | 35k+ | SaaS, Tools | @mubashariqbal (Twitter) |
-| Marc Köhlbrugge | 15k+ | Indie Makers | @marckohlbrugge (Twitter) |
-| Fabian Siegel | 12k+ | European Startups | @fabiansiegel (Twitter) |
+| Hunter          | Follower | Fokus             | Kontakt                   |
+| --------------- | -------- | ----------------- | ------------------------- |
+| Chris Messina   | 40k+     | Tech General      | @chrismessina (Twitter)   |
+| Mubashar Iqbal  | 35k+     | SaaS, Tools       | @mubashariqbal (Twitter)  |
+| Marc Köhlbrugge | 15k+     | Indie Makers      | @marckohlbrugge (Twitter) |
+| Fabian Siegel   | 12k+     | European Startups | @fabiansiegel (Twitter)   |
 
 ### Tier 2: Aktive Hunter (1-10k Follower)
+
 Realistischere Targets:
 
-| Hunter | Follower | Fokus |
-|--------|----------|-------|
-| Kevin William David | 8k+ | AI/ML Products |
-| Arun Pariyar | 5k+ | SaaS Tools |
-| Andreas Klinger | 4k+ | Startup Tools |
-| Benedicte Raae | 3k+ | Developer Tools |
+| Hunter              | Follower | Fokus           |
+| ------------------- | -------- | --------------- |
+| Kevin William David | 8k+      | AI/ML Products  |
+| Arun Pariyar        | 5k+      | SaaS Tools      |
+| Andreas Klinger     | 4k+      | Startup Tools   |
+| Benedicte Raae      | 3k+      | Developer Tools |
 
 ### Tier 3: Nischen-Hunter (500-1k Follower)
+
 Höchste Erfolgswahrscheinlichkeit:
 
 Suche auf Product Hunt nach Huntern, die ähnliche Produkte gelauncht haben:
+
 - Review Management Tools
 - AI Writing Tools
 - Chrome Extensions
@@ -119,22 +124,27 @@ Berend
 ## Outreach Timeline
 
 ### 3-4 Wochen vor Launch
+
 - Liste der Target-Hunter erstellen
 - Social Media Profile der Hunter recherchieren
 - Ihre bisherigen Hunts analysieren
 
 ### 2-3 Wochen vor Launch
+
 - Erste Kontaktaufnahme (Twitter/LinkedIn)
 - Personalisierte Nachrichten senden
 - Product Demo anbieten
 
 ### 1 Woche vor Launch
+
 - Follow-up bei Interessierten
 - Finale Zusagen einholen
 - Alternative Hunter als Backup
 
 ### Falls kein Hunter gefunden
+
 **Kein Problem!** Du kannst dein eigenes Produkt "hunten" (als Maker).
+
 - Fokussiere dich stattdessen auf Community-Upvotes
 - Baue dein eigenes Hunter-Profil auf für zukünftige Launches
 
@@ -143,6 +153,7 @@ Berend
 ## Do's and Don'ts
 
 ### Do's ✅
+
 - Personalisiere jede Nachricht
 - Recherchiere den Hunter vorher
 - Biete Mehrwert (früher Zugang, Feedback)
@@ -150,6 +161,7 @@ Berend
 - Follow-up nach 5-7 Tagen
 
 ### Don'ts ❌
+
 - Keine Massen-DMs
 - Nicht verzweifelt wirken
 - Keinen Druck ausüben
@@ -160,11 +172,11 @@ Berend
 
 ## Tracking Template
 
-| Hunter | Plattform | Gesendet | Follow-up | Status |
-|--------|-----------|----------|-----------|--------|
-| [Name] | Twitter DM | [Datum] | [Datum] | ⏳ Warten |
-| [Name] | Email | [Datum] | - | ✅ Zugesagt |
-| [Name] | LinkedIn | [Datum] | [Datum] | ❌ Abgelehnt |
+| Hunter | Plattform  | Gesendet | Follow-up | Status       |
+| ------ | ---------- | -------- | --------- | ------------ |
+| [Name] | Twitter DM | [Datum]  | [Datum]   | ⏳ Warten    |
+| [Name] | Email      | [Datum]  | -         | ✅ Zugesagt  |
+| [Name] | LinkedIn   | [Datum]  | [Datum]   | ❌ Abgelehnt |
 
 ---
 

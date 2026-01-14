@@ -3,6 +3,7 @@
 Finde Local SEO Agencies auf Clutch.co fuer White-Label Partnerships.
 
 ## Parameter
+
 - $SERVICE: Service-Filter (z.B. "local-seo", "reputation-management")
 - $LOCATION: Optional - Location (z.B. "united-states", "germany")
 
@@ -42,6 +43,7 @@ Finde Local SEO Agencies auf Clutch.co fuer White-Label Partnerships.
    POST zu: `https://review-responder.onrender.com/api/sales/agency-leads`
    Header: `x-api-key: [ADMIN_SECRET]`
    Body:
+
    ```json
    {
      "leads": [
@@ -69,12 +71,15 @@ Finde Local SEO Agencies auf Clutch.co fuer White-Label Partnerships.
    - Top Services (haeufigste)
 
 ## Beispiel-Aufruf
+
 ```
 /agency-recruiter local-seo united-states
 ```
 
 ## Filter-Empfehlungen
+
 Beste Ziel-Agencies:
+
 - Bieten "Local SEO" oder "Google My Business" an
 - 10-100 Mitarbeiter (nicht zu klein, nicht zu gross)
 - Min Project Size: $1,000-$10,000
@@ -82,12 +87,14 @@ Beste Ziel-Agencies:
 - Reviews > 10
 
 ## Service-Kategorien auf Clutch
+
 - `local-seo`
 - `reputation-management`
 - `digital-marketing`
 - `seo`
 
 ## Wichtig
+
 - Max 30 Agencies pro Durchlauf
 - 3-5 Sekunden Pause zwischen Seiten
 - Website-Scraping: Max 3 Unterseiten pro Agency

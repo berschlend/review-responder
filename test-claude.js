@@ -3,20 +3,20 @@
 
 const testReviews = [
   {
-    name: "5-Star Positive (English)",
-    text: "The margherita pizza was perfect! Fresh basil, amazing mozzarella, and the wood-fired crust had just the right char. Best Italian food I have had in years. Staff was super friendly too!",
-    rating: 5
+    name: '5-Star Positive (English)',
+    text: 'The margherita pizza was perfect! Fresh basil, amazing mozzarella, and the wood-fired crust had just the right char. Best Italian food I have had in years. Staff was super friendly too!',
+    rating: 5,
   },
   {
-    name: "2-Star Negative (English)",
-    text: "Ordered delivery and waited over an hour. When the food finally arrived, my pasta was lukewarm and the garlic bread was soggy. Very disappointing for the price we paid.",
-    rating: 2
+    name: '2-Star Negative (English)',
+    text: 'Ordered delivery and waited over an hour. When the food finally arrived, my pasta was lukewarm and the garlic bread was soggy. Very disappointing for the price we paid.',
+    rating: 2,
   },
   {
-    name: "4-Star German",
-    text: "Leckere Pizza und nettes Personal. Die Wartezeit war etwas lang, aber das Essen hat sich gelohnt. Beim nächsten Mal probiere ich die Pasta!",
-    rating: 4
-  }
+    name: '4-Star German',
+    text: 'Leckere Pizza und nettes Personal. Die Wartezeit war etwas lang, aber das Essen hat sich gelohnt. Beim nächsten Mal probiere ich die Pasta!',
+    rating: 4,
+  },
 ];
 
 const systemPrompt = `You own Marco's Pizzeria (Restaurant). You're responding to a review on Google.
@@ -48,17 +48,17 @@ async function testClaude() {
   const apiKey = process.env.ANTHROPIC_API_KEY;
 
   if (!apiKey) {
-    console.log("\n❌ ANTHROPIC_API_KEY not set!");
-    console.log("\nTo test Claude, get an API key from: https://console.anthropic.com");
-    console.log("Then run: ANTHROPIC_API_KEY=your_key node test-claude.js\n");
+    console.log('\n❌ ANTHROPIC_API_KEY not set!');
+    console.log('\nTo test Claude, get an API key from: https://console.anthropic.com');
+    console.log('Then run: ANTHROPIC_API_KEY=your_key node test-claude.js\n');
     return;
   }
 
   const Anthropic = (await import('@anthropic-ai/sdk')).default;
   const client = new Anthropic({ apiKey });
 
-  console.log("\n🧪 Testing Claude 3.5 Sonnet\n");
-  console.log("=".repeat(60));
+  console.log('\n🧪 Testing Claude 3.5 Sonnet\n');
+  console.log('='.repeat(60));
 
   for (const review of testReviews) {
     console.log(`\n📝 ${review.name}`);
@@ -70,26 +70,30 @@ async function testClaude() {
         model: 'claude-sonnet-4-20250514',
         max_tokens: 350,
         system: systemPrompt,
-        messages: [
-          { role: 'user', content: `[${review.rating} stars] ${review.text}` }
-        ]
+        messages: [{ role: 'user', content: `[${review.rating} stars] ${review.text}` }],
       });
 
       const output = response.content[0].text.trim();
       console.log(`\n✅ Response:\n"${output}"`);
 
       // Check for banned words
-      const bannedWords = ['thrilled', 'delighted', 'excited', 'absolutely', 'incredibly', 'amazing'];
+      const bannedWords = [
+        'thrilled',
+        'delighted',
+        'excited',
+        'absolutely',
+        'incredibly',
+        'amazing',
+      ];
       const found = bannedWords.filter(w => output.toLowerCase().includes(w));
       if (found.length > 0) {
         console.log(`⚠️  Found banned words: ${found.join(', ')}`);
       }
-
     } catch (error) {
       console.log(`❌ Error: ${error.message}`);
     }
 
-    console.log("\n" + "-".repeat(60));
+    console.log('\n' + '-'.repeat(60));
   }
 }
 

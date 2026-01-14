@@ -7,10 +7,12 @@
 ## QUICK START FÜR NEUE CLAUDE SESSIONS
 
 ### Deine Rolle
+
 Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-generierte Review-Antworten.
 **Ziel:** $1000/Monat Umsatz durch ~30 zahlende Kunden.
 
 ### Regeln für autonomes Arbeiten
+
 1. **Immer testen** - Vor dem Push: Funktioniert es?
 2. **Immer committen & pushen** - Nach jeder fertigen Änderung
 3. **Immer MEMORY.md updaten** - Dokumentiere was du gemacht hast
@@ -18,6 +20,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 5. **User nur fragen wenn nötig** - Nutze AskUserQuestion nur für wichtige Entscheidungen
 
 ### Workflow
+
 ```
 1. MEMORY.md lesen (diese Datei)
 2. Einen Task aus CURRENT_TASKS auswählen
@@ -31,11 +34,11 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ## LIVE URLS
 
-| Service | URL |
-|---------|-----|
-| **Frontend** | https://review-responder-frontend.onrender.com |
-| **Backend API** | https://review-responder.onrender.com |
-| **GitHub** | https://github.com/berschlend/review-responder |
+| Service         | URL                                            |
+| --------------- | ---------------------------------------------- |
+| **Frontend**    | https://review-responder-frontend.onrender.com |
+| **Backend API** | https://review-responder.onrender.com          |
+| **GitHub**      | https://github.com/berschlend/review-responder |
 
 ---
 
@@ -44,6 +47,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 **Stand: 10.01.2026 - 03:30 Uhr**
 
 ### 🔴 USER MUSS MACHEN (Nicht für Claude):
+
 - [ ] Resend.com Account erstellen + RESEND_API_KEY in Render eintragen
 - [ ] Stripe Yearly Prices erstellen + Price IDs in Render eintragen
 - [ ] Demo-Video aufnehmen (2 Min Walkthrough) und YouTube/Loom Link einfügen
@@ -52,12 +56,13 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 
 ### 🟡 NÄCHSTE CLAUDE TASKS (Wähle einen):
 
-| # | Task | Schwierigkeit | Dateien |
-|---|------|---------------|---------|
-| 1 | SEO Blog Artikel Generator | Mittel | `backend/server.js`, `frontend/src/App.js` |
-| 2 | A/B Testing für Landing Page | Mittel | `frontend/src/App.js` |
+| #   | Task                         | Schwierigkeit | Dateien                                    |
+| --- | ---------------------------- | ------------- | ------------------------------------------ |
+| 1   | SEO Blog Artikel Generator   | Mittel        | `backend/server.js`, `frontend/src/App.js` |
+| 2   | A/B Testing für Landing Page | Mittel        | `frontend/src/App.js`                      |
 
 ### ✅ HEUTE ERLEDIGT:
+
 - [x] PostgreSQL Migration (Daten persistent)
 - [x] Password Reset Flow mit Resend.com
 - [x] Jahres-Abos mit 20% Rabatt
@@ -97,6 +102,7 @@ Du bist ein autonomer Entwickler für ReviewResponder - eine SaaS-App für KI-ge
 - [x] **Bug Fixes** - Chrome Extension Sprach-Fix, Dashboard Error Handling, Backend DB Logging
 
 ### 📋 GEPLANT FÜR SPÄTER:
+
 - [ ] **Performance: Code Splitting** - Requires Refactoring von App.js in separate Module (api.js, AuthContext.js, etc.)
 - [ ] **Performance: Bundle Analyzer** - source-map-explorer installieren und analysieren
 
@@ -124,57 +130,57 @@ ReviewResponder/
 
 ## TECH STACK
 
-| Komponente | Technologie |
-|------------|-------------|
-| Frontend | React (Render Static Site) |
-| Backend | Node.js/Express (Render Web Service) |
-| Datenbank | PostgreSQL (Render) |
-| Payments | Stripe (Live-Modus) |
-| AI | OpenAI GPT-4o-mini |
-| Email | Resend.com |
+| Komponente | Technologie                          |
+| ---------- | ------------------------------------ |
+| Frontend   | React (Render Static Site)           |
+| Backend    | Node.js/Express (Render Web Service) |
+| Datenbank  | PostgreSQL (Render)                  |
+| Payments   | Stripe (Live-Modus)                  |
+| AI         | OpenAI GPT-4o-mini                   |
+| Email      | Resend.com                           |
 
 ---
 
 ## API ENDPOINTS (Backend)
 
-| Methode | Endpoint | Beschreibung |
-|---------|----------|--------------|
-| POST | `/api/auth/register` | User registrieren |
-| POST | `/api/auth/login` | Login, gibt JWT Token |
-| POST | `/api/auth/forgot-password` | Password Reset Email |
-| POST | `/api/auth/reset-password` | Neues Password setzen |
-| POST | `/api/generate` | AI Response generieren |
-| POST | `/api/generate-bulk` | Bulk Response Generation (bis zu 20) |
-| GET | `/api/stats` | Usage Stats |
-| GET | `/api/responses/history` | Response History |
-| POST | `/api/billing/create-checkout` | Stripe Checkout |
-| POST | `/api/billing/portal` | Stripe Customer Portal |
-| POST | `/api/webhooks/stripe` | Stripe Webhook |
-| POST | `/api/capture-email` | Email Capture (Exit-Intent) |
-| GET | `/api/templates` | User's Response Templates |
-| POST | `/api/templates` | Neues Template speichern |
-| PUT | `/api/templates/:id` | Template aktualisieren |
-| DELETE | `/api/templates/:id` | Template löschen |
-| GET | `/api/analytics` | Analytics Dashboard Daten (Pro/Unlimited) |
-| GET | `/api/referrals` | User's Referral Stats & Code |
-| GET | `/api/referrals/validate/:code` | Referral Code validieren (public) |
-| GET | `/api/keys` | User's API Keys (Unlimited only) |
-| POST | `/api/keys` | API Key generieren (Unlimited only) |
-| DELETE | `/api/keys/:id` | API Key löschen |
-| POST | `/api/v1/generate` | Public API - Response generieren (API Key Auth) |
-| GET | `/api/team` | Team Members abrufen (Unlimited only) |
-| POST | `/api/team/invite` | Team Member einladen |
-| POST | `/api/team/accept` | Einladung annehmen |
-| DELETE | `/api/team/:memberId` | Team Member entfernen |
-| GET | `/api/team/my-team` | Eigenes Team Info |
-| GET | `/api/settings/notifications` | Email Notification Settings |
-| PUT | `/api/settings/notifications` | Settings aktualisieren |
-| POST | `/api/cron/weekly-summary` | Wöchentliche Summary Emails (Cron) |
-| POST | `/api/feedback` | User Feedback absenden (Rating + Kommentar) |
-| GET | `/api/feedback/status` | Prüft ob Feedback-Popup angezeigt werden soll |
-| GET | `/api/testimonials` | Freigegebene Testimonials (public) |
-| POST | `/api/cron/send-drip-emails` | Drip Campaign Emails senden (Cron) |
-| POST | `/api/admin/upgrade-user` | User zu Unlimited upgraden (ADMIN_SECRET) |
+| Methode | Endpoint                        | Beschreibung                                    |
+| ------- | ------------------------------- | ----------------------------------------------- |
+| POST    | `/api/auth/register`            | User registrieren                               |
+| POST    | `/api/auth/login`               | Login, gibt JWT Token                           |
+| POST    | `/api/auth/forgot-password`     | Password Reset Email                            |
+| POST    | `/api/auth/reset-password`      | Neues Password setzen                           |
+| POST    | `/api/generate`                 | AI Response generieren                          |
+| POST    | `/api/generate-bulk`            | Bulk Response Generation (bis zu 20)            |
+| GET     | `/api/stats`                    | Usage Stats                                     |
+| GET     | `/api/responses/history`        | Response History                                |
+| POST    | `/api/billing/create-checkout`  | Stripe Checkout                                 |
+| POST    | `/api/billing/portal`           | Stripe Customer Portal                          |
+| POST    | `/api/webhooks/stripe`          | Stripe Webhook                                  |
+| POST    | `/api/capture-email`            | Email Capture (Exit-Intent)                     |
+| GET     | `/api/templates`                | User's Response Templates                       |
+| POST    | `/api/templates`                | Neues Template speichern                        |
+| PUT     | `/api/templates/:id`            | Template aktualisieren                          |
+| DELETE  | `/api/templates/:id`            | Template löschen                                |
+| GET     | `/api/analytics`                | Analytics Dashboard Daten (Pro/Unlimited)       |
+| GET     | `/api/referrals`                | User's Referral Stats & Code                    |
+| GET     | `/api/referrals/validate/:code` | Referral Code validieren (public)               |
+| GET     | `/api/keys`                     | User's API Keys (Unlimited only)                |
+| POST    | `/api/keys`                     | API Key generieren (Unlimited only)             |
+| DELETE  | `/api/keys/:id`                 | API Key löschen                                 |
+| POST    | `/api/v1/generate`              | Public API - Response generieren (API Key Auth) |
+| GET     | `/api/team`                     | Team Members abrufen (Unlimited only)           |
+| POST    | `/api/team/invite`              | Team Member einladen                            |
+| POST    | `/api/team/accept`              | Einladung annehmen                              |
+| DELETE  | `/api/team/:memberId`           | Team Member entfernen                           |
+| GET     | `/api/team/my-team`             | Eigenes Team Info                               |
+| GET     | `/api/settings/notifications`   | Email Notification Settings                     |
+| PUT     | `/api/settings/notifications`   | Settings aktualisieren                          |
+| POST    | `/api/cron/weekly-summary`      | Wöchentliche Summary Emails (Cron)              |
+| POST    | `/api/feedback`                 | User Feedback absenden (Rating + Kommentar)     |
+| GET     | `/api/feedback/status`          | Prüft ob Feedback-Popup angezeigt werden soll   |
+| GET     | `/api/testimonials`             | Freigegebene Testimonials (public)              |
+| POST    | `/api/cron/send-drip-emails`    | Drip Campaign Emails senden (Cron)              |
+| POST    | `/api/admin/upgrade-user`       | User zu Unlimited upgraden (ADMIN_SECRET)       |
 
 ---
 
@@ -207,18 +213,20 @@ ReviewResponder/
 ## STRIPE KONFIGURATION
 
 ### Monatliche Pläne (Live)
-| Plan | Preis | Price ID |
-|------|-------|----------|
-| Starter | $29/mo | `price_1Sni0hQfYocZQHxZ7oxDbiVo` |
+
+| Plan         | Preis  | Price ID                         |
+| ------------ | ------ | -------------------------------- |
+| Starter      | $29/mo | `price_1Sni0hQfYocZQHxZ7oxDbiVo` |
 | Professional | $49/mo | `price_1Sni18QfYocZQHxZuboFA6Wc` |
-| Unlimited | $99/mo | `price_1Sni1NQfYocZQHxZTq8KNLv8` |
+| Unlimited    | $99/mo | `price_1Sni1NQfYocZQHxZTq8KNLv8` |
 
 ### Jährliche Pläne (User muss erstellen)
-| Plan | Preis | Price ID |
-|------|-------|----------|
-| Starter Yearly | $278.40/yr | `[NOCH ERSTELLEN]` |
+
+| Plan                | Preis      | Price ID           |
+| ------------------- | ---------- | ------------------ |
+| Starter Yearly      | $278.40/yr | `[NOCH ERSTELLEN]` |
 | Professional Yearly | $470.40/yr | `[NOCH ERSTELLEN]` |
-| Unlimited Yearly | $950.40/yr | `[NOCH ERSTELLEN]` |
+| Unlimited Yearly    | $950.40/yr | `[NOCH ERSTELLEN]` |
 
 ---
 
@@ -257,30 +265,35 @@ git push
 ## ROADMAP ZU $1000/MONAT
 
 ### Phase 1: Stabilität ✅ FERTIG
+
 - [x] Core Features
 - [x] Stripe Payments
 - [x] PostgreSQL
 - [x] Chrome Extension
 
 ### Phase 2: Conversion (AKTUELL)
+
 - [x] Social Proof (Live Demo Examples)
 - [x] Trust Badges (SSL, Stripe, GDPR)
 - [x] Demo-Video Section (Placeholder - Video aufnehmen!)
 - [x] Exit-Intent Popup ✅
 
 ### Phase 3: Features
+
 - [x] Bulk Response Generation ✅
 - [x] Review Analytics Dashboard ✅
 - [x] Team/Multi-User Accounts ✅
 - [x] Response Templates ✅
 
 ### Phase 4: Marketing
+
 - [x] Product Hunt Launch Vorbereitung (PRODUCT_HUNT.md)
 - [ ] LinkedIn Outreach
 - [ ] Google Ads ($50-100 Test)
 - [ ] SEO Blog-Artikel
 
 ### Phase 5: Skalierung
+
 - [ ] Custom Domain
 - [ ] Chrome Web Store
 - [ ] Referral-System
@@ -289,45 +302,50 @@ git push
 
 ## BEKANNTE ISSUES & FIXES
 
-| Issue | Lösung |
-|-------|--------|
+| Issue                      | Lösung                                |
+| -------------------------- | ------------------------------------- |
 | better-sqlite3 auf Windows | Gewechselt zu sql.js, dann PostgreSQL |
-| Daten bei Deploy gelöscht | PostgreSQL auf Render |
-| react-scripts Permission | CI=false im build command |
+| Daten bei Deploy gelöscht  | PostgreSQL auf Render                 |
+| react-scripts Permission   | CI=false im build command             |
 
 ---
 
 ## BUGS (QA-Test 10.01.2026 - 03:30 Uhr)
 
 ### Getestete Flows:
-| Flow | Status | Anmerkungen |
-|------|--------|-------------|
-| User Registration | OK | Stripe Customer wird automatisch erstellt |
-| Login | OK | JWT Token funktioniert |
-| Response Generation | OK | AI antwortet korrekt, Spracherkennung funktioniert |
-| History | OK | Responses werden gespeichert und angezeigt |
-| Stats | OK | Usage wird korrekt getrackt |
-| Password Reset | OK | Endpoint erreichbar (Resend noch nicht konfiguriert) |
-| Dashboard Loading | OK | Error States + Loading Spinner implementiert |
-| Chrome Extension | OK | Sprache der Review wird jetzt beibehalten |
+
+| Flow                | Status | Anmerkungen                                          |
+| ------------------- | ------ | ---------------------------------------------------- |
+| User Registration   | OK     | Stripe Customer wird automatisch erstellt            |
+| Login               | OK     | JWT Token funktioniert                               |
+| Response Generation | OK     | AI antwortet korrekt, Spracherkennung funktioniert   |
+| History             | OK     | Responses werden gespeichert und angezeigt           |
+| Stats               | OK     | Usage wird korrekt getrackt                          |
+| Password Reset      | OK     | Endpoint erreichbar (Resend noch nicht konfiguriert) |
+| Dashboard Loading   | OK     | Error States + Loading Spinner implementiert         |
+| Chrome Extension    | OK     | Sprache der Review wird jetzt beibehalten            |
 
 ### Behobene Bugs (10.01.2026):
-| # | Bug | Status | Fix |
-|---|-----|--------|-----|
-| 1 | Chrome Extension Popup - Sprache nicht beibehalten | ✅ FIXED | `outputLanguage: 'auto'` → `'match'` in content.js |
-| 2 | Dashboard zeigt keine Fehler | ✅ FIXED | Error State + Error Banner + Retry Button |
-| 3 | Backend DB-Fehler nicht sichtbar | ✅ FIXED | Health-Endpoint zeigt DB-Status, besseres Logging |
+
+| #   | Bug                                                | Status   | Fix                                                |
+| --- | -------------------------------------------------- | -------- | -------------------------------------------------- |
+| 1   | Chrome Extension Popup - Sprache nicht beibehalten | ✅ FIXED | `outputLanguage: 'auto'` → `'match'` in content.js |
+| 2   | Dashboard zeigt keine Fehler                       | ✅ FIXED | Error State + Error Banner + Retry Button          |
+| 3   | Backend DB-Fehler nicht sichtbar                   | ✅ FIXED | Health-Endpoint zeigt DB-Status, besseres Logging  |
 
 ### Offene Bugs:
-| # | Bug | Schweregrad | Status |
-|---|-----|-------------|--------|
-| - | Keine bekannten Bugs | - | - |
+
+| #   | Bug                  | Schweregrad | Status |
+| --- | -------------------- | ----------- | ------ |
+| -   | Keine bekannten Bugs | -           | -      |
 
 **Wichtig für User:**
+
 - Nach Code-Push: Render macht automatisch Redeploy
 - Prüfe /api/health für DB-Status: `databaseUrl: 'configured'` sollte angezeigt werden
 
 ### Dokumentationsfehler (behoben):
+
 - `/api/user/stats` wurde zu `/api/stats` korrigiert
 - `/api/user/history` wurde zu `/api/responses/history` korrigiert
 - `/api/create-checkout-session` wurde zu `/api/billing/create-checkout` korrigiert
@@ -345,8 +363,9 @@ git push
 ## MARKETING CHANGES (NEU!)
 
 ### Ehrliches Marketing statt Fake Social Proof:
+
 - **Entfernt**: "500+ Businesses", "15,000+ Responses", Fake Testimonials
-- **Hinzugefügt**: 
+- **Hinzugefügt**:
   - "Just Launched" Badge
   - Early Adopter Counter (7/50 spots)
   - Live Demo Examples mit echten AI Responses
@@ -354,6 +373,7 @@ git push
   - 30-Day Money Back Guarantee
 
 ### Launch Discount Implementation:
+
 - Backend: Stripe Coupon Creation in `/api/billing/create-checkout`
 - Frontend: Automatisch EARLY50 Code angewendet
 - Discount: 50% OFF forever für erste 50 Kunden
@@ -361,6 +381,7 @@ git push
 ## EXIT-INTENT POPUP DETAILS
 
 ### Implementation:
+
 - **Trigger**: Mouse leaves viewport (geht zum Browser Tab/Close Button)
 - **Delay**: 5 Sekunden nach Seitenaufruf (nicht sofort nerven)
 - **Frequency**: Nur einmal pro Session (sessionStorage)
@@ -373,6 +394,7 @@ git push
   - Click outside oder X Button zum Schließen
 
 ### Backend Integration (NEU!):
+
 - **Endpoint**: POST `/api/capture-email`
 - **Database**: `email_captures` Tabelle (email, discount_code, source, converted, created_at)
 - **Email Validation**: Nutzt validator.js
@@ -383,6 +405,7 @@ git push
 ## CHANGELOG
 
 ### 10.01.2026 (Bug Fixes)
+
 - **Chrome Extension Fix**: content.js `outputLanguage: 'auto'` → `'match'` - Antwort behält jetzt die Review-Sprache bei
 - **Dashboard Error Handling**:
   - Neuer `dashboardError` + `isLoadingDashboard` State
@@ -396,6 +419,7 @@ git push
   - Status 'degraded' wenn DB nicht erreichbar
 
 ### 09.01.2026
+
 - PostgreSQL Migration
 - Password Reset mit Resend.com
 - Jahres-Abos (20% Rabatt)
@@ -565,6 +589,7 @@ git push
 ---
 
 > **WICHTIG:** Nach jeder Session diese Datei updaten!
+>
 > - CURRENT_TASKS aktualisieren
 > - Erledigte Tasks als [x] markieren
 > - Neue Erkenntnisse dokumentieren

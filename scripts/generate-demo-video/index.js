@@ -97,10 +97,10 @@ function combineVideoAudio(videoPath, audioPath, outputPath) {
       outputPath,
     ]);
 
-    ffmpeg.stdout.on('data', (data) => console.log(data.toString()));
-    ffmpeg.stderr.on('data', (data) => console.log(data.toString()));
+    ffmpeg.stdout.on('data', data => console.log(data.toString()));
+    ffmpeg.stderr.on('data', data => console.log(data.toString()));
 
-    ffmpeg.on('close', (code) => {
+    ffmpeg.on('close', code => {
       if (code === 0) {
         resolve();
       } else {
@@ -270,14 +270,7 @@ async function executeAction(page, action, index, total) {
         });
         const box = await el.boundingBox();
         if (box) {
-          await smoothMouseMove(
-            page,
-            960,
-            540,
-            box.x + box.width / 2,
-            box.y + box.height / 2,
-            300
-          );
+          await smoothMouseMove(page, 960, 540, box.x + box.width / 2, box.y + box.height / 2, 300);
         }
       } catch (e) {}
       break;
@@ -290,7 +283,7 @@ async function executeAction(page, action, index, total) {
           if (reviews) reviews.scrollIntoView({ behavior: 'smooth' });
         });
       } else if (action.target) {
-        await page.evaluate((selector) => {
+        await page.evaluate(selector => {
           const el = document.querySelector(selector);
           if (el) el.scrollBy({ top: 200, behavior: 'smooth' });
         }, action.target);
@@ -298,11 +291,7 @@ async function executeAction(page, action, index, total) {
       break;
 
     case 'highlight':
-      await highlightElement(
-        page,
-        action.selector,
-        action.duration || 2000
-      );
+      await highlightElement(page, action.selector, action.duration || 2000);
       break;
 
     case 'close':
@@ -462,7 +451,7 @@ async function recordDemo() {
   await context.close();
 
   // Find the recorded video
-  const videoFiles = fs.readdirSync(tempDir).filter((f) => f.endsWith('.webm'));
+  const videoFiles = fs.readdirSync(tempDir).filter(f => f.endsWith('.webm'));
   if (videoFiles.length === 0) {
     console.error('Error: No video file was recorded');
     process.exit(1);
@@ -491,7 +480,7 @@ async function recordDemo() {
 }
 
 // Run the script
-recordDemo().catch((error) => {
+recordDemo().catch(error => {
   console.error('Fatal error:', error);
   process.exit(1);
 });

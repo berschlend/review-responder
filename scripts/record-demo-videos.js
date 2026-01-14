@@ -26,7 +26,7 @@ if (!fs.existsSync(OUTPUT_DIR)) {
 /**
  * Helper: Wait for specified time
  */
-const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
  * Record Extension Demo Video
@@ -56,7 +56,9 @@ async function recordExtensionDemo(context) {
 
     // Click on Reviews tab
     console.log('  → Opening reviews...');
-    const reviewsTab = await page.locator('button:has-text("Rezensionen"), button:has-text("Reviews")').first();
+    const reviewsTab = await page
+      .locator('button:has-text("Rezensionen"), button:has-text("Reviews")')
+      .first();
     if (await reviewsTab.isVisible()) {
       await reviewsTab.click();
       await wait(2000);
@@ -87,7 +89,6 @@ async function recordExtensionDemo(context) {
 
     // Final pause for video
     await wait(2000);
-
   } catch (error) {
     console.log('  ⚠️ Extension demo error:', error.message);
   }
@@ -127,14 +128,18 @@ async function recordDashboardDemo(context) {
 
     // Find and click on review textarea
     console.log('  → Finding review input...');
-    const reviewInput = await page.locator('textarea[placeholder*="customer review"], textarea[placeholder*="Paste"]').first();
+    const reviewInput = await page
+      .locator('textarea[placeholder*="customer review"], textarea[placeholder*="Paste"]')
+      .first();
     if (await reviewInput.isVisible()) {
       await reviewInput.click();
       await wait(500);
 
       // Type sample review
       console.log('  → Typing sample review...');
-      await reviewInput.fill('The food was amazing and the service was excellent! Our waiter Carlos was very attentive and made great recommendations. Highly recommend!');
+      await reviewInput.fill(
+        'The food was amazing and the service was excellent! Our waiter Carlos was very attentive and made great recommendations. Highly recommend!'
+      );
       await wait(1000);
     }
 
@@ -165,7 +170,6 @@ async function recordDashboardDemo(context) {
 
     // Final pause
     await wait(2000);
-
   } catch (error) {
     console.log('  ⚠️ Dashboard demo error:', error.message);
   }
@@ -195,8 +199,8 @@ async function main() {
     viewport: { width: 1280, height: 720 },
     recordVideo: {
       dir: OUTPUT_DIR,
-      size: { width: 1280, height: 720 }
-    }
+      size: { width: 1280, height: 720 },
+    },
   });
 
   console.log('✅ Browser launched with extension\n');
@@ -207,7 +211,6 @@ async function main() {
 
     // Record Dashboard Demo
     await recordDashboardDemo(browser);
-
   } catch (error) {
     console.error('❌ Error during recording:', error);
   }

@@ -91,7 +91,7 @@ const DEMO_ACTIONS = [
 
   // ===== SINGLE REVIEW (0:25 - 0:40) =====
   {
-    marker: 0.60,
+    marker: 0.6,
     type: 'wait',
     duration: 500,
     description: 'Brief pause',
@@ -128,7 +128,7 @@ const DEMO_ACTIONS = [
     description: 'Wait for response generation',
   },
   {
-    marker: 0.80,
+    marker: 0.8,
     type: 'highlight',
     selector: S.qualityBadge,
     duration: 1000,
@@ -179,7 +179,7 @@ function getTimestamp(marker, totalDuration) {
  * Get all actions with calculated timestamps
  */
 function getActionsWithTimestamps(totalDuration) {
-  return DEMO_ACTIONS.map((action) => ({
+  return DEMO_ACTIONS.map(action => ({
     ...action,
     timestamp: getTimestamp(action.marker, totalDuration),
   }));

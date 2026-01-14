@@ -3,6 +3,7 @@
 ## Launch Announcement Thread
 
 ### Tweet 1 (Main Thread Starter)
+
 ```
 🚀 It's happening!
 
@@ -18,6 +19,7 @@ https://producthunt.com/posts/reviewresponder
 ```
 
 ### Tweet 2
+
 ```
 The problem:
 
@@ -32,6 +34,7 @@ We sure didn't. So we built ReviewResponder.
 ```
 
 ### Tweet 3
+
 ```
 How it works:
 
@@ -44,6 +47,7 @@ That's it. 10 seconds instead of 10 minutes.
 ```
 
 ### Tweet 4
+
 ```
 Key features:
 
@@ -57,6 +61,7 @@ Key features:
 ```
 
 ### Tweet 5
+
 ```
 🎁 Launch Day Special:
 
@@ -68,6 +73,7 @@ Try it free: https://tryreviewresponder.com
 ```
 
 ### Tweet 6
+
 ```
 If you like what we're building, we'd really appreciate your support on Product Hunt today! 🙏
 
@@ -83,6 +89,7 @@ Thank you for being part of our journey! ❤️
 ## Individual Posts (Throughout the Day)
 
 ### Post 1 (Morning Reminder)
+
 ```
 Good morning! ☀️
 
@@ -97,6 +104,7 @@ Check it out 👇
 ```
 
 ### Post 2 (Feature Highlight - Tones)
+
 ```
 "Should I sound professional or friendly?"
 
@@ -114,6 +122,7 @@ Try it on @ProductHunt: [LINK]
 ```
 
 ### Post 3 (Feature Highlight - Languages)
+
 ```
 Your customer left a review in Spanish.
 You don't speak Spanish.
@@ -129,6 +138,7 @@ Support your international customers effortlessly.
 ```
 
 ### Post 4 (Chrome Extension)
+
 ```
 We built a Chrome Extension. 🔌
 
@@ -145,6 +155,7 @@ Get it here: [LINK]
 ```
 
 ### Post 5 (Social Proof / Milestone)
+
 ```
 Update: We're in the Top [X] on @ProductHunt! 🎉
 
@@ -157,6 +168,7 @@ If you haven't voted yet, there's still time:
 ```
 
 ### Post 6 (Afternoon Push)
+
 ```
 Half of Launch Day done! 📊
 
@@ -171,6 +183,7 @@ Vote on @ProductHunt: [LINK]
 ```
 
 ### Post 7 (Discount Reminder)
+
 ```
 ⏰ Reminder: 60% OFF ends in [X] hours!
 
@@ -184,6 +197,7 @@ Never pay full price for review management again.
 ```
 
 ### Post 8 (Evening Update)
+
 ```
 Evening update from our @ProductHunt launch:
 
@@ -197,6 +211,7 @@ A few hours left - if you haven't upvoted yet, we'd really appreciate it!
 ```
 
 ### Post 9 (Final Push)
+
 ```
 🏁 Final hours of our @ProductHunt launch!
 
@@ -210,6 +225,7 @@ Thank you! ❤️
 ```
 
 ### Post 10 (Thank You - End of Day)
+
 ```
 What a day! 🚀
 
@@ -229,6 +245,7 @@ Final result: #[X] Product of the Day! 🏆
 ## Reply Templates
 
 ### For Positive Comments
+
 ```
 Thank you so much! 🙏
 
@@ -238,6 +255,7 @@ Let me know if you have any questions - happy to help!
 ```
 
 ### For Feature Requests
+
 ```
 Love this idea! 💡
 
@@ -247,6 +265,7 @@ Thanks for taking the time to share!
 ```
 
 ### For Questions
+
 ```
 Great question!
 
@@ -256,6 +275,7 @@ Let me know if you need more details - happy to help!
 ```
 
 ### For Skeptics
+
 ```
 Totally understand the concern!
 
