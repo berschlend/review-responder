@@ -20548,6 +20548,9 @@ const AdminPage = () => {
   const [emailLoading, setEmailLoading] = useState(false);
   const [scraperData, setScraperData] = useState(null);
   const [scraperLoading, setScraperLoading] = useState(false);
+  const [claudeStateData, setClaudeStateData] = useState(null);
+  const [claudeStateLoading, setClaudeStateLoading] = useState(false);
+  const [newNote, setNewNote] = useState('');
 
   // Use the same API_URL as the rest of the app (already includes /api)
   // Remove /api suffix if present to build admin URLs correctly
@@ -20701,6 +20704,42 @@ const AdminPage = () => {
     }
   };
 
+  const loadClaudeStateData = async key => {
+    const keyToUse = key || adminKey;
+    if (!keyToUse) return;
+    setClaudeStateLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/admin/sales-state`, {
+        headers: { 'X-Admin-Key': keyToUse },
+      });
+      setClaudeStateData(res.data);
+    } catch (err) {
+      console.error('Claude state load error:', err);
+      toast.error('Failed to load Claude state');
+    } finally {
+      setClaudeStateLoading(false);
+    }
+  };
+
+  const addClaudeNote = async () => {
+    if (!newNote.trim()) {
+      toast.error('Please enter a note');
+      return;
+    }
+    try {
+      await axios.post(
+        `${API_BASE}/api/admin/sales-note`,
+        { note: newNote },
+        { headers: { 'X-Admin-Key': adminKey } }
+      );
+      toast.success('Note added');
+      setNewNote('');
+      loadClaudeStateData();
+    } catch (err) {
+      toast.error('Failed to add note');
+    }
+  };
+
   const testScraperAlert = async () => {
     try {
       const res = await axios.get(`${API_BASE}/api/cron/scraper-alerts?secret=${adminKey}&force=true`);
@@ -20786,6 +20825,9 @@ const AdminPage = () => {
       }
       if (activeAdminTab === 'scraper' && !scraperData) {
         loadScraperData();
+      }
+      if (activeAdminTab === 'claude' && !claudeStateData) {
+        loadClaudeStateData();
       }
     }
   }, [activeAdminTab, isAuthenticated, adminKey]);
@@ -20900,6 +20942,12 @@ const AdminPage = () => {
           onClick={() => setActiveAdminTab('scraper')}
         >
           Scraper
+        </button>
+        <button
+          className={`btn ${activeAdminTab === 'claude' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('claude')}
+        >
+          Claude State
         </button>
       </div>
 
@@ -22440,6 +22488,233 @@ const AdminPage = () => {
                 Could not load scraper data
               </p>
               <button className="btn btn-primary" onClick={() => loadScraperData()}>
+                Retry
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Claude State Tab - Sales Automation State */}
+      {activeAdminTab === 'claude' && (
+        <div>
+          {claudeStateLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading Claude state...</div>
+          ) : claudeStateData ? (
+            <>
+              {/* Today's Actions */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
+                  Today's Actions
+                </h3>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                  gap: '16px',
+                }}>
+                  <div style={{ textAlign: 'center', padding: '16px', background: '#F3F4F6', borderRadius: '12px' }}>
+                    <div style={{ fontSize: '32px', fontWeight: '700', color: '#3B82F6' }}>
+                      {claudeStateData.today?.leads_scraped || 0}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Leads Scraped</div>
+                  </div>
+                  <div style={{ textAlign: 'center', padding: '16px', background: '#F3F4F6', borderRadius: '12px' }}>
+                    <div style={{ fontSize: '32px', fontWeight: '700', color: '#10B981' }}>
+                      {claudeStateData.today?.emails_sent || 0}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Emails Sent</div>
+                  </div>
+                  <div style={{ textAlign: 'center', padding: '16px', background: '#F3F4F6', borderRadius: '12px' }}>
+                    <div style={{ fontSize: '32px', fontWeight: '700', color: '#8B5CF6' }}>
+                      {claudeStateData.today?.twitter_posts || 0}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Twitter Posts</div>
+                  </div>
+                  <div style={{ textAlign: 'center', padding: '16px', background: '#F3F4F6', borderRadius: '12px' }}>
+                    <div style={{ fontSize: '32px', fontWeight: '700', color: '#EC4899' }}>
+                      {claudeStateData.today?.linkedin_demos || 0}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>LinkedIn Demos</div>
+                  </div>
+                  <div style={{ textAlign: 'center', padding: '16px', background: '#F3F4F6', borderRadius: '12px' }}>
+                    <div style={{ fontSize: '32px', fontWeight: '700', color: '#F59E0B' }}>
+                      {claudeStateData.today?.demos_generated || 0}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Demos Generated</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* This Week Stats */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
+                  This Week
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#3B82F6' }}>
+                      {claudeStateData.this_week?.emails_sent || 0}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Emails Sent</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#10B981' }}>
+                      {claudeStateData.this_week?.emails_opened || 0}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Emails Opened</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '28px', fontWeight: '700', color: '#F59E0B' }}>
+                      {claudeStateData.this_week?.open_rate || '0%'}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Open Rate</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pending Tasks */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
+                  Pending Tasks
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+                  <div style={{
+                    padding: '16px',
+                    background: claudeStateData.pending?.linkedin_connections > 0 ? '#FEF3C7' : '#F3F4F6',
+                    borderRadius: '12px',
+                    borderLeft: `4px solid ${claudeStateData.pending?.linkedin_connections > 0 ? '#F59E0B' : '#9CA3AF'}`,
+                  }}>
+                    <div style={{ fontSize: '24px', fontWeight: '700' }}>
+                      {claudeStateData.pending?.linkedin_connections || 0}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>LinkedIn Pending</div>
+                  </div>
+                  <div style={{
+                    padding: '16px',
+                    background: claudeStateData.pending?.leads_not_emailed > 0 ? '#FEE2E2' : '#F3F4F6',
+                    borderRadius: '12px',
+                    borderLeft: `4px solid ${claudeStateData.pending?.leads_not_emailed > 0 ? '#DC2626' : '#9CA3AF'}`,
+                  }}>
+                    <div style={{ fontSize: '24px', fontWeight: '700' }}>
+                      {claudeStateData.pending?.leads_not_emailed || 0}
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Leads Not Emailed</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Last Actions Timeline */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
+                  Last Actions
+                </h3>
+                {claudeStateData.last_actions?.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {claudeStateData.last_actions.map((action, idx) => (
+                      <div key={idx} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px 16px',
+                        background: '#F9FAFB',
+                        borderRadius: '8px',
+                        borderLeft: '4px solid #3B82F6',
+                      }}>
+                        <div style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          background: action.category === 'outreach' ? '#DBEAFE' : action.category === 'social' ? '#E9D5FF' : '#D1FAE5',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '18px',
+                        }}>
+                          {action.category === 'outreach' ? '📧' : action.category === 'social' ? '🐦' : '📝'}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: '600' }}>{action.type}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
+                            {action.details?.count && `Count: ${action.details.count}`}
+                            {action.details?.note && `"${action.details.note}"`}
+                            {action.details?.city && ` | ${action.details.city}`}
+                          </div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
+                            {new Date(action.at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--gray-400)' }}>
+                            {action.session !== 'unknown' ? `Session: ${action.session}` : ''}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ textAlign: 'center', color: 'var(--gray-500)', padding: '20px' }}>
+                    No actions recorded yet today
+                  </div>
+                )}
+              </div>
+
+              {/* Session Notes */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
+                  Notes from Previous Sessions
+                </h3>
+                {claudeStateData.notes_from_previous_sessions?.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                    {claudeStateData.notes_from_previous_sessions.map((note, idx) => (
+                      <div key={idx} style={{
+                        padding: '12px 16px',
+                        background: '#FEF3C7',
+                        borderRadius: '8px',
+                        borderLeft: '4px solid #F59E0B',
+                      }}>
+                        <div>{note.note}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--gray-500)', marginTop: '4px' }}>
+                          {new Date(note.at).toLocaleString('de-DE')}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ textAlign: 'center', color: 'var(--gray-500)', padding: '20px', marginBottom: '16px' }}>
+                    No notes yet
+                  </div>
+                )}
+
+                {/* Add Note Form */}
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="Add a note for the next Claude session..."
+                    value={newNote}
+                    onChange={(e) => setNewNote(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addClaudeNote()}
+                    style={{ flex: 1 }}
+                  />
+                  <button className="btn btn-primary" onClick={addClaudeNote}>
+                    Add Note
+                  </button>
+                </div>
+              </div>
+
+              {/* Refresh Button */}
+              <div style={{ textAlign: 'center' }}>
+                <button className="btn btn-secondary" onClick={() => loadClaudeStateData()}>
+                  Refresh State
+                </button>
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+                Could not load Claude state
+              </p>
+              <button className="btn btn-primary" onClick={() => loadClaudeStateData()}>
                 Retry
               </button>
             </div>
