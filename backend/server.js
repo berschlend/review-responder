@@ -10106,8 +10106,8 @@ app.get('/api/admin/clickers', async (req, res) => {
   }
 });
 
-// POST /api/cron/followup-clickers - Auto-send demo offer to people who clicked
-app.post('/api/cron/followup-clickers', async (req, res) => {
+// GET/POST /api/cron/followup-clickers - Auto-send demo offer to people who clicked
+app.all('/api/cron/followup-clickers', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
   if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
     return res.status(401).json({ error: 'Unauthorized' });
