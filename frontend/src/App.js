@@ -8028,6 +8028,35 @@ Food was amazing, will definitely come back!`}
         }}
         onSubmit={() => setShowFeedbackPopup(false)}
       />
+
+      {/* Upgrade Modal - Shows when user hits free limit */}
+      {showUpgradeModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div style={{ background: 'var(--bg-primary)', borderRadius: '16px', padding: '32px', maxWidth: '480px', width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
+            <h2 style={{ marginTop: 0, marginBottom: '8px', fontSize: '24px' }}>You have used all 20 free responses!</h2>
+            <p style={{ color: 'var(--gray-500)', marginBottom: '24px' }}>Your reviews are waiting for professional responses...</p>
+            <div style={{ background: 'var(--gray-100)', borderRadius: '8px', height: '8px', marginBottom: '24px' }}>
+              <div style={{ background: 'var(--primary)', width: '100%', height: '100%', borderRadius: '8px' }} />
+            </div>
+            {!exitSurveyReason ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <Link to="/pricing" className="btn btn-primary" style={{ textAlign: 'center', padding: '16px', fontSize: '16px' }} onClick={() => setShowUpgradeModal(false)}>Unlock 300 Responses - $29/mo</Link>
+                <button onClick={handleBuyResponsePack} className="btn btn-secondary" style={{ padding: '14px', fontSize: '15px' }}>Just need a few? Get 10 for $5</button>
+                <button onClick={() => { setShowUpgradeModal(false); toast.info('Your responses reset on the 1st of each month'); }} className="btn" style={{ background: 'transparent', border: '1px solid var(--gray-300)', padding: '12px' }}>Wait until next month</button>
+                <button onClick={() => setExitSurveyReason('survey')} style={{ background: 'none', border: 'none', color: 'var(--gray-500)', fontSize: '14px', cursor: 'pointer', marginTop: '8px' }}>I am not ready to upgrade</button>
+              </div>
+            ) : (
+              <div style={{ borderTop: '1px solid var(--gray-200)', paddingTop: '24px' }}>
+                <p style={{ fontWeight: '500', marginBottom: '16px' }}>Quick question - what is holding you back?</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {['Too expensive', 'Not enough value yet', 'Just testing', 'Using a competitor', 'Other'].map(reason => (<button key={reason} onClick={() => trackExitSurvey(reason)} style={{ background: 'var(--gray-50)', border: '1px solid var(--gray-200)', borderRadius: '8px', padding: '12px 16px', textAlign: 'left', cursor: 'pointer', fontSize: '14px' }}>{reason}</button>))}
+                </div>
+                <button onClick={() => setExitSurveyReason(null)} style={{ background: 'none', border: 'none', color: 'var(--gray-500)', fontSize: '13px', cursor: 'pointer', marginTop: '16px' }}>Back</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -11703,14 +11732,6 @@ const DemoPage = () => {
     };
   }, [token]);
 
-  // Testimonial auto-rotation
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTestimonialIndex(prev => (prev + 1) % testimonials.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [testimonials.length]);
-
   // Calculate days until demo expires (7 days from creation)
   const getDaysRemaining = () => {
     if (!demo?.created_at) return 7;
@@ -11942,6 +11963,23 @@ const DemoPage = () => {
                 <p style={{ color: 'var(--text-secondary)', lineHeight: '1.7', fontSize: '15px', marginTop: '12px' }}>
                   {item.review.text}
                 </p>
+                {/* View on Google Link */}
+                {demo.google_reviews_url && (
+                  <a
+                    href={demo.google_reviews_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '12px',
+                      fontSize: '13px', color: '#4285f4', textDecoration: 'none'
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#4285f4">
+                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                    </svg>
+                    View on Google (by {item.review.author || 'Anonymous'})
+                  </a>
+                )}
               </div>
 
               {/* AI Response */}
@@ -12133,82 +12171,6 @@ const DemoPage = () => {
                 </button>
               )}
             </div>
-          </div>
-        </div>
-
-        {/* Testimonial Slider */}
-        <div style={{
-          background: 'var(--bg-secondary)',
-          borderRadius: '16px',
-          padding: '32px',
-          marginBottom: '48px',
-          border: '1px solid var(--border-color)',
-          textAlign: 'center'
-        }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '24px' }}>
-            Trusted by Business Owners
-          </h3>
-
-          <div style={{ position: 'relative', minHeight: '140px' }}>
-            {testimonials.map((t, i) => (
-              <div
-                key={i}
-                style={{
-                  position: i === testimonialIndex ? 'relative' : 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  opacity: i === testimonialIndex ? 1 : 0,
-                  transform: i === testimonialIndex ? 'translateY(0)' : 'translateY(10px)',
-                  transition: 'all 0.5s ease-out',
-                  pointerEvents: i === testimonialIndex ? 'auto' : 'none'
-                }}
-              >
-                {/* Stars */}
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '4px', marginBottom: '16px' }}>
-                  {[1,2,3,4,5].map(star => (
-                    <Star key={star} size={20} fill="#FBBC04" color="#FBBC04" />
-                  ))}
-                </div>
-
-                {/* Quote */}
-                <p style={{
-                  fontSize: '18px',
-                  color: 'var(--text-primary)',
-                  fontStyle: 'italic',
-                  lineHeight: '1.6',
-                  maxWidth: '600px',
-                  margin: '0 auto 16px'
-                }}>
-                  "{t.quote}"
-                </p>
-
-                {/* Author */}
-                <div>
-                  <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{t.author}</div>
-                  <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>{t.business}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Dots */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '20px' }}>
-            {testimonials.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setTestimonialIndex(i)}
-                style={{
-                  width: '10px',
-                  height: '10px',
-                  borderRadius: '50%',
-                  border: 'none',
-                  background: i === testimonialIndex ? 'var(--primary)' : 'var(--gray-300)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-              />
-            ))}
           </div>
         </div>
 
@@ -24158,7 +24120,7 @@ const AdminPage = () => {
                   </table>
                 </div>
               )}
-              {usageData.usersAtLimit?.length > 0 && (
+              {usageData.limitHitUsers?.length > 0 && (
                 <div className="card">
                   <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Users Who Hit the Limit</h3>
                   <p style={{ color: 'var(--gray-500)', fontSize: '14px', marginBottom: '16px' }}>These users generated 20+ responses but did not upgrade</p>
@@ -24172,7 +24134,7 @@ const AdminPage = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {usageData.usersAtLimit.map((user, i) => (
+                        {usageData.limitHitUsers.map((user, i) => (
                           <tr key={i} style={{ borderBottom: '1px solid var(--gray-100)' }}>
                             <td style={{ padding: '12px 8px', fontSize: '14px' }}>{user.email}</td>
                             <td style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px', fontWeight: '600' }}>{user.total_responses}</td>

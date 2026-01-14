@@ -13159,9 +13159,10 @@ app.get('/api/admin/usage-analytics', async (req, res) => {
       WHERE plan = 'free'
     `);
 
-    // Exit survey results
+    // Exit survey results with percentage
     const exitSurveys = await dbQuery(`
-      SELECT reason, COUNT(*) as count
+      SELECT reason, COUNT(*) as count,
+             ROUND(100.0 * COUNT(*) / NULLIF(SUM(COUNT(*)) OVER (), 0), 1) as percentage
       FROM exit_surveys
       GROUP BY reason
       ORDER BY count DESC
