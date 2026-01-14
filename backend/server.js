@@ -10322,21 +10322,43 @@ app.get('/api/admin/email-dashboard', authenticateAdmin, async (req, res) => {
 // Admin: List all users (with fake detection)
 app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
   try {
+    // Get users with their response counts and activity
     const users = await dbAll(`
-      SELECT id, email, subscription_plan, created_at, stripe_customer_id
-      FROM users
-      ORDER BY created_at DESC
+      SELECT
+        u.id,
+        u.email,
+        u.subscription_plan,
+        u.created_at,
+        u.stripe_customer_id,
+        COALESCE(r.response_count, 0) as response_count,
+        r.last_response_at,
+        r.first_response_at
+      FROM users u
+      LEFT JOIN (
+        SELECT
+          user_id,
+          COUNT(*) as response_count,
+          MAX(created_at) as last_response_at,
+          MIN(created_at) as first_response_at
+        FROM responses
+        GROUP BY user_id
+      ) r ON u.id = r.user_id
+      ORDER BY u.created_at DESC
       LIMIT 100
     `);
 
     // Use central isTestEmail function for consistent detection
     const usersWithFlag = users.map(u => ({
       ...u,
-      is_test_account: isTestEmail(u.email)
+      is_test_account: isTestEmail(u.email),
+      onboarding_completed: u.response_count > 0,
+      is_active: u.last_response_at && new Date(u.last_response_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
     }));
 
     const realUsers = usersWithFlag.filter(u => !u.is_test_account);
     const testUsers = usersWithFlag.filter(u => u.is_test_account);
+    const onboardedReal = realUsers.filter(u => u.onboarding_completed);
+    const activeReal = realUsers.filter(u => u.is_active);
 
     res.json({
       users: usersWithFlag,
@@ -10344,7 +10366,10 @@ app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
         total: usersWithFlag.length,
         real: realUsers.length,
         test: testUsers.length,
-        realPaying: realUsers.filter(u => u.subscription_plan !== 'free').length
+        realPaying: realUsers.filter(u => u.subscription_plan !== 'free').length,
+        realOnboarded: onboardedReal.length,
+        realActive7d: activeReal.length,
+        onboardingRate: realUsers.length > 0 ? Math.round(onboardedReal.length / realUsers.length * 100) : 0
       }
     });
   } catch (error) {
