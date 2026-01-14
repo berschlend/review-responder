@@ -9105,8 +9105,11 @@ const SettingsPage = () => {
   const [businessContext, setBusinessContext] = useState(user?.businessContext || '');
   const [responseStyle, setResponseStyle] = useState(user?.responseStyle || '');
   const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
   const [apiKeys, setApiKeys] = useState([]);
   const [loadingKeys, setLoadingKeys] = useState(false);
+  const autoSaveTimeoutRef = useRef(null);
+  const isInitialMount = useRef(true);
 
   const businessTypes = [
     'Restaurant',
@@ -9189,11 +9192,11 @@ const SettingsPage = () => {
     }
   }, [user]);
 
-  const handleSave = async e => {
-    e.preventDefault();
+  // Core save function (used by both auto-save and manual save)
+  const doSave = async (showToast = false) => {
     setSaving(true);
+    setSaveStatus('saving');
 
-    // Use custom type if "Other" is selected, otherwise use dropdown value
     const finalBusinessType = businessType === 'Other' ? customBusinessType.trim() : businessType;
 
     try {
@@ -9204,14 +9207,56 @@ const SettingsPage = () => {
         responseStyle,
       });
       updateUser(res.data.user);
-      // Clear draft after successful save
       localStorage.removeItem('draft_businessType');
-      toast.success('Settings saved! Your responses will now be more personalized.');
+      setSaveStatus('saved');
+      if (showToast) {
+        toast.success('Settings saved!');
+      }
+      // Reset to idle after 2 seconds
+      setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
-      toast.error('Failed to save settings');
+      setSaveStatus('error');
+      if (showToast) {
+        toast.error('Failed to save settings');
+      }
     } finally {
       setSaving(false);
     }
+  };
+
+  // Auto-save when fields change (debounced 1.5 seconds)
+  useEffect(() => {
+    // Skip initial mount to avoid saving on page load
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    // Clear existing timeout
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+
+    // Set new timeout for auto-save
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      doSave(false);
+    }, 1500);
+
+    // Cleanup on unmount
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [businessName, businessType, customBusinessType, businessContext, responseStyle]);
+
+  // Manual save handler (for the button)
+  const handleSave = async e => {
+    e.preventDefault();
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    await doSave(true);
   };
 
   return (
@@ -9233,12 +9278,49 @@ const SettingsPage = () => {
         >
           ← Back to Dashboard
         </Link>
-        <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
-          <Settings size={28} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-          Business Settings
-        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <h1 style={{ fontSize: '28px', fontWeight: '700', margin: 0 }}>
+            <Settings size={28} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+            Business Settings
+          </h1>
+          {/* Auto-save status indicator */}
+          <span
+            style={{
+              fontSize: '13px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              color:
+                saveStatus === 'saving'
+                  ? 'var(--gray-500)'
+                  : saveStatus === 'saved'
+                    ? 'var(--green-600)'
+                    : saveStatus === 'error'
+                      ? 'var(--red-500)'
+                      : 'transparent',
+              transition: 'color 0.2s',
+            }}
+          >
+            {saveStatus === 'saving' && (
+              <>
+                <Loader size={14} className="spin" />
+                Saving...
+              </>
+            )}
+            {saveStatus === 'saved' && (
+              <>
+                <Check size={14} />
+                Saved
+              </>
+            )}
+            {saveStatus === 'error' && <>Save failed</>}
+          </span>
+        </div>
         <p style={{ color: 'var(--gray-600)' }}>
           Add details about your business to get more personalized AI responses
+          <span style={{ marginLeft: '8px', fontSize: '12px', color: 'var(--gray-400)' }}>
+            (auto-saves as you type)
+          </span>
         </p>
       </div>
 
@@ -9382,20 +9464,32 @@ const SettingsPage = () => {
           </div>
         </div>
 
-        <button
-          type="submit"
-          className="btn btn-primary btn-lg"
-          style={{ width: '100%' }}
-          disabled={saving}
-        >
-          {saving ? (
-            'Saving...'
-          ) : (
-            <>
-              <Save size={18} /> Save Settings
-            </>
-          )}
-        </button>
+        {/* Manual save button - backup for auto-save */}
+        <div style={{ textAlign: 'center', marginTop: '8px' }}>
+          <button
+            type="submit"
+            className="btn"
+            style={{
+              background: 'var(--gray-100)',
+              border: '1px solid var(--gray-200)',
+              color: 'var(--gray-600)',
+              padding: '10px 24px',
+            }}
+            disabled={saving}
+          >
+            {saving ? (
+              'Saving...'
+            ) : (
+              <>
+                <Save size={16} style={{ marginRight: '6px' }} />
+                Save Now
+              </>
+            )}
+          </button>
+          <p style={{ fontSize: '12px', color: 'var(--gray-400)', marginTop: '8px' }}>
+            Changes are auto-saved. Use this button if you want to save immediately.
+          </p>
+        </div>
       </form>
 
       {/* API Key Management - Only for Unlimited Plan */}
