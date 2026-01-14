@@ -1863,7 +1863,7 @@ SIGN OFF:
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Settings size={18} />
-            OUR SETTINGS (Example) | Yours will look like this
+            OUR SETTINGS (Example) | Yours will look like this (2 min)
           </span>
           <ChevronDown
             size={20}
