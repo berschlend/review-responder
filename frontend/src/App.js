@@ -1813,14 +1813,29 @@ SIGN OFF:
   return (
     <section className="container" style={{ marginBottom: '60px' }}>
       <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+        <span
+          style={{
+            background: '#FEF3C7',
+            color: '#92400E',
+            padding: '4px 10px',
+            borderRadius: '4px',
+            fontSize: '12px',
+            fontWeight: '700',
+            letterSpacing: '0.5px',
+            marginBottom: '12px',
+            display: 'inline-block',
+          }}
+        >
+          EXAMPLE
+        </span>
         <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
-          Reviews About Us, Answered By Us
+          This Is What Your AI Responses Will Look Like
         </h2>
         <p style={{ color: 'var(--gray-600)', maxWidth: '650px', margin: '0 auto 8px auto' }}>
-          We use ReviewResponder to respond to reviews about ReviewResponder.
+          We used our own product to answer real reviews about us.
         </p>
         <p style={{ color: 'var(--gray-500)', maxWidth: '600px', margin: '0 auto 16px auto', fontSize: '14px' }}>
-          We set up our business context once — you can do the same in 60 seconds with "Generate with AI" in Settings.
+          Your responses will look just as good.
         </p>
         <span
           style={{
@@ -1868,7 +1883,7 @@ SIGN OFF:
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Settings size={18} />
-            See how we configured our AI (click to expand)
+            OUR SETTINGS (Example) — Your settings page looks exactly like this
           </span>
           <ChevronDown
             size={20}
@@ -2071,20 +2086,40 @@ SIGN OFF:
         ))}
       </div>
 
-      {/* CTA */}
-      <div style={{ textAlign: 'center', marginTop: '32px' }}>
-        <p
-          style={{
-            fontSize: '14px',
-            color: 'var(--gray-600)',
-            marginBottom: '16px',
-          }}
-        >
-          Click "Generate with AI" in Settings — it takes 60 seconds, and you'll get responses just like these
-        </p>
-        <Link to="/register" className="btn btn-primary" style={{ padding: '12px 24px' }}>
-          Try It Free
-        </Link>
+      {/* How-To Box */}
+      <div
+        style={{
+          background: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)',
+          border: '1px solid #C7D2FE',
+          borderRadius: '12px',
+          padding: '24px',
+          marginTop: '32px',
+          maxWidth: '600px',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          textAlign: 'left',
+        }}
+      >
+        <div style={{ fontWeight: '600', marginBottom: '16px', fontSize: '16px' }}>
+          How to get the same results for YOUR business:
+        </div>
+        <ol style={{ margin: '0 0 20px 20px', lineHeight: '1.8', color: 'var(--gray-700)' }}>
+          <li>
+            <strong>Sign up free</strong> (takes 30 seconds)
+          </li>
+          <li>
+            Go to <strong>Settings → Business Context</strong>
+          </li>
+          <li>
+            Click <strong>"Generate with AI"</strong> — we auto-fill your details from your website
+          </li>
+          <li>Done! Your AI now writes responses like these.</li>
+        </ol>
+        <div style={{ textAlign: 'center' }}>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '12px 24px' }}>
+            Start Free →
+          </Link>
+        </div>
       </div>
     </section>
   );
@@ -5508,7 +5543,7 @@ const DashboardPage = () => {
   };
 
   // Use effectivePlan for team members (they get access to team owner's plan features)
-  const canUseBulk = ['starter', 'professional', 'unlimited'].includes(effectivePlan);
+  const canUseBulk = ['professional', 'unlimited'].includes(effectivePlan);
   const canUseBlog = ['professional', 'unlimited'].includes(effectivePlan);
   const canUseApi = effectivePlan === 'unlimited';
   const canExport = ['starter', 'professional', 'unlimited'].includes(effectivePlan);
@@ -5981,7 +6016,7 @@ const DashboardPage = () => {
                 fontWeight: '600',
               }}
             >
-              PAID
+              PRO
             </span>
           )}
         </button>
@@ -6006,6 +6041,20 @@ const DashboardPage = () => {
         >
           <Clock size={18} />
           History
+          {!canUseHistory && (
+            <span
+              style={{
+                background: 'var(--primary-600)',
+                color: 'white',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                fontSize: '10px',
+                fontWeight: '600',
+              }}
+            >
+              STARTER
+            </span>
+          )}
         </button>
         <button
           className="dashboard-tab"
@@ -6508,7 +6557,7 @@ const DashboardPage = () => {
                 <Layers size={40} style={{ color: 'var(--primary-600)' }} />
               </div>
               <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '12px' }}>
-                Bulk Generation is a Paid Feature
+                Bulk Generation is a Pro Feature
               </h2>
               <p
                 style={{
@@ -6518,13 +6567,12 @@ const DashboardPage = () => {
                   margin: '0 auto 24px',
                 }}
               >
-                Generate responses for up to 20 reviews at once with any paid plan. Perfect for
-                businesses with high review volume.
+                Generate responses for up to 20 reviews at once. Perfect for businesses with high
+                review volume.
               </p>
               <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
                 <Link to="/pricing" className="btn btn-primary" style={{ padding: '12px 24px' }}>
-                  <Zap size={18} />
-                  View Plans
+                  Upgrade to Pro - $49/month
                 </Link>
               </div>
               <div
@@ -24036,6 +24084,105 @@ const AdminPage = () => {
               <button className="btn btn-primary" onClick={() => loadCostsData()}>
                 Retry
               </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Usage Analytics Tab */}
+      {activeAdminTab === 'usage' && (
+        <div>
+          {usageLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <div className="loading-spinner" style={{ margin: '0 auto 16px' }}></div>
+              <p style={{ color: 'var(--gray-500)' }}>Loading usage analytics...</p>
+            </div>
+          ) : usageData ? (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '32px', fontWeight: '700', color: 'var(--primary)' }}>{usageData.stats?.avg_responses || 0}</div>
+                  <div style={{ color: 'var(--gray-500)', fontSize: '14px' }}>Avg Responses/User</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '32px', fontWeight: '700', color: 'var(--error)' }}>{usageData.stats?.limit_reached_count || 0}</div>
+                  <div style={{ color: 'var(--gray-500)', fontSize: '14px' }}>Users Hit Limit (20+)</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '32px', fontWeight: '700', color: 'var(--success)' }}>{usageData.stats?.max_responses || 0}</div>
+                  <div style={{ color: 'var(--gray-500)', fontSize: '14px' }}>Max Usage (any user)</div>
+                </div>
+              </div>
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Free User Usage Distribution</h3>
+                <p style={{ color: 'var(--gray-500)', fontSize: '14px', marginBottom: '20px' }}>How many responses have free users generated?</p>
+                {usageData.distribution?.map((bucket, i) => (
+                  <div key={i} style={{ marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '14px' }}>
+                      <span>{bucket.usage_bucket}</span>
+                      <span style={{ color: 'var(--gray-500)' }}>{bucket.user_count} users ({bucket.percentage}%)</span>
+                    </div>
+                    <div style={{ background: 'var(--gray-100)', borderRadius: '4px', height: '24px', overflow: 'hidden' }}>
+                      <div style={{ background: bucket.usage_bucket.includes('20+') ? 'var(--error)' : 'var(--primary)', height: '100%', width: `${bucket.percentage}%`, transition: 'width 0.3s ease' }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {usageData.exitSurveys?.length > 0 && (
+                <div className="card" style={{ marginBottom: '24px' }}>
+                  <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Exit Survey Results</h3>
+                  <p style={{ color: 'var(--gray-500)', fontSize: '14px', marginBottom: '16px' }}>Why users did not upgrade when hitting the limit</p>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--gray-200)' }}>
+                        <th style={{ textAlign: 'left', padding: '12px 8px', fontSize: '14px' }}>Reason</th>
+                        <th style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px' }}>Count</th>
+                        <th style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px' }}>%</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {usageData.exitSurveys.map((survey, i) => (
+                        <tr key={i} style={{ borderBottom: '1px solid var(--gray-100)' }}>
+                          <td style={{ padding: '12px 8px', fontSize: '14px' }}>{survey.reason}</td>
+                          <td style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px' }}>{survey.count}</td>
+                          <td style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px', color: 'var(--gray-500)' }}>{survey.percentage}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {usageData.usersAtLimit?.length > 0 && (
+                <div className="card">
+                  <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Users Who Hit the Limit</h3>
+                  <p style={{ color: 'var(--gray-500)', fontSize: '14px', marginBottom: '16px' }}>These users generated 20+ responses but did not upgrade</p>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '500px' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid var(--gray-200)' }}>
+                          <th style={{ textAlign: 'left', padding: '12px 8px', fontSize: '14px' }}>Email</th>
+                          <th style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px' }}>Responses</th>
+                          <th style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px' }}>Registered</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {usageData.usersAtLimit.map((user, i) => (
+                          <tr key={i} style={{ borderBottom: '1px solid var(--gray-100)' }}>
+                            <td style={{ padding: '12px 8px', fontSize: '14px' }}>{user.email}</td>
+                            <td style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px', fontWeight: '600' }}>{user.total_responses}</td>
+                            <td style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px', color: 'var(--gray-500)' }}>{new Date(user.created_at).toLocaleDateString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>Could not load usage analytics</p>
+              <button className="btn btn-primary" onClick={() => loadUsageData()}>Retry</button>
             </div>
           )}
         </div>
