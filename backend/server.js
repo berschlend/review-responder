@@ -12694,6 +12694,16 @@ app.get('/api/auth/magic-login/:token', async (req, res) => {
       return res.redirect('https://tryreviewresponder.com/login?error=invalid_magic_link');
     }
 
+    // Track magic link click in reengagement_emails
+    try {
+      await dbQuery(
+        `UPDATE reengagement_emails SET clicked_at = NOW() WHERE magic_link_token = $1 AND clicked_at IS NULL`,
+        [token]
+      );
+    } catch (e) {
+      // Table might not exist yet
+    }
+
     // Check if user exists
     let user = await dbGet('SELECT * FROM users WHERE LOWER(email) = LOWER($1)', [magicLink.email]);
 
@@ -18629,6 +18639,38 @@ app.get('/api/outreach/dashboard', async (req, res) => {
 
     const campaign = await dbGet('SELECT * FROM outreach_campaigns WHERE name = $1', ['main']);
 
+    // Magic Link & Re-Engagement Stats
+    let magicLinkStats = { sent: 0, clicked: 0, converted: 0 };
+    try {
+      const mlSent = await dbGet('SELECT COUNT(*) as count FROM reengagement_emails');
+      const mlClicked = await dbGet('SELECT COUNT(*) as count FROM reengagement_emails WHERE clicked_at IS NOT NULL');
+      const mlConverted = await dbGet('SELECT COUNT(*) as count FROM reengagement_emails WHERE registered_at IS NOT NULL');
+      magicLinkStats = {
+        sent: parseInt(mlSent?.count || 0),
+        clicked: parseInt(mlClicked?.count || 0),
+        converted: parseInt(mlConverted?.count || 0),
+      };
+    } catch (e) {
+      // Tables might not exist yet
+    }
+
+    // Demo Expiration Stats
+    let demoExpirationStats = { total: 0, expired: 0, day3_sent: 0, day5_sent: 0 };
+    try {
+      const totalDemos = await dbGet('SELECT COUNT(*) as count FROM demo_generations WHERE lead_id IS NOT NULL');
+      const expiredDemos = await dbGet('SELECT COUNT(*) as count FROM demo_generations WHERE expired = true');
+      const day3Sent = await dbGet('SELECT COUNT(*) as count FROM demo_generations WHERE expiration_email_day3 = true');
+      const day5Sent = await dbGet('SELECT COUNT(*) as count FROM demo_generations WHERE expiration_email_day5 = true');
+      demoExpirationStats = {
+        total: parseInt(totalDemos?.count || 0),
+        expired: parseInt(expiredDemos?.count || 0),
+        day3_sent: parseInt(day3Sent?.count || 0),
+        day5_sent: parseInt(day5Sent?.count || 0),
+      };
+    } catch (e) {
+      // Columns might not exist yet
+    }
+
     res.json({
       stats: {
         total_leads: parseInt(totalLeads?.count || 0),
@@ -18643,6 +18685,8 @@ app.get('/api/outreach/dashboard', async (req, res) => {
       },
       hot_leads: hotLeads,
       hot_leads_count: hotLeads.length,
+      magic_links: magicLinkStats,
+      demo_expiration: demoExpirationStats,
       by_status: byStatus,
       recent_leads: recentLeads,
       recent_emails: recentEmails,
