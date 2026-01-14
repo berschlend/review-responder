@@ -9674,6 +9674,55 @@ app.post('/api/admin/sales-note', authenticateAdmin, async (req, res) => {
   }
 });
 
+// TEMP: Test endpoint for smart email finding
+app.get('/api/admin/test-email-finding', async (req, res) => {
+  const key = req.query.key;
+  if (!process.env.ADMIN_SECRET || !safeCompare(key || '', process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const website = req.query.website;
+  if (!website) {
+    return res.status(400).json({ error: 'Missing website parameter' });
+  }
+
+  try {
+    console.log('🧪 Testing email finding for:', website);
+
+    // Step 1: Scrape business context (includes team members)
+    const businessContext = await scrapeBusinessContext(website);
+    console.log('📊 Business context:', JSON.stringify(businessContext, null, 2));
+
+    // Step 2: Try to generate personal email from team members
+    let personalEmail = null;
+    if (businessContext.teamMembers && businessContext.teamMembers.length > 0) {
+      personalEmail = await generatePersonalEmails(website, businessContext.teamMembers);
+    }
+
+    // Step 3: Fallback to website scraper
+    const scrapedEmail = await scrapeEmailFromWebsite(website);
+
+    res.json({
+      website,
+      businessContext: {
+        description: businessContext.description?.substring(0, 200),
+        ownerName: businessContext.ownerName,
+        teamMembers: businessContext.teamMembers,
+        foundedYear: businessContext.foundedYear,
+      },
+      emails: {
+        personalGenerated: personalEmail,
+        websiteScraped: scrapedEmail,
+        bestEmail: personalEmail?.email || scrapedEmail || null,
+        source: personalEmail ? 'personal_generated' : scrapedEmail ? 'website_scraper' : 'none',
+      },
+    });
+  } catch (error) {
+    console.error('Test email finding error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // GET /api/admin/stats - Get overall admin stats
 app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
   try {
