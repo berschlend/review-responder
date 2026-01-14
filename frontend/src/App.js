@@ -3516,14 +3516,20 @@ const RegisterPage = () => {
     }
   }, [discountParam]);
 
-  // Pre-fill email from landing page
+  // Pre-fill email from URL param (demo redirect) or landing page sessionStorage
+  const emailParam = searchParams.get('email');
   useEffect(() => {
-    const savedEmail = sessionStorage.getItem('landing_email');
-    if (savedEmail) {
-      setEmail(savedEmail);
-      sessionStorage.removeItem('landing_email');
+    // Priority: URL param > sessionStorage
+    if (emailParam) {
+      setEmail(decodeURIComponent(emailParam));
+    } else {
+      const savedEmail = sessionStorage.getItem('landing_email');
+      if (savedEmail) {
+        setEmail(savedEmail);
+        sessionStorage.removeItem('landing_email');
+      }
     }
-  }, []);
+  }, [emailParam]);
 
   const handleSubmit = async e => {
     e.preventDefault();
@@ -11904,7 +11910,7 @@ const DemoPage = () => {
     localStorage.setItem('demo_email_captured', 'true');
     setEmailCaptured(true);
     setShowEmailModal(false);
-    toast.success('Email saved! You can now copy responses.');
+    toast.success('Response copied! Redirecting to your free account...');
 
     // If there was a pending copy, execute it
     if (pendingCopyIndex !== null) {
@@ -11914,6 +11920,15 @@ const DemoPage = () => {
       }
       setPendingCopyIndex(null);
     }
+
+    // AUTO-REDIRECT: After email capture, redirect to signup with pre-filled email
+    // This is the key conversion moment - they entered email, got value, now convert!
+    const savedEmail = captureEmail;
+    setTimeout(() => {
+      const signupUrl = demo?.cta_url || '/register';
+      const separator = signupUrl.includes('?') ? '&' : '?';
+      window.location.href = `${signupUrl}${separator}email=${encodeURIComponent(savedEmail)}`;
+    }, 2000);
   };
 
   const actualCopyResponse = (text, index) => {
