@@ -5131,31 +5131,74 @@ function getSerpApiKeyCount() {
   ].filter(Boolean).length;
 }
 
-// Helper: Scrape Google reviews via SerpAPI
-async function scrapeGoogleReviews(placeId, limit = 10) {
-  const apiKey = getNextSerpApiKey();
-  if (!apiKey) {
-    throw new Error('No SERPAPI_KEY configured');
+// Helper: Scrape Google reviews via Outscraper (fallback/alternative to SerpAPI)
+// Free tier: 500 reviews, no phone verification needed
+async function scrapeGoogleReviewsOutscraper(placeId, limit = 10) {
+  if (!process.env.OUTSCRAPER_API_KEY) {
+    throw new Error('OUTSCRAPER_API_KEY not configured');
   }
 
-  const url = `https://serpapi.com/search.json?engine=google_maps_reviews&place_id=${placeId}&hl=en&api_key=${apiKey}`;
+  const url = `https://api.app.outscraper.com/maps/reviews-v3?query=${placeId}&reviewsLimit=${limit}&async=false&sort=lowest_rating`;
 
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    headers: {
+      'X-API-KEY': process.env.OUTSCRAPER_API_KEY
+    }
+  });
+
   const data = await response.json();
 
-  if (data.error) {
-    throw new Error(`SerpAPI error: ${data.error}`);
+  if (data.status === 'Error' || data.error) {
+    throw new Error(`Outscraper error: ${data.error || data.status_message || 'Unknown error'}`);
   }
 
-  return (
-    data.reviews?.slice(0, limit).map((r) => ({
-      text: r.snippet || r.text || '',
-      rating: r.rating || 0,
-      author: r.user?.name || 'Anonymous',
-      date: r.date || '',
-      source: 'google',
-    })) || []
-  );
+  // Outscraper returns array of places, each with reviews_data
+  const reviews = data.data?.[0]?.reviews_data || [];
+
+  return reviews.slice(0, limit).map((r) => ({
+    text: r.review_text || r.snippet || '',
+    rating: r.review_rating || 0,
+    author: r.author_title || r.reviewer_name || 'Anonymous',
+    date: r.review_datetime_utc || r.review_date || '',
+    source: 'google',
+  }));
+}
+
+// Helper: Scrape Google reviews - tries SerpAPI first, falls back to Outscraper
+async function scrapeGoogleReviews(placeId, limit = 10) {
+  // Try SerpAPI first (if configured)
+  const serpApiKey = getNextSerpApiKey();
+  if (serpApiKey) {
+    try {
+      const url = `https://serpapi.com/search.json?engine=google_maps_reviews&place_id=${placeId}&hl=en&api_key=${serpApiKey}`;
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.error) {
+        console.log(`SerpAPI error, trying Outscraper: ${data.error}`);
+        throw new Error(data.error);
+      }
+
+      return (
+        data.reviews?.slice(0, limit).map((r) => ({
+          text: r.snippet || r.text || '',
+          rating: r.rating || 0,
+          author: r.user?.name || 'Anonymous',
+          date: r.date || '',
+          source: 'google',
+        })) || []
+      );
+    } catch (serpErr) {
+      console.log(`SerpAPI failed: ${serpErr.message}, trying Outscraper fallback...`);
+    }
+  }
+
+  // Fallback to Outscraper
+  if (process.env.OUTSCRAPER_API_KEY) {
+    return scrapeGoogleReviewsOutscraper(placeId, limit);
+  }
+
+  throw new Error('No review scraping API configured (need SERPAPI_KEY or OUTSCRAPER_API_KEY)');
 }
 
 // Helper: Lookup Google Place ID from business name + city
@@ -10727,8 +10770,9 @@ GREAT RESPONSES:
 // Returns { demo_url, demo_token, reviews_processed } or null if failed
 async function generateDemoForLead(lead) {
   try {
-    // Need SerpAPI for review scraping (supports multiple keys via rotation)
-    if (getSerpApiKeyCount() === 0 || !process.env.GOOGLE_PLACES_API_KEY) {
+    // Need review scraping API (SerpAPI or Outscraper) + Google Places
+    const hasReviewApi = getSerpApiKeyCount() > 0 || process.env.OUTSCRAPER_API_KEY;
+    if (!hasReviewApi || !process.env.GOOGLE_PLACES_API_KEY) {
       console.log('Missing API keys for demo generation');
       return null;
     }
@@ -15781,10 +15825,10 @@ app.get('/api/admin/automation-health', async (req, res) => {
       });
     }
 
-    if (serpApiKeyCount === 0) {
+    if (serpApiKeyCount === 0 && !process.env.OUTSCRAPER_API_KEY) {
       alerts.push({
         type: 'error',
-        message: 'No SERPAPI_KEY configured - demos will fail!'
+        message: 'No review scraping API configured (need SERPAPI_KEY or OUTSCRAPER_API_KEY)'
       });
     }
 
@@ -15828,8 +15872,13 @@ app.get('/api/admin/automation-health', async (req, res) => {
           estimated_monthly: serpApiUsageEstimate,
           limit: effectiveSerpApiLimit,
           key_count: serpApiKeyCount,
-          percent: Math.round(serpApiUsageEstimate / effectiveSerpApiLimit * 100),
+          percent: effectiveSerpApiLimit > 0 ? Math.round(serpApiUsageEstimate / effectiveSerpApiLimit * 100) : 0,
           note: serpApiKeyCount > 1 ? `${serpApiKeyCount} keys rotating (${effectiveSerpApiLimit} total searches/mo)` : null
+        },
+        outscraper: {
+          configured: !!process.env.OUTSCRAPER_API_KEY,
+          free_tier_limit: 500,
+          note: 'Fallback when SerpAPI exhausted (500 free reviews)'
         },
         google_places: {
           estimated_monthly_cost_usd: Math.round(googlePlacesCostEstimate * 100) / 100,
