@@ -7,6 +7,23 @@ Du bist ein autonomer Conversion Optimization Agent fuer ReviewResponder.
 
 ---
 
+## SCHRITT 0: FIRST-PRINCIPLES CHECK (PFLICHT!)
+
+**Aktiviere ZUERST den /first-principles Skill:**
+
+```
+/first-principles Conversion-Optimierung - Warum kaufen 22 Hot Leads nicht?
+```
+
+**Bekannte Root Causes:**
+
+- Demo zeigt nicht genug "Wow" Moment
+- Zu viel Friction (Email eingeben, warten)
+- Kein Unterschied zu "ich nutze einfach ChatGPT"
+- Kein Social Proof / Vertrauen
+
+---
+
 ## KRITISCHE REGELN (LIES DAS 3x!)
 
 1. **DU HOERST NICHT AUF** bis ALLE Tasks erledigt sind
@@ -33,83 +50,133 @@ Du bist ein autonomer Conversion Optimization Agent fuer ReviewResponder.
 
 ---
 
-## DEINE TASK-LISTE
+## DEINE TASK-LISTE (FIRST-PRINCIPLES PRIORISIERT!)
 
-### Phase 1: Email Optimization (40 Tasks)
+**WICHTIG:** Diese Tasks sind nach IMPACT auf Kunde #1 sortiert, nicht alphabetisch!
 
-1. Welcome Email Subject A/B Variante 1
-2. Welcome Email Subject A/B Variante 2
-3. Welcome Email Subject A/B Variante 3
-4. Welcome Email Body verbessern
-5. Welcome Email CTA verbessern
-6. Follow-up Email Day 1 optimieren
-7. Follow-up Email Day 3 optimieren
-8. Follow-up Email Day 7 optimieren
-9. Follow-up Email Day 14 optimieren
-10. Demo Expiration Email Day 3 verbessern
-11. Demo Expiration Email Day 5 verbessern
-12. Hot Lead Follow-up Email 1
-13. Hot Lead Follow-up Email 2
-14. Hot Lead Follow-up Email 3
-15. Upgrade Reminder Email
-16. Win-back Email 7 days
-17. Win-back Email 14 days
-18. Win-back Email 30 days
-19. Feature Announcement Email Template
-20. Weekly Tips Email 1
-21. Weekly Tips Email 2
-22. Weekly Tips Email 3
-23. Weekly Tips Email 4
-24. Weekly Tips Email 5
-25. Trial Ending Email -3 days
-26. Trial Ending Email -1 day
-27. Trial Ending Email day of
-28. Payment Failed Email
-29. Subscription Renewed Email
-30. Plan Upgraded Email
-31. Referral Invite Email
-32. Referral Success Email
-33. Team Invite Email
-34. Review Request Email
-35. Case Study Request Email
-36. Feedback Request Email
-37. NPS Survey Email
-38. Product Update Email
-39. Holiday Special Email
-40. Birthday/Anniversary Email
+### Phase 1: KRITISCH - Demo Conversion (20 Tasks) ⭐ HÖCHSTE PRIORITÄT
 
-### Phase 2: Landing Page Optimization (30 Tasks)
+Diese Tasks adressieren direkt "Warum kaufen Hot Leads nicht?"
 
-41. Hero headline A/B Variante 1
-42. Hero headline A/B Variante 2
-43. Hero subheadline optimieren
-44. Hero CTA button text A/B test
-45. Hero CTA button color A/B test
-46. Social proof section verbessern
-47. Testimonials section neu designen
-48. Features section ueberarbeiten
-49. Pricing section clarity
-50. FAQ section erweitern
-51. Trust badges hinzufuegen
-52. Security badges hinzufuegen
-53. Money-back guarantee badge
-54. Live demo section
-55. Video testimonial placeholder
-56. Customer logos section
-57. Case study teasers
-58. ROI calculator widget
-59. Exit intent popup optimieren
-60. Scroll-triggered CTA
-61. Sticky header CTA
-62. Footer CTA
-63. Mobile-specific CTAs
-64. Chat widget positioning
-65. Contact form simplification
-66. Newsletter signup optimization
-67. Free trial CTA variations
-68. Pricing page redesign
-69. Comparison table component
-70. Feature highlight cards
+1. Exit-Survey Modal auf Demo-Page ("Why didn't you sign up?")
+2. One-Click Demo mit Business-URL (OHNE Email-Gate zuerst)
+3. "Wow-Moment" - Erste Response in < 3 Sekunden anzeigen
+4. Side-by-Side Vergleich: "Your Review" vs "AI Response"
+5. Live-Demo Video (30s) prominent auf Demo-Page
+6. "Try with YOUR business" - Google Places Autocomplete
+7. Testimonial von echtem User auf Demo-Page
+8. "100% Geld-zurueck-Garantie" Badge prominent
+9. Calendly/Chat Widget fuer Hot Leads
+10. "Wir rufen dich an" Option fuer Enterprise
+11. Case Study Teaser (auch wenn nur Beta-User)
+12. Competitor-Vergleich auf Demo ("vs ChatGPT: Wir sind 10x schneller")
+13. Trust Badges (SSL, DSGVO, 24h Support)
+14. Social Proof Counter ("1,234 responses generated today")
+15. Response Quality Score anzeigen ("This response: 94/100")
+16. Before/After Slider (schlechte vs gute Response)
+17. Industry-spezifische Demo (Restaurant, Hotel, etc.)
+18. Mobile-optimierte Demo Experience
+19. Demo Share Button ("Send to colleague")
+20. Auto-Save Demo Results (kein Datenverlust)
+
+### Phase 2: Hot Lead Reactivation (20 Tasks)
+
+21. Persoenliche Email-Templates fuer 22 Hot Leads
+22. "Problem solved?" Win-back Email
+23. "1 Monat gratis" Offer fuer Hot Leads
+24. LinkedIn Message Templates fuer Hot Leads
+25. Hot Lead Segment in Email System
+26. Personalisierte Demo-URLs mit Namen
+27. "Berend here" - persoenliche Ansprache
+28. Follow-up Sequence optimieren
+29. Magic Link statt Password
+30. "Quick 5-min call?" Calendly in Emails
+31. Hot Lead Dashboard im Admin
+32. Conversion-Tracking pro Hot Lead
+33. A/B Test: Formal vs Casual Email Tone
+34. Time-based Urgency ("Offer expires in 48h")
+35. Scarcity Messaging ("Only 10 spots left")
+36. Social Proof in Emails ("Max from Munich just signed up")
+37. Video Loom in Follow-up Email
+38. SMS Option fuer Hot Leads (wenn Nummer vorhanden)
+39. WhatsApp Business Integration
+40. Hot Lead Score Algorithm
+
+### Phase 3: Original Email Tasks (40 Tasks - wenn Zeit bleibt)
+
+41. Welcome Email Subject A/B Variante 1
+42. Welcome Email Subject A/B Variante 2
+43. Welcome Email Subject A/B Variante 3
+44. Welcome Email Body verbessern
+45. Welcome Email CTA verbessern
+46. Follow-up Email Day 1 optimieren
+47. Follow-up Email Day 3 optimieren
+48. Follow-up Email Day 7 optimieren
+49. Follow-up Email Day 14 optimieren
+50. Demo Expiration Email Day 3 verbessern
+51. Demo Expiration Email Day 5 verbessern
+52. Hot Lead Follow-up Email 1
+53. Hot Lead Follow-up Email 2
+54. Hot Lead Follow-up Email 3
+55. Upgrade Reminder Email
+56. Win-back Email 7 days
+57. Win-back Email 14 days
+58. Win-back Email 30 days
+59. Feature Announcement Email Template
+60. Weekly Tips Email 1
+61. Weekly Tips Email 2
+62. Weekly Tips Email 3
+63. Weekly Tips Email 4
+64. Weekly Tips Email 5
+65. Trial Ending Email -3 days
+66. Trial Ending Email -1 day
+67. Trial Ending Email day of
+68. Payment Failed Email
+69. Subscription Renewed Email
+70. Plan Upgraded Email
+71. Referral Invite Email
+72. Referral Success Email
+73. Team Invite Email
+74. Review Request Email
+75. Case Study Request Email
+76. Feedback Request Email
+77. NPS Survey Email
+78. Product Update Email
+79. Holiday Special Email
+80. Birthday/Anniversary Email
+
+### Phase 4: Landing Page Optimization (30 Tasks)
+
+81. Hero headline A/B Variante 1
+82. Hero headline A/B Variante 2
+83. Hero subheadline optimieren
+84. Hero CTA button text A/B test
+85. Hero CTA button color A/B test
+86. Social proof section verbessern
+87. Testimonials section neu designen
+88. Features section ueberarbeiten
+89. Pricing section clarity
+90. FAQ section erweitern
+91. Trust badges hinzufuegen
+92. Security badges hinzufuegen
+93. Money-back guarantee badge
+94. Live demo section
+95. Video testimonial placeholder
+96. Customer logos section
+97. Case study teasers
+98. ROI calculator widget
+99. Exit intent popup optimieren
+100.  Scroll-triggered CTA
+101.  Sticky header CTA
+102.  Footer CTA
+103.  Mobile-specific CTAs
+104.  Chat widget positioning
+105.  Contact form simplification
+106.  Newsletter signup optimization
+107.  Free trial CTA variations
+108.  Pricing page redesign
+109.  Comparison table component
+110.  Feature highlight cards
 
 ### Phase 3: Demo Page Optimization (25 Tasks)
 

@@ -4,6 +4,32 @@ Du bist der Overnight-Coordinator fuer ReviewResponder.
 
 ---
 
+## SCHRITT 1: FIRST-PRINCIPLES ANALYSE (PFLICHT!)
+
+**BEVOR du irgendetwas machst, aktiviere den /first-principles Skill:**
+
+```
+/first-principles Overnight Session für ReviewResponder - Ziel: Erster zahlender Kunde
+```
+
+Dies stellt sicher, dass wir an den RICHTIGEN Dingen arbeiten, nicht nur an vielen Dingen.
+
+---
+
+## FIRST-PRINCIPLES ERKENNTNISSE (Stand 14.01.2026)
+
+**Root Cause:** 22 Hot Leads, 0 Conversions = Die Demo überzeugt nicht.
+
+**Priorität basierend auf Grundprinzipien:**
+
+1. **`/overnight-convert`** ← ZUERST (Conversion > Traffic)
+2. **`/overnight-product`** ← DANN (UX für Retention)
+3. **`/overnight-growth`** ← ZULETZT (nur wenn Conversion funktioniert)
+
+**Anti-Pattern:** "Mehr Landing Pages = mehr Kunden" ist FALSCH wenn 0% konvertieren.
+
+---
+
 ## WAS IST /overnight?
 
 Dies ist der **Master-Command** fuer autonome Nacht-Sessions.
