@@ -2867,7 +2867,6 @@ const PricingCards = ({ showFree = true }) => {
         '20 total per month',
         'All 4 tone options',
         '50+ languages',
-        'Response history',
         'Chrome Extension (all platforms)',
       ],
       buttonText: 'Get Started',
@@ -2882,6 +2881,7 @@ const PricingCards = ({ showFree = true }) => {
         '✨ 100 Smart AI responses',
         '⚡ 200 Standard responses',
         '300 total per month',
+        'Response history',
         'CSV/PDF export',
         'Chrome Extension (all platforms)',
       ],
@@ -5307,6 +5307,7 @@ const DashboardPage = () => {
   const canUseBlog = ['professional', 'unlimited'].includes(effectivePlan);
   const canUseApi = effectivePlan === 'unlimited';
   const canExport = ['starter', 'professional', 'unlimited'].includes(effectivePlan);
+  const canUseHistory = ['starter', 'professional', 'unlimited'].includes(effectivePlan);
 
   // Load blog data when switching to blog tab
   useEffect(() => {
@@ -6653,91 +6654,121 @@ Food was amazing, will definitely come back!`}
 
       {/* History Tab */}
       {activeTab === 'history' && (
-        <div className="card">
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '16px',
-              flexWrap: 'wrap',
-              gap: '12px',
-            }}
-          >
-            <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>
-              <Clock size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-              Response History
-            </h2>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <input
-                type="date"
-                value={exportDateFrom}
-                onChange={e => setExportDateFrom(e.target.value)}
+        <div>
+          {!canUseHistory ? (
+            <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
+              <div
                 style={{
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  border: '1px solid var(--gray-300)',
-                  fontSize: '13px',
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '50%',
+                  background: 'var(--primary-light)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 16px',
                 }}
-              />
-              <span style={{ color: 'var(--gray-400)' }}>to</span>
-              <input
-                type="date"
-                value={exportDateTo}
-                onChange={e => setExportDateTo(e.target.value)}
-                style={{
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  border: '1px solid var(--gray-300)',
-                  fontSize: '13px',
-                }}
-              />
-              <button
-                onClick={exportToCSV}
-                disabled={exporting || allHistory.length === 0}
-                className="btn btn-secondary"
-                style={{ padding: '6px 12px', fontSize: '13px', opacity: !canExport ? 0.5 : 1 }}
               >
-                <Download size={14} /> CSV
-              </button>
-              <button
-                onClick={exportToPDF}
-                disabled={exporting || allHistory.length === 0}
-                className="btn btn-primary"
-                style={{ padding: '6px 12px', fontSize: '13px', opacity: !canExport ? 0.5 : 1 }}
-              >
-                <Download size={14} /> PDF
-              </button>
-            </div>
-          </div>
-          {allHistory.length > 0 && (
-            <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginBottom: '16px' }}>
-              {allHistory.length} responses available for export
-            </p>
-          )}
-
-          {history.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--gray-500)' }}>
-              <FileText size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-              <p>No responses generated yet. Start by generating your first response!</p>
+                <Clock size={32} style={{ color: 'var(--primary)' }} />
+              </div>
+              <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+                Response History is a Starter Feature
+              </h3>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '24px', maxWidth: '400px', margin: '0 auto 24px' }}>
+                Keep track of all your generated responses. Access your history anytime, export to CSV/PDF, and never lose a response.
+              </p>
+              <Link to="/pricing" className="btn btn-primary">
+                Upgrade to Starter - $29/month
+              </Link>
             </div>
           ) : (
-            history.map(item => (
-              <div key={item.id} className="history-item">
-                <div className="history-review">
-                  <strong>Review:</strong> {item.review_text.substring(0, 150)}
-                  {item.review_text.length > 150 && '...'}
-                </div>
-                <div className="history-response">
-                  <strong>Response:</strong> {item.generated_response}
-                </div>
-                <div className="history-meta">
-                  {item.review_rating && <span>{item.review_rating} stars</span>}
-                  <span>{item.review_platform}</span>
-                  <span>{new Date(item.created_at).toLocaleDateString()}</span>
+            <div className="card">
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '16px',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                }}
+              >
+                <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>
+                  <Clock size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                  Response History
+                </h2>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <input
+                    type="date"
+                    value={exportDateFrom}
+                    onChange={e => setExportDateFrom(e.target.value)}
+                    style={{
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--gray-300)',
+                      fontSize: '13px',
+                    }}
+                  />
+                  <span style={{ color: 'var(--gray-400)' }}>to</span>
+                  <input
+                    type="date"
+                    value={exportDateTo}
+                    onChange={e => setExportDateTo(e.target.value)}
+                    style={{
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--gray-300)',
+                      fontSize: '13px',
+                    }}
+                  />
+                  <button
+                    onClick={exportToCSV}
+                    disabled={exporting || allHistory.length === 0}
+                    className="btn btn-secondary"
+                    style={{ padding: '6px 12px', fontSize: '13px', opacity: !canExport ? 0.5 : 1 }}
+                  >
+                    <Download size={14} /> CSV
+                  </button>
+                  <button
+                    onClick={exportToPDF}
+                    disabled={exporting || allHistory.length === 0}
+                    className="btn btn-primary"
+                    style={{ padding: '6px 12px', fontSize: '13px', opacity: !canExport ? 0.5 : 1 }}
+                  >
+                    <Download size={14} /> PDF
+                  </button>
                 </div>
               </div>
-            ))
+              {allHistory.length > 0 && (
+                <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginBottom: '16px' }}>
+                  {allHistory.length} responses available for export
+                </p>
+              )}
+
+              {history.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--gray-500)' }}>
+                  <FileText size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+                  <p>No responses generated yet. Start by generating your first response!</p>
+                </div>
+              ) : (
+                history.map(item => (
+                  <div key={item.id} className="history-item">
+                    <div className="history-review">
+                      <strong>Review:</strong> {item.review_text.substring(0, 150)}
+                      {item.review_text.length > 150 && '...'}
+                    </div>
+                    <div className="history-response">
+                      <strong>Response:</strong> {item.generated_response}
+                    </div>
+                    <div className="history-meta">
+                      {item.review_rating && <span>{item.review_rating} stars</span>}
+                      <span>{item.review_platform}</span>
+                      <span>{new Date(item.created_at).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           )}
         </div>
       )}
@@ -18874,7 +18905,7 @@ const PricingPage = () => {
     { name: 'Standard AI', free: '17', starter: '200', pro: '500', unlimited: 'Unlimited' },
     { name: 'AI Tone Options', free: true, starter: true, pro: true, unlimited: true },
     { name: '50+ Languages', free: true, starter: true, pro: true, unlimited: true },
-    { name: 'Response History', free: true, starter: true, pro: true, unlimited: true },
+    { name: 'Response History', free: false, starter: true, pro: true, unlimited: true },
     { name: 'CSV/PDF Export', free: false, starter: true, pro: true, unlimited: true },
     { name: 'Bulk Generation (20)', free: false, starter: false, pro: true, unlimited: true },
     { name: 'Analytics Dashboard', free: false, starter: false, pro: true, unlimited: true },

@@ -3562,6 +3562,15 @@ LANGUAGE: ${bulkLanguageInstruction}`;
 
 app.get('/api/responses/history', authenticateToken, async (req, res) => {
   try {
+    // Plan-Check: Response History is Starter+ only
+    const user = await dbGet('SELECT subscription_plan FROM users WHERE id = $1', [req.user.id]);
+    if (user.subscription_plan === 'free') {
+      return res.status(403).json({
+        error: 'Response history is available for Starter plans and above',
+        upgrade: true,
+      });
+    }
+
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const offset = (page - 1) * limit;
