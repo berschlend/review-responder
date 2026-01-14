@@ -5242,6 +5242,7 @@ app.get('/api/discount-links/:token', async (req, res) => {
       isExpired,
       claimed: link.claimed,
       discount,
+      source: link.source,
     });
   } catch (error) {
     console.error('Discount link fetch error:', error);

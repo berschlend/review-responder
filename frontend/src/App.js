@@ -20066,312 +20066,258 @@ const ClaimDiscountPage = () => {
     );
   }
 
-  const { discount, discountCode, recipientName, businessName } = linkData;
+  const { discount, discountCode, recipientName, businessName, source } = linkData;
   const firstName = recipientName?.split(' ')[0];
 
+  // Calculate yearly savings (based on Starter plan $29/mo)
+  const yearlySavings = Math.round(29 * 12 * discount.percent / 100);
+
+  // Source-aware headline
+  const getHeadline = () => {
+    if (source === 'demo') {
+      return firstName ? `${firstName}, loved the demo?` : 'Loved the demo?';
+    }
+    if (source === 'outreach') {
+      return firstName ? `${firstName}, managing reviews is hard` : 'Managing reviews is hard';
+    }
+    if (source === 'drip') {
+      return firstName ? `${firstName}, ready to save time?` : 'Ready to save time?';
+    }
+    return firstName ? `${firstName}, this one's for you` : 'A special offer for you';
+  };
+
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%)',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Animated background glow */}
-      <div style={{
-        position: 'absolute',
-        top: '20%',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '600px',
-        height: '600px',
-        background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)',
-        pointerEvents: 'none'
-      }} />
+    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', paddingTop: '40px', paddingBottom: '80px' }}>
+      <div style={{ maxWidth: '560px', margin: '0 auto', padding: '0 24px' }}>
 
-      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '80px 24px', textAlign: 'center', position: 'relative', zIndex: 1 }}>
+        {/* Logo */}
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <Link to="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <MessageSquare size={28} style={{ color: 'var(--primary)' }} />
+            <span style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>ReviewResponder</span>
+          </Link>
+        </div>
 
-        {/* Exclusive badge */}
+        {/* Main Card */}
         <div style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-          padding: '6px 14px',
-          background: 'rgba(255,255,255,0.1)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255,255,255,0.2)',
-          borderRadius: '100px',
-          fontSize: '12px',
-          fontWeight: '500',
-          marginBottom: '32px',
-          color: 'rgba(255,255,255,0.9)',
-          letterSpacing: '0.5px',
-          textTransform: 'uppercase'
+          background: 'var(--card-bg)',
+          borderRadius: '16px',
+          border: '1px solid var(--border-color)',
+          padding: '40px 32px',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
+          textAlign: 'center'
         }}>
-          <span style={{ width: '6px', height: '6px', background: '#10b981', borderRadius: '50%', animation: 'pulse 2s infinite' }} />
-          {discount.label}
-        </div>
 
-        {/* Personalized greeting */}
-        {firstName && (
-          <p style={{
-            fontSize: '18px',
-            color: 'rgba(255,255,255,0.7)',
-            marginBottom: '12px',
-            fontWeight: '400'
-          }}>
-            Hey {firstName}, this one's for you
-          </p>
-        )}
-
-        {/* Giant discount number */}
-        <div style={{ marginBottom: '24px' }}>
-          <span style={{
-            fontSize: '120px',
-            fontWeight: '900',
-            background: 'linear-gradient(135deg, #10b981 0%, #34d399 50%, #6ee7b7 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            lineHeight: '1',
-            display: 'block',
-            letterSpacing: '-4px',
-            textShadow: '0 0 80px rgba(16, 185, 129, 0.5)'
-          }}>
-            {discount.percent}%
-          </span>
-          <span style={{
-            fontSize: '28px',
-            fontWeight: '600',
-            color: 'rgba(255,255,255,0.9)',
-            letterSpacing: '8px',
-            textTransform: 'uppercase',
-            display: 'block',
-            marginTop: '-8px'
-          }}>
-            OFF
-          </span>
-        </div>
-
-        {/* Business name - premium card */}
-        {businessName && (
+          {/* Badge */}
           <div style={{
-            display: 'inline-block',
-            padding: '16px 32px',
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: '16px',
-            marginBottom: '32px',
-            border: '1px solid rgba(255,255,255,0.15)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
-          }}>
-            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px 0', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: '500' }}>Reserved exclusively for</p>
-            <p style={{ fontSize: '20px', fontWeight: '700', color: 'white', margin: 0 }}>{businessName}</p>
-          </div>
-        )}
-
-        <p style={{
-          fontSize: '18px',
-          color: 'rgba(255,255,255,0.6)',
-          marginBottom: '48px',
-          maxWidth: '480px',
-          marginLeft: 'auto',
-          marginRight: 'auto',
-          lineHeight: '1.6'
-        }}>
-          AI-powered review responses in seconds. Save hours every week on Google, Yelp, TripAdvisor and more.
-        </p>
-
-        {/* Timer - Urgent countdown with glow */}
-        {!isExpired ? (
-          <div style={{ marginBottom: '48px' }}>
-            <p style={{
-              fontSize: '11px',
-              fontWeight: '600',
-              color: '#f87171',
-              marginBottom: '20px',
-              textTransform: 'uppercase',
-              letterSpacing: '3px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px'
-            }}>
-              <span style={{ display: 'inline-block', width: '8px', height: '8px', background: '#f87171', borderRadius: '50%', animation: 'pulse 1s infinite' }} />
-              Offer expires in
-            </p>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
-              {[
-                { value: timeLeft.hours, label: 'Hours' },
-                { value: timeLeft.minutes, label: 'Min' },
-                { value: timeLeft.seconds, label: 'Sec' },
-              ].map((item, i) => (
-                <div key={i} style={{ textAlign: 'center' }}>
-                  <div style={{
-                    width: '90px',
-                    height: '90px',
-                    background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)',
-                    backdropFilter: 'blur(20px)',
-                    borderRadius: '20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '36px',
-                    fontWeight: '700',
-                    color: 'white',
-                    fontFamily: 'system-ui, -apple-system, sans-serif',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1)'
-                  }}>
-                    {String(item.value).padStart(2, '0')}
-                  </div>
-                  <div style={{
-                    fontSize: '10px',
-                    fontWeight: '600',
-                    color: 'rgba(255,255,255,0.4)',
-                    marginTop: '10px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px'
-                  }}>
-                    {item.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div style={{
-            marginBottom: '48px',
-            padding: '20px 32px',
-            background: 'rgba(239,68,68,0.2)',
-            borderRadius: '16px',
-            color: '#fca5a5',
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '12px',
-            border: '1px solid rgba(239,68,68,0.3)'
-          }}>
-            <span style={{ fontSize: '24px' }}>⏰</span>
-            <span style={{ fontWeight: '600' }}>This offer has expired</span>
-          </div>
-        )}
-
-        {/* Premium CTA Button */}
-        <Link
-          to={isExpired ? '/pricing' : `/pricing?discount=${discountCode}`}
-          style={{
-            display: 'inline-block',
-            padding: '22px 64px',
-            background: isExpired ? 'rgba(255,255,255,0.1)' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            gap: '6px',
+            padding: '6px 12px',
+            background: 'var(--primary)',
             color: 'white',
-            borderRadius: '16px',
-            textDecoration: 'none',
-            fontWeight: '700',
-            fontSize: '18px',
-            boxShadow: isExpired ? 'none' : '0 0 60px rgba(16, 185, 129, 0.4), 0 20px 40px rgba(16, 185, 129, 0.3)',
-            transition: 'all 0.3s ease',
-            border: isExpired ? '1px solid rgba(255,255,255,0.2)' : 'none',
-            position: 'relative',
-            overflow: 'hidden'
-          }}
-          onMouseOver={e => {
-            if (!isExpired) {
-              e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
-              e.currentTarget.style.boxShadow = '0 0 80px rgba(16, 185, 129, 0.5), 0 24px 48px rgba(16, 185, 129, 0.4)';
-            }
-          }}
-          onMouseOut={e => {
-            e.currentTarget.style.transform = 'translateY(0) scale(1)';
-            e.currentTarget.style.boxShadow = isExpired ? 'none' : '0 0 60px rgba(16, 185, 129, 0.4), 0 20px 40px rgba(16, 185, 129, 0.3)';
-          }}
-        >
-          {isExpired ? 'View Regular Pricing' : `Claim Your ${discount.percent}% Discount`}
-        </Link>
+            borderRadius: '6px',
+            fontSize: '12px',
+            fontWeight: '600',
+            marginBottom: '24px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
+          }}>
+            {discount.label}
+          </div>
 
-        {/* Trust indicators with icons */}
-        <div style={{ marginTop: '56px', display: 'flex', justifyContent: 'center', gap: '40px', flexWrap: 'wrap' }}>
+          {/* Headline - Source-aware */}
+          <h1 style={{
+            fontSize: '28px',
+            fontWeight: '700',
+            color: 'var(--text-primary)',
+            marginBottom: '16px',
+            lineHeight: '1.3'
+          }}>
+            {getHeadline()}
+          </h1>
+
+          {/* Discount Display */}
+          <div style={{
+            display: 'inline-block',
+            padding: '20px 40px',
+            background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)',
+            borderRadius: '12px',
+            marginBottom: '24px'
+          }}>
+            <span style={{
+              fontSize: '56px',
+              fontWeight: '800',
+              color: 'white',
+              lineHeight: '1'
+            }}>
+              {discount.percent}%
+            </span>
+            <span style={{
+              fontSize: '20px',
+              fontWeight: '600',
+              color: 'rgba(255,255,255,0.9)',
+              marginLeft: '8px',
+              textTransform: 'uppercase'
+            }}>
+              OFF
+            </span>
+            <p style={{
+              fontSize: '14px',
+              color: 'rgba(255,255,255,0.8)',
+              margin: '8px 0 0 0'
+            }}>
+              for {discount.duration}
+            </p>
+          </div>
+
+          {/* Business name */}
+          {businessName && (
+            <div style={{
+              padding: '12px 20px',
+              background: 'var(--bg-tertiary)',
+              borderRadius: '8px',
+              marginBottom: '24px',
+              display: 'inline-block'
+            }}>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 4px 0' }}>Reserved for</p>
+              <p style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>{businessName}</p>
+            </div>
+          )}
+
+          {/* Value proposition with savings */}
+          <p style={{
+            fontSize: '16px',
+            color: 'var(--text-secondary)',
+            marginBottom: '32px',
+            lineHeight: '1.6'
+          }}>
+            {businessName
+              ? `Respond to ${businessName}'s reviews in seconds, not hours.`
+              : 'Respond to reviews in seconds, not hours.'
+            }
+            {' '}<strong style={{ color: 'var(--primary)' }}>Save ${yearlySavings}/year</strong> on your subscription.
+          </p>
+
+          {/* Timer */}
+          {!isExpired ? (
+            <div style={{ marginBottom: '32px' }}>
+              <p style={{
+                fontSize: '13px',
+                fontWeight: '500',
+                color: 'var(--text-muted)',
+                marginBottom: '12px'
+              }}>
+                Offer expires in
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+                {[
+                  { value: timeLeft.hours, label: 'hrs' },
+                  { value: timeLeft.minutes, label: 'min' },
+                  { value: timeLeft.seconds, label: 'sec' },
+                ].map((item, i) => (
+                  <div key={i} style={{ textAlign: 'center' }}>
+                    <div style={{
+                      width: '60px',
+                      height: '60px',
+                      background: 'var(--bg-tertiary)',
+                      borderRadius: '10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '24px',
+                      fontWeight: '700',
+                      color: 'var(--text-primary)',
+                      border: '1px solid var(--border-color)'
+                    }}>
+                      {String(item.value).padStart(2, '0')}
+                    </div>
+                    <div style={{
+                      fontSize: '11px',
+                      color: 'var(--text-muted)',
+                      marginTop: '6px'
+                    }}>
+                      {item.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div style={{
+              marginBottom: '32px',
+              padding: '12px 20px',
+              background: '#fef2f2',
+              borderRadius: '8px',
+              color: '#dc2626',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <Clock size={18} />
+              <span style={{ fontWeight: '500' }}>This offer has expired</span>
+            </div>
+          )}
+
+          {/* CTA Button */}
+          <Link
+            to={isExpired ? '/pricing' : `/pricing?discount=${discountCode}`}
+            className="btn btn-primary"
+            style={{
+              display: 'block',
+              padding: '16px 32px',
+              fontSize: '16px',
+              fontWeight: '600',
+              borderRadius: '10px',
+              textDecoration: 'none',
+              background: isExpired ? 'var(--gray-400)' : 'var(--primary)',
+              marginBottom: '24px'
+            }}
+          >
+            {isExpired ? 'View Regular Pricing' : `Claim ${discount.percent}% Off Now`}
+          </Link>
+
+          {/* Discount code */}
+          <div style={{
+            padding: '16px 24px',
+            background: 'var(--bg-tertiary)',
+            borderRadius: '8px',
+            border: '1px dashed var(--border-color)'
+          }}>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: '500' }}>Your discount code</p>
+            <p style={{
+              fontSize: '20px',
+              fontWeight: '700',
+              fontFamily: 'monospace',
+              color: 'var(--primary)',
+              margin: 0,
+              letterSpacing: '2px'
+            }}>{discountCode}</p>
+          </div>
+
+        </div>
+
+        {/* Trust indicators below card */}
+        <div style={{ marginTop: '32px', display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap' }}>
           {[
-            { icon: '⚡', text: 'Instant responses' },
-            { icon: '🌍', text: '50+ languages' },
-            { icon: '💳', text: 'Cancel anytime' },
+            { icon: <Zap size={16} />, text: 'Instant responses' },
+            { icon: <Globe size={16} />, text: '50+ languages' },
+            { icon: <Shield size={16} />, text: 'Cancel anytime' },
           ].map((item, i) => (
             <div key={i} style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '10px',
-              color: 'rgba(255,255,255,0.5)',
-              fontSize: '14px',
-              fontWeight: '500'
+              gap: '6px',
+              color: 'var(--text-muted)',
+              fontSize: '13px'
             }}>
-              <span style={{ fontSize: '18px' }}>{item.icon}</span>
+              {item.icon}
               <span>{item.text}</span>
             </div>
           ))}
         </div>
 
-        {/* Discount code - elegant display */}
-        <div style={{
-          marginTop: '56px',
-          padding: '24px 40px',
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: '16px',
-          border: '1px solid rgba(255,255,255,0.1)',
-          display: 'inline-block',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
-        }}>
-          <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginBottom: '8px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '2px' }}>Your exclusive code</p>
-          <p style={{
-            fontSize: '28px',
-            fontWeight: '800',
-            fontFamily: 'monospace',
-            background: 'linear-gradient(135deg, #a78bfa 0%, #818cf8 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            margin: 0,
-            letterSpacing: '4px'
-          }}>{discountCode}</p>
-          <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '8px', fontWeight: '500' }}>Valid for {discount.duration}</p>
-        </div>
-
-        {/* Social proof */}
-        <div style={{
-          marginTop: '48px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '12px'
-        }}>
-          <div style={{ display: 'flex' }}>
-            {['#4f46e5', '#10b981', '#f59e0b', '#ef4444'].map((color, i) => (
-              <div key={i} style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                background: color,
-                border: '2px solid #1e1b4b',
-                marginLeft: i > 0 ? '-10px' : '0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '14px'
-              }}>
-                {['B', 'M', 'S', 'R'][i]}
-              </div>
-            ))}
-          </div>
-          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>
-            Trusted by <span style={{ color: 'white', fontWeight: '600' }}>500+</span> businesses
-          </p>
-        </div>
-
       </div>
-
-      {/* CSS for pulse animation */}
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-      `}</style>
     </div>
   );
 };
