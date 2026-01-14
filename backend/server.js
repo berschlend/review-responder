@@ -4112,6 +4112,29 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
         console.log('DEMOFOLLOWUP coupon creation error:', err);
         // Continue without discount if coupon fails
       }
+    } else if (upperDiscountCode === 'WELCOME30' || upperDiscountCode === 'DEMO30') {
+      // Welcome/Demo signup - 30% off for 7 days (first 3 months)
+      try {
+        const coupon = await stripe.coupons.create({
+          percent_off: 30,
+          duration: 'repeating',
+          duration_in_months: 3,
+          id: `WELCOME30_${Date.now()}_${user.id}`,
+          redeem_by: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // Valid for 7 days
+          metadata: {
+            campaign: upperDiscountCode === 'DEMO30' ? 'demo_signup' : 'welcome_email',
+            user_id: user.id.toString(),
+          },
+        });
+        discounts = [
+          {
+            coupon: coupon.id,
+          },
+        ];
+      } catch (err) {
+        console.log('WELCOME30/DEMO30 coupon creation error:', err);
+        // Continue without discount if coupon fails
+      }
     }
 
     const sessionConfig = {
@@ -6459,7 +6482,7 @@ app.get('/api/public/demo/:token', async (req, res) => {
       total_reviews: demo.total_reviews,
       demos: demo.generated_responses,
       google_reviews_url: googleReviewsUrl,
-      cta_url: `https://tryreviewresponder.com/register?ref=demo_${demo.demo_token}`,
+      cta_url: `https://tryreviewresponder.com/register?ref=demo_${demo.demo_token}&discount=DEMO30`,
     });
   } catch (error) {
     console.error('Public demo error:', error);
@@ -8280,7 +8303,7 @@ app.get('/api/cron/send-drip-emails', async (req, res) => {
   const getDripEmail = (day, user) => {
     const templates = {
       0: {
-        subject: "Welcome to ReviewResponder! Let's get started",
+        subject: "Your 30% discount expires in 7 days",
         html: `
           <!DOCTYPE html>
           <html>
@@ -8291,8 +8314,12 @@ app.get('/api/cron/send-drip-emails', async (req, res) => {
               .header { background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0; }
               .content { background: white; padding: 40px; border: 1px solid #E5E7EB; border-radius: 0 0 8px 8px; }
               .cta-button { display: inline-block; background: #4F46E5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; }
-              .step { display: flex; gap: 12px; margin: 16px 0; }
-              .step-num { background: #4F46E5; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+              .discount-box { background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); border: 2px dashed #D97706; padding: 20px; border-radius: 8px; text-align: center; margin: 24px 0; }
+              .discount-code { font-size: 28px; font-weight: bold; color: #D97706; font-family: monospace; letter-spacing: 2px; }
+              .discount-text { color: #92400E; font-size: 14px; margin-top: 8px; }
+              .urgency { color: #DC2626; font-weight: 600; }
+              .benefit { display: flex; align-items: center; gap: 8px; margin: 12px 0; }
+              .check { color: #10B981; font-size: 18px; }
               .footer { text-align: center; padding: 20px; color: #6B7280; font-size: 14px; }
             </style>
           </head>
@@ -8300,37 +8327,50 @@ app.get('/api/cron/send-drip-emails', async (req, res) => {
             <div class="container">
               <div class="header">
                 <h1>Welcome to ReviewResponder!</h1>
-                <p>You're about to save hours on review management</p>
+                <p>Your exclusive welcome offer is inside</p>
               </div>
               <div class="content">
                 <p>Hi${user.business_name ? ' ' + user.business_name : ''}!</p>
 
-                <p>Thanks for signing up! You've made a great choice. Here's how to get started in 3 simple steps:</p>
+                <p>Thanks for signing up! As a welcome gift, here's <strong>30% off</strong> your first month:</p>
 
-                <div class="step">
-                  <div class="step-num">1</div>
-                  <div><strong>Copy a customer review</strong> from Google, Yelp, or any platform</div>
+                <div class="discount-box">
+                  <div class="discount-code">WELCOME30</div>
+                  <div class="discount-text">30% off Starter Plan ($29 → <strong>$20.30/mo</strong>)</div>
+                  <div class="discount-text urgency">Expires in 7 days</div>
                 </div>
 
-                <div class="step">
-                  <div class="step-num">2</div>
-                  <div><strong>Paste it into ReviewResponder</strong> and select your preferred tone</div>
+                <p><strong>What you get with ReviewResponder:</strong></p>
+
+                <div class="benefit">
+                  <span class="check">✓</span>
+                  <span>AI responses in <strong>2 seconds</strong> (vs 5-10 min writing yourself)</span>
                 </div>
 
-                <div class="step">
-                  <div class="step-num">3</div>
-                  <div><strong>Click Generate</strong> and get a professional response in seconds!</div>
+                <div class="benefit">
+                  <span class="check">✓</span>
+                  <span>Works on Google, Yelp, TripAdvisor, Booking & more</span>
                 </div>
 
-                <p style="margin-top: 30px;">You have <strong>20 free responses</strong> to try it out. No credit card required.</p>
+                <div class="benefit">
+                  <span class="check">✓</span>
+                  <span>4 tone options: Professional, Friendly, Apologetic, Enthusiastic</span>
+                </div>
+
+                <div class="benefit">
+                  <span class="check">✓</span>
+                  <span>Chrome Extension for one-click responses</span>
+                </div>
+
+                <p style="margin-top: 24px;">You have <strong>20 free responses</strong> to try it. Love it? Use code <strong>WELCOME30</strong> at checkout.</p>
 
                 <center style="margin: 30px 0;">
                   <a href="${FRONTEND_URL}/dashboard" class="cta-button">Generate Your First Response →</a>
                 </center>
 
-                <p>Questions? Just reply to this email!</p>
+                <p style="font-size: 14px; color: #6B7280;">Questions? Just reply to this email - I read every message.</p>
 
-                <p>Best,<br>The ReviewResponder Team</p>
+                <p>Best,<br>Berend<br><span style="font-size: 13px; color: #6B7280;">Founder, ReviewResponder</span></p>
               </div>
               <div class="footer">
                 <p>ReviewResponder - AI-Powered Review Responses</p>

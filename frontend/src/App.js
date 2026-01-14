@@ -3034,12 +3034,12 @@ const PricingCards = ({ showFree = true }) => {
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [loadingPlan, setLoadingPlan] = useState(null); // Track which plan is loading
 
-  // Get discount code from URL parameter (e.g., ?discount=EARLY50)
+  // Get discount code from URL parameter (e.g., ?discount=EARLY50) or localStorage
   const urlParams = new URLSearchParams(location.search);
-  const discountFromUrl = urlParams.get('discount');
+  const discountFromUrl = urlParams.get('discount') || localStorage.getItem('pending_discount');
 
-  // Valid discount codes
-  const validDiscountCodes = ['EARLY50', 'SAVE20', 'HUNTLAUNCH'];
+  // Valid discount codes (including new welcome/demo codes)
+  const validDiscountCodes = ['EARLY50', 'SAVE20', 'HUNTLAUNCH', 'WELCOME30', 'DEMO30', 'DEMOFOLLOWUP'];
   const activeDiscount = validDiscountCodes.includes(discountFromUrl?.toUpperCase())
     ? discountFromUrl.toUpperCase()
     : null;
@@ -3506,6 +3506,15 @@ const RegisterPage = () => {
 
   // Get ref parameter for demo conversion tracking (e.g., ref=demo_abc123)
   const refParam = searchParams.get('ref');
+  // Get discount code from URL (e.g., discount=DEMO30)
+  const discountParam = searchParams.get('discount');
+
+  // Store discount code in localStorage for checkout
+  useEffect(() => {
+    if (discountParam) {
+      localStorage.setItem('pending_discount', discountParam.toUpperCase());
+    }
+  }, [discountParam]);
 
   // Pre-fill email from landing page
   useEffect(() => {
@@ -3554,8 +3563,26 @@ const RegisterPage = () => {
   return (
     <div className="auth-container">
       <div className="card auth-card">
+        {/* Discount Banner */}
+        {discountParam && (
+          <div style={{
+            background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+            border: '2px dashed #d97706',
+            borderRadius: '8px',
+            padding: '12px 16px',
+            marginBottom: '20px',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '14px', fontWeight: '600', color: '#92400e' }}>
+              Your 30% discount is ready!
+            </div>
+            <div style={{ fontSize: '12px', color: '#a16207', marginTop: '4px' }}>
+              Code <strong>{discountParam.toUpperCase()}</strong> will be auto-applied at checkout
+            </div>
+          </div>
+        )}
         <h1 className="auth-title">Create Account</h1>
-        <p className="auth-subtitle">Start generating review responses for free</p>
+        <p className="auth-subtitle">{discountParam ? 'Sign up to claim your discount' : 'Start generating review responses for free'}</p>
 
         {/* Google Sign-Up Button */}
         <GoogleSignInButton
@@ -5390,6 +5417,23 @@ const DashboardPage = () => {
       } else {
         const aiLabel = res.data.aiModel === 'smart' ? 'Smart AI' : 'Standard';
         toast.success(`Response generated with ${aiLabel}!`);
+      }
+
+      // Micro-pricing toast when approaching limit (only for Free users)
+      const newUsed = res.data.responsesUsed;
+      const limit = res.data.responsesLimit;
+      if (user?.plan === 'free' && limit === 20 && newUsed >= 15 && newUsed < 20) {
+        const remaining = limit - newUsed;
+        setTimeout(() => {
+          toast(`Running low! Only ${remaining} responses left`, {
+            duration: 8000,
+            icon: '⚡',
+            action: {
+              label: 'Get 10 for $5',
+              onClick: () => handleBuyResponsePack()
+            }
+          });
+        }, 1500); // Delay to not overlap with success toast
       }
       // Check if user should see feedback popup
       checkFeedbackStatus();
