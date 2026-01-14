@@ -124,6 +124,9 @@
 - [ ] 25 Connection Requests pro Tag an Restaurant/Hotel Owner
 - [ ] Templates sind fertig in `content/outreach/linkedin-messages.md`
 - [ ] Ziel: 5 Conversations → 1-2 Demos pro Woche
+- [ ] **LinkedIn Verifizierung** - Blauen Badge holen für mehr Vertrauen
+  - ⚠️ ID-Scan hat nicht funktioniert (14.01.2026)
+  - Alternativen: Arbeitgeber-Verifizierung, Ausbildung-Verifizierung
 
 ---
 

@@ -24,6 +24,8 @@
 ### Wichtige Dateien
 - **CLAUDE.md** - Technische Dokumentation, Code Style, API Endpoints
 - **TODO.md** - Aktuelle Tasks, Videos, Sales Priority, Backlog
+  - ⚠️ **IMMER TODO.md checken** für aktuelle User-Tasks und Prioritäten!
+  - Enthält Sales Priority, Follow-up Checks, Backlog
 
 ---
 
@@ -988,6 +990,8 @@ const PRODUCT_HUNT_CONFIG = {
 2. User sagt "hab" oder "screenshot"
 3. Claude: `powershell -ExecutionPolicy Bypass -File "C:\Users\Berend Mainz\clipboard-screenshot.ps1"`
 4. Read tool für Bild
+
+**Hinweis:** `/screenshot` Skill kann KEINE Nachrichten an User schicken - nur Screenshot laden.
 
 ---
 
