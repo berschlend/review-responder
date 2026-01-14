@@ -3138,7 +3138,24 @@ const LoginPage = () => {
       toast.success('Welcome back!');
       navigate('/dashboard');
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Login failed');
+      const errorMsg = error.response?.data?.error || 'Login failed';
+      // Show helpful message for invalid credentials
+      if (errorMsg.toLowerCase().includes('invalid') || errorMsg.toLowerCase().includes('credentials') || errorMsg.toLowerCase().includes('not found')) {
+        toast.error(
+          <div>
+            {errorMsg}
+            <div style={{ marginTop: '8px', fontSize: '13px' }}>
+              No account?{' '}
+              <a href="/register" style={{ color: 'var(--primary-500)', fontWeight: '600' }}>
+                Sign up free →
+              </a>
+            </div>
+          </div>,
+          { duration: 5000 }
+        );
+      } else {
+        toast.error(errorMsg);
+      }
     } finally {
       setLoading(false);
     }
@@ -5457,26 +5474,65 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {!user?.businessContext && (
+      {/* Business Context Setup Banner - show if context is empty or very short */}
+      {(!user?.businessContext || user?.businessContext?.length < 50) && (
         <div
-          className="card"
           style={{
             marginBottom: '24px',
-            background: 'linear-gradient(135deg, var(--primary-50), var(--gray-50))',
-            border: '1px solid var(--primary-200)',
+            background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+            border: '2px solid #f59e0b',
+            borderRadius: '12px',
+            padding: '20px',
+            boxShadow: '0 4px 12px rgba(245, 158, 11, 0.2)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Building size={24} style={{ color: 'var(--primary-600)' }} />
-            <div style={{ flex: 1 }}>
-              <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>
-                Improve Your Responses
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+            <div
+              style={{
+                background: '#f59e0b',
+                borderRadius: '50%',
+                padding: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Sparkles size={28} style={{ color: 'white' }} />
+            </div>
+            <div style={{ flex: 1, minWidth: '200px' }}>
+              <h3
+                style={{
+                  fontSize: '18px',
+                  fontWeight: '700',
+                  marginBottom: '4px',
+                  color: '#92400e',
+                }}
+              >
+                ⚡ Set Up Your Business Profile
               </h3>
-              <p style={{ fontSize: '14px', color: 'var(--gray-600)' }}>
-                Add information about your business to get more personalized AI responses.
+              <p style={{ fontSize: '14px', color: '#a16207', margin: 0 }}>
+                Add your business details to get <strong>personalized AI responses</strong> that
+                mention your specific services, team members, and unique selling points.
               </p>
             </div>
-            <Link to="/settings" className="btn btn-primary" style={{ padding: '8px 16px' }}>
+            <Link
+              to="/settings"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '12px 24px',
+                background: '#92400e',
+                color: 'white',
+                borderRadius: '8px',
+                fontWeight: '600',
+                fontSize: '15px',
+                textDecoration: 'none',
+                boxShadow: '0 2px 8px rgba(146, 64, 14, 0.3)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <Settings size={18} />
               Set Up Now
             </Link>
           </div>
