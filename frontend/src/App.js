@@ -19143,6 +19143,70 @@ const MassageTherapistReviewPage = () => {
   );
 };
 
+// SEO Landing Page - Personal Trainer Reviews
+const PersonalTrainerReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/personal-trainer-reviews' };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'Personal Trainer Review Response Generator | Fitness Trainer Reviews | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional personal trainer review responses with AI. Reply to client reviews and get more fitness clients.');
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Personal Trainer Review Response Generator', description: 'AI tool to respond professionally to personal trainer and fitness reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #FF5722 0%, #E64A19 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <Zap size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Personal Training & Fitness</span>
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Personal Trainer Review Response Generator</h1>
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Fill your training schedule with professional AI-generated review responses. Build your fitness brand and attract new clients.</p>
+          <LandingEmailCapture buttonColor="#FF5722" />
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Zap size={16} /> Fitness Focused</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><TrendingUp size={16} /> More Clients</span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '80px 0' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Personal Trainers Choose ReviewResponder</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255, 87, 34, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Zap size={24} style={{ color: '#FF5722' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Fitness Industry Focus</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI understands personal training terminology and client transformation stories. Responses celebrate achievements.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255, 87, 34, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Users size={24} style={{ color: '#FF5722' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Build Your Brand</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Professional responses showcase your expertise. Turn happy clients into brand ambassadors.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255, 87, 34, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#FF5722' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Attract New Clients</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>87% of people read reviews before hiring a personal trainer. Stand out with thoughtful responses.</p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to grow your training business?</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join personal trainers using AI to build their client base.</p>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
 // Angi (formerly Angie's List) Contractor Review Page
 const AngiListReviewPage = () => {
   const location = useLocation();
@@ -24413,6 +24477,7 @@ const AppContent = () => {
             <Route path="/dermatologist-reviews" element={<DermatologistReviewPage />} />
             <Route path="/angie-list-contractor-reviews" element={<AngiListReviewPage />} />
             <Route path="/massage-therapist-reviews" element={<MassageTherapistReviewPage />} />
+            <Route path="/personal-trainer-reviews" element={<PersonalTrainerReviewPage />} />
             <Route
               path="/dashboard"
               element={
