@@ -12878,36 +12878,6 @@ const GoogleReviewPage = () => {
           </Link>
         </div>
 
-        <div
-          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
-        >
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>
-              ReviewResponder
-            </Link>{' '}
-            •
-            <Link
-              to="/yelp-review-reply-tool"
-              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
-            >
-              Yelp Reviews
-            </Link>{' '}
-            •
-            <Link
-              to="/restaurant-review-responses"
-              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
-            >
-              Restaurant Reviews
-            </Link>{' '}
-            •
-            <Link
-              to="/hotel-review-management"
-              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
-            >
-              Hotel Reviews
-            </Link>
-          </p>
-        </div>
       </section>
       <Footer />
     </div>
@@ -15018,6 +14988,8 @@ const DentistReviewPage = () => {
           </div>
         </div>
 
+        <DemoVideoSection platform="dental" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Grow Your Dental Practice with Better Reviews
@@ -15029,28 +15001,6 @@ const DentistReviewPage = () => {
             <Sparkles size={20} />
             Try Free - No Credit Card
           </Link>
-        </div>
-
-        <div
-          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
-        >
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>
-              ReviewResponder
-            </Link>{' '}
-            •
-            <Link to="/medical-practice-reviews" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Medical Practices
-            </Link>{' '}
-            •
-            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Google Reviews
-            </Link>{' '}
-            •
-            <Link to="/local-business-reviews" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Local Business
-            </Link>
-          </p>
         </div>
       </section>
       <Footer />
@@ -15306,6 +15256,8 @@ const MedicalPracticeReviewPage = () => {
           </div>
         </div>
 
+        <DemoVideoSection platform="medical practice" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Protect Your Medical Practice's Reputation
@@ -15317,28 +15269,6 @@ const MedicalPracticeReviewPage = () => {
             <Sparkles size={20} />
             Try Free - No Credit Card
           </Link>
-        </div>
-
-        <div
-          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
-        >
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>
-              ReviewResponder
-            </Link>{' '}
-            •
-            <Link to="/dentist-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Dentist Reviews
-            </Link>{' '}
-            •
-            <Link to="/google-review-response-generator" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Google Reviews
-            </Link>{' '}
-            •
-            <Link to="/negative-review-responses" style={{ color: 'var(--gray-500)', marginLeft: '16px' }}>
-              Negative Reviews
-            </Link>
-          </p>
         </div>
       </section>
       <Footer />
@@ -19101,6 +19031,70 @@ const MassageTherapistReviewPage = () => {
   );
 };
 
+// Angi (formerly Angie's List) Contractor Review Page
+const AngiListReviewPage = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/angie-list-contractor-reviews' };
+    if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
+    document.title = 'Angi Review Response Generator | Contractor Reviews | ReviewResponder';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Angi (Angie\'s List) review responses with AI. Reply to contractor reviews and win more home service jobs.');
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Angi Contractor Review Response Generator', description: 'AI tool to respond professionally to Angi and home service reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    document.head.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, [location.search]);
+  return (
+    <div>
+      <section style={{ background: 'linear-gradient(135deg, #FF6F00 0%, #E65100 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+            <Sparkles size={14} />
+            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Home Service Contractors</span>
+          </div>
+          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Angi Review Response Generator</h1>
+          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Win more home service jobs with professional AI-generated review responses. Stand out from competitors on Angi (formerly Angie's List).</p>
+          <LandingEmailCapture buttonColor="#FF6F00" />
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Wrench size={16} /> All Trades</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><TrendingUp size={16} /> More Jobs</span>
+          </div>
+        </div>
+      </section>
+      <section className="container" style={{ padding: '80px 0' }}>
+        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Contractors Choose ReviewResponder</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255, 111, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Sparkles size={24} style={{ color: '#FF6F00' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Professional Tone</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI creates responses that show your expertise and professionalism - key factors for homeowners choosing contractors.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255, 111, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Clock size={24} style={{ color: '#FF6F00' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Save Time</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Stop spending evenings writing review responses. Generate professional replies in seconds between jobs.</p>
+          </div>
+          <div className="card">
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255, 111, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#FF6F00' }} /></div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Win More Bids</h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Homeowners compare contractors by reviews. Active, professional responses set you apart from competition.</p>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to book more jobs?</h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join contractors using AI to build their reputation.</p>
+          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+};
+
 // Extension Page
 const ExtensionPage = () => {
   return (
@@ -21428,6 +21422,8 @@ const AdminPage = () => {
   const [newNote, setNewNote] = useState('');
   const [costsData, setCostsData] = useState(null);
   const [costsLoading, setCostsLoading] = useState(false);
+  const [usageData, setUsageData] = useState(null);
+  const [usageLoading, setUsageLoading] = useState(false);
 
   // Use the same API_URL as the rest of the app (already includes /api)
   // Remove /api suffix if present to build admin URLs correctly
@@ -21610,6 +21606,21 @@ const AdminPage = () => {
       toast.error('Failed to load API costs');
     } finally {
       setCostsLoading(false);
+    }
+  };
+
+  const loadUsageData = async key => {
+    const keyToUse = key || adminKey;
+    if (!keyToUse) return;
+    setUsageLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/admin/usage-analytics?key=${keyToUse}`);
+      setUsageData(res.data);
+    } catch (err) {
+      console.error('Usage analytics load error:', err);
+      toast.error('Failed to load usage analytics');
+    } finally {
+      setUsageLoading(false);
     }
   };
 
@@ -21849,6 +21860,12 @@ const AdminPage = () => {
           onClick={() => setActiveAdminTab('costs')}
         >
           API Costs
+        </button>
+        <button
+          className={`btn ${activeAdminTab === 'usage' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('usage')}
+        >
+          Usage Analytics
         </button>
       </div>
 
