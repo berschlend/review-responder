@@ -283,6 +283,11 @@ Click-Rate ist die echte Metrik. 17 Leute haben geklickt → Demo Attack!
 
 ## KÜRZLICH ERLEDIGT (14.01)
 
+- **Conversion Funnel für Ersten Sale** - 3 Quick Wins implementiert:
+  - Welcome Email mit WELCOME30 (30% off, 7-Tage Urgency)
+  - Demo Auto-Discount: ?discount=DEMO30 automatisch in CTA-Links
+  - Micro-Pricing Toast bei Response 15-19 ("Get 10 for $5")
+  - Neue Stripe Coupons: WELCOME30, DEMO30 (beide 30% off)
 - **Smart Email Finding** - Personal Emails statt info@/contact@
   - Team Member Extraktion von /team, /about Seiten
   - `generatePersonalEmails()` - Name→Email Patterns (firstname@, firstname.lastname@)
