@@ -2154,7 +2154,8 @@ const LandingPage = () => {
     try {
       // If user is logged in, use authenticated endpoint (uses plan limits)
       // Otherwise use public try endpoint (3/day limit)
-      if (user && token) {
+      const authToken = localStorage.getItem('token');
+      if (user && authToken) {
         const res = await api.post('/generate', {
           reviewText: tryReviewText,
           tone: tryTone,
