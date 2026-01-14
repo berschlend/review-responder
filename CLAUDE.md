@@ -14,208 +14,51 @@
 2. Immer committen & pushen nach fertiger Änderung
 3. CLAUDE.md updaten nach jeder Session
 4. User nur fragen wenn nötig
-5. **Nach Deploy immer sagen:** "Deployed! Frontend/Backend live in ~2-3 Min" (Render braucht Zeit)
+5. **Nach Deploy:** "Deployed! Frontend/Backend live in ~2-3 Min"
 
 ### Workflow
 ```
-1. CLAUDE.md lesen → 2. TODO.md checken → 3. Task wählen → 4. Erledigen → 5. Testen → 6. Git push → 7. CLAUDE.md updaten
+CLAUDE.md lesen → TODO.md checken → Task → Testen → Git push → CLAUDE.md updaten
 ```
 
 ### Wichtige Dateien
-- **CLAUDE.md** - Technische Dokumentation, Code Style, API Endpoints
-- **TODO.md** - Aktuelle Tasks, Videos, Sales Priority, Backlog
-  - ⚠️ **IMMER TODO.md checken** für aktuelle User-Tasks und Prioritäten!
-  - Enthält Sales Priority, Follow-up Checks, Backlog
+- **CLAUDE.md** - Technische Docs, Code Style
+- **TODO.md** - Aktuelle Tasks, Prioritäten
+- **`.claude/secrets.local`** - Admin URLs, API Keys (lokal)
 
 ---
 
-## CONTEXT MANAGEMENT
+## MCPs & TOOLS
 
-**Autocompact:** AUS (manuell `/compact` nach Features)
+| MCP | Beschreibung |
+|-----|--------------|
+| Memory MCP | Persistentes Gedächtnis |
+| Gemini Design MCP | Frontend outsourcen |
+| Chrome MCP | Browser Automation (`claude --chrome`) |
 
-### Commands
-| Command | Beschreibung |
-|---------|--------------|
-| `/context` | Zeigt Token-Nutzung (Ziel: < 80%) |
-| `/compact` | Manuell komprimieren nach Feature/Milestone |
-| `/cost` | Token-Verbrauch und Kosten |
-
-### Installierte MCPs
-- **Memory MCP** - Persistentes Gedächtnis (optional nutzbar)
-- **Gemini Design MCP** - Frontend outsourcen (API Key in secrets)
-- **Chrome MCP** - Browser Automation (`claude --chrome`)
-
-### Best Practice
-```
-1. Feature coden
-2. Testen
-3. /compact (oder neue Session)
-4. Nächstes Feature
-```
+### Chrome MCP Regel
+> Im Plan Mode **IMMER** markieren: **🌐 CHROME MCP: JA/NEIN**
 
 ---
 
-## BORIS CHERNY WORKFLOW (Creator of Claude Code)
-
-### Custom Slash Commands
-Nutze diese Commands für maximale Effizienz:
-
-**Neue Commands (Boris Style):**
-- `/commit-push-pr` - Commit + Push + PR erstellen (Conventional Commits)
-- `/new-feature` - 5-Phasen Feature Development (Plan → Confirm → Implement → Verify → Commit)
-- `/test-and-lint` - TypeScript + Lint + Tests + Build Pipeline
-- `/simplify-code` - Code Refactoring (nur kürzlich geänderte Files)
-- `/verify-app` - Manuelle App-Testing Checkliste
-
-**Bestehende Commands:**
-- `/test-and-push` - Tests → Manual Check → Git Push (mit Retry)
-- `/feature` - Research → Plan → Code → Test → PR (Boris Method)
-- `/bug-fix` - Reproduce → Diagnose → Plan → Fix → Verify → Push
-- `/update-claude-md` - CLAUDE.md nach Session updaten
-
-### Die 8 Schritte (Boris Style):
-1. **CLAUDE.md nutzen** - Zentrale Wahrheit, Team fügt Learnings hinzu
-2. **Plan Mode ZUERST** (Shift+Tab 2x) - Erst planen, dann coden!
-3. **Slash Commands** - Für jeden "inner loop" Workflow
-4. **Research → Plan → Code → Test → PR** - Nie direkt coden
-5. **Parallel arbeiten** - 5+ Claude instances (Tabs/Windows)
-   - User arbeitet mit mehreren Claude Tabs parallel
-   - System Notifications bei Input needed
-   - Jeder Tab für eigenen Workflow
-6. **Opus 4.5 für alles** - Beste Qualität > Geschwindigkeit
-7. **Testing VOR Push** - Chrome Extension testen, iterieren
-8. **Auto-Accept nach Plan** - Plan perfektionieren, dann One-Shot
-
-### Wichtig:
-- Research OHNE Code first
-- Plan reviewen & verfeinern
-- Dann Auto-Accept Mode
-- Claude "one-shots" die Umsetzung
-
----
-
-## CODE STYLE REGELN
+## CODE STYLE
 
 ### TypeScript
-- NIEMALS `any` verwenden - immer spezifische Types
-- NIEMALS `enum` verwenden - stattdessen String Unions:
-  ```typescript
-  // FALSCH
-  enum ReviewType { GOOGLE, YELP }
-
-  // RICHTIG
-  type ReviewType = 'google' | 'yelp' | 'tripadvisor' | 'booking'
-  ```
-- Types mit `type` definieren, nicht `interface` (außer für extending)
-- Alle Funktionen müssen Return-Types haben
-- Keine Type Assertions (`as`) außer wenn absolut nötig
+- NIEMALS `any` oder `enum` - nutze String Unions
+- Alle Funktionen brauchen Return-Types
 
 ### React
-- Functional Components mit TypeScript
-- Hooks für State Management
-- Keine Class Components
-- Props immer typisieren:
-  ```typescript
-  type ReviewCardProps = {
-    review: Review
-    onRespond: (response: string) => void
-  }
-
-  export function ReviewCard({ review, onRespond }: ReviewCardProps) {
-    // ...
-  }
-  ```
-- Event Handler: `handle` Prefix (`handleClick`, `handleSubmit`)
-- Custom Hooks: `use` Prefix (`useReviews`, `useAIResponse`)
-
-### Tailwind CSS
-- Keine inline Styles - nur Tailwind Classes
-- Responsive Design: Mobile First (`md:`, `lg:` für größere Screens)
-- Keine !important
-
-### Imports
-- Absolute Imports mit `@/` Prefix wenn möglich
-- Sortierung: React → External libs → Internal → Types → Styles
-- Keine barrel exports (index.ts) die alles re-exportieren
+- Functional Components only
+- Props typisieren, Hooks für State
+- Event Handler: `handle` Prefix
 
 ### Naming
-- Components: PascalCase (`ReviewCard.tsx`)
-- Hooks: camelCase mit `use` (`useReviewData.ts`)
-- Utils: camelCase (`formatReviewDate.ts`)
-- Constants: SCREAMING_SNAKE_CASE (`MAX_RESPONSE_LENGTH`)
-- Files = Export Name (`ReviewCard.tsx` exportiert `ReviewCard`)
+- Components: PascalCase
+- Hooks: `use` Prefix
+- Constants: SCREAMING_SNAKE_CASE
 
-### Verbotene Patterns
-- `console.log` in Production (nutze proper Logger)
-- Inline Styles (nutze Tailwind)
-- Magic Numbers (nutze Constants)
-- Nested Ternary in JSX (extrahiere in Funktionen)
-- `any` Type (immer spezifische Types)
-- `enum` (nutze String Unions)
-- Synchrone `localStorage` Calls in Render (nutze useEffect)
-- Direkte DOM Manipulation (nutze React Refs)
-- API Keys im Frontend Code
-
-### Git Commits (Conventional Commits)
-- `feat:` Neues Feature
-- `fix:` Bugfix
-- `chore:` Maintenance
-- `docs:` Dokumentation
-- `refactor:` Code-Verbesserung ohne Feature-Änderung
-- `test:` Tests hinzufügen/ändern
-- `style:` Formatting, keine Code-Änderung
-
----
-
-## RALPH LOOP (Autonome Overnight Development)
-
-**Was:** Claude Code Plugin für iterative, selbstverbessernde Entwicklungs-Loops.
-**Installiert:** 11.01.2026
-
-### Wie es funktioniert
-```
-User: /ralph-loop "Task" --max-iterations 30 --completion-promise "DONE"
-     ↓
-Claude arbeitet → Will beenden → Stop Hook blockiert
-     ↓
-Claude sieht eigene Änderungen (Files + Git) → Verbessert iterativ
-     ↓
-Wiederholt bis <promise>DONE</promise> oder max-iterations erreicht
-```
-
-### Commands
-- `/ralph-loop "<prompt>" --max-iterations N --completion-promise "TEXT"` - Loop starten
-- `/cancel-ralph` - Loop abbrechen
-
-### Beispiele für ReviewResponder
-
-**Feature Development (overnight):**
-```bash
-/ralph-loop "Implement sentiment analysis:
-- POST /api/analyze-sentiment endpoint
-- Returns positive/negative/neutral score
-- Tests with >80% coverage
-Output <promise>DONE</promise> when complete" --max-iterations 30 --completion-promise "DONE"
-```
-
-**Test Coverage erhöhen:**
-```bash
-/ralph-loop "Write tests for all backend endpoints:
-- Cover edge cases
-- Target: 80% coverage
-Output <promise>TESTS DONE</promise>" --max-iterations 40 --completion-promise "TESTS DONE"
-```
-
-### Best Practices
-1. **Immer `--max-iterations` setzen** (10-50 je nach Komplexität)
-2. **Klare Completion Criteria** mit `<promise>TEXT</promise>`
-3. **Git Branch vor Start** für einfaches Rollback
-4. **TDD Approach:** Tests first → Implement → Iterate
-
-### Kosten-Erwartung
-- Einfache Features: ~$5-20
-- Komplexe Features: ~$50-100
-- Große Projekte: ~$200-300
+### Git Commits
+`feat:` | `fix:` | `chore:` | `docs:` | `refactor:`
 
 ---
 
@@ -223,53 +66,32 @@ Output <promise>TESTS DONE</promise>" --max-iterations 40 --completion-promise "
 
 | Service | URL |
 |---------|-----|
-| **Frontend** | https://tryreviewresponder.com |
-| **Backend API** | https://review-responder.onrender.com |
-| **GitHub** | https://github.com/berschlend/review-responder |
-| **Outreach Dashboard** | Siehe `.claude/secrets.local` |
-
-### Admin URLs & Secrets
-**WICHTIG:** Admin-URLs mit Secrets sind in `.claude/secrets.local` gespeichert (lokal, nicht auf GitHub).
-Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
+| Frontend | https://tryreviewresponder.com |
+| Backend | https://review-responder.onrender.com |
+| GitHub | https://github.com/berschlend/review-responder |
 
 ### Service Dashboards
+- **Render:** dashboard.render.com
+- **Stripe:** dashboard.stripe.com
+- **Cron-job.org:** console.cron-job.org
+- **Resend:** resend.com/emails
 
-| Service | URL | Zweck |
-|---------|-----|-------|
-| **Namecheap DNS** | https://ap.www.namecheap.com/Domains/DomainControlPanel/tryreviewresponder.com/advancedns | DNS Records verwalten |
-| **Render Backend** | https://dashboard.render.com/web/srv-d5gh8c6r433s73dm9v6g/events | Logs, Events, Deploys |
-| **ImprovMX** | https://app.improvmx.com/domains/tryreviewresponder.com/aliases | Email-Forwarding |
-| **Resend** | https://resend.com/emails | Email-Logs, Bounces |
-| **Stripe** | https://dashboard.stripe.com | Payments, Subscriptions |
-| **Stripe Payment Methods** | https://dashboard.stripe.com/settings/payment_methods | PayPal, Apple Pay, etc. |
-| **Cron-job.org** | https://console.cron-job.org/dashboard | Scheduled Jobs (Outreach) |
-| **Google Search Console** | https://search.google.com/search-console?resource_id=https://tryreviewresponder.com/ | SEO, Indexierung |
-| **Gmail** | https://mail.google.com/mail/u/0/#inbox | Support-Anfragen |
+---
 
-### Cron Jobs Status (cron-job.org)
+## CRON JOBS (cron-job.org)
 
-**Stand: 14.01.2026**
-
-| Job | Schedule | Status | Letzter Fehler |
-|-----|----------|--------|----------------|
-| **Keep-Alive** | alle 15 Min | OK | Verhindert Cold Start |
-| Blog Auto-Generation | 06:00 Mo/Mi/Fr | OK | - |
-| **Scraper Alerts (NEU!)** | 08:00 täglich | OK | Lead-Quellen Monitoring |
-| **Demo Generation + Email** | 08:00 täglich | OK | Personalisierte Demo-Emails |
-| Twitter Auto-Post Morning | 09:00 täglich | OK | - |
-| Weekly Summary | 09:00 Montags | OK | - |
-| Daily Outreach | 09:00 täglich | OK | - |
-| Drip Emails | 10:00 täglich | OK | - |
-| TripAdvisor Email Sender | 09:00 täglich | OK | - |
-| Pre-Registration Drip | 11:00 täglich | OK | - |
-| **Demo Follow-Up (NEU!)** | 12:00 täglich | OK | Follow-Up an Demo-Viewer |
-
-**Root Cause "Ausgabe zu groß" (13.01):**
-- Render Free Tier schläft nach 15 Min Inaktivität
-- Cron Job trifft auf kalten Server → 502 Error mit 218KB HTML
-- cron-job.org sieht 218KB Response → "Ausgabe zu groß"
-
-**Fix:** Keep-Alive Cron Job pingt `/api/health` alle 15 Min → Server bleibt warm
+| Job | Schedule |
+|-----|----------|
+| Keep-Alive | */15 * * * * |
+| Blog Generation | 06:00 Mo/Mi/Fr |
+| Scraper Alerts | 08:00 täglich |
+| Demo Generation | 08:00 täglich |
+| Twitter Auto-Post | 09:00 täglich |
+| Daily Outreach | 09:00 täglich |
+| Weekly Summary | 09:00 Montags |
+| Drip Emails | 10:00 täglich |
+| Pre-Reg Drip | 11:00 täglich |
+| Demo Follow-Up | 12:00 täglich |
 
 ---
 
@@ -277,639 +99,43 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 **Stand: 14.01.2026**
 
-### ✅ CHROME WEB STORE EINGEREICHT (13.01.2026)
+### Chrome Web Store
+**Status:** Überprüfung läuft (eingereicht 13.01)
+- Extension v1.6.1
+- Test Account: reviewer@tryreviewresponder.com
 
-**Status:** Überprüfung läuft (1-3 Werktage, evtl. länger wegen broad host permissions)
+### USER TODO:
+- [ ] Demo-Videos aufnehmen (Main 60s, Extension 30s, Bulk 30s)
+- [ ] Reddit API Keys holen
+- [ ] Google Indexierung für 36 URLs (5-10/Tag)
+- [ ] Snov.io API Keys in Render
 
-| Item | Status |
-|------|--------|
-| ZIP v1.6.1 | ✅ Hochgeladen |
-| 5 Screenshots (1280x800) | ✅ Hochgeladen |
-| Promo Tiles (440x280, 1400x560) | ✅ Hochgeladen |
-| Demo Video (YouTube) | ✅ https://www.youtube.com/watch?v=6lujm4Z_Q_Y |
-| Privacy Policy | ✅ https://tryreviewresponder.com/privacy |
-| Test Account | ✅ reviewer@tryreviewresponder.com / ChromeReview2026! |
+### SEO Landing Pages
+- **46+ live** (Plattformen + Branchen)
+- Email-Capture → 4-Email Drip über 14 Tage
 
-**Nach Approval:**
-1. Extension ID notieren
-2. Google Cloud Console → OAuth 2.0 Client → Redirect URI hinzufügen:
-   `https://<EXTENSION_ID>.chromiumapp.org/`
-
-### USER MUSS MACHEN:
-- [x] Demo-Video aufnehmen (2 Min Walkthrough) - DONE
-- [x] Chrome Web Store einreichen - DONE (13.01.2026)
-- [ ] **Neue Demo-Videos aufnehmen** - Fokus auf maximale Verständlichkeit & Qualität:
-  - [ ] **Main Demo** (60-90 Sek): Zeigt kompletten Flow in Echtzeit, keine Schnitte, super klar
-  - [ ] **Chrome Extension Demo** (30 Sek): One-Click Response auf Google Maps
-  - [ ] **Bulk Generation Demo** (30 Sek): 20 Reviews → 20 Antworten in Sekunden
-  - [ ] **Tipp:** Langsam, deutlich, Zoom auf wichtige UI-Elemente, keine Hintergrundmusik die ablenkt
-- [ ] **Reddit API Keys holen**: Wartet auf Genehmigung → https://www.reddit.com/prefs/apps → App erstellen
-- [ ] **Google Indexierung beantragen (36 URLs)** - Nach und nach (max 5-10/Tag wegen Quota):
-  - [ ] `/medical-practice-reviews`
-  - [ ] `/salon-spa-review-responses`
-  - [ ] `/auto-shop-reviews`
-  - [ ] `/trustpilot-review-responses`
-  - [ ] `/airbnb-host-review-responses`
-  - [ ] `/real-estate-agent-reviews`
-  - [ ] `/gym-fitness-review-responses`
-  - [ ] `/veterinarian-review-responses`
-  - [ ] `/law-firm-review-responses`
-  - [ ] `/ecommerce-review-responses`
-  - [ ] `/coffee-shop-review-responses`
-  - [ ] `/amazon-review-responses`
-  - [ ] `/g2-review-responses`
-  - [ ] `/capterra-review-responses`
-  - [ ] `/glassdoor-review-responses`
-  - [ ] `/bbb-review-responses`
-  - [ ] `/plumber-review-responses`
-  - [ ] `/electrician-review-responses`
-  - [ ] `/hvac-review-responses`
-  - [ ] `/roofing-review-responses`
-  - [ ] `/landscaping-review-responses`
-  - [ ] `/cleaning-service-review-responses`
-  - [ ] `/healthgrades-review-responses`
-  - [ ] `/zocdoc-review-responses`
-  - [ ] `/photographer-review-responses`
-  - [ ] `/wedding-vendor-review-responses`
-  - [ ] `/pet-service-review-responses`
-  - [ ] `/daycare-review-responses`
-  - [ ] `/accountant-review-responses`
-  - [ ] `/insurance-agent-review-responses`
-  - [ ] `/senior-care-review-responses`
-  - [ ] `/appstore-app-reviews`
-  - [ ] `/indeed-company-reviews`
-  - [ ] `/zillow-realtor-reviews`
-  - [ ] `/therapy-counselor-reviews`
-  - [ ] `/thumbtack-reviews`
-
-### SEO LANDING PAGES (46 Total)
-
-**Status:** Alle 46+ live und getestet (HTTP 200 OK)
-**Backend:** Generisch - alle nutzen `/api/generate`, kein spezielles Backend nötig
-**Email-Capture:** Speichert in `email_captures` Tabelle → 4-Email Drip-Sequence über 14 Tage
-**Messaging:** Alle Hero-Badges zeigen "20 Free/Month" + "50+ Languages" + "Chrome Extension"
-
-| Kategorie | Anzahl | Beispiele |
-|-----------|--------|-----------|
-| Plattformen | 18 | Google, Yelp, TripAdvisor, Amazon, G2, Glassdoor, Indeed, Zillow, Thumbtack, App Store |
-| Branchen | 25 | Restaurant, Hotel, Plumber, HVAC, Photographer, Therapy |
-| Generisch | 3 | Local Business, Negative Reviews |
-
-### NÄCHSTE LANDING PAGES (Backlog - 13 Seiten)
-
-**Priorität nach Suchvolumen.** Jede Seite ~30 Min mit bestehendem Template.
-
-#### Tier 2 - Hohes Suchvolumen:
-| URL | Zielgruppe | Suchvolumen |
-|-----|------------|-------------|
-| `/linkedin-recommendations` | B2B Professionals | 30K+/mo |
-| `/angie-list-contractor-reviews` | US Contractors | 25K+/mo |
-| `/chiropractor-reviews` | Chiropraktiker | 25K+/mo |
-| `/barber-barbershop-reviews` | Barbershops | 22K+/mo |
-| `/dermatologist-reviews` | Hautärzte/Kosmetik | 20K+/mo |
-| `/massage-therapist-reviews` | Massage/Wellness | 20K+/mo |
-
-#### Tier 3 - Nischen mit engagierter Community:
-| URL | Zielgruppe | Suchvolumen |
-|-----|------------|-------------|
-| `/personal-trainer-reviews` | Personal Trainer | 18K+/mo |
-| `/orthodontist-reviews` | Kieferorthopäden | 15K+/mo |
-| `/tattoo-artist-reviews` | Tattoo Studios | 15K+/mo |
-| `/producthunt-maker-responses` | Indie Hackers/Startups | 12K+/mo |
-
-#### Tier 4 - Internationale Märkte:
-| URL | Zielgruppe | Suchvolumen |
-|-----|------------|-------------|
-| `/google-bewertungen-antworten` | Deutsche Businesses | 15K+/mo DE |
-| `/google-reviews-uk` | UK Businesses | 18K+/mo UK |
-| `/avis-google-reponses` | Französische Businesses | 12K+/mo FR |
-
-### CLAUDE KANN SELBST (mit Chrome MCP):
-- Cron Jobs anlegen/ändern auf cron-job.org
-- API Keys in Render setzen
-- Stripe Dashboard Settings
-- Alle Browser-basierten Admin-Tasks
-
-### NÄCHSTE CLAUDE TASKS:
-
-| Task | Schwierigkeit | Dateien |
-|------|---------------|---------|
-| **Chrome MCP Lead Scraper fortsetzen** | Mittel | Memory MCP |
-| **Landing Pages Tier 2 erstellen** | Einfach | frontend/src/App.js |
-
-### Chrome MCP Best Practices
-
-**Problem:** Mehrere parallel Claude `--chrome` Sessions → viele Tabs → RAM voll → Crashes
-
-**Lösung:**
-1. **Tab Wrangler Extension** installiert - schließt Tabs nach 30 Min Inaktivität automatisch
-2. Aktive Tabs **pinnen** wenn sie länger offen bleiben sollen
-3. Nur **eine** Claude Session mit `--chrome` für Browser-Tasks, andere ohne
-
-**📋 PLAN MODE REGEL:**
-> Im Plan Mode **IMMER** fett markieren ob Chrome MCP genutzt wird!
->
-> Beispiel am Plan-Anfang:
-> - **🌐 CHROME MCP: JA** - Dieser Plan nutzt Browser Automation
-> - **🌐 CHROME MCP: NEIN** - Kein Browser nötig
->
-> **Wichtig:** Chrome MCP ist erwünscht und soll aktiv genutzt werden!
-> Damit lässt sich viel mehr automatisieren. Die Markierung dient nur
-> dazu, dass User bei parallelen Claudes den Überblick behält.
-
-### Chrome MCP: Cron Jobs selbst anlegen
-
-**Claude kann selbstständig Cron Jobs auf cron-job.org anlegen/ändern!**
-
-**Dashboard:** https://console.cron-job.org/dashboard
-
-**Workflow:**
-1. `tabs_context_mcp` aufrufen (Tab-IDs holen)
-2. `navigate` zu cron-job.org Dashboard
-3. Login falls nötig (Credentials in `.claude/secrets.local`)
-4. "CREATE CRONJOB" Button klicken
-5. Formular ausfüllen:
-   - **Title:** Job-Name (z.B. "Demo Follow-Up")
-   - **URL:** Backend-Endpoint mit Secret
-   - **Schedule:** ERWEITERT Tab → Cron Expression eingeben
-6. "CREATE" klicken
-
-**Typische Cron Expressions:**
-| Expression | Bedeutung |
-|------------|-----------|
-| `0 9 * * *` | Täglich 09:00 |
-| `0 12 * * *` | Täglich 12:00 |
-| `*/15 * * * *` | Alle 15 Minuten |
-| `0 9 * * 1` | Montags 09:00 |
-| `0 6 * * 1,3,5` | Mo/Mi/Fr 06:00 |
-
-**Standard URL-Format:**
-```
-https://review-responder.onrender.com/api/cron/ENDPOINT?secret=CRON_SECRET
-```
-
-**CRON_SECRET:** Siehe `.claude/secrets.local` → `CRON_SECRET`
-
-**Wichtig:**
-- Immer ERWEITERT Tab für Cron Expression (nicht Simple Schedule)
-- Timezone: Europe/Berlin (ist Standard)
-- Request Method: GET (außer explizit anders)
-- Nach Anlegen: Screenshot machen zur Bestätigung
-
-### Chrome MCP Lead Scraper (ABGESCHLOSSEN)
-
-**Status:** 30+ Leads gesammelt, Session 14.01.2026 abgeschlossen
-
-**Gesammelte Leads:**
-| Quelle | Typ | Anzahl | Details |
-|--------|-----|--------|---------|
-| G2 Birdeye | Unzufriedene Kunden | 10 | +1 ACAD Lead (0/5, daily bugs) |
-| G2 Podium | Unzufriedene Kunden | 7 | |
-| Yelp Muenchen | Restaurants | 1 | Augustiner-Keller (781 reviews) |
-| TripAdvisor | Restaurants | 5 | Top München Restaurants (700-1,800+ reviews) |
-
-**Neue TripAdvisor Leads (14.01.2026):**
-- Schiller Bräu - 706 reviews, +49 89 890584820
-- Steinheil 16 - 1,263 reviews, +49 89 527488
-- Trattoria Da Fausto - 1,854 reviews, #4 in München
-- Little London Bar & Grill - 1,675 reviews, MICHELIN, #2 in München
-- La Bohème - 1,882 reviews, MICHELIN, #5 in München
-
-**Dokumentierte Leads:** `content/leads/scraped-leads-2026-01-13.md`
-
-**Beste Pain Points (für Cold Email):**
-- Platform bugs/errors daily
-- Slow support (days/weeks)
-- Sales over-promised features
-- Stopped using after 4 months
-- Returned to previous provider
-
-**Nächste Schritte:**
-1. LinkedIn-Suche für G2 Reviewer-Namen (ACAD, Robert R.)
-2. Cold Email Kampagne mit gesammelten Leads starten
-3. Hunter.io für Email-Adressen der Restaurant-Leads
-
-### LinkedIn Automation via Chrome MCP
-
-**So funktioniert's:**
-1. Claude mit `claude --chrome` starten
-2. Im Browser bei LinkedIn eingeloggt sein
-3. `/linkedin-connect` ausführen
-
-**Claude macht dann automatisch:**
-- Navigiert zu LinkedIn Profilen
-- Klickt "Vernetzen" → "Nachricht hinzufügen"
-- Fügt personalisierte Demo-Note ein
-- Sendet Connection Request
-- Markiert in DB als gesendet
-
-**LinkedIn Limits (Free Account):**
-- ~5 personalisierte Notes/Monat
-- 20 Connection Requests/Tag
-- 100 Connection Requests/Woche
-
-**Commands:**
-- `/linkedin-connect` - Sendet pending Demo-Leads
-- `/linkedin-connect followup` - Prüft Acceptances + sendet Follow-ups
-
-**API Endpoints:**
-- `GET /api/outreach/linkedin-pending` - Pending Leads mit Demo-URLs
-- `PUT /api/outreach/linkedin-demo/:id/sent` - Markiert als gesendet
-- `PUT /api/outreach/linkedin-demo/:id/accepted` - Markiert als akzeptiert
-
-### HEUTE ERLEDIGT (14.01.2026):
-- [x] **2 Cron Jobs angelegt** (cron-job.org)
-  - **Demo Follow-Up**: 12:00 täglich - Follow-Up Emails an Demo-Viewer
-  - **Scraper Alerts**: 08:00 täglich - Monitoring wenn Lead-Quellen ausfallen
-- [x] **Chrome MCP Lead Scraper Session** - 5 neue TripAdvisor Leads gesammelt
-  - Schiller Bräu, Steinheil 16, Trattoria Da Fausto
-  - Little London Bar & Grill (MICHELIN, #2)
-  - La Bohème (MICHELIN, #5)
-  - Alle mit Telefon, Adresse, Website dokumentiert
-  - Leads-Datei: `content/leads/scraped-leads-2026-01-13.md`
-- [x] **Auto Business Context für Demos** - AI-Antworten in Demos jetzt viel qualitätiver
-  - Neue Funktion `scrapeBusinessContext()` - Scraped About/Team/Impressum Pages
-  - Extrahiert: Business Description, Owner Name, Founded Year, Specialties
-  - Neue Funktion `extractMentionedItems()` - Findet populäre Items aus positiven Reviews
-  - Automatische Custom Instructions basierend auf Lead-Daten (City flair, Owner sign-off, etc.)
-  - Automatischer Business Context aus Website + Review-Analyse
-  - `generateDemoResponse()` erweitert um businessContext + customInstructions Parameter
-  - Graceful Fallback wenn Website-Scraping fehlschlägt
-- [x] **Landing Pages "20 Free/Month" Konsistenz** - Alle 48+ Landing Pages vereinheitlicht
-  - Alle Hero-Badges von "20 Free Responses" → "20 Free/Month" geändert
-  - Email-Capture funktioniert bereits (speichert in `email_captures` → 4-Email Drip)
-  - CLAUDE.md korrigiert (veraltete "nur visuell" Info entfernt)
-- [x] **Sales Automation - Parallel Outreach Blast** - 13 Städte parallel gescraped
-  - **Strategie:** `/automate-sales` Command für 10+ Demo-Signups in 30 Tagen
-  - **Ergebnis:** +210 Leads (313 → 523), +107 Emails gesendet
-  - **Städte:** Berlin, NYC, LA, Miami, London, Chicago, SF, Wien, München, Seattle, Austin, Boston, Zürich
-  - **Branchen:** Restaurant, Hotel, Dental Office
-  - **Wichtige Erkenntnis:** Open Rate ist **24.4%** (nicht 3.6% wie gedacht!)
-  - **Click Rate:** 3.8% mit 18 unique Clicks (The Capital Grille, lgho@ldry.com, etc.)
-  - **Plan:** Volume > Optimierung - bei 100 Emails/Tag → ~4 Demo-Besucher/Tag → 12+ Signups/Monat
-- [x] **API Costs Dashboard im Admin Panel** - Übersicht über alle externe API-Kosten
-  - Neue DB-Tabelle: `api_call_logs` (Provider, Model, Tokens, Cost, Endpoint)
-  - `logApiCall()` Funktion mit automatischer Kostenberechnung
-  - Geloggte APIs: Claude, GPT-4o, Gemini, Google Places, Hunter, SerpAPI, Brevo, Resend
-  - Admin Endpoint: `GET /api/admin/api-costs`
-  - Frontend: Neuer "API Costs" Tab mit Summary Cards, Breakdown-Tabelle, Pricing Reference
-  - Kosten starten bei $0 (historische Daten fehlen - Tracking beginnt ab jetzt)
-- [x] **Pricing Page Optimierung** - First-Principles Analyse für bessere Conversion
-  - Chrome Extension zu allen Plänen hinzugefügt (war vorher nicht gelistet)
-  - Response History von Free → Starter+ verschoben (echte Differenzierung)
-  - Templates & Email Support aus Features entfernt (keine echten Kaufgründe)
-  - Feature Comparison Table aktualisiert
-  - Backend: Plan-Check für `/api/responses/history` (403 für Free)
-  - Dashboard: Upgrade-Prompt für Free User im History Tab
-  - Bug-Fix: 403 Error graceful handeln (Connection Error Banner)
-- [x] **Review Alert System komplett gefixt** - Personalisierte Demos funktionieren jetzt
-  - **Problem 1:** Demo wurde nicht generiert - Bedingung `has_bad_review && worst_review_text` zu restriktiv
-  - **Fix:** Geändert zu `!lead.demo_url` → Demo für ALLE Leads ohne Demo
-  - **Problem 2:** Email-Variablen leer (Rating, Author, Text fehlten)
-  - **Fix:** `generateDemoForLead()` gibt jetzt `first_review` zurück für Email-Template
-  - **Problem 3:** Email landete in Gmail Promotions Tab
-  - **Fix:** Deutsche Email-Template komplett umgeschrieben, persönlicher Ton ("Hey" statt "Hi")
-  - **Problem 4:** Fake Claims auf Demo-Seite ("500K+ responses", "10K+ businesses")
-  - **Fix:** Ersetzt durch ehrliche Feature-Stats ("20 Free Responses", "50+ Languages", etc.)
-  - **Problem 5:** AI-Antworten zu generisch, falsches Sign-off ("Cafe" statt "Cafe Einstein")
-  - **Fix:** System Prompt verbessert - spezifische Details, Reviewer by name, VOLLER Business Name
-  - **NEU:** Chrome Extension Demo Video auf jeder Demo-Seite eingebettet
-- [x] **Scraper Status Dashboard** - Admin Panel zeigt alle Lead-Quellen mit Prioritaet
-  - Neuer Tab "Scraper" im Admin Panel
-  - 3 Tiers: Automatisch (Daily Outreach, Drip, Blog), Manuell High-ROI (G2, TripAdvisor, LinkedIn), Experimentell (Yelp, Agency)
-  - Status-Farben: OK (gruen), Low (gelb), Critical (rot)
-  - Copy-Button fuer Commands direkt in Clipboard
-  - `GET /api/admin/scraper-status` - Liefert alle Lead-Counts und Status
-  - `GET /api/cron/scraper-alerts` - Taegliche Email-Alerts bei kritischen Quellen
-  - **USER TODO: Cron Job "Scraper Alerts" anlegen** auf cron-job.org
-    - URL: `https://review-responder.onrender.com/api/cron/scraper-alerts?secret=mein-geheimer-cron-key-biwbqevpbACN`
-    - Schedule: `0 8 * * *` (taeglich 08:00 Berlin)
-- [x] **Outreach Emails: Preview + Demo-Link** - Bessere Conversion durch "Preview + More"
-  - Problem: Tony Quach (erste Antwort!) bekam generische AI-Response ohne Business Context
-  - Fix: System Prompt jetzt mit Owner Name, Industry Context, City, Rating
-  - Neue Helper: `getOwnerName()` (z.B. "Tony Quach & Co" → "Tony"), `getIndustryContext()`
-  - Email zeigt jetzt 1 AI-Antwort als Preview + Link zu Demo Page mit 2 weiteren
-  - Daily Outreach ruft `generateDemoForLead()` statt nur `generateReviewAlertDraft()`
-  - Fallback: Wenn Demo-Generation fehlschlägt → Single AI Draft wie vorher
-  - DB: `outreach_leads` hat jetzt `demo_token` und `demo_url` Columns
-- [x] **Demo Generation Cron Job** - Automatische personalisierte Demo-Emails
-  - Cron Job auf cron-job.org angelegt: 08:00 täglich
-  - POST `/api/cron/generate-demos?send_emails=true&limit=10`
-  - Findet Leads mit 20+ Reviews → Scraped negative Reviews → AI-Antworten → Demo-Email
-  - Duplikat gelöscht (versehentlich 2x erstellt)
-- [x] **Brevo Email Delivery gefixt** - Domain verifiziert, Emails werden jetzt zugestellt
-  - Problem: Emails zeigten "sent" aber wurden nicht delivered (Sender not valid)
-  - Fix: DKIM Records in Namecheap für Brevo konfiguriert
-  - Test: Email an berend.jakob.mainz@gmail.com erfolgreich delivered
-  - Brevo API bestätigt: `"event":"delivered"`
-- [x] **Open Tracking Pixel hinzugefügt** - Outreach Emails tracken jetzt Opens
-- [x] **Email-Logs Admin Endpoint** - `/api/admin/email-logs` zeigt alle gesendeten Emails
-- [x] **Follow-up Emails für TripAdvisor** - 4 Tage nach Erst-Email automatisch
-  - Query: `sequence_number = 1` + `sent_at < NOW() - 4 days` + keine `sequence_number = 2`
-  - Personalisiert mit Demo-URL falls vorhanden
-  - Logging in `outreach_emails` Tabelle
-- [x] **Follow-up Emails für G2 Competitor Leads** - Gleiche Logik
-  - `POST /api/cron/send-g2-emails` sendet First + Follow-ups
-  - Neue Columns: `followup_sent`, `followup_sent_at`
-- [x] **LinkedIn Limits Tracking** - Dashboard zeigt Tages/Wochen-Limits
-  - Connections heute: X/20 mit Progress-Bar
-  - Connections Woche: X/100 mit Progress-Bar
-  - Messages heute: X/50 mit Progress-Bar
-  - Farbcodes: grün (ok), orange (warning bei 75%+), rot (limit reached)
-  - Verhindert LinkedIn Account-Sperrung
-- [x] **G2/LinkedIn/TripAdvisor komplett automatisiert**
-  - `/g2-miner birdeye` → scraped + findet Emails + sendet + Demo
-  - `/linkedin-connect followup` → prüft Acceptances + sendet Follow-ups
-  - `/scrape-leads restaurants munich` → scraped + Cron sendet Emails
-- [x] **Demo Conversion Tracking gefixt** - War komplett kaputt!
-  - Problem: Registration ignorierte `ref=demo_{token}` Parameter
-  - Fix: Backend akzeptiert jetzt `ref` bei Email + Google OAuth Registration
-  - Frontend liest `ref` aus URL und sendet an Backend
-  - `demo_generations.converted_at` wird jetzt korrekt gesetzt
-- [x] **Demo Email Tracking gefixt** - `email_sent_at` wurde nicht gesetzt
-  - Problem: Nach Daily Outreach Email wurde `demo_generations.email_sent_at` nicht geupdated
-  - Fix: Nach erfolgreichem Email-Versand wird jetzt `email_sent_at = NOW()` gesetzt
-- [x] **Outscraper als Primary API** - Statt Fallback jetzt Primary
-  - Problem: SerpAPI bei 360% vom monatlichen Limit
-  - Fix: Outscraper (500 free/mo) zuerst, SerpAPI (100 free/mo) nur als Fallback
-  - Reduziert API-Kosten und vermeidet Limit-Probleme
-- [x] **Demo Follow-Up Cron** - Neue automatische Follow-Up Emails
-  - `GET /api/cron/demo-followup` - Sendet Follow-Up an Demo-Viewer ohne Conversion
-  - Bedingung: Demo angesehen vor >24h, nicht konvertiert, kein Follow-Up gesendet
-  - Email enthält AI-Response Preview + `DEMOFOLLOWUP` Code (30% off für 3 Monate)
-  - **USER TODO: Cron Job anlegen:** `0 12 * * *` (12:00 täglich)
-    - URL: `https://review-responder.onrender.com/api/cron/demo-followup?secret=...`
-- [x] **Multi-Fallback Email System** - Hunter.io Bottleneck gelöst!
-  - Problem: Hunter.io Credits aufgebraucht, 100 Leads ohne Email
-  - Lösung: 4-stufiges Fallback-System (FREE First!)
-  - **Reihenfolge:**
-    1. Website Scraper (FREE) - Verbessert: mehr Pages, mailto: Erkennung
-    2. Pattern Guesser (FREE) - Testet info@, contact@, etc. mit MX-Check
-    3. Snov.io (50/Monat) - Neuer Fallback
-    4. Hunter.io (25/Woche) - Nur noch Last Resort
-  - `findEmailForLead()` - Neue kombinierte Funktion
-  - automation-health zeigt jetzt alle Email-Quellen
-  - **USER TODO: Snov.io API Keys holen:** https://snov.io → Settings → API
-    - In Render hinzufügen: `SNOV_CLIENT_ID`, `SNOV_CLIENT_SECRET`
-- [x] **AI Response Prompts refactored** - Anthropic Best Practices + XML Tags
-  - First-Principles Analyse: Defensive "BANNED:" Listen führen zu "constraint anxiety"
-  - Neuer Ansatz: Positive Framing statt Verbote (Anthropic-Empfehlung)
-  - XML Tags: `<output_format>`, `<voice>`, `<style_guide>`, `<avoid_ai_patterns>`
-  - **Neue Datei:** `backend/promptExamples.js` - Industry-spezifische Few-Shot Examples
-    - 10 Branchen: Restaurant, Dental, Hotel, Salon, Medical, Automotive, Fitness, Legal, Retail, Generic
-    - Dynamisches Matching basierend auf `business_type`
-  - **Aktualisierte Prompts:** Main Generator, Public API, Bulk Generation
-  - Ergebnis: Responses klingen natürlicher, weniger "AI slop"
-- [x] **Early Access Banner verbessert** - Klarere Kommunikation der 50% Rabatt-Bedingung
-  - Neuer Text: "50% off for your first year" (statt "Early Access - 50% OFF!")
-  - Cleaner Design passend zum Rest der Seite
-  - Code EARLY50 automatisch angewendet mit klarer Info
-- [x] **Settings Page UX verbessert** - Bessere Guidance für Custom Instructions
-  - "Generate with AI" Button prominenter gestaltet (filled, green) + "RECOMMENDED" Badge
-  - XML Tags Beispiele in Placeholders für Custom Instructions und Style Instructions
-  - `<rules>`, `<always>`, `<never>`, `<style>` Tags für besseres Prompt Engineering
-  - "(optional)" Label bei Style Instructions entfernt
-  - "Synced with Dashboard & Extension" Badge hinzugefügt
-- [x] **Onboarding Flow optimiert** - Keine Auto-Speicherung von Business Context mehr
-  - Problem: User sahen nicht mehr den "Set up your AI" Banner weil Context auto-gespeichert wurde
-  - Fix: `saveBusinessProfile()` speichert nur noch businessName + businessType (nicht Context)
-  - Keywords werden via localStorage an Settings übergeben für Pre-fill
-  - User konfiguriert AI bewusst in Settings mit den neuen XML-Tag Guides
-- [x] **Custom Instructions Sync** - Dashboard lädt Custom Instructions aus User Settings
-  - `customInstructions` State initialisiert mit `user?.responseStyle || ''`
-  - User kann in Settings einmal konfigurieren, dann ist es überall verfügbar
-
-### ERLEDIGT (13.01.2026):
-- [x] **Cron Jobs gefixt** - Alle 3 Cron Jobs liefen auf "Ausgabe zu groß" Fehler
-  - `send-tripadvisor-emails`: Response minimiert auf `{ok, sent, err}`
-  - `daily-outreach`: Bug gefixt (`results.new_leads?.found` → `results.scraping?.leads_added`)
-  - `send-drip-emails`: War schon OK
-  - Alle getestet und funktionieren jetzt
-- [x] **Open Tracking gefixt** - War kaputt, jetzt funktioniert es (echte Rate: **24.4%**!)
-- [x] **G2 Competitor Lead Scraping** - 74 negative Reviews gefunden
-  - Birdeye: 27 negative (19x 1-Stern, 8x 2-Stern)
-  - Podium: 47 negative (36x 1-Stern, 11x 2-Stern)
-  - 5 Named Leads mit Details (Colin D. = High Value, Mid-Market)
-  - Pain Points: Over-promising, daily bugs, poor support, contract traps
-  - Datei: `content/leads/g2-birdeye-leads-2026-01-13.md`
-- [x] **G2 Leads importiert** - 6 neue Leads in competitor_leads Tabelle
-- [x] **Daily Outreach getriggert** - 20 neue Leads, 11 Emails gesendet
-- [x] **Twitter Auto-Post** - Tweet gepostet auf @ExecPsychology
-- [x] **Outreach Metriken verbessert**:
-  - Leads: 249 → 272 (+23) → jetzt **523** (nach Parallel-Outreach 14.01)
-  - Emails: 230 → 329 (+99) → jetzt **476**
-  - Open Rate: 0.4% → 3.6% → **24.4%** (echte Metriken nach korrektem Tracking!)
-  - Click Rate: **3.8%** mit **18 unique Clicks** (echte Business-Interessenten!)
-
-### ERLEDIGT (Keep-Alive Session):
-- [x] **Keep-Alive Cron Job** - Verhindert Render Cold Start "Ausgabe zu groß" Fehler
-  - Endpoint: `GET /api/health`
-  - Schedule: alle 15 Minuten (*/15 * * * *)
-  - Root Cause gefunden: Render Free Tier schläft nach 15 Min → 502 Error mit 218KB HTML
-  - cron-job.org interpretiert 218KB Response als "Ausgabe zu groß"
-  - Fix: Server bleibt jetzt immer warm durch 15-Min Health Checks
-- [x] **Chrome Web Store Einreichung komplett** - Extension v1.6.1 eingereicht
-  - manifest.json mit SEO-optimierter Description
-  - 5 Screenshots erstellt und resized (1280x800)
-  - Promo Tiles erstellt (440x280, 1400x560)
-  - Demo-Video auf YouTube hochgeladen (ungelistet)
-  - Privacy Tab ausgefüllt (alle Permissions begründet)
-  - Test-Account erstellt: reviewer@tryreviewresponder.com
-  - Status: Überprüfung läuft (1-3 Werktage)
-
-### ERLEDIGT (14.01.2026):
-- [x] **Pre-Registration Drip Email System** - Nurturing für Landing Page Email-Captures
-  - 4 automatische Emails: Tag 1, 3, 7, 14
-  - Check ob User sich registriert hat → wenn ja, keine weiteren Drips
-  - DB-Tabelle: `pre_registration_drips` (tracking sent emails)
-  - Endpoint: `GET /api/cron/send-pre-registration-drips?secret=...`
-  - Test-Endpoint: `GET /api/admin/test-pre-reg-drip?email=X&day=X&key=...`
-  - Alle 4 Emails erfolgreich getestet
-  - Cron Job: täglich 11:00 Uhr
-- [x] **Demo Generator implementiert** - Personalisierte Demos für Cold Outreach
-  - SerpAPI Integration für Google Review Scraping
-  - `POST /api/demo/generate` - Generiert Demo mit AI-Antworten
-  - `GET /api/public/demo/:token` - Public Demo Landing Page
-  - `POST /api/cron/generate-demos` - Batch Demo Generation
-  - Frontend: `/demo/:token` Route mit DemoPage Komponente
-- [x] **LinkedIn Demo Outreach implementiert** - Personalisierte Connection Notes
-  - `POST /api/outreach/linkedin-demo` - Generiert Demo + Connection Note
-  - `GET /api/outreach/linkedin-demo/:id` - Lead Details
-  - `PUT /api/outreach/linkedin-demo/:id/sent` - Mark as sent
-  - `PUT /api/outreach/linkedin-demo/:id/accepted` - Mark as accepted
-  - `GET /api/outreach/linkedin-pending` - Pending leads with demos
-  - Database: linkedin_outreach erweitert mit demo_token, demo_url, connection_note, etc.
-- [x] **Admin Secret gespeichert** in `.claude/secrets.local`
-- [x] **GOOGLE_PLACES_API_KEY** - Funktioniert! (getestet 14.01.2026)
-
-### ERLEDIGT (13.01.2026):
-- [x] **Twitter Auto-Post System** - Automatische Tweets für @ExecPsychology
-  - Endpoint: `GET /api/cron/twitter-post?secret=...`
-  - 5 Kategorien (business_psychology 30%, review_management 25%, business_tip 20%, engagement_question 15%, soft_promo 10%)
-  - AI-Slop Filter entfernt typische AI-Phrasen ("Here's a...", "game-changer", etc.)
-  - Tweet-Generierung mit Claude Sonnet (~$0.01/Tweet)
-  - DB-Tabelle: `twitter_scheduled_posts`
-  - Admin: `GET /api/admin/twitter-posts?key=...`
-  - Twitter API Keys in `.claude/secrets.local` + Render Env Vars
-  - **Erster Tweet erfolgreich gepostet!** (Test 13.01.2026)
-  - **USER TODO: Cron Job "Twitter Auto-Post Morning" auf 09:00 fixen (aktuell 00:09)**
-    - cron-job.org -> Jobs -> Twitter Auto-Post Morning -> ERWEITERT Tab -> Cron Expression: `0 9 * * *`
-  - **USER TODO: Zweiten Cron Job für 18:00 anlegen**
-    - URL: `https://review-responder.onrender.com/api/cron/twitter-post?secret=mein-geheimer-cron-key-biwbqevpbACN`
-- [x] **Click-Tracking für Outreach Emails** - Endlich messbar ob jemand klickt
-  - Neuer Endpoint: `/api/outreach/track-click` (Redirect-basiert)
-  - Alle Email-Links werden automatisch mit Tracking gewrapped
-  - UTM-Parameter werden automatisch hinzugefügt
-  - Dashboard zeigt jetzt `click_rate` und `emails_clicked`
-  - Neue DB-Tabelle: `outreach_clicks`
-- [x] **First Principles Sales Analysis** - Mit Chrome MCP Dashboard gecheckt
-  - Funnel-Daten: 8 User (Test-Accounts), 87.5% Activation, 0% Conversion
-  - Outreach-Daten: 191 Leads, 103 Emails, 0% Opens (Tracking kaputt)
-  - Erkenntnis: Activation ist kein Problem, Conversion ist das Bottleneck
-  - Nächster Checkpoint: In 1 Woche Clicks auswerten
-- [x] **8 neue SEO Landing Pages erstellt** - Plattformen und Branchen erweitert
-  - Plattformen: Trustpilot, Airbnb, E-Commerce
-  - Branchen: Real Estate, Gym/Fitness, Veterinarian, Law Firm, Coffee Shop
-  - Alle 21 Landing Pages getestet (Status 200 OK)
-  - Google Indexierung wartet auf Tageskontingent (morgen beantragen)
-- [x] **Frontend Redesign mit Gemini MCP** - Komplette Landing Page überarbeitet
-  - Neues modernes Design mit verbesserter UX
-  - "20 free responses/month" klar kommuniziert (statt vages "free forever")
-  - "Launch Special" → "Early Access" umbenannt
-  - Footer auf allen SEO-Seiten gefixt
-  - Video-Player mit korrektem Aspect Ratio (kein Cropping)
-  - Mobile + Dark Mode getestet
-- [x] **Review Alert Outreach System** - Personalisierte Emails mit AI-generierten Antwort-Drafts
-  - Daily Outreach fetcht jetzt Place Details inkl. Reviews
-  - Für Businesses mit 1-2 Sterne Reviews: AI-Draft generiert
-  - Emails enthalten echte Review + fertige Antwort (Wert statt Spam)
-  - Kosten: ~$10/Monat (nur Claude Sonnet für Drafts)
-  - Campaign tracking: `review_alert` vs `main`
-- [x] **Sales Automation implementiert** - Komplettes System für automatische Lead-Generierung
-  - DACH-Städte hinzugefügt (München, Hamburg, Frankfurt, Köln, Stuttgart, Düsseldorf, Wien, Zürich, Genf, Brüssel)
-  - 4 neue Branchen (Spa, Tierarzt, Physiotherapie, Steuerberater)
-  - Website Scraper als Primary (spart Hunter.io Credits)
-- [x] **Reddit Auto-Responder** - Automatische hilfreiche Kommentare auf Reddit
-  - Monitort 8 Subreddits (smallbusiness, Entrepreneur, restaurateur, etc.)
-  - 8 Keywords (negative review, review management, etc.)
-  - AI-generierte hilfreiche Antworten (**Claude Opus 4.5** für beste Qualität)
-  - 5 Kommentare/Tag Limit (Anti-Spam)
-  - Endpoints: `GET /api/cron/reddit-monitor`, `GET /api/admin/reddit-responses`
-- [x] **Twitter/X Engagement** - Findet Tweet-Opportunities für manuelles Engagement
-  - Sucht nach review-bezogenen Tweets
-  - Generiert Antwort-Vorschläge (**Claude Opus 4.5**)
-  - Loggt Opportunities für manuelles Posten (Free Tier kann nicht automatisch posten)
-  - Endpoints: `GET /api/cron/twitter-monitor`, `GET /api/admin/twitter-opportunities`
-- [x] **Blog SEO Verbesserungen**
-  - Internal Linking: Neue Artikel verlinken automatisch zu verwandten Artikeln
-  - Schema.org JSON-LD Markup für Rich Snippets in Google
-- [x] **Drip Email Cron Fix** - Error Response kompakter gemacht
-  - cron-job.org hatte "Ausgabe zu groß" Fehler
-  - Error-Response auf max 100 Zeichen gekürzt
-- [x] **Reddit API Access Request** - Antrag eingereicht
-  - Formular ausgefüllt via Chrome MCP
-  - Wartet auf Genehmigung (1-2 Tage)
-- [x] **Google Indexierung für 5 neue Landing Pages** - Via Chrome MCP beantragt
-  - `/negative-review-responses`
-  - `/tripadvisor-review-responses`
-  - `/booking-review-generator`
-  - `/facebook-review-responses`
-  - `/dentist-review-responses`
-  - (3 weitere morgen wegen Tageslimit)
-
-### ERLEDIGT (12.01.2026):
-- [x] **SEO Auto-Pilot Blog implementiert** - Automatische Blog-Generierung mit Gemini 2.5 Pro
-  - Öffentlicher Blog unter `/blog` und `/blog/:slug`
-  - 25 SEO-optimierte Topics in 5 Kategorien
-  - Gemini 2.5 Pro mit Google Search Grounding (recherchiert aktuelle Daten)
-  - Public Endpoints: `GET /api/public/blog`, `GET /api/public/blog/:slug`
-  - Admin Endpoints: `GET/PUT/DELETE /api/admin/blog/:id`
-  - Cron Endpoint: `POST /api/cron/generate-blog-article`
-  - Komplett kostenlos (Free Tier)
-- [x] **App Verification durchgeführt** - Homepage, Dashboard, AI Generation getestet - alles funktioniert
-- [x] **Email System komplett auditiert** - Alle 18 Email-Typen geprüft und funktionsfähig
-- [x] **Fehlende Notification Functions implementiert**:
-  - `sendUsageAlertEmail()` - Warnung bei 80% Usage
-  - `sendPlanRenewalEmail()` - Bestätigung bei Subscription-Renewal
-  - `/api/cron/send-weekly-summary` - Wöchentliche Statistik-Email
-- [x] **4 Cron Jobs konfiguriert** (cron-job.org):
-  - Outreach: täglich 09:00 Berlin
-  - Drip Emails: täglich 10:00 Berlin
-  - Weekly Summary: Montag 09:00 Berlin
-  - **Blog Generation: Mo/Mi/Fr 07:00 Berlin (NEU - noch zu konfigurieren)**
-- [x] **Drip Endpoint Auth gefixt** - Akzeptiert jetzt Query-Parameter wie Outreach
-- [x] **Emojis aus Email-Templates entfernt** - Alle Subjects und Bodies bereinigt
-- [x] **URLs korrigiert** - Alte render URLs → tryreviewresponder.com
-
-### ERLEDIGT (11.01.2026):
-- [x] **Dogfooding Section** - "Reviews About Us, Answered By Us"
-  - Zeigt echte Testimonials mit AI-generierten Antworten
-  - Open-Source Business Context (aufklappbar)
-  - Alle 3 Testimonials werden angezeigt
-- [x] **Auto AI-Response für Testimonials** - Bei neuem Testimonial wird automatisch AI-Antwort generiert
-  - Helper-Funktion `generateAIResponseForTestimonial()`
-  - Non-blocking (async im Hintergrund)
-  - Verwendet Claude Sonnet 4 mit ReviewResponder Business Context
-
-### ERLEDIGT (10.01.2026):
-- [x] **Weitere Zahlungsmethoden aktiviert** - PayPal, SEPA-Lastschrift, Link (Stripe Wallet), Apple Pay/Google Pay
-  - Backend: `payment_method_types` erweitert in `/api/billing/create-checkout`
-  - `.well-known` Ordner für Apple Pay Verifizierung vorbereitet
-  - User muss PayPal + Apple Pay Domain manuell im Stripe Dashboard aktivieren
-- [x] **Response History für Free freigeschaltet** - History Tab jetzt für alle User sichtbar
-- [x] **CSV/PDF Export für Starter+ freigeschaltet** - War nur Pro+, jetzt auch Starter
-  - Free-User sehen Upgrade-Prompt beim Export-Versuch
-  - Feature Table auf Pricing Page aktualisiert
-- [x] **Konsistenz-Check Frontend** - 6x "5 free responses" zu "20 free responses" korrigiert
-- [x] **CLAUDE.md Cleanup** - Nicht-implementierte Features entfernt (Achievements/Streaks, Multi-Account UI)
-- [x] **Email Case-Insensitive Fix** - 7 Stellen gefixt wo Email-Vergleiche case-sensitive waren
-  - Jetzt: `test@email.com` = `TEST@EMAIL.COM` bei Login, Register, Google OAuth, Team Invite, etc.
-- [x] **Email-Verifizierung mit Banner (Optional)** - Non-blocking Email-Verification
-  - Bei Registration wird Verification-Email gesendet
-  - Gelber Banner im Dashboard wenn nicht verifiziert
-  - Resend-Button sendet neue Verification-Email
-  - `/verify-email?token=xxx` Route für Verification-Links
-  - User kann App trotzdem sofort nutzen (kein Blocker!)
-  - Endpoints: `GET /api/auth/verify-email`, `POST /api/auth/resend-verification`
-
-### BEKANNTE BUGS:
-Keine offenen Bugs.
+### Outreach Metriken (14.01)
+- **523 Leads**, **476 Emails**
+- **24.4% Open Rate**, **3.8% Click Rate**
 
 ---
 
-## LEARNINGS (Review Alert System)
+## LEARNINGS
 
-**Wichtige Erkenntnisse für zukünftige Sessions:**
-
-### Google Places API Limits
-- Google Places API gibt nur **5 Reviews** zurück (max)
-- `has_bad_review` wird selten `true` weil oft keine 1-2 Sterne Reviews dabei
-- **Lösung:** SerpAPI für Review-Scraping nutzen (gibt mehr Reviews)
-- **Best Practice:** Demo für ALLE Leads generieren, nicht nur für solche mit schlechten Reviews
-
-### Email Deliverability (Primary vs Promotions)
-- Marketing-Sprache → Promotions Tab
-- Persönlicher Ton → Primary Inbox
-- **Was hilft:**
-  - "Hey" statt "Hallo/Hi"
-  - Konversationeller Stil wie eine echte Person
-  - Keine Emojis
-  - Keine Marketing-Floskeln ("kostenlos testen", "jetzt anfangen")
-  - Direkt zum Punkt kommen
+### Email Deliverability
+- "Hey" statt "Hallo" → Primary Inbox
+- Keine Emojis, keine Marketing-Floskeln
 
 ### AI Response Qualität
-- Generische Antworten = niedrige Conversion
-- **Qualitäts-Checklist für System Prompts:**
-  1. Reviewer BY NAME ansprechen
-  2. SPEZIFISCHE Details aus Review erwähnen
-  3. Bei negativ: Zeigen dass man Frustration versteht + was man ändern wird
-  4. VOLLER Business Name am Ende (nicht abgekürzt!)
-  5. AI-Slop vermeiden ("Thank you for your feedback", "We appreciate")
+1. Reviewer BY NAME ansprechen
+2. SPEZIFISCHE Details aus Review
+3. VOLLER Business Name am Ende
+4. AI-Slop vermeiden
 
-### Hunter.io Limits
-- 25 Email-Suchen/Monat im Free Tier
-- **Fallback:** Website-Scraper (findet Email im Footer/Impressum)
-- Priorität: Website → Hunter.io → Skip
+### API Limits
+- Google Places: nur 5 Reviews → SerpAPI nutzen
+- Hunter.io: 25/Monat → Website Scraper als Primary
+- Outscraper: 500/Monat (Primary für Reviews)
 
 ---
 
@@ -917,57 +143,88 @@ Keine offenen Bugs.
 
 | Komponente | Technologie |
 |------------|-------------|
-| Frontend | React (Render Static Site) |
+| Frontend | React (Render) |
 | Backend | Node.js/Express (Render) |
-| Datenbank | PostgreSQL (Render) |
-| Payments | Stripe (Live) |
-| AI | OpenAI GPT-4o-mini + Claude Sonnet + Gemini 2.5 Pro (Hybrid) |
-| Email | Resend.com |
-| Domain | Namecheap |
-| Email-Forwarding | ImprovMX |
+| DB | PostgreSQL (Render) |
+| Payments | Stripe |
+| AI | GPT-4o-mini + Claude Sonnet + Gemini 2.5 |
+| Email | Resend + Brevo |
 
 ---
 
-## GEMINI DESIGN MCP
+## PLAN LIMITS
 
-**Was:** Paralleler Design-Agent der mit Gemini AI das Frontend verbessert während Claude an der Logik arbeitet.
-**URL:** https://gemini-design-mcp.com
+| Plan | Smart | Standard | Total |
+|------|-------|----------|-------|
+| Free | 3 | 17 | 20 |
+| Starter $29 | 100 | 200 | 300 |
+| Pro $49 | 300 | 500 | 800 |
+| Unlimited $99 | ∞ | ∞ | ∞ |
 
-### Installation
-```bash
-claude mcp add gemini-design-mcp --env API_KEY=YOUR_GEMINI_API_KEY -- npx -y gemini-design-mcp@latest
-```
+### Feature Gating
+- **Free:** Chrome Extension only
+- **Starter+:** History, Export
+- **Pro+:** Bulk, Analytics, Teams
+- **Unlimited:** API Access
 
-**API Key:** https://aistudio.google.com/apikey
+---
 
-### Die 4 Tools
+## API ENDPOINTS
 
-| Tool | Use Case | Beispiel |
-|------|----------|----------|
-| **create_frontend** | Komplette responsive Views generieren | "Create a modern pricing page with 3 tiers" |
-| **modify_frontend** | Chirurgische Edits an Components | "Adjust padding, change button colors, fix mobile layout" |
-| **snippet_frontend** | Standalone UI Components | "Create a modal for email verification" |
-| **Context Isolation** | Backend Logic bleibt geschützt | Arbeitet nur an Frontend-Dateien |
+### Core
+- `POST /api/generate` - Single
+- `POST /api/generate-bulk` - Bulk (Pro+)
+- `GET /api/stats` | `GET /api/responses/history`
 
-### Wann benutzen?
+### Auth
+- `POST /api/auth/register|login|google`
+- `POST /api/auth/forgot-password|reset-password`
 
-**Automatisch bei Frontend-Tasks:**
-- Dashboard Redesign
-- Landing Page Optimierung
-- Component Styling
-- Mobile Responsiveness
-- Neue UI Features
+### Billing
+- `POST /api/billing/create-checkout|portal`
 
-**Workflow:**
-1. Claude analysiert Business Logic
-2. Gemini MCP übernimmt Frontend Design
-3. Beide arbeiten parallel in einer Session
-4. Kein Context-Switching nötig
+### Admin
+- `GET /api/admin/stats|set-plan|api-costs|scraper-status`
 
-### Pricing
-- **Free:** 20K tokens/month
-- **Pro:** $19/month, 1M tokens
-- **Enterprise:** $79/month, 6M tokens
+### Outreach
+- `GET /api/cron/daily-outreach|demo-followup|scraper-alerts`
+
+---
+
+## COMPLETED FEATURES
+
+### Core
+- Auth (Email + Google OAuth)
+- AI Generation (4 Tones, 50+ Languages)
+- Hybrid AI, Templates, Bulk
+
+### Premium
+- Analytics, Teams, API Keys
+- SEO Blog Generator
+
+### Chrome Extension v1.6.1
+- Google Maps, Yelp, TripAdvisor, Booking, Facebook, Trustpilot
+- One-Click Response, Business Context
+
+### Marketing Automation
+- Daily Outreach + Drip Emails
+- Demo Generation + Follow-Up
+- Twitter Auto-Post
+- LinkedIn Outreach
+- Click/Open Tracking
+
+---
+
+## KÜRZLICH ERLEDIGT (14.01)
+
+- 2 Cron Jobs angelegt (Demo Follow-Up, Scraper Alerts)
+- Auto Business Context für Demos
+- Sales Automation Blast (13 Städte, +210 Leads)
+- API Costs Dashboard
+- Pricing Page Optimierung
+- Review Alert System komplett gefixt
+- Multi-Fallback Email System (Website → Pattern → Snov.io → Hunter)
+- AI Prompts refactored (XML Tags, Few-Shot Examples)
 
 ---
 
@@ -975,198 +232,17 @@ claude mcp add gemini-design-mcp --env API_KEY=YOUR_GEMINI_API_KEY -- npx -y gem
 
 ```
 ReviewResponder/
-├── frontend/          # React App (src/App.js, src/App.css)
+├── frontend/          # React App
 ├── backend/           # Express API (server.js)
 ├── chrome-extension/  # Browser Extension
-├── content/           # Marketing (outreach/, product-hunt/, social/)
-├── scripts/           # Automation Scripts
+├── content/           # Marketing, Leads
 ├── .claude/
-│   ├── settings.json  # Auto-Lint Hook + Permissions
-│   ├── commands/      # Custom Slash Commands
-│   │   ├── commit-push-pr.md
-│   │   ├── new-feature.md
-│   │   ├── test-and-lint.md
-│   │   ├── simplify-code.md
-│   │   └── verify-app.md
-│   └── TESTING.md     # Testing Workflow Checklist
-├── CLAUDE.md          # Technische Docs, Code Style, API
-└── TODO.md            # Tasks, Videos, Sales, Backlog
+│   ├── settings.json
+│   ├── commands/      # Slash Commands
+│   └── secrets.local  # API Keys (lokal)
+├── CLAUDE.md
+└── TODO.md
 ```
-
----
-
-## API ENDPOINTS (Wichtigste)
-
-### Auth
-- `POST /api/auth/register|login|forgot-password|reset-password|google`
-- `PUT /api/auth/change-password` | `POST /api/auth/change-email-request|confirm-email-change`
-- `DELETE /api/auth/delete-account`
-
-### Core
-- `POST /api/generate` - Single Response
-- `POST /api/generate-bulk` - Bis zu 20 Reviews
-- `POST /api/generate-variations` - 3 Varianten
-- `GET /api/stats` | `GET /api/responses/history`
-
-### Templates & Analytics
-- `GET|POST|PUT|DELETE /api/templates/:id`
-- `GET /api/analytics` (Pro/Unlimited)
-
-### Teams (Pro/Unlimited)
-- `GET|POST /api/team` | `POST /api/team/invite|accept`
-- `PUT /api/team/:memberId/role` | `DELETE /api/team/:memberId`
-
-### API Keys (Unlimited)
-- `GET|POST|PUT|DELETE /api/keys/:id`
-- `POST /api/v1/generate` (Public API mit X-API-Key)
-
-### Affiliate
-- `POST /api/affiliate/apply` | `GET /api/affiliate/stats|payouts`
-- `GET /api/affiliate/track/:code` (Click tracking)
-
-### Admin
-- `GET /api/admin/stats|affiliates` | `PUT /api/admin/affiliates/:id/status`
-- `GET /api/admin/set-plan?email=X&plan=X&key=X`
-
-### Billing
-- `POST /api/billing/create-checkout|portal`
-- `POST /api/webhooks/stripe`
-
----
-
-## PLAN LIMITS (Hybrid AI)
-
-| Plan | Smart (Claude) | Standard (GPT-4o) | Total | Team |
-|------|----------------|-------------------|-------|------|
-| Free | 3 | 17 | 20 | - |
-| Starter ($29) | 100 | 200 | 300 | - |
-| Pro ($49) | 300 | 500 | 800 | 3 |
-| Unlimited ($99) | ∞ | ∞ | ∞ | 10 |
-
-### Feature Gating
-| Feature | Free | Starter | Pro | Unlimited |
-|---------|------|---------|-----|-----------|
-| Response History | ❌ | ✓ | ✓ | ✓ |
-| CSV/PDF Export | ❌ | ✓ | ✓ | ✓ |
-| Bulk Generation | ❌ | ❌ | ✓ | ✓ |
-| Analytics | ❌ | ❌ | ✓ | ✓ |
-| API Access | ❌ | ❌ | ❌ | ✓ |
-
----
-
-## STRIPE CONFIG (Live)
-
-### Monthly
-- Starter: `price_1Sni0hQfYocZQHxZ7oxDbiVo`
-- Pro: `price_1Sni18QfYocZQHxZuboFA6Wc`
-- Unlimited: `price_1Sni1NQfYocZQHxZTq8KNLv8`
-
-### Yearly (20% off)
-- Starter: `price_1SnkL2QfYocZQHxZPvaX6mru`
-- Pro: `prod_TlEUSJsa7ULdZj`
-- Unlimited: `price_1SnkObQfYocZQHxZ5zNYTN3f`
-
----
-
-## ENV VARIABLES (Render Backend)
-
-```
-DATABASE_URL, OPENAI_API_KEY, ANTHROPIC_API_KEY, JWT_SECRET
-STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET
-STRIPE_STARTER_PRICE_ID, STRIPE_PRO_PRICE_ID, STRIPE_UNLIMITED_PRICE_ID
-RESEND_API_KEY, GOOGLE_CLIENT_ID
-FRONTEND_URL=https://review-responder-frontend.onrender.com
-NODE_ENV=production
-```
-
----
-
-## GIT WORKFLOW
-
-```bash
-git add -A && git commit -m "Beschreibung" && git push
-# Render deployed automatisch!
-```
-
----
-
-## COMPLETED FEATURES
-
-### Core
-- User Auth (Email/Password + Google OAuth)
-- AI Response Generation (4 Tones, 50+ Sprachen)
-- Hybrid AI (Smart=Claude, Standard=GPT-4o)
-- Response History, Templates, Bulk Generation
-
-### Premium Features
-- Analytics Dashboard (Pro/Unlimited)
-- Team/Multi-User Accounts (Pro: 3, Unlimited: 10)
-- API Key System (Unlimited only)
-- SEO Blog Generator (Pro/Unlimited)
-
-### Monetization
-- Stripe Payments (Monthly + Yearly 20% off)
-- Referral System (1 Month Free)
-- Affiliate Program (20% recurring)
-- Discount Codes: EARLY50 (50%), SAVE20 (20%), HUNTLAUNCH (60%)
-
-### Chrome Extension v1.6.1 (Im Chrome Web Store Review)
-- Google Maps, Yelp, TripAdvisor, Booking, Facebook, Trustpilot
-- One-Click Response Generation
-- Text Selection → Floating Respond Button
-- 4 Tone Options (Professional, Friendly, Formal, Apologetic)
-- 50+ Languages Auto-Detection
-- Business Context für personalisierte Antworten
-- Copy-to-Clipboard
-
-### Marketing Systems
-- Automated Outreach (Google Places → Hunter.io → Cold Emails)
-- LinkedIn Outreach Templates
-- Cold Email Sequences (Restaurant/Hotel/Local)
-- Product Hunt Launch Ready
-- Google Ads Landing Pages (5 Seiten)
-- Exit-Intent Popup
-
-### Admin
-- Admin Panel (/admin)
-- Profile Page (/profile)
-- Mobile Responsive Design
-
----
-
-## MARKETING AUTOMATION BACKLOG
-
-| System | Beschreibung | Status |
-|--------|--------------|--------|
-| Reddit Auto-Responder | Keywords monitoren, hilfreiche Antworten | ✅ Implementiert - wartet auf API Keys |
-| Twitter/X Auto-Post | 2 Tweets/Tag @ExecPsychology | ✅ Live - **Cron manuell fixen: 09:00** |
-| SEO Auto-Pilot | 3 Artikel/Woche auto-generieren | ✅ Implementiert + Cron aktiv |
-| Quora Auto-Responder | Ähnlich wie Reddit | Backlog |
-| Competitor Scraper | Unzufriedene Birdeye/Podium Kunden | Backlog |
-
----
-
-## PRODUCT HUNT LAUNCH
-
-Am Launch-Tag in `frontend/src/App.js`:
-```javascript
-const PRODUCT_HUNT_CONFIG = {
-  isLaunched: true,
-  launchEndTime: new Date('2025-XX-XXTXX:XX:XX-08:00'),
-  productHuntUrl: 'https://www.producthunt.com/posts/reviewresponder',
-};
-```
-
----
-
-## SCREENSHOT TOOL
-
-1. `Win + Shift + S` → Screenshot machen
-2. User sagt "hab" oder "screenshot"
-3. Claude: `powershell -ExecutionPolicy Bypass -File "C:\Users\Berend Mainz\clipboard-screenshot.ps1"`
-4. Read tool für Bild
-
-**Hinweis:** `/screenshot` Skill kann KEINE Nachrichten an User schicken - nur Screenshot laden.
 
 ---
 

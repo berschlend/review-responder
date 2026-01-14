@@ -13123,6 +13123,199 @@ app.get('/api/admin/api-costs', async (req, res) => {
   }
 });
 
+// API Credits Dashboard - Show remaining credits for all external APIs
+app.get('/api/admin/api-credits', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!process.env.ADMIN_SECRET || !safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const credits = [];
+
+  // Helper to calculate status
+  const getStatus = (used, limit) => {
+    const percent = (used / limit) * 100;
+    if (percent >= 100) return 'exhausted';
+    if (percent >= 90) return 'critical';
+    if (percent >= 70) return 'warning';
+    return 'ok';
+  };
+
+  try {
+    // 1. SerpAPI - Check via API (free call)
+    if (process.env.SERPAPI_KEY) {
+      try {
+        const serpRes = await fetch(`https://serpapi.com/account.json?api_key=${process.env.SERPAPI_KEY}`);
+        const serpData = await serpRes.json();
+        const used = serpData.this_month_usage || 0;
+        const limit = serpData.plan_searches_left !== undefined
+          ? used + serpData.plan_searches_left
+          : 250; // Free tier default
+        credits.push({
+          name: 'SerpAPI',
+          used,
+          limit,
+          period: 'month',
+          percent: Math.round((used / limit) * 100),
+          status: getStatus(used, limit),
+        });
+      } catch (e) {
+        credits.push({ name: 'SerpAPI', error: e.message });
+      }
+    } else {
+      credits.push({ name: 'SerpAPI', error: 'Not configured' });
+    }
+
+    // 2. Hunter.io - Check via API (free call)
+    if (process.env.HUNTER_API_KEY) {
+      try {
+        const hunterRes = await fetch(`https://api.hunter.io/v2/account?api_key=${process.env.HUNTER_API_KEY}`);
+        const hunterData = await hunterRes.json();
+        const requests = hunterData.data?.requests;
+        if (requests?.credits) {
+          const used = requests.credits.used || 0;
+          const limit = (requests.credits.available || 0) + used;
+          credits.push({
+            name: 'Hunter.io',
+            used,
+            limit: limit || 25, // Free tier default
+            period: 'month',
+            percent: limit > 0 ? Math.round((used / limit) * 100) : 0,
+            status: getStatus(used, limit || 25),
+          });
+        } else {
+          credits.push({ name: 'Hunter.io', error: 'Invalid response' });
+        }
+      } catch (e) {
+        credits.push({ name: 'Hunter.io', error: e.message });
+      }
+    } else {
+      credits.push({ name: 'Hunter.io', error: 'Not configured' });
+    }
+
+    // 3. Snov.io - Check via API with OAuth (free call)
+    if (process.env.SNOV_CLIENT_ID && process.env.SNOV_CLIENT_SECRET) {
+      try {
+        const tokenRes = await fetch('https://api.snov.io/v1/oauth/access_token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            grant_type: 'client_credentials',
+            client_id: process.env.SNOV_CLIENT_ID,
+            client_secret: process.env.SNOV_CLIENT_SECRET,
+          }),
+        });
+        const tokenData = await tokenRes.json();
+
+        if (tokenData.access_token) {
+          const balanceRes = await fetch('https://api.snov.io/v1/get-balance', {
+            headers: { 'Authorization': `Bearer ${tokenData.access_token}` },
+          });
+          const balanceData = await balanceRes.json();
+
+          if (balanceData.success && balanceData.data) {
+            const balance = parseFloat(balanceData.data.balance) || 0;
+            // Snov.io shows available credits, not used
+            // Free tier is 50 credits/month, so we estimate used = 50 - balance
+            const limit = 50;
+            const used = Math.max(0, limit - balance);
+            credits.push({
+              name: 'Snov.io',
+              used: Math.round(used),
+              limit,
+              period: 'month',
+              percent: Math.round((used / limit) * 100),
+              status: getStatus(used, limit),
+            });
+          } else {
+            credits.push({ name: 'Snov.io', error: 'Balance check failed' });
+          }
+        } else {
+          credits.push({ name: 'Snov.io', error: 'Token error' });
+        }
+      } catch (e) {
+        credits.push({ name: 'Snov.io', error: e.message });
+      }
+    } else {
+      credits.push({ name: 'Snov.io', error: 'Not configured' });
+    }
+
+    // 4. Outscraper - No API, count from api_call_logs
+    try {
+      const outscraperResult = await dbQuery(`
+        SELECT COUNT(*) as used
+        FROM api_call_logs
+        WHERE provider = 'outscraper'
+        AND created_at >= DATE_TRUNC('month', CURRENT_DATE)
+      `);
+      const used = parseInt(outscraperResult.rows[0]?.used) || 0;
+      const limit = 500; // Free tier
+      credits.push({
+        name: 'Outscraper',
+        used,
+        limit,
+        period: 'month',
+        percent: Math.round((used / limit) * 100),
+        status: getStatus(used, limit),
+      });
+    } catch (e) {
+      credits.push({ name: 'Outscraper', error: e.message });
+    }
+
+    // 5. Brevo - Count from email_logs (today)
+    try {
+      const brevoResult = await dbQuery(`
+        SELECT COUNT(*) as used
+        FROM email_logs
+        WHERE provider = 'brevo'
+        AND sent_at >= CURRENT_DATE
+      `);
+      const used = parseInt(brevoResult.rows[0]?.used) || 0;
+      const limit = 300; // Free tier daily limit
+      credits.push({
+        name: 'Brevo',
+        used,
+        limit,
+        period: 'day',
+        percent: Math.round((used / limit) * 100),
+        status: getStatus(used, limit),
+      });
+    } catch (e) {
+      credits.push({ name: 'Brevo', error: e.message });
+    }
+
+    // 6. Resend - Count from email_logs (today)
+    try {
+      const resendResult = await dbQuery(`
+        SELECT COUNT(*) as used
+        FROM email_logs
+        WHERE provider = 'resend'
+        AND sent_at >= CURRENT_DATE
+      `);
+      const used = parseInt(resendResult.rows[0]?.used) || 0;
+      const limit = 100; // Free tier daily limit
+      credits.push({
+        name: 'Resend',
+        used,
+        limit,
+        period: 'day',
+        percent: Math.round((used / limit) * 100),
+        status: getStatus(used, limit),
+      });
+    } catch (e) {
+      credits.push({ name: 'Resend', error: e.message });
+    }
+
+    res.json({
+      credits,
+      lastUpdated: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('[api-credits] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Usage Analytics - Understand Free User behavior for conversion optimization
 app.get('/api/admin/usage-analytics', async (req, res) => {
   const adminKey = req.headers['x-admin-key'] || req.query.key;
