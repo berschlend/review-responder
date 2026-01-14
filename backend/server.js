@@ -4043,6 +4043,49 @@ app.post('/api/billing/portal', authenticateToken, async (req, res) => {
   }
 });
 
+// Micro-Pricing: Buy 10 responses for $5 (one-time payment, no subscription)
+app.post('/api/billing/buy-responses', authenticateToken, async (req, res) => {
+  try {
+    const user = await dbGet('SELECT email, stripe_customer_id FROM users WHERE id = $1', [req.user.id]);
+
+    // Create or retrieve Stripe customer
+    let customerId = user.stripe_customer_id;
+    if (!customerId) {
+      const customer = await stripe.customers.create({ email: user.email });
+      customerId = customer.id;
+      await pool.query('UPDATE users SET stripe_customer_id = $1 WHERE id = $2', [customerId, req.user.id]);
+    }
+
+    // Check if Response Pack price exists in env
+    const priceId = process.env.STRIPE_RESPONSE_PACK_PRICE_ID;
+    if (!priceId) {
+      console.error('[buy-responses] STRIPE_RESPONSE_PACK_PRICE_ID not configured');
+      return res.status(500).json({ error: 'Response pack not configured. Contact support.' });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      mode: 'payment', // One-time payment, NOT subscription
+      line_items: [{
+        price: priceId,
+        quantity: 1
+      }],
+      success_url: `${process.env.FRONTEND_URL}/dashboard?pack=success`,
+      cancel_url: `${process.env.FRONTEND_URL}/pricing`,
+      metadata: {
+        userId: req.user.id.toString(),
+        type: 'response_pack',
+        responses: '10'
+      }
+    });
+
+    res.json({ url: session.url });
+  } catch (error) {
+    console.error('[buy-responses] Error:', error);
+    res.status(500).json({ error: 'Failed to create checkout session' });
+  }
+});
+
 // Self-service plan change for testing (bypasses Stripe)
 // WARNING: This allows plan changes without payment - use only for testing!
 app.post('/api/admin/self-set-plan', authenticateToken, async (req, res) => {
@@ -4095,7 +4138,25 @@ async function handleStripeWebhook(req, res) {
       case 'checkout.session.completed': {
         const session = event.data.object;
         const userId = session.metadata.userId;
+        const type = session.metadata.type;
+
+        // Handle Response Pack purchase (one-time payment)
+        if (type === 'response_pack') {
+          const responses = parseInt(session.metadata.responses) || 10;
+          await dbQuery(
+            `UPDATE users SET bonus_responses = COALESCE(bonus_responses, 0) + $1 WHERE id = $2`,
+            [responses, userId]
+          );
+          console.log(`💰 Response Pack purchased: User ${userId} got +${responses} bonus responses`);
+          break;
+        }
+
+        // Handle subscription purchase
         const plan = session.metadata.plan;
+        if (!plan || !PLAN_LIMITS[plan]) {
+          console.error(`Invalid plan in webhook: ${plan}`);
+          break;
+        }
 
         await dbQuery(
           `UPDATE users SET subscription_status = 'active', subscription_plan = $1, responses_limit = $2, responses_used = 0 WHERE id = $3`,
