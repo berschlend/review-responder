@@ -1816,9 +1816,25 @@ SIGN OFF:
         <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
           Reviews About Us, Answered By Us
         </h2>
-        <p style={{ color: 'var(--gray-600)', maxWidth: '600px', margin: '0 auto' }}>
+        <p style={{ color: 'var(--gray-600)', maxWidth: '600px', margin: '0 auto 16px auto' }}>
           See how our AI responds to real reviews — and the exact settings we used
         </p>
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 12px',
+            background: 'var(--primary-50)',
+            color: 'var(--primary-700)',
+            borderRadius: '20px',
+            fontSize: '13px',
+            fontWeight: '500',
+          }}
+        >
+          <Sparkles size={14} />
+          100% AI-generated, zero editing
+        </span>
       </div>
 
       {/* Collapsible Context Box */}
@@ -13361,6 +13377,8 @@ const RestaurantReviewPage = () => {
           </div>
         </div>
 
+        <DemoVideoSection platform="restaurant" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Focus on Cooking, Not Typing
@@ -13372,37 +13390,6 @@ const RestaurantReviewPage = () => {
             <Sparkles size={20} />
             Start Free - 20 Responses Included
           </Link>
-        </div>
-
-        <div
-          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
-        >
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>
-              ReviewResponder
-            </Link>{' '}
-            •
-            <Link
-              to="/google-review-response-generator"
-              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
-            >
-              Google Reviews
-            </Link>{' '}
-            •
-            <Link
-              to="/yelp-review-reply-tool"
-              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
-            >
-              Yelp Reviews
-            </Link>{' '}
-            •
-            <Link
-              to="/hotel-review-management"
-              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
-            >
-              Hotel Reviews
-            </Link>
-          </p>
         </div>
       </section>
       <Footer />
@@ -13660,6 +13647,8 @@ const HotelReviewPage = () => {
           </div>
         </div>
 
+        <DemoVideoSection platform="hotel" />
+
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
             Elevate Your Guest Experience
@@ -13671,37 +13660,6 @@ const HotelReviewPage = () => {
             <Sparkles size={20} />
             Start Free - Hotels Welcome
           </Link>
-        </div>
-
-        <div
-          style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid var(--gray-200)' }}
-        >
-          <p style={{ textAlign: 'center', color: 'var(--gray-500)' }}>
-            <Link to="/" style={{ color: 'var(--primary-600)' }}>
-              ReviewResponder
-            </Link>{' '}
-            •
-            <Link
-              to="/google-review-response-generator"
-              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
-            >
-              Google Reviews
-            </Link>{' '}
-            •
-            <Link
-              to="/yelp-review-reply-tool"
-              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
-            >
-              Yelp Reviews
-            </Link>{' '}
-            •
-            <Link
-              to="/restaurant-review-responses"
-              style={{ color: 'var(--gray-500)', marginLeft: '16px' }}
-            >
-              Restaurant Reviews
-            </Link>
-          </p>
         </div>
       </section>
       <Footer />
