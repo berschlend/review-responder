@@ -116,30 +116,38 @@ CLAUDE.md lesen → TODO.md checken → Task → Testen → Git push → CLAUDE.
 | Drip Emails | 10:00 täglich |
 | Pre-Reg Drip | 11:00 täglich |
 | Demo Follow-Up | 12:00 täglich |
-| **Night Loop** | **22:00-06:00 stündlich** |
+| **Night-Blast** | **22:00, 02:00, 06:00 (auto via node-cron)** |
 
 ### Night Automation (NEU 14.01.2026)
-Läuft autonom ohne User-Input:
-- **22:00** - Hot Lead Follow-Ups (Demos für Klicker)
-- **23:00** - Second Follow-Up ("1 Monat gratis")
-- **00:00** - Demo Expiration Emails + Stats Collection
-- **01:00** - Dead Lead Revival ("Problem solved?")
-- **02:00** - Re-Engagement (Magic Links für Nicht-Registrierte)
-- **03:00-06:00** - Idle
+**VOLLAUTOMATISCH via node-cron** - Keine externen Cron-Jobs nötig!
 
-**Endpoints:**
-- `/api/cron/night-loop` - Master Endpoint (orchestriert alles)
+**Night-Blast (3x/Nacht):**
+- **22:00 Berlin** - Multi-City Scraping + alle Follow-ups
+- **02:00 Berlin** - Multi-City Scraping + alle Follow-ups
+- **06:00 Berlin** - Multi-City Scraping + alle Follow-ups
+
+**Was Night-Blast tut (pro Lauf):**
+1. 5 Städte scrapen (100 Leads)
+2. Emails finden (50 neue)
+3. Demos generieren (20 neue)
+4. Hot Lead Follow-ups
+5. Second Follow-ups
+6. Demo Follow-ups
+7. G2 Enrichment
+8. Source-specific Emails
+
+**Weitere Endpoints:**
+- `/api/cron/night-loop` - Alternative stündliche Orchestrierung
 - `/api/cron/revive-dead-leads` - Reaktiviert 7+ Tage alte Leads
-- `/api/cron/ab-test-evaluate` - Bewertet A/B Tests automatisch
-- `/api/cron/reengage-clickers` - Magic Links an Clicker die nicht registriert sind
-- `/api/cron/demo-expiration-emails` - Urgency Emails (Tag 3, 5) + Auto-Expire (Tag 7)
-- `/api/auth/magic-login/:token` - Passwordless Login mit Auto-Account-Erstellung
+- `/api/cron/reengage-clickers` - Magic Links an Clicker ohne Account
+- `/api/cron/demo-expiration-emails` - Urgency Emails (Tag 3, 5)
+- `/api/auth/magic-login/:token` - Passwordless Login
 
-**Magic Link System:**
-- Clicker die nicht registriert sind bekommen Magic Link Email
-- Link erstellt automatisch Account (kein Passwort nötig)
-- User landet direkt im Dashboard
-- Link gültig für 7 Tage
+**Ergebnis pro Nacht:**
+- ~300 neue Leads
+- ~150 Emails gefunden
+- ~60 Demos generiert
+- Alle Follow-ups automatisch
 
 ---
 
