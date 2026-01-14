@@ -11232,26 +11232,60 @@ app.all('/api/cron/followup-clickers', async (req, res) => {
     for (const clicker of clickers) {
       try {
         const businessName = clicker.business_name || 'your restaurant';
-        const reviewCount = clicker.google_reviews_count || 'hundreds of';
-        const greeting = clicker.contact_name ? `Hi ${clicker.contact_name.split(' ')[0]},` : 'Hi,';
+        const reviewCount = clicker.google_reviews_count || null;
+        const city = clicker.city || '';
 
-        // Personalized follow-up email
-        const subject = `${businessName} - your demo is ready`;
-        const body = `${greeting}
+        // Detect German-speaking cities
+        const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Brüssel', 'Munich', 'Cologne', 'Vienna', 'Zurich', 'Geneva'];
+        const isGerman = germanCities.some(c => city.toLowerCase().includes(c.toLowerCase()));
 
-I noticed you checked out ReviewResponder earlier - thanks for taking a look!
+        let subject, body;
 
-Quick question: With ${reviewCount} reviews to manage, how much time does your team spend responding each week?
+        if (isGerman) {
+          // German email
+          const reviewText = reviewCount ? `Mit über ${reviewCount.toLocaleString('de-DE')} Google Bewertungen` : 'Mit so vielen Bewertungen';
+          subject = reviewCount
+            ? `Kurze Frage zu euren ${reviewCount.toLocaleString('de-DE')}+ Google Bewertungen`
+            : `Kurze Frage zu ${businessName}`;
 
-I'd love to give you a quick 15-min demo showing how ${businessName} could respond to reviews 10x faster.
+          body = `Hey,
 
-Just reply to this email with a time that works, or pick a slot here:
-https://tryreviewresponder.com/demo
+ich hab gesehen, dass ihr auf meine Email geklickt habt – dachte ich meld mich nochmal persönlich.
+
+${reviewText} seid ihr wahrscheinlich einer der meistbewerteten Betriebe in ${city}. Respekt! Aber ich kann mir vorstellen, dass da einiges an Arbeit anfällt beim Beantworten.
+
+Habt ihr gerade 15 Minuten? Ich zeig euch kurz wie ReviewResponder funktioniert – live, an einer eurer echten Bewertungen. Kein Sales-Pitch, nur Demo.
+
+Oder soll ich euch einfach 3 Antworten auf eure neuesten Bewertungen schicken? Dann seht ihr direkt ob es zu eurem Ton passt.
+
+Grüße,
+Berend
+
+P.S. Falls ihr kein Interesse habt – kein Thema, einfach ignorieren.`;
+        } else {
+          // English email
+          const reviewText = reviewCount ? `${reviewCount.toLocaleString()} reviews` : 'hundreds of reviews';
+          subject = reviewCount
+            ? `Quick follow-up – ${reviewCount.toLocaleString()}+ reviews is impressive`
+            : `Quick follow-up about ${businessName}`;
+
+          body = `Hey,
+
+I noticed someone from ${businessName} clicked on my email – figured I'd reach out personally.
+
+With ${reviewText}, you're clearly doing something right. But I imagine the review management is a lot of work.
+
+Quick question: How are you handling responses right now? Responding to all, just negatives, or not at all?
+
+If you're curious, I'd love to show you how ReviewResponder works – 15 min Zoom, no pitch. Or I can just send you 3 sample responses to your latest reviews so you can see if it matches your brand voice.
+
+Let me know either way.
 
 Best,
 Berend
 
-P.S. Sign up during our call and I'll give you the first month free.`;
+P.S. If this isn't relevant right now, no worries – just ignore this.`;
+        }
 
         await resend.emails.send({
           from: OUTREACH_FROM_EMAIL,
@@ -11348,12 +11382,36 @@ app.all('/api/cron/second-followup', async (req, res) => {
     for (const clicker of clickers) {
       try {
         const businessName = clicker.business_name || 'your restaurant';
-        const firstName = clicker.contact_name ? clicker.contact_name.split(' ')[0] : null;
-        const greeting = firstName ? `Hey ${firstName},` : 'Hey,';
+        const city = clicker.city || '';
 
-        // SECOND follow-up with better offer
-        const subject = `Quick question about ${businessName}`;
-        const body = `${greeting}
+        // Detect German-speaking cities
+        const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Brüssel', 'Munich', 'Cologne', 'Vienna', 'Zurich', 'Geneva'];
+        const isGerman = germanCities.some(c => city.toLowerCase().includes(c.toLowerCase()));
+
+        let subject, body;
+
+        if (isGerman) {
+          // German second follow-up
+          subject = `Letzte Frage zu ${businessName}`;
+          body = `Hey,
+
+kurze Frage: Was hält euch davon ab, ReviewResponder auszuprobieren?
+
+Ich würde euch gerne anbieten:
+- 1 VOLLER MONAT KOSTENLOS (nicht nur 20 Antworten - unbegrenzt!)
+- Ich richte es persönlich für euch ein
+- 15-Minuten Zoom wo ich alles erkläre
+
+Antwortet einfach auf diese Email mit einem Zeitvorschlag.
+
+Grüße,
+Berend
+
+P.S. Falls Review-Management gerade keine Priorität hat - kein Problem, sagt einfach Bescheid und ich melde mich nicht mehr.`;
+        } else {
+          // English second follow-up
+          subject = `Quick question about ${businessName}`;
+          body = `Hey,
 
 Quick question: What's holding you back from trying ReviewResponder?
 
@@ -11368,6 +11426,7 @@ Best,
 Berend
 
 P.S. If review management isn't a priority right now, no worries - just let me know and I won't follow up again.`;
+        }
 
         await brevoApi.sendTransacEmail({
           sender: { name: 'Berend from ReviewResponder', email: 'outreach@tryreviewresponder.com' },
