@@ -299,14 +299,19 @@ Click-Rate ist die echte Metrik. 17 Leute haben geklickt → Demo Attack!
 
 ## KÜRZLICH ERLEDIGT (14.01 Nacht - Spät)
 
-- **Demo Page Conversion Gates** - 0 Conversions Root Cause Fix
-  - **Problem:** Demo-Seite verschenkte vollen Wert ohne Gate (44 Views, 0 Signups)
+- **Demo Page Conversion Gates v2** - Verbesserte Conversion nach First-Principles Analyse
+  - **Problem:** 17 Hot Leads klickten, 0 Conversions - Email-Gate wurde ignoriert
+  - **Fix 1: Auto-Redirect zu Signup** - Nach Email-Eingabe → 2s delay → Redirect zu /register?email=...
+  - **Fix 2: Nur 1 Response sichtbar** - Statt 2 jetzt nur 1, Rest hinter "Unlock with Email"
+  - **Fix 3: Email Pre-Fill** - RegisterPage akzeptiert jetzt `?email=` Parameter
+  - **Root Cause:** User bekamen vollen Wert (3 Responses sichtbar) ohne zu konvertieren
+  - **Neue Commits:** 24fa5a8f, ddde24f5 - Live & getestet
+
+- **Demo Page Conversion Gates v1** - Initial Implementation
   - **Fix 1: Email-Gate für Copy** - Modal erscheint bei Klick auf "Copy"
-  - **Fix 2: Response-Gate** - Nur 2 Responses, Rest hinter "Unlock with Email"
-  - **Fix 3: 24h Countdown Timer** - "30% OFF expires in HH:MM:SS"
+  - **Fix 2: 24h Countdown Timer** - "30% OFF expires in HH:MM:SS"
   - Neuer Endpoint: `POST /api/public/demo-email-capture`
   - Captured Emails werden als `warm_lead` in outreach_leads gespeichert
-  - **DEPLOYED:** bbfad10f - Live & getestet
 
 ---
 
