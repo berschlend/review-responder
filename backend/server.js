@@ -5208,8 +5208,8 @@ async function lookupPlaceId(businessName, city) {
   }
 
   const query = encodeURIComponent(`${businessName} ${city}`);
-  // Extended fields for richer context
-  const fields = 'place_id,name,rating,user_ratings_total,types,formatted_address,website,price_level';
+  // Core fields only - extended fields can cause API issues
+  const fields = 'place_id,name,rating,user_ratings_total,types';
   const url = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${query}&inputtype=textquery&fields=${fields}&key=${process.env.GOOGLE_PLACES_API_KEY}`;
 
   const response = await fetch(url);
@@ -5230,9 +5230,6 @@ async function lookupPlaceId(businessName, city) {
     rating: place.rating,
     totalReviews: place.user_ratings_total,
     businessType,
-    address: place.formatted_address,
-    website: place.website,
-    priceLevel: place.price_level, // 0-4 scale
   };
 }
 
