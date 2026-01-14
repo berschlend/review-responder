@@ -153,13 +153,18 @@ Läuft autonom ohne User-Input:
 - **46+ live** (Plattformen + Branchen)
 - Email-Capture → 4-Email Drip über 14 Tage
 
-### Outreach Metriken (14.01 Nacht - AKTUELL)
-- **640 Leads**, **364 mit Email**
-- **18 Klicks** (Click Rate wichtiger als Opens!)
-- **0 Conversions** ← HAUPTPROBLEM
+### Outreach Metriken (14.01 Nacht 22:30 UTC)
+- **1,988 Leads** (+1,460 heute!)
+- **572 Emails** gesendet
+- **23 Clicks** (4.0% CTR) - +6 heute
+- **22 Hot Leads** - aktiv engagiert
+- **0 Conversions** ← Conversion Fixes deployed!
 
-**Erkenntnis:** Open-Rate ist unzuverlässig (Bot-Scans).
-Click-Rate ist die echte Metrik.
+**Session-Ergebnis:**
+- Exit Intent Popup mit 30% Discount
+- Email Subjects mit Star-Rating (A/B Winner: 100%)
+- Response Gate: nur 1 Response sichtbar
+- Auto-Redirect nach Email-Capture
 
 ---
 
