@@ -11210,7 +11210,7 @@ app.all('/api/cron/second-followup', async (req, res) => {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  if (!brevo) {
+  if (!brevoApi) {
     return res.status(500).json({ error: 'Brevo not configured' });
   }
 
@@ -11267,7 +11267,7 @@ Berend
 
 P.S. If review management isn't a priority right now, no worries - just let me know and I won't follow up again.`;
 
-        await brevo.sendTransacEmail({
+        await brevoApi.sendTransacEmail({
           sender: { name: 'Berend from ReviewResponder', email: 'outreach@tryreviewresponder.com' },
           to: [{ email: clicker.email }],
           subject: subject,
