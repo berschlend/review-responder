@@ -3943,7 +3943,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                     <input
                       type="text"
                       className="form-input"
-                      placeholder="e.g., italian, family-owned, homemade pasta"
+                      placeholder={getContextPlaceholder(businessType)}
                       value={keywords}
                       onChange={e => setKeywords(e.target.value)}
                     />
@@ -4018,16 +4018,29 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                     </p>
                   </div>
 
-                  <p
+                  {/* Go to Settings hint */}
+                  <div
                     style={{
-                      fontSize: '12px',
-                      color: 'var(--gray-500)',
+                      background: 'linear-gradient(135deg, var(--primary-50), #eff6ff)',
+                      border: '1px solid var(--primary-200)',
+                      borderRadius: '8px',
+                      padding: '12px',
                       marginTop: '12px',
-                      textAlign: 'center',
                     }}
                   >
-                    See how the AI uses your business details? Click Next to continue.
-                  </p>
+                    <p
+                      style={{
+                        fontSize: '13px',
+                        color: 'var(--primary-700)',
+                        margin: 0,
+                        textAlign: 'center',
+                      }}
+                    >
+                      <strong>💡 Pro Tip:</strong> After setup, go to{' '}
+                      <strong>Settings → Generate with AI</strong> to add more details and get even
+                      better responses!
+                    </p>
+                  </div>
                 </>
               )}
             </div>
@@ -8932,13 +8945,14 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
 
   return (
     <div style={{ marginBottom: '16px' }}>
-      {/* Subtle label with Step indicator */}
+      {/* Label with Step indicator + Recommended badge */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
           marginBottom: '8px',
+          flexWrap: 'wrap',
         }}
       >
         <span
@@ -8954,6 +8968,19 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
           }}
         >
           Step 1
+        </span>
+        <span
+          style={{
+            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+            color: 'white',
+            fontSize: '11px',
+            fontWeight: '700',
+            padding: '4px 10px',
+            borderRadius: '4px',
+            boxShadow: '0 2px 4px rgba(217, 119, 6, 0.3)',
+          }}
+        >
+          ⭐ RECOMMENDED
         </span>
         <span style={{ fontSize: '13px', color: 'var(--gray-600)' }}>
           Enter keywords, AI generates a profile
