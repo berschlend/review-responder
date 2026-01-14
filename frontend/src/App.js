@@ -2168,10 +2168,11 @@ const LandingPage = () => {
         setTryResponse(res.data.response);
       }
     } catch (err) {
+      console.error('Try generate error:', err.response?.status, err.response?.data, err.message);
       if (err.response?.status === 429) {
         setTryError(err.response?.data?.message || 'Daily limit reached. Sign up for 20 free/month!');
       } else {
-        setTryError(err.response?.data?.error || 'Something went wrong. Please try again.');
+        setTryError(err.response?.data?.error || err.response?.data?.message || `Error: ${err.message}`);
       }
     } finally {
       setTryLoading(false);
