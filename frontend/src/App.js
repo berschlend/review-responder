@@ -4728,6 +4728,11 @@ const DashboardPage = () => {
       const res = await api.get('/responses/history?limit=10');
       setHistory(res.data.responses || []);
     } catch (error) {
+      // 403 = Free user, history is Starter+ feature - this is expected
+      if (error.response?.status === 403) {
+        setHistory([]);
+        return;
+      }
       console.error('Failed to fetch history:', error);
       throw error;
     }
@@ -4761,6 +4766,11 @@ const DashboardPage = () => {
       const res = await api.get('/responses/history?limit=1000');
       setAllHistory(res.data.responses || []);
     } catch (error) {
+      // 403 = Free user, history is Starter+ feature - expected
+      if (error.response?.status === 403) {
+        setAllHistory([]);
+        return;
+      }
       console.error('Failed to fetch all history:', error);
       // All history is for export, don't throw
     }
