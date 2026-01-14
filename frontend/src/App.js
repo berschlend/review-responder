@@ -1736,7 +1736,8 @@ const DogfoodingSection = ({ testimonials }) => {
     whatWeTyped: {
       business: 'ReviewResponder',
       type: 'SaaS / Software Tool',
-      keywords: 'Chrome extension, review responses, saves time, Google Maps, Yelp, TripAdvisor, 50+ languages',
+      keywords:
+        'Chrome extension, review responses, saves time, Google Maps, Yelp, TripAdvisor, Trustpilot, Booking.com, 50+ languages, 4 tone options, bulk generation, response history',
     },
 
     // What the AI GENERATED from those keywords (impressive!)
@@ -1906,7 +1907,7 @@ SIGN OFF:
                 }}
               >
                 <Zap size={14} />
-                WHAT WE ACTUALLY TYPED (10 seconds)
+                WHAT WE ACTUALLY TYPED (30 seconds)
               </div>
               <div style={{ display: 'grid', gap: '8px', fontSize: '14px', color: '#166534' }}>
                 <div>
