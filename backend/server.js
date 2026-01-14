@@ -11152,6 +11152,86 @@ app.post('/api/outreach/test-email', async (req, res) => {
   }
 });
 
+// Test Review Alert Email - sends a test review alert email with AI-generated response
+app.post('/api/outreach/test-review-alert', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (!process.env.ADMIN_SECRET || !safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend && !brevoApi) {
+    return res.status(500).json({ error: 'No email provider configured' });
+  }
+
+  const { email, business_name, city, review_text, review_rating, review_author } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Email required' });
+  }
+
+  try {
+    // Use provided data or defaults
+    const testBusinessName = business_name || 'Cafe Milano';
+    const testCity = city || 'Berlin';
+    const testReviewText = review_text || 'The service was extremely slow and the waiter was rude. We waited 45 minutes for our food and when it arrived, it was cold. Very disappointing experience.';
+    const testReviewRating = review_rating || 1;
+    const testReviewAuthor = review_author || 'Sarah M.';
+
+    // Generate AI response draft
+    const aiDraft = await generateReviewAlertDraft(
+      testBusinessName,
+      'restaurant',
+      testReviewText,
+      testReviewRating,
+      testReviewAuthor
+    );
+
+    if (!aiDraft) {
+      return res.status(500).json({ error: 'Failed to generate AI draft' });
+    }
+
+    // Create test lead with review data
+    const testLead = {
+      business_name: testBusinessName,
+      business_type: 'restaurant',
+      city: testCity,
+      email: email,
+      google_reviews_count: 150,
+      has_bad_review: true,
+      worst_review_text: testReviewText,
+      worst_review_rating: testReviewRating,
+      worst_review_author: testReviewAuthor,
+      ai_response_draft: aiDraft,
+    };
+
+    // Get review alert template
+    const lang = detectLanguage(testCity);
+    const templateKey = lang === 'de' ? 'review_alert_de' : 'review_alert';
+    const template = fillEmailTemplate(EMAIL_TEMPLATES[templateKey], testLead);
+
+    // Send email
+    const result = await sendOutreachEmail({
+      to: email,
+      subject: `[TEST] ${template.subject}`,
+      html: template.body.replace(/\n/g, '<br>'),
+      campaign: 'test_review_alert',
+    });
+
+    res.json({
+      success: true,
+      message: `Review Alert test email sent to ${email}`,
+      provider: result.provider,
+      language: lang,
+      business_name: testBusinessName,
+      review_rating: testReviewRating,
+      review_author: testReviewAuthor,
+      ai_draft_preview: aiDraft.substring(0, 200) + '...',
+    });
+  } catch (err) {
+    console.error('Test review alert error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Debug email logs - see recent sent emails
 app.get('/api/admin/email-logs', async (req, res) => {
   const adminKey = req.headers['x-admin-key'] || req.query.key;
