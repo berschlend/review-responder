@@ -6628,7 +6628,7 @@ Food was amazing, will definitely come back!`}
                 onClick={exportToCSV}
                 disabled={exporting || allHistory.length === 0}
                 className="btn btn-secondary"
-                style={{ padding: '6px 12px', fontSize: '13px' }}
+                style={{ padding: '6px 12px', fontSize: '13px', opacity: !canExport ? 0.5 : 1 }}
               >
                 <Download size={14} /> CSV
               </button>
@@ -6636,7 +6636,7 @@ Food was amazing, will definitely come back!`}
                 onClick={exportToPDF}
                 disabled={exporting || allHistory.length === 0}
                 className="btn btn-primary"
-                style={{ padding: '6px 12px', fontSize: '13px' }}
+                style={{ padding: '6px 12px', fontSize: '13px', opacity: !canExport ? 0.5 : 1 }}
               >
                 <Download size={14} /> PDF
               </button>
