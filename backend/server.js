@@ -5044,7 +5044,7 @@ app.post('/api/capture-email', async (req, res) => {
                   <p>ReviewResponder helps businesses respond to customer reviews in seconds using AI. No more staring at a blank screen wondering what to write.</p>
 
                   <div style="text-align: center; margin: 32px 0;">
-                    <a href="${process.env.FRONTEND_URL}/pricing?discount=${discountCode}" style="display: inline-block; background: #10b981; color: white; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px;">Claim Your Discount</a>
+                    <a href="${process.env.FRONTEND_URL}/claim/${discountCode}" style="display: inline-block; background: #10b981; color: white; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px;">Claim Your Discount</a>
                   </div>
 
                   <p style="color: #6B7280; font-size: 14px;">Questions? Just reply to this email.</p>
@@ -8299,7 +8299,7 @@ app.get('/api/cron/send-drip-emails', async (req, res) => {
                 </ul>
 
                 <center style="margin: 30px 0;">
-                  <a href="${FRONTEND_URL}/pricing" class="cta-button">Claim 50% Off →</a>
+                  <a href="${FRONTEND_URL}/claim/EARLY50" class="cta-button">Claim 50% Off →</a>
                 </center>
 
                 <p style="font-size: 14px; color: #6B7280;">This offer won't last forever - lock in this price while you can!</p>

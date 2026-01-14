@@ -19994,6 +19994,222 @@ const PricingPage = () => {
   );
 };
 
+// Claim Discount Page - Beautiful landing for discount links
+const ClaimDiscountPage = () => {
+  const { code } = useParams();
+  const navigate = useNavigate();
+  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
+  const [isExpired, setIsExpired] = useState(false);
+
+  // Discount info for each code
+  const discountInfo = {
+    EARLY50: { percent: 50, label: 'Early Access', duration: '12 months' },
+    HUNTLAUNCH: { percent: 60, label: 'Product Hunt Special', duration: '12 months' },
+    DEMOFOLLOWUP: { percent: 30, label: 'Demo Special', duration: '3 months' },
+    SAVE20: { percent: 20, label: 'Special Offer', duration: '12 months' },
+  };
+
+  const upperCode = code?.toUpperCase();
+  const discount = discountInfo[upperCode];
+  const isValidCode = !!discount;
+
+  useEffect(() => {
+    if (!isValidCode) return;
+
+    // Get or set the expiry time (48h from first visit)
+    const storageKey = `discount_expiry_${upperCode}`;
+    let expiryTime = localStorage.getItem(storageKey);
+
+    if (!expiryTime) {
+      // First visit - set 48h from now
+      expiryTime = Date.now() + 48 * 60 * 60 * 1000;
+      localStorage.setItem(storageKey, expiryTime.toString());
+    } else {
+      expiryTime = parseInt(expiryTime);
+    }
+
+    const updateTimer = () => {
+      const now = Date.now();
+      const diff = expiryTime - now;
+
+      if (diff <= 0) {
+        setIsExpired(true);
+        setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
+        return;
+      }
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTimeLeft({ hours, minutes, seconds });
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+
+    return () => clearInterval(interval);
+  }, [upperCode, isValidCode]);
+
+  // Invalid code
+  if (!isValidCode) {
+    return (
+      <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <div style={{ textAlign: 'center', maxWidth: '500px' }}>
+          <div style={{ fontSize: '64px', marginBottom: '24px' }}>🔗</div>
+          <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px', color: 'var(--text-primary)' }}>
+            Invalid Discount Code
+          </h1>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>
+            This discount link is not valid or has expired.
+          </p>
+          <Link
+            to="/pricing"
+            style={{
+              display: 'inline-block',
+              padding: '14px 32px',
+              background: 'var(--primary)',
+              color: 'white',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontWeight: '600',
+            }}
+          >
+            View Plans
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+      <div style={{ textAlign: 'center', maxWidth: '600px' }}>
+        {/* Badge */}
+        <div
+          style={{
+            display: 'inline-block',
+            padding: '6px 16px',
+            background: 'linear-gradient(135deg, #10b981, #059669)',
+            color: 'white',
+            borderRadius: '20px',
+            fontSize: '13px',
+            fontWeight: '600',
+            marginBottom: '24px',
+          }}
+        >
+          {discount.label}
+        </div>
+
+        {/* Main heading */}
+        <h1 style={{ fontSize: '42px', fontWeight: '800', marginBottom: '16px', color: 'var(--text-primary)', lineHeight: '1.1' }}>
+          Your Exclusive{' '}
+          <span style={{ background: 'linear-gradient(135deg, #10b981, #059669)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            {discount.percent}% Off
+          </span>
+        </h1>
+
+        <p style={{ fontSize: '18px', color: 'var(--text-secondary)', marginBottom: '32px' }}>
+          Save on ReviewResponder for {discount.duration}. AI-powered review responses in seconds.
+        </p>
+
+        {/* Timer */}
+        {!isExpired ? (
+          <div style={{ marginBottom: '32px' }}>
+            <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '12px' }}>
+              Offer expires in:
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
+              {[
+                { value: timeLeft.hours, label: 'Hours' },
+                { value: timeLeft.minutes, label: 'Minutes' },
+                { value: timeLeft.seconds, label: 'Seconds' },
+              ].map((item, i) => (
+                <div key={i} style={{ textAlign: 'center' }}>
+                  <div
+                    style={{
+                      width: '72px',
+                      height: '72px',
+                      background: 'var(--bg-secondary)',
+                      borderRadius: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '28px',
+                      fontWeight: '700',
+                      color: 'var(--text-primary)',
+                      fontFamily: 'monospace',
+                      border: '1px solid var(--border-color)',
+                    }}
+                  >
+                    {String(item.value).padStart(2, '0')}
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' }}>
+                    {item.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div style={{ marginBottom: '32px', padding: '16px', background: '#fef2f2', borderRadius: '8px', color: '#dc2626' }}>
+            This offer has expired. View our regular pricing below.
+          </div>
+        )}
+
+        {/* CTA Button */}
+        <Link
+          to={isExpired ? '/pricing' : `/pricing?discount=${upperCode}`}
+          style={{
+            display: 'inline-block',
+            padding: '18px 48px',
+            background: isExpired ? 'var(--text-muted)' : 'linear-gradient(135deg, #10b981, #059669)',
+            color: 'white',
+            borderRadius: '12px',
+            textDecoration: 'none',
+            fontWeight: '700',
+            fontSize: '18px',
+            boxShadow: isExpired ? 'none' : '0 8px 24px rgba(16, 185, 129, 0.3)',
+            transition: 'transform 0.2s, box-shadow 0.2s',
+          }}
+          onMouseOver={e => {
+            if (!isExpired) {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 12px 32px rgba(16, 185, 129, 0.4)';
+            }
+          }}
+          onMouseOut={e => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = isExpired ? 'none' : '0 8px 24px rgba(16, 185, 129, 0.3)';
+          }}
+        >
+          {isExpired ? 'View Plans' : `Claim ${discount.percent}% Off Now`}
+        </Link>
+
+        {/* Benefits */}
+        <div style={{ marginTop: '48px', display: 'flex', justifyContent: 'center', gap: '32px', flexWrap: 'wrap' }}>
+          {[
+            { icon: '⚡', text: 'AI responses in seconds' },
+            { icon: '🌍', text: '50+ languages' },
+            { icon: '🔌', text: 'Chrome Extension' },
+          ].map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)' }}>
+              <span>{item.icon}</span>
+              <span style={{ fontSize: '14px' }}>{item.text}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Code display */}
+        <div style={{ marginTop: '48px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px dashed var(--border-color)' }}>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Your discount code</p>
+          <p style={{ fontSize: '20px', fontWeight: '700', fontFamily: 'monospace', color: 'var(--primary)' }}>{upperCode}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Analytics Page (Pro/Unlimited Only)
 const AnalyticsPage = () => {
   const { user } = useAuth();
@@ -24514,6 +24730,7 @@ const AppContent = () => {
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/claim/:code" element={<ClaimDiscountPage />} />
             <Route path="/support" element={<SupportPage />} />
             <Route path="/blog" element={<BlogListPage />} />
             <Route path="/blog/:slug" element={<BlogArticlePage />} />
