@@ -10330,57 +10330,49 @@ P.S. I'm the founder. Reply if you have questions.`,
 
 // Email templates for REVIEW ALERT outreach - GERMAN
 const REVIEW_ALERT_TEMPLATES_DE = {
-  // With demo link
+  // With demo link - personal, conversational tone
   sequence1: {
-    subject: '{business_name} - hab dir was geschrieben',
-    body: `Hi,
+    subject: 'Kurze Frage zu {business_name}',
+    body: `Hey,
 
-ich habe gesehen dass {business_name} eine {review_rating}-Sterne Bewertung auf Google hat:
+bin gerade auf eine Bewertung von {business_name} gestoßen und dachte mir ich schreib dir mal kurz.
 
-"{review_text_truncated}"
-- {review_author}
+Die hier meine ich:
+"{review_text_truncated}" - {review_author}
 
-Hier ist ein professioneller Antwortvorschlag:
+Hab mal eine Antwort formuliert die du nutzen könntest:
 
----
 {ai_response_draft}
----
 
-Gerne direkt nutzen - ist kostenlos.
+Kannst du einfach so kopieren wenn du magst.
 
-Ich habe noch 2 weitere Antworten auf deine anderen Reviews geschrieben:
+Hab noch ein paar andere Reviews von euch angeschaut und Antworten dafür vorbereitet:
 {demo_url}
 
-Grüße,
-Berend
-
-P.S. Bin der Gründer, bei Fragen einfach antworten.`,
+Viele Grüße
+Berend`,
   },
-  // Fallback without demo
+  // Fallback without demo - personal tone
   sequence1_no_demo: {
-    subject: '{business_name} - Antwort auf Ihre Google-Bewertung',
-    body: `Hi,
+    subject: 'Kurze Frage zu {business_name}',
+    body: `Hey,
 
-ich habe gesehen dass {business_name} eine {review_rating}-Sterne Bewertung auf Google hat:
+bin gerade auf eine Bewertung von {business_name} gestoßen und dachte mir ich schreib dir mal kurz.
 
-"{review_text_truncated}"
-- {review_author}
+Die hier meine ich:
+"{review_text_truncated}" - {review_author}
 
-Hier ist ein professioneller Antwortvorschlag:
+Hab mal eine Antwort formuliert die du nutzen könntest:
 
----
 {ai_response_draft}
----
 
-Diese Antwort ist kostenlos - nutzen Sie sie gerne direkt.
+Kannst du einfach so kopieren wenn du magst.
 
-Falls Sie professionelle Antworten auf alle Reviews möchten, probieren Sie ReviewResponder:
+Falls du öfter Hilfe mit Reviews brauchst, schau mal hier vorbei:
 https://tryreviewresponder.com?ref=alert
 
-Grüße,
-Berend
-
-P.S. Bin der Gründer, bei Fragen einfach antworten.`,
+Viele Grüße
+Berend`,
   },
 };
 
