@@ -217,15 +217,16 @@ CLAUDE.md lesen → TODO.md checken → Task → Testen → Git push → CLAUDE.
 
 ## KÜRZLICH ERLEDIGT (14.01)
 
-- Google Indexierung: 2 URLs beantragt (`/salon-spa-review-responses`, `/trustpilot-review-responses`)
+- **Conversion System 2.0** - Free→Paid Conversion verbessern:
+  - Usage Analytics Tab im Admin Panel (Distribution, Stats, Exit Surveys)
+  - Upgrade Modal bei 20 Response Limit (statt nur Toast)
+  - Exit Survey Tracking (warum User nicht upgraden)
+  - Micro-Pricing: $5 für 10 Responses (Stripe: `price_1SpQPRQfYocZQHxZNiEwUKl0`)
+- Google Indexierung: 2 URLs beantragt
 - 2 Cron Jobs angelegt (Demo Follow-Up, Scraper Alerts)
-- Auto Business Context für Demos
 - Sales Automation Blast (13 Städte, +210 Leads)
 - API Costs Dashboard
-- Pricing Page Optimierung
-- Review Alert System komplett gefixt
-- Multi-Fallback Email System (Website → Pattern → Snov.io → Hunter)
-- AI Prompts refactored (XML Tags, Few-Shot Examples)
+- Multi-Fallback Email System
 
 ---
 
