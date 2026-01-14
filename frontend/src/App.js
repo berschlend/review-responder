@@ -11772,7 +11772,16 @@ const DemoPage = () => {
       });
       const data = await response.json();
       if (data.error) {
-        setLiveResponse(data.error);
+        // Rate limit reached - scroll to CTA section
+        if (data.error === 'Daily limit reached' || data.message?.includes('free tries')) {
+          setLiveResponse('');
+          toast.success('Love the enthusiasm! Sign up for 20 free responses/month 👇');
+          setTimeout(() => {
+            document.getElementById('demo-cta-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 300);
+        } else {
+          setLiveResponse(data.error);
+        }
       } else {
         setLiveResponse(data.response || 'Unable to generate response. Please try again.');
       }
@@ -12224,10 +12233,13 @@ const DemoPage = () => {
         </div>
 
         {/* CTA Section */}
-        <div style={{
-          background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
-          borderRadius: '20px', padding: '48px 32px', textAlign: 'center', position: 'relative', overflow: 'hidden'
-        }}>
+        <div
+          id="demo-cta-section"
+          style={{
+            background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
+            borderRadius: '20px', padding: '48px 32px', textAlign: 'center', position: 'relative', overflow: 'hidden'
+          }}
+        >
           {/* Decorative circles */}
           <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />
           <div style={{ position: 'absolute', bottom: '-30px', left: '-30px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
