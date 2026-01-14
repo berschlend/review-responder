@@ -4,7 +4,39 @@
 
 ---
 
-## SCHRITT 0: ZEIT-AWARENESS (IMMER ZUERST!)
+## SCHRITT 0: ADMIN DASHBOARD CHECK (AUTOMATISCH!)
+
+**ZUERST API Key holen und alle Status-Endpoints checken:**
+
+```bash
+# 1. Key holen
+cat .claude/secrets.local
+
+# 2. Scraper-Status checken (Lead-Quellen)
+curl -s -H "X-Admin-Key: KEY" "https://review-responder.onrender.com/api/admin/scraper-status"
+
+# 3. Automation Health checken
+curl -s "https://review-responder.onrender.com/api/admin/automation-health?key=KEY"
+```
+
+**AUTOMATISCHE LEAD-GENERIERUNG wenn noetig:**
+
+| Status | Aktion |
+|--------|--------|
+| `critical` | SOFORT Leads generieren (< 10-15 Leads) |
+| `low` | Heute noch Leads generieren (< 20-30 Leads) |
+| `healthy` | Nichts tun |
+
+**Wenn manuelle Quellen kritisch/low sind:**
+1. Scraper-Command aus Response nutzen (steht bei jeder Quelle)
+2. Chrome MCP starten wenn Scraper Browser braucht
+3. Nach Scraping: Status erneut pruefen
+
+**WICHTIG:** Autonome Systeme (Daily Outreach, Drip Emails) brauchen Leads zum Funktionieren!
+
+---
+
+## SCHRITT 1: ZEIT-AWARENESS
 
 **BEVOR du Panik schiebst oder Aenderungen vorschlaegst:**
 
@@ -20,18 +52,19 @@
 
 ---
 
-## SCHRITT 1: LIVE-DATEN HOLEN
+## SCHRITT 2: OUTREACH-STATS HOLEN
 
 ```bash
-cat .claude/secrets.local
-# Dann mit KEY:
-curl -s -H "X-Admin-Key: KEY" "https://review-responder.onrender.com/api/admin/stats"
+# Outreach Dashboard (Emails, Opens, Clicks)
 curl -s "https://review-responder.onrender.com/api/outreach/dashboard?key=KEY"
+
+# Admin Stats (User, Revenue)
+curl -s -H "X-Admin-Key: KEY" "https://review-responder.onrender.com/api/admin/stats"
 ```
 
 ---
 
-## SCHRITT 1: QUICK ANALYSIS (3 Saetze max)
+## SCHRITT 3: QUICK ANALYSIS (3 Saetze max)
 
 - **Funnel:** X User, Y Paying, Z% Conversion
 - **Outreach:** X Leads, Y% Open, Z% Click
@@ -39,7 +72,7 @@ curl -s "https://review-responder.onrender.com/api/outreach/dashboard?key=KEY"
 
 ---
 
-## SCHRITT 2: FIRST-PRINCIPLES (Kompakt!)
+## SCHRITT 4: FIRST-PRINCIPLES (Kompakt!)
 
 **5x Warum → Root Cause:**
 > Warum kauft niemand? → [1 Satz Antwort]
@@ -49,7 +82,7 @@ curl -s "https://review-responder.onrender.com/api/outreach/dashboard?key=KEY"
 
 ---
 
-## SCHRITT 3: TOP 3 IDEEN
+## SCHRITT 5: TOP 3 IDEEN
 
 Nur Ideen die den Kunden-Filter bestehen:
 1. **[Idee]** - Weil Kunde X will
@@ -63,15 +96,7 @@ Nur Ideen die den Kunden-Filter bestehen:
 
 ---
 
-## SCHRITT 4: ONE THING
-
-> Was ist der EINE naechste Schritt?
-
-**Kleinster Test:** [1 Satz - was testen wir HEUTE]
-
----
-
-## SCHRITT 5: EXECUTION (Max 3 Tasks)
+## SCHRITT 6: EXECUTION (Max 3 Tasks)
 
 - [ ] **Task 1:** ...
 - [ ] **Task 2:** ...
