@@ -12850,33 +12850,8 @@ async function scrapeBusinessContext(websiteUrl) {
           result.foundedYear = yearMatch[1];
         }
 
-        // Look for owner/chef/founder name (STRICTER: requires first + last name)
-        const ownerPatterns = [
-          /(?:owner|founder|chef|inhaber|geschäftsführer)[:\s]+([A-Z][a-zäöüß]+\s+[A-Z][a-zäöüß]+)/i,
-          /([A-Z][a-zäöüß]+\s+[A-Z][a-zäöüß]+),?\s+(?:owner|founder|chef|inhaber)/i,
-        ];
-        for (const pattern of ownerPatterns) {
-          const ownerMatch = html.match(pattern);
-          if (ownerMatch && ownerMatch[1]) {
-            const potentialName = ownerMatch[1].trim();
-            // Basic validation: must be 2+ words, reasonable length
-            const words = potentialName.split(/\s+/);
-            if (words.length >= 2 && potentialName.length >= 5 && potentialName.length < 40) {
-              result.ownerName = potentialName;
-              break;
-            }
-          }
-        }
-
-        // NEU: Extract team members with roles for personal email generation
-        // Priority roles for review management (in order of importance)
-        const priorityRoles = [
-          'owner', 'founder', 'ceo', 'geschäftsführer', 'inhaber', 'chef',
-          'marketing', 'customer success', 'customer experience', 'customer service',
-          'manager', 'general manager', 'operations', 'director',
-        ];
-
         // Blacklist: Words that look like names but aren't (single-word matches)
+        // MOVED UP: Now used for both ownerPatterns AND teamMembers
         const nameBlacklist = [
           'manager', 'director', 'owner', 'founder', 'chef', 'team', 'about', 'lead',
           'agent', 'design', 'marketing', 'operations', 'customer', 'integration',
@@ -12902,6 +12877,31 @@ async function scrapeBusinessContext(websiteUrl) {
           if (words.some((w) => w.length < 2 || w.length > 20)) return false;
           return true;
         };
+
+        // Look for owner/chef/founder name (STRICTER: requires first + last name + validation)
+        const ownerPatterns = [
+          /(?:owner|founder|chef|inhaber|geschäftsführer)[:\s]+([A-Z][a-zäöüß]+\s+[A-Z][a-zäöüß]+)/i,
+          /([A-Z][a-zäöüß]+\s+[A-Z][a-zäöüß]+),?\s+(?:owner|founder|chef|inhaber)/i,
+        ];
+        for (const pattern of ownerPatterns) {
+          const ownerMatch = html.match(pattern);
+          if (ownerMatch && ownerMatch[1]) {
+            const potentialName = ownerMatch[1].trim();
+            // Use isValidPersonName for proper validation (includes blacklist check)
+            if (isValidPersonName(potentialName) && potentialName.length < 40) {
+              result.ownerName = potentialName;
+              break;
+            }
+          }
+        }
+
+        // NEU: Extract team members with roles for personal email generation
+        // Priority roles for review management (in order of importance)
+        const priorityRoles = [
+          'owner', 'founder', 'ceo', 'geschäftsführer', 'inhaber', 'chef',
+          'marketing', 'customer success', 'customer experience', 'customer service',
+          'manager', 'general manager', 'operations', 'director',
+        ];
 
         // Pattern 1: "Role: Name" or "Name, Role" format - STRICTER
         // Only match patterns like "Owner: Max Müller" or "Max Müller, Owner"
