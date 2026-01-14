@@ -8842,7 +8842,15 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
   const [generating, setGenerating] = useState(false);
   const [generated, setGenerated] = useState('');
   const [remaining, setRemaining] = useState(null);
-  const [showGenerator, setShowGenerator] = useState(false);
+  // Show generator by default if no content exists yet
+  const [showGenerator, setShowGenerator] = useState(!currentValue);
+
+  // Auto-collapse when user already has content
+  useEffect(() => {
+    if (currentValue && currentValue.length > 50) {
+      setShowGenerator(false);
+    }
+  }, [currentValue]);
 
   const handleGenerate = async () => {
     if (!keywords.trim()) {
@@ -8928,9 +8936,9 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
     <div
       style={{
         background: 'linear-gradient(135deg, var(--primary-50), #f0f7ff)',
-        border: '1px solid var(--primary-200)',
+        border: '2px solid var(--primary-300)',
         borderRadius: '12px',
-        padding: '16px',
+        padding: '20px',
         marginBottom: '16px',
       }}
     >
@@ -8939,21 +8947,21 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '12px',
+          marginBottom: '16px',
         }}
       >
         <span
           style={{
-            fontWeight: '600',
-            fontSize: '14px',
+            fontWeight: '700',
+            fontSize: '16px',
             color: 'var(--primary-700)',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '8px',
           }}
         >
-          <Sparkles size={16} />
-          {field === 'context' ? 'Generate Business Context' : 'Generate Response Style'}
+          <Sparkles size={20} />
+          {field === 'context' ? '✨ AI Generator - Start Here!' : '✨ AI Style Generator'}
         </span>
         <button
           type="button"
@@ -8964,50 +8972,73 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
         </button>
       </div>
 
-      <div style={{ marginBottom: '12px' }}>
-        <label
+      {/* Input + Button inline for better visibility */}
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch' }}>
+        <div style={{ flex: 1 }}>
+          <input
+            type="text"
+            className="form-input"
+            value={keywords}
+            onChange={e => setKeywords(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && keywords.trim() && handleGenerate()}
+            placeholder={
+              field === 'context'
+                ? getContextPlaceholder(businessType)
+                : 'e.g. friendly, short, with greeting, casual'
+            }
+            style={{
+              fontSize: '15px',
+              padding: '14px 16px',
+              height: '100%',
+              borderColor: 'var(--primary-300)',
+            }}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={handleGenerate}
+          disabled={generating || !keywords.trim()}
           style={{
-            fontSize: '13px',
-            color: 'var(--gray-600)',
-            marginBottom: '6px',
-            display: 'block',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '14px 24px',
+            background: generating
+              ? 'var(--gray-400)'
+              : 'linear-gradient(135deg, var(--primary-500), var(--primary-600))',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: generating || !keywords.trim() ? 'not-allowed' : 'pointer',
+            fontSize: '15px',
+            fontWeight: '600',
+            color: 'white',
+            whiteSpace: 'nowrap',
+            boxShadow: '0 2px 8px rgba(99, 102, 241, 0.3)',
           }}
         >
-          Enter keywords (comma-separated):
-        </label>
-        <input
-          type="text"
-          className="form-input"
-          value={keywords}
-          onChange={e => setKeywords(e.target.value)}
-          placeholder={
-            field === 'context'
-              ? getContextPlaceholder(businessType)
-              : 'e.g. friendly, short, with greeting, casual'
-          }
-          style={{ fontSize: '14px' }}
-        />
+          {generating ? (
+            <>
+              <Loader size={18} className="spin" />
+              Generating...
+            </>
+          ) : (
+            <>
+              <Sparkles size={18} />
+              Generate
+            </>
+          )}
+        </button>
       </div>
-
-      <button
-        type="button"
-        onClick={handleGenerate}
-        disabled={generating || !keywords.trim()}
-        className="btn btn-primary btn-sm"
-        style={{ marginBottom: generated ? '12px' : '0' }}
+      <p
+        style={{
+          fontSize: '13px',
+          color: 'var(--primary-600)',
+          marginTop: '10px',
+          marginBottom: generated ? '12px' : '0',
+        }}
       >
-        {generating ? (
-          <>
-            <Loader size={14} className="spin" style={{ marginRight: '6px' }} />
-            Generating...
-          </>
-        ) : (
-          <>
-            <Sparkles size={14} style={{ marginRight: '6px' }} />
-            Generate
-          </>
-        )}
-      </button>
+        💡 Enter a few keywords, then click Generate. AI creates a profile you can edit below.
+      </p>
 
       {remaining !== null && remaining < 10 && (
         <span style={{ fontSize: '12px', color: 'var(--gray-500)', marginLeft: '8px' }}>
