@@ -4659,6 +4659,29 @@
   background: #059669;
 }
 
+.rr-batch-paste {
+  background: var(--rr-bg-light);
+  border: 1px solid var(--rr-border);
+  color: var(--rr-text);
+}
+
+.rr-batch-paste:hover {
+  border-color: var(--rr-primary);
+  color: var(--rr-primary);
+}
+
+.rr-batch-submit {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border: none;
+  color: white;
+  font-weight: 600;
+}
+
+.rr-batch-submit:hover {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
 .rr-batch-regenerate {
   background: var(--rr-bg-light);
   border: 1px solid var(--rr-border);
