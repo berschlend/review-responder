@@ -273,7 +273,7 @@ Claude kann diese Datei lesen wenn Admin-Zugriff benötigt wird.
 
 ## CURRENT TASKS
 
-**Stand: 14.01.2026**
+**Stand: 14.01.2026** (Keine Änderungen in dieser Session - nur CLAUDE.md Update angefordert)
 
 ### ✅ CHROME WEB STORE EINGEREICHT (13.01.2026)
 
@@ -454,6 +454,14 @@ $env:CLAUDE_SESSION = "scraper"; claude --chrome
 ```
 
 ### HEUTE ERLEDIGT (14.01.2026):
+- [x] **Pricing Page Optimierung** - First-Principles Analyse für bessere Conversion
+  - Chrome Extension zu allen Plänen hinzugefügt (war vorher nicht gelistet)
+  - Response History von Free → Starter+ verschoben (echte Differenzierung)
+  - Templates & Email Support aus Features entfernt (keine echten Kaufgründe)
+  - Feature Comparison Table aktualisiert
+  - Backend: Plan-Check für `/api/responses/history` (403 für Free)
+  - Dashboard: Upgrade-Prompt für Free User im History Tab
+  - Bug-Fix: 403 Error graceful handeln (Connection Error Banner)
 - [x] **Review Alert System komplett gefixt** - Personalisierte Demos funktionieren jetzt
   - **Problem 1:** Demo wurde nicht generiert - Bedingung `has_bad_review && worst_review_text` zu restriktiv
   - **Fix:** Geändert zu `!lead.demo_url` → Demo für ALLE Leads ohne Demo
@@ -876,6 +884,15 @@ ReviewResponder/
 | Starter ($29) | 100 | 200 | 300 | - |
 | Pro ($49) | 300 | 500 | 800 | 3 |
 | Unlimited ($99) | ∞ | ∞ | ∞ | 10 |
+
+### Feature Gating
+| Feature | Free | Starter | Pro | Unlimited |
+|---------|------|---------|-----|-----------|
+| Response History | ❌ | ✓ | ✓ | ✓ |
+| CSV/PDF Export | ❌ | ✓ | ✓ | ✓ |
+| Bulk Generation | ❌ | ❌ | ✓ | ✓ |
+| Analytics | ❌ | ❌ | ✓ | ✓ |
+| API Access | ❌ | ❌ | ❌ | ✓ |
 
 ---
 
