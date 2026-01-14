@@ -1713,7 +1713,7 @@ app.put('/api/auth/profile', authenticateToken, async (req, res) => {
 // Generate Business Context or Response Style with AI
 app.post('/api/personalization/generate-context', authenticateToken, async (req, res) => {
   try {
-    const { keywords, businessType, businessName, field } = req.body;
+    const { keywords, businessType, businessName, field, structured } = req.body;
 
     if (!keywords || keywords.trim().length === 0) {
       return res.status(400).json({ error: 'Keywords are required' });
@@ -1752,7 +1752,38 @@ app.post('/api/personalization/generate-context', authenticateToken, async (req,
     let userMessage;
 
     if (field === 'context') {
-      systemPrompt = `You help a business owner create a professional description of their business.
+      if (structured) {
+        // Profile Page: Structured output with placeholders for missing info
+        // FIRST PRINCIPLES: Only 3 things that actually make review responses better
+        systemPrompt = `You help a business owner create a business profile for AI review responses.
+
+Business Type: ${businessType || 'General Business'}
+Business Name: ${businessName || 'the business'}
+
+Create a STRUCTURED description based on the keywords. Use this EXACT format:
+
+**Your Story:** [1-2 sentences - who runs it, how/when/why started]
+**What Customers Love:** [3-5 specific things customers mention in reviews]
+**Signed by:** [Name for review sign-offs]
+
+CRITICAL - For ANY missing information, add placeholders with MULTIPLE examples:
+
+If NO story/founding info:
+→ "[YOUR STORY - e.g., "Family-owned since 1985", "Started by two college friends", "Third-generation business", "Former chef following my dream"]"
+
+If NO specific offerings mentioned:
+→ "[WHAT CUSTOMERS LOVE - e.g., "homemade tiramisu", "quick turnaround", "friendly staff", "cozy atmosphere", "honest pricing"]"
+
+If NO name for sign-off:
+→ "[YOUR NAME - e.g., "Marco", "The Rossi Family", "Dr. Sarah", "Mike & Team", "Chef Antonio"]"
+
+Each placeholder MUST have 3-5 examples so the user understands what to add.
+Use info from keywords where provided, only add placeholders for truly missing info.
+Write in first person plural (we, our).
+Respond ONLY with the structured text.`;
+      } else {
+        // Onboarding: Simple flowing text (unchanged)
+        systemPrompt = `You help a business owner create a professional description of their business.
 This description will be used to personalize AI-generated responses to customer reviews.
 
 Business Type: ${businessType || 'General Business'}
@@ -1764,6 +1795,7 @@ Keep it authentic and not too promotional.
 AVOID phrases like "We strive" or "We are committed".
 Write in first person plural (we, our).
 Respond ONLY with the generated text, no introduction or explanation.`;
+      }
       userMessage = `Keywords: ${keywords.trim()}`;
     } else if (field === 'style') {
       systemPrompt = `You help a business owner define their response style for customer reviews.

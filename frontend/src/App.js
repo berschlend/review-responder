@@ -8707,6 +8707,7 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
         businessType,
         businessName,
         field,
+        structured: field === 'context', // Profile Page gets structured output with placeholders
       });
       setGenerated(res.data.generated);
       setRemaining(res.data.remaining);
@@ -10526,7 +10527,7 @@ const NewsletterSignup = ({ compact = false }) => {
           }}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Check size={14} /> No spam
+            <Check size={14} /> Free forever
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <Check size={14} /> Unsubscribe anytime
