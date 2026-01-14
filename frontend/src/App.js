@@ -402,7 +402,7 @@ const LandingEmailCapture = ({ buttonColor = 'var(--primary-600)', buttonText = 
       sessionStorage.setItem('landing_email', trimmedEmail);
       setLoading(true);
       // Send to backend (non-blocking - navigate even if it fails)
-      api.post('/capture-email', { email: trimmedEmail, source, discountCode: 'EARLY50' }).catch(() => {});
+      api.post('/capture-email', { email: trimmedEmail, source }).catch(() => {});
     }
     navigate('/register');
   };
@@ -1051,7 +1051,6 @@ const ExitIntentPopup = () => {
     try {
       const response = await api.post('/capture-email', {
         email,
-        discountCode: 'EARLY50',
         source: 'exit_intent',
       });
 
@@ -1139,14 +1138,14 @@ const ExitIntentPopup = () => {
                 marginBottom: '8px',
                 lineHeight: '1.3'
               }}>
-                Get 50% off your first year
+                Don't miss out on updates
               </h2>
               <p style={{
                 fontSize: '14px',
                 color: 'var(--text-secondary)',
                 lineHeight: '1.5'
               }}>
-                Enter your email to unlock this limited-time offer.
+                Get notified about new features and exclusive offers.
               </p>
             </div>
 
@@ -1185,7 +1184,7 @@ const ExitIntentPopup = () => {
                   opacity: loading ? 0.7 : 1,
                 }}
               >
-                {loading ? 'Please wait...' : 'Unlock 50% Discount'}
+                {loading ? 'Please wait...' : 'Get Early Access'}
               </button>
             </form>
 
@@ -1219,17 +1218,17 @@ const ExitIntentPopup = () => {
               marginBottom: '8px',
               color: 'var(--text-primary)'
             }}>
-              Discount Unlocked
+              You're on the list!
             </h3>
             <p style={{
               color: 'var(--text-secondary)',
               marginBottom: '20px',
               fontSize: '14px'
             }}>
-              Your 50% discount is ready. We sent the details to your email.
+              We'll keep you updated on new features and exclusive offers.
             </p>
             <Link
-              to="/pricing?discount=EARLY50"
+              to="/pricing"
               style={{
                 display: 'inline-block',
                 padding: '12px 24px',
@@ -2805,34 +2804,6 @@ const LandingPage = () => {
             <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: '0' }}>
               Choose a plan that fits your business.
             </p>
-            <Link
-              to="/pricing?discount=EARLY50"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                marginTop: '16px',
-                padding: '4px 10px',
-                border: '1px solid var(--border-color)',
-                borderRadius: '4px',
-                color: 'var(--text-muted)',
-                fontSize: '12px',
-                fontWeight: '500',
-                textDecoration: 'none',
-                transition: 'color 0.2s, border-color 0.2s',
-              }}
-              onMouseOver={e => {
-                e.currentTarget.style.borderColor = 'var(--text-muted)';
-                e.currentTarget.style.color = 'var(--text-primary)';
-              }}
-              onMouseOut={e => {
-                e.currentTarget.style.borderColor = 'var(--border-color)';
-                e.currentTarget.style.color = 'var(--text-muted)';
-              }}
-            >
-              <Sparkles size={12} style={{ color: 'var(--primary)' }} />
-              Early Access - 50% Off
-            </Link>
           </div>
           <PricingCards />
         </div>

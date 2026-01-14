@@ -4982,7 +4982,7 @@ app.post('/api/team/leave', authenticateToken, async (req, res) => {
 // Capture email from exit-intent popup
 app.post('/api/capture-email', async (req, res) => {
   try {
-    const { email, discountCode = 'EARLY50', source = 'exit_intent' } = req.body;
+    const { email, discountCode = null, source = 'exit_intent' } = req.body;
 
     // Validate email
     if (!email || !validator.isEmail(email)) {
@@ -4998,14 +4998,14 @@ app.post('/api/capture-email', async (req, res) => {
       console.log(`📧 Email already captured: ${email}`);
       return res.json({
         success: true,
-        message: 'Thanks! Check your email for the discount code.',
+        message: 'Thanks for joining!',
         discountCode: existing.discount_code,
       });
     }
 
     // Insert new email
     await dbQuery(
-      `INSERT INTO email_captures (email, discount_code, source) 
+      `INSERT INTO email_captures (email, discount_code, source)
        VALUES ($1, $2, $3)`,
       [email.toLowerCase(), discountCode, source]
     );
@@ -5015,12 +5015,11 @@ app.post('/api/capture-email', async (req, res) => {
     // Send welcome email if Resend is configured
     if (resend && process.env.NODE_ENV === 'production') {
       try {
-        await resend.emails.send({
-          from: FROM_EMAIL,
-          replyTo: 'hello@tryreviewresponder.com',
-          to: email,
-          subject: 'Your 50% discount code inside',
-          html: `
+        // Different email based on whether discount code is present
+        const emailContent = discountCode
+          ? {
+              subject: `Your ${discountCode === 'EARLY50' ? '50%' : discountCode === 'HUNTLAUNCH' ? '60%' : '30%'} discount code inside`,
+              html: `
             <!DOCTYPE html>
             <html>
             <head>
@@ -5030,25 +5029,22 @@ app.post('/api/capture-email', async (req, res) => {
             <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; margin: 0; padding: 0; background-color: #f9fafb;">
               <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
                 <div style="background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
-                  <h1 style="margin: 0; font-size: 24px;">50% Off - Launch Special</h1>
+                  <h1 style="margin: 0; font-size: 24px;">Your Exclusive Discount</h1>
                 </div>
                 <div style="background: white; padding: 40px; border: 1px solid #E5E7EB; border-top: none; border-radius: 0 0 8px 8px;">
                   <p style="margin-top: 0;">Hi there,</p>
 
-                  <p>Thanks for checking out ReviewResponder! As an early supporter, you get access to our launch discount:</p>
+                  <p>Thanks for your interest in ReviewResponder! Here's your exclusive discount:</p>
 
                   <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 24px; border-radius: 8px; text-align: center; margin: 24px 0;">
-                    <p style="margin: 0 0 8px 0; color: rgba(255,255,255,0.9); font-size: 14px;">Your exclusive discount</p>
-                    <div style="font-size: 32px; font-weight: bold; color: white;">50% OFF</div>
-                    <p style="margin: 8px 0 0 0; font-weight: 600; color: rgba(255,255,255,0.95);">Forever, not just the first month!</p>
+                    <p style="margin: 0 0 8px 0; color: rgba(255,255,255,0.9); font-size: 14px;">Your discount code</p>
+                    <div style="font-size: 28px; font-weight: bold; color: white; font-family: monospace;">${discountCode}</div>
                   </div>
 
                   <p>ReviewResponder helps businesses respond to customer reviews in seconds using AI. No more staring at a blank screen wondering what to write.</p>
 
-                  <p>This discount won't last forever - it's only for our first 50 customers.</p>
-
                   <div style="text-align: center; margin: 32px 0;">
-                    <a href="${process.env.FRONTEND_URL}/pricing?discount=${discountCode}" style="display: inline-block; background: #10b981; color: white; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px;">Claim 50% Discount</a>
+                    <a href="${process.env.FRONTEND_URL}/pricing?discount=${discountCode}" style="display: inline-block; background: #10b981; color: white; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px;">Claim Your Discount</a>
                   </div>
 
                   <p style="color: #6B7280; font-size: 14px;">Questions? Just reply to this email.</p>
@@ -5062,6 +5058,60 @@ app.post('/api/capture-email', async (req, res) => {
             </body>
             </html>
           `,
+            }
+          : {
+              subject: "You're on the early access list!",
+              html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; margin: 0; padding: 0; background-color: #f9fafb;">
+              <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); color: white; padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
+                  <h1 style="margin: 0; font-size: 24px;">Welcome to ReviewResponder</h1>
+                </div>
+                <div style="background: white; padding: 40px; border: 1px solid #E5E7EB; border-top: none; border-radius: 0 0 8px 8px;">
+                  <p style="margin-top: 0;">Hi there,</p>
+
+                  <p>Thanks for signing up! You're now on our early access list.</p>
+
+                  <p>ReviewResponder helps businesses respond to customer reviews in seconds using AI. No more staring at a blank screen wondering what to write.</p>
+
+                  <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 24px 0;">
+                    <p style="margin: 0; font-weight: 600;">What you get with ReviewResponder:</p>
+                    <ul style="margin: 12px 0 0 0; padding-left: 20px;">
+                      <li>AI-powered review responses in seconds</li>
+                      <li>4 different tones (Professional, Friendly, Apologetic, Grateful)</li>
+                      <li>50+ languages supported</li>
+                      <li>Chrome Extension for all major platforms</li>
+                    </ul>
+                  </div>
+
+                  <div style="text-align: center; margin: 32px 0;">
+                    <a href="${process.env.FRONTEND_URL}/register" style="display: inline-block; background: #4F46E5; color: white; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px;">Start Free - 20 Responses</a>
+                  </div>
+
+                  <p style="color: #6B7280; font-size: 14px;">Questions? Just reply to this email.</p>
+
+                  <p style="margin-bottom: 0;">Cheers,<br>Berend from ReviewResponder</p>
+                </div>
+                <div style="text-align: center; padding: 20px; color: #9CA3AF; font-size: 12px;">
+                  <p style="margin: 0;">You're receiving this because you signed up at tryreviewresponder.com</p>
+                </div>
+              </div>
+            </body>
+            </html>
+          `,
+            };
+
+        await resend.emails.send({
+          from: FROM_EMAIL,
+          replyTo: 'hello@tryreviewresponder.com',
+          to: email,
+          ...emailContent,
         });
         console.log(`📨 Welcome email sent to ${email}`);
       } catch (emailError) {
@@ -5072,7 +5122,7 @@ app.post('/api/capture-email', async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Thanks! Check your email for the discount code.',
+      message: 'Thanks for joining!',
       discountCode,
     });
   } catch (error) {
