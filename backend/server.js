@@ -13174,10 +13174,11 @@ app.all('/api/cron/night-loop', async (req, res) => {
       }
     }
 
-    // Hour 0: Stats Collection & Report Preparation
+    // Hour 0: Stats Collection & Demo Expiration Emails
     if (hour === 0) {
-      console.log('📊 00:00 - Collecting nightly stats');
+      console.log('📊 00:00 - Collecting nightly stats + Demo Expiration Emails');
       actions.push({ hour: 0, action: 'stats-collection', description: 'Collect metrics for daily report' });
+      actions.push({ hour: 0, action: 'demo-expiration', description: 'Send urgency emails for expiring demos' });
 
       if (!dryRun) {
         const totalLeads = await dbGet(`SELECT COUNT(*) as count FROM outreach_leads`);
@@ -13191,6 +13192,18 @@ app.all('/api/cron/night-loop', async (req, res) => {
           unique_clickers: parseInt(totalClicks?.count || 0),
           conversions: parseInt(conversions?.count || 0),
         };
+
+        // Call demo expiration endpoint internally
+        try {
+          const baseUrl = process.env.BACKEND_URL || 'https://review-responder.onrender.com';
+          const expirationResponse = await fetch(`${baseUrl}/api/cron/demo-expiration-emails?secret=${process.env.CRON_SECRET}`);
+          const expirationData = await expirationResponse.json();
+          results.demo_expiration = expirationData;
+          console.log(`📆 Demo expiration: ${expirationData.day3_sent || 0} day-3, ${expirationData.day5_sent || 0} day-5, ${expirationData.demos_expired || 0} expired`);
+        } catch (e) {
+          console.error('Demo expiration call failed:', e.message);
+          results.demo_expiration = { error: e.message };
+        }
       }
     }
 
@@ -13217,10 +13230,11 @@ app.all('/api/cron/night-loop', async (req, res) => {
       }
     }
 
-    // Hour 2: A/B Test Evaluation
+    // Hour 2: A/B Test Evaluation + Re-Engagement Magic Links
     if (hour === 2) {
-      console.log('🔬 02:00 - Evaluating A/B Tests');
+      console.log('🔬 02:00 - Evaluating A/B Tests + Re-Engagement Magic Links');
       actions.push({ hour: 2, action: 'ab-test-evaluate', description: 'Evaluate email subject/CTA tests' });
+      actions.push({ hour: 2, action: 'reengage-clickers', description: 'Send magic links to unregistered clickers' });
 
       if (!dryRun) {
         const activeTests = await dbAll(`
@@ -13228,6 +13242,18 @@ app.all('/api/cron/night-loop', async (req, res) => {
           WHERE winner IS NULL AND ended_at IS NULL
         `);
         results.active_ab_tests = activeTests?.length || 0;
+
+        // Call re-engagement endpoint internally
+        try {
+          const baseUrl = process.env.BACKEND_URL || 'https://review-responder.onrender.com';
+          const reengageResponse = await fetch(`${baseUrl}/api/cron/reengage-clickers?secret=${process.env.CRON_SECRET}`);
+          const reengageData = await reengageResponse.json();
+          results.reengagement = reengageData;
+          console.log(`🔮 Re-engagement: ${reengageData.sent || 0} magic link emails sent`);
+        } catch (e) {
+          console.error('Re-engagement call failed:', e.message);
+          results.reengagement = { error: e.message };
+        }
       }
     }
 
