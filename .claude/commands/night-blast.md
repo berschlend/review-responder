@@ -596,7 +596,7 @@ Tab-Status: [Kann geschlossen werden: JA/NEIN]
 
 ## LEARNINGS (Addiere hier, lösche nichts!)
 
-> Jede Claude Session fügt ihre Learnings hier hinzu. Niemals alte löschen!
+> Jede Claude Session fügt ihre Learnings hier hinzu. Alte nicht löschen.
 
 ### 15.01.2026 - Session: User Activation System
 
