@@ -373,6 +373,35 @@ Läuft autonom ohne User-Input:
 
 ---
 
+## NACHT-LOG 15.01.2026 ~22:30
+
+**Session:** Sales Automation Setup + Chrome MCP Debugging
+
+**Aktionen:**
+1. **Night Loop Cron verifiziert** - Läuft bereits stündlich (`0 * * * *`)
+   - Alle 8 Stunden-Jobs bereits konfiguriert bei cron-job.org
+   - Hot Lead Follow-Ups, Dead Lead Revival, A/B Tests laufen autonom
+2. **Chrome MCP Tab-Chaos diagnostiziert**
+   - Problem: Alle Claude Sessions teilen dieselbe Tab-Gruppe
+   - Lösung dokumentiert in globaler CLAUDE.md:
+     - Option 1: Nur EINE Session nutzt Chrome MCP
+     - Option 2: Separate Chrome Profile pro Session
+3. **Lead-Scraping abgebrochen** (Chrome MCP instabil)
+   - LinkedIn, TripAdvisor, G2 Tasks verschoben auf stabile Session
+
+**Metriken (Status Check ~21:17):**
+- 644 Leads total
+- 391 mit Email
+- 499 Emails gesendet
+- 18 Clicks (3.6% Click Rate)
+- 17 Hot Leads (haben geklickt!)
+- 0 Conversions
+
+**Erkenntnis:** Chrome MCP braucht Session-Isolation für Boris Flow.
+**TODO:** Parallele Chrome Sessions mit separaten Profilen testen.
+
+---
+
 ## NACHT-LOG 15.01.2026 01:45
 
 **Session:** Night Blast (Continued)
