@@ -1,0 +1,48 @@
+{
+  "last_updated": null,
+  "total_scored": 0,
+  "segments": {
+    "hot": 0,
+    "warm": 0,
+    "cool": 0,
+    "cold": 0
+  },
+  "top_10": [],
+  "new_hot_leads": [],
+  "score_changes": [],
+  "scoring_model": {
+    "version": "1.0",
+    "engagement": {
+      "email_opened": 5,
+      "email_clicked": 15,
+      "demo_viewed": 10,
+      "demo_3min_plus": 10
+    },
+    "fit": {
+      "reviews_5_50": 10,
+      "reviews_50_200": 15,
+      "reviews_200_plus": 5,
+      "rating_3_35": 15,
+      "rating_35_4": 10,
+      "rating_4_plus": 5
+    },
+    "behavior": {
+      "response_1h": 10,
+      "multiple_sessions": 10,
+      "pricing_visited": 10,
+      "replied": 15
+    }
+  },
+  "thresholds": {
+    "hot": 80,
+    "warm": 60,
+    "cool": 40,
+    "cold": 0
+  },
+  "agent_actions": {
+    "hot": "Burst-5 immediate follow-up, Burst-7 discount ready",
+    "warm": "Burst-2 prioritize, Burst-4 generate demo",
+    "cool": "Burst-2 standard drip",
+    "cold": "Burst-2 nurture only, no discounts"
+  }
+}

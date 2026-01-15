@@ -1,0 +1,52 @@
+{
+  "last_updated": "2026-01-16T00:00:00Z",
+  "updated_by": "initial-setup",
+
+  "current": {
+    "leads_total": 0,
+    "leads_with_email": 0,
+    "emails_sent": 0,
+    "emails_clicked": 0,
+    "email_ctr": 0,
+    "demo_views": 0,
+    "registrations": 0,
+    "activations": 0,
+    "conversions": 0,
+    "mrr": 0
+  },
+
+  "goals": {
+    "leads_per_day": 50,
+    "emails_per_day": 50,
+    "email_ctr_target": 3.0,
+    "demo_views_per_day": 10,
+    "registrations_per_day": 5,
+    "activation_rate_target": 30,
+    "conversion_rate_target": 10,
+    "mrr_target": 1000
+  },
+
+  "thresholds": {
+    "email_ctr_warning": 2.0,
+    "email_ctr_critical": 1.0,
+    "activation_warning": 20,
+    "activation_critical": 10,
+    "conversion_warning": 5,
+    "conversion_critical": 2
+  },
+
+  "history": [],
+
+  "agents": {
+    "burst-1": { "status": "not_started", "last_run": null },
+    "burst-2": { "status": "not_started", "last_run": null },
+    "burst-3": { "status": "not_started", "last_run": null },
+    "burst-4": { "status": "not_started", "last_run": null },
+    "burst-5": { "status": "not_started", "last_run": null },
+    "burst-6": { "status": "not_started", "last_run": null },
+    "burst-7": { "status": "not_started", "last_run": null },
+    "burst-8": { "status": "not_started", "last_run": null },
+    "burst-9": { "status": "not_started", "last_run": null },
+    "burst-10": { "status": "not_started", "last_run": null }
+  }
+}

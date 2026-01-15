@@ -623,6 +623,135 @@ Oder: `.claude\omnichannel-parallel.ps1` ausführen
 
 ---
 
+## NIGHT-BURST V2 AGENTS (15.01.2026)
+
+> **Autonomes Marketing-Genie basierend auf Anthropics Project Vend Learnings.**
+> Alle Agents laufen in Endlos-Loop bis Berend "Stopp" sagt.
+
+### Agent-Übersicht (15 Total)
+
+**EXECUTION LAYER (1-8):**
+| Agent | Name | Mission | Loop |
+|-------|------|---------|------|
+| Burst-1 | Lead Finder | Neue Leads scrapen | 4h |
+| Burst-2 | Cold Emailer | Cold Outreach senden | 6h |
+| Burst-3 | Social DM | LinkedIn/Twitter DMs | 8h |
+| Burst-4 | Demo Generator | Personalisierte Demos | 4h |
+| Burst-5 | Hot Lead Chaser | Hot Leads follow-up | 2h |
+| Burst-6 | User Activator | Onboarding aktivieren | 4h |
+| Burst-7 | Payment Converter | Free→Paid konvertieren | 3h |
+| Burst-8 | Upgrader | Upsell Starter→Pro | 6h |
+
+**INTELLIGENCE LAYER (9-14):**
+| Agent | Name | Mission | Loop |
+|-------|------|---------|------|
+| Burst-9 | Doctor | Metriken tracken | 1h |
+| Burst-10 | Morning Briefer | Daily Report | 24h |
+| Burst-11 | **Bottleneck Analyzer** | Funnel-Engpass finden | 2h |
+| Burst-12 | **Creative Strategist** | Neue Strategien vorschlagen | 4h |
+| Burst-13 | **Churn Prevention** | User reaktivieren | 6h |
+| Burst-14 | **Lead Scorer** | Leads priorisieren | 30min |
+
+**CONTROL LAYER (15):**
+| Agent | Name | Mission | Loop |
+|-------|------|---------|------|
+| Burst-15 | **Approval Gate** | Human-in-the-Loop | 5min |
+
+### Neue Agent-Files
+```
+.claude/commands/
+├── night-burst-11.md  # Bottleneck Analyzer
+├── night-burst-12.md  # Creative Strategist
+├── night-burst-13.md  # Churn Prevention
+├── night-burst-14.md  # Lead Scorer
+└── night-burst-15.md  # Approval Gate (KRITISCH!)
+```
+
+### Neue Support-Files
+```
+content/claude-progress/
+├── approval-queue.md      # Pending Decisions
+├── bottleneck-report.md   # Funnel Analysis
+├── churn-alerts.md        # At-Risk Users
+├── lead-scores.json       # Lead Prioritization
+├── strategy-proposals.md  # A/B Test Ideas
+└── taste-examples.md      # Brand Voice Control
+```
+
+### Human-in-the-Loop (Burst-15)
+
+**Approval Required für:**
+- Discount >30%
+- First Conversion ever
+- Neue Strategie (Burst-12)
+- API Spend >$20/day
+- Any "unsure" Flag
+
+**Workflow:**
+1. Agent schreibt in `approval-queue.md`
+2. Burst-15 monitort alle 5min
+3. Berend antwortet in `berend-feedback.md`
+4. Bei Timeout → Default Action (REJECT für Critical)
+
+**Approval Levels:**
+| Level | Timeout | Default |
+|-------|---------|---------|
+| 🔴 Critical | 30min | REJECT |
+| 🟡 Important | 2h | PROCEED |
+| 🟢 Informational | None | N/A |
+
+### Lead Scoring (Burst-14)
+
+**Scoring Model (0-100):**
+```
+ENGAGEMENT (0-40):
+├── Email opened: +5
+├── Email clicked: +15
+├── Demo viewed: +10
+└── Demo >3min: +10
+
+FIT (0-30):
+├── Reviews 5-50: +10
+├── Reviews 50-200: +15
+├── Rating 3.0-3.5: +15
+└── Rating 3.5-4.0: +10
+
+BEHAVIOR (0-30):
+├── Response <1h: +10
+├── Multiple sessions: +10
+└── Pricing visited: +10
+```
+
+**Segments:**
+| Score | Segment | Treatment |
+|-------|---------|-----------|
+| 80-100 | 🔥 Hot | Immediate follow-up |
+| 60-79 | 🟡 Warm | Aggressive sequence |
+| 40-59 | 🟢 Cool | Standard drip |
+| 0-39 | ⚪ Cold | Nurture only |
+
+### Claudius Guard (Anti-Patterns)
+
+> Basierend auf Anthropics Project Vend Failures.
+
+**Vor JEDER Aktion checken:**
+```
+□ Dient das $1000 MRR oder bin ich "nett"?
+□ Habe ich Daten die diese Entscheidung stützen?
+□ Was ist der ROI? (Nicht: was will der Lead?)
+□ Wiederhole ich einen Fehler?
+□ Sollte ich eskalieren?
+```
+
+**NIEMALS wie Claudius:**
+- ❌ Discount ohne Business-Logik
+- ❌ Von "netten Anfragen" überzeugen lassen
+- ❌ Gleiche Fehler wiederholen
+- ❌ Positive Reports bei schlechten Zahlen
+- ❌ Eskalation vergessen
+
+---
+
 ## SESSION-LOG 15.01.2026 ~09:00 UTC
 
 **Session:** LinkedIn Outreach - Hotel Managers Germany
