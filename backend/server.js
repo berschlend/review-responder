@@ -16,6 +16,9 @@ const Anthropic = require('@anthropic-ai/sdk');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { TwitterApi } = require('twitter-api-v2');
 const SibApiV3Sdk = require('@getbrevo/brevo');
+const sgMail = require('@sendgrid/mail');
+const Mailgun = require('mailgun.js');
+const FormData = require('form-data');
 const cron = require('node-cron');
 const {
   getFewShotExamples,
@@ -82,6 +85,90 @@ let brevoApi = null;
 if (process.env.BREVO_API_KEY) {
   brevoApi = new SibApiV3Sdk.TransactionalEmailsApi();
   brevoApi.setApiKey(SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
+}
+
+// SendGrid (100/day free forever)
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  console.log('[SendGrid] Initialized');
+}
+
+// Mailgun (5000/month free for 3 months, then pay-as-you-go)
+let mailgunClient = null;
+if (process.env.MAILGUN_API_KEY && process.env.MAILGUN_DOMAIN) {
+  const mailgun = new Mailgun(FormData);
+  mailgunClient = mailgun.client({ username: 'api', key: process.env.MAILGUN_API_KEY });
+  console.log('[Mailgun] Initialized');
+}
+
+// ==========================================
+// MULTI-PROVIDER EMAIL SYSTEM
+// ==========================================
+// Round-robin through providers to maximize daily email volume
+// Limits: Brevo 300/day, SendGrid 100/day, Mailgun 166/day (5000/30), Resend 100/day
+
+const EMAIL_PROVIDER_LIMITS = {
+  brevo: 300,
+  sendgrid: 100,
+  mailgun: 166, // 5000/month ÷ 30 days
+  resend: 100,
+};
+
+// Get today's email count per provider (cached for 5 min)
+let providerCountCache = { counts: {}, lastUpdated: 0 };
+async function getProviderCountsToday() {
+  const now = Date.now();
+  if (now - providerCountCache.lastUpdated < 300000) { // 5 min cache
+    return providerCountCache.counts;
+  }
+
+  try {
+    const result = await pool.query(`
+      SELECT provider, COUNT(*) as count
+      FROM email_logs
+      WHERE sent_at >= CURRENT_DATE
+        AND status = 'sent'
+      GROUP BY provider
+    `);
+
+    const counts = { brevo: 0, sendgrid: 0, mailgun: 0, resend: 0 };
+    result.rows.forEach(row => {
+      if (counts.hasOwnProperty(row.provider)) {
+        counts[row.provider] = parseInt(row.count);
+      }
+    });
+
+    providerCountCache = { counts, lastUpdated: now };
+    return counts;
+  } catch (err) {
+    console.error('[Email] Failed to get provider counts:', err.message);
+    return { brevo: 0, sendgrid: 0, mailgun: 0, resend: 0 };
+  }
+}
+
+// Select best provider with remaining capacity
+async function selectEmailProvider() {
+  const counts = await getProviderCountsToday();
+
+  // Priority order: Brevo (highest limit) → Mailgun → SendGrid → Resend
+  const providers = [
+    { name: 'brevo', available: brevoApi !== null },
+    { name: 'mailgun', available: mailgunClient !== null },
+    { name: 'sendgrid', available: process.env.SENDGRID_API_KEY !== undefined },
+    { name: 'resend', available: resend !== null },
+  ];
+
+  for (const p of providers) {
+    if (p.available && counts[p.name] < EMAIL_PROVIDER_LIMITS[p.name]) {
+      const remaining = EMAIL_PROVIDER_LIMITS[p.name] - counts[p.name];
+      console.log(`[Email] Selected ${p.name} (${counts[p.name]}/${EMAIL_PROVIDER_LIMITS[p.name]}, ${remaining} remaining)`);
+      return p.name;
+    }
+  }
+
+  // All providers exhausted - use Brevo anyway (might fail with quota error)
+  console.warn('[Email] All providers at daily limit! Trying Brevo as fallback...');
+  return brevoApi ? 'brevo' : 'resend';
 }
 
 // Email sender addresses (configurable via ENV)
@@ -294,10 +381,8 @@ async function sendEmail({
   replyTo = null,
   addTrackingPixel = false,
 }) {
-  // CHANGED: Always try Brevo first (Resend quota exhausted)
-  // Brevo: 300/day free, Resend: 100/day free (but quota exhausted)
-  const useBrevo = brevoApi !== null;
-  let provider = useBrevo ? 'brevo' : 'resend';
+  // MULTI-PROVIDER: Select best available provider with capacity
+  let provider = await selectEmailProvider();
   let messageId = null;
   let error = null;
 
@@ -319,104 +404,142 @@ async function sendEmail({
   // Determine sender
   const fromAddress = from || (type === 'outreach' ? OUTREACH_FROM_EMAIL : FROM_EMAIL);
 
-  try {
-    if (useBrevo) {
-      // Send via Brevo
-      try {
+  // Parse from address into name/email parts
+  const fromMatch = fromAddress.match(/^(.+?)\s*<(.+)>$/);
+  const fromName = fromMatch ? fromMatch[1].trim() : 'ReviewResponder';
+  const fromEmail = fromMatch ? fromMatch[2].trim() : fromAddress;
+
+  // Track which providers we've tried (for fallback)
+  const triedProviders = new Set();
+
+  while (triedProviders.size < 4) { // Max 4 providers
+    triedProviders.add(provider);
+
+    try {
+      // ========== BREVO ==========
+      if (provider === 'brevo' && brevoApi) {
         const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
         sendSmtpEmail.subject = subject;
         if (finalHtml) sendSmtpEmail.htmlContent = finalHtml;
         if (finalText) sendSmtpEmail.textContent = finalText;
-
-        // Parse from address
-        const fromMatch = fromAddress.match(/^(.+?)\s*<(.+)>$/);
-        if (fromMatch) {
-          sendSmtpEmail.sender = { name: fromMatch[1].trim(), email: fromMatch[2].trim() };
-        } else {
-          sendSmtpEmail.sender = { name: 'ReviewResponder', email: fromAddress };
-        }
-
+        sendSmtpEmail.sender = { name: fromName, email: fromEmail };
         sendSmtpEmail.to = [{ email: to }];
-        sendSmtpEmail.tags = [type, campaign, ...tags.map(t => t.value || t.name || t)].filter(
-          Boolean
-        );
-
-        if (replyTo) {
-          sendSmtpEmail.replyTo = { email: replyTo };
-        }
+        sendSmtpEmail.tags = [type, campaign, ...tags.map(t => t.value || t.name || t)].filter(Boolean);
+        if (replyTo) sendSmtpEmail.replyTo = { email: replyTo };
 
         const result = await brevoApi.sendTransacEmail(sendSmtpEmail);
         messageId = result.body?.messageId || result.messageId;
         console.log(`[Brevo] ${type} email sent to ${to} (campaign: ${campaign || 'none'})`);
-      } catch (brevoError) {
-        console.error(`[Brevo] Failed: ${brevoError.message}, falling back to Resend`);
-        provider = 'resend';
-        // Fall through to Resend
       }
-    }
+      // ========== SENDGRID ==========
+      else if (provider === 'sendgrid' && process.env.SENDGRID_API_KEY) {
+        const msg = {
+          to,
+          from: { name: fromName, email: fromEmail },
+          subject,
+          html: finalHtml,
+          text: finalText,
+        };
+        if (replyTo) msg.replyTo = replyTo;
 
-    // Send via Resend (primary for transactional, fallback for marketing)
-    if (provider === 'resend') {
-      if (!resend) {
-        throw new Error('No email provider available (RESEND_API_KEY required)');
+        const result = await sgMail.send(msg);
+        messageId = result[0]?.headers?.['x-message-id'] || `sg_${Date.now()}`;
+        console.log(`[SendGrid] ${type} email sent to ${to} (campaign: ${campaign || 'none'})`);
+      }
+      // ========== MAILGUN ==========
+      else if (provider === 'mailgun' && mailgunClient) {
+        const result = await mailgunClient.messages.create(process.env.MAILGUN_DOMAIN, {
+          from: `${fromName} <${fromEmail}>`,
+          to: [to],
+          subject,
+          html: finalHtml,
+          text: finalText,
+          'h:Reply-To': replyTo || undefined,
+        });
+        messageId = result.id;
+        console.log(`[Mailgun] ${type} email sent to ${to} (campaign: ${campaign || 'none'})`);
+      }
+      // ========== RESEND ==========
+      else if (provider === 'resend' && resend) {
+        const resendTags = [...tags];
+        if (campaign && !resendTags.find(t => t.name === 'campaign')) {
+          resendTags.push({ name: 'campaign', value: campaign });
+        }
+        if (!resendTags.find(t => t.name === 'type')) {
+          resendTags.push({ name: 'type', value: type });
+        }
+
+        const emailOptions = {
+          from: fromAddress,
+          to,
+          subject,
+          tags: resendTags,
+        };
+        if (finalHtml) emailOptions.html = finalHtml;
+        if (finalText) emailOptions.text = finalText;
+        if (replyTo) emailOptions.replyTo = replyTo;
+
+        const result = await resend.emails.send(emailOptions);
+        messageId = result.id;
+        console.log(`[Resend] ${type} email sent to ${to} (campaign: ${campaign || 'none'})`);
+      }
+      // ========== NO PROVIDER ==========
+      else {
+        throw new Error(`Provider ${provider} not available`);
       }
 
-      const resendTags = [...tags];
-      if (campaign && !resendTags.find(t => t.name === 'campaign')) {
-        resendTags.push({ name: 'campaign', value: campaign });
-      }
-      if (!resendTags.find(t => t.name === 'type')) {
-        resendTags.push({ name: 'type', value: type });
-      }
+      // SUCCESS - Log and return
+      // Invalidate cache so next email picks fresh counts
+      providerCountCache.lastUpdated = 0;
 
-      const emailOptions = {
-        from: fromAddress,
-        to,
-        subject,
-        tags: resendTags,
-      };
-
-      if (finalHtml) emailOptions.html = finalHtml;
-      if (finalText) emailOptions.text = finalText;
-      if (replyTo) emailOptions.replyTo = replyTo;
-
-      const result = await resend.emails.send(emailOptions);
-      messageId = result.id;
-      console.log(`[Resend] ${type} email sent to ${to} (campaign: ${campaign || 'none'})`);
-    }
-
-    // Log successful email to DB (non-blocking)
-    pool
-      .query(
+      // Log successful email to DB (non-blocking)
+      pool.query(
         `INSERT INTO email_logs (to_email, subject, type, campaign, provider, status, message_id, sent_at)
-       VALUES ($1, $2, $3, $4, $5, 'sent', $6, NOW())`,
+         VALUES ($1, $2, $3, $4, $5, 'sent', $6, NOW())`,
         [to, subject.substring(0, 255), type, campaign, provider, messageId]
-      )
-      .catch(logErr => console.error('[Email Log] Failed to log:', logErr.message));
+      ).catch(logErr => console.error('[Email Log] Failed to log:', logErr.message));
 
-    // Log API call for cost tracking (emails are free but track for volume)
-    logApiCall({
-      provider: provider === 'brevo' ? 'brevo' : 'resend',
-      endpoint: 'sendEmail',
-      metadata: { type, campaign, to: to.substring(0, 50) },
-    });
+      // Log API call for cost tracking
+      logApiCall({
+        provider,
+        endpoint: 'sendEmail',
+        metadata: { type, campaign, to: to.substring(0, 50) },
+      });
 
-    return { success: true, provider, messageId };
-  } catch (err) {
-    error = err.message;
-    console.error(`[Email] Failed to send ${type} email to ${to}:`, error);
+      return { success: true, provider, messageId };
 
-    // Log failed email to DB (non-blocking)
-    pool
-      .query(
-        `INSERT INTO email_logs (to_email, subject, type, campaign, provider, status, error, sent_at)
-       VALUES ($1, $2, $3, $4, $5, 'failed', $6, NOW())`,
-        [to, subject.substring(0, 255), type, campaign, provider, error]
-      )
-      .catch(logErr => console.error('[Email Log] Failed to log error:', logErr.message));
+    } catch (providerError) {
+      console.error(`[${provider}] Failed: ${providerError.message}`);
 
-    throw err;
+      // Try next available provider
+      const nextProviders = ['brevo', 'mailgun', 'sendgrid', 'resend'].filter(p => !triedProviders.has(p));
+      if (nextProviders.length === 0) {
+        error = providerError.message;
+        break;
+      }
+
+      // Find next provider that's actually available
+      for (const next of nextProviders) {
+        if (next === 'brevo' && brevoApi) { provider = next; break; }
+        if (next === 'sendgrid' && process.env.SENDGRID_API_KEY) { provider = next; break; }
+        if (next === 'mailgun' && mailgunClient) { provider = next; break; }
+        if (next === 'resend' && resend) { provider = next; break; }
+      }
+      console.log(`[Email] Falling back to ${provider}...`);
+    }
   }
+
+  // All providers failed
+  console.error(`[Email] All providers failed for ${to}:`, error);
+
+  // Log failed email to DB (non-blocking)
+  pool.query(
+    `INSERT INTO email_logs (to_email, subject, type, campaign, provider, status, error, sent_at)
+     VALUES ($1, $2, $3, $4, $5, 'failed', $6, NOW())`,
+    [to, subject.substring(0, 255), type, campaign, provider, error]
+  ).catch(logErr => console.error('[Email Log] Failed to log error:', logErr.message));
+
+  throw new Error(`All email providers failed: ${error}`);
 }
 
 // ==========================================
@@ -12521,7 +12644,66 @@ app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
   }
 });
 
-// GET /api/admin/email-dashboard - Unified email dashboard for both providers
+// GET /api/admin/email-providers - Multi-provider capacity status
+app.get('/api/admin/email-providers', authenticateAdmin, async (req, res) => {
+  try {
+    const counts = await getProviderCountsToday();
+
+    const providers = [
+      {
+        name: 'brevo',
+        available: brevoApi !== null,
+        limit: EMAIL_PROVIDER_LIMITS.brevo,
+        used: counts.brevo,
+        remaining: EMAIL_PROVIDER_LIMITS.brevo - counts.brevo,
+      },
+      {
+        name: 'sendgrid',
+        available: process.env.SENDGRID_API_KEY !== undefined,
+        limit: EMAIL_PROVIDER_LIMITS.sendgrid,
+        used: counts.sendgrid,
+        remaining: EMAIL_PROVIDER_LIMITS.sendgrid - counts.sendgrid,
+      },
+      {
+        name: 'mailgun',
+        available: mailgunClient !== null,
+        limit: EMAIL_PROVIDER_LIMITS.mailgun,
+        used: counts.mailgun,
+        remaining: EMAIL_PROVIDER_LIMITS.mailgun - counts.mailgun,
+      },
+      {
+        name: 'resend',
+        available: resend !== null,
+        limit: EMAIL_PROVIDER_LIMITS.resend,
+        used: counts.resend,
+        remaining: EMAIL_PROVIDER_LIMITS.resend - counts.resend,
+      },
+    ];
+
+    const totalLimit = providers.filter(p => p.available).reduce((sum, p) => sum + p.limit, 0);
+    const totalUsed = providers.filter(p => p.available).reduce((sum, p) => sum + p.used, 0);
+    const totalRemaining = providers.filter(p => p.available).reduce((sum, p) => sum + p.remaining, 0);
+
+    res.json({
+      providers,
+      summary: {
+        active_providers: providers.filter(p => p.available).length,
+        total_daily_limit: totalLimit,
+        total_used_today: totalUsed,
+        total_remaining: totalRemaining,
+        utilization_percent: totalLimit > 0 ? Math.round((totalUsed / totalLimit) * 100) : 0,
+      },
+      setup_instructions: {
+        sendgrid: !process.env.SENDGRID_API_KEY ? 'Add SENDGRID_API_KEY to Render env vars' : '✓ Configured',
+        mailgun: !process.env.MAILGUN_API_KEY ? 'Add MAILGUN_API_KEY and MAILGUN_DOMAIN to Render env vars' : '✓ Configured',
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/admin/email-dashboard - Unified email dashboard for all providers
 app.get('/api/admin/email-dashboard', authenticateAdmin, async (req, res) => {
   try {
     // Summary stats from email_logs
@@ -12531,6 +12713,8 @@ app.get('/api/admin/email-dashboard', authenticateAdmin, async (req, res) => {
       total_failed: 0,
       by_provider: {
         brevo: { sent: 0, today: 0, failed: 0 },
+        sendgrid: { sent: 0, today: 0, failed: 0 },
+        mailgun: { sent: 0, today: 0, failed: 0 },
         resend: { sent: 0, today: 0, failed: 0 },
       },
     };
@@ -12547,7 +12731,7 @@ app.get('/api/admin/email-dashboard', authenticateAdmin, async (req, res) => {
       `);
 
       for (const s of stats) {
-        if (s.provider === 'brevo' || s.provider === 'resend') {
+        if (['brevo', 'sendgrid', 'mailgun', 'resend'].includes(s.provider)) {
           summary.by_provider[s.provider] = {
             sent: parseInt(s.sent) || 0,
             today: parseInt(s.today) || 0,
@@ -12556,9 +12740,9 @@ app.get('/api/admin/email-dashboard', authenticateAdmin, async (req, res) => {
         }
       }
 
-      summary.total_sent = summary.by_provider.brevo.sent + summary.by_provider.resend.sent;
-      summary.total_today = summary.by_provider.brevo.today + summary.by_provider.resend.today;
-      summary.total_failed = summary.by_provider.brevo.failed + summary.by_provider.resend.failed;
+      summary.total_sent = Object.values(summary.by_provider).reduce((sum, p) => sum + p.sent, 0);
+      summary.total_today = Object.values(summary.by_provider).reduce((sum, p) => sum + p.today, 0);
+      summary.total_failed = Object.values(summary.by_provider).reduce((sum, p) => sum + p.failed, 0);
     } catch (e) {
       console.error('Email summary query error:', e.message);
     }
