@@ -516,7 +516,7 @@ const InstantDemoWidget = ({
           // Silently ignore - just use default behavior
         });
     }
-  }, [location.search]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [location.search]);
 
   // Auto-detect context from URL path if not provided via props
   const detectedContext = useMemo(() => {
