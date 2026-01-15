@@ -294,8 +294,8 @@ const Footer = () => (
         <div>
           <div className="footer-brand">ReviewResponder</div>
           <p className="footer-description">
-            AI-powered review response generator helping businesses maintain their online
-            reputation effortlessly.
+            AI-powered review response generator helping businesses maintain their online reputation
+            effortlessly.
           </p>
         </div>
         <div>
@@ -389,12 +389,16 @@ const Footer = () => (
 );
 
 // Reusable Landing Page Email Capture Component
-const LandingEmailCapture = ({ buttonColor = 'var(--primary-600)', buttonText = 'Get Started Free', source = 'landing_page' }) => {
+const LandingEmailCapture = ({
+  buttonColor = 'var(--primary-600)',
+  buttonText = 'Get Started Free',
+  source = 'landing_page',
+}) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     const trimmedEmail = email.trim();
 
@@ -408,15 +412,56 @@ const LandingEmailCapture = ({ buttonColor = 'var(--primary-600)', buttonText = 
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexWrap: 'wrap', background: 'white', padding: '6px', borderRadius: '14px', maxWidth: '540px', margin: '0 auto 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+    <form
+      onSubmit={handleSubmit}
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        background: 'white',
+        padding: '6px',
+        borderRadius: '14px',
+        maxWidth: '540px',
+        margin: '0 auto 32px',
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+      }}
+    >
       <input
         type="email"
         placeholder="Enter your business email"
         value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        style={{ flex: 1, minWidth: '200px', border: 'none', padding: '14px 20px', fontSize: '16px', color: 'var(--gray-900)', outline: 'none', background: 'transparent', borderRadius: '10px' }}
+        onChange={e => setEmail(e.target.value)}
+        style={{
+          flex: 1,
+          minWidth: '200px',
+          border: 'none',
+          padding: '14px 20px',
+          fontSize: '16px',
+          color: 'var(--gray-900)',
+          outline: 'none',
+          background: 'transparent',
+          borderRadius: '10px',
+        }}
       />
-      <button type="submit" className="btn" disabled={loading} style={{ padding: '14px 28px', borderRadius: '10px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, whiteSpace: 'nowrap', background: buttonColor, color: 'white', border: 'none', cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1 }}>
+      <button
+        type="submit"
+        className="btn"
+        disabled={loading}
+        style={{
+          padding: '14px 28px',
+          borderRadius: '10px',
+          fontWeight: '600',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          margin: 0,
+          whiteSpace: 'nowrap',
+          background: buttonColor,
+          color: 'white',
+          border: 'none',
+          cursor: loading ? 'wait' : 'pointer',
+          opacity: loading ? 0.7 : 1,
+        }}
+      >
         {buttonText} <Sparkles size={18} />
       </button>
     </form>
@@ -546,7 +591,17 @@ const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, setUser, login, register, loginWithGoogle, logout, loading, updateUser, refreshUser }}
+      value={{
+        user,
+        setUser,
+        login,
+        register,
+        loginWithGoogle,
+        logout,
+        loading,
+        updateUser,
+        refreshUser,
+      }}
     >
       {children}
     </AuthContext.Provider>
@@ -1118,33 +1173,39 @@ const ExitIntentPopup = () => {
           <>
             {/* Header */}
             <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <span style={{
-                display: 'inline-block',
-                padding: '6px 12px',
-                background: 'var(--bg-secondary)',
-                color: 'var(--primary)',
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontWeight: '600',
-                marginBottom: '16px',
-                border: '1px solid var(--border-color)',
-              }}>
+              <span
+                style={{
+                  display: 'inline-block',
+                  padding: '6px 12px',
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--primary)',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  marginBottom: '16px',
+                  border: '1px solid var(--border-color)',
+                }}
+              >
                 EARLY ACCESS
               </span>
-              <h2 style={{
-                fontSize: '22px',
-                fontWeight: '600',
-                color: 'var(--text-primary)',
-                marginBottom: '8px',
-                lineHeight: '1.3'
-              }}>
+              <h2
+                style={{
+                  fontSize: '22px',
+                  fontWeight: '600',
+                  color: 'var(--text-primary)',
+                  marginBottom: '8px',
+                  lineHeight: '1.3',
+                }}
+              >
                 Don't miss out on updates
               </h2>
-              <p style={{
-                fontSize: '14px',
-                color: 'var(--text-secondary)',
-                lineHeight: '1.5'
-              }}>
+              <p
+                style={{
+                  fontSize: '14px',
+                  color: 'var(--text-secondary)',
+                  lineHeight: '1.5',
+                }}
+              >
                 Get notified about new features and exclusive offers.
               </p>
             </div>
@@ -1188,43 +1249,51 @@ const ExitIntentPopup = () => {
               </button>
             </form>
 
-            <p style={{
-              textAlign: 'center',
-              fontSize: '12px',
-              color: 'var(--text-muted)',
-              marginTop: '16px',
-            }}>
+            <p
+              style={{
+                textAlign: 'center',
+                fontSize: '12px',
+                color: 'var(--text-muted)',
+                marginTop: '16px',
+              }}
+            >
               No spam. Unsubscribe anytime.
             </p>
           </>
         ) : (
           <div style={{ textAlign: 'center' }}>
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '48px',
-              height: '48px',
-              background: 'var(--bg-secondary)',
-              borderRadius: '50%',
-              marginBottom: '16px',
-              border: '1px solid var(--border-color)',
-            }}>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '48px',
+                height: '48px',
+                background: 'var(--bg-secondary)',
+                borderRadius: '50%',
+                marginBottom: '16px',
+                border: '1px solid var(--border-color)',
+              }}
+            >
               <Check size={24} style={{ color: 'var(--primary)' }} />
             </div>
-            <h3 style={{
-              fontSize: '18px',
-              fontWeight: '600',
-              marginBottom: '8px',
-              color: 'var(--text-primary)'
-            }}>
+            <h3
+              style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                marginBottom: '8px',
+                color: 'var(--text-primary)',
+              }}
+            >
               You're on the list!
             </h3>
-            <p style={{
-              color: 'var(--text-secondary)',
-              marginBottom: '20px',
-              fontSize: '14px'
-            }}>
+            <p
+              style={{
+                color: 'var(--text-secondary)',
+                marginBottom: '20px',
+                fontSize: '14px',
+              }}
+            >
               We'll keep you updated on new features and exclusive offers.
             </p>
             <Link
@@ -1497,13 +1566,21 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
       toast.error('Please select a rating');
       return;
     }
+    if (!comment.trim()) {
+      toast.error('Please tell us about your experience');
+      return;
+    }
+    if (!displayName.trim()) {
+      toast.error('Please enter your name');
+      return;
+    }
 
     setLoading(true);
     try {
       await api.post('/feedback', {
         rating,
-        comment: comment.trim() || null,
-        displayName: displayName.trim() || null,
+        comment: comment.trim(),
+        displayName: displayName.trim(),
       });
       setSubmitted(true);
       toast.success('Thank you for your feedback!');
@@ -1659,9 +1736,11 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
                 )}
               </div>
 
-              {/* Comment (optional) */}
+              {/* Comment (required) */}
               <div className="form-group">
-                <label className="form-label">Tell us more (optional)</label>
+                <label className="form-label">
+                  Tell us more <span style={{ color: 'var(--danger)' }}>*</span>
+                </label>
                 <textarea
                   className="form-input"
                   placeholder="What do you like? What could be better?"
@@ -1670,12 +1749,15 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
                   rows={3}
                   maxLength={500}
                   style={{ resize: 'vertical' }}
+                  required
                 />
               </div>
 
-              {/* Display Name (optional) */}
+              {/* Display Name (required) */}
               <div className="form-group">
-                <label className="form-label">Your name (optional, for testimonial)</label>
+                <label className="form-label">
+                  Your name <span style={{ color: 'var(--danger)' }}>*</span>
+                </label>
                 <input
                   type="text"
                   className="form-input"
@@ -1683,9 +1765,10 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
                   value={displayName}
                   onChange={e => setDisplayName(e.target.value)}
                   maxLength={100}
+                  required
                 />
                 <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
-                  If approved, your feedback may appear on our website
+                  Your feedback may appear on our website as a testimonial
                 </p>
               </div>
 
@@ -1693,7 +1776,7 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={loading || rating === 0}
+                disabled={loading || rating === 0 || !comment.trim() || !displayName.trim()}
                 style={{ width: '100%', marginTop: '16px' }}
               >
                 {loading ? 'Submitting...' : 'Submit Feedback'}
@@ -1814,7 +1897,14 @@ SIGN OFF:
         <p style={{ color: 'var(--gray-600)', maxWidth: '650px', margin: '0 auto 8px auto' }}>
           We used our own product to answer real reviews about us.
         </p>
-        <p style={{ color: 'var(--gray-500)', maxWidth: '600px', margin: '0 auto 16px auto', fontSize: '14px' }}>
+        <p
+          style={{
+            color: 'var(--gray-500)',
+            maxWidth: '600px',
+            margin: '0 auto 16px auto',
+            fontSize: '14px',
+          }}
+        >
           Your responses will look just as good.
         </p>
         <span
@@ -2184,9 +2274,13 @@ const LandingPage = () => {
     } catch (err) {
       console.error('Try generate error:', err.response?.status, err.response?.data, err.message);
       if (err.response?.status === 429) {
-        setTryError(err.response?.data?.message || 'Daily limit reached. Sign up for 20 free/month!');
+        setTryError(
+          err.response?.data?.message || 'Daily limit reached. Sign up for 20 free/month!'
+        );
       } else {
-        setTryError(err.response?.data?.error || err.response?.data?.message || `Error: ${err.message}`);
+        setTryError(
+          err.response?.data?.error || err.response?.data?.message || `Error: ${err.message}`
+        );
       }
     } finally {
       setTryLoading(false);
@@ -2288,23 +2382,38 @@ const LandingPage = () => {
           Sign up now to get started.
         </div>
       )}
-      <section className="hero" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)', borderBottom: '1px solid var(--border-color)' }}>
-        <div className="container" style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center', padding: '40px 20px' }}>
+      <section
+        className="hero"
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'var(--bg-primary)',
+          borderBottom: '1px solid var(--border-color)',
+        }}
+      >
+        <div
+          className="container"
+          style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center', padding: '40px 20px' }}
+        >
           <div style={{ marginBottom: '20px' }}>
-            <span style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '6px 14px',
-              background: 'var(--bg-secondary)',
-              color: 'var(--text-secondary)',
-              borderRadius: '20px',
-              fontSize: '11px',
-              fontWeight: '600',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              border: '1px solid var(--border-color)'
-            }}>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '6px 14px',
+                background: 'var(--bg-secondary)',
+                color: 'var(--text-secondary)',
+                borderRadius: '20px',
+                fontSize: '11px',
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                border: '1px solid var(--border-color)',
+              }}
+            >
               <Shield size={12} style={{ color: 'var(--primary)' }} />
               Professional Review Management
             </span>
@@ -2313,39 +2422,56 @@ const LandingPage = () => {
             <ProductHuntBadge />
           </div>
 
-          <h1 className="hero-title" style={{
-            fontSize: '2.5rem',
-            lineHeight: '1.15',
-            letterSpacing: '-0.025em',
-            marginBottom: '16px',
-            color: 'var(--text-primary)',
-            fontWeight: '700'
-          }}>
-            Never stress about <span style={{ color: 'var(--primary)' }}>negative reviews</span> again
+          <h1
+            className="hero-title"
+            style={{
+              fontSize: '2.5rem',
+              lineHeight: '1.15',
+              letterSpacing: '-0.025em',
+              marginBottom: '16px',
+              color: 'var(--text-primary)',
+              fontWeight: '700',
+            }}
+          >
+            Never stress about <span style={{ color: 'var(--primary)' }}>negative reviews</span>{' '}
+            again
           </h1>
 
-          <p className="hero-subtitle" style={{ maxWidth: '540px', margin: '0 auto 32px', fontSize: '1.05rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
-            AI-powered responses for Google, Yelp, TripAdvisor & 10+ platforms.
-            Professional replies in one click.
+          <p
+            className="hero-subtitle"
+            style={{
+              maxWidth: '540px',
+              margin: '0 auto 32px',
+              fontSize: '1.05rem',
+              lineHeight: '1.5',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            AI-powered responses for Google, Yelp, TripAdvisor & 10+ platforms. Professional replies
+            in one click.
           </p>
 
           {/* Try Before Signup - Demo Box */}
-          <div style={{
-            maxWidth: '600px',
-            margin: '0 auto',
-            width: '100%'
-          }}>
+          <div
+            style={{
+              maxWidth: '600px',
+              margin: '0 auto',
+              width: '100%',
+            }}
+          >
             {/* Input Section */}
-            <div style={{
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '12px',
-              padding: '20px',
-              marginBottom: '16px'
-            }}>
+            <div
+              style={{
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '12px',
+                padding: '20px',
+                marginBottom: '16px',
+              }}
+            >
               <textarea
                 value={tryReviewText}
-                onChange={(e) => setTryReviewText(e.target.value)}
+                onChange={e => setTryReviewText(e.target.value)}
                 placeholder="Paste a customer review here to see how we respond..."
                 style={{
                   width: '100%',
@@ -2358,13 +2484,21 @@ const LandingPage = () => {
                   color: 'var(--text-primary)',
                   resize: 'vertical',
                   fontFamily: 'inherit',
-                  marginBottom: '12px'
+                  marginBottom: '12px',
                 }}
               />
 
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '12px',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {['professional', 'friendly', 'formal', 'apologetic'].map((tone) => (
+                  {['professional', 'friendly', 'formal', 'apologetic'].map(tone => (
                     <button
                       key={tone}
                       onClick={() => setTryTone(tone)}
@@ -2372,12 +2506,15 @@ const LandingPage = () => {
                         padding: '6px 12px',
                         fontSize: '12px',
                         borderRadius: '6px',
-                        border: tryTone === tone ? '1px solid var(--primary)' : '1px solid var(--border-color)',
+                        border:
+                          tryTone === tone
+                            ? '1px solid var(--primary)'
+                            : '1px solid var(--border-color)',
                         background: tryTone === tone ? 'var(--primary-light)' : 'var(--bg-primary)',
                         color: tryTone === tone ? 'var(--primary)' : 'var(--text-secondary)',
                         cursor: 'pointer',
                         fontWeight: '500',
-                        textTransform: 'capitalize'
+                        textTransform: 'capitalize',
                       }}
                     >
                       {tone}
@@ -2397,12 +2534,22 @@ const LandingPage = () => {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
-                    opacity: tryLoading || !tryReviewText.trim() ? 0.7 : 1
+                    opacity: tryLoading || !tryReviewText.trim() ? 0.7 : 1,
                   }}
                 >
                   {tryLoading ? (
                     <>
-                      <div className="spinner" style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                      <div
+                        className="spinner"
+                        style={{
+                          width: '14px',
+                          height: '14px',
+                          border: '2px solid rgba(255,255,255,0.3)',
+                          borderTopColor: 'white',
+                          borderRadius: '50%',
+                          animation: 'spin 1s linear infinite',
+                        }}
+                      />
                       Generating...
                     </>
                   ) : (
@@ -2417,19 +2564,26 @@ const LandingPage = () => {
 
             {/* Error Message */}
             {tryError && (
-              <div style={{
-                padding: '12px 16px',
-                background: tryError.includes('Sign up') ? 'var(--primary-light)' : '#FEF2F2',
-                border: tryError.includes('Sign up') ? '1px solid var(--primary)' : '1px solid #FCA5A5',
-                borderRadius: '8px',
-                marginBottom: '16px',
-                color: tryError.includes('Sign up') ? 'var(--primary)' : '#DC2626',
-                fontSize: '13px',
-                textAlign: 'center'
-              }}>
+              <div
+                style={{
+                  padding: '12px 16px',
+                  background: tryError.includes('Sign up') ? 'var(--primary-light)' : '#FEF2F2',
+                  border: tryError.includes('Sign up')
+                    ? '1px solid var(--primary)'
+                    : '1px solid #FCA5A5',
+                  borderRadius: '8px',
+                  marginBottom: '16px',
+                  color: tryError.includes('Sign up') ? 'var(--primary)' : '#DC2626',
+                  fontSize: '13px',
+                  textAlign: 'center',
+                }}
+              >
                 {tryError}
                 {tryError.includes('Sign up') && (
-                  <Link to="/register" style={{ marginLeft: '8px', fontWeight: '600', textDecoration: 'underline' }}>
+                  <Link
+                    to="/register"
+                    style={{ marginLeft: '8px', fontWeight: '600', textDecoration: 'underline' }}
+                  >
                     Sign up free
                   </Link>
                 )}
@@ -2438,37 +2592,72 @@ const LandingPage = () => {
 
             {/* Generated Response */}
             {tryResponse && (
-              <div style={{
-                background: 'var(--bg-secondary)',
-                border: '1px solid var(--primary)',
-                borderRadius: '12px',
-                padding: '20px',
-                marginBottom: '16px'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <div
+                style={{
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--primary)',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  marginBottom: '16px',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '12px',
+                  }}
+                >
                   <Sparkles size={16} style={{ color: 'var(--primary)' }} />
-                  <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <span
+                    style={{
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      color: 'var(--primary)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
                     AI Response
                   </span>
                 </div>
-                <p style={{
-                  fontSize: '14px',
-                  lineHeight: '1.6',
-                  color: 'var(--text-primary)',
-                  margin: 0,
-                  whiteSpace: 'pre-wrap'
-                }}>
+                <p
+                  style={{
+                    fontSize: '14px',
+                    lineHeight: '1.6',
+                    color: 'var(--text-primary)',
+                    margin: 0,
+                    whiteSpace: 'pre-wrap',
+                  }}
+                >
                   {tryResponse}
                 </p>
 
-                <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                <div
+                  style={{
+                    marginTop: '16px',
+                    paddingTop: '16px',
+                    borderTop: '1px solid var(--border-color)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '12px',
+                  }}
+                >
                   <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
                     Like this? Get 20 free responses/month
                   </span>
                   <Link
                     to="/register"
                     className="btn btn-primary"
-                    style={{ padding: '8px 16px', fontSize: '13px', fontWeight: '600', borderRadius: '6px' }}
+                    style={{
+                      padding: '8px 16px',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      borderRadius: '6px',
+                    }}
                   >
                     Sign Up Free
                   </Link>
@@ -2477,18 +2666,49 @@ const LandingPage = () => {
             )}
 
             {/* Trust Badges */}
-            <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '12px' }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: '24px',
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+                marginTop: '8px',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  color: 'var(--text-muted)',
+                  fontSize: '12px',
+                }}
+              >
                 <Check size={14} style={{ color: 'var(--text-secondary)' }} />
                 No signup required
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '12px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  color: 'var(--text-muted)',
+                  fontSize: '12px',
+                }}
+              >
                 <Sparkles size={14} style={{ color: 'var(--text-secondary)' }} />
                 See results instantly
               </div>
               <a
                 href="#demo"
-                style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '12px', textDecoration: 'none' }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  color: 'var(--text-muted)',
+                  fontSize: '12px',
+                  textDecoration: 'none',
+                }}
               >
                 <PlayCircle size={14} style={{ color: 'var(--text-secondary)' }} />
                 Watch Demo
@@ -2570,31 +2790,98 @@ const LandingPage = () => {
             boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
           }}
         >
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '48px', alignItems: 'start' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gap: '48px',
+              alignItems: 'start',
+            }}
+          >
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginBottom: '16px',
+                  flexWrap: 'wrap',
+                }}
+              >
                 <Chrome size={20} color="var(--primary)" strokeWidth={2.5} />
-                <span style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.05em', color: 'var(--primary)', textTransform: 'uppercase', background: 'rgba(79, 70, 229, 0.08)', padding: '2px 8px', borderRadius: '4px' }}>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    letterSpacing: '0.05em',
+                    color: 'var(--primary)',
+                    textTransform: 'uppercase',
+                    background: 'rgba(79, 70, 229, 0.08)',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                  }}
+                >
                   Official Extension
                 </span>
-                <span style={{ fontSize: '10px', fontWeight: '600', color: '#059669', background: 'rgba(5, 150, 105, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>
+                <span
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: '600',
+                    color: '#059669',
+                    background: 'rgba(5, 150, 105, 0.1)',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                  }}
+                >
                   Chrome Web Store - Coming Soon
                 </span>
               </div>
-              <h2 style={{ fontSize: '22px', fontWeight: '600', marginBottom: '12px', letterSpacing: '-0.01em' }}>
+              <h2
+                style={{
+                  fontSize: '22px',
+                  fontWeight: '600',
+                  marginBottom: '12px',
+                  letterSpacing: '-0.01em',
+                }}
+              >
                 Integrated Review Workflow
               </h2>
-              <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '14px', lineHeight: '1.5', maxWidth: '440px' }}>
-                Works inside your review pages. Respond on Google, Yelp, TripAdvisor and more - without leaving the page.
+              <p
+                style={{
+                  color: 'var(--text-secondary)',
+                  marginBottom: '24px',
+                  fontSize: '14px',
+                  lineHeight: '1.5',
+                  maxWidth: '440px',
+                }}
+              >
+                Works inside your review pages. Respond on Google, Yelp, TripAdvisor and more -
+                without leaving the page.
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                  marginBottom: '32px',
+                }}
+              >
                 {[
                   'One-click response generation',
                   'Maintains brand voice & personality',
-                  'No manual copy-pasting required'
+                  'No manual copy-pasting required',
                 ].map((step, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: 'var(--text-primary)' }}>
+                  <div
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      fontSize: '13px',
+                      color: 'var(--text-primary)',
+                    }}
+                  >
                     <CheckCircle2 size={14} color="var(--primary)" />
                     <span>{step}</span>
                   </div>
@@ -2602,10 +2889,28 @@ const LandingPage = () => {
               </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
-                <Link to="/extension" className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Link
+                  to="/extension"
+                  className="btn btn-primary"
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '13px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
                   <Download size={14} /> Get Extension
                 </Link>
-                <Link to="/register" className="btn btn-secondary" style={{ padding: '8px 16px', fontSize: '13px', border: '1px solid var(--border-color)' }}>
+                <Link
+                  to="/register"
+                  className="btn btn-secondary"
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '13px',
+                    border: '1px solid var(--border-color)',
+                  }}
+                >
                   Sign Up Free
                 </Link>
               </div>
@@ -2683,7 +2988,15 @@ const LandingPage = () => {
                   </div>
                 )}
               </div>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '12px', fontStyle: 'italic' }}>
+              <p
+                style={{
+                  fontSize: '11px',
+                  color: 'var(--text-muted)',
+                  textAlign: 'center',
+                  marginTop: '12px',
+                  fontStyle: 'italic',
+                }}
+              >
                 Watch: 45-second workflow overview
               </p>
             </div>
@@ -2692,9 +3005,20 @@ const LandingPage = () => {
       </section>
 
       {/* Demo Video Section - Refined Walkthrough */}
-      <section id="walkthrough-demo" className="container" style={{ marginTop: '48px', marginBottom: '48px' }}>
+      <section
+        id="walkthrough-demo"
+        className="container"
+        style={{ marginTop: '48px', marginBottom: '48px' }}
+      >
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '20px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '6px' }}>
+          <h2
+            style={{
+              fontSize: '20px',
+              fontWeight: '600',
+              color: 'var(--text-primary)',
+              marginBottom: '6px',
+            }}
+          >
             See it in Action
           </h2>
         </div>
@@ -2787,7 +3111,16 @@ const LandingPage = () => {
       <section className="pricing-section" id="pricing">
         <div className="container">
           <div className="pricing-header" style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <h2 className="pricing-title" style={{ fontSize: '24px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '8px', letterSpacing: '-0.02em' }}>
+            <h2
+              className="pricing-title"
+              style={{
+                fontSize: '24px',
+                fontWeight: '600',
+                color: 'var(--text-primary)',
+                marginBottom: '8px',
+                letterSpacing: '-0.02em',
+              }}
+            >
               Plans & Pricing
             </h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: '0' }}>
@@ -2807,134 +3140,152 @@ const LandingPage = () => {
 const PrivacyPage = () => (
   <>
     <div className="container" style={{ maxWidth: '800px', padding: '60px 20px' }}>
-    <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '24px' }}>Privacy Policy</h1>
-    <p style={{ color: 'var(--gray-500)', marginBottom: '32px' }}>Last updated: January 9, 2026</p>
-
-    <div style={{ lineHeight: '1.8', color: 'var(--gray-700)' }}>
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
-        1. Information We Collect
-      </h2>
-      <p>When you use ReviewResponder, we collect:</p>
-      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
-        <li>
-          <strong>Account Information:</strong> Email address, business name, and password
-          (encrypted)
-        </li>
-        <li>
-          <strong>Usage Data:</strong> Review texts you submit and generated responses
-        </li>
-        <li>
-          <strong>Payment Information:</strong> Processed securely by Stripe - we never store your
-          card details
-        </li>
-      </ul>
-
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
-        2. How We Use Your Data
-      </h2>
-      <p>We use your information to:</p>
-      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
-        <li>Provide and improve our AI response generation service</li>
-        <li>Process payments and manage your subscription</li>
-        <li>Send important service updates (no marketing spam)</li>
-        <li>Respond to support requests</li>
-      </ul>
-
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
-        3. Data Storage & Security
-      </h2>
-      <p>Your data is stored securely on servers in the EU/US (Render.com). We use:</p>
-      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
-        <li>HTTPS encryption for all data transfers</li>
-        <li>Encrypted password storage (bcrypt)</li>
-        <li>Secure PostgreSQL database</li>
-      </ul>
-
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
-        4. Third-Party Services
-      </h2>
-      <p>We use the following services:</p>
-      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
-        <li>
-          <strong>OpenAI:</strong> To generate review responses (your review text is sent to their
-          API)
-        </li>
-        <li>
-          <strong>Stripe:</strong> For payment processing
-        </li>
-        <li>
-          <strong>Resend:</strong> For transactional emails
-        </li>
-      </ul>
-
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
-        5. Your Rights (GDPR)
-      </h2>
-      <p>You have the right to:</p>
-      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
-        <li>
-          <strong>Access:</strong> Request a copy of your data
-        </li>
-        <li>
-          <strong>Rectification:</strong> Correct inaccurate data
-        </li>
-        <li>
-          <strong>Erasure:</strong> Request deletion of your account and data
-        </li>
-        <li>
-          <strong>Portability:</strong> Export your data
-        </li>
-      </ul>
-      <p style={{ marginTop: '12px' }}>
-        To exercise these rights, email us at{' '}
-        <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>
-          support@tryreviewresponder.com
-        </a>
+      <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '24px' }}>Privacy Policy</h1>
+      <p style={{ color: 'var(--gray-500)', marginBottom: '32px' }}>
+        Last updated: January 9, 2026
       </p>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
-        6. Chrome Extension
-      </h2>
-      <p>Our Chrome Extension requires specific permissions to function:</p>
-      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
-        <li>
-          <strong>activeTab:</strong> To detect reviews on Google Maps pages you visit
-        </li>
-        <li>
-          <strong>storage:</strong> To save your login session locally
-        </li>
-        <li>
-          <strong>clipboardWrite:</strong> To copy generated responses to your clipboard
-        </li>
-        <li>
-          <strong>host_permissions:</strong> To communicate with Google Maps and our API
-        </li>
-      </ul>
-      <p style={{ marginTop: '12px' }}>
-        The extension does NOT collect browsing history, personal data from other sites, or any data
-        when you're not actively using it.
-      </p>
+      <div style={{ lineHeight: '1.8', color: 'var(--gray-700)' }}>
+        <h2
+          style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}
+        >
+          1. Information We Collect
+        </h2>
+        <p>When you use ReviewResponder, we collect:</p>
+        <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+          <li>
+            <strong>Account Information:</strong> Email address, business name, and password
+            (encrypted)
+          </li>
+          <li>
+            <strong>Usage Data:</strong> Review texts you submit and generated responses
+          </li>
+          <li>
+            <strong>Payment Information:</strong> Processed securely by Stripe - we never store your
+            card details
+          </li>
+        </ul>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
-        7. Data Retention
-      </h2>
-      <p>
-        We retain your data for as long as your account is active. Upon account deletion, we remove
-        your personal data within 30 days.
-      </p>
+        <h2
+          style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}
+        >
+          2. How We Use Your Data
+        </h2>
+        <p>We use your information to:</p>
+        <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+          <li>Provide and improve our AI response generation service</li>
+          <li>Process payments and manage your subscription</li>
+          <li>Send important service updates (no marketing spam)</li>
+          <li>Respond to support requests</li>
+        </ul>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
-        8. Contact
-      </h2>
-      <p>
-        Questions about this policy? Contact us at{' '}
-        <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>
-          support@tryreviewresponder.com
-        </a>
-      </p>
+        <h2
+          style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}
+        >
+          3. Data Storage & Security
+        </h2>
+        <p>Your data is stored securely on servers in the EU/US (Render.com). We use:</p>
+        <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+          <li>HTTPS encryption for all data transfers</li>
+          <li>Encrypted password storage (bcrypt)</li>
+          <li>Secure PostgreSQL database</li>
+        </ul>
+
+        <h2
+          style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}
+        >
+          4. Third-Party Services
+        </h2>
+        <p>We use the following services:</p>
+        <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+          <li>
+            <strong>OpenAI:</strong> To generate review responses (your review text is sent to their
+            API)
+          </li>
+          <li>
+            <strong>Stripe:</strong> For payment processing
+          </li>
+          <li>
+            <strong>Resend:</strong> For transactional emails
+          </li>
+        </ul>
+
+        <h2
+          style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}
+        >
+          5. Your Rights (GDPR)
+        </h2>
+        <p>You have the right to:</p>
+        <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+          <li>
+            <strong>Access:</strong> Request a copy of your data
+          </li>
+          <li>
+            <strong>Rectification:</strong> Correct inaccurate data
+          </li>
+          <li>
+            <strong>Erasure:</strong> Request deletion of your account and data
+          </li>
+          <li>
+            <strong>Portability:</strong> Export your data
+          </li>
+        </ul>
+        <p style={{ marginTop: '12px' }}>
+          To exercise these rights, email us at{' '}
+          <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>
+            support@tryreviewresponder.com
+          </a>
+        </p>
+
+        <h2
+          style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}
+        >
+          6. Chrome Extension
+        </h2>
+        <p>Our Chrome Extension requires specific permissions to function:</p>
+        <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+          <li>
+            <strong>activeTab:</strong> To detect reviews on Google Maps pages you visit
+          </li>
+          <li>
+            <strong>storage:</strong> To save your login session locally
+          </li>
+          <li>
+            <strong>clipboardWrite:</strong> To copy generated responses to your clipboard
+          </li>
+          <li>
+            <strong>host_permissions:</strong> To communicate with Google Maps and our API
+          </li>
+        </ul>
+        <p style={{ marginTop: '12px' }}>
+          The extension does NOT collect browsing history, personal data from other sites, or any
+          data when you're not actively using it.
+        </p>
+
+        <h2
+          style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}
+        >
+          7. Data Retention
+        </h2>
+        <p>
+          We retain your data for as long as your account is active. Upon account deletion, we
+          remove your personal data within 30 days.
+        </p>
+
+        <h2
+          style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}
+        >
+          8. Contact
+        </h2>
+        <p>
+          Questions about this policy? Contact us at{' '}
+          <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>
+            support@tryreviewresponder.com
+          </a>
+        </p>
+      </div>
     </div>
-  </div>
-  <Footer />
+    <Footer />
   </>
 );
 
@@ -2942,85 +3293,105 @@ const PrivacyPage = () => (
 const TermsPage = () => (
   <>
     <div className="container" style={{ maxWidth: '800px', padding: '60px 20px' }}>
-      <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '24px' }}>Terms of Service</h1>
-    <p style={{ color: 'var(--gray-500)', marginBottom: '32px' }}>Last updated: January 9, 2026</p>
-
-    <div style={{ lineHeight: '1.8', color: 'var(--gray-700)' }}>
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
-        1. Service Description
-      </h2>
-      <p>
-        ReviewResponder provides AI-powered review response generation for businesses. We use
-        artificial intelligence to help you craft professional responses to customer reviews.
+      <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '24px' }}>
+        Terms of Service
+      </h1>
+      <p style={{ color: 'var(--gray-500)', marginBottom: '32px' }}>
+        Last updated: January 9, 2026
       </p>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
-        2. Account Terms
-      </h2>
-      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
-        <li>You must be 18 years or older to use this service</li>
-        <li>You are responsible for maintaining the security of your account</li>
-        <li>You may not use the service for illegal purposes</li>
-        <li>One person or business per account</li>
-      </ul>
+      <div style={{ lineHeight: '1.8', color: 'var(--gray-700)' }}>
+        <h2
+          style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}
+        >
+          1. Service Description
+        </h2>
+        <p>
+          ReviewResponder provides AI-powered review response generation for businesses. We use
+          artificial intelligence to help you craft professional responses to customer reviews.
+        </p>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
-        3. Acceptable Use
-      </h2>
-      <p>You agree NOT to use ReviewResponder to:</p>
-      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
-        <li>Generate fake reviews or misleading content</li>
-        <li>Harass, abuse, or harm others</li>
-        <li>Violate any laws or regulations</li>
-        <li>Infringe on intellectual property rights</li>
-      </ul>
+        <h2
+          style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}
+        >
+          2. Account Terms
+        </h2>
+        <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+          <li>You must be 18 years or older to use this service</li>
+          <li>You are responsible for maintaining the security of your account</li>
+          <li>You may not use the service for illegal purposes</li>
+          <li>One person or business per account</li>
+        </ul>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
-        4. Payment & Refunds
-      </h2>
-      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
-        <li>Free tier: 20 responses per month, no payment required</li>
-        <li>Paid plans: Billed monthly or yearly via Stripe</li>
-        <li>
-          <strong>30-Day Money Back Guarantee:</strong> If you're not satisfied within 30 days,
-          contact us for a full refund
-        </li>
-        <li>Cancel anytime - no long-term contracts</li>
-      </ul>
+        <h2
+          style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}
+        >
+          3. Acceptable Use
+        </h2>
+        <p>You agree NOT to use ReviewResponder to:</p>
+        <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+          <li>Generate fake reviews or misleading content</li>
+          <li>Harass, abuse, or harm others</li>
+          <li>Violate any laws or regulations</li>
+          <li>Infringe on intellectual property rights</li>
+        </ul>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
-        5. AI-Generated Content
-      </h2>
-      <p>Responses generated by our AI are suggestions only. You are responsible for:</p>
-      <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
-        <li>Reviewing and editing responses before posting</li>
-        <li>Ensuring accuracy of any claims made</li>
-        <li>The final content you publish</li>
-      </ul>
+        <h2
+          style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}
+        >
+          4. Payment & Refunds
+        </h2>
+        <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+          <li>Free tier: 20 responses per month, no payment required</li>
+          <li>Paid plans: Billed monthly or yearly via Stripe</li>
+          <li>
+            <strong>30-Day Money Back Guarantee:</strong> If you're not satisfied within 30 days,
+            contact us for a full refund
+          </li>
+          <li>Cancel anytime - no long-term contracts</li>
+        </ul>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
-        6. Limitation of Liability
-      </h2>
-      <p>
-        ReviewResponder is provided "as is" without warranties. We are not liable for any damages
-        arising from your use of the service or AI-generated content.
-      </p>
+        <h2
+          style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}
+        >
+          5. AI-Generated Content
+        </h2>
+        <p>Responses generated by our AI are suggestions only. You are responsible for:</p>
+        <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
+          <li>Reviewing and editing responses before posting</li>
+          <li>Ensuring accuracy of any claims made</li>
+          <li>The final content you publish</li>
+        </ul>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
-        7. Changes to Terms
-      </h2>
-      <p>We may update these terms. Continued use after changes constitutes acceptance.</p>
+        <h2
+          style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}
+        >
+          6. Limitation of Liability
+        </h2>
+        <p>
+          ReviewResponder is provided "as is" without warranties. We are not liable for any damages
+          arising from your use of the service or AI-generated content.
+        </p>
 
-      <h2 style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}>
-        8. Contact
-      </h2>
-      <p>
-        Questions? Email us at{' '}
-        <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>
-          support@tryreviewresponder.com
-        </a>
-      </p>
-    </div>
+        <h2
+          style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}
+        >
+          7. Changes to Terms
+        </h2>
+        <p>We may update these terms. Continued use after changes constitutes acceptance.</p>
+
+        <h2
+          style={{ fontSize: '20px', fontWeight: '600', marginTop: '32px', marginBottom: '16px' }}
+        >
+          8. Contact
+        </h2>
+        <p>
+          Questions? Email us at{' '}
+          <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>
+            support@tryreviewresponder.com
+          </a>
+        </p>
+      </div>
     </div>
     <Footer />
   </>
@@ -3039,7 +3410,14 @@ const PricingCards = ({ showFree = true }) => {
   const discountFromUrl = urlParams.get('discount') || localStorage.getItem('pending_discount');
 
   // Valid discount codes (including new welcome/demo codes)
-  const validDiscountCodes = ['EARLY50', 'SAVE20', 'HUNTLAUNCH', 'WELCOME30', 'DEMO30', 'DEMOFOLLOWUP'];
+  const validDiscountCodes = [
+    'EARLY50',
+    'SAVE20',
+    'HUNTLAUNCH',
+    'WELCOME30',
+    'DEMO30',
+    'DEMOFOLLOWUP',
+  ];
   const activeDiscount = validDiscountCodes.includes(discountFromUrl?.toUpperCase())
     ? discountFromUrl.toUpperCase()
     : null;
@@ -3163,7 +3541,16 @@ const PricingCards = ({ showFree = true }) => {
             boxShadow: '0 4px 16px rgba(16, 185, 129, 0.25)',
           }}
         >
-          <div style={{ fontSize: '11px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase', opacity: 0.9, marginBottom: '6px' }}>
+          <div
+            style={{
+              fontSize: '11px',
+              fontWeight: '600',
+              letterSpacing: '0.5px',
+              textTransform: 'uppercase',
+              opacity: 0.9,
+              marginBottom: '6px',
+            }}
+          >
             Early Access
           </div>
           <div style={{ fontSize: '22px', fontWeight: '700', marginBottom: '6px' }}>
@@ -3351,7 +3738,11 @@ const LoginPage = () => {
     } catch (error) {
       const errorMsg = error.response?.data?.error || 'Login failed';
       // Show helpful message for invalid credentials
-      if (errorMsg.toLowerCase().includes('invalid') || errorMsg.toLowerCase().includes('credentials') || errorMsg.toLowerCase().includes('not found')) {
+      if (
+        errorMsg.toLowerCase().includes('invalid') ||
+        errorMsg.toLowerCase().includes('credentials') ||
+        errorMsg.toLowerCase().includes('not found')
+      ) {
         toast.error(
           <div>
             {errorMsg}
@@ -3415,14 +3806,16 @@ const LoginPage = () => {
         )}
 
         {/* Trust Signals */}
-        <div style={{
-          marginTop: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '16px',
-          flexWrap: 'wrap'
-        }}>
+        <div
+          style={{
+            marginTop: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '16px',
+            flexWrap: 'wrap',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Lock size={12} style={{ color: 'var(--gray-400)' }} />
             <span style={{ fontSize: '12px', color: 'var(--gray-400)' }}>256-bit SSL</span>
@@ -3505,9 +3898,11 @@ const MagicLoginPage = () => {
     const errorParam = searchParams.get('error');
 
     if (errorParam) {
-      setError(errorParam === 'invalid_magic_link'
-        ? 'This magic link has expired or is invalid.'
-        : 'Magic link login failed. Please try again.');
+      setError(
+        errorParam === 'invalid_magic_link'
+          ? 'This magic link has expired or is invalid.'
+          : 'Magic link login failed. Please try again.'
+      );
       return;
     }
 
@@ -3516,7 +3911,8 @@ const MagicLoginPage = () => {
       localStorage.setItem('token', token);
 
       // Fetch user data and login
-      api.get('/auth/me')
+      api
+        .get('/auth/me')
         .then(res => {
           setUser(res.data.user);
           toast.success('Welcome! Your account is ready.');
@@ -3549,14 +3945,17 @@ const MagicLoginPage = () => {
   return (
     <div className="auth-container">
       <div className="card auth-card" style={{ textAlign: 'center' }}>
-        <div className="animate-spin" style={{
-          width: '40px',
-          height: '40px',
-          border: '3px solid var(--border-color)',
-          borderTopColor: 'var(--primary-500)',
-          borderRadius: '50%',
-          margin: '0 auto 20px'
-        }}></div>
+        <div
+          className="animate-spin"
+          style={{
+            width: '40px',
+            height: '40px',
+            border: '3px solid var(--border-color)',
+            borderTopColor: 'var(--primary-500)',
+            borderRadius: '50%',
+            margin: '0 auto 20px',
+          }}
+        ></div>
         <h1 className="auth-title">Logging you in...</h1>
         <p style={{ color: 'var(--text-secondary)' }}>Please wait while we set up your account.</p>
       </div>
@@ -3642,14 +4041,16 @@ const RegisterPage = () => {
       <div className="card auth-card">
         {/* Discount Banner */}
         {discountParam && (
-          <div style={{
-            background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-            border: '2px dashed #d97706',
-            borderRadius: '8px',
-            padding: '12px 16px',
-            marginBottom: '20px',
-            textAlign: 'center'
-          }}>
+          <div
+            style={{
+              background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+              border: '2px dashed #d97706',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              marginBottom: '20px',
+              textAlign: 'center',
+            }}
+          >
             <div style={{ fontSize: '14px', fontWeight: '600', color: '#92400e' }}>
               Your 30% discount is ready!
             </div>
@@ -3659,7 +4060,11 @@ const RegisterPage = () => {
           </div>
         )}
         <h1 className="auth-title">Create Account</h1>
-        <p className="auth-subtitle">{discountParam ? 'Sign up to claim your discount' : 'Start generating review responses for free'}</p>
+        <p className="auth-subtitle">
+          {discountParam
+            ? 'Sign up to claim your discount'
+            : 'Start generating review responses for free'}
+        </p>
 
         {/* Google Sign-Up Button */}
         <GoogleSignInButton
@@ -3677,21 +4082,25 @@ const RegisterPage = () => {
         )}
 
         {/* Trust Signals */}
-        <div style={{
-          marginTop: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '16px',
-          flexWrap: 'wrap'
-        }}>
+        <div
+          style={{
+            marginTop: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '16px',
+            flexWrap: 'wrap',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <CreditCard size={12} style={{ color: 'var(--gray-400)' }} />
             <span style={{ fontSize: '12px', color: 'var(--gray-400)' }}>No credit card</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Sparkles size={12} style={{ color: 'var(--gray-400)' }} />
-            <span style={{ fontSize: '12px', color: 'var(--gray-400)' }}>20 free responses/month</span>
+            <span style={{ fontSize: '12px', color: 'var(--gray-400)' }}>
+              20 free responses/month
+            </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Shield size={12} style={{ color: 'var(--gray-400)' }} />
@@ -3712,7 +4121,12 @@ const RegisterPage = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Business Name <span style={{ color: 'var(--text-secondary)', fontWeight: 'normal' }}>(optional)</span></label>
+            <label className="form-label">
+              Business Name{' '}
+              <span style={{ color: 'var(--text-secondary)', fontWeight: 'normal' }}>
+                (optional)
+              </span>
+            </label>
             <input
               type="text"
               className="form-input"
@@ -3834,15 +4248,19 @@ const ForgotPasswordPage = () => {
         </form>
 
         {/* Security Note */}
-        <div style={{
-          marginTop: '20px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '6px'
-        }}>
+        <div
+          style={{
+            marginTop: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
+          }}
+        >
           <Lock size={12} style={{ color: 'var(--gray-400)' }} />
-          <span style={{ fontSize: '12px', color: 'var(--gray-400)' }}>Secure password reset via 256-bit SSL</span>
+          <span style={{ fontSize: '12px', color: 'var(--gray-400)' }}>
+            Secure password reset via 256-bit SSL
+          </span>
         </div>
 
         <p className="auth-footer">
@@ -4394,7 +4812,8 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                 You're all set!
               </h3>
               <p style={{ color: 'var(--gray-600)', marginBottom: '16px', fontSize: '14px' }}>
-                Go to <strong>Settings</strong> to customize your AI responses with your business details.
+                Go to <strong>Settings</strong> to customize your AI responses with your business
+                details.
               </p>
               <p style={{ color: 'var(--gray-600)', marginBottom: '24px', fontSize: '14px' }}>
                 Want to respond even faster? Install our Chrome extension.
@@ -5507,8 +5926,8 @@ const DashboardPage = () => {
             icon: '⚡',
             action: {
               label: 'Get 10 for $5',
-              onClick: () => handleBuyResponsePack()
-            }
+              onClick: () => handleBuyResponsePack(),
+            },
           });
         }, 1500); // Delay to not overlap with success toast
       }
@@ -6573,10 +6992,16 @@ const DashboardPage = () => {
 - Use customer's name if mentioned
 </style>`}
                     rows={4}
-                    style={{ resize: 'vertical', minHeight: '100px', fontFamily: 'monospace', fontSize: '12px' }}
+                    style={{
+                      resize: 'vertical',
+                      minHeight: '100px',
+                      fontFamily: 'monospace',
+                      fontSize: '12px',
+                    }}
                   />
                   <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
-                    Use XML tags like {'<rules>'}, {'<style>'}, {'<always>'}, {'<never>'} for better AI understanding
+                    Use XML tags like {'<rules>'}, {'<style>'}, {'<always>'}, {'<never>'} for better
+                    AI understanding
                   </p>
                 </div>
               </div>
@@ -7067,8 +7492,16 @@ Food was amazing, will definitely come back!`}
               <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
                 Response History is a Starter Feature
               </h3>
-              <p style={{ color: 'var(--gray-500)', marginBottom: '24px', maxWidth: '400px', margin: '0 auto 24px' }}>
-                Keep track of all your generated responses. Access your history anytime, export to CSV/PDF, and never lose a response.
+              <p
+                style={{
+                  color: 'var(--gray-500)',
+                  marginBottom: '24px',
+                  maxWidth: '400px',
+                  margin: '0 auto 24px',
+                }}
+              >
+                Keep track of all your generated responses. Access your history anytime, export to
+                CSV/PDF, and never lose a response.
               </p>
               <Link to="/pricing" className="btn btn-primary">
                 Upgrade to Starter - $29/month
@@ -7090,7 +7523,9 @@ Food was amazing, will definitely come back!`}
                   <Clock size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
                   Response History
                 </h2>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div
+                  style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}
+                >
                   <input
                     type="date"
                     value={exportDateFrom}
@@ -7139,7 +7574,9 @@ Food was amazing, will definitely come back!`}
               )}
 
               {history.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--gray-500)' }}>
+                <div
+                  style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--gray-500)' }}
+                >
                   <FileText size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
                   <p>No responses generated yet. Start by generating your first response!</p>
                 </div>
@@ -8142,27 +8579,140 @@ Food was amazing, will definitely come back!`}
 
       {/* Upgrade Modal - Shows when user hits free limit */}
       {showUpgradeModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div style={{ background: 'var(--bg-primary)', borderRadius: '16px', padding: '32px', maxWidth: '480px', width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h2 style={{ marginTop: 0, marginBottom: '8px', fontSize: '24px' }}>You have used all 20 free responses!</h2>
-            <p style={{ color: 'var(--gray-500)', marginBottom: '24px' }}>Your reviews are waiting for professional responses...</p>
-            <div style={{ background: 'var(--gray-100)', borderRadius: '8px', height: '8px', marginBottom: '24px' }}>
-              <div style={{ background: 'var(--primary)', width: '100%', height: '100%', borderRadius: '8px' }} />
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.8)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+          }}
+        >
+          <div
+            style={{
+              background: 'var(--bg-primary)',
+              borderRadius: '16px',
+              padding: '32px',
+              maxWidth: '480px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+            }}
+          >
+            <h2 style={{ marginTop: 0, marginBottom: '8px', fontSize: '24px' }}>
+              You have used all 20 free responses!
+            </h2>
+            <p style={{ color: 'var(--gray-500)', marginBottom: '24px' }}>
+              Your reviews are waiting for professional responses...
+            </p>
+            <div
+              style={{
+                background: 'var(--gray-100)',
+                borderRadius: '8px',
+                height: '8px',
+                marginBottom: '24px',
+              }}
+            >
+              <div
+                style={{
+                  background: 'var(--primary)',
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: '8px',
+                }}
+              />
             </div>
             {!exitSurveyReason ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <Link to="/pricing" className="btn btn-primary" style={{ textAlign: 'center', padding: '16px', fontSize: '16px' }} onClick={() => setShowUpgradeModal(false)}>Unlock 300 Responses - $29/mo</Link>
-                <button onClick={handleBuyResponsePack} className="btn btn-secondary" style={{ padding: '14px', fontSize: '15px' }}>Just need a few? Get 10 for $5</button>
-                <button onClick={() => { setShowUpgradeModal(false); toast.info('Your responses reset on the 1st of each month'); }} className="btn" style={{ background: 'transparent', border: '1px solid var(--gray-300)', padding: '12px' }}>Wait until next month</button>
-                <button onClick={() => setExitSurveyReason('survey')} style={{ background: 'none', border: 'none', color: 'var(--gray-500)', fontSize: '14px', cursor: 'pointer', marginTop: '8px' }}>I am not ready to upgrade</button>
+                <Link
+                  to="/pricing"
+                  className="btn btn-primary"
+                  style={{ textAlign: 'center', padding: '16px', fontSize: '16px' }}
+                  onClick={() => setShowUpgradeModal(false)}
+                >
+                  Unlock 300 Responses - $29/mo
+                </Link>
+                <button
+                  onClick={handleBuyResponsePack}
+                  className="btn btn-secondary"
+                  style={{ padding: '14px', fontSize: '15px' }}
+                >
+                  Just need a few? Get 10 for $5
+                </button>
+                <button
+                  onClick={() => {
+                    setShowUpgradeModal(false);
+                    toast.info('Your responses reset on the 1st of each month');
+                  }}
+                  className="btn"
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid var(--gray-300)',
+                    padding: '12px',
+                  }}
+                >
+                  Wait until next month
+                </button>
+                <button
+                  onClick={() => setExitSurveyReason('survey')}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--gray-500)',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    marginTop: '8px',
+                  }}
+                >
+                  I am not ready to upgrade
+                </button>
               </div>
             ) : (
               <div style={{ borderTop: '1px solid var(--gray-200)', paddingTop: '24px' }}>
-                <p style={{ fontWeight: '500', marginBottom: '16px' }}>Quick question - what is holding you back?</p>
+                <p style={{ fontWeight: '500', marginBottom: '16px' }}>
+                  Quick question - what is holding you back?
+                </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {['Too expensive', 'Not enough value yet', 'Just testing', 'Using a competitor', 'Other'].map(reason => (<button key={reason} onClick={() => trackExitSurvey(reason)} style={{ background: 'var(--gray-50)', border: '1px solid var(--gray-200)', borderRadius: '8px', padding: '12px 16px', textAlign: 'left', cursor: 'pointer', fontSize: '14px' }}>{reason}</button>))}
+                  {[
+                    'Too expensive',
+                    'Not enough value yet',
+                    'Just testing',
+                    'Using a competitor',
+                    'Other',
+                  ].map(reason => (
+                    <button
+                      key={reason}
+                      onClick={() => trackExitSurvey(reason)}
+                      style={{
+                        background: 'var(--gray-50)',
+                        border: '1px solid var(--gray-200)',
+                        borderRadius: '8px',
+                        padding: '12px 16px',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                      }}
+                    >
+                      {reason}
+                    </button>
+                  ))}
                 </div>
-                <button onClick={() => setExitSurveyReason(null)} style={{ background: 'none', border: 'none', color: 'var(--gray-500)', fontSize: '13px', cursor: 'pointer', marginTop: '16px' }}>Back</button>
+                <button
+                  onClick={() => setExitSurveyReason(null)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--gray-500)',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    marginTop: '16px',
+                  }}
+                >
+                  Back
+                </button>
               </div>
             )}
           </div>
@@ -9229,7 +9779,8 @@ const getContextPlaceholder = businessType => {
     'Gym / Fitness Studio': 'e.g. personal training, group classes, 24/7 access, modern equipment',
     'Retail Store': 'e.g. local boutique, curated selection, friendly staff, unique finds',
     'E-commerce': 'e.g. fast shipping, easy returns, quality products, great support',
-    'Professional Services': 'e.g. accounting firm, CPA certified, small business focus, responsive',
+    'Professional Services':
+      'e.g. accounting firm, CPA certified, small business focus, responsive',
     'Real Estate': 'e.g. local expert, first-time buyers, 15 years experience, personal touch',
     'Home Services': 'e.g. plumbing, licensed, same-day service, fair pricing, family-owned',
   };
@@ -9739,7 +10290,14 @@ const SettingsPage = () => {
         >
           ← Back to Dashboard
         </Link>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '8px',
+          }}
+        >
           <h1 style={{ fontSize: '28px', fontWeight: '700', margin: 0 }}>
             <Settings size={28} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
             Business Settings
@@ -10772,7 +11330,10 @@ const BlogListPage = () => {
         </p>
       </div>
 
-      <div className="container" style={{ maxWidth: '1200px', padding: '40px 20px', margin: '0 auto' }}>
+      <div
+        className="container"
+        style={{ maxWidth: '1200px', padding: '40px 20px', margin: '0 auto' }}
+      >
         {/* Category Filter */}
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '32px' }}>
           <button
@@ -11049,7 +11610,14 @@ const SocialShareButtons = ({ title, url, vertical = false }) => {
     {
       name: 'Copy Link',
       icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
           <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
         </svg>
@@ -11072,7 +11640,9 @@ const SocialShareButtons = ({ title, url, vertical = false }) => {
       }}
     >
       {!vertical && (
-        <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--gray-500)' }}>Share:</span>
+        <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--gray-500)' }}>
+          Share:
+        </span>
       )}
       {shareLinks.map(link => (
         <button
@@ -11535,14 +12105,8 @@ const BlogArticlePage = () => {
           '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">$1</a>'
         )
         // List items (both - and * with optional spaces)
-        .replace(
-          /^[*-]\s+(.*$)/gm,
-          '<li style="margin-left: 20px; margin-bottom: 8px;">$1</li>'
-        )
-        .replace(
-          /^\d+\.\s+(.*$)/gm,
-          '<li style="margin-left: 20px; margin-bottom: 8px;">$1</li>'
-        )
+        .replace(/^[*-]\s+(.*$)/gm, '<li style="margin-left: 20px; margin-bottom: 8px;">$1</li>')
+        .replace(/^\d+\.\s+(.*$)/gm, '<li style="margin-left: 20px; margin-bottom: 8px;">$1</li>')
         // Paragraphs
         .replace(
           /\n\n/g,
@@ -11667,7 +12231,14 @@ const BlogArticlePage = () => {
               gap: '16px',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', color: 'var(--gray-500)' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                color: 'var(--gray-500)',
+              }}
+            >
               <span>By {article.author_name || 'ReviewResponder Team'}</span>
               <span>-</span>
               <span>{article.published_at && formatDate(article.published_at)}</span>
@@ -11752,7 +12323,12 @@ const BlogArticlePage = () => {
         <div style={{ background: 'var(--gray-50)', padding: '60px 20px' }}>
           <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
             <h2
-              style={{ fontSize: '24px', fontWeight: '700', marginBottom: '32px', textAlign: 'center' }}
+              style={{
+                fontSize: '24px',
+                fontWeight: '700',
+                marginBottom: '32px',
+                textAlign: 'center',
+              }}
             >
               Related Articles
             </h2>
@@ -11874,7 +12450,7 @@ const DemoPage = () => {
   useEffect(() => {
     const exitIntentKey = `demo_exit_${token}`;
 
-    const handleMouseLeave = (e) => {
+    const handleMouseLeave = e => {
       // Only trigger when mouse leaves through the top of the page
       if (e.clientY <= 0 && !sessionStorage.getItem(exitIntentKey)) {
         setShowExitIntent(true);
@@ -11924,7 +12500,9 @@ const DemoPage = () => {
           setLiveResponse('');
           toast.success('Love the enthusiasm! Sign up for 20 free responses/month 👇');
           setTimeout(() => {
-            document.getElementById('demo-cta-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document
+              .getElementById('demo-cta-section')
+              ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }, 300);
         } else {
           setLiveResponse(data.error);
@@ -11956,7 +12534,7 @@ const DemoPage = () => {
   };
 
   // EMAIL GATE: Handle email capture for copy access
-  const handleEmailCapture = async (e) => {
+  const handleEmailCapture = async e => {
     e.preventDefault();
     if (!captureEmail.trim() || !captureEmail.includes('@')) {
       toast.error('Please enter a valid email');
@@ -11971,7 +12549,7 @@ const DemoPage = () => {
         body: JSON.stringify({
           email: captureEmail,
           demo_token: token,
-          business_name: demo?.business_name
+          business_name: demo?.business_name,
         }),
       });
     } catch (err) {
@@ -12009,7 +12587,7 @@ const DemoPage = () => {
       particleCount: 50,
       spread: 60,
       origin: { y: 0.7 },
-      colors: ['#10b981', '#6366f1', '#8b5cf6']
+      colors: ['#10b981', '#6366f1', '#8b5cf6'],
     });
     setTimeout(() => setCopiedIndex(null), 2000);
   };
@@ -12027,7 +12605,13 @@ const DemoPage = () => {
   const GoogleStars = ({ rating }) => (
     <div style={{ display: 'flex', gap: '2px' }}>
       {[1, 2, 3, 4, 5].map(star => (
-        <svg key={star} width="16" height="16" viewBox="0 0 24 24" fill={star <= rating ? '#FBBC04' : '#E8EAED'}>
+        <svg
+          key={star}
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill={star <= rating ? '#FBBC04' : '#E8EAED'}
+        >
           <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
         </svg>
       ))}
@@ -12036,7 +12620,15 @@ const DemoPage = () => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: 'var(--bg-primary)' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+          background: 'var(--bg-primary)',
+        }}
+      >
         <div style={{ textAlign: 'center' }}>
           <div className="loading-spinner" style={{ marginBottom: '16px' }} />
           <p style={{ color: 'var(--text-muted)' }}>Loading your personalized demo...</p>
@@ -12047,19 +12639,56 @@ const DemoPage = () => {
 
   if (error || !demo) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div
+        style={{
+          minHeight: '100vh',
+          background: 'var(--bg-primary)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         <div style={{ textAlign: 'center', padding: '40px 20px', maxWidth: '400px' }}>
-          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2">
+          <div
+            style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              background: 'var(--bg-tertiary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 24px',
+            }}
+          >
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--text-muted)"
+              strokeWidth="2"
+            >
               <circle cx="12" cy="12" r="10" />
               <path d="M12 8v4M12 16h.01" />
             </svg>
           </div>
-          <h1 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '12px' }}>Demo Not Found</h1>
+          <h1
+            style={{
+              fontSize: '24px',
+              fontWeight: '700',
+              color: 'var(--text-primary)',
+              marginBottom: '12px',
+            }}
+          >
+            Demo Not Found
+          </h1>
           <p style={{ color: 'var(--text-muted)', marginBottom: '24px', lineHeight: '1.6' }}>
             This demo link may have expired or the URL is incorrect.
           </p>
-          <a href="/" className="btn btn-primary">Visit ReviewResponder</a>
+          <a href="/" className="btn btn-primary">
+            Visit ReviewResponder
+          </a>
         </div>
       </div>
     );
@@ -12068,18 +12697,53 @@ const DemoPage = () => {
   // EXPIRED DEMO: Show special page for expired demos
   if (demo.expired) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div
+        style={{
+          minHeight: '100vh',
+          background: 'var(--bg-primary)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         <div style={{ textAlign: 'center', padding: '40px 20px', maxWidth: '500px' }}>
-          <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+          <div
+            style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 24px',
+            }}
+          >
             <svg width="40" height="40" viewBox="0 0 24 24" fill="white">
-              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
             </svg>
           </div>
-          <h1 style={{ fontSize: '28px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '12px' }}>
+          <h1
+            style={{
+              fontSize: '28px',
+              fontWeight: '700',
+              color: 'var(--text-primary)',
+              marginBottom: '12px',
+            }}
+          >
             Demo Expired
           </h1>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '8px', lineHeight: '1.6', fontSize: '16px' }}>
-            Your personalized demo for <strong style={{ color: 'var(--text-primary)' }}>{demo.business_name}</strong> has expired after 7 days.
+          <p
+            style={{
+              color: 'var(--text-muted)',
+              marginBottom: '8px',
+              lineHeight: '1.6',
+              fontSize: '16px',
+            }}
+          >
+            Your personalized demo for{' '}
+            <strong style={{ color: 'var(--text-primary)' }}>{demo.business_name}</strong> has
+            expired after 7 days.
           </p>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', lineHeight: '1.6' }}>
             Sign up free to generate fresh AI responses for your reviews. No credit card required.
@@ -12095,7 +12759,7 @@ const DemoPage = () => {
               border: 'none',
               borderRadius: '12px',
               display: 'inline-block',
-              textDecoration: 'none'
+              textDecoration: 'none',
             }}
           >
             Get Fresh Responses - 30% OFF
@@ -12112,27 +12776,56 @@ const DemoPage = () => {
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
       {/* EMAIL GATE MODAL */}
       {showEmailModal && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center',
-          justifyContent: 'center', zIndex: 1000, padding: '20px'
-        }}>
-          <div style={{
-            background: 'var(--bg-primary)', borderRadius: '20px', padding: '32px',
-            maxWidth: '420px', width: '100%', textAlign: 'center',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
-          }}>
-            <div style={{
-              width: '64px', height: '64px', borderRadius: '50%',
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              margin: '0 auto 20px'
-            }}>
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px',
+          }}
+        >
+          <div
+            style={{
+              background: 'var(--bg-primary)',
+              borderRadius: '20px',
+              padding: '32px',
+              maxWidth: '420px',
+              width: '100%',
+              textAlign: 'center',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+            }}
+          >
+            <div
+              style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 20px',
+              }}
+            >
               <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
               </svg>
             </div>
-            <h3 style={{ fontSize: '22px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '8px' }}>
+            <h3
+              style={{
+                fontSize: '22px',
+                fontWeight: '700',
+                color: 'var(--text-primary)',
+                marginBottom: '8px',
+              }}
+            >
               Copy This Response
             </h3>
             <p style={{ color: 'var(--text-muted)', marginBottom: '24px', lineHeight: '1.6' }}>
@@ -12142,31 +12835,49 @@ const DemoPage = () => {
               <input
                 type="email"
                 value={captureEmail}
-                onChange={(e) => setCaptureEmail(e.target.value)}
+                onChange={e => setCaptureEmail(e.target.value)}
                 placeholder="your@email.com"
                 style={{
-                  width: '100%', padding: '14px 16px', borderRadius: '10px',
-                  border: '1px solid var(--border-color)', background: 'var(--bg-secondary)',
-                  color: 'var(--text-primary)', fontSize: '15px', marginBottom: '12px'
+                  width: '100%',
+                  padding: '14px 16px',
+                  borderRadius: '10px',
+                  border: '1px solid var(--border-color)',
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  fontSize: '15px',
+                  marginBottom: '12px',
                 }}
                 autoFocus
               />
               <button
                 type="submit"
                 style={{
-                  width: '100%', padding: '14px', borderRadius: '10px', border: 'none',
+                  width: '100%',
+                  padding: '14px',
+                  borderRadius: '10px',
+                  border: 'none',
                   background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
-                  color: 'white', fontWeight: '600', fontSize: '15px', cursor: 'pointer'
+                  color: 'white',
+                  fontWeight: '600',
+                  fontSize: '15px',
+                  cursor: 'pointer',
                 }}
               >
                 Unlock Copy + 30% OFF
               </button>
             </form>
             <button
-              onClick={() => { setShowEmailModal(false); setPendingCopyIndex(null); }}
+              onClick={() => {
+                setShowEmailModal(false);
+                setPendingCopyIndex(null);
+              }}
               style={{
-                marginTop: '16px', background: 'none', border: 'none',
-                color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px'
+                marginTop: '16px',
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                fontSize: '13px',
               }}
             >
               Maybe later
@@ -12176,105 +12887,263 @@ const DemoPage = () => {
       )}
 
       {/* Floating Header */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 100, background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', backdropFilter: 'blur(8px)' }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <a href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          background: 'var(--bg-secondary)',
+          borderBottom: '1px solid var(--border-color)',
+          backdropFilter: 'blur(8px)',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: '900px',
+            margin: '0 auto',
+            padding: '12px 20px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <a
+            href="/"
+            style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <div
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
+                background: 'var(--primary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
                 <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
               </svg>
             </div>
-            <span style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)' }}>ReviewResponder</span>
+            <span style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)' }}>
+              ReviewResponder
+            </span>
           </a>
-          <a href={demo.cta_url} className="btn btn-primary" style={{ padding: '10px 20px', fontSize: '14px' }}>
+          <a
+            href={demo.cta_url}
+            className="btn btn-primary"
+            style={{ padding: '10px 20px', fontSize: '14px' }}
+          >
             Try It Free
           </a>
         </div>
       </div>
 
       {/* Hero Section - Clean & Professional */}
-      <div style={{ background: 'var(--hero-gradient)', padding: '56px 20px 72px', borderBottom: '1px solid var(--border-color)' }}>
+      <div
+        style={{
+          background: 'var(--hero-gradient)',
+          padding: '56px 20px 72px',
+          borderBottom: '1px solid var(--border-color)',
+        }}
+      >
         <div style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
           {/* Trust Badge - Subtle */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--bg-secondary)', padding: '8px 16px', borderRadius: '100px', marginBottom: '28px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }} />
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'var(--bg-secondary)',
+              padding: '8px 16px',
+              borderRadius: '100px',
+              marginBottom: '28px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+            }}
+          >
+            <span
+              style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}
+            />
             <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-secondary)' }}>
               Demo prepared for {demo.business_name}
             </span>
           </div>
 
-          <h1 style={{ fontSize: 'clamp(32px, 5vw, 44px)', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '16px', lineHeight: '1.15', letterSpacing: '-0.02em' }}>
-            AI-Powered Review Responses<br />
+          <h1
+            style={{
+              fontSize: 'clamp(32px, 5vw, 44px)',
+              fontWeight: '800',
+              color: 'var(--text-primary)',
+              marginBottom: '16px',
+              lineHeight: '1.15',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            AI-Powered Review Responses
+            <br />
             <span style={{ color: 'var(--primary)' }}>Ready in Seconds</span>
           </h1>
 
-          <p style={{ fontSize: '18px', color: 'var(--text-muted)', maxWidth: '540px', margin: '0 auto 32px', lineHeight: '1.6' }}>
-            See how ReviewResponder transforms your actual Google reviews into professional responses.
+          <p
+            style={{
+              fontSize: '18px',
+              color: 'var(--text-muted)',
+              maxWidth: '540px',
+              margin: '0 auto 32px',
+              lineHeight: '1.6',
+            }}
+          >
+            See how ReviewResponder transforms your actual Google reviews into professional
+            responses.
           </p>
 
           {/* Business Info Card - Refined */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '16px', background: 'var(--bg-secondary)', padding: '20px 28px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', border: '1px solid var(--border-color)' }}>
-            <div style={{ width: '52px', height: '52px', borderRadius: '12px', background: 'linear-gradient(135deg, #4285f4 0%, #34a853 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '16px',
+              background: 'var(--bg-secondary)',
+              padding: '20px 28px',
+              borderRadius: '16px',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+              border: '1px solid var(--border-color)',
+            }}
+          >
+            <div
+              style={{
+                width: '52px',
+                height: '52px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #4285f4 0%, #34a853 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               <svg width="26" height="26" viewBox="0 0 24 24" fill="white">
                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
               </svg>
             </div>
             <div style={{ textAlign: 'left' }}>
-              <div style={{ fontWeight: '700', fontSize: '17px', color: 'var(--text-primary)' }}>{demo.business_name}</div>
+              <div style={{ fontWeight: '700', fontSize: '17px', color: 'var(--text-primary)' }}>
+                {demo.business_name}
+              </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
                 {demo.google_rating && (
                   <>
-                    <span style={{ fontWeight: '600', color: 'var(--text-primary)', fontSize: '15px' }}>{demo.google_rating}</span>
+                    <span
+                      style={{ fontWeight: '600', color: 'var(--text-primary)', fontSize: '15px' }}
+                    >
+                      {demo.google_rating}
+                    </span>
                     <GoogleStars rating={Math.round(demo.google_rating)} />
                   </>
                 )}
                 {demo.total_reviews && (
-                  <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>({demo.total_reviews} reviews)</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
+                    ({demo.total_reviews} reviews)
+                  </span>
                 )}
               </div>
             </div>
           </div>
 
           {/* Platform Trust Logos */}
-          <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Works with</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div
+            style={{
+              marginTop: '40px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '12px',
+            }}
+          >
+            <span
+              style={{
+                fontSize: '13px',
+                color: 'var(--text-muted)',
+                fontWeight: '500',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+              }}
+            >
+              Works with
+            </span>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '24px',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+              }}
+            >
               {/* Google */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', opacity: 0.7 }}>
                 <svg width="20" height="20" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  />
                 </svg>
-                <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>Google</span>
+                <span
+                  style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}
+                >
+                  Google
+                </span>
               </div>
               {/* Yelp */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', opacity: 0.7 }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="#D32323">
-                  <path d="M20.16 12.73l-4.19-.86a.5.5 0 0 0-.57.64l1.56 4.04a1.26 1.26 0 0 0 2.25.18 1.26 1.26 0 0 0 .95-4z"/>
-                  <path d="M14.94 14.93l-3.16 2.87a.5.5 0 0 0 .12.82l3.88 1.88a1.26 1.26 0 0 0 1.88-1.09 1.26 1.26 0 0 0-2.72-4.48z"/>
-                  <path d="M11.08 12.35l-3.93-1.53a.5.5 0 0 0-.67.47l.13 4.32a1.26 1.26 0 0 0 1.26 1.21 1.26 1.26 0 0 0 3.21-4.47z"/>
-                  <path d="M12.05 9.85l2.9-3.15a.5.5 0 0 0-.23-.8L10.6 4.37a1.26 1.26 0 0 0-1.5.92 1.26 1.26 0 0 0 2.95 4.56z"/>
+                  <path d="M20.16 12.73l-4.19-.86a.5.5 0 0 0-.57.64l1.56 4.04a1.26 1.26 0 0 0 2.25.18 1.26 1.26 0 0 0 .95-4z" />
+                  <path d="M14.94 14.93l-3.16 2.87a.5.5 0 0 0 .12.82l3.88 1.88a1.26 1.26 0 0 0 1.88-1.09 1.26 1.26 0 0 0-2.72-4.48z" />
+                  <path d="M11.08 12.35l-3.93-1.53a.5.5 0 0 0-.67.47l.13 4.32a1.26 1.26 0 0 0 1.26 1.21 1.26 1.26 0 0 0 3.21-4.47z" />
+                  <path d="M12.05 9.85l2.9-3.15a.5.5 0 0 0-.23-.8L10.6 4.37a1.26 1.26 0 0 0-1.5.92 1.26 1.26 0 0 0 2.95 4.56z" />
                 </svg>
-                <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>Yelp</span>
+                <span
+                  style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}
+                >
+                  Yelp
+                </span>
               </div>
               {/* TripAdvisor */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', opacity: 0.7 }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="#00AF87">
-                  <circle cx="6.5" cy="12" r="2.5"/>
-                  <circle cx="17.5" cy="12" r="2.5"/>
-                  <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
+                  <circle cx="6.5" cy="12" r="2.5" />
+                  <circle cx="17.5" cy="12" r="2.5" />
+                  <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
                 </svg>
-                <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>TripAdvisor</span>
+                <span
+                  style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}
+                >
+                  TripAdvisor
+                </span>
               </div>
               {/* Booking.com */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', opacity: 0.7 }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="#003580">
-                  <rect x="4" y="8" width="16" height="10" rx="2"/>
-                  <path fill="white" d="M7 11h2v4H7zm4 0h2v4h-2zm4 0h2v4h-2z"/>
+                  <rect x="4" y="8" width="16" height="10" rx="2" />
+                  <path fill="white" d="M7 11h2v4H7zm4 0h2v4h-2zm4 0h2v4h-2z" />
                 </svg>
-                <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>Booking</span>
+                <span
+                  style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}
+                >
+                  Booking
+                </span>
               </div>
             </div>
           </div>
@@ -12285,7 +13154,14 @@ const DemoPage = () => {
       <div style={{ maxWidth: '900px', margin: '0 auto', padding: '48px 20px' }}>
         {/* Section Header */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '8px' }}>
+          <h2
+            style={{
+              fontSize: '24px',
+              fontWeight: '700',
+              color: 'var(--text-primary)',
+              marginBottom: '8px',
+            }}
+          >
             Your Reviews, Answered by AI
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '16px' }}>
@@ -12294,132 +13170,241 @@ const DemoPage = () => {
         </div>
 
         {/* Demo Cards - RESPONSE GATE: Only show 1 initially, gate the rest */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '48px' }}>
-          {demo.demos && demo.demos.slice(0, showAllResponses ? demo.demos.length : 1).map((item, index) => (
-            <div
-              key={index}
-              style={{
-                background: 'var(--card-bg)',
-                borderRadius: '16px',
-                border: '1px solid var(--border-color)',
-                overflow: 'hidden',
-                boxShadow: 'var(--card-shadow)',
-              }}
-            >
-              {/* Review Header - Google Style */}
-              <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-light)' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-                  {/* Avatar */}
-                  <div style={{
-                    width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
-                    background: `linear-gradient(135deg, ${['#4285f4', '#ea4335', '#fbbc04', '#34a853', '#ff6d00'][index % 5]} 0%, ${['#34a853', '#fbbc04', '#ea4335', '#4285f4', '#e91e63'][index % 5]} 100%)`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: 'white', fontWeight: '600', fontSize: '18px'
-                  }}>
-                    {(item.review.author || 'A').charAt(0).toUpperCase()}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                      <span style={{ fontWeight: '600', color: 'var(--text-primary)', fontSize: '15px' }}>
-                        {item.review.author || 'Anonymous'}
-                      </span>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="#4285f4">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                      </svg>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <GoogleStars rating={item.review.rating} />
-                      {item.review.date && (
-                        <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{item.review.date}</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <p style={{ color: 'var(--text-secondary)', lineHeight: '1.7', fontSize: '15px', marginTop: '12px' }}>
-                  {item.review.text}
-                </p>
-                {/* View on Google Link - use direct review_link if available, fallback to general reviews page */}
-                {(item.review.review_link || demo.google_reviews_url) && (
-                  <a
-                    href={item.review.review_link || demo.google_reviews_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '12px',
-                      fontSize: '13px', color: '#4285f4', textDecoration: 'none'
-                    }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#4285f4">
-                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-                    </svg>
-                    {item.review.review_link ? 'View This Review on Google' : `View on Google (by ${item.review.author || 'Anonymous'})`}
-                  </a>
-                )}
-              </div>
-
-              {/* AI Response */}
-              <div style={{ padding: '20px 24px', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                      </svg>
-                    </div>
-                    <span style={{ fontWeight: '600', color: '#059669', fontSize: '14px' }}>AI-Generated Response</span>
-                    <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#059669', fontSize: '11px', padding: '2px 8px', borderRadius: '4px', fontWeight: '600' }}>READY TO USE</span>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                      onClick={() => copyResponse(item.ai_response, index)}
+        <div
+          style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '48px' }}
+        >
+          {demo.demos &&
+            demo.demos.slice(0, showAllResponses ? demo.demos.length : 1).map((item, index) => (
+              <div
+                key={index}
+                style={{
+                  background: 'var(--card-bg)',
+                  borderRadius: '16px',
+                  border: '1px solid var(--border-color)',
+                  overflow: 'hidden',
+                  boxShadow: 'var(--card-shadow)',
+                }}
+              >
+                {/* Review Header - Google Style */}
+                <div
+                  style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-light)' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                    {/* Avatar */}
+                    <div
                       style={{
-                        display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', borderRadius: '6px',
-                        background: copiedIndex === index ? '#059669' : 'var(--bg-secondary)',
-                        border: copiedIndex === index ? 'none' : '1px solid var(--border-color)',
-                        color: copiedIndex === index ? 'white' : 'var(--text-secondary)',
-                        cursor: 'pointer', fontSize: '13px', fontWeight: '500', transition: 'all 0.2s'
+                        width: '44px',
+                        height: '44px',
+                        borderRadius: '50%',
+                        flexShrink: 0,
+                        background: `linear-gradient(135deg, ${['#4285f4', '#ea4335', '#fbbc04', '#34a853', '#ff6d00'][index % 5]} 0%, ${['#34a853', '#fbbc04', '#ea4335', '#4285f4', '#e91e63'][index % 5]} 100%)`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontWeight: '600',
+                        fontSize: '18px',
                       }}
                     >
-                      {copiedIndex === index ? (
-                        <>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" /></svg>
-                          Copy
-                        </>
-                      )}
-                    </button>
-                    {(item.review.review_link || demo.google_reviews_url) && (
-                      <a
-                        href={item.review.review_link || demo.google_reviews_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      {(item.review.author || 'A').charAt(0).toUpperCase()}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div
                         style={{
-                          display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', borderRadius: '6px',
-                          background: '#4285f4', border: 'none', color: 'white',
-                          cursor: 'pointer', fontSize: '13px', fontWeight: '500', textDecoration: 'none'
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          marginBottom: '4px',
                         }}
                       >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                        <span
+                          style={{
+                            fontWeight: '600',
+                            color: 'var(--text-primary)',
+                            fontSize: '15px',
+                          }}
+                        >
+                          {item.review.author || 'Anonymous'}
+                        </span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#4285f4">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                         </svg>
-                        Reply on Google
-                      </a>
-                    )}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <GoogleStars rating={item.review.rating} />
+                        {item.review.date && (
+                          <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                            {item.review.date}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
+                  <p
+                    style={{
+                      color: 'var(--text-secondary)',
+                      lineHeight: '1.7',
+                      fontSize: '15px',
+                      marginTop: '12px',
+                    }}
+                  >
+                    {item.review.text}
+                  </p>
+                  {/* View on Google Link - use direct review_link if available, fallback to general reviews page */}
+                  {(item.review.review_link || demo.google_reviews_url) && (
+                    <a
+                      href={item.review.review_link || demo.google_reviews_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        marginTop: '12px',
+                        fontSize: '13px',
+                        color: '#4285f4',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="#4285f4">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                      </svg>
+                      {item.review.review_link
+                        ? 'View This Review on Google'
+                        : `View on Google (by ${item.review.author || 'Anonymous'})`}
+                    </a>
+                  )}
                 </div>
-                <p style={{ color: 'var(--text-primary)', lineHeight: '1.7', fontSize: '15px' }}>
-                  {item.ai_response}
-                </p>
+
+                {/* AI Response */}
+                <div
+                  style={{
+                    padding: '20px 24px',
+                    background:
+                      'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%)',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '12px',
+                      flexWrap: 'wrap',
+                      gap: '8px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div
+                        style={{
+                          width: '28px',
+                          height: '28px',
+                          borderRadius: '6px',
+                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                        </svg>
+                      </div>
+                      <span style={{ fontWeight: '600', color: '#059669', fontSize: '14px' }}>
+                        AI-Generated Response
+                      </span>
+                      <span
+                        style={{
+                          background: 'rgba(16, 185, 129, 0.1)',
+                          color: '#059669',
+                          fontSize: '11px',
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          fontWeight: '600',
+                        }}
+                      >
+                        READY TO USE
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        onClick={() => copyResponse(item.ai_response, index)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '8px 12px',
+                          borderRadius: '6px',
+                          background: copiedIndex === index ? '#059669' : 'var(--bg-secondary)',
+                          border: copiedIndex === index ? 'none' : '1px solid var(--border-color)',
+                          color: copiedIndex === index ? 'white' : 'var(--text-secondary)',
+                          cursor: 'pointer',
+                          fontSize: '13px',
+                          fontWeight: '500',
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        {copiedIndex === index ? (
+                          <>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                            </svg>
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <rect x="9" y="9" width="13" height="13" rx="2" />
+                              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                            </svg>
+                            Copy
+                          </>
+                        )}
+                      </button>
+                      {(item.review.review_link || demo.google_reviews_url) && (
+                        <a
+                          href={item.review.review_link || demo.google_reviews_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            background: '#4285f4',
+                            border: 'none',
+                            color: 'white',
+                            cursor: 'pointer',
+                            fontSize: '13px',
+                            fontWeight: '500',
+                            textDecoration: 'none',
+                          }}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                          </svg>
+                          Reply on Google
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  <p style={{ color: 'var(--text-primary)', lineHeight: '1.7', fontSize: '15px' }}>
+                    {item.ai_response}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
           {/* RESPONSE GATE: Show unlock button if more responses available (now shows after 1st) */}
           {demo.demos && demo.demos.length > 1 && !showAllResponses && (
@@ -12432,37 +13417,60 @@ const DemoPage = () => {
                 }
               }}
               style={{
-                background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
+                background:
+                  'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
                 borderRadius: '16px',
                 border: '2px dashed var(--primary)',
                 padding: '32px',
                 textAlign: 'center',
                 cursor: 'pointer',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
               }}
             >
-              <div style={{
-                width: '48px', height: '48px', borderRadius: '50%',
-                background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                margin: '0 auto 16px'
-              }}>
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 16px',
+                }}
+              >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
                   <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
                 </svg>
               </div>
-              <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '8px' }}>
+              <h3
+                style={{
+                  fontSize: '18px',
+                  fontWeight: '700',
+                  color: 'var(--text-primary)',
+                  marginBottom: '8px',
+                }}
+              >
                 {demo.demos.length - 1} More AI Responses Available
               </h3>
               <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '16px' }}>
-                {emailCaptured ? 'Click to reveal all responses' : 'Enter your email to unlock all responses'}
+                {emailCaptured
+                  ? 'Click to reveal all responses'
+                  : 'Enter your email to unlock all responses'}
               </p>
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: '6px',
-                background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
-                color: 'white', padding: '10px 20px', borderRadius: '8px',
-                fontWeight: '600', fontSize: '14px'
-              }}>
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
+                  color: 'white',
+                  padding: '10px 20px',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                }}
+              >
                 {emailCaptured ? 'Show All Responses' : 'Unlock with Email'}
               </span>
             </div>
@@ -12470,19 +13478,42 @@ const DemoPage = () => {
         </div>
 
         {/* Live Preview - Try It Yourself */}
-        <div style={{
-          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%)',
-          borderRadius: '20px',
-          padding: '32px',
-          marginBottom: '48px',
-          border: '1px solid var(--border-color)'
-        }}>
+        <div
+          style={{
+            background:
+              'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%)',
+            borderRadius: '20px',
+            padding: '32px',
+            marginBottom: '48px',
+            border: '1px solid var(--border-color)',
+          }}
+        >
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--primary)', color: 'white', padding: '6px 14px', borderRadius: '100px', marginBottom: '16px', fontSize: '13px', fontWeight: '600' }}>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'var(--primary)',
+                color: 'white',
+                padding: '6px 14px',
+                borderRadius: '100px',
+                marginBottom: '16px',
+                fontSize: '13px',
+                fontWeight: '600',
+              }}
+            >
               <Sparkles size={14} />
               Try It Yourself
             </div>
-            <h3 style={{ fontSize: '22px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '8px' }}>
+            <h3
+              style={{
+                fontSize: '22px',
+                fontWeight: '700',
+                color: 'var(--text-primary)',
+                marginBottom: '8px',
+              }}
+            >
               Type Any Review, See the AI Response
             </h3>
             <p style={{ color: 'var(--text-muted)', fontSize: '15px' }}>
@@ -12490,15 +13521,29 @@ const DemoPage = () => {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '20px',
+            }}
+          >
             {/* Input */}
             <div>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: 'var(--text-secondary)',
+                  marginBottom: '8px',
+                }}
+              >
                 Your Review
               </label>
               <textarea
                 value={liveReview}
-                onChange={(e) => setLiveReview(e.target.value)}
+                onChange={e => setLiveReview(e.target.value)}
                 placeholder="Paste any review here... Try a negative one!"
                 style={{
                   width: '100%',
@@ -12510,7 +13555,7 @@ const DemoPage = () => {
                   color: 'var(--text-primary)',
                   fontSize: '15px',
                   resize: 'vertical',
-                  fontFamily: 'inherit'
+                  fontFamily: 'inherit',
                 }}
               />
               <button
@@ -12522,7 +13567,9 @@ const DemoPage = () => {
                   padding: '14px',
                   borderRadius: '10px',
                   border: 'none',
-                  background: liveLoading ? 'var(--gray-400)' : 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
+                  background: liveLoading
+                    ? 'var(--gray-400)'
+                    : 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
                   color: 'white',
                   fontWeight: '600',
                   fontSize: '15px',
@@ -12530,7 +13577,7 @@ const DemoPage = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '8px'
+                  gap: '8px',
                 }}
               >
                 {liveLoading ? (
@@ -12549,19 +13596,31 @@ const DemoPage = () => {
 
             {/* Output */}
             <div>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: 'var(--text-secondary)',
+                  marginBottom: '8px',
+                }}
+              >
                 AI Response
               </label>
-              <div style={{
-                minHeight: '120px',
-                padding: '14px',
-                borderRadius: '12px',
-                border: '1px solid var(--border-color)',
-                background: liveResponse ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%)' : 'var(--bg-secondary)',
-                color: liveResponse ? 'var(--text-primary)' : 'var(--text-muted)',
-                fontSize: '15px',
-                lineHeight: '1.6'
-              }}>
+              <div
+                style={{
+                  minHeight: '120px',
+                  padding: '14px',
+                  borderRadius: '12px',
+                  border: '1px solid var(--border-color)',
+                  background: liveResponse
+                    ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%)'
+                    : 'var(--bg-secondary)',
+                  color: liveResponse ? 'var(--text-primary)' : 'var(--text-muted)',
+                  fontSize: '15px',
+                  lineHeight: '1.6',
+                }}
+              >
                 {liveResponse || 'Your AI-generated response will appear here...'}
               </div>
               {liveResponse && (
@@ -12585,7 +13644,7 @@ const DemoPage = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '8px'
+                    gap: '8px',
                   }}
                 >
                   <Copy size={16} />
@@ -12597,7 +13656,19 @@ const DemoPage = () => {
         </div>
 
         {/* Quick Stats - Clean */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '40px', padding: '36px 32px', background: 'var(--bg-secondary)', borderRadius: '20px', marginBottom: '56px', border: '1px solid var(--border-color)' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            gap: '40px',
+            padding: '36px 32px',
+            background: 'var(--bg-secondary)',
+            borderRadius: '20px',
+            marginBottom: '56px',
+            border: '1px solid var(--border-color)',
+          }}
+        >
           {[
             { value: '6+', label: 'Review Platforms' },
             { value: '50+', label: 'Languages' },
@@ -12605,23 +13676,58 @@ const DemoPage = () => {
             { value: '100%', label: 'Free to Start' },
           ].map((stat, i) => (
             <div key={i} style={{ textAlign: 'center', minWidth: '100px' }}>
-              <div style={{ fontSize: '32px', fontWeight: '800', color: 'var(--primary)', marginBottom: '6px', letterSpacing: '-0.02em' }}>{stat.value}</div>
-              <div style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>{stat.label}</div>
+              <div
+                style={{
+                  fontSize: '32px',
+                  fontWeight: '800',
+                  color: 'var(--primary)',
+                  marginBottom: '6px',
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                {stat.value}
+              </div>
+              <div style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>
+                {stat.label}
+              </div>
             </div>
           ))}
         </div>
 
         {/* Demo Video */}
         <div style={{ marginBottom: '48px', textAlign: 'center' }}>
-          <h3 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '16px' }}>
+          <h3
+            style={{
+              fontSize: '20px',
+              fontWeight: '700',
+              color: 'var(--text-primary)',
+              marginBottom: '16px',
+            }}
+          >
             See It In Action
           </h3>
           <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
             Watch how our Chrome extension responds to reviews in seconds
           </p>
-          <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}>
+          <div
+            style={{
+              position: 'relative',
+              paddingBottom: '56.25%',
+              height: 0,
+              overflow: 'hidden',
+              borderRadius: '12px',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+            }}
+          >
             <iframe
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                border: 'none',
+              }}
               src="https://www.youtube.com/embed/6lujm4Z_Q_Y"
               title="ReviewResponder Chrome Extension Demo"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -12635,30 +13741,87 @@ const DemoPage = () => {
           id="demo-cta-section"
           style={{
             background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
-            borderRadius: '20px', padding: '48px 32px', textAlign: 'center', position: 'relative', overflow: 'hidden'
+            borderRadius: '20px',
+            padding: '48px 32px',
+            textAlign: 'center',
+            position: 'relative',
+            overflow: 'hidden',
           }}
         >
           {/* Decorative circles */}
-          <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />
-          <div style={{ position: 'absolute', bottom: '-30px', left: '-30px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
+          <div
+            style={{
+              position: 'absolute',
+              top: '-50px',
+              right: '-50px',
+              width: '200px',
+              height: '200px',
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.1)',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '-30px',
+              left: '-30px',
+              width: '120px',
+              height: '120px',
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.05)',
+            }}
+          />
 
           <div style={{ position: 'relative', zIndex: 1 }}>
-            <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.2)', padding: '6px 16px', borderRadius: '100px', marginBottom: '20px' }}>
-              <span style={{ color: 'white', fontSize: '14px', fontWeight: '600' }}>Limited Time: 20 Free/Month</span>
+            <div
+              style={{
+                display: 'inline-block',
+                background: 'rgba(255,255,255,0.2)',
+                padding: '6px 16px',
+                borderRadius: '100px',
+                marginBottom: '20px',
+              }}
+            >
+              <span style={{ color: 'white', fontSize: '14px', fontWeight: '600' }}>
+                Limited Time: 20 Free/Month
+              </span>
             </div>
-            <h2 style={{ fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: '800', color: 'white', marginBottom: '12px' }}>
+            <h2
+              style={{
+                fontSize: 'clamp(24px, 4vw, 32px)',
+                fontWeight: '800',
+                color: 'white',
+                marginBottom: '12px',
+              }}
+            >
               Start Responding Like a Pro
             </h2>
-            <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.9)', marginBottom: '28px', maxWidth: '500px', margin: '0 auto 28px' }}>
+            <p
+              style={{
+                fontSize: '16px',
+                color: 'rgba(255,255,255,0.9)',
+                marginBottom: '28px',
+                maxWidth: '500px',
+                margin: '0 auto 28px',
+              }}
+            >
               20 free responses every month. No credit card required.
             </p>
             <a
               href={demo.cta_url}
               style={{
-                display: 'inline-flex', alignItems: 'center', gap: '8px',
-                background: 'white', color: 'var(--primary)', padding: '16px 36px',
-                borderRadius: '10px', textDecoration: 'none', fontWeight: '700', fontSize: '16px',
-                boxShadow: '0 4px 14px rgba(0,0,0,0.2)', transition: 'transform 0.2s'
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'white',
+                color: 'var(--primary)',
+                padding: '16px 36px',
+                borderRadius: '10px',
+                textDecoration: 'none',
+                fontWeight: '700',
+                fontSize: '16px',
+                boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
+                transition: 'transform 0.2s',
               }}
             >
               Get Started Free
@@ -12670,47 +13833,154 @@ const DemoPage = () => {
         </div>
 
         {/* Features Grid - Professional Icons */}
-        <div style={{ marginTop: '56px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+        <div
+          style={{
+            marginTop: '56px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: '20px',
+          }}
+        >
           {[
             {
-              icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>,
+              icon: (
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--primary)"
+                  strokeWidth="2"
+                >
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg>
+              ),
               title: '4 Professional Tones',
-              desc: 'Professional, friendly, formal, or apologetic - match your brand voice'
+              desc: 'Professional, friendly, formal, or apologetic - match your brand voice',
             },
             {
-              icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+              icon: (
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--primary)"
+                  strokeWidth="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                </svg>
+              ),
               title: '50+ Languages',
-              desc: 'Auto-detect and respond in the same language as the review'
+              desc: 'Auto-detect and respond in the same language as the review',
             },
             {
-              icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+              icon: (
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--primary)"
+                  strokeWidth="2"
+                >
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+              ),
               title: 'Instant Generation',
-              desc: 'Get perfect responses in under 5 seconds'
+              desc: 'Get perfect responses in under 5 seconds',
             },
             {
-              icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+              icon: (
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--primary)"
+                  strokeWidth="2"
+                >
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              ),
               title: 'Your Business Context',
-              desc: 'Add your business details for personalized responses'
+              desc: 'Add your business details for personalized responses',
             },
           ].map((feature, i) => (
-            <div key={i} style={{ padding: '28px', background: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(99, 102, 241, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+            <div
+              key={i}
+              style={{
+                padding: '28px',
+                background: 'var(--card-bg)',
+                borderRadius: '16px',
+                border: '1px solid var(--border-color)',
+              }}
+            >
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '12px',
+                  background: 'rgba(99, 102, 241, 0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '16px',
+                }}
+              >
                 {feature.icon}
               </div>
-              <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '8px' }}>
+              <h3
+                style={{
+                  fontSize: '16px',
+                  fontWeight: '700',
+                  color: 'var(--text-primary)',
+                  marginBottom: '8px',
+                }}
+              >
                 {feature.title}
               </h3>
-              <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{feature.desc}</p>
+              <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+                {feature.desc}
+              </p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Footer */}
-      <div style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--border-color)', padding: '32px 20px', marginTop: '48px' }}>
+      <div
+        style={{
+          background: 'var(--bg-secondary)',
+          borderTop: '1px solid var(--border-color)',
+          padding: '32px 20px',
+          marginTop: '48px',
+        }}
+      >
         <div style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
-          <a href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none', marginBottom: '16px' }}>
-            <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <a
+            href="/"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              textDecoration: 'none',
+              marginBottom: '16px',
+            }}
+          >
+            <div
+              style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '6px',
+                background: 'var(--primary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
                 <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
               </svg>
@@ -12741,12 +14011,29 @@ const DemoPage = () => {
           backdropFilter: 'blur(10px)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
               20 free responses/month
             </span>
-            <span style={{ fontSize: '12px', padding: '3px 8px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.1)', color: '#059669', fontWeight: '600' }}>
+            <span
+              style={{
+                fontSize: '12px',
+                padding: '3px 8px',
+                borderRadius: '4px',
+                background: 'rgba(16, 185, 129, 0.1)',
+                color: '#059669',
+                fontWeight: '600',
+              }}
+            >
               No credit card
             </span>
           </div>
@@ -12764,7 +14051,7 @@ const DemoPage = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              boxShadow: '0 2px 8px rgba(99, 102, 241, 0.3)'
+              boxShadow: '0 2px 8px rgba(99, 102, 241, 0.3)',
             }}
           >
             Start Free Trial
@@ -12803,15 +14090,17 @@ const DemoPage = () => {
               boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
               animation: 'slideUp 0.3s ease-out',
             }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             {/* Header with gradient */}
-            <div style={{
-              background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
-              padding: '32px 24px',
-              textAlign: 'center',
-              position: 'relative',
-            }}>
+            <div
+              style={{
+                background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
+                padding: '32px 24px',
+                textAlign: 'center',
+                position: 'relative',
+              }}
+            >
               <button
                 onClick={() => setShowExitIntent(false)}
                 style={{
@@ -12832,19 +14121,23 @@ const DemoPage = () => {
               >
                 <X size={18} />
               </button>
-              <div style={{
-                width: '64px',
-                height: '64px',
-                borderRadius: '50%',
-                background: 'rgba(255,255,255,0.2)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 16px',
-              }}>
+              <div
+                style={{
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 16px',
+                }}
+              >
                 <Sparkles size={32} color="white" />
               </div>
-              <h2 style={{ color: 'white', fontSize: '24px', fontWeight: '800', marginBottom: '8px' }}>
+              <h2
+                style={{ color: 'white', fontSize: '24px', fontWeight: '800', marginBottom: '8px' }}
+              >
                 Wait! Your Responses Are Ready
               </h2>
               <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '15px' }}>
@@ -12861,26 +14154,33 @@ const DemoPage = () => {
                   { icon: <Check size={16} />, text: 'No credit card required' },
                   { icon: <Check size={16} />, text: 'Works with Google, Yelp, TripAdvisor' },
                 ].map((item, i) => (
-                  <div key={i} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '10px 0',
-                    borderBottom: i < 2 ? '1px solid var(--border-light)' : 'none',
-                  }}>
-                    <div style={{
-                      width: '24px',
-                      height: '24px',
-                      borderRadius: '50%',
-                      background: 'rgba(16, 185, 129, 0.1)',
+                  <div
+                    key={i}
+                    style={{
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#10b981',
-                    }}>
+                      gap: '12px',
+                      padding: '10px 0',
+                      borderBottom: i < 2 ? '1px solid var(--border-light)' : 'none',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        background: 'rgba(16, 185, 129, 0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#10b981',
+                      }}
+                    >
                       {item.icon}
                     </div>
-                    <span style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: '500' }}>
+                    <span
+                      style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: '500' }}
+                    >
                       {item.text}
                     </span>
                   </div>
@@ -12888,16 +14188,19 @@ const DemoPage = () => {
               </div>
 
               {/* Discount Badge */}
-              <div style={{
-                background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-                border: '1px solid #f59e0b',
-                borderRadius: '8px',
-                padding: '12px 16px',
-                marginBottom: '16px',
-                textAlign: 'center',
-              }}>
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                  border: '1px solid #f59e0b',
+                  borderRadius: '8px',
+                  padding: '12px 16px',
+                  marginBottom: '16px',
+                  textAlign: 'center',
+                }}
+              >
                 <span style={{ fontSize: '14px', fontWeight: '600', color: '#92400e' }}>
-                  🎁 Exit-Deal: <strong>30% OFF</strong> your first month with code <strong>DEMO30</strong>
+                  🎁 Exit-Deal: <strong>30% OFF</strong> your first month with code{' '}
+                  <strong>DEMO30</strong>
                 </span>
               </div>
 
@@ -13027,153 +14330,153 @@ const SupportPage = () => {
         </div>
 
         <div className="faq-contact-grid">
-        <div>
-          <h2
-            style={{
-              fontSize: '20px',
-              fontWeight: '600',
-              marginBottom: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}
-          >
-            <HelpCircle size={20} />
-            Frequently Asked Questions
-          </h2>
-
-          {faqs.map((faq, i) => (
-            <div key={i} className="card" style={{ marginBottom: '12px', padding: '16px' }}>
-              <h3
-                style={{
-                  fontSize: '15px',
-                  fontWeight: '600',
-                  marginBottom: '8px',
-                  color: 'var(--gray-800)',
-                }}
-              >
-                {faq.q}
-              </h3>
-              <p style={{ fontSize: '14px', color: 'var(--gray-600)', lineHeight: '1.6' }}>
-                {faq.a}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        <div>
-          <h2
-            style={{
-              fontSize: '20px',
-              fontWeight: '600',
-              marginBottom: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}
-          >
-            <Mail size={20} />
-            Contact Us
-          </h2>
-
-          <div className="card">
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label className="form-label">Name</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  placeholder="Your name"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Email</label>
-                <input
-                  type="email"
-                  className="form-input"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Subject</label>
-                <select
-                  className="form-select"
-                  value={subject}
-                  onChange={e => setSubject(e.target.value)}
-                  required
-                >
-                  <option value="">Select a topic</option>
-                  <option value="general">General Question</option>
-                  <option value="billing">Billing & Subscription</option>
-                  <option value="technical">Technical Issue</option>
-                  <option value="feedback">Feedback & Suggestions</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Message</label>
-                <textarea
-                  className="form-textarea"
-                  value={message}
-                  onChange={e => setMessage(e.target.value)}
-                  placeholder="How can we help you?"
-                  rows={5}
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="btn btn-primary"
-                style={{ width: '100%' }}
-                disabled={sending}
-              >
-                {sending ? (
-                  'Sending...'
-                ) : (
-                  <>
-                    <Send size={16} />
-                    Send Message
-                  </>
-                )}
-              </button>
-            </form>
-
-            <div
+          <div>
+            <h2
               style={{
-                marginTop: '20px',
-                paddingTop: '20px',
-                borderTop: '1px solid var(--gray-200)',
-                textAlign: 'center',
+                fontSize: '20px',
+                fontWeight: '600',
+                marginBottom: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
               }}
             >
-              <p style={{ fontSize: '14px', color: 'var(--gray-500)' }}>
-                Or email us directly at
-                <br />
-                <a
-                  href="mailto:support@tryreviewresponder.com"
-                  style={{ color: 'var(--primary-600)', fontWeight: '500' }}
+              <HelpCircle size={20} />
+              Frequently Asked Questions
+            </h2>
+
+            {faqs.map((faq, i) => (
+              <div key={i} className="card" style={{ marginBottom: '12px', padding: '16px' }}>
+                <h3
+                  style={{
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    marginBottom: '8px',
+                    color: 'var(--gray-800)',
+                  }}
                 >
-                  support@tryreviewresponder.com
-                </a>
-              </p>
+                  {faq.q}
+                </h3>
+                <p style={{ fontSize: '14px', color: 'var(--gray-600)', lineHeight: '1.6' }}>
+                  {faq.a}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <h2
+              style={{
+                fontSize: '20px',
+                fontWeight: '600',
+                marginBottom: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <Mail size={20} />
+              Contact Us
+            </h2>
+
+            <div className="card">
+              <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                  <label className="form-label">Name</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder="Your name"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Email</label>
+                  <input
+                    type="email"
+                    className="form-input"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Subject</label>
+                  <select
+                    className="form-select"
+                    value={subject}
+                    onChange={e => setSubject(e.target.value)}
+                    required
+                  >
+                    <option value="">Select a topic</option>
+                    <option value="general">General Question</option>
+                    <option value="billing">Billing & Subscription</option>
+                    <option value="technical">Technical Issue</option>
+                    <option value="feedback">Feedback & Suggestions</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Message</label>
+                  <textarea
+                    className="form-textarea"
+                    value={message}
+                    onChange={e => setMessage(e.target.value)}
+                    placeholder="How can we help you?"
+                    rows={5}
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{ width: '100%' }}
+                  disabled={sending}
+                >
+                  {sending ? (
+                    'Sending...'
+                  ) : (
+                    <>
+                      <Send size={16} />
+                      Send Message
+                    </>
+                  )}
+                </button>
+              </form>
+
+              <div
+                style={{
+                  marginTop: '20px',
+                  paddingTop: '20px',
+                  borderTop: '1px solid var(--gray-200)',
+                  textAlign: 'center',
+                }}
+              >
+                <p style={{ fontSize: '14px', color: 'var(--gray-500)' }}>
+                  Or email us directly at
+                  <br />
+                  <a
+                    href="mailto:support@tryreviewresponder.com"
+                    style={{ color: 'var(--primary-600)', fontWeight: '500' }}
+                  >
+                    support@tryreviewresponder.com
+                  </a>
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
+      <Footer />
     </div>
-    <Footer />
-  </div>
-);
+  );
 };
 
 // Reusable Chrome Extension How-To Component for Landing Pages
@@ -13194,13 +14497,25 @@ const ChromeExtensionHowTo = ({ platform = 'Google Maps', color = '#4285f4' }) =
       </h2>
     </div>
     <ol style={{ lineHeight: '2.2', color: 'var(--gray-700)', marginBottom: '24px' }}>
-      <li><strong>Install the Chrome Extension</strong> (free)</li>
-      <li><strong>Open {platform}</strong> and find any review</li>
-      <li><strong>Click the ReviewResponder button</strong> that appears</li>
-      <li><strong>Done!</strong> Your AI response is ready to post</li>
+      <li>
+        <strong>Install the Chrome Extension</strong> (free)
+      </li>
+      <li>
+        <strong>Open {platform}</strong> and find any review
+      </li>
+      <li>
+        <strong>Click the ReviewResponder button</strong> that appears
+      </li>
+      <li>
+        <strong>Done!</strong> Your AI response is ready to post
+      </li>
     </ol>
     <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
-      <a href="/extension" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+      <a
+        href="/extension"
+        className="btn btn-primary"
+        style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+      >
         <Chrome size={18} />
         Get Chrome Extension
       </a>
@@ -13226,13 +14541,26 @@ const DemoVideoSection = ({ platform = 'review platforms' }) => {
         textAlign: 'center',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '16px' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '12px',
+          marginBottom: '16px',
+        }}
+      >
         <Play size={28} style={{ color: '#9333ea' }} />
-        <h2 style={{ fontSize: '24px', fontWeight: '700', margin: 0 }}>
-          See It In Action
-        </h2>
+        <h2 style={{ fontSize: '24px', fontWeight: '700', margin: 0 }}>See It In Action</h2>
       </div>
-      <p style={{ color: 'var(--gray-600)', marginBottom: '24px', maxWidth: '500px', margin: '0 auto 24px' }}>
+      <p
+        style={{
+          color: 'var(--gray-600)',
+          marginBottom: '24px',
+          maxWidth: '500px',
+          margin: '0 auto 24px',
+        }}
+      >
         Watch how easy it is to respond to {platform} reviews with ReviewResponder
       </p>
 
@@ -13278,7 +14606,7 @@ const DemoVideoSection = ({ platform = 'review platforms' }) => {
                 objectFit: 'cover',
                 opacity: 0.9,
               }}
-              onError={(e) => {
+              onError={e => {
                 e.target.src = 'https://img.youtube.com/vi/6lujm4Z_Q_Y/hqdefault.jpg';
               }}
             />
@@ -13298,8 +14626,12 @@ const DemoVideoSection = ({ platform = 'review platforms' }) => {
                 boxShadow: '0 4px 20px rgba(147, 51, 234, 0.4)',
                 transition: 'transform 0.2s ease',
               }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1.1)'}
-              onMouseLeave={(e) => e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1)'}
+              onMouseEnter={e =>
+                (e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1.1)')
+              }
+              onMouseLeave={e =>
+                (e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1)')
+              }
             >
               <Play size={36} fill="white" color="white" style={{ marginLeft: '4px' }} />
             </div>
@@ -13383,10 +14715,13 @@ const GoogleReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -13401,49 +14736,83 @@ const GoogleReviewPage = () => {
             }}
           >
             <Star size={14} fill="currentColor" />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               Google Maps Integration
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Google Review Response Generator
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
             Respond to Google reviews in seconds with AI. Generate professional, personalized
             replies that boost your local SEO and show customers you care.
           </p>
 
           <LandingEmailCapture />
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>GOOGLE MAPS</span>
             <span>YELP</span>
             <span>TRIPADVISOR</span>
@@ -13514,7 +14883,6 @@ const GoogleReviewPage = () => {
             Try Free - No Card Required
           </Link>
         </div>
-
       </section>
       <Footer />
     </div>
@@ -13573,10 +14941,13 @@ const YelpReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -13591,49 +14962,83 @@ const YelpReviewPage = () => {
             }}
           >
             <Star size={14} fill="currentColor" />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               Yelp Business Owners
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Yelp Review Reply Tool
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
-            Never let a Yelp review go unanswered. Generate professional, thoughtful responses
-            to all your reviews with AI - from 5-star praise to 1-star complaints.
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Never let a Yelp review go unanswered. Generate professional, thoughtful responses to
+            all your reviews with AI - from 5-star praise to 1-star complaints.
           </p>
 
           <LandingEmailCapture buttonColor="#d32323" />
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>YELP</span>
             <span>GOOGLE MAPS</span>
             <span>TRIPADVISOR</span>
@@ -13662,7 +15067,16 @@ const YelpReviewPage = () => {
               97% Read Responses
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              97% of consumers who read reviews also read business responses — <a href="https://www.brightlocal.com/research/local-consumer-review-survey/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gray-500)', fontSize: '14px' }}>BrightLocal</a>. Make yours count.
+              97% of consumers who read reviews also read business responses —{' '}
+              <a
+                href="https://www.brightlocal.com/research/local-consumer-review-survey/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'var(--gray-500)', fontSize: '14px' }}
+              >
+                BrightLocal
+              </a>
+              . Make yours count.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -13681,7 +15095,8 @@ const YelpReviewPage = () => {
               Respond in 30 Seconds
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Stop agonizing over the perfect response. Our AI crafts professional Yelp replies in seconds.
+              Stop agonizing over the perfect response. Our AI crafts professional Yelp replies in
+              seconds.
             </p>
           </div>
         </div>
@@ -13790,10 +15205,13 @@ const RestaurantReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -13808,30 +15226,57 @@ const RestaurantReviewPage = () => {
             }}
           >
             <Utensils size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               For Restaurant Owners
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Restaurant Review Response Generator
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
             Running a restaurant is hard enough. Let AI handle your review responses so you can
             focus on what matters - great food and happy customers.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              background: 'white',
+              padding: '6px',
+              borderRadius: '14px',
+              maxWidth: '540px',
+              margin: '0 auto 32px',
+              boxShadow:
+                '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            }}
+          >
             <input
               type="email"
               placeholder="Enter your restaurant email"
@@ -13844,7 +15289,7 @@ const RestaurantReviewPage = () => {
                 color: 'var(--gray-900)',
                 outline: 'none',
                 background: 'transparent',
-                borderRadius: '10px'
+                borderRadius: '10px',
               }}
             />
             <Link
@@ -13860,40 +15305,50 @@ const RestaurantReviewPage = () => {
                 margin: 0,
                 whiteSpace: 'nowrap',
                 background: '#ef4444',
-                color: 'white'
+                color: 'white',
               }}
             >
               Get Started Free <Sparkles size={18} />
             </Link>
           </div>
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>GOOGLE MAPS</span>
             <span>YELP</span>
             <span>TRIPADVISOR</span>
@@ -13932,7 +15387,16 @@ const RestaurantReviewPage = () => {
               Reviews Make or Break You
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              94% of diners choose restaurants based on reviews — <a href="https://www.brightlocal.com/research/local-consumer-review-survey/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gray-500)', fontSize: '14px' }}>BrightLocal</a>. Your responses show you care.
+              94% of diners choose restaurants based on reviews —{' '}
+              <a
+                href="https://www.brightlocal.com/research/local-consumer-review-survey/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'var(--gray-500)', fontSize: '14px' }}
+              >
+                BrightLocal
+              </a>
+              . Your responses show you care.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -14059,10 +15523,13 @@ const HotelReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -14077,30 +15544,57 @@ const HotelReviewPage = () => {
             }}
           >
             <Building size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               For Hotels & B&Bs
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Hotel Review Management Tool
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
             Manage guest reviews across all platforms with AI. From Booking.com to TripAdvisor,
             respond professionally to every review and boost your hotel's reputation.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              background: 'white',
+              padding: '6px',
+              borderRadius: '14px',
+              maxWidth: '540px',
+              margin: '0 auto 32px',
+              boxShadow:
+                '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            }}
+          >
             <input
               type="email"
               placeholder="Enter your hotel email"
@@ -14113,7 +15607,7 @@ const HotelReviewPage = () => {
                 color: 'var(--gray-900)',
                 outline: 'none',
                 background: 'transparent',
-                borderRadius: '10px'
+                borderRadius: '10px',
               }}
             />
             <Link
@@ -14129,40 +15623,50 @@ const HotelReviewPage = () => {
                 margin: 0,
                 whiteSpace: 'nowrap',
                 background: '#6366f1',
-                color: 'white'
+                color: 'white',
               }}
             >
               Get Started Free <Sparkles size={18} />
             </Link>
           </div>
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>BOOKING.COM</span>
             <span>TRIPADVISOR</span>
             <span>EXPEDIA</span>
@@ -14329,10 +15833,13 @@ const LocalBusinessReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -14347,49 +15854,83 @@ const LocalBusinessReviewPage = () => {
             }}
           >
             <Store size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               For Local Businesses
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             AI Review Responses for Local Businesses
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
             You're busy running your business. Let AI write professional, personalized responses to
             every review - from glowing 5-stars to tough complaints.
           </p>
 
           <LandingEmailCapture buttonColor="#059669" />
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>GOOGLE MAPS</span>
             <span>YELP</span>
             <span>FACEBOOK</span>
@@ -14493,7 +16034,8 @@ const LocalBusinessReviewPage = () => {
               30 Seconds Per Review
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Stop spending minutes crafting the perfect response. Our AI generates professional replies in seconds.
+              Stop spending minutes crafting the perfect response. Our AI generates professional
+              replies in seconds.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -14632,10 +16174,13 @@ const NegativeReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -14650,49 +16195,83 @@ const NegativeReviewPage = () => {
             }}
           >
             <AlertCircle size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               Damage Control
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             How to Respond to Negative Reviews
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
             Got a bad review? Don't panic. Our AI generates professional, empathetic responses that
             show you care - and can turn critics into loyal customers.
           </p>
 
           <LandingEmailCapture buttonColor="#B71C1C" />
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>GOOGLE MAPS</span>
             <span>YELP</span>
             <span>TRIPADVISOR</span>
@@ -14721,7 +16300,8 @@ const NegativeReviewPage = () => {
               Turn Critics Into Fans
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              A thoughtful response to a negative review can change minds. Many customers give businesses another chance after seeing a professional reply.
+              A thoughtful response to a negative review can change minds. Many customers give
+              businesses another chance after seeing a professional reply.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -14730,7 +16310,16 @@ const NegativeReviewPage = () => {
               Others Are Watching
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              94% of consumers read review responses — <a href="https://www.brightlocal.com/research/local-consumer-review-survey/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gray-500)', fontSize: '14px' }}>BrightLocal</a>. How you handle criticism shapes how new customers see you.
+              94% of consumers read review responses —{' '}
+              <a
+                href="https://www.brightlocal.com/research/local-consumer-review-survey/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'var(--gray-500)', fontSize: '14px' }}
+              >
+                BrightLocal
+              </a>
+              . How you handle criticism shapes how new customers see you.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -14778,7 +16367,8 @@ const NegativeReviewPage = () => {
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#D32F2F', marginTop: '2px' }} />
               <div>
-                <strong>Offer a solution</strong> - Invite them back or provide contact info to resolve
+                <strong>Offer a solution</strong> - Invite them back or provide contact info to
+                resolve
               </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
@@ -14861,10 +16451,13 @@ const TripAdvisorReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -14879,49 +16472,83 @@ const TripAdvisorReviewPage = () => {
             }}
           >
             <MapPin size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               TripAdvisor Integration
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             TripAdvisor Review Response Generator
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
-            Stand out on TripAdvisor with AI-crafted responses. Reply to guest reviews professionally
-            and boost your ranking in the world's largest travel platform.
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Stand out on TripAdvisor with AI-crafted responses. Reply to guest reviews
+            professionally and boost your ranking in the world's largest travel platform.
           </p>
 
           <LandingEmailCapture buttonColor="#0066cc" />
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>HOTELS</span>
             <span>RESTAURANTS</span>
             <span>ATTRACTIONS</span>
@@ -15049,10 +16676,13 @@ const BookingReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -15067,49 +16697,83 @@ const BookingReviewPage = () => {
             }}
           >
             <Globe size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               Booking.com Partner
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Booking.com Review Response Generator
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
             Improve your Booking.com rating with thoughtful, AI-generated responses. Reply to every
             guest review professionally and increase your bookings.
           </p>
 
           <LandingEmailCapture buttonColor="#0066ff" />
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>HOTELS</span>
             <span>APARTMENTS</span>
             <span>HOSTELS</span>
@@ -15237,10 +16901,13 @@ const FacebookReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -15255,49 +16922,83 @@ const FacebookReviewPage = () => {
             }}
           >
             <MessageSquare size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               Facebook Business
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Facebook Review Response Generator
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
             Build trust on Facebook with AI-crafted responses. Reply to recommendations and reviews
             professionally to grow your local business presence.
           </p>
 
           <LandingEmailCapture buttonColor="#0a66c2" />
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>FACEBOOK</span>
             <span>INSTAGRAM</span>
             <span>META BUSINESS</span>
@@ -15391,7 +17092,8 @@ const DentistReviewPage = () => {
       sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     }
 
-    document.title = 'Dentist Review Response Generator | AI Replies for Dental Practices | ReviewResponder';
+    document.title =
+      'Dentist Review Response Generator | AI Replies for Dental Practices | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc)
       metaDesc.setAttribute(
@@ -15424,10 +17126,13 @@ const DentistReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -15442,30 +17147,57 @@ const DentistReviewPage = () => {
             }}
           >
             <Heart size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               For Dental Practices
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Dentist Review Response Generator
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
             Build patient trust with thoughtful review responses. Our AI helps dental practices
             respond professionally while maintaining HIPAA compliance awareness.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              background: 'white',
+              padding: '6px',
+              borderRadius: '14px',
+              maxWidth: '540px',
+              margin: '0 auto 32px',
+              boxShadow:
+                '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            }}
+          >
             <input
               type="email"
               placeholder="Enter your practice email"
@@ -15478,7 +17210,7 @@ const DentistReviewPage = () => {
                 color: 'var(--gray-900)',
                 outline: 'none',
                 background: 'transparent',
-                borderRadius: '10px'
+                borderRadius: '10px',
               }}
             />
             <Link
@@ -15494,40 +17226,50 @@ const DentistReviewPage = () => {
                 margin: 0,
                 whiteSpace: 'nowrap',
                 background: '#2E7D32',
-                color: 'white'
+                color: 'white',
               }}
             >
               Get Started Free <Sparkles size={18} />
             </Link>
           </div>
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>GOOGLE</span>
             <span>YELP</span>
             <span>HEALTHGRADES</span>
@@ -15663,7 +17405,8 @@ const MedicalPracticeReviewPage = () => {
       sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     }
 
-    document.title = 'Medical Practice Review Response Generator | AI for Healthcare | ReviewResponder';
+    document.title =
+      'Medical Practice Review Response Generator | AI for Healthcare | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc)
       metaDesc.setAttribute(
@@ -15696,10 +17439,13 @@ const MedicalPracticeReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -15714,30 +17460,57 @@ const MedicalPracticeReviewPage = () => {
             }}
           >
             <Heart size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               For Healthcare Providers
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Medical Practice Review Response Generator
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
             Manage your medical practice's online reputation with AI. Generate professional,
             HIPAA-aware responses that build patient trust without compromising privacy.
           </p>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            background: 'white',
-            padding: '6px',
-            borderRadius: '14px',
-            maxWidth: '540px',
-            margin: '0 auto 32px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              background: 'white',
+              padding: '6px',
+              borderRadius: '14px',
+              maxWidth: '540px',
+              margin: '0 auto 32px',
+              boxShadow:
+                '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            }}
+          >
             <input
               type="email"
               placeholder="Enter your practice email"
@@ -15750,7 +17523,7 @@ const MedicalPracticeReviewPage = () => {
                 color: 'var(--gray-900)',
                 outline: 'none',
                 background: 'transparent',
-                borderRadius: '10px'
+                borderRadius: '10px',
               }}
             />
             <Link
@@ -15766,40 +17539,50 @@ const MedicalPracticeReviewPage = () => {
                 margin: 0,
                 whiteSpace: 'nowrap',
                 background: '#C62828',
-                color: 'white'
+                color: 'white',
               }}
             >
               Get Started Free <Sparkles size={18} />
             </Link>
           </div>
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>GOOGLE</span>
             <span>HEALTHGRADES</span>
             <span>VITALS</span>
@@ -15828,8 +17611,8 @@ const MedicalPracticeReviewPage = () => {
               Patients Choose Based on Reviews
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              84% of patients use online reviews to evaluate physicians. Your responses shape
-              how new patients perceive your practice.
+              84% of patients use online reviews to evaluate physicians. Your responses shape how
+              new patients perceive your practice.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -15838,8 +17621,8 @@ const MedicalPracticeReviewPage = () => {
               HIPAA Compliance Matters
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Our AI generates responses that don't confirm patient relationships or disclose
-              PHI, helping you respond safely.
+              Our AI generates responses that don't confirm patient relationships or disclose PHI,
+              helping you respond safely.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -15848,8 +17631,8 @@ const MedicalPracticeReviewPage = () => {
               Save Staff Time
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Your staff is busy with patient care. Let AI draft responses in seconds that you
-              can review and post quickly.
+              Your staff is busy with patient care. Let AI draft responses in seconds that you can
+              review and post quickly.
             </p>
           </div>
         </div>
@@ -15869,25 +17652,29 @@ const MedicalPracticeReviewPage = () => {
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#E53935', marginTop: '2px' }} />
               <div>
-                <strong>Never confirm patient status</strong> - Don't acknowledge someone is/was your patient
+                <strong>Never confirm patient status</strong> - Don't acknowledge someone is/was
+                your patient
               </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#E53935', marginTop: '2px' }} />
               <div>
-                <strong>Avoid treatment details</strong> - Keep responses general about your practice's approach
+                <strong>Avoid treatment details</strong> - Keep responses general about your
+                practice's approach
               </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#E53935', marginTop: '2px' }} />
               <div>
-                <strong>Take complaints offline</strong> - Invite concerned reviewers to contact you directly
+                <strong>Take complaints offline</strong> - Invite concerned reviewers to contact you
+                directly
               </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#E53935', marginTop: '2px' }} />
               <div>
-                <strong>Stay professional</strong> - Never argue or get defensive, even with unfair reviews
+                <strong>Stay professional</strong> - Never argue or get defensive, even with unfair
+                reviews
               </div>
             </div>
           </div>
@@ -15931,7 +17718,8 @@ const SalonSpaReviewPage = () => {
       sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     }
 
-    document.title = 'Salon & Spa Review Response Generator | AI for Beauty Industry | ReviewResponder';
+    document.title =
+      'Salon & Spa Review Response Generator | AI for Beauty Industry | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc)
       metaDesc.setAttribute(
@@ -15964,10 +17752,13 @@ const SalonSpaReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -15982,49 +17773,83 @@ const SalonSpaReviewPage = () => {
             }}
           >
             <Scissors size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               For Beauty Businesses
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Salon & Spa Review Response Generator
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
             Build your beauty business reputation with AI-crafted responses. Reply to client reviews
             professionally and attract more bookings.
           </p>
 
           <LandingEmailCapture buttonColor="#C2185B" />
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>HAIR SALONS</span>
             <span>NAIL SALONS</span>
             <span>DAY SPAS</span>
@@ -16113,7 +17938,8 @@ const SalonSpaReviewPage = () => {
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#E91E63', marginTop: '2px' }} />
               <div>
-                <strong>"Nail polish chipped next day"</strong> - Apologize, offer a redo or discount
+                <strong>"Nail polish chipped next day"</strong> - Apologize, offer a redo or
+                discount
               </div>
             </div>
           </div>
@@ -16171,7 +17997,8 @@ const AutoShopReviewPage = () => {
       '@context': 'https://schema.org',
       '@type': 'SoftwareApplication',
       name: 'ReviewResponder - Auto Shop Review Response Generator',
-      description: 'AI tool for automotive businesses to respond professionally to customer reviews',
+      description:
+        'AI tool for automotive businesses to respond professionally to customer reviews',
       applicationCategory: 'BusinessApplication',
       operatingSystem: 'Web',
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
@@ -16190,10 +18017,13 @@ const AutoShopReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -16208,49 +18038,83 @@ const AutoShopReviewPage = () => {
             }}
           >
             <Car size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               For Auto Shops
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Auto Shop Review Response Generator
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
             Build trust in an industry where customers are skeptical. Our AI helps you respond to
             reviews professionally and turn first-timers into loyal customers.
           </p>
 
           <LandingEmailCapture buttonColor="#E65100" />
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>AUTO REPAIR</span>
             <span>TIRE SHOPS</span>
             <span>OIL CHANGE</span>
@@ -16419,10 +18283,13 @@ const TrustpilotReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -16437,48 +18304,83 @@ const TrustpilotReviewPage = () => {
             }}
           >
             <Star size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               Trustpilot Integration
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Trustpilot Review Response Generator
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
-            Build trust on the world's leading review platform. Generate professional responses to Trustpilot reviews in seconds with AI.
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Build trust on the world's leading review platform. Generate professional responses to
+            Trustpilot reviews in seconds with AI.
           </p>
 
           <LandingEmailCapture buttonColor="#00b67a" />
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>E-COMMERCE</span>
             <span>SaaS</span>
             <span>SERVICES</span>
@@ -16488,11 +18390,19 @@ const TrustpilotReviewPage = () => {
       </section>
 
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
           Why Trustpilot Reviews Matter for Your Business
         </h2>
 
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
           <div className="card" style={{ padding: '24px' }}>
             <Users size={32} style={{ color: '#00b67a', marginBottom: '16px' }} />
             <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
@@ -16562,7 +18472,8 @@ const AirbnbReviewPage = () => {
       sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     }
 
-    document.title = 'Airbnb Host Review Response Generator | AI Replies for Hosts | ReviewResponder';
+    document.title =
+      'Airbnb Host Review Response Generator | AI Replies for Hosts | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc)
       metaDesc.setAttribute(
@@ -16595,10 +18506,13 @@ const AirbnbReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -16613,48 +18527,83 @@ const AirbnbReviewPage = () => {
             }}
           >
             <Home size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               Airbnb Host Tool
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Airbnb Host Review Response Generator
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
-            Respond to guest reviews like a Superhost. Generate warm, professional responses that encourage future bookings.
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Respond to guest reviews like a Superhost. Generate warm, professional responses that
+            encourage future bookings.
           </p>
 
           <LandingEmailCapture buttonColor="#FF5A5F" />
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>APARTMENTS</span>
             <span>VACATION HOMES</span>
             <span>UNIQUE STAYS</span>
@@ -16664,11 +18613,19 @@ const AirbnbReviewPage = () => {
       </section>
 
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
           Why Review Responses Matter for Airbnb Hosts
         </h2>
 
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
           <div className="card" style={{ padding: '24px' }}>
             <Award size={32} style={{ color: '#FF5A5F', marginBottom: '16px' }} />
             <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
@@ -16684,7 +18641,8 @@ const AirbnbReviewPage = () => {
               More Bookings
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Guests read your responses to previous reviews before booking. Make a great impression.
+              Guests read your responses to previous reviews before booking. Make a great
+              impression.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -16698,26 +18656,41 @@ const AirbnbReviewPage = () => {
           </div>
         </div>
 
-        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
+        <div
+          style={{
+            marginTop: '60px',
+            background: 'var(--gray-50)',
+            borderRadius: '16px',
+            padding: '40px',
+          }}
+        >
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
             Tips for Responding to Airbnb Reviews
           </h2>
           <div style={{ display: 'grid', gap: '16px' }}>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#FF5A5F', marginTop: '2px' }} />
-              <div><strong>Thank every guest</strong> - Even for short stays, appreciation matters</div>
+              <div>
+                <strong>Thank every guest</strong> - Even for short stays, appreciation matters
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#FF5A5F', marginTop: '2px' }} />
-              <div><strong>Be personal</strong> - Reference specific details from their stay</div>
+              <div>
+                <strong>Be personal</strong> - Reference specific details from their stay
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#FF5A5F', marginTop: '2px' }} />
-              <div><strong>Address concerns gracefully</strong> - Show you care about improving</div>
+              <div>
+                <strong>Address concerns gracefully</strong> - Show you care about improving
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#FF5A5F', marginTop: '2px' }} />
-              <div><strong>Invite them back</strong> - End with a warm welcome for future stays</div>
+              <div>
+                <strong>Invite them back</strong> - End with a warm welcome for future stays
+              </div>
             </div>
           </div>
         </div>
@@ -16760,7 +18733,8 @@ const RealEstateReviewPage = () => {
       sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     }
 
-    document.title = 'Real Estate Agent Review Response Generator | AI Replies for Realtors | ReviewResponder';
+    document.title =
+      'Real Estate Agent Review Response Generator | AI Replies for Realtors | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc)
       metaDesc.setAttribute(
@@ -16793,10 +18767,13 @@ const RealEstateReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -16811,48 +18788,83 @@ const RealEstateReviewPage = () => {
             }}
           >
             <Home size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               Real Estate
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Real Estate Review Response Generator
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
-            Build your realtor reputation with AI-crafted responses. Generate professional replies to client reviews on Zillow, Realtor.com, and Google.
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Build your realtor reputation with AI-crafted responses. Generate professional replies
+            to client reviews on Zillow, Realtor.com, and Google.
           </p>
 
           <LandingEmailCapture buttonColor="#2d5a87" />
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>ZILLOW</span>
             <span>REALTOR.COM</span>
             <span>GOOGLE</span>
@@ -16862,11 +18874,19 @@ const RealEstateReviewPage = () => {
       </section>
 
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
           Why Reviews Matter for Real Estate Agents
         </h2>
 
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
           <div className="card" style={{ padding: '24px' }}>
             <Users size={32} style={{ color: '#2d5a87', marginBottom: '16px' }} />
             <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
@@ -16936,7 +18956,8 @@ const GymReviewPage = () => {
       sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     }
 
-    document.title = 'Gym & Fitness Review Response Generator | AI Replies for Gyms | ReviewResponder';
+    document.title =
+      'Gym & Fitness Review Response Generator | AI Replies for Gyms | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc)
       metaDesc.setAttribute(
@@ -16969,10 +18990,13 @@ const GymReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -16987,48 +19011,83 @@ const GymReviewPage = () => {
             }}
           >
             <Zap size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               Fitness Industry
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Gym & Fitness Review Response Generator
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
-            Keep members motivated and attract new ones. Generate professional responses to gym reviews that show you care about every member's fitness journey.
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Keep members motivated and attract new ones. Generate professional responses to gym
+            reviews that show you care about every member's fitness journey.
           </p>
 
           <LandingEmailCapture buttonColor="#ff6b35" />
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>GYMS</span>
             <span>CROSSFIT</span>
             <span>YOGA STUDIOS</span>
@@ -17038,11 +19097,19 @@ const GymReviewPage = () => {
       </section>
 
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
           Why Reviews Matter for Fitness Businesses
         </h2>
 
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
           <div className="card" style={{ padding: '24px' }}>
             <Users size={32} style={{ color: '#ff6b35', marginBottom: '16px' }} />
             <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
@@ -17072,26 +19139,42 @@ const GymReviewPage = () => {
           </div>
         </div>
 
-        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
+        <div
+          style={{
+            marginTop: '60px',
+            background: 'var(--gray-50)',
+            borderRadius: '16px',
+            padding: '40px',
+          }}
+        >
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
             Common Gym Review Topics
           </h2>
           <div style={{ display: 'grid', gap: '16px' }}>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#ff6b35', marginTop: '2px' }} />
-              <div><strong>"Equipment was broken"</strong> - Acknowledge, explain maintenance schedule</div>
+              <div>
+                <strong>"Equipment was broken"</strong> - Acknowledge, explain maintenance schedule
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#ff6b35', marginTop: '2px' }} />
-              <div><strong>"Too crowded"</strong> - Suggest off-peak hours, mention expansion plans</div>
+              <div>
+                <strong>"Too crowded"</strong> - Suggest off-peak hours, mention expansion plans
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#ff6b35', marginTop: '2px' }} />
-              <div><strong>"Great trainers!"</strong> - Thank them, share with your team</div>
+              <div>
+                <strong>"Great trainers!"</strong> - Thank them, share with your team
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#ff6b35', marginTop: '2px' }} />
-              <div><strong>"Cancellation issues"</strong> - Apologize, offer direct contact for resolution</div>
+              <div>
+                <strong>"Cancellation issues"</strong> - Apologize, offer direct contact for
+                resolution
+              </div>
             </div>
           </div>
         </div>
@@ -17134,7 +19217,8 @@ const VetReviewPage = () => {
       sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     }
 
-    document.title = 'Veterinarian Review Response Generator | AI Replies for Vet Clinics | ReviewResponder';
+    document.title =
+      'Veterinarian Review Response Generator | AI Replies for Vet Clinics | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc)
       metaDesc.setAttribute(
@@ -17167,10 +19251,13 @@ const VetReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -17185,48 +19272,83 @@ const VetReviewPage = () => {
             }}
           >
             <Heart size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               Veterinary Care
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Veterinarian Review Response Generator
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
-            Show pet owners you care as much about their furry friends as they do. Generate compassionate, professional responses to veterinary reviews.
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Show pet owners you care as much about their furry friends as they do. Generate
+            compassionate, professional responses to veterinary reviews.
           </p>
 
           <LandingEmailCapture buttonColor="#4CAF50" />
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>VET CLINICS</span>
             <span>ANIMAL HOSPITALS</span>
             <span>PET GROOMING</span>
@@ -17236,18 +19358,27 @@ const VetReviewPage = () => {
       </section>
 
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
           Why Reviews Matter for Veterinary Practices
         </h2>
 
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
           <div className="card" style={{ padding: '24px' }}>
             <Heart size={32} style={{ color: '#4CAF50', marginBottom: '16px' }} />
             <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
               Pet Parent Trust
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Pet owners are deeply emotional about their animals. Your responses show you understand.
+              Pet owners are deeply emotional about their animals. Your responses show you
+              understand.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -17270,26 +19401,42 @@ const VetReviewPage = () => {
           </div>
         </div>
 
-        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
+        <div
+          style={{
+            marginTop: '60px',
+            background: 'var(--gray-50)',
+            borderRadius: '16px',
+            padding: '40px',
+          }}
+        >
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
             Common Veterinary Review Topics
           </h2>
           <div style={{ display: 'grid', gap: '16px' }}>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#4CAF50', marginTop: '2px' }} />
-              <div><strong>"Long wait times"</strong> - Explain emergency protocols, offer appointment tips</div>
+              <div>
+                <strong>"Long wait times"</strong> - Explain emergency protocols, offer appointment
+                tips
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#4CAF50', marginTop: '2px' }} />
-              <div><strong>"Expensive treatment"</strong> - Explain value, mention payment plans</div>
+              <div>
+                <strong>"Expensive treatment"</strong> - Explain value, mention payment plans
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#4CAF50', marginTop: '2px' }} />
-              <div><strong>"Compassionate care"</strong> - Thank them, share with your team</div>
+              <div>
+                <strong>"Compassionate care"</strong> - Thank them, share with your team
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#4CAF50', marginTop: '2px' }} />
-              <div><strong>"End-of-life support"</strong> - Respond with deep empathy and care</div>
+              <div>
+                <strong>"End-of-life support"</strong> - Respond with deep empathy and care
+              </div>
             </div>
           </div>
         </div>
@@ -17332,7 +19479,8 @@ const LawFirmReviewPage = () => {
       sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     }
 
-    document.title = 'Law Firm Review Response Generator | AI Replies for Attorneys | ReviewResponder';
+    document.title =
+      'Law Firm Review Response Generator | AI Replies for Attorneys | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc)
       metaDesc.setAttribute(
@@ -17346,7 +19494,8 @@ const LawFirmReviewPage = () => {
       '@context': 'https://schema.org',
       '@type': 'SoftwareApplication',
       name: 'ReviewResponder - Law Firm Review Response Generator',
-      description: 'AI tool for law firms and attorneys to respond to client reviews professionally',
+      description:
+        'AI tool for law firms and attorneys to respond to client reviews professionally',
       applicationCategory: 'BusinessApplication',
       operatingSystem: 'Web',
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
@@ -17365,10 +19514,13 @@ const LawFirmReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -17383,48 +19535,83 @@ const LawFirmReviewPage = () => {
             }}
           >
             <Shield size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               Legal Industry
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Law Firm Review Response Generator
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
-            Respond to client reviews professionally while maintaining attorney-client privilege. Generate ethical, thoughtful responses that build trust.
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Respond to client reviews professionally while maintaining attorney-client privilege.
+            Generate ethical, thoughtful responses that build trust.
           </p>
 
           <LandingEmailCapture buttonColor="#16213e" />
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>PERSONAL INJURY</span>
             <span>FAMILY LAW</span>
             <span>CRIMINAL DEFENSE</span>
@@ -17434,11 +19621,19 @@ const LawFirmReviewPage = () => {
       </section>
 
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
           Why Reviews Matter for Law Firms
         </h2>
 
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
           <div className="card" style={{ padding: '24px' }}>
             <Users size={32} style={{ color: '#16213e', marginBottom: '16px' }} />
             <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
@@ -17454,7 +19649,8 @@ const LawFirmReviewPage = () => {
               Ethical Compliance
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Our AI generates responses that respect confidentiality and bar association guidelines.
+              Our AI generates responses that respect confidentiality and bar association
+              guidelines.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -17468,26 +19664,41 @@ const LawFirmReviewPage = () => {
           </div>
         </div>
 
-        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
+        <div
+          style={{
+            marginTop: '60px',
+            background: 'var(--gray-50)',
+            borderRadius: '16px',
+            padding: '40px',
+          }}
+        >
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
             Best Practices for Attorney Review Responses
           </h2>
           <div style={{ display: 'grid', gap: '16px' }}>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#16213e', marginTop: '2px' }} />
-              <div><strong>Never confirm representation</strong> - Protect client confidentiality</div>
+              <div>
+                <strong>Never confirm representation</strong> - Protect client confidentiality
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#16213e', marginTop: '2px' }} />
-              <div><strong>Keep it general</strong> - Thank without revealing case details</div>
+              <div>
+                <strong>Keep it general</strong> - Thank without revealing case details
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#16213e', marginTop: '2px' }} />
-              <div><strong>Address concerns offline</strong> - Invite private conversation</div>
+              <div>
+                <strong>Address concerns offline</strong> - Invite private conversation
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#16213e', marginTop: '2px' }} />
-              <div><strong>Stay professional</strong> - Never argue publicly with reviewers</div>
+              <div>
+                <strong>Stay professional</strong> - Never argue publicly with reviewers
+              </div>
             </div>
           </div>
         </div>
@@ -17530,7 +19741,8 @@ const EcommerceReviewPage = () => {
       sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     }
 
-    document.title = 'E-Commerce Review Response Generator | AI Replies for Online Stores | ReviewResponder';
+    document.title =
+      'E-Commerce Review Response Generator | AI Replies for Online Stores | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc)
       metaDesc.setAttribute(
@@ -17563,10 +19775,13 @@ const EcommerceReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -17581,48 +19796,83 @@ const EcommerceReviewPage = () => {
             }}
           >
             <ShoppingCart size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               E-Commerce
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             E-Commerce Review Response Generator
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
-            Turn product reviews into sales opportunities. Generate professional responses that address concerns, thank happy customers, and boost your store rating.
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Turn product reviews into sales opportunities. Generate professional responses that
+            address concerns, thank happy customers, and boost your store rating.
           </p>
 
           <LandingEmailCapture buttonColor="#7c3aed" />
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>AMAZON</span>
             <span>SHOPIFY</span>
             <span>ETSY</span>
@@ -17632,18 +19882,27 @@ const EcommerceReviewPage = () => {
       </section>
 
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
           Why Reviews Matter for E-Commerce
         </h2>
 
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
           <div className="card" style={{ padding: '24px' }}>
             <TrendingUp size={32} style={{ color: '#7c3aed', marginBottom: '16px' }} />
             <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
               Conversion Boost
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Products with seller responses see 18% higher conversion rates. Engagement drives sales.
+              Products with seller responses see 18% higher conversion rates. Engagement drives
+              sales.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -17666,26 +19925,41 @@ const EcommerceReviewPage = () => {
           </div>
         </div>
 
-        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
+        <div
+          style={{
+            marginTop: '60px',
+            background: 'var(--gray-50)',
+            borderRadius: '16px',
+            padding: '40px',
+          }}
+        >
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
             Common E-Commerce Review Topics
           </h2>
           <div style={{ display: 'grid', gap: '16px' }}>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#7c3aed', marginTop: '2px' }} />
-              <div><strong>"Product not as described"</strong> - Apologize, offer exchange or refund</div>
+              <div>
+                <strong>"Product not as described"</strong> - Apologize, offer exchange or refund
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#7c3aed', marginTop: '2px' }} />
-              <div><strong>"Shipping was slow"</strong> - Explain delays, offer solutions for next time</div>
+              <div>
+                <strong>"Shipping was slow"</strong> - Explain delays, offer solutions for next time
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#7c3aed', marginTop: '2px' }} />
-              <div><strong>"Love this product!"</strong> - Thank them, suggest complementary products</div>
+              <div>
+                <strong>"Love this product!"</strong> - Thank them, suggest complementary products
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#7c3aed', marginTop: '2px' }} />
-              <div><strong>"Arrived damaged"</strong> - Express concern, provide replacement process</div>
+              <div>
+                <strong>"Arrived damaged"</strong> - Express concern, provide replacement process
+              </div>
             </div>
           </div>
         </div>
@@ -17728,7 +20002,8 @@ const CoffeeShopReviewPage = () => {
       sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     }
 
-    document.title = 'Coffee Shop Review Response Generator | AI Replies for Cafes | ReviewResponder';
+    document.title =
+      'Coffee Shop Review Response Generator | AI Replies for Cafes | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc)
       metaDesc.setAttribute(
@@ -17761,10 +20036,13 @@ const CoffeeShopReviewPage = () => {
           padding: '100px 0 80px',
           color: 'white',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
           <div
             style={{
               display: 'inline-flex',
@@ -17779,48 +20057,83 @@ const CoffeeShopReviewPage = () => {
             }}
           >
             <Coffee size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
               Coffee & Cafes
             </span>
           </div>
 
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Coffee Shop Review Response Generator
           </h1>
 
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>
-            Brew the perfect response every time. Generate warm, friendly replies that reflect your coffee shop's unique personality and keep customers coming back.
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Brew the perfect response every time. Generate warm, friendly replies that reflect your
+            coffee shop's unique personality and keep customers coming back.
           </p>
 
           <LandingEmailCapture buttonColor="#6f4e37" />
 
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '24px',
-            marginBottom: '48px',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            paddingTop: '32px',
-            opacity: 0.7,
-            fontSize: '12px',
-            fontWeight: '600',
-            letterSpacing: '1px',
-            display: 'flex',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '32px',
-            alignItems: 'center'
-          }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.2)',
+              paddingTop: '32px',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontWeight: '600',
+              letterSpacing: '1px',
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '32px',
+              alignItems: 'center',
+            }}
+          >
             <span>COFFEE SHOPS</span>
             <span>CAFES</span>
             <span>BAKERIES</span>
@@ -17830,18 +20143,27 @@ const CoffeeShopReviewPage = () => {
       </section>
 
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
           Why Reviews Matter for Coffee Shops
         </h2>
 
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
           <div className="card" style={{ padding: '24px' }}>
             <MapPin size={32} style={{ color: '#6f4e37', marginBottom: '16px' }} />
             <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
               Local Discovery
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              "Coffee near me" searches lead to Google reviews. Your rating determines if they walk in.
+              "Coffee near me" searches lead to Google reviews. Your rating determines if they walk
+              in.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -17850,7 +20172,8 @@ const CoffeeShopReviewPage = () => {
               Community Building
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Responding to reviews creates a sense of community that makes your cafe a local favorite.
+              Responding to reviews creates a sense of community that makes your cafe a local
+              favorite.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -17859,31 +20182,49 @@ const CoffeeShopReviewPage = () => {
               Regular Customers
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
-              Personalized responses turn one-time visitors into daily regulars who know you by name.
+              Personalized responses turn one-time visitors into daily regulars who know you by
+              name.
             </p>
           </div>
         </div>
 
-        <div style={{ marginTop: '60px', background: 'var(--gray-50)', borderRadius: '16px', padding: '40px' }}>
+        <div
+          style={{
+            marginTop: '60px',
+            background: 'var(--gray-50)',
+            borderRadius: '16px',
+            padding: '40px',
+          }}
+        >
           <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '24px' }}>
             Common Coffee Shop Review Topics
           </h2>
           <div style={{ display: 'grid', gap: '16px' }}>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#6f4e37', marginTop: '2px' }} />
-              <div><strong>"Coffee was cold"</strong> - Apologize, invite them back for a fresh cup</div>
+              <div>
+                <strong>"Coffee was cold"</strong> - Apologize, invite them back for a fresh cup
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#6f4e37', marginTop: '2px' }} />
-              <div><strong>"No WiFi/power outlets"</strong> - Explain your concept, suggest alternatives</div>
+              <div>
+                <strong>"No WiFi/power outlets"</strong> - Explain your concept, suggest
+                alternatives
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#6f4e37', marginTop: '2px' }} />
-              <div><strong>"Best latte in town!"</strong> - Thank them warmly, share barista's appreciation</div>
+              <div>
+                <strong>"Best latte in town!"</strong> - Thank them warmly, share barista's
+                appreciation
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <CheckCircle size={20} style={{ color: '#6f4e37', marginTop: '2px' }} />
-              <div><strong>"Too expensive"</strong> - Explain sourcing, mention value options</div>
+              <div>
+                <strong>"Too expensive"</strong> - Explain sourcing, mention value options
+              </div>
             </div>
           </div>
         </div>
@@ -17913,43 +20254,181 @@ const AmazonReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/amazon-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/amazon-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'Amazon Review Response Generator | AI-Powered Seller Replies | ReviewResponder';
+    document.title =
+      'Amazon Review Response Generator | AI-Powered Seller Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Amazon review responses with AI. Reply to customer reviews instantly. Boost your seller rating and increase sales.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional Amazon review responses with AI. Reply to customer reviews instantly. Boost your seller rating and increase sales.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Amazon Review Response Generator', description: 'AI tool to respond professionally to Amazon product reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Amazon Review Response Generator',
+      description: 'AI tool to respond professionally to Amazon product reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #FF9900 0%, #cc7a00 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #FF9900 0%, #cc7a00 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <ShoppingCart size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Amazon Sellers</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Amazon Sellers
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Amazon Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Boost your Amazon seller rating with professional AI-generated responses. Turn negative reviews into opportunities.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Amazon Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Boost your Amazon seller rating with professional AI-generated responses. Turn negative
+            reviews into opportunities.
+          </p>
           <LandingEmailCapture buttonColor="#FF9900" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why Amazon Reviews Matter for Sellers</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><ShoppingCart size={32} style={{ color: '#FF9900', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Buy Box Impact</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Seller rating affects Buy Box eligibility. Professional responses improve your metrics.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#FF9900', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Sales Conversion</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Responded reviews show you care about customers, increasing purchase confidence.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Award size={32} style={{ color: '#FF9900', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Brand Protection</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Address negative feedback professionally to protect your brand reputation on Amazon.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Amazon Reviews Matter for Sellers
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <ShoppingCart size={32} style={{ color: '#FF9900', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Buy Box Impact
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Seller rating affects Buy Box eligibility. Professional responses improve your
+              metrics.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#FF9900', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Sales Conversion
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Responded reviews show you care about customers, increasing purchase confidence.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#FF9900', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Brand Protection
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Address negative feedback professionally to protect your brand reputation on Amazon.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Grow Your Amazon Business Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join Amazon sellers using AI to manage their product reviews.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Grow Your Amazon Business Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join Amazon sellers using AI to manage their product reviews.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -17961,43 +20440,179 @@ const G2ReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/g2-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/g2-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     document.title = 'G2 Review Response Generator | AI-Powered B2B SaaS Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional G2 review responses with AI. Reply to B2B software reviews instantly. Boost your G2 rating and win more enterprise deals.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional G2 review responses with AI. Reply to B2B software reviews instantly. Boost your G2 rating and win more enterprise deals.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - G2 Review Response Generator', description: 'AI tool to respond professionally to G2 software reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - G2 Review Response Generator',
+      description: 'AI tool to respond professionally to G2 software reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #FF492C 0%, #cc3a23 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #FF492C 0%, #cc3a23 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Award size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>B2B Software</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              B2B Software
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>G2 Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Win more enterprise deals with professional G2 review responses. Show prospects you care about customer success.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            G2 Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Win more enterprise deals with professional G2 review responses. Show prospects you care
+            about customer success.
+          </p>
           <LandingEmailCapture buttonColor="#FF492C" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why G2 Reviews Matter for SaaS Companies</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><Users size={32} style={{ color: '#FF492C', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Buyer Research</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>92% of B2B buyers read reviews before purchasing. G2 is their go-to platform.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#FF492C', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Grid Rankings</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Active engagement improves your G2 Grid position and category leadership.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Award size={32} style={{ color: '#FF492C', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Enterprise Deals</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Procurement teams check G2 reviews. Professional responses close deals faster.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why G2 Reviews Matter for SaaS Companies
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Users size={32} style={{ color: '#FF492C', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Buyer Research
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              92% of B2B buyers read reviews before purchasing. G2 is their go-to platform.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#FF492C', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Grid Rankings
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Active engagement improves your G2 Grid position and category leadership.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#FF492C', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Enterprise Deals
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Procurement teams check G2 reviews. Professional responses close deals faster.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Improve Your G2 Presence Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join SaaS companies using AI to manage their G2 reviews.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Improve Your G2 Presence Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join SaaS companies using AI to manage their G2 reviews.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -18009,43 +20624,180 @@ const CapterraReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/capterra-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/capterra-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'Capterra Review Response Generator | AI-Powered Software Replies | ReviewResponder';
+    document.title =
+      'Capterra Review Response Generator | AI-Powered Software Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Capterra review responses with AI. Reply to software reviews instantly. Boost your Capterra rating and attract more leads.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional Capterra review responses with AI. Reply to software reviews instantly. Boost your Capterra rating and attract more leads.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Capterra Review Response Generator', description: 'AI tool to respond professionally to Capterra software reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Capterra Review Response Generator',
+      description: 'AI tool to respond professionally to Capterra software reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #044D80 0%, #023350 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #044D80 0%, #023350 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Layers size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Software Reviews</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Software Reviews
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Capterra Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Stand out on Capterra with professional AI-generated responses. Convert more software buyers into customers.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Capterra Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Stand out on Capterra with professional AI-generated responses. Convert more software
+            buyers into customers.
+          </p>
           <LandingEmailCapture buttonColor="#044D80" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why Capterra Reviews Drive Software Sales</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><Users size={32} style={{ color: '#044D80', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>5M+ Monthly Visitors</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Capterra attracts millions of software buyers researching solutions every month.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#044D80', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Comparison Shopping</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Buyers compare software side-by-side. Responsive vendors win more trials.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Award size={32} style={{ color: '#044D80', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Lead Generation</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Higher ratings and active engagement drive more qualified leads from Capterra.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Capterra Reviews Drive Software Sales
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Users size={32} style={{ color: '#044D80', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              5M+ Monthly Visitors
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Capterra attracts millions of software buyers researching solutions every month.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#044D80', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Comparison Shopping
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Buyers compare software side-by-side. Responsive vendors win more trials.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#044D80', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Lead Generation
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Higher ratings and active engagement drive more qualified leads from Capterra.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Boost Your Capterra Presence Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join software companies using AI to manage their Capterra reviews.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Boost Your Capterra Presence Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join software companies using AI to manage their Capterra reviews.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -18057,43 +20809,180 @@ const GlassdoorReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/glassdoor-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/glassdoor-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'Glassdoor Review Response Generator | AI-Powered Employer Replies | ReviewResponder';
+    document.title =
+      'Glassdoor Review Response Generator | AI-Powered Employer Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Glassdoor review responses with AI. Reply to employee reviews instantly. Improve your employer brand and attract top talent.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional Glassdoor review responses with AI. Reply to employee reviews instantly. Improve your employer brand and attract top talent.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Glassdoor Review Response Generator', description: 'AI tool to respond professionally to Glassdoor employee reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Glassdoor Review Response Generator',
+      description: 'AI tool to respond professionally to Glassdoor employee reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #0CAA41 0%, #087830 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #0CAA41 0%, #087830 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Users size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Employer Brand</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Employer Brand
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Glassdoor Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build a stronger employer brand with professional AI-generated responses. Attract top talent by showing you value feedback.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Glassdoor Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Build a stronger employer brand with professional AI-generated responses. Attract top
+            talent by showing you value feedback.
+          </p>
           <LandingEmailCapture buttonColor="#0CAA41" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why Glassdoor Reviews Matter for Recruiting</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><Users size={32} style={{ color: '#0CAA41', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Candidate Research</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>86% of job seekers read company reviews before applying. Your responses matter.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#0CAA41', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Hiring Cost Reduction</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Strong employer brands reduce cost-per-hire by up to 50%.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Award size={32} style={{ color: '#0CAA41', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Talent Retention</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Responding to reviews shows you listen, improving employee satisfaction.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Glassdoor Reviews Matter for Recruiting
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Users size={32} style={{ color: '#0CAA41', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Candidate Research
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              86% of job seekers read company reviews before applying. Your responses matter.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#0CAA41', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Hiring Cost Reduction
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Strong employer brands reduce cost-per-hire by up to 50%.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#0CAA41', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Talent Retention
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Responding to reviews shows you listen, improving employee satisfaction.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Strengthen Your Employer Brand Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join HR teams using AI to manage their Glassdoor presence.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Strengthen Your Employer Brand Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join HR teams using AI to manage their Glassdoor presence.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -18105,43 +20994,181 @@ const BBBReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/bbb-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/bbb-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'BBB Review Response Generator | AI-Powered Business Replies | ReviewResponder';
+    document.title =
+      'BBB Review Response Generator | AI-Powered Business Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Better Business Bureau review responses with AI. Reply to BBB complaints instantly. Maintain your accreditation and build trust.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional Better Business Bureau review responses with AI. Reply to BBB complaints instantly. Maintain your accreditation and build trust.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - BBB Review Response Generator', description: 'AI tool to respond professionally to Better Business Bureau reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - BBB Review Response Generator',
+      description: 'AI tool to respond professionally to Better Business Bureau reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #005A8C 0%, #003d5c 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #005A8C 0%, #003d5c 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Shield size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>BBB Accredited</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              BBB Accredited
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>BBB Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Maintain your BBB rating with professional AI-generated responses. Handle complaints effectively and build consumer trust.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            BBB Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Maintain your BBB rating with professional AI-generated responses. Handle complaints
+            effectively and build consumer trust.
+          </p>
           <LandingEmailCapture buttonColor="#005A8C" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why BBB Reviews Matter for Your Business</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><Shield size={32} style={{ color: '#005A8C', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Trust Signal</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>BBB accreditation is a powerful trust signal. Consumers check BBB before major purchases.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#005A8C', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Rating Protection</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Timely, professional responses help maintain your A+ rating.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Award size={32} style={{ color: '#005A8C', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Complaint Resolution</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>BBB tracks complaint resolution rates. Professional responses improve your metrics.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why BBB Reviews Matter for Your Business
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Shield size={32} style={{ color: '#005A8C', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Trust Signal
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              BBB accreditation is a powerful trust signal. Consumers check BBB before major
+              purchases.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#005A8C', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Rating Protection
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Timely, professional responses help maintain your A+ rating.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#005A8C', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Complaint Resolution
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              BBB tracks complaint resolution rates. Professional responses improve your metrics.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Protect Your BBB Rating Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join businesses using AI to manage their BBB reputation.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Protect Your BBB Rating Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join businesses using AI to manage their BBB reputation.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -18153,43 +21180,179 @@ const PlumberReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/plumber-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/plumber-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     document.title = 'Plumber Review Response Generator | AI-Powered Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional plumbing service review responses with AI. Reply to customer reviews instantly. Build trust and get more plumbing jobs.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional plumbing service review responses with AI. Reply to customer reviews instantly. Build trust and get more plumbing jobs.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Plumber Review Response Generator', description: 'AI tool to respond professionally to plumbing service reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Plumber Review Response Generator',
+      description: 'AI tool to respond professionally to plumbing service reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #1E88E5 0%, #1565C0 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #1E88E5 0%, #1565C0 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Wrench size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Plumbing Services</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Plumbing Services
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Plumber Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build your plumbing reputation with professional AI-generated responses. Turn satisfied customers into referral sources.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Plumber Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Build your plumbing reputation with professional AI-generated responses. Turn satisfied
+            customers into referral sources.
+          </p>
           <LandingEmailCapture buttonColor="#1E88E5" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why Reviews Matter for Plumbers</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><Wrench size={32} style={{ color: '#1E88E5', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Emergency Trust</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Customers need plumbers fast. Good reviews mean they call you first for emergencies.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#1E88E5', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Local SEO Boost</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Responded reviews improve your Google Maps ranking for local searches.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Award size={32} style={{ color: '#1E88E5', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Word of Mouth</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Professional responses show reliability, driving referrals from happy homeowners.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Reviews Matter for Plumbers
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Wrench size={32} style={{ color: '#1E88E5', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Emergency Trust
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Customers need plumbers fast. Good reviews mean they call you first for emergencies.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#1E88E5', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Local SEO Boost
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Responded reviews improve your Google Maps ranking for local searches.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#1E88E5', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Word of Mouth
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Professional responses show reliability, driving referrals from happy homeowners.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Grow Your Plumbing Business Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join plumbers using AI to manage their online reputation.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Grow Your Plumbing Business Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join plumbers using AI to manage their online reputation.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -18201,43 +21364,180 @@ const ElectricianReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/electrician-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/electrician-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     document.title = 'Electrician Review Response Generator | AI-Powered Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional electrical service review responses with AI. Reply to customer reviews instantly. Build trust and get more electrical jobs.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional electrical service review responses with AI. Reply to customer reviews instantly. Build trust and get more electrical jobs.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Electrician Review Response Generator', description: 'AI tool to respond professionally to electrical service reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Electrician Review Response Generator',
+      description: 'AI tool to respond professionally to electrical service reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #FFC107 0%, #FFA000 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #FFC107 0%, #FFA000 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Zap size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Electrical Services</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Electrical Services
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Electrician Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Power up your electrical business with professional AI-generated responses. Show customers why you're the trusted choice.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Electrician Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Power up your electrical business with professional AI-generated responses. Show
+            customers why you're the trusted choice.
+          </p>
           <LandingEmailCapture buttonColor="#FFA000" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why Reviews Matter for Electricians</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><Zap size={32} style={{ color: '#FFA000', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Safety Trust</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Electrical work requires trust. Positive reviews show you're licensed, insured, and reliable.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#FFA000', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Competitive Edge</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Stand out from competitors with professional, thoughtful review responses.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Award size={32} style={{ color: '#FFA000', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Commercial Contracts</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Business clients check reviews before hiring. Great responses win bigger contracts.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Reviews Matter for Electricians
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Zap size={32} style={{ color: '#FFA000', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Safety Trust
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Electrical work requires trust. Positive reviews show you're licensed, insured, and
+              reliable.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#FFA000', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Competitive Edge
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Stand out from competitors with professional, thoughtful review responses.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#FFA000', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Commercial Contracts
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Business clients check reviews before hiring. Great responses win bigger contracts.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Grow Your Electrical Business Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join electricians using AI to manage their online reputation.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Grow Your Electrical Business Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join electricians using AI to manage their online reputation.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -18249,43 +21549,179 @@ const HVACReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/hvac-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/hvac-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     document.title = 'HVAC Review Response Generator | AI-Powered Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional HVAC service review responses with AI. Reply to heating and cooling reviews instantly. Build trust and grow your HVAC business.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional HVAC service review responses with AI. Reply to heating and cooling reviews instantly. Build trust and grow your HVAC business.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - HVAC Review Response Generator', description: 'AI tool to respond professionally to HVAC service reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - HVAC Review Response Generator',
+      description: 'AI tool to respond professionally to HVAC service reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #00ACC1 0%, #00838F 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #00ACC1 0%, #00838F 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Thermometer size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>HVAC Services</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              HVAC Services
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>HVAC Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Keep your HVAC business cool under pressure with professional AI-generated responses. Turn every review into a growth opportunity.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            HVAC Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Keep your HVAC business cool under pressure with professional AI-generated responses.
+            Turn every review into a growth opportunity.
+          </p>
           <LandingEmailCapture buttonColor="#00ACC1" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why Reviews Matter for HVAC Companies</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><Thermometer size={32} style={{ color: '#00ACC1', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Seasonal Demand</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Peak season means more reviews. Stay on top of customer feedback when it matters most.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#00ACC1', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Service Agreements</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Good reviews help sell maintenance contracts and recurring service plans.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Award size={32} style={{ color: '#00ACC1', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Emergency Calls</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>When AC breaks in summer, customers call the highest-rated HVAC company.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Reviews Matter for HVAC Companies
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Thermometer size={32} style={{ color: '#00ACC1', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Seasonal Demand
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Peak season means more reviews. Stay on top of customer feedback when it matters most.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#00ACC1', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Service Agreements
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Good reviews help sell maintenance contracts and recurring service plans.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#00ACC1', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Emergency Calls
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              When AC breaks in summer, customers call the highest-rated HVAC company.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Grow Your HVAC Business Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join HVAC companies using AI to manage their online reputation.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Grow Your HVAC Business Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join HVAC companies using AI to manage their online reputation.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -18297,43 +21733,180 @@ const RoofingReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/roofing-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/roofing-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     document.title = 'Roofing Review Response Generator | AI-Powered Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional roofing review responses with AI. Reply to customer reviews instantly. Build trust and win more roofing contracts.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional roofing review responses with AI. Reply to customer reviews instantly. Build trust and win more roofing contracts.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Roofing Review Response Generator', description: 'AI tool to respond professionally to roofing service reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Roofing Review Response Generator',
+      description: 'AI tool to respond professionally to roofing service reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #795548 0%, #5D4037 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #795548 0%, #5D4037 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Home size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Roofing Services</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Roofing Services
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Roofing Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Raise the roof on your reputation with professional AI-generated responses. Win more high-value roofing contracts.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Roofing Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Raise the roof on your reputation with professional AI-generated responses. Win more
+            high-value roofing contracts.
+          </p>
           <LandingEmailCapture buttonColor="#795548" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why Reviews Matter for Roofers</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><Home size={32} style={{ color: '#795548', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>High-Value Projects</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Roofing is a big investment. Homeowners research extensively before choosing a contractor.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#795548', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Storm Season</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>After storms, everyone needs a roofer. The best-reviewed companies get called first.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Award size={32} style={{ color: '#795548', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Insurance Work</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Insurance companies recommend highly-rated contractors. Reviews drive referrals.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Reviews Matter for Roofers
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Home size={32} style={{ color: '#795548', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              High-Value Projects
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Roofing is a big investment. Homeowners research extensively before choosing a
+              contractor.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#795548', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Storm Season
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              After storms, everyone needs a roofer. The best-reviewed companies get called first.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#795548', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Insurance Work
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Insurance companies recommend highly-rated contractors. Reviews drive referrals.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Grow Your Roofing Business Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join roofers using AI to manage their online reputation.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Grow Your Roofing Business Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join roofers using AI to manage their online reputation.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -18345,43 +21918,179 @@ const LandscapingReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/landscaping-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/landscaping-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     document.title = 'Landscaping Review Response Generator | AI-Powered Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional landscaping review responses with AI. Reply to customer reviews instantly. Build trust and grow your landscaping business.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional landscaping review responses with AI. Reply to customer reviews instantly. Build trust and grow your landscaping business.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Landscaping Review Response Generator', description: 'AI tool to respond professionally to landscaping service reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Landscaping Review Response Generator',
+      description: 'AI tool to respond professionally to landscaping service reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #4CAF50 0%, #388E3C 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #4CAF50 0%, #388E3C 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Trees size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Landscaping Services</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Landscaping Services
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Landscaping Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Help your landscaping business flourish with professional AI-generated responses. Turn happy customers into year-round clients.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Landscaping Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Help your landscaping business flourish with professional AI-generated responses. Turn
+            happy customers into year-round clients.
+          </p>
           <LandingEmailCapture buttonColor="#4CAF50" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why Reviews Matter for Landscapers</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><Trees size={32} style={{ color: '#4CAF50', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Visual Results</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Landscaping transforms homes. Reviews with photos drive new business.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#4CAF50', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Recurring Revenue</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Good reviews help convert one-time projects into monthly maintenance contracts.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Award size={32} style={{ color: '#4CAF50', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Neighborhood Effect</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>One beautiful yard leads to referrals from neighbors. Reviews amplify this effect.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Reviews Matter for Landscapers
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Trees size={32} style={{ color: '#4CAF50', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Visual Results
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Landscaping transforms homes. Reviews with photos drive new business.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#4CAF50', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Recurring Revenue
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Good reviews help convert one-time projects into monthly maintenance contracts.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#4CAF50', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Neighborhood Effect
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              One beautiful yard leads to referrals from neighbors. Reviews amplify this effect.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Grow Your Landscaping Business Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join landscapers using AI to manage their online reputation.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Grow Your Landscaping Business Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join landscapers using AI to manage their online reputation.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -18393,43 +22102,182 @@ const CleaningReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/cleaning-service-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/cleaning-service-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'Cleaning Service Review Response Generator | AI-Powered Replies | ReviewResponder';
+    document.title =
+      'Cleaning Service Review Response Generator | AI-Powered Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional cleaning service review responses with AI. Reply to customer reviews instantly. Build trust and grow your cleaning business.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional cleaning service review responses with AI. Reply to customer reviews instantly. Build trust and grow your cleaning business.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Cleaning Service Review Response Generator', description: 'AI tool to respond professionally to cleaning service reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Cleaning Service Review Response Generator',
+      description: 'AI tool to respond professionally to cleaning service reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Sparkles size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Cleaning Services</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Cleaning Services
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Cleaning Service Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Keep your cleaning business sparkling with professional AI-generated responses. Turn one-time clients into recurring customers.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Cleaning Service Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Keep your cleaning business sparkling with professional AI-generated responses. Turn
+            one-time clients into recurring customers.
+          </p>
           <LandingEmailCapture buttonColor="#9C27B0" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why Reviews Matter for Cleaning Services</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><Sparkles size={32} style={{ color: '#9C27B0', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Trust in Your Home</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Clients invite you into their homes. Reviews build the trust needed for that relationship.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#9C27B0', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Recurring Bookings</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Great reviews convert one-time deep cleans into weekly or bi-weekly service plans.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Award size={32} style={{ color: '#9C27B0', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Commercial Contracts</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Office managers check reviews before hiring. Professional responses win business accounts.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Reviews Matter for Cleaning Services
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Sparkles size={32} style={{ color: '#9C27B0', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Trust in Your Home
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Clients invite you into their homes. Reviews build the trust needed for that
+              relationship.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#9C27B0', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Recurring Bookings
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Great reviews convert one-time deep cleans into weekly or bi-weekly service plans.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#9C27B0', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Commercial Contracts
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Office managers check reviews before hiring. Professional responses win business
+              accounts.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Grow Your Cleaning Business Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join cleaning services using AI to manage their online reputation.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Grow Your Cleaning Business Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join cleaning services using AI to manage their online reputation.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -18441,43 +22289,180 @@ const HealthgradesReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/healthgrades-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/healthgrades-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'Healthgrades Review Response Generator | AI-Powered Doctor Replies | ReviewResponder';
+    document.title =
+      'Healthgrades Review Response Generator | AI-Powered Doctor Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Healthgrades review responses with AI. Reply to patient reviews instantly. Build your medical practice reputation.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional Healthgrades review responses with AI. Reply to patient reviews instantly. Build your medical practice reputation.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Healthgrades Review Response Generator', description: 'AI tool to respond professionally to Healthgrades patient reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Healthgrades Review Response Generator',
+      description: 'AI tool to respond professionally to Healthgrades patient reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #00A99D 0%, #007d74 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #00A99D 0%, #007d74 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Heart size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Healthcare</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Healthcare
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Healthgrades Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build patient trust on Healthgrades with professional AI-generated responses. Attract more patients with a stellar online reputation.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Healthgrades Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Build patient trust on Healthgrades with professional AI-generated responses. Attract
+            more patients with a stellar online reputation.
+          </p>
           <LandingEmailCapture buttonColor="#00A99D" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={16} /> HIPAA-Aware</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Shield size={16} /> HIPAA-Aware
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why Healthgrades Reviews Matter</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><Heart size={32} style={{ color: '#00A99D', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Patient Decisions</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>77% of patients use reviews as their first step in finding a doctor.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#00A99D', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Practice Growth</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Higher ratings mean more new patient appointments and practice revenue.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Shield size={32} style={{ color: '#00A99D', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>HIPAA Compliant</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Our AI generates responses that maintain patient privacy and HIPAA compliance.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Healthgrades Reviews Matter
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Heart size={32} style={{ color: '#00A99D', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Patient Decisions
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              77% of patients use reviews as their first step in finding a doctor.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#00A99D', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Practice Growth
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Higher ratings mean more new patient appointments and practice revenue.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Shield size={32} style={{ color: '#00A99D', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              HIPAA Compliant
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Our AI generates responses that maintain patient privacy and HIPAA compliance.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Grow Your Medical Practice Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join healthcare providers using AI to manage their Healthgrades presence.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Grow Your Medical Practice Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join healthcare providers using AI to manage their Healthgrades presence.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -18489,43 +22474,180 @@ const ZocdocReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/zocdoc-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/zocdoc-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'Zocdoc Review Response Generator | AI-Powered Doctor Replies | ReviewResponder';
+    document.title =
+      'Zocdoc Review Response Generator | AI-Powered Doctor Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Zocdoc review responses with AI. Reply to patient reviews instantly. Fill your appointment calendar with new patients.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional Zocdoc review responses with AI. Reply to patient reviews instantly. Fill your appointment calendar with new patients.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Zocdoc Review Response Generator', description: 'AI tool to respond professionally to Zocdoc patient reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Zocdoc Review Response Generator',
+      description: 'AI tool to respond professionally to Zocdoc patient reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #FFA000 0%, #FF8F00 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #FFA000 0%, #FF8F00 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Calendar size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Healthcare Booking</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Healthcare Booking
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Zocdoc Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Turn Zocdoc reviews into new patient bookings with professional AI-generated responses. Stand out in the competitive healthcare market.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Zocdoc Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Turn Zocdoc reviews into new patient bookings with professional AI-generated responses.
+            Stand out in the competitive healthcare market.
+          </p>
           <LandingEmailCapture buttonColor="#FFA000" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={16} /> HIPAA-Aware</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Shield size={16} /> HIPAA-Aware
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why Zocdoc Reviews Drive Bookings</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><Calendar size={32} style={{ color: '#FFA000', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Direct Bookings</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Zocdoc patients book appointments directly. Reviews influence their choice.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#FFA000', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Search Rankings</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Engaged profiles rank higher in Zocdoc search results.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Award size={32} style={{ color: '#FFA000', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Patient Retention</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Thoughtful responses show you care, encouraging patients to return.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Zocdoc Reviews Drive Bookings
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Calendar size={32} style={{ color: '#FFA000', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Direct Bookings
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Zocdoc patients book appointments directly. Reviews influence their choice.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#FFA000', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Search Rankings
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Engaged profiles rank higher in Zocdoc search results.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#FFA000', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Patient Retention
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Thoughtful responses show you care, encouraging patients to return.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Fill Your Appointment Calendar Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join healthcare providers using AI to manage their Zocdoc presence.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Fill Your Appointment Calendar Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join healthcare providers using AI to manage their Zocdoc presence.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -18537,43 +22659,180 @@ const PhotographerReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/photographer-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/photographer-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'Photographer Review Response Generator | AI-Powered Replies | ReviewResponder';
+    document.title =
+      'Photographer Review Response Generator | AI-Powered Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional photography review responses with AI. Reply to client reviews instantly. Book more sessions and grow your photography business.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional photography review responses with AI. Reply to client reviews instantly. Book more sessions and grow your photography business.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Photographer Review Response Generator', description: 'AI tool to respond professionally to photography business reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Photographer Review Response Generator',
+      description: 'AI tool to respond professionally to photography business reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #424242 0%, #212121 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #424242 0%, #212121 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Camera size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Photography</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Photography
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Photographer Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Capture more bookings with professional AI-generated responses. Let your reputation shine as bright as your photos.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Photographer Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Capture more bookings with professional AI-generated responses. Let your reputation
+            shine as bright as your photos.
+          </p>
           <LandingEmailCapture buttonColor="#424242" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why Reviews Matter for Photographers</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><Camera size={32} style={{ color: '#424242', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Portfolio + Reviews</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Clients love your photos, but reviews tell them about the experience.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#424242', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Referral Power</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Thoughtful responses encourage clients to refer friends and family.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Award size={32} style={{ color: '#424242', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Premium Pricing</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Great reviews justify premium rates. Show why you're worth every penny.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Reviews Matter for Photographers
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Camera size={32} style={{ color: '#424242', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Portfolio + Reviews
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Clients love your photos, but reviews tell them about the experience.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#424242', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Referral Power
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Thoughtful responses encourage clients to refer friends and family.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#424242', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Premium Pricing
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Great reviews justify premium rates. Show why you're worth every penny.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Book More Sessions Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join photographers using AI to manage their online reputation.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Book More Sessions Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join photographers using AI to manage their online reputation.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -18585,43 +22844,180 @@ const WeddingReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/wedding-vendor-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/wedding-vendor-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'Wedding Vendor Review Response Generator | AI-Powered Replies | ReviewResponder';
+    document.title =
+      'Wedding Vendor Review Response Generator | AI-Powered Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional wedding vendor review responses with AI. Reply to couple reviews instantly. Book more weddings and grow your business.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional wedding vendor review responses with AI. Reply to couple reviews instantly. Book more weddings and grow your business.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Wedding Vendor Review Response Generator', description: 'AI tool to respond professionally to wedding vendor reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Wedding Vendor Review Response Generator',
+      description: 'AI tool to respond professionally to wedding vendor reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #E91E63 0%, #C2185B 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #E91E63 0%, #C2185B 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Heart size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Wedding Industry</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Wedding Industry
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Wedding Vendor Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Say "I do" to more bookings with professional AI-generated responses. Build the reputation that makes couples choose you.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Wedding Vendor Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Say "I do" to more bookings with professional AI-generated responses. Build the
+            reputation that makes couples choose you.
+          </p>
           <LandingEmailCapture buttonColor="#E91E63" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why Reviews Matter for Wedding Vendors</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><Heart size={32} style={{ color: '#E91E63', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Emotional Decisions</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Weddings are emotional. Couples choose vendors who show they care through reviews.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#E91E63', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>The Knot & WeddingWire</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Top-rated vendors on wedding platforms get more inquiries and bookings.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Award size={32} style={{ color: '#E91E63', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Premium Events</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Great reviews help you attract higher-budget weddings and premium clients.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Reviews Matter for Wedding Vendors
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Heart size={32} style={{ color: '#E91E63', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Emotional Decisions
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Weddings are emotional. Couples choose vendors who show they care through reviews.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#E91E63', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              The Knot & WeddingWire
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Top-rated vendors on wedding platforms get more inquiries and bookings.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#E91E63', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Premium Events
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Great reviews help you attract higher-budget weddings and premium clients.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Book More Weddings Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join wedding vendors using AI to manage their online reputation.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Book More Weddings Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join wedding vendors using AI to manage their online reputation.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -18633,43 +23029,179 @@ const PetServiceReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/pet-service-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/pet-service-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     document.title = 'Pet Service Review Response Generator | AI-Powered Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional pet service review responses with AI. Reply to pet parent reviews instantly. Build trust and grow your pet business.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional pet service review responses with AI. Reply to pet parent reviews instantly. Build trust and grow your pet business.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Pet Service Review Response Generator', description: 'AI tool to respond professionally to pet service reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Pet Service Review Response Generator',
+      description: 'AI tool to respond professionally to pet service reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #8D6E63 0%, #6D4C41 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #8D6E63 0%, #6D4C41 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Dog size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Pet Services</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Pet Services
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Pet Service Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Fetch more customers with professional AI-generated responses. Show pet parents why their fur babies are in good hands.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Pet Service Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Fetch more customers with professional AI-generated responses. Show pet parents why
+            their fur babies are in good hands.
+          </p>
           <LandingEmailCapture buttonColor="#8D6E63" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why Reviews Matter for Pet Businesses</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><Dog size={32} style={{ color: '#8D6E63', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Pet Parent Trust</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Pet owners are protective. Reviews help them trust you with their beloved pets.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#8D6E63', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Recurring Revenue</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Happy pet parents become regular customers. Reviews build that loyalty.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Award size={32} style={{ color: '#8D6E63', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Word of Mouth</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Pet owners talk at dog parks. Great reviews become referral conversations.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Reviews Matter for Pet Businesses
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Dog size={32} style={{ color: '#8D6E63', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Pet Parent Trust
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Pet owners are protective. Reviews help them trust you with their beloved pets.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#8D6E63', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Recurring Revenue
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Happy pet parents become regular customers. Reviews build that loyalty.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#8D6E63', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Word of Mouth
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Pet owners talk at dog parks. Great reviews become referral conversations.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Grow Your Pet Business Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join pet services using AI to manage their online reputation.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Grow Your Pet Business Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join pet services using AI to manage their online reputation.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -18681,43 +23213,179 @@ const DaycareReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/daycare-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/daycare-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     document.title = 'Daycare Review Response Generator | AI-Powered Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional daycare review responses with AI. Reply to parent reviews instantly. Build trust and enroll more families.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional daycare review responses with AI. Reply to parent reviews instantly. Build trust and enroll more families.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Daycare Review Response Generator', description: 'AI tool to respond professionally to daycare and childcare reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Daycare Review Response Generator',
+      description: 'AI tool to respond professionally to daycare and childcare reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #FF7043 0%, #E64A19 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #FF7043 0%, #E64A19 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Baby size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Childcare</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Childcare
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Daycare Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Nurture your reputation with professional AI-generated responses. Help parents feel confident choosing your childcare center.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Daycare Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Nurture your reputation with professional AI-generated responses. Help parents feel
+            confident choosing your childcare center.
+          </p>
           <LandingEmailCapture buttonColor="#FF7043" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why Reviews Matter for Daycares</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><Baby size={32} style={{ color: '#FF7043', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Parent Trust</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Childcare is parents' biggest decision. Reviews build the trust needed to enroll.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#FF7043', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Waitlist Demand</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Top-rated daycares have waitlists. Great reviews create that demand.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Award size={32} style={{ color: '#FF7043', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Community Reputation</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Parents talk. Your online reputation becomes your local reputation.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Reviews Matter for Daycares
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Baby size={32} style={{ color: '#FF7043', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Parent Trust
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Childcare is parents' biggest decision. Reviews build the trust needed to enroll.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#FF7043', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Waitlist Demand
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Top-rated daycares have waitlists. Great reviews create that demand.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#FF7043', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Community Reputation
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Parents talk. Your online reputation becomes your local reputation.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Enroll More Families Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join daycares using AI to manage their online reputation.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Enroll More Families Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join daycares using AI to manage their online reputation.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -18729,43 +23397,180 @@ const AccountantReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/accountant-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/accountant-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'Accountant Review Response Generator | AI-Powered CPA Replies | ReviewResponder';
+    document.title =
+      'Accountant Review Response Generator | AI-Powered CPA Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional accountant review responses with AI. Reply to client reviews instantly. Build trust and grow your CPA practice.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional accountant review responses with AI. Reply to client reviews instantly. Build trust and grow your CPA practice.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Accountant Review Response Generator', description: 'AI tool to respond professionally to accounting and CPA reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Accountant Review Response Generator',
+      description: 'AI tool to respond professionally to accounting and CPA reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #37474F 0%, #263238 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #37474F 0%, #263238 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Calculator size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Accounting</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Accounting
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Accountant Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Balance your books and your reputation with professional AI-generated responses. Build client trust during tax season and beyond.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Accountant Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Balance your books and your reputation with professional AI-generated responses. Build
+            client trust during tax season and beyond.
+          </p>
           <LandingEmailCapture buttonColor="#37474F" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why Reviews Matter for Accountants</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><Calculator size={32} style={{ color: '#37474F', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Financial Trust</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Clients share sensitive financial data. Reviews establish the trust needed.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#37474F', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Tax Season Prep</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>New clients search for CPAs before tax season. Your reviews are waiting.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Award size={32} style={{ color: '#37474F', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Business Referrals</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Business owners recommend accountants. Great reviews get you referred.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Reviews Matter for Accountants
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Calculator size={32} style={{ color: '#37474F', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Financial Trust
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Clients share sensitive financial data. Reviews establish the trust needed.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#37474F', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Tax Season Prep
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              New clients search for CPAs before tax season. Your reviews are waiting.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#37474F', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Business Referrals
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Business owners recommend accountants. Great reviews get you referred.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Grow Your CPA Practice Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join accountants using AI to manage their online reputation.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Grow Your CPA Practice Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join accountants using AI to manage their online reputation.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -18777,43 +23582,180 @@ const InsuranceReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/insurance-agent-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/insurance-agent-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'Insurance Agent Review Response Generator | AI-Powered Replies | ReviewResponder';
+    document.title =
+      'Insurance Agent Review Response Generator | AI-Powered Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional insurance agent review responses with AI. Reply to client reviews instantly. Build trust and write more policies.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional insurance agent review responses with AI. Reply to client reviews instantly. Build trust and write more policies.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Insurance Agent Review Response Generator', description: 'AI tool to respond professionally to insurance agent reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Insurance Agent Review Response Generator',
+      description: 'AI tool to respond professionally to insurance agent reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #1565C0 0%, #0D47A1 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #1565C0 0%, #0D47A1 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Shield size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Insurance</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Insurance
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Insurance Agent Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Protect your reputation like you protect your clients. Professional AI-generated responses that build trust and close more policies.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Insurance Agent Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Protect your reputation like you protect your clients. Professional AI-generated
+            responses that build trust and close more policies.
+          </p>
           <LandingEmailCapture buttonColor="#1565C0" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why Reviews Matter for Insurance Agents</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><Shield size={32} style={{ color: '#1565C0', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Trust is Everything</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Insurance is a trust business. Reviews prove you deliver on your promises.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#1565C0', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Local Competition</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Stand out from other local agents with superior online presence.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Award size={32} style={{ color: '#1565C0', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Multi-Policy Clients</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Happy clients bundle policies. Great reviews encourage multi-policy business.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Reviews Matter for Insurance Agents
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <Shield size={32} style={{ color: '#1565C0', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Trust is Everything
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Insurance is a trust business. Reviews prove you deliver on your promises.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#1565C0', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Local Competition
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Stand out from other local agents with superior online presence.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#1565C0', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Multi-Policy Clients
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Happy clients bundle policies. Great reviews encourage multi-policy business.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Write More Policies Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join insurance agents using AI to manage their online reputation.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Write More Policies Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join insurance agents using AI to manage their online reputation.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -18825,43 +23767,180 @@ const SeniorCareReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/senior-care-review-responses' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/senior-care-review-responses',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     document.title = 'Senior Care Review Response Generator | AI-Powered Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional senior care review responses with AI. Reply to family reviews instantly. Build trust and help more families.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional senior care review responses with AI. Reply to family reviews instantly. Build trust and help more families.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Senior Care Review Response Generator', description: 'AI tool to respond professionally to senior care and assisted living reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Senior Care Review Response Generator',
+      description: 'AI tool to respond professionally to senior care and assisted living reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #7B1FA2 0%, #6A1B9A 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #7B1FA2 0%, #6A1B9A 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <HeartHandshake size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Senior Care</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Senior Care
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Senior Care Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Show families the compassionate care you provide with professional AI-generated responses. Build trust during difficult decisions.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Senior Care Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Show families the compassionate care you provide with professional AI-generated
+            responses. Build trust during difficult decisions.
+          </p>
           <LandingEmailCapture buttonColor="#7B1FA2" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Globe size={16} /> 50+ Languages</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Chrome size={16} /> Chrome Extension</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Globe size={16} /> 50+ Languages
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Chrome size={16} /> Chrome Extension
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '60px 20px', maxWidth: '900px' }}>
-        <h2 style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}>Why Reviews Matter for Senior Care</h2>
-        <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-          <div className="card" style={{ padding: '24px' }}><HeartHandshake size={32} style={{ color: '#7B1FA2', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Family Decisions</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Choosing senior care is emotional. Reviews help families feel confident in their choice.</p></div>
-          <div className="card" style={{ padding: '24px' }}><TrendingUp size={32} style={{ color: '#7B1FA2', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Occupancy Rates</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Higher ratings mean higher occupancy. Reviews directly impact your business.</p></div>
-          <div className="card" style={{ padding: '24px' }}><Award size={32} style={{ color: '#7B1FA2', marginBottom: '16px' }} /><h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Community Trust</h3><p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Healthcare professionals and social workers recommend facilities with great reviews.</p></div>
+        <h2
+          style={{ fontSize: '28px', fontWeight: '700', textAlign: 'center', marginBottom: '40px' }}
+        >
+          Why Reviews Matter for Senior Care
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gap: '24px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          }}
+        >
+          <div className="card" style={{ padding: '24px' }}>
+            <HeartHandshake size={32} style={{ color: '#7B1FA2', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Family Decisions
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Choosing senior care is emotional. Reviews help families feel confident in their
+              choice.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <TrendingUp size={32} style={{ color: '#7B1FA2', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Occupancy Rates
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Higher ratings mean higher occupancy. Reviews directly impact your business.
+            </p>
+          </div>
+          <div className="card" style={{ padding: '24px' }}>
+            <Award size={32} style={{ color: '#7B1FA2', marginBottom: '16px' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+              Community Trust
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Healthcare professionals and social workers recommend facilities with great reviews.
+            </p>
+          </div>
         </div>
-        <div style={{ marginTop: '60px', textAlign: 'center' }}><h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>Help More Families Today</h2><p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>Join senior care providers using AI to manage their online reputation.</p><Link to="/register" className="btn btn-primary btn-lg"><Sparkles size={20} />Try Free - No Credit Card</Link></div>
+        <div style={{ marginTop: '60px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px' }}>
+            Help More Families Today
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
+            Join senior care providers using AI to manage their online reputation.
+          </p>
+          <Link to="/register" className="btn btn-primary btn-lg">
+            <Sparkles size={20} />
+            Try Free - No Credit Card
+          </Link>
+        </div>
       </section>
       <Footer />
     </div>
@@ -18873,58 +23952,232 @@ const AppStoreReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/appstore-app-reviews' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/appstore-app-reviews',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'App Store Review Response Generator | iOS & Android App Reviews | ReviewResponder';
+    document.title =
+      'App Store Review Response Generator | iOS & Android App Reviews | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional App Store and Google Play review responses with AI. Reply to app reviews instantly. Boost your app rating and downloads.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional App Store and Google Play review responses with AI. Reply to app reviews instantly. Boost your app rating and downloads.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - App Store Review Response Generator', description: 'AI tool to respond professionally to iOS and Android app reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - App Store Review Response Generator',
+      description: 'AI tool to respond professionally to iOS and Android app reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Smartphone size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>App Developers</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              App Developers
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>App Store Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Boost your app rating with professional AI-generated responses. Reply to iOS App Store and Google Play reviews in seconds.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            App Store Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Boost your app rating with professional AI-generated responses. Reply to iOS App Store
+            and Google Play reviews in seconds.
+          </p>
           <LandingEmailCapture buttonColor="#007AFF" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={16} /> iOS & Android</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Clock size={16} /> Save 5+ Hours/Week
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Shield size={16} /> iOS & Android
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '80px 0' }}>
-        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why App Developers Choose ReviewResponder</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+        <h2
+          style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}
+        >
+          Why App Developers Choose ReviewResponder
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '32px',
+            marginBottom: '64px',
+          }}
+        >
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 122, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Smartphone size={24} style={{ color: '#007AFF' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Multi-Platform Support</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Reply to reviews on iOS App Store, Google Play Store, and other app marketplaces from one place.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(0, 122, 255, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Smartphone size={24} style={{ color: '#007AFF' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Multi-Platform Support
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Reply to reviews on iOS App Store, Google Play Store, and other app marketplaces from
+              one place.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 122, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Star size={24} style={{ color: '#007AFF' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Improve App Ratings</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Turn negative reviews into positive experiences. Professional responses can lead users to update their ratings.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(0, 122, 255, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Star size={24} style={{ color: '#007AFF' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Improve App Ratings
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Turn negative reviews into positive experiences. Professional responses can lead users
+              to update their ratings.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 122, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Zap size={24} style={{ color: '#007AFF' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Bug Report Handling</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Generate professional responses to bug reports and feature requests. Show users you care about their feedback.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(0, 122, 255, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Zap size={24} style={{ color: '#007AFF' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Bug Report Handling
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Generate professional responses to bug reports and feature requests. Show users you
+              care about their feedback.
+            </p>
           </div>
         </div>
-        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
-          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to improve your app reviews?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>20 free responses/month. No credit card required.</p>
-          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '48px',
+            background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)',
+            borderRadius: '24px',
+          }}
+        >
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>
+            Ready to improve your app reviews?
+          </h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
+            20 free responses/month. No credit card required.
+          </p>
+          <Link
+            to="/register"
+            className="btn btn-primary"
+            style={{ padding: '16px 32px', fontSize: '18px' }}
+          >
+            Start Free - 20 Responses Included
+          </Link>
         </div>
       </section>
       <Footer />
@@ -18937,58 +24190,232 @@ const IndeedReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/indeed-company-reviews' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/indeed-company-reviews',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'Indeed Company Review Response Generator | Employer Brand Management | ReviewResponder';
+    document.title =
+      'Indeed Company Review Response Generator | Employer Brand Management | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Indeed company review responses with AI. Manage your employer brand and attract top talent with thoughtful replies.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional Indeed company review responses with AI. Manage your employer brand and attract top talent with thoughtful replies.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Indeed Review Response Generator', description: 'AI tool to respond professionally to Indeed company reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Indeed Review Response Generator',
+      description: 'AI tool to respond professionally to Indeed company reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #2164F3 0%, #1a4fc9 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #2164F3 0%, #1a4fc9 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Briefcase size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>HR & Recruiting</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              HR & Recruiting
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Indeed Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build your employer brand with professional AI-generated responses. Turn employee feedback into recruitment opportunities.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Indeed Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Build your employer brand with professional AI-generated responses. Turn employee
+            feedback into recruitment opportunities.
+          </p>
           <LandingEmailCapture buttonColor="#2164F3" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={16} /> Employer Branding</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Clock size={16} /> Save 5+ Hours/Week
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Shield size={16} /> Employer Branding
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '80px 0' }}>
-        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why HR Teams Choose ReviewResponder</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+        <h2
+          style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}
+        >
+          Why HR Teams Choose ReviewResponder
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '32px',
+            marginBottom: '64px',
+          }}
+        >
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(33, 100, 243, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Briefcase size={24} style={{ color: '#2164F3' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Employer Brand Management</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Respond professionally to employee reviews. Show candidates that you value feedback and care about your workplace culture.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(33, 100, 243, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Briefcase size={24} style={{ color: '#2164F3' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Employer Brand Management
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Respond professionally to employee reviews. Show candidates that you value feedback
+              and care about your workplace culture.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(33, 100, 243, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Users size={24} style={{ color: '#2164F3' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Attract Top Talent</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Candidates read reviews before applying. Professional responses to negative feedback show you take employee concerns seriously.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(33, 100, 243, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Users size={24} style={{ color: '#2164F3' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Attract Top Talent
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Candidates read reviews before applying. Professional responses to negative feedback
+              show you take employee concerns seriously.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(33, 100, 243, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><MessageSquare size={24} style={{ color: '#2164F3' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Consistent Messaging</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Maintain a consistent employer voice across all review platforms. AI ensures professional, on-brand responses every time.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(33, 100, 243, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <MessageSquare size={24} style={{ color: '#2164F3' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Consistent Messaging
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Maintain a consistent employer voice across all review platforms. AI ensures
+              professional, on-brand responses every time.
+            </p>
           </div>
         </div>
-        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
-          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to improve your employer brand?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>20 free responses/month. No credit card required.</p>
-          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '48px',
+            background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)',
+            borderRadius: '24px',
+          }}
+        >
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>
+            Ready to improve your employer brand?
+          </h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
+            20 free responses/month. No credit card required.
+          </p>
+          <Link
+            to="/register"
+            className="btn btn-primary"
+            style={{ padding: '16px 32px', fontSize: '18px' }}
+          >
+            Start Free - 20 Responses Included
+          </Link>
         </div>
       </section>
       <Footer />
@@ -19001,58 +24428,240 @@ const ZillowReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/zillow-realtor-reviews' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/zillow-realtor-reviews',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'Zillow Review Response Generator | Realtor Review Management | ReviewResponder';
+    document.title =
+      'Zillow Review Response Generator | Realtor Review Management | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Zillow review responses with AI. Real estate agents can reply to client reviews instantly and boost their realtor rating.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional Zillow review responses with AI. Real estate agents can reply to client reviews instantly and boost their realtor rating.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Zillow Review Response Generator', description: 'AI tool to respond professionally to Zillow realtor reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Zillow Review Response Generator',
+      description: 'AI tool to respond professionally to Zillow realtor reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #006AFF 0%, #0052cc 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #006AFF 0%, #0052cc 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Home size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Real Estate Agents</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Real Estate Agents
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Zillow Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build your realtor reputation with professional AI-generated responses. Turn client reviews into more listings and sales.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Zillow Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Build your realtor reputation with professional AI-generated responses. Turn client
+            reviews into more listings and sales.
+          </p>
           <LandingEmailCapture buttonColor="#006AFF" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={16} /> Realtor Focused</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Clock size={16} /> Save 5+ Hours/Week
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Shield size={16} /> Realtor Focused
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '80px 0' }}>
-        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Real Estate Agents Choose ReviewResponder</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+        <h2
+          style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}
+        >
+          Why Real Estate Agents Choose ReviewResponder
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '32px',
+            marginBottom: '64px',
+          }}
+        >
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 106, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Home size={24} style={{ color: '#006AFF' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Zillow Profile Optimization</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Boost your Zillow rating with professional responses. Active engagement shows potential clients you care about their experience.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(0, 106, 255, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Home size={24} style={{ color: '#006AFF' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Zillow Profile Optimization
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Boost your Zillow rating with professional responses. Active engagement shows
+              potential clients you care about their experience.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 106, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#006AFF' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>More Listings & Sales</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Most home buyers read agent reviews before choosing a realtor — <a href="https://www.brightlocal.com/research/local-consumer-review-survey/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gray-500)', fontSize: '14px' }}>BrightLocal</a>. Stand out with professional responses.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(0, 106, 255, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <TrendingUp size={24} style={{ color: '#006AFF' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              More Listings & Sales
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Most home buyers read agent reviews before choosing a realtor —{' '}
+              <a
+                href="https://www.brightlocal.com/research/local-consumer-review-survey/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'var(--gray-500)', fontSize: '14px' }}
+              >
+                BrightLocal
+              </a>
+              . Stand out with professional responses.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 106, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><MessageSquare size={24} style={{ color: '#006AFF' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Handle Difficult Reviews</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Real estate transactions can be emotional. AI helps you craft professional responses to challenging feedback.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(0, 106, 255, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <MessageSquare size={24} style={{ color: '#006AFF' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Handle Difficult Reviews
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Real estate transactions can be emotional. AI helps you craft professional responses
+              to challenging feedback.
+            </p>
           </div>
         </div>
-        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
-          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to grow your real estate business?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>20 free responses/month. No credit card required.</p>
-          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '48px',
+            background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)',
+            borderRadius: '24px',
+          }}
+        >
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>
+            Ready to grow your real estate business?
+          </h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
+            20 free responses/month. No credit card required.
+          </p>
+          <Link
+            to="/register"
+            className="btn btn-primary"
+            style={{ padding: '16px 32px', fontSize: '18px' }}
+          >
+            Start Free - 20 Responses Included
+          </Link>
         </div>
       </section>
       <Footer />
@@ -19065,58 +24674,232 @@ const TherapyReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/therapy-counselor-reviews' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/therapy-counselor-reviews',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'Therapist Review Response Generator | Mental Health Practice Reviews | ReviewResponder';
+    document.title =
+      'Therapist Review Response Generator | Mental Health Practice Reviews | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional therapy practice review responses with AI. HIPAA-aware responses for psychologists, counselors, and therapists.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional therapy practice review responses with AI. HIPAA-aware responses for psychologists, counselors, and therapists.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Therapist Review Response Generator', description: 'AI tool to respond professionally to therapy and counseling practice reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Therapist Review Response Generator',
+      description: 'AI tool to respond professionally to therapy and counseling practice reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #5b21b6 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #7C3AED 0%, #5b21b6 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Heart size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Mental Health Professionals</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Mental Health Professionals
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Therapist Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build your therapy practice with professional AI-generated responses. Privacy-aware replies that respect client confidentiality.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Therapist Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Build your therapy practice with professional AI-generated responses. Privacy-aware
+            replies that respect client confidentiality.
+          </p>
           <LandingEmailCapture buttonColor="#7C3AED" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={16} /> Privacy-Aware</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Clock size={16} /> Save 5+ Hours/Week
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Shield size={16} /> Privacy-Aware
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '80px 0' }}>
-        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Therapists Choose ReviewResponder</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+        <h2
+          style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}
+        >
+          Why Therapists Choose ReviewResponder
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '32px',
+            marginBottom: '64px',
+          }}
+        >
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(124, 58, 237, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Shield size={24} style={{ color: '#7C3AED' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Privacy-First Responses</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI generates responses that maintain client confidentiality. Never acknowledge treatment details or confirm client status.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(124, 58, 237, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Shield size={24} style={{ color: '#7C3AED' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Privacy-First Responses
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              AI generates responses that maintain client confidentiality. Never acknowledge
+              treatment details or confirm client status.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(124, 58, 237, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Heart size={24} style={{ color: '#7C3AED' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Compassionate Tone</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI understands the sensitivity of mental health reviews. Responses are empathetic, professional, and appropriate for healthcare.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(124, 58, 237, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Heart size={24} style={{ color: '#7C3AED' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Compassionate Tone
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              AI understands the sensitivity of mental health reviews. Responses are empathetic,
+              professional, and appropriate for healthcare.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(124, 58, 237, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Users size={24} style={{ color: '#7C3AED' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Grow Your Practice</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>People seeking therapy often research providers online. Professional responses help build trust with potential clients.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(124, 58, 237, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Users size={24} style={{ color: '#7C3AED' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Grow Your Practice
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              People seeking therapy often research providers online. Professional responses help
+              build trust with potential clients.
+            </p>
           </div>
         </div>
-        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
-          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to grow your therapy practice?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join mental health professionals using AI to manage their reviews.</p>
-          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '48px',
+            background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)',
+            borderRadius: '24px',
+          }}
+        >
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>
+            Ready to grow your therapy practice?
+          </h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
+            Join mental health professionals using AI to manage their reviews.
+          </p>
+          <Link
+            to="/register"
+            className="btn btn-primary"
+            style={{ padding: '16px 32px', fontSize: '18px' }}
+          >
+            Start Free - 20 Responses Included
+          </Link>
         </div>
       </section>
       <Footer />
@@ -19129,58 +24912,231 @@ const ThumbtackReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/thumbtack-reviews' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/thumbtack-reviews',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     document.title = 'Thumbtack Review Response Generator | Service Pro Reviews | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Thumbtack review responses with AI. Service professionals can reply to customer reviews and get more leads.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional Thumbtack review responses with AI. Service professionals can reply to customer reviews and get more leads.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Thumbtack Review Response Generator', description: 'AI tool to respond professionally to Thumbtack service reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Thumbtack Review Response Generator',
+      description: 'AI tool to respond professionally to Thumbtack service reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #009FD9 0%, #007ab3 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #009FD9 0%, #007ab3 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Hammer size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Service Professionals</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Service Professionals
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Thumbtack Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Get more Thumbtack leads with professional AI-generated responses. Turn positive reviews into more bookings.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Thumbtack Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Get more Thumbtack leads with professional AI-generated responses. Turn positive reviews
+            into more bookings.
+          </p>
           <LandingEmailCapture buttonColor="#009FD9" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={16} /> Save 5+ Hours/Week</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Shield size={16} /> More Leads</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Clock size={16} /> Save 5+ Hours/Week
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Shield size={16} /> More Leads
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '80px 0' }}>
-        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Thumbtack Pros Choose ReviewResponder</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+        <h2
+          style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}
+        >
+          Why Thumbtack Pros Choose ReviewResponder
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '32px',
+            marginBottom: '64px',
+          }}
+        >
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 159, 217, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Hammer size={24} style={{ color: '#009FD9' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Built for Service Pros</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Whether you're a plumber, photographer, or personal trainer - AI generates responses that match your profession and expertise.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(0, 159, 217, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Hammer size={24} style={{ color: '#009FD9' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Built for Service Pros
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Whether you're a plumber, photographer, or personal trainer - AI generates responses
+              that match your profession and expertise.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 159, 217, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#009FD9' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Increase Your Hire Rate</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Thumbtack customers check reviews before hiring. Professional responses show you're reliable and care about customer satisfaction.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(0, 159, 217, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <TrendingUp size={24} style={{ color: '#009FD9' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Increase Your Hire Rate
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Thumbtack customers check reviews before hiring. Professional responses show you're
+              reliable and care about customer satisfaction.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 159, 217, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Zap size={24} style={{ color: '#009FD9' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Quick & Professional</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Respond to reviews between jobs without spending hours writing. AI generates professional replies in seconds.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(0, 159, 217, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Zap size={24} style={{ color: '#009FD9' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Quick & Professional
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Respond to reviews between jobs without spending hours writing. AI generates
+              professional replies in seconds.
+            </p>
           </div>
         </div>
-        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
-          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to get more Thumbtack leads?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>20 free responses/month. No credit card required.</p>
-          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '48px',
+            background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)',
+            borderRadius: '24px',
+          }}
+        >
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>
+            Ready to get more Thumbtack leads?
+          </h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
+            20 free responses/month. No credit card required.
+          </p>
+          <Link
+            to="/register"
+            className="btn btn-primary"
+            style={{ padding: '16px 32px', fontSize: '18px' }}
+          >
+            Start Free - 20 Responses Included
+          </Link>
         </div>
       </section>
       <Footer />
@@ -19193,58 +25149,232 @@ const LinkedInReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/linkedin-recommendations' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/linkedin-recommendations',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'LinkedIn Recommendation Response Generator | Professional Thank You Messages | ReviewResponder';
+    document.title =
+      'LinkedIn Recommendation Response Generator | Professional Thank You Messages | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional thank you responses to LinkedIn recommendations with AI. Reply to colleagues and build your professional reputation.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional thank you responses to LinkedIn recommendations with AI. Reply to colleagues and build your professional reputation.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - LinkedIn Recommendation Response Generator', description: 'AI tool to respond professionally to LinkedIn recommendations', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - LinkedIn Recommendation Response Generator',
+      description: 'AI tool to respond professionally to LinkedIn recommendations',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #0A66C2 0%, #004182 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #0A66C2 0%, #004182 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Linkedin size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>B2B Professionals</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              B2B Professionals
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>LinkedIn Recommendation Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Never leave a LinkedIn recommendation unanswered. Generate thoughtful thank you responses that strengthen your professional network.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            LinkedIn Recommendation Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Never leave a LinkedIn recommendation unanswered. Generate thoughtful thank you
+            responses that strengthen your professional network.
+          </p>
           <LandingEmailCapture buttonColor="#0A66C2" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={16} /> Build Your Network</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Briefcase size={16} /> Professional Tone</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Users size={16} /> Build Your Network
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Briefcase size={16} /> Professional Tone
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '80px 0' }}>
-        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why LinkedIn Recommendations Matter</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+        <h2
+          style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}
+        >
+          Why LinkedIn Recommendations Matter
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '32px',
+            marginBottom: '64px',
+          }}
+        >
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(10, 102, 194, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Linkedin size={24} style={{ color: '#0A66C2' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>900M+ Professionals</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>LinkedIn is the world's largest professional network. Recommendations boost your credibility and visibility.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(10, 102, 194, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Linkedin size={24} style={{ color: '#0A66C2' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              900M+ Professionals
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              LinkedIn is the world's largest professional network. Recommendations boost your
+              credibility and visibility.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(10, 102, 194, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#0A66C2' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Career Growth</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Responding to recommendations shows gratitude and strengthens relationships that can lead to new opportunities.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(10, 102, 194, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <TrendingUp size={24} style={{ color: '#0A66C2' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Career Growth
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Responding to recommendations shows gratitude and strengthens relationships that can
+              lead to new opportunities.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(10, 102, 194, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><MessageSquare size={24} style={{ color: '#0A66C2' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Reciprocity</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>A thoughtful response often leads to reciprocal recommendations, building your profile further.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(10, 102, 194, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <MessageSquare size={24} style={{ color: '#0A66C2' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Reciprocity
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              A thoughtful response often leads to reciprocal recommendations, building your profile
+              further.
+            </p>
           </div>
         </div>
-        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
-          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to build your LinkedIn reputation?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Generate professional thank you responses in seconds.</p>
-          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '48px',
+            background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)',
+            borderRadius: '24px',
+          }}
+        >
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>
+            Ready to build your LinkedIn reputation?
+          </h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
+            Generate professional thank you responses in seconds.
+          </p>
+          <Link
+            to="/register"
+            className="btn btn-primary"
+            style={{ padding: '16px 32px', fontSize: '18px' }}
+          >
+            Start Free - 20 Responses Included
+          </Link>
         </div>
       </section>
       <Footer />
@@ -19257,58 +25387,229 @@ const AngiReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/angie-list-contractor-reviews' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/angie-list-contractor-reviews',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     document.title = 'Angi Review Response Generator | Contractor Review Replies | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Angi (Angie\'s List) review responses with AI. Contractors can reply to customer reviews and get more leads.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        "Generate professional Angi (Angie's List) review responses with AI. Contractors can reply to customer reviews and get more leads."
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Angi Review Response Generator', description: 'AI tool to respond professionally to Angi contractor reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Angi Review Response Generator',
+      description: 'AI tool to respond professionally to Angi contractor reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #00A651 0%, #007336 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #00A651 0%, #007336 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Hammer size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Home Service Contractors</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Home Service Contractors
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Angi Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Win more jobs on Angi with professional AI-generated review responses. Build your contractor reputation and get more leads.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Angi Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Win more jobs on Angi with professional AI-generated review responses. Build your
+            contractor reputation and get more leads.
+          </p>
           <LandingEmailCapture buttonColor="#00A651" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Award size={16} /> Top Pro Status</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><TrendingUp size={16} /> More Leads</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Award size={16} /> Top Pro Status
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <TrendingUp size={16} /> More Leads
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '80px 0' }}>
-        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Angi Contractors Choose ReviewResponder</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+        <h2
+          style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}
+        >
+          Why Angi Contractors Choose ReviewResponder
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '32px',
+            marginBottom: '64px',
+          }}
+        >
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 166, 81, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Hammer size={24} style={{ color: '#00A651' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Built for Contractors</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Plumbers, electricians, roofers, landscapers - AI generates responses that match your trade and expertise.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(0, 166, 81, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Hammer size={24} style={{ color: '#00A651' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Built for Contractors
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Plumbers, electricians, roofers, landscapers - AI generates responses that match your
+              trade and expertise.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 166, 81, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Award size={24} style={{ color: '#00A651' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Boost Your Rating</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Responding to reviews shows professionalism and can help you achieve Top Pro status on Angi.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(0, 166, 81, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Award size={24} style={{ color: '#00A651' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Boost Your Rating
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Responding to reviews shows professionalism and can help you achieve Top Pro status on
+              Angi.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 166, 81, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Clock size={24} style={{ color: '#00A651' }} /></div>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(0, 166, 81, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Clock size={24} style={{ color: '#00A651' }} />
+            </div>
             <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Save Time</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Stop spending hours writing review responses. AI generates professional replies between jobs in seconds.</p>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Stop spending hours writing review responses. AI generates professional replies
+              between jobs in seconds.
+            </p>
           </div>
         </div>
-        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
-          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to get more Angi leads?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join contractors using AI to manage their Angi reviews.</p>
-          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '48px',
+            background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)',
+            borderRadius: '24px',
+          }}
+        >
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>
+            Ready to get more Angi leads?
+          </h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
+            Join contractors using AI to manage their Angi reviews.
+          </p>
+          <Link
+            to="/register"
+            className="btn btn-primary"
+            style={{ padding: '16px 32px', fontSize: '18px' }}
+          >
+            Start Free - 20 Responses Included
+          </Link>
         </div>
       </section>
       <Footer />
@@ -19321,58 +25622,231 @@ const ChiropractorReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/chiropractor-reviews' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/chiropractor-reviews',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'Chiropractor Review Response Generator | Chiropractic Practice Reviews | ReviewResponder';
+    document.title =
+      'Chiropractor Review Response Generator | Chiropractic Practice Reviews | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional chiropractor review responses with AI. Reply to patient reviews and grow your chiropractic practice.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional chiropractor review responses with AI. Reply to patient reviews and grow your chiropractic practice.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Chiropractor Review Response Generator', description: 'AI tool to respond professionally to chiropractic practice reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Chiropractor Review Response Generator',
+      description: 'AI tool to respond professionally to chiropractic practice reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #5C6BC0 0%, #3949AB 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #5C6BC0 0%, #3949AB 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Activity size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Chiropractic Practices</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Chiropractic Practices
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Chiropractor Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build patient trust with professional AI-generated review responses. Grow your chiropractic practice with better online reputation.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Chiropractor Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Build patient trust with professional AI-generated review responses. Grow your
+            chiropractic practice with better online reputation.
+          </p>
           <LandingEmailCapture buttonColor="#5C6BC0" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Heart size={16} /> HIPAA Aware</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={16} /> More Patients</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Heart size={16} /> HIPAA Aware
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Users size={16} /> More Patients
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '80px 0' }}>
-        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Chiropractors Choose ReviewResponder</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+        <h2
+          style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}
+        >
+          Why Chiropractors Choose ReviewResponder
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '32px',
+            marginBottom: '64px',
+          }}
+        >
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(92, 107, 192, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Activity size={24} style={{ color: '#5C6BC0' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Healthcare Focused</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI understands chiropractic care terminology and patient sensitivity. Responses are professional and HIPAA-aware.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(92, 107, 192, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Activity size={24} style={{ color: '#5C6BC0' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Healthcare Focused
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              AI understands chiropractic care terminology and patient sensitivity. Responses are
+              professional and HIPAA-aware.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(92, 107, 192, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#5C6BC0' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Attract New Patients</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>93% of patients read online reviews before choosing a chiropractor. Professional responses build trust.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(92, 107, 192, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <TrendingUp size={24} style={{ color: '#5C6BC0' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Attract New Patients
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              93% of patients read online reviews before choosing a chiropractor. Professional
+              responses build trust.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(92, 107, 192, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Shield size={24} style={{ color: '#5C6BC0' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Handle Negative Reviews</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Turn negative feedback into positive outcomes with thoughtful, professional responses.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(92, 107, 192, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Shield size={24} style={{ color: '#5C6BC0' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Handle Negative Reviews
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Turn negative feedback into positive outcomes with thoughtful, professional responses.
+            </p>
           </div>
         </div>
-        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
-          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to grow your practice?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join chiropractors using AI to manage patient reviews.</p>
-          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '48px',
+            background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)',
+            borderRadius: '24px',
+          }}
+        >
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>
+            Ready to grow your practice?
+          </h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
+            Join chiropractors using AI to manage patient reviews.
+          </p>
+          <Link
+            to="/register"
+            className="btn btn-primary"
+            style={{ padding: '16px 32px', fontSize: '18px' }}
+          >
+            Start Free - 20 Responses Included
+          </Link>
         </div>
       </section>
       <Footer />
@@ -19385,58 +25859,229 @@ const BarberReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/barber-barbershop-reviews' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/barber-barbershop-reviews',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     document.title = 'Barbershop Review Response Generator | Barber Shop Reviews | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional barbershop review responses with AI. Reply to customer reviews and get more clients for your barber shop.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional barbershop review responses with AI. Reply to customer reviews and get more clients for your barber shop.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Barbershop Review Response Generator', description: 'AI tool to respond professionally to barbershop reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Barbershop Review Response Generator',
+      description: 'AI tool to respond professionally to barbershop reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #D32F2F 0%, #B71C1C 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #D32F2F 0%, #B71C1C 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Scissors size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Barbershops & Barbers</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Barbershops & Barbers
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Barbershop Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Keep your chair full with professional AI-generated review responses. Build loyalty and attract new clients to your barbershop.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Barbershop Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Keep your chair full with professional AI-generated review responses. Build loyalty and
+            attract new clients to your barbershop.
+          </p>
           <LandingEmailCapture buttonColor="#D32F2F" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Scissors size={16} /> Built for Barbers</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><TrendingUp size={16} /> More Clients</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Scissors size={16} /> Built for Barbers
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <TrendingUp size={16} /> More Clients
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '80px 0' }}>
-        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Barbers Choose ReviewResponder</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+        <h2
+          style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}
+        >
+          Why Barbers Choose ReviewResponder
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '32px',
+            marginBottom: '64px',
+          }}
+        >
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(211, 47, 47, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Scissors size={24} style={{ color: '#D32F2F' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Built for Barbershops</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI understands barbershop culture and terminology. Responses sound authentic, not robotic.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(211, 47, 47, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Scissors size={24} style={{ color: '#D32F2F' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Built for Barbershops
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              AI understands barbershop culture and terminology. Responses sound authentic, not
+              robotic.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(211, 47, 47, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Users size={24} style={{ color: '#D32F2F' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Build Client Loyalty</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Thank regulars for their reviews and turn first-timers into repeat clients with thoughtful responses.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(211, 47, 47, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Users size={24} style={{ color: '#D32F2F' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Build Client Loyalty
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Thank regulars for their reviews and turn first-timers into repeat clients with
+              thoughtful responses.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(211, 47, 47, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Clock size={24} style={{ color: '#D32F2F' }} /></div>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(211, 47, 47, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Clock size={24} style={{ color: '#D32F2F' }} />
+            </div>
             <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Save Time</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Respond between cuts instead of after closing. AI generates professional replies in seconds.</p>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Respond between cuts instead of after closing. AI generates professional replies in
+              seconds.
+            </p>
           </div>
         </div>
-        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
-          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to fill your chair?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join barbers using AI to build their online reputation.</p>
-          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '48px',
+            background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)',
+            borderRadius: '24px',
+          }}
+        >
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>
+            Ready to fill your chair?
+          </h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
+            Join barbers using AI to build their online reputation.
+          </p>
+          <Link
+            to="/register"
+            className="btn btn-primary"
+            style={{ padding: '16px 32px', fontSize: '18px' }}
+          >
+            Start Free - 20 Responses Included
+          </Link>
         </div>
       </section>
       <Footer />
@@ -19449,58 +26094,232 @@ const DermatologistReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/dermatologist-reviews' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/dermatologist-reviews',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'Dermatologist Review Response Generator | Dermatology Practice Reviews | ReviewResponder';
+    document.title =
+      'Dermatologist Review Response Generator | Dermatology Practice Reviews | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional dermatologist review responses with AI. Reply to patient reviews and grow your dermatology practice.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional dermatologist review responses with AI. Reply to patient reviews and grow your dermatology practice.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Dermatologist Review Response Generator', description: 'AI tool to respond professionally to dermatology practice reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Dermatologist Review Response Generator',
+      description: 'AI tool to respond professionally to dermatology practice reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #26A69A 0%, #00897B 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #26A69A 0%, #00897B 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Sparkles size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Dermatology Practices</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Dermatology Practices
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Dermatologist Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Build patient confidence with professional AI-generated review responses. Grow your dermatology practice with better online reputation.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Dermatologist Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Build patient confidence with professional AI-generated review responses. Grow your
+            dermatology practice with better online reputation.
+          </p>
           <LandingEmailCapture buttonColor="#26A69A" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Heart size={16} /> HIPAA Aware</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={16} /> More Patients</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Heart size={16} /> HIPAA Aware
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Users size={16} /> More Patients
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '80px 0' }}>
-        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Dermatologists Choose ReviewResponder</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+        <h2
+          style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}
+        >
+          Why Dermatologists Choose ReviewResponder
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '32px',
+            marginBottom: '64px',
+          }}
+        >
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(38, 166, 154, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Sparkles size={24} style={{ color: '#26A69A' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Medical & Cosmetic</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI handles both medical dermatology and cosmetic procedure reviews with appropriate professional tone.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(38, 166, 154, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Sparkles size={24} style={{ color: '#26A69A' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Medical & Cosmetic
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              AI handles both medical dermatology and cosmetic procedure reviews with appropriate
+              professional tone.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(38, 166, 154, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Shield size={24} style={{ color: '#26A69A' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>HIPAA Compliant</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Responses never reveal patient information. Professional, private, and compliant with healthcare regulations.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(38, 166, 154, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Shield size={24} style={{ color: '#26A69A' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              HIPAA Compliant
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Responses never reveal patient information. Professional, private, and compliant with
+              healthcare regulations.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(38, 166, 154, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#26A69A' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Build Trust</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Patients research extensively before choosing a dermatologist. Professional responses establish credibility.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(38, 166, 154, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <TrendingUp size={24} style={{ color: '#26A69A' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Build Trust
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Patients research extensively before choosing a dermatologist. Professional responses
+              establish credibility.
+            </p>
           </div>
         </div>
-        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
-          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to grow your practice?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join dermatologists using AI to manage patient reviews.</p>
-          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '48px',
+            background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)',
+            borderRadius: '24px',
+          }}
+        >
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>
+            Ready to grow your practice?
+          </h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
+            Join dermatologists using AI to manage patient reviews.
+          </p>
+          <Link
+            to="/register"
+            className="btn btn-primary"
+            style={{ padding: '16px 32px', fontSize: '18px' }}
+          >
+            Start Free - 20 Responses Included
+          </Link>
         </div>
       </section>
       <Footer />
@@ -19513,58 +26332,232 @@ const MassageTherapistReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/massage-therapist-reviews' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/massage-therapist-reviews',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'Massage Therapist Review Response Generator | Spa & Massage Reviews | ReviewResponder';
+    document.title =
+      'Massage Therapist Review Response Generator | Spa & Massage Reviews | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional massage therapist review responses with AI. Reply to client reviews and grow your massage therapy practice.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional massage therapist review responses with AI. Reply to client reviews and grow your massage therapy practice.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Massage Therapist Review Response Generator', description: 'AI tool to respond professionally to massage therapy reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Massage Therapist Review Response Generator',
+      description: 'AI tool to respond professionally to massage therapy reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #8E24AA 0%, #6A1B9A 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #8E24AA 0%, #6A1B9A 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Heart size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Massage & Wellness</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Massage & Wellness
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Massage Therapist Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Keep your schedule full with professional AI-generated review responses. Build client relationships and attract new bookings.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Massage Therapist Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Keep your schedule full with professional AI-generated review responses. Build client
+            relationships and attract new bookings.
+          </p>
           <LandingEmailCapture buttonColor="#8E24AA" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Heart size={16} /> Warm & Personal</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={16} /> More Bookings</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Heart size={16} /> Warm & Personal
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Calendar size={16} /> More Bookings
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '80px 0' }}>
-        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Massage Therapists Choose ReviewResponder</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+        <h2
+          style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}
+        >
+          Why Massage Therapists Choose ReviewResponder
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '32px',
+            marginBottom: '64px',
+          }}
+        >
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(142, 36, 170, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Heart size={24} style={{ color: '#8E24AA' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Warm & Personal</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI generates responses that feel genuine and caring - matching the personal nature of massage therapy.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(142, 36, 170, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Heart size={24} style={{ color: '#8E24AA' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Warm & Personal
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              AI generates responses that feel genuine and caring - matching the personal nature of
+              massage therapy.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(142, 36, 170, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Users size={24} style={{ color: '#8E24AA' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Client Retention</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Personal thank you responses turn one-time clients into regulars. Build lasting relationships.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(142, 36, 170, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Users size={24} style={{ color: '#8E24AA' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Client Retention
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Personal thank you responses turn one-time clients into regulars. Build lasting
+              relationships.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(142, 36, 170, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#8E24AA' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Grow Your Practice</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>New clients check reviews before booking. Professional responses build trust and attract bookings.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(142, 36, 170, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <TrendingUp size={24} style={{ color: '#8E24AA' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Grow Your Practice
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              New clients check reviews before booking. Professional responses build trust and
+              attract bookings.
+            </p>
           </div>
         </div>
-        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
-          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to fill your schedule?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join massage therapists using AI to build their client base.</p>
-          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '48px',
+            background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)',
+            borderRadius: '24px',
+          }}
+        >
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>
+            Ready to fill your schedule?
+          </h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
+            Join massage therapists using AI to build their client base.
+          </p>
+          <Link
+            to="/register"
+            className="btn btn-primary"
+            style={{ padding: '16px 32px', fontSize: '18px' }}
+          >
+            Start Free - 20 Responses Included
+          </Link>
         </div>
       </section>
       <Footer />
@@ -19577,58 +26570,232 @@ const PersonalTrainerReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/personal-trainer-reviews' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/personal-trainer-reviews',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
-    document.title = 'Personal Trainer Review Response Generator | Fitness Trainer Reviews | ReviewResponder';
+    document.title =
+      'Personal Trainer Review Response Generator | Fitness Trainer Reviews | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional personal trainer review responses with AI. Reply to client reviews and get more fitness clients.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        'Generate professional personal trainer review responses with AI. Reply to client reviews and get more fitness clients.'
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Personal Trainer Review Response Generator', description: 'AI tool to respond professionally to personal trainer and fitness reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Personal Trainer Review Response Generator',
+      description: 'AI tool to respond professionally to personal trainer and fitness reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #FF5722 0%, #E64A19 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #FF5722 0%, #E64A19 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Zap size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Personal Training & Fitness</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Personal Training & Fitness
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Personal Trainer Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Fill your training schedule with professional AI-generated review responses. Build your fitness brand and attract new clients.</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Personal Trainer Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Fill your training schedule with professional AI-generated review responses. Build your
+            fitness brand and attract new clients.
+          </p>
           <LandingEmailCapture buttonColor="#FF5722" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Zap size={16} /> Fitness Focused</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><TrendingUp size={16} /> More Clients</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Zap size={16} /> Fitness Focused
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <TrendingUp size={16} /> More Clients
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '80px 0' }}>
-        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Personal Trainers Choose ReviewResponder</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+        <h2
+          style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}
+        >
+          Why Personal Trainers Choose ReviewResponder
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '32px',
+            marginBottom: '64px',
+          }}
+        >
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255, 87, 34, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Zap size={24} style={{ color: '#FF5722' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Fitness Industry Focus</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI understands personal training terminology and client transformation stories. Responses celebrate achievements.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(255, 87, 34, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Zap size={24} style={{ color: '#FF5722' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Fitness Industry Focus
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              AI understands personal training terminology and client transformation stories.
+              Responses celebrate achievements.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255, 87, 34, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Users size={24} style={{ color: '#FF5722' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Build Your Brand</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Professional responses showcase your expertise. Turn happy clients into brand ambassadors.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(255, 87, 34, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Users size={24} style={{ color: '#FF5722' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Build Your Brand
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Professional responses showcase your expertise. Turn happy clients into brand
+              ambassadors.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255, 87, 34, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#FF5722' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Attract New Clients</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>87% of people read reviews before hiring a personal trainer. Stand out with thoughtful responses.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(255, 87, 34, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <TrendingUp size={24} style={{ color: '#FF5722' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Attract New Clients
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              87% of people read reviews before hiring a personal trainer. Stand out with thoughtful
+              responses.
+            </p>
           </div>
         </div>
-        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
-          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to grow your training business?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join personal trainers using AI to build their client base.</p>
-          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '48px',
+            background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)',
+            borderRadius: '24px',
+          }}
+        >
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>
+            Ready to grow your training business?
+          </h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
+            Join personal trainers using AI to build their client base.
+          </p>
+          <Link
+            to="/register"
+            className="btn btn-primary"
+            style={{ padding: '16px 32px', fontSize: '18px' }}
+          >
+            Start Free - 20 Responses Included
+          </Link>
         </div>
       </section>
       <Footer />
@@ -19641,58 +26808,229 @@ const AngiListReviewPage = () => {
   const location = useLocation();
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const utmParams = { utm_source: params.get('utm_source'), utm_medium: params.get('utm_medium'), utm_campaign: params.get('utm_campaign'), utm_content: params.get('utm_content'), utm_term: params.get('utm_term'), landing_page: '/angie-list-contractor-reviews' };
+    const utmParams = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      landing_page: '/angie-list-contractor-reviews',
+    };
     if (utmParams.utm_source) sessionStorage.setItem('utm_params', JSON.stringify(utmParams));
     document.title = 'Angi Review Response Generator | Contractor Reviews | ReviewResponder';
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', 'Generate professional Angi (Angie\'s List) review responses with AI. Reply to contractor reviews and win more home service jobs.');
+    if (metaDesc)
+      metaDesc.setAttribute(
+        'content',
+        "Generate professional Angi (Angie's List) review responses with AI. Reply to contractor reviews and win more home service jobs."
+      );
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'ReviewResponder - Angi Contractor Review Response Generator', description: 'AI tool to respond professionally to Angi and home service reviews', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' } });
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'ReviewResponder - Angi Contractor Review Response Generator',
+      description: 'AI tool to respond professionally to Angi and home service reviews',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    });
     document.head.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
   }, [location.search]);
   return (
     <div>
-      <section style={{ background: 'linear-gradient(135deg, #FF6F00 0%, #E65100 100%)', padding: '100px 0 80px', color: 'white', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '6px 16px', borderRadius: '100px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.2)' }}>
+      <section
+        style={{
+          background: 'linear-gradient(135deg, #FF6F00 0%, #E65100 100%)',
+          padding: '100px 0 80px',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="container"
+          style={{ textAlign: 'center', maxWidth: '900px', position: 'relative', zIndex: 1 }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+              padding: '6px 16px',
+              borderRadius: '100px',
+              marginBottom: '32px',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
             <Sparkles size={14} />
-            <span style={{ fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Home Service Contractors</span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: '600',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Home Service Contractors
+            </span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.02em' }}>Angi Review Response Generator</h1>
-          <p style={{ fontSize: '20px', opacity: 0.9, marginBottom: '40px', lineHeight: '1.6', maxWidth: '700px', margin: '0 auto 40px' }}>Win more home service jobs with professional AI-generated review responses. Stand out from competitors on Angi (formerly Angie's List).</p>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: '800',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Angi Review Response Generator
+          </h1>
+          <p
+            style={{
+              fontSize: '20px',
+              opacity: 0.9,
+              marginBottom: '40px',
+              lineHeight: '1.6',
+              maxWidth: '700px',
+              margin: '0 auto 40px',
+            }}
+          >
+            Win more home service jobs with professional AI-generated review responses. Stand out
+            from competitors on Angi (formerly Angie's List).
+          </p>
           <LandingEmailCapture buttonColor="#FF6F00" />
-          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '24px', marginBottom: '48px', fontSize: '14px', fontWeight: '500' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Star size={16} /> 20 Free/Month</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Wrench size={16} /> All Trades</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><TrendingUp size={16} /> More Jobs</span>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '24px',
+              marginBottom: '48px',
+              fontSize: '14px',
+              fontWeight: '500',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={16} /> 20 Free/Month
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Wrench size={16} /> All Trades
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <TrendingUp size={16} /> More Jobs
+            </span>
           </div>
         </div>
       </section>
       <section className="container" style={{ padding: '80px 0' }}>
-        <h2 style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}>Why Contractors Choose ReviewResponder</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '64px' }}>
+        <h2
+          style={{ textAlign: 'center', fontSize: '32px', fontWeight: '700', marginBottom: '48px' }}
+        >
+          Why Contractors Choose ReviewResponder
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '32px',
+            marginBottom: '64px',
+          }}
+        >
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255, 111, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Sparkles size={24} style={{ color: '#FF6F00' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Professional Tone</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>AI creates responses that show your expertise and professionalism - key factors for homeowners choosing contractors.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(255, 111, 0, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Sparkles size={24} style={{ color: '#FF6F00' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Professional Tone
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              AI creates responses that show your expertise and professionalism - key factors for
+              homeowners choosing contractors.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255, 111, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><Clock size={24} style={{ color: '#FF6F00' }} /></div>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(255, 111, 0, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <Clock size={24} style={{ color: '#FF6F00' }} />
+            </div>
             <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Save Time</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Stop spending evenings writing review responses. Generate professional replies in seconds between jobs.</p>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Stop spending evenings writing review responses. Generate professional replies in
+              seconds between jobs.
+            </p>
           </div>
           <div className="card">
-            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255, 111, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}><TrendingUp size={24} style={{ color: '#FF6F00' }} /></div>
-            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Win More Bids</h3>
-            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>Homeowners compare contractors by reviews. Active, professional responses set you apart from competition.</p>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'rgba(255, 111, 0, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}
+            >
+              <TrendingUp size={24} style={{ color: '#FF6F00' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+              Win More Bids
+            </h3>
+            <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
+              Homeowners compare contractors by reviews. Active, professional responses set you
+              apart from competition.
+            </p>
           </div>
         </div>
-        <div style={{ textAlign: 'center', padding: '48px', background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)', borderRadius: '24px' }}>
-          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>Ready to book more jobs?</h3>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>Join contractors using AI to build their reputation.</p>
-          <Link to="/register" className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }}>Start Free - 20 Responses Included</Link>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '48px',
+            background: 'linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%)',
+            borderRadius: '24px',
+          }}
+        >
+          <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>
+            Ready to book more jobs?
+          </h3>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
+            Join contractors using AI to build their reputation.
+          </p>
+          <Link
+            to="/register"
+            className="btn btn-primary"
+            style={{ padding: '16px 32px', fontSize: '18px' }}
+          >
+            Start Free - 20 Responses Included
+          </Link>
         </div>
       </section>
       <Footer />
@@ -19708,186 +27046,194 @@ const ExtensionPage = () => {
         className="container"
         style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}
       >
-      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <Chrome size={48} style={{ color: 'var(--primary-600)', marginBottom: '16px' }} />
-        <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '12px' }}>
-          Install Chrome Extension
-        </h1>
-        <p style={{ color: 'var(--gray-600)' }}>3 simple steps - takes less than 1 minute</p>
-        <div style={{ background: 'rgba(5, 150, 105, 0.1)', padding: '12px 20px', borderRadius: '8px', marginTop: '16px', display: 'inline-block' }}>
-          <p style={{ margin: 0, fontSize: '14px', color: '#059669', fontWeight: '500' }}>
-            Coming soon to Chrome Web Store! For now, install manually below.
-          </p>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <Chrome size={48} style={{ color: 'var(--primary-600)', marginBottom: '16px' }} />
+          <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '12px' }}>
+            Install Chrome Extension
+          </h1>
+          <p style={{ color: 'var(--gray-600)' }}>3 simple steps - takes less than 1 minute</p>
+          <div
+            style={{
+              background: 'rgba(5, 150, 105, 0.1)',
+              padding: '12px 20px',
+              borderRadius: '8px',
+              marginTop: '16px',
+              display: 'inline-block',
+            }}
+          >
+            <p style={{ margin: 0, fontSize: '14px', color: '#059669', fontWeight: '500' }}>
+              Coming soon to Chrome Web Store! For now, install manually below.
+            </p>
+          </div>
         </div>
-      </div>
 
-      <div className="card" style={{ marginBottom: '24px' }}>
-        <h2
-          style={{
-            fontSize: '18px',
-            fontWeight: '600',
-            marginBottom: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-          }}
-        >
-          <span
+        <div className="card" style={{ marginBottom: '24px' }}>
+          <h2
             style={{
-              background: 'var(--primary-600)',
-              color: 'white',
-              borderRadius: '50%',
-              width: '28px',
-              height: '28px',
+              fontSize: '18px',
+              fontWeight: '600',
+              marginBottom: '16px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '14px',
+              gap: '12px',
             }}
           >
-            1
-          </span>
-          Download & Unzip
-        </h2>
-        <p style={{ color: 'var(--gray-600)', marginBottom: '16px' }}>
-          Download the ZIP file and extract it to any folder (e.g. Desktop).
-        </p>
-        <a
-          href="/extension-download.zip"
-          download="ReviewResponder-Extension.zip"
-          className="btn btn-primary"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-        >
-          <Download size={18} />
-          Download Extension
-        </a>
-      </div>
-
-      <div className="card" style={{ marginBottom: '24px' }}>
-        <h2
-          style={{
-            fontSize: '18px',
-            fontWeight: '600',
-            marginBottom: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-          }}
-        >
-          <span
-            style={{
-              background: 'var(--primary-600)',
-              color: 'white',
-              borderRadius: '50%',
-              width: '28px',
-              height: '28px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '14px',
-            }}
-          >
-            2
-          </span>
-          Add to Chrome
-        </h2>
-        <ol
-          style={{
-            color: 'var(--gray-600)',
-            paddingLeft: '20px',
-            lineHeight: '2.2',
-            marginBottom: '16px',
-          }}
-        >
-          <li>
-            Type{' '}
-            <code
+            <span
               style={{
-                background: 'var(--gray-100)',
-                padding: '4px 10px',
-                borderRadius: '4px',
-                fontWeight: '600',
+                background: 'var(--primary-600)',
+                color: 'white',
+                borderRadius: '50%',
+                width: '28px',
+                height: '28px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '14px',
               }}
             >
-              chrome://extensions
-            </code>{' '}
-            in your address bar
-          </li>
-          <li>
-            Turn on <strong>Developer mode</strong> (top-right toggle)
-          </li>
-          <li>
-            Click <strong>Load unpacked</strong>
-          </li>
-          <li>Select the extracted folder</li>
-        </ol>
-        <div
-          style={{
-            background: 'var(--gray-50)',
-            padding: '12px',
-            borderRadius: '8px',
-            fontSize: '13px',
-            color: 'var(--gray-600)',
-          }}
-        >
-          <strong>Tip:</strong> The extension icon will appear in your Chrome toolbar (puzzle piece
-          icon)
+              1
+            </span>
+            Download & Unzip
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '16px' }}>
+            Download the ZIP file and extract it to any folder (e.g. Desktop).
+          </p>
+          <a
+            href="/extension-download.zip"
+            download="ReviewResponder-Extension.zip"
+            className="btn btn-primary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+          >
+            <Download size={18} />
+            Download Extension
+          </a>
         </div>
-      </div>
 
-      <div
-        className="card"
-        style={{
-          marginBottom: '24px',
-          background: 'linear-gradient(135deg, var(--primary-50), var(--gray-50))',
-          border: '1px solid var(--primary-200)',
-        }}
-      >
-        <h2
-          style={{
-            fontSize: '18px',
-            fontWeight: '600',
-            marginBottom: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-          }}
-        >
-          <span
+        <div className="card" style={{ marginBottom: '24px' }}>
+          <h2
             style={{
-              background: '#10b981',
-              color: 'white',
-              borderRadius: '50%',
-              width: '28px',
-              height: '28px',
+              fontSize: '18px',
+              fontWeight: '600',
+              marginBottom: '16px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '14px',
+              gap: '12px',
             }}
           >
-            3
-          </span>
-          Login & Go!
-        </h2>
-        <p style={{ color: 'var(--gray-600)', marginBottom: '16px' }}>
-          Click the ReviewResponder icon, login with your account, and start generating responses!
-        </p>
-        <Link to="/register" className="btn btn-primary">
-          Create Free Account
-        </Link>
-      </div>
+            <span
+              style={{
+                background: 'var(--primary-600)',
+                color: 'white',
+                borderRadius: '50%',
+                width: '28px',
+                height: '28px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '14px',
+              }}
+            >
+              2
+            </span>
+            Add to Chrome
+          </h2>
+          <ol
+            style={{
+              color: 'var(--gray-600)',
+              paddingLeft: '20px',
+              lineHeight: '2.2',
+              marginBottom: '16px',
+            }}
+          >
+            <li>
+              Type{' '}
+              <code
+                style={{
+                  background: 'var(--gray-100)',
+                  padding: '4px 10px',
+                  borderRadius: '4px',
+                  fontWeight: '600',
+                }}
+              >
+                chrome://extensions
+              </code>{' '}
+              in your address bar
+            </li>
+            <li>
+              Turn on <strong>Developer mode</strong> (top-right toggle)
+            </li>
+            <li>
+              Click <strong>Load unpacked</strong>
+            </li>
+            <li>Select the extracted folder</li>
+          </ol>
+          <div
+            style={{
+              background: 'var(--gray-50)',
+              padding: '12px',
+              borderRadius: '8px',
+              fontSize: '13px',
+              color: 'var(--gray-600)',
+            }}
+          >
+            <strong>Tip:</strong> The extension icon will appear in your Chrome toolbar (puzzle
+            piece icon)
+          </div>
+        </div>
 
-      <div style={{ textAlign: 'center', color: 'var(--gray-500)', fontSize: '14px' }}>
-        Need help?{' '}
-        <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>
-          Contact support
-        </a>
+        <div
+          className="card"
+          style={{
+            marginBottom: '24px',
+            background: 'linear-gradient(135deg, var(--primary-50), var(--gray-50))',
+            border: '1px solid var(--primary-200)',
+          }}
+        >
+          <h2
+            style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+            }}
+          >
+            <span
+              style={{
+                background: '#10b981',
+                color: 'white',
+                borderRadius: '50%',
+                width: '28px',
+                height: '28px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '14px',
+              }}
+            >
+              3
+            </span>
+            Login & Go!
+          </h2>
+          <p style={{ color: 'var(--gray-600)', marginBottom: '16px' }}>
+            Click the ReviewResponder icon, login with your account, and start generating responses!
+          </p>
+          <Link to="/register" className="btn btn-primary">
+            Create Free Account
+          </Link>
+        </div>
+
+        <div style={{ textAlign: 'center', color: 'var(--gray-500)', fontSize: '14px' }}>
+          Need help?{' '}
+          <a href="mailto:support@tryreviewresponder.com" style={{ color: 'var(--primary-600)' }}>
+            Contact support
+          </a>
+        </div>
       </div>
+      <Footer />
     </div>
-    <Footer />
-  </div>
-);
+  );
 };
 
 // Pricing Page
@@ -20491,8 +27837,25 @@ const ClaimDiscountPage = () => {
   // Loading state
   if (loading) {
     return (
-      <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="spinner" style={{ width: '40px', height: '40px', border: '3px solid var(--border-color)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+      <div
+        style={{
+          minHeight: '80vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <div
+          className="spinner"
+          style={{
+            width: '40px',
+            height: '40px',
+            border: '3px solid var(--border-color)',
+            borderTopColor: 'var(--primary)',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+          }}
+        />
       </div>
     );
   }
@@ -20500,16 +27863,42 @@ const ClaimDiscountPage = () => {
   // Invalid link
   if (!linkData?.valid) {
     return (
-      <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+      <div
+        style={{
+          minHeight: '80vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px',
+        }}
+      >
         <div style={{ textAlign: 'center', maxWidth: '500px' }}>
           <div style={{ fontSize: '64px', marginBottom: '24px' }}>🔗</div>
-          <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px', color: 'var(--text-primary)' }}>
+          <h1
+            style={{
+              fontSize: '28px',
+              fontWeight: '700',
+              marginBottom: '12px',
+              color: 'var(--text-primary)',
+            }}
+          >
             Link Not Found
           </h1>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>
             This discount link is not valid or has expired.
           </p>
-          <Link to="/pricing" style={{ display: 'inline-block', padding: '14px 32px', background: 'var(--primary)', color: 'white', borderRadius: '8px', textDecoration: 'none', fontWeight: '600' }}>
+          <Link
+            to="/pricing"
+            style={{
+              display: 'inline-block',
+              padding: '14px 32px',
+              background: 'var(--primary)',
+              color: 'white',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontWeight: '600',
+            }}
+          >
             View Plans
           </Link>
         </div>
@@ -20521,7 +27910,7 @@ const ClaimDiscountPage = () => {
   const firstName = recipientName?.split(' ')[0];
 
   // Calculate yearly savings (based on Starter plan $29/mo)
-  const yearlySavings = Math.round(29 * 12 * discount.percent / 100);
+  const yearlySavings = Math.round((29 * 12 * discount.percent) / 100);
 
   // Source-aware headline
   const getHeadline = () => {
@@ -20538,127 +27927,173 @@ const ClaimDiscountPage = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', paddingTop: '40px', paddingBottom: '80px' }}>
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'var(--bg-primary)',
+        paddingTop: '40px',
+        paddingBottom: '80px',
+      }}
+    >
       <div style={{ maxWidth: '560px', margin: '0 auto', padding: '0 24px' }}>
-
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <Link to="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+          <Link
+            to="/"
+            style={{
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
             <MessageSquare size={28} style={{ color: 'var(--primary)' }} />
-            <span style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>ReviewResponder</span>
+            <span style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-primary)' }}>
+              ReviewResponder
+            </span>
           </Link>
         </div>
 
         {/* Main Card */}
-        <div style={{
-          background: 'var(--card-bg)',
-          borderRadius: '16px',
-          border: '1px solid var(--border-color)',
-          padding: '40px 32px',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
-          textAlign: 'center'
-        }}>
-
+        <div
+          style={{
+            background: 'var(--card-bg)',
+            borderRadius: '16px',
+            border: '1px solid var(--border-color)',
+            padding: '40px 32px',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
+            textAlign: 'center',
+          }}
+        >
           {/* Badge */}
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '6px 12px',
-            background: 'var(--primary)',
-            color: 'white',
-            borderRadius: '6px',
-            fontSize: '12px',
-            fontWeight: '600',
-            marginBottom: '24px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px'
-          }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 12px',
+              background: 'var(--primary)',
+              color: 'white',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: '600',
+              marginBottom: '24px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}
+          >
             {discount.label}
           </div>
 
           {/* Headline - Source-aware */}
-          <h1 style={{
-            fontSize: '28px',
-            fontWeight: '700',
-            color: 'var(--text-primary)',
-            marginBottom: '16px',
-            lineHeight: '1.3'
-          }}>
+          <h1
+            style={{
+              fontSize: '28px',
+              fontWeight: '700',
+              color: 'var(--text-primary)',
+              marginBottom: '16px',
+              lineHeight: '1.3',
+            }}
+          >
             {getHeadline()}
           </h1>
 
           {/* Discount Display */}
-          <div style={{
-            display: 'inline-block',
-            padding: '20px 40px',
-            background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)',
-            borderRadius: '12px',
-            marginBottom: '24px'
-          }}>
-            <span style={{
-              fontSize: '56px',
-              fontWeight: '800',
-              color: 'white',
-              lineHeight: '1'
-            }}>
+          <div
+            style={{
+              display: 'inline-block',
+              padding: '20px 40px',
+              background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)',
+              borderRadius: '12px',
+              marginBottom: '24px',
+            }}
+          >
+            <span
+              style={{
+                fontSize: '56px',
+                fontWeight: '800',
+                color: 'white',
+                lineHeight: '1',
+              }}
+            >
               {discount.percent}%
             </span>
-            <span style={{
-              fontSize: '20px',
-              fontWeight: '600',
-              color: 'rgba(255,255,255,0.9)',
-              marginLeft: '8px',
-              textTransform: 'uppercase'
-            }}>
+            <span
+              style={{
+                fontSize: '20px',
+                fontWeight: '600',
+                color: 'rgba(255,255,255,0.9)',
+                marginLeft: '8px',
+                textTransform: 'uppercase',
+              }}
+            >
               OFF
             </span>
-            <p style={{
-              fontSize: '14px',
-              color: 'rgba(255,255,255,0.8)',
-              margin: '8px 0 0 0'
-            }}>
+            <p
+              style={{
+                fontSize: '14px',
+                color: 'rgba(255,255,255,0.8)',
+                margin: '8px 0 0 0',
+              }}
+            >
               for {discount.duration}
             </p>
           </div>
 
           {/* Business name */}
           {businessName && (
-            <div style={{
-              padding: '12px 20px',
-              background: 'var(--bg-tertiary)',
-              borderRadius: '8px',
-              marginBottom: '24px',
-              display: 'inline-block'
-            }}>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 4px 0' }}>Reserved for</p>
-              <p style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>{businessName}</p>
+            <div
+              style={{
+                padding: '12px 20px',
+                background: 'var(--bg-tertiary)',
+                borderRadius: '8px',
+                marginBottom: '24px',
+                display: 'inline-block',
+              }}
+            >
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 4px 0' }}>
+                Reserved for
+              </p>
+              <p
+                style={{
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: 'var(--text-primary)',
+                  margin: 0,
+                }}
+              >
+                {businessName}
+              </p>
             </div>
           )}
 
           {/* Value proposition with savings */}
-          <p style={{
-            fontSize: '16px',
-            color: 'var(--text-secondary)',
-            marginBottom: '32px',
-            lineHeight: '1.6'
-          }}>
+          <p
+            style={{
+              fontSize: '16px',
+              color: 'var(--text-secondary)',
+              marginBottom: '32px',
+              lineHeight: '1.6',
+            }}
+          >
             {businessName
               ? `Respond to ${businessName}'s reviews in seconds, not hours.`
-              : 'Respond to reviews in seconds, not hours.'
-            }
-            {' '}<strong style={{ color: 'var(--primary)' }}>Save ${yearlySavings}/year</strong> on your subscription.
+              : 'Respond to reviews in seconds, not hours.'}{' '}
+            <strong style={{ color: 'var(--primary)' }}>Save ${yearlySavings}/year</strong> on your
+            subscription.
           </p>
 
           {/* Timer */}
           {!isExpired ? (
             <div style={{ marginBottom: '32px' }}>
-              <p style={{
-                fontSize: '13px',
-                fontWeight: '500',
-                color: 'var(--text-muted)',
-                marginBottom: '12px'
-              }}>
+              <p
+                style={{
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  color: 'var(--text-muted)',
+                  marginBottom: '12px',
+                }}
+              >
                 Offer expires in
               </p>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
@@ -20668,26 +28103,30 @@ const ClaimDiscountPage = () => {
                   { value: timeLeft.seconds, label: 'sec' },
                 ].map((item, i) => (
                   <div key={i} style={{ textAlign: 'center' }}>
-                    <div style={{
-                      width: '60px',
-                      height: '60px',
-                      background: 'var(--bg-tertiary)',
-                      borderRadius: '10px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '24px',
-                      fontWeight: '700',
-                      color: 'var(--text-primary)',
-                      border: '1px solid var(--border-color)'
-                    }}>
+                    <div
+                      style={{
+                        width: '60px',
+                        height: '60px',
+                        background: 'var(--bg-tertiary)',
+                        borderRadius: '10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '24px',
+                        fontWeight: '700',
+                        color: 'var(--text-primary)',
+                        border: '1px solid var(--border-color)',
+                      }}
+                    >
                       {String(item.value).padStart(2, '0')}
                     </div>
-                    <div style={{
-                      fontSize: '11px',
-                      color: 'var(--text-muted)',
-                      marginTop: '6px'
-                    }}>
+                    <div
+                      style={{
+                        fontSize: '11px',
+                        color: 'var(--text-muted)',
+                        marginTop: '6px',
+                      }}
+                    >
                       {item.label}
                     </div>
                   </div>
@@ -20695,16 +28134,18 @@ const ClaimDiscountPage = () => {
               </div>
             </div>
           ) : (
-            <div style={{
-              marginBottom: '32px',
-              padding: '12px 20px',
-              background: '#fef2f2',
-              borderRadius: '8px',
-              color: '#dc2626',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
+            <div
+              style={{
+                marginBottom: '32px',
+                padding: '12px 20px',
+                background: '#fef2f2',
+                borderRadius: '8px',
+                color: '#dc2626',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
               <Clock size={18} />
               <span style={{ fontWeight: '500' }}>This offer has expired</span>
             </div>
@@ -20722,52 +28163,76 @@ const ClaimDiscountPage = () => {
               borderRadius: '10px',
               textDecoration: 'none',
               background: isExpired ? 'var(--gray-400)' : 'var(--primary)',
-              marginBottom: '24px'
+              marginBottom: '24px',
             }}
           >
             {isExpired ? 'View Regular Pricing' : `Claim ${discount.percent}% Off Now`}
           </Link>
 
           {/* Discount code */}
-          <div style={{
-            padding: '16px 24px',
-            background: 'var(--bg-tertiary)',
-            borderRadius: '8px',
-            border: '1px dashed var(--border-color)'
-          }}>
-            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: '500' }}>Your discount code</p>
-            <p style={{
-              fontSize: '20px',
-              fontWeight: '700',
-              fontFamily: 'monospace',
-              color: 'var(--primary)',
-              margin: 0,
-              letterSpacing: '2px'
-            }}>{discountCode}</p>
+          <div
+            style={{
+              padding: '16px 24px',
+              background: 'var(--bg-tertiary)',
+              borderRadius: '8px',
+              border: '1px dashed var(--border-color)',
+            }}
+          >
+            <p
+              style={{
+                fontSize: '11px',
+                color: 'var(--text-muted)',
+                marginBottom: '4px',
+                fontWeight: '500',
+              }}
+            >
+              Your discount code
+            </p>
+            <p
+              style={{
+                fontSize: '20px',
+                fontWeight: '700',
+                fontFamily: 'monospace',
+                color: 'var(--primary)',
+                margin: 0,
+                letterSpacing: '2px',
+              }}
+            >
+              {discountCode}
+            </p>
           </div>
-
         </div>
 
         {/* Trust indicators below card */}
-        <div style={{ marginTop: '32px', display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap' }}>
+        <div
+          style={{
+            marginTop: '32px',
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '24px',
+            flexWrap: 'wrap',
+          }}
+        >
           {[
             { icon: <Zap size={16} />, text: 'Instant responses' },
             { icon: <Globe size={16} />, text: '50+ languages' },
             { icon: <Shield size={16} />, text: 'Cancel anytime' },
           ].map((item, i) => (
-            <div key={i} style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              color: 'var(--text-muted)',
-              fontSize: '13px'
-            }}>
+            <div
+              key={i}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                color: 'var(--text-muted)',
+                fontSize: '13px',
+              }}
+            >
               {item.icon}
               <span>{item.text}</span>
             </div>
           ))}
         </div>
-
       </div>
     </div>
   );
@@ -22602,7 +30067,9 @@ const AdminPage = () => {
 
   const testScraperAlert = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/cron/scraper-alerts?secret=${adminKey}&force=true`);
+      const res = await axios.get(
+        `${API_BASE}/api/cron/scraper-alerts?secret=${adminKey}&force=true`
+      );
       toast.success(`Alert sent: ${res.data.critical || 0} critical, ${res.data.low || 0} low`);
     } catch (err) {
       toast.error('Failed to send test alert');
@@ -22854,13 +30321,27 @@ const AdminPage = () => {
                   marginBottom: '24px',
                 }}
               >
-                <div className="card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: 'white' }}>
+                <div
+                  className="card"
+                  style={{
+                    textAlign: 'center',
+                    background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                    color: 'white',
+                  }}
+                >
                   <div style={{ fontSize: '36px', fontWeight: '700' }}>
                     ${salesData.revenue?.mrr || 0}
                   </div>
                   <div style={{ opacity: 0.9 }}>MRR</div>
                 </div>
-                <div className="card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', color: 'white' }}>
+                <div
+                  className="card"
+                  style={{
+                    textAlign: 'center',
+                    background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
+                    color: 'white',
+                  }}
+                >
                   <div style={{ fontSize: '36px', fontWeight: '700' }}>
                     ${salesData.revenue?.arr || 0}
                   </div>
@@ -22896,55 +30377,134 @@ const AdminPage = () => {
                 }}
               >
                 <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#10B981' }}>+{salesData.users?.newToday || 0}</div>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#10B981' }}>
+                    +{salesData.users?.newToday || 0}
+                  </div>
                   <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Today</div>
                 </div>
                 <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#3B82F6' }}>+{salesData.users?.newThisWeek || 0}</div>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#3B82F6' }}>
+                    +{salesData.users?.newThisWeek || 0}
+                  </div>
                   <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>This Week</div>
                 </div>
                 <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#8B5CF6' }}>+{salesData.users?.newThisMonth || 0}</div>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#8B5CF6' }}>
+                    +{salesData.users?.newThisMonth || 0}
+                  </div>
                   <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>This Month</div>
                 </div>
                 <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#EC4899' }}>{salesData.activity?.activeUsers7d || 0}</div>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#EC4899' }}>
+                    {salesData.activity?.activeUsers7d || 0}
+                  </div>
                   <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Active (7d)</div>
                 </div>
                 <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#F59E0B' }}>{salesData.activity?.responsesToday || 0}</div>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#F59E0B' }}>
+                    {salesData.activity?.responsesToday || 0}
+                  </div>
                   <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Responses Today</div>
                 </div>
                 <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#6366F1' }}>{salesData.activity?.responsesThisWeek || 0}</div>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#6366F1' }}>
+                    {salesData.activity?.responsesThisWeek || 0}
+                  </div>
                   <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>This Week</div>
                 </div>
               </div>
 
               {/* Sales Funnel & Plan Breakdown */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '24px',
+                  marginBottom: '24px',
+                }}
+              >
                 {/* Sales Funnel */}
                 <div className="card">
-                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>Sales Funnel</h3>
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
+                    Sales Funnel
+                  </h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ width: '100%', background: 'var(--gray-100)', borderRadius: '8px', overflow: 'hidden' }}>
-                        <div style={{ width: '100%', background: 'var(--primary)', height: '32px', display: 'flex', alignItems: 'center', paddingLeft: '12px', color: 'white', fontWeight: '500' }}>
+                      <div
+                        style={{
+                          width: '100%',
+                          background: 'var(--gray-100)',
+                          borderRadius: '8px',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '100%',
+                            background: 'var(--primary)',
+                            height: '32px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            paddingLeft: '12px',
+                            color: 'white',
+                            fontWeight: '500',
+                          }}
+                        >
                           Registered: {salesData.funnel?.registered || 0}
                         </div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ width: '100%', background: 'var(--gray-100)', borderRadius: '8px', overflow: 'hidden' }}>
-                        <div style={{ width: `${salesData.funnel?.activationRate || 0}%`, minWidth: '120px', background: '#3B82F6', height: '32px', display: 'flex', alignItems: 'center', paddingLeft: '12px', color: 'white', fontWeight: '500' }}>
-                          Activated: {salesData.funnel?.activated || 0} ({salesData.funnel?.activationRate || 0}%)
+                      <div
+                        style={{
+                          width: '100%',
+                          background: 'var(--gray-100)',
+                          borderRadius: '8px',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${salesData.funnel?.activationRate || 0}%`,
+                            minWidth: '120px',
+                            background: '#3B82F6',
+                            height: '32px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            paddingLeft: '12px',
+                            color: 'white',
+                            fontWeight: '500',
+                          }}
+                        >
+                          Activated: {salesData.funnel?.activated || 0} (
+                          {salesData.funnel?.activationRate || 0}%)
                         </div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ width: '100%', background: 'var(--gray-100)', borderRadius: '8px', overflow: 'hidden' }}>
-                        <div style={{ width: `${Math.max(parseFloat(salesData.funnel?.conversionRate || 0) * 5, 10)}%`, minWidth: '100px', background: '#10B981', height: '32px', display: 'flex', alignItems: 'center', paddingLeft: '12px', color: 'white', fontWeight: '500' }}>
-                          Paying: {salesData.funnel?.paying || 0} ({salesData.funnel?.conversionRate || 0}%)
+                      <div
+                        style={{
+                          width: '100%',
+                          background: 'var(--gray-100)',
+                          borderRadius: '8px',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${Math.max(parseFloat(salesData.funnel?.conversionRate || 0) * 5, 10)}%`,
+                            minWidth: '100px',
+                            background: '#10B981',
+                            height: '32px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            paddingLeft: '12px',
+                            color: 'white',
+                            fontWeight: '500',
+                          }}
+                        >
+                          Paying: {salesData.funnel?.paying || 0} (
+                          {salesData.funnel?.conversionRate || 0}%)
                         </div>
                       </div>
                     </div>
@@ -22953,30 +30513,56 @@ const AdminPage = () => {
 
                 {/* Plan Breakdown */}
                 <div className="card">
-                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>Plan Distribution</h3>
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
+                    Plan Distribution
+                  </h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {Object.entries(salesData.revenue?.planBreakdown || {}).map(([plan, count]) => (
-                      <div key={plan} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: 'var(--gray-50)', borderRadius: '8px' }}>
+                      <div
+                        key={plan}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '12px',
+                          background: 'var(--gray-50)',
+                          borderRadius: '8px',
+                        }}
+                      >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                            background: plan === 'free' ? '#E5E7EB' :
-                                       plan === 'starter' ? '#DBEAFE' :
-                                       plan === 'pro' ? '#D1FAE5' : '#EDE9FE',
-                            color: plan === 'free' ? '#374151' :
-                                   plan === 'starter' ? '#1D4ED8' :
-                                   plan === 'pro' ? '#065F46' : '#5B21B6',
-                          }}>
+                          <span
+                            style={{
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              background:
+                                plan === 'free'
+                                  ? '#E5E7EB'
+                                  : plan === 'starter'
+                                    ? '#DBEAFE'
+                                    : plan === 'pro'
+                                      ? '#D1FAE5'
+                                      : '#EDE9FE',
+                              color:
+                                plan === 'free'
+                                  ? '#374151'
+                                  : plan === 'starter'
+                                    ? '#1D4ED8'
+                                    : plan === 'pro'
+                                      ? '#065F46'
+                                      : '#5B21B6',
+                            }}
+                          >
                             {plan.toUpperCase()}
                           </span>
                         </div>
                         <div style={{ textAlign: 'right' }}>
                           <div style={{ fontWeight: '700', fontSize: '18px' }}>{count}</div>
                           <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
-                            {plan !== 'free' ? `$${plan === 'starter' ? 29 : plan === 'pro' ? 49 : 99}/mo` : 'Free'}
+                            {plan !== 'free'
+                              ? `$${plan === 'starter' ? 29 : plan === 'pro' ? 49 : 99}/mo`
+                              : 'Free'}
                           </div>
                         </div>
                       </div>
@@ -22987,11 +30573,21 @@ const AdminPage = () => {
 
               {/* Recent Signups */}
               <div className="card" style={{ marginBottom: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '16px',
+                  }}
+                >
                   <h3 style={{ fontSize: '18px', fontWeight: '600' }}>Recent Signups</h3>
                   <button
                     className="btn btn-secondary"
-                    onClick={() => { setSalesData(null); loadSalesData(); }}
+                    onClick={() => {
+                      setSalesData(null);
+                      loadSalesData();
+                    }}
                     style={{ padding: '6px 12px', fontSize: '13px' }}
                   >
                     Refresh
@@ -23013,18 +30609,30 @@ const AdminPage = () => {
                         <tr key={user.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                           <td style={{ padding: '10px 8px', fontWeight: '500' }}>{user.email}</td>
                           <td style={{ padding: '10px 8px' }}>
-                            <span style={{
-                              padding: '2px 8px',
-                              borderRadius: '4px',
-                              fontSize: '11px',
-                              fontWeight: '500',
-                              background: user.subscription_plan === 'free' ? '#E5E7EB' :
-                                         user.subscription_plan === 'starter' ? '#DBEAFE' :
-                                         user.subscription_plan === 'pro' ? '#D1FAE5' : '#EDE9FE',
-                              color: user.subscription_plan === 'free' ? '#374151' :
-                                     user.subscription_plan === 'starter' ? '#1D4ED8' :
-                                     user.subscription_plan === 'pro' ? '#065F46' : '#5B21B6',
-                            }}>
+                            <span
+                              style={{
+                                padding: '2px 8px',
+                                borderRadius: '4px',
+                                fontSize: '11px',
+                                fontWeight: '500',
+                                background:
+                                  user.subscription_plan === 'free'
+                                    ? '#E5E7EB'
+                                    : user.subscription_plan === 'starter'
+                                      ? '#DBEAFE'
+                                      : user.subscription_plan === 'pro'
+                                        ? '#D1FAE5'
+                                        : '#EDE9FE',
+                                color:
+                                  user.subscription_plan === 'free'
+                                    ? '#374151'
+                                    : user.subscription_plan === 'starter'
+                                      ? '#1D4ED8'
+                                      : user.subscription_plan === 'pro'
+                                        ? '#065F46'
+                                        : '#5B21B6',
+                              }}
+                            >
                               {user.subscription_plan}
                             </span>
                           </td>
@@ -23043,7 +30651,11 @@ const AdminPage = () => {
                             )}
                           </td>
                           <td style={{ padding: '10px 8px', color: 'var(--gray-500)' }}>
-                            {new Date(user.created_at).toLocaleDateString()} {new Date(user.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            {new Date(user.created_at).toLocaleDateString()}{' '}
+                            {new Date(user.created_at).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
                           </td>
                         </tr>
                       ))}
@@ -23055,27 +30667,41 @@ const AdminPage = () => {
               {/* Blog & Activity Stats */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                 <div className="card">
-                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Blog Performance</h3>
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
+                    Blog Performance
+                  </h3>
                   <div style={{ display: 'flex', gap: '24px' }}>
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '32px', fontWeight: '700', color: '#6366F1' }}>{salesData.blog?.published || 0}</div>
+                      <div style={{ fontSize: '32px', fontWeight: '700', color: '#6366F1' }}>
+                        {salesData.blog?.published || 0}
+                      </div>
                       <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Published</div>
                     </div>
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '32px', fontWeight: '700', color: 'var(--gray-400)' }}>{salesData.blog?.totalArticles || 0}</div>
+                      <div
+                        style={{ fontSize: '32px', fontWeight: '700', color: 'var(--gray-400)' }}
+                      >
+                        {salesData.blog?.totalArticles || 0}
+                      </div>
                       <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Total</div>
                     </div>
                   </div>
                 </div>
                 <div className="card">
-                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Email Verification</h3>
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
+                    Email Verification
+                  </h3>
                   <div style={{ display: 'flex', gap: '24px' }}>
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '32px', fontWeight: '700', color: '#10B981' }}>{salesData.users?.verified || 0}</div>
+                      <div style={{ fontSize: '32px', fontWeight: '700', color: '#10B981' }}>
+                        {salesData.users?.verified || 0}
+                      </div>
                       <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Verified</div>
                     </div>
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '32px', fontWeight: '700', color: '#F59E0B' }}>{salesData.users?.verificationRate || 0}%</div>
+                      <div style={{ fontSize: '32px', fontWeight: '700', color: '#F59E0B' }}>
+                        {salesData.users?.verificationRate || 0}%
+                      </div>
                       <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Rate</div>
                     </div>
                   </div>
@@ -23084,8 +30710,12 @@ const AdminPage = () => {
             </>
           ) : (
             <div style={{ textAlign: 'center', padding: '40px' }}>
-              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>Failed to load sales data</p>
-              <button className="btn btn-primary" onClick={() => loadSalesData()}>Retry</button>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+                Failed to load sales data
+              </p>
+              <button className="btn btn-primary" onClick={() => loadSalesData()}>
+                Retry
+              </button>
             </div>
           )}
         </div>
@@ -23099,23 +30729,64 @@ const AdminPage = () => {
           ) : salesData ? (
             <>
               {/* Action Cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', marginBottom: '24px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                  gap: '24px',
+                  marginBottom: '24px',
+                }}
+              >
                 {/* Upgrade Opportunities */}
                 <div className="card" style={{ borderLeft: '4px solid #10B981' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#10B981' }}>
+                  <h3
+                    style={{
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      marginBottom: '16px',
+                      color: '#10B981',
+                    }}
+                  >
                     Upgrade Opportunities ({salesData.insights?.upgradeOpportunities?.length || 0})
                   </h3>
                   <p style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '16px' }}>
                     Users near their plan limit - reach out to upgrade
                   </p>
                   {salesData.insights?.upgradeOpportunities?.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '250px', overflowY: 'auto' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                        maxHeight: '250px',
+                        overflowY: 'auto',
+                      }}
+                    >
                       {salesData.insights.upgradeOpportunities.map((u, i) => (
-                        <div key={i} style={{ padding: '10px', background: 'var(--gray-50)', borderRadius: '6px', fontSize: '13px' }}>
+                        <div
+                          key={i}
+                          style={{
+                            padding: '10px',
+                            background: 'var(--gray-50)',
+                            borderRadius: '6px',
+                            fontSize: '13px',
+                          }}
+                        >
                           <div style={{ fontWeight: '500' }}>{u.email}</div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              marginTop: '4px',
+                            }}
+                          >
                             <span style={{ color: 'var(--gray-500)' }}>{u.subscription_plan}</span>
-                            <span style={{ color: u.usage_percent >= 80 ? '#EF4444' : '#F59E0B', fontWeight: '600' }}>
+                            <span
+                              style={{
+                                color: u.usage_percent >= 80 ? '#EF4444' : '#F59E0B',
+                                fontWeight: '600',
+                              }}
+                            >
                               {u.monthly_response_count}/{u.limit} ({u.usage_percent}%)
                             </span>
                           </div>
@@ -23123,26 +30794,60 @@ const AdminPage = () => {
                       ))}
                     </div>
                   ) : (
-                    <p style={{ fontSize: '13px', color: 'var(--gray-400)' }}>No upgrade opportunities right now</p>
+                    <p style={{ fontSize: '13px', color: 'var(--gray-400)' }}>
+                      No upgrade opportunities right now
+                    </p>
                   )}
                 </div>
 
                 {/* Free Users to Convert */}
                 <div className="card" style={{ borderLeft: '4px solid #3B82F6' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#3B82F6' }}>
+                  <h3
+                    style={{
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      marginBottom: '16px',
+                      color: '#3B82F6',
+                    }}
+                  >
                     Hot Free Users ({salesData.insights?.freeUpgradeCandidates?.length || 0})
                   </h3>
                   <p style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '16px' }}>
                     High-activity free users - prime for conversion
                   </p>
                   {salesData.insights?.freeUpgradeCandidates?.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '250px', overflowY: 'auto' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                        maxHeight: '250px',
+                        overflowY: 'auto',
+                      }}
+                    >
                       {salesData.insights.freeUpgradeCandidates.map((u, i) => (
-                        <div key={i} style={{ padding: '10px', background: 'var(--gray-50)', borderRadius: '6px', fontSize: '13px' }}>
+                        <div
+                          key={i}
+                          style={{
+                            padding: '10px',
+                            background: 'var(--gray-50)',
+                            borderRadius: '6px',
+                            fontSize: '13px',
+                          }}
+                        >
                           <div style={{ fontWeight: '500' }}>{u.email}</div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              marginTop: '4px',
+                            }}
+                          >
                             <span style={{ color: 'var(--gray-500)' }}>
-                              Last: {u.last_activity ? new Date(u.last_activity).toLocaleDateString() : 'Never'}
+                              Last:{' '}
+                              {u.last_activity
+                                ? new Date(u.last_activity).toLocaleDateString()
+                                : 'Never'}
                             </span>
                             <span style={{ color: '#3B82F6', fontWeight: '600' }}>
                               {u.monthly_response_count}/20 used
@@ -23152,44 +30857,90 @@ const AdminPage = () => {
                       ))}
                     </div>
                   ) : (
-                    <p style={{ fontSize: '13px', color: 'var(--gray-400)' }}>No hot leads right now</p>
+                    <p style={{ fontSize: '13px', color: 'var(--gray-400)' }}>
+                      No hot leads right now
+                    </p>
                   )}
                 </div>
 
                 {/* Churn Risk */}
                 <div className="card" style={{ borderLeft: '4px solid #EF4444' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#EF4444' }}>
+                  <h3
+                    style={{
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      marginBottom: '16px',
+                      color: '#EF4444',
+                    }}
+                  >
                     Churn Risk ({salesData.insights?.churnRisk?.length || 0})
                   </h3>
                   <p style={{ fontSize: '13px', color: 'var(--gray-500)', marginBottom: '16px' }}>
                     Paying users inactive 14+ days - reach out to retain
                   </p>
                   {salesData.insights?.churnRisk?.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '250px', overflowY: 'auto' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                        maxHeight: '250px',
+                        overflowY: 'auto',
+                      }}
+                    >
                       {salesData.insights.churnRisk.map((u, i) => (
-                        <div key={i} style={{ padding: '10px', background: '#FEF2F2', borderRadius: '6px', fontSize: '13px' }}>
+                        <div
+                          key={i}
+                          style={{
+                            padding: '10px',
+                            background: '#FEF2F2',
+                            borderRadius: '6px',
+                            fontSize: '13px',
+                          }}
+                        >
                           <div style={{ fontWeight: '500' }}>{u.email}</div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-                            <span style={{
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              fontSize: '11px',
-                              background: u.subscription_plan === 'starter' ? '#DBEAFE' :
-                                         u.subscription_plan === 'pro' ? '#D1FAE5' : '#EDE9FE',
-                              color: u.subscription_plan === 'starter' ? '#1D4ED8' :
-                                     u.subscription_plan === 'pro' ? '#065F46' : '#5B21B6',
-                            }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              marginTop: '4px',
+                            }}
+                          >
+                            <span
+                              style={{
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                fontSize: '11px',
+                                background:
+                                  u.subscription_plan === 'starter'
+                                    ? '#DBEAFE'
+                                    : u.subscription_plan === 'pro'
+                                      ? '#D1FAE5'
+                                      : '#EDE9FE',
+                                color:
+                                  u.subscription_plan === 'starter'
+                                    ? '#1D4ED8'
+                                    : u.subscription_plan === 'pro'
+                                      ? '#065F46'
+                                      : '#5B21B6',
+                              }}
+                            >
                               {u.subscription_plan}
                             </span>
                             <span style={{ color: '#EF4444', fontSize: '12px' }}>
-                              Last: {u.last_activity ? new Date(u.last_activity).toLocaleDateString() : 'Never'}
+                              Last:{' '}
+                              {u.last_activity
+                                ? new Date(u.last_activity).toLocaleDateString()
+                                : 'Never'}
                             </span>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p style={{ fontSize: '13px', color: 'var(--gray-400)' }}>No churn risks detected</p>
+                    <p style={{ fontSize: '13px', color: 'var(--gray-400)' }}>
+                      No churn risks detected
+                    </p>
                   )}
                 </div>
               </div>
@@ -23214,26 +30965,47 @@ const AdminPage = () => {
                         <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
                           <td style={{ padding: '10px 8px', fontWeight: '500' }}>{u.email}</td>
                           <td style={{ padding: '10px 8px' }}>
-                            <span style={{
-                              padding: '2px 8px',
-                              borderRadius: '4px',
-                              fontSize: '11px',
-                              fontWeight: '500',
-                              background: u.subscription_plan === 'free' ? '#E5E7EB' :
-                                         u.subscription_plan === 'starter' ? '#DBEAFE' :
-                                         u.subscription_plan === 'pro' ? '#D1FAE5' : '#EDE9FE',
-                              color: u.subscription_plan === 'free' ? '#374151' :
-                                     u.subscription_plan === 'starter' ? '#1D4ED8' :
-                                     u.subscription_plan === 'pro' ? '#065F46' : '#5B21B6',
-                            }}>
+                            <span
+                              style={{
+                                padding: '2px 8px',
+                                borderRadius: '4px',
+                                fontSize: '11px',
+                                fontWeight: '500',
+                                background:
+                                  u.subscription_plan === 'free'
+                                    ? '#E5E7EB'
+                                    : u.subscription_plan === 'starter'
+                                      ? '#DBEAFE'
+                                      : u.subscription_plan === 'pro'
+                                        ? '#D1FAE5'
+                                        : '#EDE9FE',
+                                color:
+                                  u.subscription_plan === 'free'
+                                    ? '#374151'
+                                    : u.subscription_plan === 'starter'
+                                      ? '#1D4ED8'
+                                      : u.subscription_plan === 'pro'
+                                        ? '#065F46'
+                                        : '#5B21B6',
+                              }}
+                            >
                               {u.subscription_plan}
                             </span>
                           </td>
-                          <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: '600', color: '#10B981' }}>
+                          <td
+                            style={{
+                              padding: '10px 8px',
+                              textAlign: 'right',
+                              fontWeight: '600',
+                              color: '#10B981',
+                            }}
+                          >
                             {u.response_count}
                           </td>
                           <td style={{ padding: '10px 8px', color: 'var(--gray-500)' }}>
-                            {u.last_activity ? new Date(u.last_activity).toLocaleDateString() : 'N/A'}
+                            {u.last_activity
+                              ? new Date(u.last_activity).toLocaleDateString()
+                              : 'N/A'}
                           </td>
                         </tr>
                       ))}
@@ -23244,8 +31016,12 @@ const AdminPage = () => {
             </>
           ) : (
             <div style={{ textAlign: 'center', padding: '40px' }}>
-              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>Load sales data first</p>
-              <button className="btn btn-primary" onClick={() => loadSalesData()}>Load Data</button>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+                Load sales data first
+              </p>
+              <button className="btn btn-primary" onClick={() => loadSalesData()}>
+                Load Data
+              </button>
             </div>
           )}
         </div>
@@ -23295,11 +31071,21 @@ const AdminPage = () => {
 
               {/* Users Table */}
               <div className="card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '16px',
+                  }}
+                >
                   <h3 style={{ fontSize: '18px', fontWeight: '600' }}>All Users</h3>
                   <button
                     className="btn btn-secondary"
-                    onClick={() => { setUsersData(null); loadUsersData(); }}
+                    onClick={() => {
+                      setUsersData(null);
+                      loadUsersData();
+                    }}
                     style={{ padding: '6px 12px', fontSize: '13px' }}
                   >
                     Refresh
@@ -23322,7 +31108,9 @@ const AdminPage = () => {
                           key={user.id}
                           style={{
                             borderBottom: '1px solid var(--border-color)',
-                            background: user.is_test_account ? 'rgba(251, 191, 36, 0.1)' : 'transparent',
+                            background: user.is_test_account
+                              ? 'rgba(251, 191, 36, 0.1)'
+                              : 'transparent',
                           }}
                         >
                           <td style={{ padding: '12px 8px' }}>
@@ -23335,12 +31123,22 @@ const AdminPage = () => {
                                 borderRadius: '4px',
                                 fontSize: '12px',
                                 fontWeight: '500',
-                                background: user.subscription_plan === 'free' ? '#E5E7EB' :
-                                           user.subscription_plan === 'starter' ? '#DBEAFE' :
-                                           user.subscription_plan === 'pro' ? '#D1FAE5' : '#EDE9FE',
-                                color: user.subscription_plan === 'free' ? '#374151' :
-                                       user.subscription_plan === 'starter' ? '#1D4ED8' :
-                                       user.subscription_plan === 'pro' ? '#065F46' : '#5B21B6',
+                                background:
+                                  user.subscription_plan === 'free'
+                                    ? '#E5E7EB'
+                                    : user.subscription_plan === 'starter'
+                                      ? '#DBEAFE'
+                                      : user.subscription_plan === 'pro'
+                                        ? '#D1FAE5'
+                                        : '#EDE9FE',
+                                color:
+                                  user.subscription_plan === 'free'
+                                    ? '#374151'
+                                    : user.subscription_plan === 'starter'
+                                      ? '#1D4ED8'
+                                      : user.subscription_plan === 'pro'
+                                        ? '#065F46'
+                                        : '#5B21B6',
                               }}
                             >
                               {user.subscription_plan}
@@ -23380,7 +31178,9 @@ const AdminPage = () => {
           ) : (
             <div style={{ textAlign: 'center', padding: '40px' }}>
               <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>Failed to load users</p>
-              <button className="btn btn-primary" onClick={() => loadUsersData()}>Retry</button>
+              <button className="btn btn-primary" onClick={() => loadUsersData()}>
+                Retry
+              </button>
             </div>
           )}
         </div>
@@ -23389,301 +31189,311 @@ const AdminPage = () => {
       {/* Affiliates Tab */}
       {activeAdminTab === 'affiliates' && (
         <>
-      {/* Affiliate Management */}
-      <div className="card">
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '24px',
-          }}
-        >
-          <h2 style={{ fontSize: '20px', fontWeight: '600' }}>Affiliate Applications</h2>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            {['all', 'pending', 'approved', 'rejected', 'suspended'].map(f => (
-              <button
-                key={f}
-                className={`btn ${filter === f ? 'btn-primary' : 'btn-secondary'}`}
-                style={{ padding: '6px 12px', fontSize: '13px' }}
-                onClick={() => setFilter(f)}
-              >
-                {f.charAt(0).toUpperCase() + f.slice(1)} {f !== 'all' && `(${counts[f] || 0})`}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: selectedAffiliate ? '1fr 1fr' : '1fr',
-            gap: '24px',
-          }}
-        >
-          {/* Affiliates List */}
-          <div>
-            {affiliates.length === 0 ? (
-              <p style={{ color: 'var(--gray-500)', textAlign: 'center', padding: '40px' }}>
-                No affiliates found
-              </p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {affiliates.map(aff => (
-                  <div
-                    key={aff.id}
-                    onClick={() => loadAffiliateDetails(aff.id)}
-                    style={{
-                      padding: '16px',
-                      border:
-                        selectedAffiliate === aff.id
-                          ? '2px solid var(--primary)'
-                          : '1px solid var(--border-color)',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      background:
-                        selectedAffiliate === aff.id ? 'var(--primary-light)' : 'transparent',
-                    }}
+          {/* Affiliate Management */}
+          <div className="card">
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '24px',
+              }}
+            >
+              <h2 style={{ fontSize: '20px', fontWeight: '600' }}>Affiliate Applications</h2>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {['all', 'pending', 'approved', 'rejected', 'suspended'].map(f => (
+                  <button
+                    key={f}
+                    className={`btn ${filter === f ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{ padding: '6px 12px', fontSize: '13px' }}
+                    onClick={() => setFilter(f)}
                   >
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <div>
-                        <div style={{ fontWeight: '600' }}>{aff.email}</div>
-                        <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>
-                          {aff.affiliate_code}
-                        </div>
-                      </div>
-                      <span
-                        style={{
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: '500',
-                          background:
-                            aff.status === 'approved'
-                              ? '#D1FAE5'
-                              : aff.status === 'pending'
-                                ? '#FEF3C7'
-                                : aff.status === 'rejected'
-                                  ? '#FEE2E2'
-                                  : '#E5E7EB',
-                          color:
-                            aff.status === 'approved'
-                              ? '#065F46'
-                              : aff.status === 'pending'
-                                ? '#92400E'
-                                : aff.status === 'rejected'
-                                  ? '#991B1B'
-                                  : '#374151',
-                        }}
-                      >
-                        {aff.status}
-                      </span>
-                    </div>
-                    <div style={{ marginTop: '8px', fontSize: '13px', color: 'var(--gray-600)' }}>
-                      Website: {aff.website || 'N/A'} | Audience: {aff.audience_size || 'N/A'}
-                    </div>
-                    <div style={{ marginTop: '4px', fontSize: '12px', color: 'var(--gray-500)' }}>
-                      Applied: {new Date(aff.applied_at).toLocaleDateString()} | Earned: $
-                      {parseFloat(aff.total_earned || 0).toFixed(2)}
-                    </div>
-                  </div>
+                    {f.charAt(0).toUpperCase() + f.slice(1)} {f !== 'all' && `(${counts[f] || 0})`}
+                  </button>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* Affiliate Details Panel */}
-          {selectedAffiliate && affiliateDetails && (
-            <div style={{ borderLeft: '1px solid var(--border-color)', paddingLeft: '24px' }}>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '16px',
-                }}
-              >
-                <h3 style={{ fontSize: '18px', fontWeight: '600' }}>Details</h3>
-                <button
-                  onClick={() => {
-                    setSelectedAffiliate(null);
-                    setAffiliateDetails(null);
-                  }}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              <div style={{ marginBottom: '20px' }}>
-                <p>
-                  <strong>Email:</strong> {affiliateDetails.affiliate?.email}
-                </p>
-                <p>
-                  <strong>Business:</strong> {affiliateDetails.affiliate?.business_name || 'N/A'}
-                </p>
-                <p>
-                  <strong>Code:</strong> {affiliateDetails.affiliate?.affiliate_code}
-                </p>
-                <p>
-                  <strong>Commission:</strong> {affiliateDetails.affiliate?.commission_rate}%
-                </p>
-                <p>
-                  <strong>Website:</strong> {affiliateDetails.affiliate?.website || 'N/A'}
-                </p>
-                <p>
-                  <strong>Marketing:</strong>{' '}
-                  {affiliateDetails.affiliate?.marketing_channels || 'N/A'}
-                </p>
-                <p>
-                  <strong>Audience:</strong> {affiliateDetails.affiliate?.audience_size || 'N/A'}
-                </p>
-                <p>
-                  <strong>Total Earned:</strong> $
-                  {parseFloat(affiliateDetails.affiliate?.total_earned || 0).toFixed(2)}
-                </p>
-                <p>
-                  <strong>Pending Balance:</strong> $
-                  {parseFloat(affiliateDetails.affiliate?.pending_balance || 0).toFixed(2)}
-                </p>
-                <p>
-                  <strong>Payout Method:</strong> {affiliateDetails.affiliate?.payout_method} (
-                  {affiliateDetails.affiliate?.payout_email || 'Not set'})
-                </p>
-              </div>
-
-              {/* Actions */}
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
-                {affiliateDetails.affiliate?.status !== 'approved' && (
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => updateStatus(selectedAffiliate, 'approved')}
-                    disabled={actionLoading}
-                  >
-                    <Check size={16} /> Approve
-                  </button>
-                )}
-                {affiliateDetails.affiliate?.status !== 'rejected' && (
-                  <button
-                    className="btn btn-secondary"
-                    style={{ background: '#FEE2E2', color: '#991B1B' }}
-                    onClick={() => updateStatus(selectedAffiliate, 'rejected')}
-                    disabled={actionLoading}
-                  >
-                    <X size={16} /> Reject
-                  </button>
-                )}
-                {affiliateDetails.affiliate?.status === 'approved' && (
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => updateStatus(selectedAffiliate, 'suspended')}
-                    disabled={actionLoading}
-                  >
-                    Suspend
-                  </button>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: selectedAffiliate ? '1fr 1fr' : '1fr',
+                gap: '24px',
+              }}
+            >
+              {/* Affiliates List */}
+              <div>
+                {affiliates.length === 0 ? (
+                  <p style={{ color: 'var(--gray-500)', textAlign: 'center', padding: '40px' }}>
+                    No affiliates found
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {affiliates.map(aff => (
+                      <div
+                        key={aff.id}
+                        onClick={() => loadAffiliateDetails(aff.id)}
+                        style={{
+                          padding: '16px',
+                          border:
+                            selectedAffiliate === aff.id
+                              ? '2px solid var(--primary)'
+                              : '1px solid var(--border-color)',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          background:
+                            selectedAffiliate === aff.id ? 'var(--primary-light)' : 'transparent',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <div>
+                            <div style={{ fontWeight: '600' }}>{aff.email}</div>
+                            <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>
+                              {aff.affiliate_code}
+                            </div>
+                          </div>
+                          <span
+                            style={{
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              fontSize: '12px',
+                              fontWeight: '500',
+                              background:
+                                aff.status === 'approved'
+                                  ? '#D1FAE5'
+                                  : aff.status === 'pending'
+                                    ? '#FEF3C7'
+                                    : aff.status === 'rejected'
+                                      ? '#FEE2E2'
+                                      : '#E5E7EB',
+                              color:
+                                aff.status === 'approved'
+                                  ? '#065F46'
+                                  : aff.status === 'pending'
+                                    ? '#92400E'
+                                    : aff.status === 'rejected'
+                                      ? '#991B1B'
+                                      : '#374151',
+                            }}
+                          >
+                            {aff.status}
+                          </span>
+                        </div>
+                        <div
+                          style={{ marginTop: '8px', fontSize: '13px', color: 'var(--gray-600)' }}
+                        >
+                          Website: {aff.website || 'N/A'} | Audience: {aff.audience_size || 'N/A'}
+                        </div>
+                        <div
+                          style={{ marginTop: '4px', fontSize: '12px', color: 'var(--gray-500)' }}
+                        >
+                          Applied: {new Date(aff.applied_at).toLocaleDateString()} | Earned: $
+                          {parseFloat(aff.total_earned || 0).toFixed(2)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
 
-              {/* Payout Form */}
-              {affiliateDetails.affiliate?.status === 'approved' &&
-                parseFloat(affiliateDetails.affiliate?.pending_balance || 0) > 0 && (
+              {/* Affiliate Details Panel */}
+              {selectedAffiliate && affiliateDetails && (
+                <div style={{ borderLeft: '1px solid var(--border-color)', paddingLeft: '24px' }}>
                   <div
                     style={{
-                      background: 'var(--gray-50)',
-                      padding: '16px',
-                      borderRadius: '8px',
-                      marginBottom: '20px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '16px',
                     }}
                   >
-                    <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>
-                      Process Payout
-                    </h4>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <input
-                        type="number"
-                        id={`payout-${selectedAffiliate}`}
-                        className="form-input"
-                        placeholder="Amount"
-                        defaultValue={affiliateDetails.affiliate?.pending_balance}
-                        style={{ width: '120px' }}
-                      />
+                    <h3 style={{ fontSize: '18px', fontWeight: '600' }}>Details</h3>
+                    <button
+                      onClick={() => {
+                        setSelectedAffiliate(null);
+                        setAffiliateDetails(null);
+                      }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+
+                  <div style={{ marginBottom: '20px' }}>
+                    <p>
+                      <strong>Email:</strong> {affiliateDetails.affiliate?.email}
+                    </p>
+                    <p>
+                      <strong>Business:</strong>{' '}
+                      {affiliateDetails.affiliate?.business_name || 'N/A'}
+                    </p>
+                    <p>
+                      <strong>Code:</strong> {affiliateDetails.affiliate?.affiliate_code}
+                    </p>
+                    <p>
+                      <strong>Commission:</strong> {affiliateDetails.affiliate?.commission_rate}%
+                    </p>
+                    <p>
+                      <strong>Website:</strong> {affiliateDetails.affiliate?.website || 'N/A'}
+                    </p>
+                    <p>
+                      <strong>Marketing:</strong>{' '}
+                      {affiliateDetails.affiliate?.marketing_channels || 'N/A'}
+                    </p>
+                    <p>
+                      <strong>Audience:</strong>{' '}
+                      {affiliateDetails.affiliate?.audience_size || 'N/A'}
+                    </p>
+                    <p>
+                      <strong>Total Earned:</strong> $
+                      {parseFloat(affiliateDetails.affiliate?.total_earned || 0).toFixed(2)}
+                    </p>
+                    <p>
+                      <strong>Pending Balance:</strong> $
+                      {parseFloat(affiliateDetails.affiliate?.pending_balance || 0).toFixed(2)}
+                    </p>
+                    <p>
+                      <strong>Payout Method:</strong> {affiliateDetails.affiliate?.payout_method} (
+                      {affiliateDetails.affiliate?.payout_email || 'Not set'})
+                    </p>
+                  </div>
+
+                  {/* Actions */}
+                  <div
+                    style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}
+                  >
+                    {affiliateDetails.affiliate?.status !== 'approved' && (
                       <button
                         className="btn btn-primary"
-                        onClick={() =>
-                          processPayout(
-                            selectedAffiliate,
-                            document.getElementById(`payout-${selectedAffiliate}`).value
-                          )
-                        }
+                        onClick={() => updateStatus(selectedAffiliate, 'approved')}
                         disabled={actionLoading}
                       >
-                        Pay Out
+                        <Check size={16} /> Approve
                       </button>
-                    </div>
+                    )}
+                    {affiliateDetails.affiliate?.status !== 'rejected' && (
+                      <button
+                        className="btn btn-secondary"
+                        style={{ background: '#FEE2E2', color: '#991B1B' }}
+                        onClick={() => updateStatus(selectedAffiliate, 'rejected')}
+                        disabled={actionLoading}
+                      >
+                        <X size={16} /> Reject
+                      </button>
+                    )}
+                    {affiliateDetails.affiliate?.status === 'approved' && (
+                      <button
+                        className="btn btn-secondary"
+                        onClick={() => updateStatus(selectedAffiliate, 'suspended')}
+                        disabled={actionLoading}
+                      >
+                        Suspend
+                      </button>
+                    )}
                   </div>
-                )}
 
-              {/* Conversions */}
-              <div style={{ marginBottom: '20px' }}>
-                <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>
-                  Conversions ({affiliateDetails.conversions?.length || 0})
-                </h4>
-                {affiliateDetails.conversions?.length > 0 ? (
-                  <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
-                    {affiliateDetails.conversions.map(c => (
+                  {/* Payout Form */}
+                  {affiliateDetails.affiliate?.status === 'approved' &&
+                    parseFloat(affiliateDetails.affiliate?.pending_balance || 0) > 0 && (
                       <div
-                        key={c.id}
                         style={{
-                          fontSize: '13px',
-                          padding: '8px',
-                          borderBottom: '1px solid var(--border-color)',
+                          background: 'var(--gray-50)',
+                          padding: '16px',
+                          borderRadius: '8px',
+                          marginBottom: '20px',
                         }}
                       >
-                        {c.converted_email} - ${parseFloat(c.commission_amount || 0).toFixed(2)} -{' '}
-                        {new Date(c.created_at).toLocaleDateString()}
+                        <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>
+                          Process Payout
+                        </h4>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <input
+                            type="number"
+                            id={`payout-${selectedAffiliate}`}
+                            className="form-input"
+                            placeholder="Amount"
+                            defaultValue={affiliateDetails.affiliate?.pending_balance}
+                            style={{ width: '120px' }}
+                          />
+                          <button
+                            className="btn btn-primary"
+                            onClick={() =>
+                              processPayout(
+                                selectedAffiliate,
+                                document.getElementById(`payout-${selectedAffiliate}`).value
+                              )
+                            }
+                            disabled={actionLoading}
+                          >
+                            Pay Out
+                          </button>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p style={{ fontSize: '13px', color: 'var(--gray-500)' }}>No conversions yet</p>
-                )}
-              </div>
+                    )}
 
-              {/* Payouts */}
-              <div>
-                <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>
-                  Payouts ({affiliateDetails.payouts?.length || 0})
-                </h4>
-                {affiliateDetails.payouts?.length > 0 ? (
-                  <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
-                    {affiliateDetails.payouts.map(p => (
-                      <div
-                        key={p.id}
-                        style={{
-                          fontSize: '13px',
-                          padding: '8px',
-                          borderBottom: '1px solid var(--border-color)',
-                        }}
-                      >
-                        ${parseFloat(p.amount || 0).toFixed(2)} via {p.method} - {p.status} -{' '}
-                        {new Date(p.created_at).toLocaleDateString()}
+                  {/* Conversions */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>
+                      Conversions ({affiliateDetails.conversions?.length || 0})
+                    </h4>
+                    {affiliateDetails.conversions?.length > 0 ? (
+                      <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                        {affiliateDetails.conversions.map(c => (
+                          <div
+                            key={c.id}
+                            style={{
+                              fontSize: '13px',
+                              padding: '8px',
+                              borderBottom: '1px solid var(--border-color)',
+                            }}
+                          >
+                            {c.converted_email} - ${parseFloat(c.commission_amount || 0).toFixed(2)}{' '}
+                            - {new Date(c.created_at).toLocaleDateString()}
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    ) : (
+                      <p style={{ fontSize: '13px', color: 'var(--gray-500)' }}>
+                        No conversions yet
+                      </p>
+                    )}
                   </div>
-                ) : (
-                  <p style={{ fontSize: '13px', color: 'var(--gray-500)' }}>No payouts yet</p>
-                )}
-              </div>
+
+                  {/* Payouts */}
+                  <div>
+                    <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>
+                      Payouts ({affiliateDetails.payouts?.length || 0})
+                    </h4>
+                    {affiliateDetails.payouts?.length > 0 ? (
+                      <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                        {affiliateDetails.payouts.map(p => (
+                          <div
+                            key={p.id}
+                            style={{
+                              fontSize: '13px',
+                              padding: '8px',
+                              borderBottom: '1px solid var(--border-color)',
+                            }}
+                          >
+                            ${parseFloat(p.amount || 0).toFixed(2)} via {p.method} - {p.status} -{' '}
+                            {new Date(p.created_at).toLocaleDateString()}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p style={{ fontSize: '13px', color: 'var(--gray-500)' }}>No payouts yet</p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </div>
+          </div>
         </>
       )}
 
@@ -23703,11 +31513,20 @@ const AdminPage = () => {
                   border: '1px solid #C7D2FE',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '12px',
+                  }}
+                >
                   <div>
                     <strong>OUTREACH</strong> = Cold Emails an potenzielle Kunden (Sales Pipeline)
                     <div style={{ fontSize: '12px', color: 'var(--gray-600)', marginTop: '4px' }}>
-                      Unterschied zu EMAIL Tab: Dort sind transaktionale Emails (Passwort-Reset, Drips etc.)
+                      Unterschied zu EMAIL Tab: Dort sind transaktionale Emails (Passwort-Reset,
+                      Drips etc.)
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -23950,9 +31769,18 @@ const AdminPage = () => {
                   border: '1px solid #FCD34D',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '12px',
+                  }}
+                >
                   <div>
-                    <strong>EMAIL</strong> = Transaktionale Emails (Passwort-Reset, Drip Sequences, Willkommens-Mails)
+                    <strong>EMAIL</strong> = Transaktionale Emails (Passwort-Reset, Drip Sequences,
+                    Willkommens-Mails)
                     <div style={{ fontSize: '12px', color: 'var(--gray-600)', marginTop: '4px' }}>
                       Unterschied zu OUTREACH Tab: Dort sind Cold Sales Emails an Leads
                     </div>
@@ -23989,19 +31817,40 @@ const AdminPage = () => {
                   marginBottom: '24px',
                 }}
               >
-                <div className="card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)', color: 'white' }}>
+                <div
+                  className="card"
+                  style={{
+                    textAlign: 'center',
+                    background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                    color: 'white',
+                  }}
+                >
                   <div style={{ fontSize: '32px', fontWeight: '700' }}>
                     {emailData.summary?.total_sent || 0}
                   </div>
                   <div style={{ opacity: 0.9 }}>Total Sent</div>
                 </div>
-                <div className="card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: 'white' }}>
+                <div
+                  className="card"
+                  style={{
+                    textAlign: 'center',
+                    background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                    color: 'white',
+                  }}
+                >
                   <div style={{ fontSize: '32px', fontWeight: '700' }}>
                     {emailData.summary?.total_today || 0}
                   </div>
                   <div style={{ opacity: 0.9 }}>Today</div>
                 </div>
-                <div className="card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)', color: 'white' }}>
+                <div
+                  className="card"
+                  style={{
+                    textAlign: 'center',
+                    background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
+                    color: 'white',
+                  }}
+                >
                   <div style={{ fontSize: '32px', fontWeight: '700' }}>
                     {emailData.summary?.total_failed || 0}
                   </div>
@@ -24019,47 +31868,95 @@ const AdminPage = () => {
                 }}
               >
                 <div className="card">
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#8B5CF6' }}></span>
+                  <h3
+                    style={{
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      marginBottom: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        background: '#8B5CF6',
+                      }}
+                    ></span>
                     Brevo (Marketing)
                   </h3>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
                     <div>
-                      <div style={{ fontSize: '24px', fontWeight: '700' }}>{emailData.summary?.by_provider?.brevo?.sent || 0}</div>
+                      <div style={{ fontSize: '24px', fontWeight: '700' }}>
+                        {emailData.summary?.by_provider?.brevo?.sent || 0}
+                      </div>
                       <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Sent</div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#10B981' }}>{emailData.summary?.by_provider?.brevo?.today || 0}</div>
+                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#10B981' }}>
+                        {emailData.summary?.by_provider?.brevo?.today || 0}
+                      </div>
                       <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Today</div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#EF4444' }}>{emailData.summary?.by_provider?.brevo?.failed || 0}</div>
+                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#EF4444' }}>
+                        {emailData.summary?.by_provider?.brevo?.failed || 0}
+                      </div>
                       <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Failed</div>
                     </div>
                   </div>
-                  <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--gray-500)' }}>300/day free limit</div>
+                  <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--gray-500)' }}>
+                    300/day free limit
+                  </div>
                 </div>
 
                 <div className="card">
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#F59E0B' }}></span>
+                  <h3
+                    style={{
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      marginBottom: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        background: '#F59E0B',
+                      }}
+                    ></span>
                     Resend (Transactional)
                   </h3>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
                     <div>
-                      <div style={{ fontSize: '24px', fontWeight: '700' }}>{emailData.summary?.by_provider?.resend?.sent || 0}</div>
+                      <div style={{ fontSize: '24px', fontWeight: '700' }}>
+                        {emailData.summary?.by_provider?.resend?.sent || 0}
+                      </div>
                       <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Sent</div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#10B981' }}>{emailData.summary?.by_provider?.resend?.today || 0}</div>
+                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#10B981' }}>
+                        {emailData.summary?.by_provider?.resend?.today || 0}
+                      </div>
                       <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Today</div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#EF4444' }}>{emailData.summary?.by_provider?.resend?.failed || 0}</div>
+                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#EF4444' }}>
+                        {emailData.summary?.by_provider?.resend?.failed || 0}
+                      </div>
                       <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Failed</div>
                     </div>
                   </div>
-                  <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--gray-500)' }}>100/day free limit</div>
+                  <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--gray-500)' }}>
+                    100/day free limit
+                  </div>
                 </div>
               </div>
 
@@ -24074,15 +31971,31 @@ const AdminPage = () => {
               >
                 {/* By Type */}
                 <div className="card">
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>By Type</h3>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
+                    By Type
+                  </h3>
                   {emailData.byType?.length > 0 ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {emailData.byType.map(t => (
-                        <div key={t.type} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: 'var(--bg-secondary)', borderRadius: '6px' }}>
-                          <span style={{ fontWeight: '500', textTransform: 'capitalize' }}>{t.type}</span>
+                        <div
+                          key={t.type}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '8px',
+                            background: 'var(--bg-secondary)',
+                            borderRadius: '6px',
+                          }}
+                        >
+                          <span style={{ fontWeight: '500', textTransform: 'capitalize' }}>
+                            {t.type}
+                          </span>
                           <div style={{ display: 'flex', gap: '16px' }}>
                             <span style={{ color: 'var(--gray-600)' }}>{t.sent} sent</span>
-                            {t.failed > 0 && <span style={{ color: '#EF4444' }}>{t.failed} failed</span>}
+                            {t.failed > 0 && (
+                              <span style={{ color: '#EF4444' }}>{t.failed} failed</span>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -24094,14 +32007,34 @@ const AdminPage = () => {
 
                 {/* Outreach Stats (from existing tracking) */}
                 <div className="card">
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Outreach Engagement</h3>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
+                    Outreach Engagement
+                  </h3>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <div style={{ textAlign: 'center', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
-                      <div style={{ fontSize: '28px', fontWeight: '700', color: '#10B981' }}>{emailData.outreachStats?.opens || 0}</div>
+                    <div
+                      style={{
+                        textAlign: 'center',
+                        padding: '16px',
+                        background: 'var(--bg-secondary)',
+                        borderRadius: '8px',
+                      }}
+                    >
+                      <div style={{ fontSize: '28px', fontWeight: '700', color: '#10B981' }}>
+                        {emailData.outreachStats?.opens || 0}
+                      </div>
                       <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Total Opens</div>
                     </div>
-                    <div style={{ textAlign: 'center', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
-                      <div style={{ fontSize: '28px', fontWeight: '700', color: '#3B82F6' }}>{emailData.outreachStats?.clicks || 0}</div>
+                    <div
+                      style={{
+                        textAlign: 'center',
+                        padding: '16px',
+                        background: 'var(--bg-secondary)',
+                        borderRadius: '8px',
+                      }}
+                    >
+                      <div style={{ fontSize: '28px', fontWeight: '700', color: '#3B82F6' }}>
+                        {emailData.outreachStats?.clicks || 0}
+                      </div>
                       <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Total Clicks</div>
                     </div>
                   </div>
@@ -24111,28 +32044,67 @@ const AdminPage = () => {
               {/* Campaign Performance */}
               {emailData.byCampaign?.length > 0 && (
                 <div className="card" style={{ marginBottom: '24px' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Campaign Performance</h3>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
+                    Campaign Performance
+                  </h3>
                   <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
                       <thead>
                         <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
-                          <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>Campaign</th>
-                          <th style={{ textAlign: 'right', padding: '12px 8px', fontWeight: '600' }}>Sent</th>
-                          <th style={{ textAlign: 'right', padding: '12px 8px', fontWeight: '600' }}>Opens</th>
-                          <th style={{ textAlign: 'right', padding: '12px 8px', fontWeight: '600' }}>Clicks</th>
-                          <th style={{ textAlign: 'right', padding: '12px 8px', fontWeight: '600' }}>Open Rate</th>
-                          <th style={{ textAlign: 'right', padding: '12px 8px', fontWeight: '600' }}>Click Rate</th>
+                          <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>
+                            Campaign
+                          </th>
+                          <th
+                            style={{ textAlign: 'right', padding: '12px 8px', fontWeight: '600' }}
+                          >
+                            Sent
+                          </th>
+                          <th
+                            style={{ textAlign: 'right', padding: '12px 8px', fontWeight: '600' }}
+                          >
+                            Opens
+                          </th>
+                          <th
+                            style={{ textAlign: 'right', padding: '12px 8px', fontWeight: '600' }}
+                          >
+                            Clicks
+                          </th>
+                          <th
+                            style={{ textAlign: 'right', padding: '12px 8px', fontWeight: '600' }}
+                          >
+                            Open Rate
+                          </th>
+                          <th
+                            style={{ textAlign: 'right', padding: '12px 8px', fontWeight: '600' }}
+                          >
+                            Click Rate
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         {emailData.byCampaign.map(c => (
-                          <tr key={c.campaign} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                          <tr
+                            key={c.campaign}
+                            style={{ borderBottom: '1px solid var(--border-color)' }}
+                          >
                             <td style={{ padding: '12px 8px', fontWeight: '500' }}>{c.campaign}</td>
                             <td style={{ padding: '12px 8px', textAlign: 'right' }}>{c.sent}</td>
-                            <td style={{ padding: '12px 8px', textAlign: 'right', color: '#10B981' }}>{c.opens}</td>
-                            <td style={{ padding: '12px 8px', textAlign: 'right', color: '#3B82F6' }}>{c.clicks}</td>
-                            <td style={{ padding: '12px 8px', textAlign: 'right' }}>{c.openRate}</td>
-                            <td style={{ padding: '12px 8px', textAlign: 'right' }}>{c.clickRate}</td>
+                            <td
+                              style={{ padding: '12px 8px', textAlign: 'right', color: '#10B981' }}
+                            >
+                              {c.opens}
+                            </td>
+                            <td
+                              style={{ padding: '12px 8px', textAlign: 'right', color: '#3B82F6' }}
+                            >
+                              {c.clicks}
+                            </td>
+                            <td style={{ padding: '12px 8px', textAlign: 'right' }}>
+                              {c.openRate}
+                            </td>
+                            <td style={{ padding: '12px 8px', textAlign: 'right' }}>
+                              {c.clickRate}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -24143,7 +32115,9 @@ const AdminPage = () => {
 
               {/* Recent Emails */}
               <div className="card">
-                <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Recent Emails</h3>
+                <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
+                  Recent Emails
+                </h3>
                 {emailData.recentEmails?.length > 0 ? (
                   <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                     {emailData.recentEmails.map(email => (
@@ -24160,36 +32134,50 @@ const AdminPage = () => {
                       >
                         <div>
                           <div style={{ fontWeight: '500', fontSize: '13px' }}>{email.to}</div>
-                          <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{email.subject}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
+                            {email.subject}
+                          </div>
                         </div>
-                        <div style={{
-                          fontSize: '11px',
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          background: email.provider === 'brevo' ? '#EDE9FE' : '#FEF3C7',
-                          color: email.provider === 'brevo' ? '#6D28D9' : '#D97706',
-                          fontWeight: '500'
-                        }}>
+                        <div
+                          style={{
+                            fontSize: '11px',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            background: email.provider === 'brevo' ? '#EDE9FE' : '#FEF3C7',
+                            color: email.provider === 'brevo' ? '#6D28D9' : '#D97706',
+                            fontWeight: '500',
+                          }}
+                        >
                           {email.provider}
                         </div>
-                        <div style={{
-                          fontSize: '11px',
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          background: email.status === 'sent' ? '#D1FAE5' : '#FEE2E2',
-                          color: email.status === 'sent' ? '#059669' : '#DC2626',
-                          fontWeight: '500'
-                        }}>
+                        <div
+                          style={{
+                            fontSize: '11px',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            background: email.status === 'sent' ? '#D1FAE5' : '#FEE2E2',
+                            color: email.status === 'sent' ? '#059669' : '#DC2626',
+                            fontWeight: '500',
+                          }}
+                        >
                           {email.status}
                         </div>
-                        <div style={{ fontSize: '12px', color: 'var(--gray-500)', whiteSpace: 'nowrap' }}>
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            color: 'var(--gray-500)',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
                           {email.sentAt ? new Date(email.sentAt).toLocaleString() : '-'}
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p style={{ color: 'var(--gray-500)' }}>No emails logged yet. Emails will appear here after the next send.</p>
+                  <p style={{ color: 'var(--gray-500)' }}>
+                    No emails logged yet. Emails will appear here after the next send.
+                  </p>
                 )}
               </div>
 
@@ -24228,7 +32216,14 @@ const AdminPage = () => {
             <>
               {/* Summary */}
               <div className="card" style={{ marginBottom: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '16px',
+                  }}
+                >
                   <h2 style={{ fontSize: '20px', fontWeight: '600', margin: 0 }}>Scraper Status</h2>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button
@@ -24245,26 +32240,62 @@ const AdminPage = () => {
                     </button>
                   </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '16px' }}>
-                  <div style={{ padding: '16px', background: 'var(--gray-50)', borderRadius: '8px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--primary-color)' }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                    gap: '16px',
+                  }}
+                >
+                  <div
+                    style={{
+                      padding: '16px',
+                      background: 'var(--gray-50)',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div
+                      style={{ fontSize: '24px', fontWeight: '700', color: 'var(--primary-color)' }}
+                    >
                       {scraperData.summary?.total_leads || 0}
                     </div>
                     <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Total Leads</div>
                   </div>
-                  <div style={{ padding: '16px', background: '#FEE2E2', borderRadius: '8px', textAlign: 'center' }}>
+                  <div
+                    style={{
+                      padding: '16px',
+                      background: '#FEE2E2',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                    }}
+                  >
                     <div style={{ fontSize: '24px', fontWeight: '700', color: '#DC2626' }}>
                       {scraperData.summary?.critical_count || 0}
                     </div>
                     <div style={{ fontSize: '12px', color: '#DC2626' }}>Critical</div>
                   </div>
-                  <div style={{ padding: '16px', background: '#FEF3C7', borderRadius: '8px', textAlign: 'center' }}>
+                  <div
+                    style={{
+                      padding: '16px',
+                      background: '#FEF3C7',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                    }}
+                  >
                     <div style={{ fontSize: '24px', fontWeight: '700', color: '#D97706' }}>
                       {scraperData.summary?.low_count || 0}
                     </div>
                     <div style={{ fontSize: '12px', color: '#D97706' }}>Low</div>
                   </div>
-                  <div style={{ padding: '16px', background: '#D1FAE5', borderRadius: '8px', textAlign: 'center' }}>
+                  <div
+                    style={{
+                      padding: '16px',
+                      background: '#D1FAE5',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                    }}
+                  >
                     <div style={{ fontSize: '24px', fontWeight: '700', color: '#059669' }}>
                       {scraperData.summary?.automatic_sources || 0}
                     </div>
@@ -24275,29 +32306,48 @@ const AdminPage = () => {
 
               {/* Recommendations */}
               {scraperData.recommendations?.length > 0 && (
-                <div className="card" style={{ marginBottom: '24px', background: '#FEF3C7', border: '1px solid #F59E0B' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', color: '#D97706' }}>
+                <div
+                  className="card"
+                  style={{
+                    marginBottom: '24px',
+                    background: '#FEF3C7',
+                    border: '1px solid #F59E0B',
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      marginBottom: '12px',
+                      color: '#D97706',
+                    }}
+                  >
                     Recommended Actions
                   </h3>
                   {scraperData.recommendations.map((rec, idx) => (
-                    <div key={idx} style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '12px',
-                      background: 'white',
-                      borderRadius: '8px',
-                      marginBottom: '8px'
-                    }}>
+                    <div
+                      key={idx}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '12px',
+                        background: 'white',
+                        borderRadius: '8px',
+                        marginBottom: '8px',
+                      }}
+                    >
                       <div>
-                        <span style={{
-                          fontSize: '10px',
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                          background: rec.priority === 'high' ? '#DC2626' : '#D97706',
-                          color: 'white',
-                          marginRight: '8px'
-                        }}>
+                        <span
+                          style={{
+                            fontSize: '10px',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            background: rec.priority === 'high' ? '#DC2626' : '#D97706',
+                            color: 'white',
+                            marginRight: '8px',
+                          }}
+                        >
                           {rec.priority.toUpperCase()}
                         </span>
                         <strong>{rec.source}</strong>: {rec.leads} leads (need {rec.threshold})
@@ -24320,42 +32370,55 @@ const AdminPage = () => {
                   TIER 1 - Automatic Systems
                 </h3>
                 <div style={{ display: 'grid', gap: '12px' }}>
-                  {scraperData.sources?.filter(s => s.tier === 1).map((source, idx) => (
-                    <div key={idx} style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '12px 16px',
-                      background: '#D1FAE5',
-                      borderRadius: '8px',
-                      borderLeft: '4px solid #059669'
-                    }}>
-                      <div>
-                        <div style={{ fontWeight: '600' }}>{source.name}</div>
-                        <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{source.priority_reason}</div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        {source.leads_total !== undefined && (
-                          <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontWeight: '600' }}>{source.leads_total}</div>
-                            <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>leads</div>
+                  {scraperData.sources
+                    ?.filter(s => s.tier === 1)
+                    .map((source, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '12px 16px',
+                          background: '#D1FAE5',
+                          borderRadius: '8px',
+                          borderLeft: '4px solid #059669',
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: '600' }}>{source.name}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
+                            {source.priority_reason}
                           </div>
-                        )}
-                        {source.emails_today !== undefined && (
-                          <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontWeight: '600' }}>{source.emails_today}/50</div>
-                            <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>today</div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                          {source.leads_total !== undefined && (
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ fontWeight: '600' }}>{source.leads_total}</div>
+                              <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
+                                leads
+                              </div>
+                            </div>
+                          )}
+                          {source.emails_today !== undefined && (
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ fontWeight: '600' }}>{source.emails_today}/50</div>
+                              <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
+                                today
+                              </div>
+                            </div>
+                          )}
+                          <div
+                            style={{
+                              fontSize: '20px',
+                              color: '#059669',
+                            }}
+                          >
+                            ✓
                           </div>
-                        )}
-                        <div style={{
-                          fontSize: '20px',
-                          color: '#059669'
-                        }}>
-                          ✓
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </div>
 
@@ -24365,218 +32428,409 @@ const AdminPage = () => {
                   TIER 2 - Manual (High ROI)
                 </h3>
                 <div style={{ display: 'grid', gap: '12px' }}>
-                  {scraperData.sources?.filter(s => s.tier === 2).map((source, idx) => (
-                    <div key={idx} style={{
-                      padding: '16px',
-                      background: source.status === 'critical' ? '#FEE2E2' : source.status === 'low' ? '#FEF3C7' : '#F3F4F6',
-                      borderRadius: '8px',
-                      borderLeft: `4px solid ${source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#9CA3AF'}`
-                    }}>
-                      {/* Header Row */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontWeight: '600' }}>{source.name}</span>
-                          {source.requires_chrome_mcp && (
-                            <span style={{
-                              background: '#8B5CF6',
-                              color: 'white',
-                              padding: '2px 8px',
-                              borderRadius: '4px',
-                              fontSize: '10px',
-                              fontWeight: '600'
-                            }}>
-                              CHROME MCP
-                            </span>
-                          )}
-                          <span style={{
-                            fontSize: '16px',
-                            color: source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#059669'
-                          }}>
-                            {source.status === 'critical' ? '!' : source.status === 'low' ? '!' : '!'}
-                          </span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontWeight: '600', fontSize: '18px' }}>{source.leads_not_contacted || source.leads_total || 0}</span>
-                          <span style={{ fontSize: '12px', color: 'var(--gray-500)' }}>/ {source.threshold_low}</span>
-                        </div>
-                      </div>
-
-                      {/* Stats Row */}
-                      <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: 'var(--gray-600)', marginBottom: '8px' }}>
-                        <span>Total: {source.leads_total || 0}</span>
-                        {source.leads_with_email !== undefined && <span>Mit Email: {source.leads_with_email}</span>}
-                        {source.leads_with_demo !== undefined && <span>Mit Demo: {source.leads_with_demo}</span>}
-                        {source.by_competitor && (
-                          <>
-                            <span>Birdeye: {source.by_competitor.birdeye}</span>
-                            <span>Podium: {source.by_competitor.podium}</span>
-                          </>
-                        )}
-                        {source.connections_accepted !== undefined && (
-                          <>
-                            <span>Accepted: {source.connections_accepted}</span>
-                            <span>Demos viewed: {source.demos_viewed || 0}</span>
-                          </>
-                        )}
-                      </div>
-
-                      {/* LinkedIn Limits Tracking */}
-                      {source.limits && (
-                        <div style={{
-                          background: 'rgba(59, 130, 246, 0.1)',
-                          border: '1px solid rgba(59, 130, 246, 0.3)',
-                          borderRadius: '6px',
-                          padding: '12px',
-                          marginBottom: '8px'
-                        }}>
-                          <div style={{ fontSize: '11px', fontWeight: '600', color: '#2563EB', marginBottom: '8px' }}>
-                            LinkedIn Limits (verhindert Account-Sperrung)
-                          </div>
-                          <div style={{ display: 'grid', gap: '8px' }}>
-                            {/* Daily Connections */}
-                            <div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '2px' }}>
-                                <span>Connections heute</span>
-                                <span style={{
-                                  fontWeight: '600',
-                                  color: source.limits.daily_status === 'limit_reached' ? '#DC2626' : source.limits.daily_status === 'warning' ? '#D97706' : '#059669'
-                                }}>
-                                  {source.limits.connections_today}/{source.limits.connections_today_max}
-                                  {source.limits.daily_status === 'limit_reached' && ' LIMIT!'}
-                                </span>
-                              </div>
-                              <div style={{ background: '#E5E7EB', borderRadius: '4px', height: '6px', overflow: 'hidden' }}>
-                                <div style={{
-                                  width: `${(source.limits.connections_today / source.limits.connections_today_max) * 100}%`,
-                                  height: '100%',
-                                  background: source.limits.daily_status === 'limit_reached' ? '#DC2626' : source.limits.daily_status === 'warning' ? '#D97706' : '#10B981',
-                                  transition: 'width 0.3s'
-                                }} />
-                              </div>
-                            </div>
-                            {/* Weekly Connections */}
-                            <div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '2px' }}>
-                                <span>Connections diese Woche</span>
-                                <span style={{
-                                  fontWeight: '600',
-                                  color: source.limits.weekly_status === 'limit_reached' ? '#DC2626' : source.limits.weekly_status === 'warning' ? '#D97706' : '#059669'
-                                }}>
-                                  {source.limits.connections_this_week}/{source.limits.connections_week_max}
-                                  {source.limits.weekly_status === 'limit_reached' && ' LIMIT!'}
-                                </span>
-                              </div>
-                              <div style={{ background: '#E5E7EB', borderRadius: '4px', height: '6px', overflow: 'hidden' }}>
-                                <div style={{
-                                  width: `${(source.limits.connections_this_week / source.limits.connections_week_max) * 100}%`,
-                                  height: '100%',
-                                  background: source.limits.weekly_status === 'limit_reached' ? '#DC2626' : source.limits.weekly_status === 'warning' ? '#D97706' : '#10B981',
-                                  transition: 'width 0.3s'
-                                }} />
-                              </div>
-                            </div>
-                            {/* Daily Messages */}
-                            <div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '2px' }}>
-                                <span>Messages heute</span>
-                                <span style={{ fontWeight: '600', color: source.limits.messages_today >= 50 ? '#DC2626' : '#059669' }}>
-                                  {source.limits.messages_today}/{source.limits.messages_today_max}
-                                </span>
-                              </div>
-                              <div style={{ background: '#E5E7EB', borderRadius: '4px', height: '6px', overflow: 'hidden' }}>
-                                <div style={{
-                                  width: `${(source.limits.messages_today / source.limits.messages_today_max) * 100}%`,
-                                  height: '100%',
-                                  background: source.limits.messages_today >= 50 ? '#DC2626' : '#10B981',
-                                  transition: 'width 0.3s'
-                                }} />
-                              </div>
-                            </div>
-                          </div>
-                          <div style={{ fontSize: '10px', color: 'var(--gray-500)', marginTop: '8px' }}>
-                            Verbleibend: {source.limits.connections_today_remaining} heute, {source.limits.connections_week_remaining} diese Woche
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Last Activity */}
-                      {(source.last_scraped || source.last_email_sent) && (
-                        <div style={{ fontSize: '11px', color: 'var(--gray-500)', marginBottom: '8px' }}>
-                          {source.last_scraped && <span>Letztes Scrape: {new Date(source.last_scraped).toLocaleDateString('de-DE')} </span>}
-                          {source.last_email_sent && <span>| Letzte Email: {new Date(source.last_email_sent).toLocaleDateString('de-DE')}</span>}
-                        </div>
-                      )}
-
-                      {/* Chrome MCP Instructions */}
-                      {source.requires_chrome_mcp && source.chrome_command && (
-                        <div style={{
-                          background: 'rgba(139, 92, 246, 0.1)',
-                          border: '1px solid rgba(139, 92, 246, 0.3)',
-                          borderRadius: '6px',
-                          padding: '12px',
-                          marginTop: '8px'
-                        }}>
-                          <div style={{ fontSize: '11px', fontWeight: '600', color: '#7C3AED', marginBottom: '6px' }}>
-                            Chrome MCP starten:
-                          </div>
-                          <div style={{
+                  {scraperData.sources
+                    ?.filter(s => s.tier === 2)
+                    .map((source, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          padding: '16px',
+                          background:
+                            source.status === 'critical'
+                              ? '#FEE2E2'
+                              : source.status === 'low'
+                                ? '#FEF3C7'
+                                : '#F3F4F6',
+                          borderRadius: '8px',
+                          borderLeft: `4px solid ${source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#9CA3AF'}`,
+                        }}
+                      >
+                        {/* Header Row */}
+                        <div
+                          style={{
                             display: 'flex',
+                            justifyContent: 'space-between',
                             alignItems: 'center',
-                            gap: '8px',
-                            background: '#1F2937',
-                            color: '#10B981',
-                            padding: '8px 12px',
-                            borderRadius: '4px',
-                            fontFamily: 'monospace',
-                            fontSize: '12px'
-                          }}>
-                            <code style={{ flex: 1 }}>{source.chrome_command}</code>
-                            <button
-                              className="btn"
-                              style={{ fontSize: '10px', padding: '2px 8px', background: '#374151', color: 'white' }}
-                              onClick={() => copyCommand(source.chrome_command)}
+                            marginBottom: '8px',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontWeight: '600' }}>{source.name}</span>
+                            {source.requires_chrome_mcp && (
+                              <span
+                                style={{
+                                  background: '#8B5CF6',
+                                  color: 'white',
+                                  padding: '2px 8px',
+                                  borderRadius: '4px',
+                                  fontSize: '10px',
+                                  fontWeight: '600',
+                                }}
+                              >
+                                CHROME MCP
+                              </span>
+                            )}
+                            <span
+                              style={{
+                                fontSize: '16px',
+                                color:
+                                  source.status === 'critical'
+                                    ? '#DC2626'
+                                    : source.status === 'low'
+                                      ? '#D97706'
+                                      : '#059669',
+                              }}
                             >
-                              Copy
-                            </button>
+                              {source.status === 'critical'
+                                ? '!'
+                                : source.status === 'low'
+                                  ? '!'
+                                  : '!'}
+                            </span>
                           </div>
-                          {source.scrape_prompt && (
-                            <div style={{ marginTop: '8px' }}>
-                              <div style={{ fontSize: '11px', fontWeight: '600', color: '#7C3AED', marginBottom: '4px' }}>
-                                Dann eingeben:
-                              </div>
-                              <div style={{
-                                background: 'white',
-                                padding: '8px',
-                                borderRadius: '4px',
-                                fontSize: '11px',
-                                color: 'var(--gray-700)'
-                              }}>
-                                {source.scrape_prompt}
-                              </div>
-                            </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontWeight: '600', fontSize: '18px' }}>
+                              {source.leads_not_contacted || source.leads_total || 0}
+                            </span>
+                            <span style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
+                              / {source.threshold_low}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Stats Row */}
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: '16px',
+                            fontSize: '12px',
+                            color: 'var(--gray-600)',
+                            marginBottom: '8px',
+                          }}
+                        >
+                          <span>Total: {source.leads_total || 0}</span>
+                          {source.leads_with_email !== undefined && (
+                            <span>Mit Email: {source.leads_with_email}</span>
                           )}
-                          {source.workflow && (
-                            <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--gray-600)' }}>
-                              {source.workflow.map((step, i) => (
-                                <div key={i}>{step}</div>
-                              ))}
-                            </div>
+                          {source.leads_with_demo !== undefined && (
+                            <span>Mit Demo: {source.leads_with_demo}</span>
+                          )}
+                          {source.by_competitor && (
+                            <>
+                              <span>Birdeye: {source.by_competitor.birdeye}</span>
+                              <span>Podium: {source.by_competitor.podium}</span>
+                            </>
+                          )}
+                          {source.connections_accepted !== undefined && (
+                            <>
+                              <span>Accepted: {source.connections_accepted}</span>
+                              <span>Demos viewed: {source.demos_viewed || 0}</span>
+                            </>
                           )}
                         </div>
-                      )}
 
-                      {/* Legacy command button for non-Chrome sources */}
-                      {!source.requires_chrome_mcp && source.command && (
-                        <button
-                          className="btn btn-secondary"
-                          style={{ fontSize: '11px', padding: '4px 8px', marginTop: '8px' }}
-                          onClick={() => copyCommand(source.command)}
-                        >
-                          Copy Command
-                        </button>
-                      )}
-                    </div>
-                  ))}
+                        {/* LinkedIn Limits Tracking */}
+                        {source.limits && (
+                          <div
+                            style={{
+                              background: 'rgba(59, 130, 246, 0.1)',
+                              border: '1px solid rgba(59, 130, 246, 0.3)',
+                              borderRadius: '6px',
+                              padding: '12px',
+                              marginBottom: '8px',
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                color: '#2563EB',
+                                marginBottom: '8px',
+                              }}
+                            >
+                              LinkedIn Limits (verhindert Account-Sperrung)
+                            </div>
+                            <div style={{ display: 'grid', gap: '8px' }}>
+                              {/* Daily Connections */}
+                              <div>
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    fontSize: '11px',
+                                    marginBottom: '2px',
+                                  }}
+                                >
+                                  <span>Connections heute</span>
+                                  <span
+                                    style={{
+                                      fontWeight: '600',
+                                      color:
+                                        source.limits.daily_status === 'limit_reached'
+                                          ? '#DC2626'
+                                          : source.limits.daily_status === 'warning'
+                                            ? '#D97706'
+                                            : '#059669',
+                                    }}
+                                  >
+                                    {source.limits.connections_today}/
+                                    {source.limits.connections_today_max}
+                                    {source.limits.daily_status === 'limit_reached' && ' LIMIT!'}
+                                  </span>
+                                </div>
+                                <div
+                                  style={{
+                                    background: '#E5E7EB',
+                                    borderRadius: '4px',
+                                    height: '6px',
+                                    overflow: 'hidden',
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      width: `${(source.limits.connections_today / source.limits.connections_today_max) * 100}%`,
+                                      height: '100%',
+                                      background:
+                                        source.limits.daily_status === 'limit_reached'
+                                          ? '#DC2626'
+                                          : source.limits.daily_status === 'warning'
+                                            ? '#D97706'
+                                            : '#10B981',
+                                      transition: 'width 0.3s',
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                              {/* Weekly Connections */}
+                              <div>
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    fontSize: '11px',
+                                    marginBottom: '2px',
+                                  }}
+                                >
+                                  <span>Connections diese Woche</span>
+                                  <span
+                                    style={{
+                                      fontWeight: '600',
+                                      color:
+                                        source.limits.weekly_status === 'limit_reached'
+                                          ? '#DC2626'
+                                          : source.limits.weekly_status === 'warning'
+                                            ? '#D97706'
+                                            : '#059669',
+                                    }}
+                                  >
+                                    {source.limits.connections_this_week}/
+                                    {source.limits.connections_week_max}
+                                    {source.limits.weekly_status === 'limit_reached' && ' LIMIT!'}
+                                  </span>
+                                </div>
+                                <div
+                                  style={{
+                                    background: '#E5E7EB',
+                                    borderRadius: '4px',
+                                    height: '6px',
+                                    overflow: 'hidden',
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      width: `${(source.limits.connections_this_week / source.limits.connections_week_max) * 100}%`,
+                                      height: '100%',
+                                      background:
+                                        source.limits.weekly_status === 'limit_reached'
+                                          ? '#DC2626'
+                                          : source.limits.weekly_status === 'warning'
+                                            ? '#D97706'
+                                            : '#10B981',
+                                      transition: 'width 0.3s',
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                              {/* Daily Messages */}
+                              <div>
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    fontSize: '11px',
+                                    marginBottom: '2px',
+                                  }}
+                                >
+                                  <span>Messages heute</span>
+                                  <span
+                                    style={{
+                                      fontWeight: '600',
+                                      color:
+                                        source.limits.messages_today >= 50 ? '#DC2626' : '#059669',
+                                    }}
+                                  >
+                                    {source.limits.messages_today}/
+                                    {source.limits.messages_today_max}
+                                  </span>
+                                </div>
+                                <div
+                                  style={{
+                                    background: '#E5E7EB',
+                                    borderRadius: '4px',
+                                    height: '6px',
+                                    overflow: 'hidden',
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      width: `${(source.limits.messages_today / source.limits.messages_today_max) * 100}%`,
+                                      height: '100%',
+                                      background:
+                                        source.limits.messages_today >= 50 ? '#DC2626' : '#10B981',
+                                      transition: 'width 0.3s',
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            <div
+                              style={{
+                                fontSize: '10px',
+                                color: 'var(--gray-500)',
+                                marginTop: '8px',
+                              }}
+                            >
+                              Verbleibend: {source.limits.connections_today_remaining} heute,{' '}
+                              {source.limits.connections_week_remaining} diese Woche
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Last Activity */}
+                        {(source.last_scraped || source.last_email_sent) && (
+                          <div
+                            style={{
+                              fontSize: '11px',
+                              color: 'var(--gray-500)',
+                              marginBottom: '8px',
+                            }}
+                          >
+                            {source.last_scraped && (
+                              <span>
+                                Letztes Scrape:{' '}
+                                {new Date(source.last_scraped).toLocaleDateString('de-DE')}{' '}
+                              </span>
+                            )}
+                            {source.last_email_sent && (
+                              <span>
+                                | Letzte Email:{' '}
+                                {new Date(source.last_email_sent).toLocaleDateString('de-DE')}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Chrome MCP Instructions */}
+                        {source.requires_chrome_mcp && source.chrome_command && (
+                          <div
+                            style={{
+                              background: 'rgba(139, 92, 246, 0.1)',
+                              border: '1px solid rgba(139, 92, 246, 0.3)',
+                              borderRadius: '6px',
+                              padding: '12px',
+                              marginTop: '8px',
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                color: '#7C3AED',
+                                marginBottom: '6px',
+                              }}
+                            >
+                              Chrome MCP starten:
+                            </div>
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                background: '#1F2937',
+                                color: '#10B981',
+                                padding: '8px 12px',
+                                borderRadius: '4px',
+                                fontFamily: 'monospace',
+                                fontSize: '12px',
+                              }}
+                            >
+                              <code style={{ flex: 1 }}>{source.chrome_command}</code>
+                              <button
+                                className="btn"
+                                style={{
+                                  fontSize: '10px',
+                                  padding: '2px 8px',
+                                  background: '#374151',
+                                  color: 'white',
+                                }}
+                                onClick={() => copyCommand(source.chrome_command)}
+                              >
+                                Copy
+                              </button>
+                            </div>
+                            {source.scrape_prompt && (
+                              <div style={{ marginTop: '8px' }}>
+                                <div
+                                  style={{
+                                    fontSize: '11px',
+                                    fontWeight: '600',
+                                    color: '#7C3AED',
+                                    marginBottom: '4px',
+                                  }}
+                                >
+                                  Dann eingeben:
+                                </div>
+                                <div
+                                  style={{
+                                    background: 'white',
+                                    padding: '8px',
+                                    borderRadius: '4px',
+                                    fontSize: '11px',
+                                    color: 'var(--gray-700)',
+                                  }}
+                                >
+                                  {source.scrape_prompt}
+                                </div>
+                              </div>
+                            )}
+                            {source.workflow && (
+                              <div
+                                style={{
+                                  marginTop: '8px',
+                                  fontSize: '11px',
+                                  color: 'var(--gray-600)',
+                                }}
+                              >
+                                {source.workflow.map((step, i) => (
+                                  <div key={i}>{step}</div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Legacy command button for non-Chrome sources */}
+                        {!source.requires_chrome_mcp && source.command && (
+                          <button
+                            className="btn btn-secondary"
+                            style={{ fontSize: '11px', padding: '4px 8px', marginTop: '8px' }}
+                            onClick={() => copyCommand(source.command)}
+                          >
+                            Copy Command
+                          </button>
+                        )}
+                      </div>
+                    ))}
                 </div>
               </div>
 
@@ -24586,45 +32840,68 @@ const AdminPage = () => {
                   TIER 3 - Experimental
                 </h3>
                 <div style={{ display: 'grid', gap: '12px' }}>
-                  {scraperData.sources?.filter(s => s.tier === 3).map((source, idx) => (
-                    <div key={idx} style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '12px 16px',
-                      background: source.status === 'critical' ? '#FEE2E2' : source.status === 'low' ? '#FEF3C7' : '#F3F4F6',
-                      borderRadius: '8px',
-                      borderLeft: `4px solid ${source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#9CA3AF'}`
-                    }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: '600' }}>{source.name}</div>
-                        <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{source.priority_reason}</div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontWeight: '600' }}>{source.leads_total || 0}</div>
-                          <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
-                            / {source.threshold_low} threshold
+                  {scraperData.sources
+                    ?.filter(s => s.tier === 3)
+                    .map((source, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '12px 16px',
+                          background:
+                            source.status === 'critical'
+                              ? '#FEE2E2'
+                              : source.status === 'low'
+                                ? '#FEF3C7'
+                                : '#F3F4F6',
+                          borderRadius: '8px',
+                          borderLeft: `4px solid ${source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#9CA3AF'}`,
+                        }}
+                      >
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: '600' }}>{source.name}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
+                            {source.priority_reason}
                           </div>
                         </div>
-                        <div style={{
-                          fontSize: '16px',
-                          color: source.status === 'critical' ? '#DC2626' : source.status === 'low' ? '#D97706' : '#059669'
-                        }}>
-                          {source.status === 'critical' ? '!' : source.status === 'low' ? '⚠' : '✓'}
-                        </div>
-                        {source.command && (
-                          <button
-                            className="btn btn-secondary"
-                            style={{ fontSize: '11px', padding: '4px 8px' }}
-                            onClick={() => copyCommand(source.command)}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontWeight: '600' }}>{source.leads_total || 0}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
+                              / {source.threshold_low} threshold
+                            </div>
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '16px',
+                              color:
+                                source.status === 'critical'
+                                  ? '#DC2626'
+                                  : source.status === 'low'
+                                    ? '#D97706'
+                                    : '#059669',
+                            }}
                           >
-                            Copy
-                          </button>
-                        )}
+                            {source.status === 'critical'
+                              ? '!'
+                              : source.status === 'low'
+                                ? '⚠'
+                                : '✓'}
+                          </div>
+                          {source.command && (
+                            <button
+                              className="btn btn-secondary"
+                              style={{ fontSize: '11px', padding: '4px 8px' }}
+                              onClick={() => copyCommand(source.command)}
+                            >
+                              Copy
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </div>
 
@@ -24635,7 +32912,8 @@ const AdminPage = () => {
                   <div>
                     <div style={{ fontWeight: '600' }}>Email Alerts Active</div>
                     <div style={{ fontSize: '12px', color: 'var(--gray-600)' }}>
-                      Daily alerts sent to {scraperData.notifications?.email} when sources are critical
+                      Daily alerts sent to {scraperData.notifications?.email} when sources are
+                      critical
                     </div>
                   </div>
                 </div>
@@ -24666,40 +32944,79 @@ const AdminPage = () => {
                 <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
                   Today's Actions
                 </h3>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                  gap: '16px',
-                }}>
-                  <div style={{ textAlign: 'center', padding: '16px', background: '#F3F4F6', borderRadius: '12px' }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                    gap: '16px',
+                  }}
+                >
+                  <div
+                    style={{
+                      textAlign: 'center',
+                      padding: '16px',
+                      background: '#F3F4F6',
+                      borderRadius: '12px',
+                    }}
+                  >
                     <div style={{ fontSize: '32px', fontWeight: '700', color: '#3B82F6' }}>
                       {claudeStateData.today?.leads_scraped || 0}
                     </div>
                     <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Leads Scraped</div>
                   </div>
-                  <div style={{ textAlign: 'center', padding: '16px', background: '#F3F4F6', borderRadius: '12px' }}>
+                  <div
+                    style={{
+                      textAlign: 'center',
+                      padding: '16px',
+                      background: '#F3F4F6',
+                      borderRadius: '12px',
+                    }}
+                  >
                     <div style={{ fontSize: '32px', fontWeight: '700', color: '#10B981' }}>
                       {claudeStateData.today?.emails_sent || 0}
                     </div>
                     <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Emails Sent</div>
                   </div>
-                  <div style={{ textAlign: 'center', padding: '16px', background: '#F3F4F6', borderRadius: '12px' }}>
+                  <div
+                    style={{
+                      textAlign: 'center',
+                      padding: '16px',
+                      background: '#F3F4F6',
+                      borderRadius: '12px',
+                    }}
+                  >
                     <div style={{ fontSize: '32px', fontWeight: '700', color: '#8B5CF6' }}>
                       {claudeStateData.today?.twitter_posts || 0}
                     </div>
                     <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Twitter Posts</div>
                   </div>
-                  <div style={{ textAlign: 'center', padding: '16px', background: '#F3F4F6', borderRadius: '12px' }}>
+                  <div
+                    style={{
+                      textAlign: 'center',
+                      padding: '16px',
+                      background: '#F3F4F6',
+                      borderRadius: '12px',
+                    }}
+                  >
                     <div style={{ fontSize: '32px', fontWeight: '700', color: '#EC4899' }}>
                       {claudeStateData.today?.linkedin_demos || 0}
                     </div>
                     <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>LinkedIn Demos</div>
                   </div>
-                  <div style={{ textAlign: 'center', padding: '16px', background: '#F3F4F6', borderRadius: '12px' }}>
+                  <div
+                    style={{
+                      textAlign: 'center',
+                      padding: '16px',
+                      background: '#F3F4F6',
+                      borderRadius: '12px',
+                    }}
+                  >
                     <div style={{ fontSize: '32px', fontWeight: '700', color: '#F59E0B' }}>
                       {claudeStateData.today?.demos_generated || 0}
                     </div>
-                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Demos Generated</div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>
+                      Demos Generated
+                    </div>
                   </div>
                 </div>
               </div>
@@ -24709,7 +33026,9 @@ const AdminPage = () => {
                 <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
                   This Week
                 </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                <div
+                  style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}
+                >
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '28px', fontWeight: '700', color: '#3B82F6' }}>
                       {claudeStateData.this_week?.emails_sent || 0}
@@ -24736,28 +33055,40 @@ const AdminPage = () => {
                 <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
                   Pending Tasks
                 </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-                  <div style={{
-                    padding: '16px',
-                    background: claudeStateData.pending?.linkedin_connections > 0 ? '#FEF3C7' : '#F3F4F6',
-                    borderRadius: '12px',
-                    borderLeft: `4px solid ${claudeStateData.pending?.linkedin_connections > 0 ? '#F59E0B' : '#9CA3AF'}`,
-                  }}>
+                <div
+                  style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}
+                >
+                  <div
+                    style={{
+                      padding: '16px',
+                      background:
+                        claudeStateData.pending?.linkedin_connections > 0 ? '#FEF3C7' : '#F3F4F6',
+                      borderRadius: '12px',
+                      borderLeft: `4px solid ${claudeStateData.pending?.linkedin_connections > 0 ? '#F59E0B' : '#9CA3AF'}`,
+                    }}
+                  >
                     <div style={{ fontSize: '24px', fontWeight: '700' }}>
                       {claudeStateData.pending?.linkedin_connections || 0}
                     </div>
-                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>LinkedIn Pending</div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>
+                      LinkedIn Pending
+                    </div>
                   </div>
-                  <div style={{
-                    padding: '16px',
-                    background: claudeStateData.pending?.leads_not_emailed > 0 ? '#FEE2E2' : '#F3F4F6',
-                    borderRadius: '12px',
-                    borderLeft: `4px solid ${claudeStateData.pending?.leads_not_emailed > 0 ? '#DC2626' : '#9CA3AF'}`,
-                  }}>
+                  <div
+                    style={{
+                      padding: '16px',
+                      background:
+                        claudeStateData.pending?.leads_not_emailed > 0 ? '#FEE2E2' : '#F3F4F6',
+                      borderRadius: '12px',
+                      borderLeft: `4px solid ${claudeStateData.pending?.leads_not_emailed > 0 ? '#DC2626' : '#9CA3AF'}`,
+                    }}
+                  >
                     <div style={{ fontSize: '24px', fontWeight: '700' }}>
                       {claudeStateData.pending?.leads_not_emailed || 0}
                     </div>
-                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>Leads Not Emailed</div>
+                    <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>
+                      Leads Not Emailed
+                    </div>
                   </div>
                 </div>
               </div>
@@ -24770,26 +33101,40 @@ const AdminPage = () => {
                 {claudeStateData.last_actions?.length > 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {claudeStateData.last_actions.map((action, idx) => (
-                      <div key={idx} style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        padding: '12px 16px',
-                        background: '#F9FAFB',
-                        borderRadius: '8px',
-                        borderLeft: '4px solid #3B82F6',
-                      }}>
-                        <div style={{
-                          width: '40px',
-                          height: '40px',
-                          borderRadius: '50%',
-                          background: action.category === 'outreach' ? '#DBEAFE' : action.category === 'social' ? '#E9D5FF' : '#D1FAE5',
+                      <div
+                        key={idx}
+                        style={{
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '18px',
-                        }}>
-                          {action.category === 'outreach' ? '📧' : action.category === 'social' ? '🐦' : '📝'}
+                          gap: '12px',
+                          padding: '12px 16px',
+                          background: '#F9FAFB',
+                          borderRadius: '8px',
+                          borderLeft: '4px solid #3B82F6',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            background:
+                              action.category === 'outreach'
+                                ? '#DBEAFE'
+                                : action.category === 'social'
+                                  ? '#E9D5FF'
+                                  : '#D1FAE5',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '18px',
+                          }}
+                        >
+                          {action.category === 'outreach'
+                            ? '📧'
+                            : action.category === 'social'
+                              ? '🐦'
+                              : '📝'}
                         </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ fontWeight: '600' }}>{action.type}</div>
@@ -24801,7 +33146,10 @@ const AdminPage = () => {
                         </div>
                         <div style={{ textAlign: 'right' }}>
                           <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
-                            {new Date(action.at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+                            {new Date(action.at).toLocaleTimeString('de-DE', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
                           </div>
                           <div style={{ fontSize: '11px', color: 'var(--gray-400)' }}>
                             {action.session !== 'unknown' ? `Session: ${action.session}` : ''}
@@ -24823,23 +33171,42 @@ const AdminPage = () => {
                   Notes from Previous Sessions
                 </h3>
                 {claudeStateData.notes_from_previous_sessions?.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                      marginBottom: '16px',
+                    }}
+                  >
                     {claudeStateData.notes_from_previous_sessions.map((note, idx) => (
-                      <div key={idx} style={{
-                        padding: '12px 16px',
-                        background: '#FEF3C7',
-                        borderRadius: '8px',
-                        borderLeft: '4px solid #F59E0B',
-                      }}>
+                      <div
+                        key={idx}
+                        style={{
+                          padding: '12px 16px',
+                          background: '#FEF3C7',
+                          borderRadius: '8px',
+                          borderLeft: '4px solid #F59E0B',
+                        }}
+                      >
                         <div>{note.note}</div>
-                        <div style={{ fontSize: '11px', color: 'var(--gray-500)', marginTop: '4px' }}>
+                        <div
+                          style={{ fontSize: '11px', color: 'var(--gray-500)', marginTop: '4px' }}
+                        >
                           {new Date(note.at).toLocaleString('de-DE')}
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div style={{ textAlign: 'center', color: 'var(--gray-500)', padding: '20px', marginBottom: '16px' }}>
+                  <div
+                    style={{
+                      textAlign: 'center',
+                      color: 'var(--gray-500)',
+                      padding: '20px',
+                      marginBottom: '16px',
+                    }}
+                  >
                     No notes yet
                   </div>
                 )}
@@ -24851,8 +33218,8 @@ const AdminPage = () => {
                     className="input"
                     placeholder="Add a note for the next Claude session..."
                     value={newNote}
-                    onChange={(e) => setNewNote(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addClaudeNote()}
+                    onChange={e => setNewNote(e.target.value)}
+                    onKeyPress={e => e.key === 'Enter' && addClaudeNote()}
                     style={{ flex: 1 }}
                   />
                   <button className="btn btn-primary" onClick={addClaudeNote}>
@@ -24884,11 +33251,21 @@ const AdminPage = () => {
       {/* API Costs Tab */}
       {activeAdminTab === 'costs' && (
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '20px',
+            }}
+          >
             <h2 style={{ margin: 0 }}>API Costs Dashboard</h2>
             <button
               className="btn btn-secondary"
-              onClick={() => { setCostsData(null); loadCostsData(); }}
+              onClick={() => {
+                setCostsData(null);
+                loadCostsData();
+              }}
               style={{ padding: '6px 12px', fontSize: '13px' }}
             >
               Refresh
@@ -24908,26 +33285,53 @@ const AdminPage = () => {
                   marginBottom: '24px',
                 }}
               >
-                <div className="card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: 'white' }}>
+                <div
+                  className="card"
+                  style={{
+                    textAlign: 'center',
+                    background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                    color: 'white',
+                  }}
+                >
                   <div style={{ fontSize: '28px', fontWeight: '700' }}>
                     ${parseFloat(costsData.totals?.today || 0).toFixed(2)}
                   </div>
                   <div style={{ opacity: 0.9, fontSize: '14px' }}>Today</div>
-                  <div style={{ opacity: 0.7, fontSize: '12px' }}>{costsData.totals?.calls_today || 0} calls</div>
+                  <div style={{ opacity: 0.7, fontSize: '12px' }}>
+                    {costsData.totals?.calls_today || 0} calls
+                  </div>
                 </div>
-                <div className="card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', color: 'white' }}>
+                <div
+                  className="card"
+                  style={{
+                    textAlign: 'center',
+                    background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
+                    color: 'white',
+                  }}
+                >
                   <div style={{ fontSize: '28px', fontWeight: '700' }}>
                     ${parseFloat(costsData.totals?.this_month || 0).toFixed(2)}
                   </div>
                   <div style={{ opacity: 0.9, fontSize: '14px' }}>This Month</div>
-                  <div style={{ opacity: 0.7, fontSize: '12px' }}>{costsData.totals?.calls_this_month || 0} calls</div>
+                  <div style={{ opacity: 0.7, fontSize: '12px' }}>
+                    {costsData.totals?.calls_this_month || 0} calls
+                  </div>
                 </div>
-                <div className="card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)', color: 'white' }}>
+                <div
+                  className="card"
+                  style={{
+                    textAlign: 'center',
+                    background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                    color: 'white',
+                  }}
+                >
                   <div style={{ fontSize: '28px', fontWeight: '700' }}>
                     ${parseFloat(costsData.totals?.all_time || 0).toFixed(2)}
                   </div>
                   <div style={{ opacity: 0.9, fontSize: '14px' }}>All Time</div>
-                  <div style={{ opacity: 0.7, fontSize: '12px' }}>{costsData.totals?.calls_all_time || 0} calls</div>
+                  <div style={{ opacity: 0.7, fontSize: '12px' }}>
+                    {costsData.totals?.calls_all_time || 0} calls
+                  </div>
                 </div>
               </div>
 
@@ -24949,33 +33353,59 @@ const AdminPage = () => {
                       {costsData.thisMonth.map((row, i) => (
                         <tr key={i} style={{ borderBottom: '1px solid var(--gray-100)' }}>
                           <td style={{ padding: '8px 12px' }}>
-                            <span style={{
-                              padding: '2px 8px',
-                              borderRadius: '4px',
-                              fontSize: '12px',
-                              fontWeight: '500',
-                              background: row.provider === 'anthropic' ? '#F3E8FF' :
-                                         row.provider === 'openai' ? '#DCFCE7' :
-                                         row.provider === 'google' ? '#FEF3C7' :
-                                         row.provider === 'google_places' ? '#DBEAFE' :
-                                         '#F3F4F6',
-                              color: row.provider === 'anthropic' ? '#7C3AED' :
-                                    row.provider === 'openai' ? '#16A34A' :
-                                    row.provider === 'google' ? '#D97706' :
-                                    row.provider === 'google_places' ? '#2563EB' :
-                                    '#374151'
-                            }}>
+                            <span
+                              style={{
+                                padding: '2px 8px',
+                                borderRadius: '4px',
+                                fontSize: '12px',
+                                fontWeight: '500',
+                                background:
+                                  row.provider === 'anthropic'
+                                    ? '#F3E8FF'
+                                    : row.provider === 'openai'
+                                      ? '#DCFCE7'
+                                      : row.provider === 'google'
+                                        ? '#FEF3C7'
+                                        : row.provider === 'google_places'
+                                          ? '#DBEAFE'
+                                          : '#F3F4F6',
+                                color:
+                                  row.provider === 'anthropic'
+                                    ? '#7C3AED'
+                                    : row.provider === 'openai'
+                                      ? '#16A34A'
+                                      : row.provider === 'google'
+                                        ? '#D97706'
+                                        : row.provider === 'google_places'
+                                          ? '#2563EB'
+                                          : '#374151',
+                              }}
+                            >
                               {row.provider}
                             </span>
                           </td>
-                          <td style={{ padding: '8px 12px', color: 'var(--gray-600)', fontSize: '14px' }}>
+                          <td
+                            style={{
+                              padding: '8px 12px',
+                              color: 'var(--gray-600)',
+                              fontSize: '14px',
+                            }}
+                          >
                             {row.model || '-'}
                           </td>
                           <td style={{ padding: '8px 12px', textAlign: 'right' }}>{row.calls}</td>
-                          <td style={{ padding: '8px 12px', textAlign: 'right', color: 'var(--gray-600)' }}>
+                          <td
+                            style={{
+                              padding: '8px 12px',
+                              textAlign: 'right',
+                              color: 'var(--gray-600)',
+                            }}
+                          >
                             {parseInt(row.tokens || 0).toLocaleString()}
                           </td>
-                          <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: '600' }}>
+                          <td
+                            style={{ padding: '8px 12px', textAlign: 'right', fontWeight: '600' }}
+                          >
                             ${parseFloat(row.cost || 0).toFixed(4)}
                           </td>
                         </tr>
@@ -24983,7 +33413,9 @@ const AdminPage = () => {
                     </tbody>
                   </table>
                 ) : (
-                  <p style={{ color: 'var(--gray-500)', textAlign: 'center' }}>No API calls this month yet</p>
+                  <p style={{ color: 'var(--gray-500)', textAlign: 'center' }}>
+                    No API calls this month yet
+                  </p>
                 )}
               </div>
 
@@ -24993,27 +33425,41 @@ const AdminPage = () => {
                 {costsData.today?.length > 0 ? (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {costsData.today.map((row, i) => (
-                      <div key={i} style={{
-                        padding: '8px 12px',
-                        background: 'var(--gray-50)',
-                        borderRadius: '6px',
-                        fontSize: '13px'
-                      }}>
+                      <div
+                        key={i}
+                        style={{
+                          padding: '8px 12px',
+                          background: 'var(--gray-50)',
+                          borderRadius: '6px',
+                          fontSize: '13px',
+                        }}
+                      >
                         <strong>{row.provider}</strong>
-                        {row.model && <span style={{ color: 'var(--gray-500)' }}> ({row.model})</span>}
+                        {row.model && (
+                          <span style={{ color: 'var(--gray-500)' }}> ({row.model})</span>
+                        )}
                         : {row.calls} calls, ${parseFloat(row.cost || 0).toFixed(4)}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p style={{ color: 'var(--gray-500)', textAlign: 'center' }}>No API calls today yet</p>
+                  <p style={{ color: 'var(--gray-500)', textAlign: 'center' }}>
+                    No API calls today yet
+                  </p>
                 )}
               </div>
 
               {/* Pricing Reference */}
               <div className="card">
                 <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Pricing Reference</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', fontSize: '13px' }}>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '12px',
+                    fontSize: '13px',
+                  }}
+                >
                   <div>
                     <strong>Anthropic Claude</strong>
                     <div style={{ color: 'var(--gray-600)' }}>Sonnet: $3/$15 per 1M tokens</div>
@@ -25053,11 +33499,21 @@ const AdminPage = () => {
       {/* API Credits Tab */}
       {activeAdminTab === 'credits' && (
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '20px',
+            }}
+          >
             <h2 style={{ margin: 0 }}>API Credits</h2>
             <button
               className="btn btn-secondary"
-              onClick={() => { setCreditsData(null); loadCreditsData(); }}
+              onClick={() => {
+                setCreditsData(null);
+                loadCreditsData();
+              }}
               style={{ padding: '6px 12px', fontSize: '13px' }}
             >
               Refresh
@@ -25076,30 +33532,54 @@ const AdminPage = () => {
                 }}
               >
                 {creditsData.credits?.map((credit, i) => {
-                  const statusColor = credit.status === 'ok' ? '#10B981' :
-                                     credit.status === 'warning' ? '#F59E0B' :
-                                     credit.status === 'critical' ? '#EF4444' :
-                                     credit.status === 'exhausted' ? '#DC2626' : '#6B7280';
-                  const bgGradient = credit.status === 'ok' ? 'linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)' :
-                                    credit.status === 'warning' ? 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)' :
-                                    credit.status === 'critical' ? 'linear-gradient(135deg, #FEF2F2 0%, #FECACA 100%)' :
-                                    credit.status === 'exhausted' ? 'linear-gradient(135deg, #FEF2F2 0%, #FCA5A5 100%)' :
-                                    'var(--gray-50)';
+                  const statusColor =
+                    credit.status === 'ok'
+                      ? '#10B981'
+                      : credit.status === 'warning'
+                        ? '#F59E0B'
+                        : credit.status === 'critical'
+                          ? '#EF4444'
+                          : credit.status === 'exhausted'
+                            ? '#DC2626'
+                            : '#6B7280';
+                  const bgGradient =
+                    credit.status === 'ok'
+                      ? 'linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)'
+                      : credit.status === 'warning'
+                        ? 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)'
+                        : credit.status === 'critical'
+                          ? 'linear-gradient(135deg, #FEF2F2 0%, #FECACA 100%)'
+                          : credit.status === 'exhausted'
+                            ? 'linear-gradient(135deg, #FEF2F2 0%, #FCA5A5 100%)'
+                            : 'var(--gray-50)';
 
                   return (
-                    <div key={i} className="card" style={{ background: credit.error ? 'var(--gray-50)' : bgGradient }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <div
+                      key={i}
+                      className="card"
+                      style={{ background: credit.error ? 'var(--gray-50)' : bgGradient }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: '8px',
+                        }}
+                      >
                         <strong style={{ fontSize: '16px' }}>{credit.name}</strong>
                         {!credit.error && (
-                          <span style={{
-                            fontSize: '11px',
-                            padding: '2px 6px',
-                            borderRadius: '4px',
-                            background: statusColor,
-                            color: 'white',
-                            fontWeight: '600',
-                            textTransform: 'uppercase',
-                          }}>
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              background: statusColor,
+                              color: 'white',
+                              fontWeight: '600',
+                              textTransform: 'uppercase',
+                            }}
+                          >
                             {credit.status}
                           </span>
                         )}
@@ -25114,26 +33594,43 @@ const AdminPage = () => {
                           <div style={{ fontSize: '24px', fontWeight: '700', color: statusColor }}>
                             {credit.used}/{credit.limit}
                           </div>
-                          <div style={{ color: 'var(--gray-600)', fontSize: '12px', marginBottom: '8px' }}>
+                          <div
+                            style={{
+                              color: 'var(--gray-600)',
+                              fontSize: '12px',
+                              marginBottom: '8px',
+                            }}
+                          >
                             per {credit.period}
                           </div>
 
                           {/* Progress bar */}
-                          <div style={{
-                            width: '100%',
-                            height: '8px',
-                            background: 'rgba(0,0,0,0.1)',
-                            borderRadius: '4px',
-                            overflow: 'hidden',
-                          }}>
-                            <div style={{
-                              width: `${Math.min(credit.percent, 100)}%`,
-                              height: '100%',
-                              background: statusColor,
-                              transition: 'width 0.3s ease',
-                            }} />
+                          <div
+                            style={{
+                              width: '100%',
+                              height: '8px',
+                              background: 'rgba(0,0,0,0.1)',
+                              borderRadius: '4px',
+                              overflow: 'hidden',
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: `${Math.min(credit.percent, 100)}%`,
+                                height: '100%',
+                                background: statusColor,
+                                transition: 'width 0.3s ease',
+                              }}
+                            />
                           </div>
-                          <div style={{ fontSize: '12px', color: 'var(--gray-600)', marginTop: '4px', textAlign: 'right' }}>
+                          <div
+                            style={{
+                              fontSize: '12px',
+                              color: 'var(--gray-600)',
+                              marginTop: '4px',
+                              textAlign: 'right',
+                            }}
+                          >
                             {credit.percent}% used
                           </div>
                         </>
@@ -25144,7 +33641,14 @@ const AdminPage = () => {
               </div>
 
               {creditsData.lastUpdated && (
-                <div style={{ marginTop: '16px', textAlign: 'center', color: 'var(--gray-500)', fontSize: '12px' }}>
+                <div
+                  style={{
+                    marginTop: '16px',
+                    textAlign: 'center',
+                    color: 'var(--gray-500)',
+                    fontSize: '12px',
+                  }}
+                >
                   Last updated: {new Date(creditsData.lastUpdated).toLocaleString()}
                 </div>
               )}
@@ -25172,31 +33676,77 @@ const AdminPage = () => {
             </div>
           ) : usageData ? (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: '16px',
+                  marginBottom: '24px',
+                }}
+              >
                 <div className="card" style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '32px', fontWeight: '700', color: 'var(--primary)' }}>{usageData.stats?.avg_responses || 0}</div>
-                  <div style={{ color: 'var(--gray-500)', fontSize: '14px' }}>Avg Responses/User</div>
+                  <div style={{ fontSize: '32px', fontWeight: '700', color: 'var(--primary)' }}>
+                    {usageData.stats?.avg_responses || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-500)', fontSize: '14px' }}>
+                    Avg Responses/User
+                  </div>
                 </div>
                 <div className="card" style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '32px', fontWeight: '700', color: 'var(--error)' }}>{usageData.stats?.limit_reached_count || 0}</div>
-                  <div style={{ color: 'var(--gray-500)', fontSize: '14px' }}>Users Hit Limit (20+)</div>
+                  <div style={{ fontSize: '32px', fontWeight: '700', color: 'var(--error)' }}>
+                    {usageData.stats?.limit_reached_count || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-500)', fontSize: '14px' }}>
+                    Users Hit Limit (20+)
+                  </div>
                 </div>
                 <div className="card" style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '32px', fontWeight: '700', color: 'var(--success)' }}>{usageData.stats?.max_responses || 0}</div>
-                  <div style={{ color: 'var(--gray-500)', fontSize: '14px' }}>Max Usage (any user)</div>
+                  <div style={{ fontSize: '32px', fontWeight: '700', color: 'var(--success)' }}>
+                    {usageData.stats?.max_responses || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-500)', fontSize: '14px' }}>
+                    Max Usage (any user)
+                  </div>
                 </div>
               </div>
               <div className="card" style={{ marginBottom: '24px' }}>
                 <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Free User Usage Distribution</h3>
-                <p style={{ color: 'var(--gray-500)', fontSize: '14px', marginBottom: '20px' }}>How many responses have free users generated?</p>
+                <p style={{ color: 'var(--gray-500)', fontSize: '14px', marginBottom: '20px' }}>
+                  How many responses have free users generated?
+                </p>
                 {usageData.distribution?.map((bucket, i) => (
                   <div key={i} style={{ marginBottom: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '14px' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        marginBottom: '4px',
+                        fontSize: '14px',
+                      }}
+                    >
                       <span>{bucket.usage_bucket}</span>
-                      <span style={{ color: 'var(--gray-500)' }}>{bucket.user_count} users ({bucket.percentage}%)</span>
+                      <span style={{ color: 'var(--gray-500)' }}>
+                        {bucket.user_count} users ({bucket.percentage}%)
+                      </span>
                     </div>
-                    <div style={{ background: 'var(--gray-100)', borderRadius: '4px', height: '24px', overflow: 'hidden' }}>
-                      <div style={{ background: bucket.usage_bucket.includes('20+') ? 'var(--error)' : 'var(--primary)', height: '100%', width: `${bucket.percentage}%`, transition: 'width 0.3s ease' }} />
+                    <div
+                      style={{
+                        background: 'var(--gray-100)',
+                        borderRadius: '4px',
+                        height: '24px',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <div
+                        style={{
+                          background: bucket.usage_bucket.includes('20+')
+                            ? 'var(--error)'
+                            : 'var(--primary)',
+                          height: '100%',
+                          width: `${bucket.percentage}%`,
+                          transition: 'width 0.3s ease',
+                        }}
+                      />
                     </div>
                   </div>
                 ))}
@@ -25204,21 +33754,40 @@ const AdminPage = () => {
               {usageData.exitSurveys?.length > 0 && (
                 <div className="card" style={{ marginBottom: '24px' }}>
                   <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Exit Survey Results</h3>
-                  <p style={{ color: 'var(--gray-500)', fontSize: '14px', marginBottom: '16px' }}>Why users did not upgrade when hitting the limit</p>
+                  <p style={{ color: 'var(--gray-500)', fontSize: '14px', marginBottom: '16px' }}>
+                    Why users did not upgrade when hitting the limit
+                  </p>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ borderBottom: '1px solid var(--gray-200)' }}>
-                        <th style={{ textAlign: 'left', padding: '12px 8px', fontSize: '14px' }}>Reason</th>
-                        <th style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px' }}>Count</th>
-                        <th style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px' }}>%</th>
+                        <th style={{ textAlign: 'left', padding: '12px 8px', fontSize: '14px' }}>
+                          Reason
+                        </th>
+                        <th style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px' }}>
+                          Count
+                        </th>
+                        <th style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px' }}>
+                          %
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {usageData.exitSurveys.map((survey, i) => (
                         <tr key={i} style={{ borderBottom: '1px solid var(--gray-100)' }}>
                           <td style={{ padding: '12px 8px', fontSize: '14px' }}>{survey.reason}</td>
-                          <td style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px' }}>{survey.count}</td>
-                          <td style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px', color: 'var(--gray-500)' }}>{survey.percentage}%</td>
+                          <td style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px' }}>
+                            {survey.count}
+                          </td>
+                          <td
+                            style={{
+                              textAlign: 'right',
+                              padding: '12px 8px',
+                              fontSize: '14px',
+                              color: 'var(--gray-500)',
+                            }}
+                          >
+                            {survey.percentage}%
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -25228,22 +33797,48 @@ const AdminPage = () => {
               {usageData.limitHitUsers?.length > 0 && (
                 <div className="card">
                   <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Users Who Hit the Limit</h3>
-                  <p style={{ color: 'var(--gray-500)', fontSize: '14px', marginBottom: '16px' }}>These users generated 20+ responses but did not upgrade</p>
+                  <p style={{ color: 'var(--gray-500)', fontSize: '14px', marginBottom: '16px' }}>
+                    These users generated 20+ responses but did not upgrade
+                  </p>
                   <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '500px' }}>
                       <thead>
                         <tr style={{ borderBottom: '1px solid var(--gray-200)' }}>
-                          <th style={{ textAlign: 'left', padding: '12px 8px', fontSize: '14px' }}>Email</th>
-                          <th style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px' }}>Responses</th>
-                          <th style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px' }}>Registered</th>
+                          <th style={{ textAlign: 'left', padding: '12px 8px', fontSize: '14px' }}>
+                            Email
+                          </th>
+                          <th style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px' }}>
+                            Responses
+                          </th>
+                          <th style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px' }}>
+                            Registered
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         {usageData.limitHitUsers.map((user, i) => (
                           <tr key={i} style={{ borderBottom: '1px solid var(--gray-100)' }}>
                             <td style={{ padding: '12px 8px', fontSize: '14px' }}>{user.email}</td>
-                            <td style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px', fontWeight: '600' }}>{user.total_responses}</td>
-                            <td style={{ textAlign: 'right', padding: '12px 8px', fontSize: '14px', color: 'var(--gray-500)' }}>{new Date(user.created_at).toLocaleDateString()}</td>
+                            <td
+                              style={{
+                                textAlign: 'right',
+                                padding: '12px 8px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                              }}
+                            >
+                              {user.total_responses}
+                            </td>
+                            <td
+                              style={{
+                                textAlign: 'right',
+                                padding: '12px 8px',
+                                fontSize: '14px',
+                                color: 'var(--gray-500)',
+                              }}
+                            >
+                              {new Date(user.created_at).toLocaleDateString()}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -25254,8 +33849,12 @@ const AdminPage = () => {
             </>
           ) : (
             <div style={{ textAlign: 'center', padding: '40px' }}>
-              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>Could not load usage analytics</p>
-              <button className="btn btn-primary" onClick={() => loadUsageData()}>Retry</button>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+                Could not load usage analytics
+              </p>
+              <button className="btn btn-primary" onClick={() => loadUsageData()}>
+                Retry
+              </button>
             </div>
           )}
         </div>
@@ -25283,153 +33882,153 @@ const AppContent = () => {
 
   return (
     <ThemeProvider>
-        <AuthProvider>
-          <Toaster position="top-right" />
-          <Navbar />
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/magic-login" element={<MagicLoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/pricing" element={<PricingPage />} />
-            <Route path="/claim/:code" element={<ClaimDiscountPage />} />
-            <Route path="/support" element={<SupportPage />} />
-            <Route path="/blog" element={<BlogListPage />} />
-            <Route path="/blog/:slug" element={<BlogArticlePage />} />
-            <Route path="/demo/:token" element={<DemoPage />} />
-            <Route path="/privacy" element={<PrivacyPage />} />
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/extension" element={<ExtensionPage />} />
-            <Route path="/google-review-response-generator" element={<GoogleReviewPage />} />
-            <Route path="/yelp-review-reply-tool" element={<YelpReviewPage />} />
-            <Route path="/restaurant-review-responses" element={<RestaurantReviewPage />} />
-            <Route path="/hotel-review-management" element={<HotelReviewPage />} />
-            <Route path="/local-business-reviews" element={<LocalBusinessReviewPage />} />
-            <Route path="/negative-review-responses" element={<NegativeReviewPage />} />
-            <Route path="/tripadvisor-review-responses" element={<TripAdvisorReviewPage />} />
-            <Route path="/booking-review-generator" element={<BookingReviewPage />} />
-            <Route path="/facebook-review-responses" element={<FacebookReviewPage />} />
-            <Route path="/dentist-review-responses" element={<DentistReviewPage />} />
-            <Route path="/medical-practice-reviews" element={<MedicalPracticeReviewPage />} />
-            <Route path="/salon-spa-review-responses" element={<SalonSpaReviewPage />} />
-            <Route path="/auto-shop-reviews" element={<AutoShopReviewPage />} />
-            <Route path="/trustpilot-review-responses" element={<TrustpilotReviewPage />} />
-            <Route path="/airbnb-host-review-responses" element={<AirbnbReviewPage />} />
-            <Route path="/real-estate-agent-reviews" element={<RealEstateReviewPage />} />
-            <Route path="/gym-fitness-review-responses" element={<GymReviewPage />} />
-            <Route path="/veterinarian-review-responses" element={<VetReviewPage />} />
-            <Route path="/law-firm-review-responses" element={<LawFirmReviewPage />} />
-            <Route path="/ecommerce-review-responses" element={<EcommerceReviewPage />} />
-            <Route path="/coffee-shop-review-responses" element={<CoffeeShopReviewPage />} />
-            <Route path="/amazon-review-responses" element={<AmazonReviewPage />} />
-            <Route path="/g2-review-responses" element={<G2ReviewPage />} />
-            <Route path="/capterra-review-responses" element={<CapterraReviewPage />} />
-            <Route path="/glassdoor-review-responses" element={<GlassdoorReviewPage />} />
-            <Route path="/bbb-review-responses" element={<BBBReviewPage />} />
-            <Route path="/plumber-review-responses" element={<PlumberReviewPage />} />
-            <Route path="/electrician-review-responses" element={<ElectricianReviewPage />} />
-            <Route path="/hvac-review-responses" element={<HVACReviewPage />} />
-            <Route path="/roofing-review-responses" element={<RoofingReviewPage />} />
-            <Route path="/landscaping-review-responses" element={<LandscapingReviewPage />} />
-            <Route path="/cleaning-service-review-responses" element={<CleaningReviewPage />} />
-            <Route path="/healthgrades-review-responses" element={<HealthgradesReviewPage />} />
-            <Route path="/zocdoc-review-responses" element={<ZocdocReviewPage />} />
-            <Route path="/photographer-review-responses" element={<PhotographerReviewPage />} />
-            <Route path="/wedding-vendor-review-responses" element={<WeddingReviewPage />} />
-            <Route path="/pet-service-review-responses" element={<PetServiceReviewPage />} />
-            <Route path="/daycare-review-responses" element={<DaycareReviewPage />} />
-            <Route path="/accountant-review-responses" element={<AccountantReviewPage />} />
-            <Route path="/insurance-agent-review-responses" element={<InsuranceReviewPage />} />
-            <Route path="/senior-care-review-responses" element={<SeniorCareReviewPage />} />
-            <Route path="/appstore-app-reviews" element={<AppStoreReviewPage />} />
-            <Route path="/indeed-company-reviews" element={<IndeedReviewPage />} />
-            <Route path="/zillow-realtor-reviews" element={<ZillowReviewPage />} />
-            <Route path="/therapy-counselor-reviews" element={<TherapyReviewPage />} />
-            <Route path="/thumbtack-reviews" element={<ThumbtackReviewPage />} />
-            <Route path="/linkedin-recommendations" element={<LinkedInReviewPage />} />
-            <Route path="/chiropractor-reviews" element={<ChiropractorReviewPage />} />
-            <Route path="/barber-barbershop-reviews" element={<BarberReviewPage />} />
-            <Route path="/dermatologist-reviews" element={<DermatologistReviewPage />} />
-            <Route path="/angie-list-contractor-reviews" element={<AngiListReviewPage />} />
-            <Route path="/massage-therapist-reviews" element={<MassageTherapistReviewPage />} />
-            <Route path="/personal-trainer-reviews" element={<PersonalTrainerReviewPage />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <DashboardPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <ProfilePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/confirm-email" element={<ConfirmEmailPage />} />
-            <Route path="/verify-email" element={<VerifyEmailPage />} />
-            <Route
-              path="/settings"
-              element={
-                <ProtectedRoute>
-                  <SettingsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/analytics"
-              element={
-                <ProtectedRoute>
-                  <AnalyticsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/team"
-              element={
-                <ProtectedRoute>
-                  <TeamPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/join-team" element={<JoinTeamPage />} />
-            <Route path="/affiliate" element={<AffiliateLandingPage />} />
-            <Route
-              path="/affiliate/dashboard"
-              element={
-                <ProtectedRoute>
-                  <AffiliateDashboardPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/api-docs"
-              element={
-                <ProtectedRoute>
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <LazyApiDocsPage />
-                  </Suspense>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute requireAdmin>
-                  <AdminPage />
-                </ProtectedRoute>
-              }
-            />
-            {/* Catch-all route for 404 - redirect to home */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </AuthProvider>
-      </ThemeProvider>
+      <AuthProvider>
+        <Toaster position="top-right" />
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/magic-login" element={<MagicLoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/claim/:code" element={<ClaimDiscountPage />} />
+          <Route path="/support" element={<SupportPage />} />
+          <Route path="/blog" element={<BlogListPage />} />
+          <Route path="/blog/:slug" element={<BlogArticlePage />} />
+          <Route path="/demo/:token" element={<DemoPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/extension" element={<ExtensionPage />} />
+          <Route path="/google-review-response-generator" element={<GoogleReviewPage />} />
+          <Route path="/yelp-review-reply-tool" element={<YelpReviewPage />} />
+          <Route path="/restaurant-review-responses" element={<RestaurantReviewPage />} />
+          <Route path="/hotel-review-management" element={<HotelReviewPage />} />
+          <Route path="/local-business-reviews" element={<LocalBusinessReviewPage />} />
+          <Route path="/negative-review-responses" element={<NegativeReviewPage />} />
+          <Route path="/tripadvisor-review-responses" element={<TripAdvisorReviewPage />} />
+          <Route path="/booking-review-generator" element={<BookingReviewPage />} />
+          <Route path="/facebook-review-responses" element={<FacebookReviewPage />} />
+          <Route path="/dentist-review-responses" element={<DentistReviewPage />} />
+          <Route path="/medical-practice-reviews" element={<MedicalPracticeReviewPage />} />
+          <Route path="/salon-spa-review-responses" element={<SalonSpaReviewPage />} />
+          <Route path="/auto-shop-reviews" element={<AutoShopReviewPage />} />
+          <Route path="/trustpilot-review-responses" element={<TrustpilotReviewPage />} />
+          <Route path="/airbnb-host-review-responses" element={<AirbnbReviewPage />} />
+          <Route path="/real-estate-agent-reviews" element={<RealEstateReviewPage />} />
+          <Route path="/gym-fitness-review-responses" element={<GymReviewPage />} />
+          <Route path="/veterinarian-review-responses" element={<VetReviewPage />} />
+          <Route path="/law-firm-review-responses" element={<LawFirmReviewPage />} />
+          <Route path="/ecommerce-review-responses" element={<EcommerceReviewPage />} />
+          <Route path="/coffee-shop-review-responses" element={<CoffeeShopReviewPage />} />
+          <Route path="/amazon-review-responses" element={<AmazonReviewPage />} />
+          <Route path="/g2-review-responses" element={<G2ReviewPage />} />
+          <Route path="/capterra-review-responses" element={<CapterraReviewPage />} />
+          <Route path="/glassdoor-review-responses" element={<GlassdoorReviewPage />} />
+          <Route path="/bbb-review-responses" element={<BBBReviewPage />} />
+          <Route path="/plumber-review-responses" element={<PlumberReviewPage />} />
+          <Route path="/electrician-review-responses" element={<ElectricianReviewPage />} />
+          <Route path="/hvac-review-responses" element={<HVACReviewPage />} />
+          <Route path="/roofing-review-responses" element={<RoofingReviewPage />} />
+          <Route path="/landscaping-review-responses" element={<LandscapingReviewPage />} />
+          <Route path="/cleaning-service-review-responses" element={<CleaningReviewPage />} />
+          <Route path="/healthgrades-review-responses" element={<HealthgradesReviewPage />} />
+          <Route path="/zocdoc-review-responses" element={<ZocdocReviewPage />} />
+          <Route path="/photographer-review-responses" element={<PhotographerReviewPage />} />
+          <Route path="/wedding-vendor-review-responses" element={<WeddingReviewPage />} />
+          <Route path="/pet-service-review-responses" element={<PetServiceReviewPage />} />
+          <Route path="/daycare-review-responses" element={<DaycareReviewPage />} />
+          <Route path="/accountant-review-responses" element={<AccountantReviewPage />} />
+          <Route path="/insurance-agent-review-responses" element={<InsuranceReviewPage />} />
+          <Route path="/senior-care-review-responses" element={<SeniorCareReviewPage />} />
+          <Route path="/appstore-app-reviews" element={<AppStoreReviewPage />} />
+          <Route path="/indeed-company-reviews" element={<IndeedReviewPage />} />
+          <Route path="/zillow-realtor-reviews" element={<ZillowReviewPage />} />
+          <Route path="/therapy-counselor-reviews" element={<TherapyReviewPage />} />
+          <Route path="/thumbtack-reviews" element={<ThumbtackReviewPage />} />
+          <Route path="/linkedin-recommendations" element={<LinkedInReviewPage />} />
+          <Route path="/chiropractor-reviews" element={<ChiropractorReviewPage />} />
+          <Route path="/barber-barbershop-reviews" element={<BarberReviewPage />} />
+          <Route path="/dermatologist-reviews" element={<DermatologistReviewPage />} />
+          <Route path="/angie-list-contractor-reviews" element={<AngiListReviewPage />} />
+          <Route path="/massage-therapist-reviews" element={<MassageTherapistReviewPage />} />
+          <Route path="/personal-trainer-reviews" element={<PersonalTrainerReviewPage />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/confirm-email" element={<ConfirmEmailPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <AnalyticsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/team"
+            element={
+              <ProtectedRoute>
+                <TeamPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/join-team" element={<JoinTeamPage />} />
+          <Route path="/affiliate" element={<AffiliateLandingPage />} />
+          <Route
+            path="/affiliate/dashboard"
+            element={
+              <ProtectedRoute>
+                <AffiliateDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/api-docs"
+            element={
+              <ProtectedRoute>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <LazyApiDocsPage />
+                </Suspense>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requireAdmin>
+                <AdminPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* Catch-all route for 404 - redirect to home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 

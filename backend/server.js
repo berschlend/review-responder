@@ -67,14 +67,15 @@ const gemini = process.env.GEMINI_API_KEY
   : null;
 
 // Twitter/X API Client (OAuth 1.0a for posting)
-const twitterClient = process.env.TWITTER_API_KEY && process.env.TWITTER_ACCESS_TOKEN
-  ? new TwitterApi({
-      appKey: process.env.TWITTER_API_KEY,
-      appSecret: process.env.TWITTER_API_SECRET,
-      accessToken: process.env.TWITTER_ACCESS_TOKEN,
-      accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
-    })
-  : null;
+const twitterClient =
+  process.env.TWITTER_API_KEY && process.env.TWITTER_ACCESS_TOKEN
+    ? new TwitterApi({
+        appKey: process.env.TWITTER_API_KEY,
+        appSecret: process.env.TWITTER_API_SECRET,
+        accessToken: process.env.TWITTER_ACCESS_TOKEN,
+        accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+      })
+    : null;
 
 // Brevo (ex-Sendinblue) for marketing/outreach emails (300/day free)
 let brevoApi = null;
@@ -100,7 +101,7 @@ const API_PRICING = {
     'claude-opus-4-20250514': { input: 15, output: 75 },
   },
   openai: {
-    'gpt-4o-mini': { input: 0.15, output: 0.60 },
+    'gpt-4o-mini': { input: 0.15, output: 0.6 },
     'gpt-4o': { input: 2.5, output: 10 },
   },
   google: {
@@ -109,7 +110,7 @@ const API_PRICING = {
   },
   google_places: { per_request: 0.017 }, // $17/1000 requests
   hunter: { per_request: 0.04 }, // After 50 free/mo
-  serpapi: { per_request: 0.10 }, // After 100 free/mo
+  serpapi: { per_request: 0.1 }, // After 100 free/mo
   brevo: { per_request: 0 }, // Free 300/day
   resend: { per_request: 0 }, // Free 100/day
   twitter: { per_request: 0 }, // Free Tier
@@ -136,19 +137,19 @@ const TEST_EMAILS = [
 
 // SQL LIKE Patterns für Test-Emails
 const TEST_EMAIL_PATTERNS = [
-  '%@web.de',        // Owner's domain
-  'test%',           // Starts with test
-  '%test@%',         // Contains test@
-  'asdf%',           // Keyboard spam
-  'qwer%',           // Keyboard spam
-  'asd@%',           // Keyboard spam
-  '%@test.%',        // @test.* domain
-  '%@example.%',     // @example.* domain
-  'admin@%',         // admin@ prefix
-  '%fake%',          // Contains fake
-  'a@%',             // Single char a@
-  'aa@%',            // Double char aa@
-  'aaa@%',           // Triple char aaa@
+  '%@web.de', // Owner's domain
+  'test%', // Starts with test
+  '%test@%', // Contains test@
+  'asdf%', // Keyboard spam
+  'qwer%', // Keyboard spam
+  'asd@%', // Keyboard spam
+  '%@test.%', // @test.* domain
+  '%@example.%', // @example.* domain
+  'admin@%', // admin@ prefix
+  '%fake%', // Contains fake
+  'a@%', // Single char a@
+  'aa@%', // Double char aa@
+  'aaa@%', // Triple char aaa@
 ];
 
 /**
@@ -157,13 +158,11 @@ const TEST_EMAIL_PATTERNS = [
  * @returns {string} SQL AND clause
  */
 function getTestEmailExcludeClause(emailColumn = 'email') {
-  const patternClauses = TEST_EMAIL_PATTERNS.map(p =>
-    `${emailColumn} NOT LIKE '${p}'`
-  ).join(' AND ');
+  const patternClauses = TEST_EMAIL_PATTERNS.map(p => `${emailColumn} NOT LIKE '${p}'`).join(
+    ' AND '
+  );
 
-  const explicitClauses = TEST_EMAILS.map(e =>
-    `LOWER(${emailColumn}) != '${e}'`
-  ).join(' AND ');
+  const explicitClauses = TEST_EMAILS.map(e => `LOWER(${emailColumn}) != '${e}'`).join(' AND ');
 
   return `AND ${patternClauses} AND ${explicitClauses}`;
 }
@@ -302,7 +301,11 @@ async function sendEmail({
   let error = null;
 
   // Convert text to HTML if only text provided
-  let finalHtml = html || (text ? `<pre style="font-family: Arial, sans-serif; white-space: pre-wrap;">${text}</pre>` : null);
+  let finalHtml =
+    html ||
+    (text
+      ? `<pre style="font-family: Arial, sans-serif; white-space: pre-wrap;">${text}</pre>`
+      : null);
   const finalText = text;
 
   // Add tracking pixel for marketing/outreach emails
@@ -333,7 +336,9 @@ async function sendEmail({
         }
 
         sendSmtpEmail.to = [{ email: to }];
-        sendSmtpEmail.tags = [type, campaign, ...tags.map(t => t.value || t.name || t)].filter(Boolean);
+        sendSmtpEmail.tags = [type, campaign, ...tags.map(t => t.value || t.name || t)].filter(
+          Boolean
+        );
 
         if (replyTo) {
           sendSmtpEmail.replyTo = { email: replyTo };
@@ -827,9 +832,7 @@ async function initDatabase() {
       );
       await dbQuery(`ALTER TABLE blog_articles ADD COLUMN IF NOT EXISTS published_at TIMESTAMP`);
       await dbQuery(`ALTER TABLE blog_articles ADD COLUMN IF NOT EXISTS category TEXT`);
-      await dbQuery(
-        `ALTER TABLE blog_articles ADD COLUMN IF NOT EXISTS read_time_minutes INTEGER`
-      );
+      await dbQuery(`ALTER TABLE blog_articles ADD COLUMN IF NOT EXISTS read_time_minutes INTEGER`);
       await dbQuery(
         `ALTER TABLE blog_articles ADD COLUMN IF NOT EXISTS view_count INTEGER DEFAULT 0`
       );
@@ -924,8 +927,12 @@ async function initDatabase() {
 
     // Add indexes for click tracking
     try {
-      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_outreach_clicks_email ON outreach_clicks(email)`);
-      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_outreach_clicks_campaign ON outreach_clicks(campaign)`);
+      await dbQuery(
+        `CREATE INDEX IF NOT EXISTS idx_outreach_clicks_email ON outreach_clicks(email)`
+      );
+      await dbQuery(
+        `CREATE INDEX IF NOT EXISTS idx_outreach_clicks_campaign ON outreach_clicks(campaign)`
+      );
     } catch (error) {
       // Index might already exist
     }
@@ -1194,9 +1201,7 @@ async function initDatabase() {
 
     // Add bonus_responses column for micro-pricing ($5 for 10 responses)
     try {
-      await dbQuery(
-        `ALTER TABLE users ADD COLUMN IF NOT EXISTS bonus_responses INTEGER DEFAULT 0`
-      );
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS bonus_responses INTEGER DEFAULT 0`);
     } catch (error) {
       // Column might already exist
     }
@@ -1264,8 +1269,12 @@ async function initDatabase() {
     `);
 
     // Add followup columns if missing (migration)
-    await dbQuery(`ALTER TABLE competitor_leads ADD COLUMN IF NOT EXISTS followup_sent BOOLEAN DEFAULT FALSE`);
-    await dbQuery(`ALTER TABLE competitor_leads ADD COLUMN IF NOT EXISTS followup_sent_at TIMESTAMP`);
+    await dbQuery(
+      `ALTER TABLE competitor_leads ADD COLUMN IF NOT EXISTS followup_sent BOOLEAN DEFAULT FALSE`
+    );
+    await dbQuery(
+      `ALTER TABLE competitor_leads ADD COLUMN IF NOT EXISTS followup_sent_at TIMESTAMP`
+    );
 
     // LinkedIn Outreach Tracking
     await dbQuery(`
@@ -1319,10 +1328,18 @@ async function initDatabase() {
     // Add indexes for sales automation tables
     try {
       await dbQuery(`CREATE INDEX IF NOT EXISTS idx_yelp_leads_city ON yelp_leads(city)`);
-      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_yelp_leads_email_sent ON yelp_leads(email_sent)`);
-      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_competitor_leads_competitor ON competitor_leads(competitor)`);
-      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_linkedin_outreach_sent ON linkedin_outreach(connection_sent)`);
-      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_agency_leads_sequence ON agency_leads(email_sequence)`);
+      await dbQuery(
+        `CREATE INDEX IF NOT EXISTS idx_yelp_leads_email_sent ON yelp_leads(email_sent)`
+      );
+      await dbQuery(
+        `CREATE INDEX IF NOT EXISTS idx_competitor_leads_competitor ON competitor_leads(competitor)`
+      );
+      await dbQuery(
+        `CREATE INDEX IF NOT EXISTS idx_linkedin_outreach_sent ON linkedin_outreach(connection_sent)`
+      );
+      await dbQuery(
+        `CREATE INDEX IF NOT EXISTS idx_agency_leads_sequence ON agency_leads(email_sequence)`
+      );
     } catch (error) {
       // Indexes might already exist
     }
@@ -1334,9 +1351,15 @@ async function initDatabase() {
       await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS connection_note TEXT`);
       await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS business_name TEXT`);
       await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS google_place_id TEXT`);
-      await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS google_rating DECIMAL(2,1)`);
-      await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS demo_viewed_at TIMESTAMP`);
-      await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS converted_at TIMESTAMP`);
+      await dbQuery(
+        `ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS google_rating DECIMAL(2,1)`
+      );
+      await dbQuery(
+        `ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS demo_viewed_at TIMESTAMP`
+      );
+      await dbQuery(
+        `ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS converted_at TIMESTAMP`
+      );
     } catch (error) {
       // Columns might already exist
     }
@@ -1399,12 +1422,10 @@ const authenticateApiKey = async (req, res, next) => {
     }
 
     if (requestsToday >= 100) {
-      return res
-        .status(429)
-        .json({
-          error: 'Rate limit exceeded. Maximum 100 requests per day.',
-          reset_at: 'midnight UTC',
-        });
+      return res.status(429).json({
+        error: 'Rate limit exceeded. Maximum 100 requests per day.',
+        reset_at: 'midnight UTC',
+      });
     }
 
     await dbQuery(
@@ -3031,7 +3052,12 @@ async function generateResponseHandler(req, res) {
           smartRemaining: 0,
           standardRemaining,
           bonusRemaining,
-          suggestion: standardRemaining > 0 ? 'Switch to Standard AI' : (bonusRemaining > 0 ? 'Use bonus responses' : 'Upgrade your plan'),
+          suggestion:
+            standardRemaining > 0
+              ? 'Switch to Standard AI'
+              : bonusRemaining > 0
+                ? 'Use bonus responses'
+                : 'Upgrade your plan',
         });
       }
       useModel = 'smart';
@@ -3166,7 +3192,9 @@ async function generateResponseHandler(req, res) {
 CRITICAL: Your response will be rejected if it sounds AI-generated.
 
 <forbidden_phrases>
-${AI_SLOP_PHRASES.slice(0, 8).map(p => `- "${p}"`).join('\n')}
+${AI_SLOP_PHRASES.slice(0, 8)
+  .map(p => `- "${p}"`)
+  .join('\n')}
 </forbidden_phrases>
 
 <forbidden_words>
@@ -3282,11 +3310,15 @@ ${contextUser.business_context ? `\n<business_details>\n${contextUser.business_c
 ${contextUser.response_style ? `\n<custom_style>\n${contextUser.response_style}\n</custom_style>` : ''}
 </context>
 
-${templateContent ? `<template_reference>
+${
+  templateContent
+    ? `<template_reference>
 Use this as a style guide. Match its tone and structure:
 "${templateContent}"
 </template_reference>
-` : ''}
+`
+    : ''
+}
 ${writingStyleInstructions}
 
 ${fewShotExamplesXMLContent}
@@ -4245,14 +4277,19 @@ app.post('/api/billing/portal', authenticateToken, async (req, res) => {
 // Micro-Pricing: Buy 10 responses for $5 (one-time payment, no subscription)
 app.post('/api/billing/buy-responses', authenticateToken, async (req, res) => {
   try {
-    const user = await dbGet('SELECT email, stripe_customer_id FROM users WHERE id = $1', [req.user.id]);
+    const user = await dbGet('SELECT email, stripe_customer_id FROM users WHERE id = $1', [
+      req.user.id,
+    ]);
 
     // Create or retrieve Stripe customer
     let customerId = user.stripe_customer_id;
     if (!customerId) {
       const customer = await stripe.customers.create({ email: user.email });
       customerId = customer.id;
-      await pool.query('UPDATE users SET stripe_customer_id = $1 WHERE id = $2', [customerId, req.user.id]);
+      await pool.query('UPDATE users SET stripe_customer_id = $1 WHERE id = $2', [
+        customerId,
+        req.user.id,
+      ]);
     }
 
     // Check if Response Pack price exists in env
@@ -4265,17 +4302,19 @@ app.post('/api/billing/buy-responses', authenticateToken, async (req, res) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'payment', // One-time payment, NOT subscription
-      line_items: [{
-        price: priceId,
-        quantity: 1
-      }],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
       success_url: `${process.env.FRONTEND_URL}/dashboard?pack=success`,
       cancel_url: `${process.env.FRONTEND_URL}/pricing`,
       metadata: {
         userId: req.user.id.toString(),
         type: 'response_pack',
-        responses: '10'
-      }
+        responses: '10',
+      },
     });
 
     res.json({ url: session.url });
@@ -4346,7 +4385,9 @@ async function handleStripeWebhook(req, res) {
             `UPDATE users SET bonus_responses = COALESCE(bonus_responses, 0) + $1 WHERE id = $2`,
             [responses, userId]
           );
-          console.log(`💰 Response Pack purchased: User ${userId} got +${responses} bonus responses`);
+          console.log(
+            `💰 Response Pack purchased: User ${userId} got +${responses} bonus responses`
+          );
           break;
         }
 
@@ -4807,13 +4848,11 @@ app.get('/api/team', authenticateToken, async (req, res) => {
   try {
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
     if (!hasTeamAccess(user.subscription_plan)) {
-      return res
-        .status(403)
-        .json({
-          error: 'Team features are available for Professional and Unlimited plans',
-          upgrade: true,
-          requiredPlan: 'professional',
-        });
+      return res.status(403).json({
+        error: 'Team features are available for Professional and Unlimited plans',
+        upgrade: true,
+        requiredPlan: 'professional',
+      });
     }
     const members = await dbAll(
       `SELECT tm.*, u.email as user_email, u.business_name FROM team_members tm LEFT JOIN users u ON tm.member_user_id = u.id WHERE tm.team_owner_id = $1 ORDER BY tm.invited_at DESC`,
@@ -4846,12 +4885,10 @@ app.post('/api/team/invite', authenticateToken, async (req, res) => {
     const { email, role = 'member' } = req.body;
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
     if (!hasTeamAccess(user.subscription_plan)) {
-      return res
-        .status(403)
-        .json({
-          error: 'Team features are available for Professional and Unlimited plans',
-          upgrade: true,
-        });
+      return res.status(403).json({
+        error: 'Team features are available for Professional and Unlimited plans',
+        upgrade: true,
+      });
     }
     if (!email || !validator.isEmail(email))
       return res.status(400).json({ error: 'Valid email is required' });
@@ -4866,12 +4903,10 @@ app.post('/api/team/invite', authenticateToken, async (req, res) => {
     );
     const maxMembers = getMaxTeamMembers(user.subscription_plan);
     if (parseInt(memberCount.count) >= maxMembers) {
-      return res
-        .status(400)
-        .json({
-          error: `Maximum ${maxMembers} team members allowed on your plan`,
-          upgrade: user.subscription_plan === 'professional',
-        });
+      return res.status(400).json({
+        error: `Maximum ${maxMembers} team members allowed on your plan`,
+        upgrade: user.subscription_plan === 'professional',
+      });
     }
     const existing = await dbGet(
       'SELECT * FROM team_members WHERE team_owner_id = $1 AND LOWER(member_email) = LOWER($2)',
@@ -4900,14 +4935,12 @@ app.post('/api/team/invite', authenticateToken, async (req, res) => {
       }
     }
     // Always return token so frontend can show invite link (useful if email fails)
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: `Invitation sent to ${email}`,
-        inviteToken,
-        inviteUrl: `${process.env.FRONTEND_URL}/join-team?token=${inviteToken}`,
-      });
+    res.status(201).json({
+      success: true,
+      message: `Invitation sent to ${email}`,
+      inviteToken,
+      inviteUrl: `${process.env.FRONTEND_URL}/join-team?token=${inviteToken}`,
+    });
   } catch (error) {
     console.error('Invite error:', error);
     res.status(500).json({ error: 'Failed to invite team member' });
@@ -5233,7 +5266,14 @@ const generateDiscountToken = () => {
 // Create personalized discount link
 app.post('/api/discount-links', async (req, res) => {
   try {
-    const { discountCode, recipientName, businessName, email, source = 'outreach', expiresInHours = 48 } = req.body;
+    const {
+      discountCode,
+      recipientName,
+      businessName,
+      email,
+      source = 'outreach',
+      expiresInHours = 48,
+    } = req.body;
 
     if (!discountCode) {
       return res.status(400).json({ error: 'discountCode is required' });
@@ -5256,7 +5296,15 @@ app.post('/api/discount-links', async (req, res) => {
     await dbQuery(
       `INSERT INTO discount_links (token, discount_code, recipient_name, business_name, email, expires_at, source)
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [token, discountCode.toUpperCase(), recipientName || null, businessName || null, email || null, expiresAt, source]
+      [
+        token,
+        discountCode.toUpperCase(),
+        recipientName || null,
+        businessName || null,
+        email || null,
+        expiresAt,
+        source,
+      ]
     );
 
     const FRONTEND_URL = process.env.FRONTEND_URL || 'https://tryreviewresponder.com';
@@ -5300,7 +5348,11 @@ app.get('/api/discount-links/:token', async (req, res) => {
       SAVE20: { percent: 20, label: 'Special Offer', duration: '12 months' },
     };
 
-    const discount = discountInfo[link.discount_code] || { percent: 20, label: 'Special Offer', duration: '12 months' };
+    const discount = discountInfo[link.discount_code] || {
+      percent: 20,
+      label: 'Special Offer',
+      duration: '12 months',
+    };
 
     res.json({
       valid: true,
@@ -5731,7 +5783,7 @@ app.delete('/api/blog/:id', authenticateToken, async (req, res) => {
 function generateSlug(title) {
   return title
     .toLowerCase()
-    .replace(/[äöüß]/g, (match) => ({ ä: 'ae', ö: 'oe', ü: 'ue', ß: 'ss' })[match] || match)
+    .replace(/[äöüß]/g, match => ({ ä: 'ae', ö: 'oe', ü: 'ue', ß: 'ss' })[match] || match)
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
     .substring(0, 80);
@@ -5818,7 +5870,7 @@ app.get('/api/public/blog/:slug', async (req, res) => {
     // Increment view count (fire and forget)
     dbQuery('UPDATE blog_articles SET view_count = view_count + 1 WHERE id = $1', [
       article.id,
-    ]).catch((err) => console.error('View count update error:', err));
+    ]).catch(err => console.error('View count update error:', err));
 
     // Get related articles (same category, excluding current)
     const related = await dbAll(
@@ -5860,11 +5912,9 @@ function getNextSerpApiKey() {
 }
 
 function getSerpApiKeyCount() {
-  return [
-    process.env.SERPAPI_KEY,
-    process.env.SERPAPI_KEY_2,
-    process.env.SERPAPI_KEY_3,
-  ].filter(Boolean).length;
+  return [process.env.SERPAPI_KEY, process.env.SERPAPI_KEY_2, process.env.SERPAPI_KEY_3].filter(
+    Boolean
+  ).length;
 }
 
 // Helper: Scrape Google reviews via Outscraper (fallback/alternative to SerpAPI)
@@ -5878,8 +5928,8 @@ async function scrapeGoogleReviewsOutscraper(placeId, limit = 10) {
 
   const response = await fetch(url, {
     headers: {
-      'X-API-KEY': process.env.OUTSCRAPER_API_KEY
-    }
+      'X-API-KEY': process.env.OUTSCRAPER_API_KEY,
+    },
   });
 
   const data = await response.json();
@@ -5891,7 +5941,7 @@ async function scrapeGoogleReviewsOutscraper(placeId, limit = 10) {
   // Outscraper returns array of places, each with reviews_data
   const reviews = data.data?.[0]?.reviews_data || [];
 
-  return reviews.slice(0, limit).map((r) => ({
+  return reviews.slice(0, limit).map(r => ({
     text: r.review_text || r.snippet || '',
     rating: r.review_rating || 0,
     author: r.author_title || r.reviewer_name || 'Anonymous',
@@ -5926,7 +5976,7 @@ async function scrapeGoogleReviews(placeId, limit = 10) {
       }
 
       return (
-        data.reviews?.slice(0, limit).map((r) => ({
+        data.reviews?.slice(0, limit).map(r => ({
           text: r.snippet || r.text || '',
           rating: r.rating || 0,
           author: r.user?.name || 'Anonymous',
@@ -6047,35 +6097,35 @@ async function getKnowledgePanel(businessName, city) {
 // Helper: Extract readable business type from Google types array
 function extractBusinessType(types) {
   const typeMap = {
-    'restaurant': 'Restaurant',
-    'cafe': 'Café',
-    'bar': 'Bar',
-    'bakery': 'Bakery',
-    'hotel': 'Hotel',
-    'lodging': 'Hotel',
-    'dentist': 'Dental Practice',
-    'doctor': 'Medical Practice',
-    'hospital': 'Hospital',
-    'pharmacy': 'Pharmacy',
-    'veterinary_care': 'Veterinary Clinic',
-    'hair_care': 'Hair Salon',
-    'beauty_salon': 'Beauty Salon',
-    'spa': 'Spa',
-    'gym': 'Fitness Center',
-    'car_repair': 'Auto Shop',
-    'car_dealer': 'Car Dealership',
-    'real_estate_agency': 'Real Estate Agency',
-    'lawyer': 'Law Firm',
-    'accounting': 'Accounting Firm',
-    'insurance_agency': 'Insurance Agency',
-    'store': 'Retail Store',
-    'clothing_store': 'Clothing Store',
-    'electronics_store': 'Electronics Store',
-    'home_goods_store': 'Home Goods Store',
-    'plumber': 'Plumbing Service',
-    'electrician': 'Electrical Service',
-    'roofing_contractor': 'Roofing Company',
-    'general_contractor': 'Contractor',
+    restaurant: 'Restaurant',
+    cafe: 'Café',
+    bar: 'Bar',
+    bakery: 'Bakery',
+    hotel: 'Hotel',
+    lodging: 'Hotel',
+    dentist: 'Dental Practice',
+    doctor: 'Medical Practice',
+    hospital: 'Hospital',
+    pharmacy: 'Pharmacy',
+    veterinary_care: 'Veterinary Clinic',
+    hair_care: 'Hair Salon',
+    beauty_salon: 'Beauty Salon',
+    spa: 'Spa',
+    gym: 'Fitness Center',
+    car_repair: 'Auto Shop',
+    car_dealer: 'Car Dealership',
+    real_estate_agency: 'Real Estate Agency',
+    lawyer: 'Law Firm',
+    accounting: 'Accounting Firm',
+    insurance_agency: 'Insurance Agency',
+    store: 'Retail Store',
+    clothing_store: 'Clothing Store',
+    electronics_store: 'Electronics Store',
+    home_goods_store: 'Home Goods Store',
+    plumber: 'Plumbing Service',
+    electrician: 'Electrical Service',
+    roofing_contractor: 'Roofing Company',
+    general_contractor: 'Contractor',
   };
 
   for (const type of types) {
@@ -6100,7 +6150,16 @@ function extractPlaceIdFromUrl(url) {
 
 // Helper: Generate AI response for a review (for demo purposes)
 // ENHANCED ANTI-SLOP PROMPT - Based on Anthropic Best Practices 2025
-async function generateDemoResponse(review, businessName, businessType = null, city = null, googleRating = null, totalReviews = null, businessContext = null, customInstructions = null) {
+async function generateDemoResponse(
+  review,
+  businessName,
+  businessType = null,
+  city = null,
+  googleRating = null,
+  totalReviews = null,
+  businessContext = null,
+  customInstructions = null
+) {
   if (!anthropic) {
     throw new Error('ANTHROPIC_API_KEY not configured');
   }
@@ -6304,13 +6363,21 @@ For 3-star reviews:
 
 ${fewShotExamplesXMLContent}
 
-${businessContext ? `<additional_context>
+${
+  businessContext
+    ? `<additional_context>
 ${businessContext}
-</additional_context>` : ''}
+</additional_context>`
+    : ''
+}
 
-${customInstructions ? `<custom_instructions>
+${
+  customInstructions
+    ? `<custom_instructions>
 ${customInstructions}
-</custom_instructions>` : ''}
+</custom_instructions>`
+    : ''
+}
 
 <final_output_instructions>
 Write the response directly. No preamble. No quotes. No "Response:" prefix.
@@ -6379,7 +6446,15 @@ app.post('/api/demo/generate', async (req, res) => {
   }
 
   try {
-    const { google_maps_url, business_name, city, review_count = 3, focus = 'negative', send_email = false, email } = req.body;
+    const {
+      google_maps_url,
+      business_name,
+      city,
+      review_count = 3,
+      focus = 'negative',
+      send_email = false,
+      email,
+    } = req.body;
 
     // Resolve place_id
     let placeId = null;
@@ -6422,22 +6497,22 @@ app.post('/api/demo/generate', async (req, res) => {
     let targetReviews = allReviews;
     if (focus === 'negative') {
       targetReviews = allReviews
-        .filter((r) => r.rating <= 3)
+        .filter(r => r.rating <= 3)
         .sort((a, b) => a.rating - b.rating)
         .slice(0, review_count);
 
       // If not enough negative reviews, add some mixed
       if (targetReviews.length < review_count) {
         const remaining = allReviews
-          .filter((r) => r.rating === 4)
+          .filter(r => r.rating === 4)
           .slice(0, review_count - targetReviews.length);
         targetReviews = [...targetReviews, ...remaining];
       }
     } else if (focus === 'mixed') {
       // Mix of ratings
-      const negative = allReviews.filter((r) => r.rating <= 2).slice(0, 1);
-      const neutral = allReviews.filter((r) => r.rating === 3).slice(0, 1);
-      const positive = allReviews.filter((r) => r.rating >= 4).slice(0, 1);
+      const negative = allReviews.filter(r => r.rating <= 2).slice(0, 1);
+      const neutral = allReviews.filter(r => r.rating === 3).slice(0, 1);
+      const positive = allReviews.filter(r => r.rating >= 4).slice(0, 1);
       targetReviews = [...negative, ...neutral, ...positive].slice(0, review_count);
     } else {
       targetReviews = allReviews.slice(0, review_count);
@@ -6446,7 +6521,14 @@ app.post('/api/demo/generate', async (req, res) => {
     // Generate AI responses for each review
     const demos = [];
     for (const review of targetReviews) {
-      const aiResponse = await generateDemoResponse(review, resolvedName, null, city, googleRating, totalReviews);
+      const aiResponse = await generateDemoResponse(
+        review,
+        resolvedName,
+        null,
+        city,
+        googleRating,
+        totalReviews
+      );
       demos.push({
         review: {
           text: review.text,
@@ -6487,7 +6569,9 @@ app.post('/api/demo/generate', async (req, res) => {
     if (send_email && email) {
       try {
         await sendDemoEmail(email, resolvedName, demos, demoToken, totalReviews);
-        await dbQuery('UPDATE demo_generations SET email_sent_at = NOW() WHERE demo_token = $1', [demoToken]);
+        await dbQuery('UPDATE demo_generations SET email_sent_at = NOW() WHERE demo_token = $1', [
+          demoToken,
+        ]);
         emailSent = true;
       } catch (emailError) {
         console.error('Failed to send demo email:', emailError);
@@ -6516,7 +6600,9 @@ app.post('/api/demo/generate', async (req, res) => {
 // GET /api/public/demo/:token - Public demo page data
 app.get('/api/public/demo/:token', async (req, res) => {
   try {
-    const demo = await dbGet('SELECT * FROM demo_generations WHERE demo_token = $1', [req.params.token]);
+    const demo = await dbGet('SELECT * FROM demo_generations WHERE demo_token = $1', [
+      req.params.token,
+    ]);
 
     if (!demo) {
       return res.status(404).json({ error: 'Demo not found' });
@@ -6525,7 +6611,9 @@ app.get('/api/public/demo/:token', async (req, res) => {
     // Check if demo is expired (7+ days old and not converted)
     const isExpired = demo.expired === true;
     const createdAt = new Date(demo.created_at);
-    const daysSinceCreation = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+    const daysSinceCreation = Math.floor(
+      (Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24)
+    );
 
     // Return expired state if demo is marked expired or 7+ days old
     if (isExpired || (daysSinceCreation >= 7 && !demo.converted_at)) {
@@ -6535,23 +6623,32 @@ app.get('/api/public/demo/:token', async (req, res) => {
         city: demo.city,
         days_since_creation: daysSinceCreation,
         cta_url: `https://tryreviewresponder.com/register?ref=expired_demo_${demo.demo_token}&discount=DEMO30`,
-        message: 'This demo has expired. Sign up free to generate fresh AI responses for your reviews.',
+        message:
+          'This demo has expired. Sign up free to generate fresh AI responses for your reviews.',
       });
     }
 
     // Track page view (only first view)
     if (!demo.demo_page_viewed_at) {
-      await dbQuery('UPDATE demo_generations SET demo_page_viewed_at = NOW() WHERE id = $1', [demo.id]);
+      await dbQuery('UPDATE demo_generations SET demo_page_viewed_at = NOW() WHERE id = $1', [
+        demo.id,
+      ]);
     }
 
     // Get google_place_id - fallback to linkedin_outreach if not in demo_generations
     let placeId = demo.google_place_id;
     if (!placeId) {
-      const linkedinLead = await dbGet('SELECT google_place_id FROM linkedin_outreach WHERE demo_token = $1', [req.params.token]);
+      const linkedinLead = await dbGet(
+        'SELECT google_place_id FROM linkedin_outreach WHERE demo_token = $1',
+        [req.params.token]
+      );
       if (linkedinLead?.google_place_id) {
         placeId = linkedinLead.google_place_id;
         // Also update demo_generations for future lookups
-        await dbQuery('UPDATE demo_generations SET google_place_id = $1 WHERE demo_token = $2', [placeId, req.params.token]);
+        await dbQuery('UPDATE demo_generations SET google_place_id = $1 WHERE demo_token = $2', [
+          placeId,
+          req.params.token,
+        ]);
       }
     }
 
@@ -6762,7 +6859,11 @@ Write the response directly. No quotes. No "Response:" prefix. Just the review r
          VALUES ($1, $2, $3, NOW())
          ON CONFLICT DO NOTHING`,
         [
-          crypto.createHash('sha256').update(req.ip || 'unknown').digest('hex').substring(0, 16),
+          crypto
+            .createHash('sha256')
+            .update(req.ip || 'unknown')
+            .digest('hex')
+            .substring(0, 16),
           reviewText.length,
           tone,
         ]
@@ -6796,18 +6897,20 @@ app.post('/api/public/demo-email-capture', async (req, res) => {
     console.log(`[Demo Email Capture] ${email} from demo ${demo_token} (${business_name})`);
 
     // Check if this email already exists as a lead
-    const existingLead = await pool.query(
-      'SELECT id FROM outreach_leads WHERE email = $1',
-      [email.toLowerCase()]
-    );
+    const existingLead = await pool.query('SELECT id FROM outreach_leads WHERE email = $1', [
+      email.toLowerCase(),
+    ]);
 
     if (existingLead.rows.length === 0) {
       // Add as a new lead with source = demo_gate
-      await pool.query(`
+      await pool.query(
+        `
         INSERT INTO outreach_leads (email, business_name, source, status, created_at)
         VALUES ($1, $2, 'demo_gate', 'warm_lead', NOW())
         ON CONFLICT (email) DO UPDATE SET status = 'warm_lead', updated_at = NOW()
-      `, [email.toLowerCase(), business_name || 'Demo Visitor']);
+      `,
+        [email.toLowerCase(), business_name || 'Demo Visitor']
+      );
     } else {
       // Upgrade existing lead to warm_lead
       await pool.query(
@@ -6819,10 +6922,9 @@ app.post('/api/public/demo-email-capture', async (req, res) => {
     // Track the demo token view if provided (silently fail if column doesn't exist)
     if (demo_token) {
       try {
-        await pool.query(
-          `UPDATE outreach_demos SET updated_at = NOW() WHERE token = $1`,
-          [demo_token]
-        );
+        await pool.query(`UPDATE outreach_demos SET updated_at = NOW() WHERE token = $1`, [
+          demo_token,
+        ]);
       } catch (e) {
         // Column might not exist, ignore
       }
@@ -6926,7 +7028,7 @@ app.get('/api/cron/generate-demos', async (req, res) => {
 
         // Get worst reviews
         const targetReviews = allReviews
-          .filter((r) => r.rating <= 3)
+          .filter(r => r.rating <= 3)
           .sort((a, b) => a.rating - b.rating)
           .slice(0, 3);
 
@@ -6938,7 +7040,14 @@ app.get('/api/cron/generate-demos', async (req, res) => {
         // Generate AI responses
         const demos = [];
         for (const review of targetReviews) {
-          const aiResponse = await generateDemoResponse(review, lead.business_name, lead.business_type, lead.city, placeInfo.rating, placeInfo.totalReviews);
+          const aiResponse = await generateDemoResponse(
+            review,
+            lead.business_name,
+            lead.business_type,
+            lead.city,
+            placeInfo.rating,
+            placeInfo.totalReviews
+          );
           demos.push({
             review: {
               text: review.text,
@@ -6976,8 +7085,17 @@ app.get('/api/cron/generate-demos', async (req, res) => {
         // Send email if requested
         if (sendEmails && lead.email) {
           try {
-            await sendDemoEmail(lead.email, lead.business_name, demos, demoToken, placeInfo.totalReviews);
-            await dbQuery('UPDATE demo_generations SET email_sent_at = NOW() WHERE demo_token = $1', [demoToken]);
+            await sendDemoEmail(
+              lead.email,
+              lead.business_name,
+              demos,
+              demoToken,
+              placeInfo.totalReviews
+            );
+            await dbQuery(
+              'UPDATE demo_generations SET email_sent_at = NOW() WHERE demo_token = $1',
+              [demoToken]
+            );
           } catch (emailError) {
             console.error(`Email failed for ${lead.email}:`, emailError.message);
           }
@@ -6991,7 +7109,7 @@ app.get('/api/cron/generate-demos', async (req, res) => {
         });
 
         // Small delay to avoid rate limits
-        await new Promise((r) => setTimeout(r, 1000));
+        await new Promise(r => setTimeout(r, 1000));
       } catch (error) {
         results.failed++;
         console.error(`Demo generation failed for ${lead.business_name}:`, error.message);
@@ -8062,6 +8180,15 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Rating must be between 1 and 5' });
     }
 
+    // Require comment and displayName for useful testimonials
+    if (!comment || !comment.trim()) {
+      return res.status(400).json({ error: 'Please tell us about your experience' });
+    }
+
+    if (!displayName || !displayName.trim()) {
+      return res.status(400).json({ error: 'Please enter your name' });
+    }
+
     // Check if user already submitted feedback
     const existing = await dbGet('SELECT id FROM user_feedback WHERE user_id = $1', [req.user.id]);
 
@@ -8069,15 +8196,15 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'You have already submitted feedback' });
     }
 
-    // Get user info for display name
+    // Get user info for fallback
     const user = await dbGet('SELECT email, business_name FROM users WHERE id = $1', [req.user.id]);
-    const userName = displayName || user.business_name || user.email.split('@')[0];
+    const userName = displayName.trim();
 
     // Insert feedback - auto-approved for transparency
     const insertResult = await dbQuery(
       `INSERT INTO user_feedback (user_id, rating, comment, user_name, approved)
        VALUES ($1, $2, $3, $4, TRUE) RETURNING id`,
-      [req.user.id, rating, comment || null, userName]
+      [req.user.id, rating, comment.trim(), userName]
     );
 
     // Mark user as having submitted feedback
@@ -8444,7 +8571,7 @@ app.get('/api/cron/send-drip-emails', async (req, res) => {
   const getDripEmail = (day, user) => {
     const templates = {
       0: {
-        subject: "Your 30% discount expires in 7 days",
+        subject: 'Your 30% discount expires in 7 days',
         html: `
           <!DOCTYPE html>
           <html>
@@ -9073,7 +9200,8 @@ app.get('/api/cron/send-pre-registration-drips', async (req, res) => {
       // 1. Were captured X days ago (based on drip schedule)
       // 2. Haven't received this drip email yet
       // 3. Haven't converted (registered)
-      const eligibleEmails = await dbAll(`
+      const eligibleEmails = await dbAll(
+        `
         SELECT ec.* FROM email_captures ec
         WHERE ec.converted = FALSE
           AND DATE(ec.created_at) = DATE(NOW() - INTERVAL '${day} days')
@@ -9082,21 +9210,19 @@ app.get('/api/cron/send-pre-registration-drips', async (req, res) => {
             WHERE LOWER(prd.email) = LOWER(ec.email)
             AND prd.email_day = $1
           )
-      `, [day]);
+      `,
+        [day]
+      );
 
       for (const capture of eligibleEmails) {
         // Check if user has registered (email exists in users table)
-        const existingUser = await dbGet(
-          'SELECT id FROM users WHERE LOWER(email) = LOWER($1)',
-          [capture.email]
-        );
+        const existingUser = await dbGet('SELECT id FROM users WHERE LOWER(email) = LOWER($1)', [
+          capture.email,
+        ]);
 
         if (existingUser) {
           // User registered! Mark as converted and skip
-          await dbQuery(
-            'UPDATE email_captures SET converted = TRUE WHERE id = $1',
-            [capture.id]
-          );
+          await dbQuery('UPDATE email_captures SET converted = TRUE WHERE id = $1', [capture.id]);
           skippedCount++;
           console.log(`⏭️ Pre-reg drip skipped (user registered): ${capture.email}`);
           continue;
@@ -9988,7 +10114,6 @@ app.post('/api/admin/sales-note', authenticateAdmin, async (req, res) => {
   }
 });
 
-
 // GET /api/admin/stats - Get overall admin stats
 app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
   try {
@@ -10111,9 +10236,16 @@ app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
 
     // ========== ACTIVITY METRICS ==========
     // Active users (generated response in last 7 days)
-    let activityMetrics = { active_7d: 0, active_30d: 0, total_responses: 0, responses_today: 0, responses_week: 0 };
+    let activityMetrics = {
+      active_7d: 0,
+      active_30d: 0,
+      total_responses: 0,
+      responses_today: 0,
+      responses_week: 0,
+    };
     try {
-      activityMetrics = await dbGet(`
+      activityMetrics =
+        (await dbGet(`
         SELECT
           COUNT(DISTINCT user_id) FILTER (WHERE created_at > NOW() - INTERVAL '7 days') as active_7d,
           COUNT(DISTINCT user_id) FILTER (WHERE created_at > NOW() - INTERVAL '30 days') as active_30d,
@@ -10121,7 +10253,7 @@ app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
           COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '24 hours') as responses_today,
           COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '7 days') as responses_week
         FROM responses
-      `) || activityMetrics;
+      `)) || activityMetrics;
     } catch (e) {
       console.error('Activity query error:', e.message);
     }
@@ -10185,7 +10317,9 @@ app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
       upgradeOpportunities = upgradeOpportunities.map(u => ({
         ...u,
         limit: limits[u.subscription_plan] || 20,
-        usage_percent: Math.round((u.monthly_response_count / (limits[u.subscription_plan] || 20)) * 100)
+        usage_percent: Math.round(
+          (u.monthly_response_count / (limits[u.subscription_plan] || 20)) * 100
+        ),
       }));
     } catch (e) {
       console.error('Upgrade opportunities query error:', e.message);
@@ -10231,11 +10365,12 @@ app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
     // ========== BLOG STATS ==========
     let blogStats = { total_articles: 0, published: 0 };
     try {
-      blogStats = await dbGet(`
+      blogStats =
+        (await dbGet(`
         SELECT COUNT(*) as total_articles,
                COUNT(*) FILTER (WHERE published = true) as published
         FROM blog_articles
-      `) || blogStats;
+      `)) || blogStats;
     } catch (e) {
       console.error('Blog stats query error:', e.message);
     }
@@ -10243,11 +10378,12 @@ app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
     // ========== EMAIL VERIFICATION STATS ==========
     let emailStats = { total_tokens: 0, verified: 0 };
     try {
-      emailStats = await dbGet(`
+      emailStats =
+        (await dbGet(`
         SELECT
           (SELECT COUNT(*) FROM email_verification_tokens) as total_tokens,
           (SELECT COUNT(*) FROM users WHERE email_verified = true ${excludeEmailsClause}) as verified
-      `) || emailStats;
+      `)) || emailStats;
     } catch (e) {
       console.error('Email stats query error:', e.message);
     }
@@ -10286,7 +10422,8 @@ app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
         mrr,
         arr: mrr * 12,
         planBreakdown,
-        avgRevenuePerUser: userMetrics.paying_users > 0 ? (mrr / parseInt(userMetrics.paying_users)).toFixed(2) : 0
+        avgRevenuePerUser:
+          userMetrics.paying_users > 0 ? (mrr / parseInt(userMetrics.paying_users)).toFixed(2) : 0,
       },
       users: {
         total: parseInt(userMetrics.total_users) || 0,
@@ -10296,43 +10433,52 @@ app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
         newThisWeek: parseInt(userMetrics.new_this_week) || 0,
         newThisMonth: parseInt(userMetrics.new_this_month) || 0,
         verified: parseInt(userMetrics.verified_users) || 0,
-        verificationRate: userMetrics.total_users > 0
-          ? ((parseInt(userMetrics.verified_users) / parseInt(userMetrics.total_users)) * 100).toFixed(1)
-          : 0
+        verificationRate:
+          userMetrics.total_users > 0
+            ? (
+                (parseInt(userMetrics.verified_users) / parseInt(userMetrics.total_users)) *
+                100
+              ).toFixed(1)
+            : 0,
       },
       activity: {
         activeUsers7d: parseInt(activityMetrics.active_7d) || 0,
         activeUsers30d: parseInt(activityMetrics.active_30d) || 0,
         totalResponses: parseInt(activityMetrics.total_responses) || 0,
         responsesToday: parseInt(activityMetrics.responses_today) || 0,
-        responsesThisWeek: parseInt(activityMetrics.responses_week) || 0
+        responsesThisWeek: parseInt(activityMetrics.responses_week) || 0,
       },
       funnel: {
         registered: parseInt(userMetrics.total_users) || 0,
         activated: activatedCount,
-        activationRate: userMetrics.total_users > 0
-          ? ((activatedCount / parseInt(userMetrics.total_users)) * 100).toFixed(1)
-          : 0,
+        activationRate:
+          userMetrics.total_users > 0
+            ? ((activatedCount / parseInt(userMetrics.total_users)) * 100).toFixed(1)
+            : 0,
         paying: parseInt(userMetrics.paying_users) || 0,
-        conversionRate: userMetrics.total_users > 0
-          ? ((parseInt(userMetrics.paying_users) / parseInt(userMetrics.total_users)) * 100).toFixed(1)
-          : 0
+        conversionRate:
+          userMetrics.total_users > 0
+            ? (
+                (parseInt(userMetrics.paying_users) / parseInt(userMetrics.total_users)) *
+                100
+              ).toFixed(1)
+            : 0,
       },
       insights: {
         powerUsers,
         upgradeOpportunities,
         churnRisk,
-        freeUpgradeCandidates
+        freeUpgradeCandidates,
       },
       recentSignups,
       trends: {
         dailySignups,
-        dailyResponses
+        dailyResponses,
       },
       blog: {
         totalArticles: parseInt(blogStats.total_articles) || 0,
-        published: parseInt(blogStats.published) || 0
-      }
+        published: parseInt(blogStats.published) || 0,
+      },
     });
   } catch (error) {
     console.error('Sales dashboard error:', error);
@@ -10348,7 +10494,10 @@ app.get('/api/admin/email-dashboard', authenticateAdmin, async (req, res) => {
       total_sent: 0,
       total_today: 0,
       total_failed: 0,
-      by_provider: { brevo: { sent: 0, today: 0, failed: 0 }, resend: { sent: 0, today: 0, failed: 0 } },
+      by_provider: {
+        brevo: { sent: 0, today: 0, failed: 0 },
+        resend: { sent: 0, today: 0, failed: 0 },
+      },
     };
 
     try {
@@ -10372,12 +10521,9 @@ app.get('/api/admin/email-dashboard', authenticateAdmin, async (req, res) => {
         }
       }
 
-      summary.total_sent =
-        summary.by_provider.brevo.sent + summary.by_provider.resend.sent;
-      summary.total_today =
-        summary.by_provider.brevo.today + summary.by_provider.resend.today;
-      summary.total_failed =
-        summary.by_provider.brevo.failed + summary.by_provider.resend.failed;
+      summary.total_sent = summary.by_provider.brevo.sent + summary.by_provider.resend.sent;
+      summary.total_today = summary.by_provider.brevo.today + summary.by_provider.resend.today;
+      summary.total_failed = summary.by_provider.brevo.failed + summary.by_provider.resend.failed;
     } catch (e) {
       console.error('Email summary query error:', e.message);
     }
@@ -10533,7 +10679,9 @@ app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
       ...u,
       is_test_account: isTestEmail(u.email),
       onboarding_completed: u.response_count > 0,
-      is_active: u.last_response_at && new Date(u.last_response_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      is_active:
+        u.last_response_at &&
+        new Date(u.last_response_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
     }));
 
     const realUsers = usersWithFlag.filter(u => !u.is_test_account);
@@ -10550,8 +10698,9 @@ app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
         realPaying: realUsers.filter(u => u.subscription_plan !== 'free').length,
         realOnboarded: onboardedReal.length,
         realActive7d: activeReal.length,
-        onboardingRate: realUsers.length > 0 ? Math.round(onboardedReal.length / realUsers.length * 100) : 0
-      }
+        onboardingRate:
+          realUsers.length > 0 ? Math.round((onboardedReal.length / realUsers.length) * 100) : 0,
+      },
     });
   } catch (error) {
     console.error('Admin users error:', error);
@@ -10608,7 +10757,7 @@ app.delete('/api/admin/cleanup-test-accounts', authenticateAdmin, async (req, re
 
     res.json({
       message: `Deleted ${result.rows?.length || 0} fake accounts`,
-      deleted: result.rows || toDelete
+      deleted: result.rows || toDelete,
     });
   } catch (error) {
     console.error('Cleanup error:', error);
@@ -10644,7 +10793,11 @@ app.delete('/api/admin/cleanup-all-tests', authenticateAdmin, async (req, res) =
     `);
 
     if (toDelete.length === 0) {
-      return res.json({ message: 'No test accounts to delete', deleted: [], kept: realEmails.length });
+      return res.json({
+        message: 'No test accounts to delete',
+        deleted: [],
+        kept: realEmails.length,
+      });
     }
 
     const userIds = toDelete.map(u => u.id);
@@ -10684,7 +10837,7 @@ app.delete('/api/admin/cleanup-all-tests', authenticateAdmin, async (req, res) =
     res.json({
       message: `Deleted ${result.rows?.length || toDelete.length} test accounts`,
       deleted: result.rows || toDelete,
-      kept: realEmails.length
+      kept: realEmails.length,
     });
   } catch (error) {
     console.error('Cleanup all tests error:', error);
@@ -10823,7 +10976,9 @@ app.get('/api/outreach/track-open', async (req, res) => {
            WHERE test_name = 'sequence1_subject' AND is_active = TRUE`,
           []
         );
-        console.log(`📧 Email opened: ${email} (campaign: ${campaign}, A/B variant: ${emailRecord.ab_variant})`);
+        console.log(
+          `📧 Email opened: ${email} (campaign: ${campaign}, A/B variant: ${emailRecord.ab_variant})`
+        );
       } else {
         console.log(`📧 Email opened: ${email} (campaign: ${campaign})`);
       }
@@ -10879,7 +11034,9 @@ app.get('/api/outreach/track-click', async (req, res) => {
   } catch (error) {
     console.error('Click tracking error:', error.message);
     // Fallback redirect on error
-    res.redirect(req.query.url ? decodeURIComponent(req.query.url) : 'https://tryreviewresponder.com');
+    res.redirect(
+      req.query.url ? decodeURIComponent(req.query.url) : 'https://tryreviewresponder.com'
+    );
   }
 });
 
@@ -10933,23 +11090,27 @@ app.get('/api/outreach/stats', async (req, res) => {
     let clicksByUrl = [];
 
     try {
-      totalClicks = await dbGet(`SELECT COUNT(*) as count FROM outreach_clicks`) || { count: 0 };
-      uniqueClicks = await dbGet(`SELECT COUNT(DISTINCT email) as count FROM outreach_clicks`) || { count: 0 };
+      totalClicks = (await dbGet(`SELECT COUNT(*) as count FROM outreach_clicks`)) || { count: 0 };
+      uniqueClicks = (await dbGet(
+        `SELECT COUNT(DISTINCT email) as count FROM outreach_clicks`
+      )) || { count: 0 };
 
-      recentClicks = await dbAll(
-        `SELECT email, campaign, clicked_url, clicked_at
+      recentClicks =
+        (await dbAll(
+          `SELECT email, campaign, clicked_url, clicked_at
          FROM outreach_clicks
          ORDER BY clicked_at DESC
          LIMIT 20`
-      ) || [];
+        )) || [];
 
-      clicksByUrl = await dbAll(
-        `SELECT clicked_url, COUNT(*) as clicks
+      clicksByUrl =
+        (await dbAll(
+          `SELECT clicked_url, COUNT(*) as clicks
          FROM outreach_clicks
          GROUP BY clicked_url
          ORDER BY clicks DESC
          LIMIT 10`
-      ) || [];
+        )) || [];
     } catch (e) {
       // Table might not exist yet
       console.log('Click tracking tables not ready:', e.message);
@@ -10994,9 +11155,10 @@ app.get('/api/outreach/ab-results', async (req, res) => {
 
       // Variant A
       if (test.variant_a_subject) {
-        const openRate = test.variant_a_sent > 0
-          ? ((test.variant_a_opens / test.variant_a_sent) * 100).toFixed(2)
-          : 0;
+        const openRate =
+          test.variant_a_sent > 0
+            ? ((test.variant_a_opens / test.variant_a_sent) * 100).toFixed(2)
+            : 0;
         variants.push({
           variant: 'A',
           subject: test.variant_a_subject,
@@ -11008,9 +11170,10 @@ app.get('/api/outreach/ab-results', async (req, res) => {
 
       // Variant B
       if (test.variant_b_subject) {
-        const openRate = test.variant_b_sent > 0
-          ? ((test.variant_b_opens / test.variant_b_sent) * 100).toFixed(2)
-          : 0;
+        const openRate =
+          test.variant_b_sent > 0
+            ? ((test.variant_b_opens / test.variant_b_sent) * 100).toFixed(2)
+            : 0;
         variants.push({
           variant: 'B',
           subject: test.variant_b_subject,
@@ -11022,9 +11185,10 @@ app.get('/api/outreach/ab-results', async (req, res) => {
 
       // Variant C
       if (test.variant_c_subject) {
-        const openRate = test.variant_c_sent > 0
-          ? ((test.variant_c_opens / test.variant_c_sent) * 100).toFixed(2)
-          : 0;
+        const openRate =
+          test.variant_c_sent > 0
+            ? ((test.variant_c_opens / test.variant_c_sent) * 100).toFixed(2)
+            : 0;
         variants.push({
           variant: 'C',
           subject: test.variant_c_subject,
@@ -11036,9 +11200,10 @@ app.get('/api/outreach/ab-results', async (req, res) => {
 
       // Variant D
       if (test.variant_d_subject) {
-        const openRate = test.variant_d_sent > 0
-          ? ((test.variant_d_opens / test.variant_d_sent) * 100).toFixed(2)
-          : 0;
+        const openRate =
+          test.variant_d_sent > 0
+            ? ((test.variant_d_opens / test.variant_d_sent) * 100).toFixed(2)
+            : 0;
         variants.push({
           variant: 'D',
           subject: test.variant_d_subject,
@@ -11075,9 +11240,10 @@ app.get('/api/outreach/ab-results', async (req, res) => {
         total_opens: variants.reduce((sum, v) => sum + v.opens, 0),
         variants: sortedVariants,
         created_at: test.created_at,
-        recommendation: isSignificant && currentWinner
-          ? `Use variant ${currentWinner}: "${sortedVariants[0].subject}"`
-          : `Need more data (${totalSent}/${minSampleSize * variants.length} emails sent)`,
+        recommendation:
+          isSignificant && currentWinner
+            ? `Use variant ${currentWinner}: "${sortedVariants[0].subject}"`
+            : `Need more data (${totalSent}/${minSampleSize * variants.length} emails sent)`,
       };
     });
 
@@ -11169,7 +11335,9 @@ app.post('/api/admin/import-leads', async (req, res) => {
             lead.source || 'manual_import',
             leadType,
             competitorPlatform,
-            lead.pain_points ? `{${lead.pain_points.map(p => `"${p.replace(/"/g, '\\"')}"`).join(',')}}` : null,
+            lead.pain_points
+              ? `{${lead.pain_points.map(p => `"${p.replace(/"/g, '\\"')}"`).join(',')}}`
+              : null,
             lead.platform_url || lead.yelp_url || lead.tripadvisor_url || null,
             lead.title || lead.job_title || null,
             lead.company_size || null,
@@ -11287,9 +11455,7 @@ app.get('/api/admin/clickers', async (req, res) => {
       demo_booked: c.demo_booked || false,
       converted: c.converted || false,
       // For LinkedIn search
-      linkedin_search: c.contact_name
-        ? `${c.contact_name} ${c.business_name}`
-        : c.business_name,
+      linkedin_search: c.contact_name ? `${c.contact_name} ${c.business_name}` : c.business_name,
     }));
 
     // Summary stats
@@ -11300,9 +11466,8 @@ app.get('/api/admin/clickers', async (req, res) => {
       total: formattedClickers.length,
       followed_up: followedUp,
       pending_followup: pending,
-      message: pending > 0
-        ? `${pending} clickers need follow-up!`
-        : 'All clickers have been followed up',
+      message:
+        pending > 0 ? `${pending} clickers need follow-up!` : 'All clickers have been followed up',
       clickers: formattedClickers,
     });
   } catch (error) {
@@ -11377,7 +11542,24 @@ app.post('/api/admin/send-hot-lead-demos', async (req, res) => {
         const city = lead.city;
 
         // Detect German-speaking cities
-        const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Brüssel', 'Munich', 'Cologne', 'Vienna', 'Zurich', 'Geneva'];
+        const germanCities = [
+          'München',
+          'Berlin',
+          'Hamburg',
+          'Frankfurt',
+          'Köln',
+          'Stuttgart',
+          'Düsseldorf',
+          'Wien',
+          'Zürich',
+          'Genf',
+          'Brüssel',
+          'Munich',
+          'Cologne',
+          'Vienna',
+          'Zurich',
+          'Geneva',
+        ];
         const isGerman = germanCities.some(c => city.toLowerCase().includes(c.toLowerCase()));
 
         // Generate personalized demo
@@ -11424,7 +11606,11 @@ app.post('/api/admin/send-hot-lead-demos', async (req, res) => {
         }
 
         if (demos.length === 0) {
-          results.push({ email: lead.email, business: businessName, error: 'Demo generation failed' });
+          results.push({
+            email: lead.email,
+            business: businessName,
+            error: 'Demo generation failed',
+          });
           continue;
         }
 
@@ -11496,7 +11682,10 @@ Berend`;
         // Send via Brevo (to avoid hitting Resend limits)
         if (brevoApi) {
           await brevoApi.sendTransacEmail({
-            sender: { name: 'Berend from ReviewResponder', email: 'outreach@tryreviewresponder.com' },
+            sender: {
+              name: 'Berend from ReviewResponder',
+              email: 'outreach@tryreviewresponder.com',
+            },
             to: [{ email: lead.email }],
             subject: subject,
             textContent: body,
@@ -11545,7 +11734,10 @@ Berend`;
 // Updated 14.01.2026: Now generates actual demo with AI responses instead of asking for Zoom call
 app.all('/api/cron/followup-clickers', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -11568,7 +11760,9 @@ app.all('/api/cron/followup-clickers', async (req, res) => {
     // Add demo_token column if not exists
     try {
       await dbQuery(`ALTER TABLE clicker_followups ADD COLUMN IF NOT EXISTS demo_token TEXT`);
-    } catch (e) { /* Column might already exist */ }
+    } catch (e) {
+      /* Column might already exist */
+    }
 
     // Find clickers who haven't received follow-up yet
     const clickers = await dbAll(`
@@ -11595,7 +11789,24 @@ app.all('/api/cron/followup-clickers', async (req, res) => {
         const city = clicker.city || '';
 
         // Detect German-speaking cities
-        const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Brüssel', 'Munich', 'Cologne', 'Vienna', 'Zurich', 'Geneva'];
+        const germanCities = [
+          'München',
+          'Berlin',
+          'Hamburg',
+          'Frankfurt',
+          'Köln',
+          'Stuttgart',
+          'Düsseldorf',
+          'Wien',
+          'Zürich',
+          'Genf',
+          'Brüssel',
+          'Munich',
+          'Cologne',
+          'Vienna',
+          'Zurich',
+          'Geneva',
+        ];
         const isGerman = germanCities.some(c => city.toLowerCase().includes(c.toLowerCase()));
 
         // Try to generate a personalized demo for this business
@@ -11727,7 +11938,9 @@ P.S. Use code CLICKER30 for 30% off if you upgrade.`;
         } else {
           // Fallback email WITHOUT demo (if demo generation failed)
           if (isGerman) {
-            const reviewText = reviewCount ? `Mit über ${reviewCount.toLocaleString('de-DE')} Google Bewertungen` : 'Mit so vielen Bewertungen';
+            const reviewText = reviewCount
+              ? `Mit über ${reviewCount.toLocaleString('de-DE')} Google Bewertungen`
+              : 'Mit so vielen Bewertungen';
             subject = reviewCount
               ? `${reviewCount.toLocaleString('de-DE')}+ Bewertungen – wie antwortet ihr?`
               : `Kurze Frage zu ${businessName}`;
@@ -11748,7 +11961,9 @@ Berend
 
 P.S. Code CLICKER30 = 30% Rabatt wenn ihr upgraden wollt.`;
           } else {
-            const reviewText = reviewCount ? `${reviewCount.toLocaleString()} reviews` : 'hundreds of reviews';
+            const reviewText = reviewCount
+              ? `${reviewCount.toLocaleString()} reviews`
+              : 'hundreds of reviews';
             subject = reviewCount
               ? `${reviewCount.toLocaleString()}+ reviews – how do you respond?`
               : `Quick question about ${businessName}`;
@@ -11805,7 +12020,8 @@ P.S. Use code CLICKER30 for 30% off if you upgrade.`;
       sent: sent,
       demos_generated: demosGenerated,
       followups_sent: results,
-      message: sent > 0 ? `Sent ${sent} personalized demos to hot leads!` : 'No new clickers to follow up',
+      message:
+        sent > 0 ? `Sent ${sent} personalized demos to hot leads!` : 'No new clickers to follow up',
     });
   } catch (error) {
     console.error('Clicker followup error:', error);
@@ -11816,7 +12032,10 @@ P.S. Use code CLICKER30 for 30% off if you upgrade.`;
 // GET /api/cron/second-followup - Send SECOND follow-up with better offer to clickers who haven't converted
 app.all('/api/cron/second-followup', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -11827,8 +12046,12 @@ app.all('/api/cron/second-followup', async (req, res) => {
   try {
     // Add second_followup_sent column if not exists
     try {
-      await dbQuery(`ALTER TABLE clicker_followups ADD COLUMN IF NOT EXISTS second_followup_sent TIMESTAMP`);
-    } catch (e) { /* Column might already exist */ }
+      await dbQuery(
+        `ALTER TABLE clicker_followups ADD COLUMN IF NOT EXISTS second_followup_sent TIMESTAMP`
+      );
+    } catch (e) {
+      /* Column might already exist */
+    }
 
     // Check for force parameter to skip 2-day wait
     const forceNow = req.query.force === 'true';
@@ -11853,8 +12076,12 @@ app.all('/api/cron/second-followup', async (req, res) => {
     if (clickers.length === 0) {
       // Debug: Check how many are in clicker_followups table
       const total = await dbQuery(`SELECT COUNT(*) as count FROM clicker_followups`);
-      const notConverted = await dbQuery(`SELECT COUNT(*) as count FROM clicker_followups WHERE converted = FALSE`);
-      const noSecond = await dbQuery(`SELECT COUNT(*) as count FROM clicker_followups WHERE converted = FALSE AND second_followup_sent IS NULL`);
+      const notConverted = await dbQuery(
+        `SELECT COUNT(*) as count FROM clicker_followups WHERE converted = FALSE`
+      );
+      const noSecond = await dbQuery(
+        `SELECT COUNT(*) as count FROM clicker_followups WHERE converted = FALSE AND second_followup_sent IS NULL`
+      );
       return res.json({
         success: true,
         sent: 0,
@@ -11875,10 +12102,29 @@ app.all('/api/cron/second-followup', async (req, res) => {
       try {
         const businessName = clicker.business_name || 'your restaurant';
         const city = clicker.city || '';
-        const demoUrl = clicker.demo_token ? `https://tryreviewresponder.com/demo/${clicker.demo_token}` : null;
+        const demoUrl = clicker.demo_token
+          ? `https://tryreviewresponder.com/demo/${clicker.demo_token}`
+          : null;
 
         // Detect German-speaking cities
-        const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Brüssel', 'Munich', 'Cologne', 'Vienna', 'Zurich', 'Geneva'];
+        const germanCities = [
+          'München',
+          'Berlin',
+          'Hamburg',
+          'Frankfurt',
+          'Köln',
+          'Stuttgart',
+          'Düsseldorf',
+          'Wien',
+          'Zürich',
+          'Genf',
+          'Brüssel',
+          'Munich',
+          'Cologne',
+          'Vienna',
+          'Zurich',
+          'Geneva',
+        ];
         const isGerman = germanCities.some(c => city.toLowerCase().includes(c.toLowerCase()));
 
         let subject, body;
@@ -11906,9 +12152,7 @@ P.S. Keine Antwort = kein Interesse. Kein Problem, dann höre ich auf.`;
         } else {
           // English second follow-up - with demo link if available
           subject = `Last chance: 1 month free for ${businessName}`;
-          const demoLine = demoUrl
-            ? `\nIf you haven't seen the demo yet:\n${demoUrl}\n`
-            : '';
+          const demoLine = demoUrl ? `\nIf you haven't seen the demo yet:\n${demoUrl}\n` : '';
           body = `Hey,
 
 Last email from me.
@@ -11965,7 +12209,10 @@ P.S. No reply = no interest. No problem, I'll stop reaching out.`;
 // Added 14.01.2026: Part of Night Turbo Automation System
 app.get('/api/cron/hot-lead-attack', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -12014,10 +12261,29 @@ app.get('/api/cron/hot-lead-attack', async (req, res) => {
         const businessName = clicker.business_name || 'your business';
         const city = clicker.city || '';
         const demoToken = clicker.demo_token;
-        const demoUrl = demoToken ? `https://tryreviewresponder.com/demo/${demoToken}?discount=CLICKER30` : null;
+        const demoUrl = demoToken
+          ? `https://tryreviewresponder.com/demo/${demoToken}?discount=CLICKER30`
+          : null;
 
         // Detect German-speaking cities
-        const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Brüssel', 'Munich', 'Cologne', 'Vienna', 'Zurich', 'Geneva'];
+        const germanCities = [
+          'München',
+          'Berlin',
+          'Hamburg',
+          'Frankfurt',
+          'Köln',
+          'Stuttgart',
+          'Düsseldorf',
+          'Wien',
+          'Zürich',
+          'Genf',
+          'Brüssel',
+          'Munich',
+          'Cologne',
+          'Vienna',
+          'Zurich',
+          'Geneva',
+        ];
         const isGerman = germanCities.some(gc => city.toLowerCase().includes(gc.toLowerCase()));
 
         let subject, body;
@@ -12123,7 +12389,10 @@ P.S. Use code CLICKER30 for 30% off if you upgrade later.`;
       success: true,
       sent: sent,
       hot_leads_attacked: results,
-      message: sent > 0 ? `🔥 Attacked ${sent} hot leads within 4h of clicking!` : 'No hot leads to attack right now',
+      message:
+        sent > 0
+          ? `🔥 Attacked ${sent} hot leads within 4h of clicking!`
+          : 'No hot leads to attack right now',
       next_run: 'Every 2 hours',
     });
   } catch (error) {
@@ -12137,7 +12406,10 @@ P.S. Use code CLICKER30 for 30% off if you upgrade later.`;
 // Runs 6 times per day at: 00:00, 04:00, 08:00, 12:00, 16:00, 20:00
 app.get('/api/cron/turbo-scrape', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -12146,27 +12418,33 @@ app.get('/api/cron/turbo-scrape', async (req, res) => {
 
   // Wave-based city distribution for global coverage
   const waveConfig = {
-    1: { // 00:00 UTC - DACH Region
+    1: {
+      // 00:00 UTC - DACH Region
       cities: ['Berlin', 'München', 'Hamburg', 'Wien', 'Zürich'],
       name: 'DACH Night',
     },
-    2: { // 04:00 UTC - US East Coast
+    2: {
+      // 04:00 UTC - US East Coast
       cities: ['New York', 'Boston', 'Philadelphia', 'Miami', 'Chicago'],
       name: 'US East',
     },
-    3: { // 08:00 UTC - US West Coast
+    3: {
+      // 08:00 UTC - US West Coast
       cities: ['Los Angeles', 'San Francisco', 'Seattle', 'Denver', 'Phoenix'],
       name: 'US West',
     },
-    4: { // 12:00 UTC - UK & Ireland
+    4: {
+      // 12:00 UTC - UK & Ireland
       cities: ['London', 'Dublin', 'Manchester', 'Edinburgh', 'Birmingham'],
       name: 'UK Ireland',
     },
-    5: { // 16:00 UTC - Benelux & Scandinavia
+    5: {
+      // 16:00 UTC - Benelux & Scandinavia
       cities: ['Amsterdam', 'Brüssel', 'Copenhagen', 'Stockholm', 'Oslo'],
       name: 'Benelux Nordic',
     },
-    6: { // 20:00 UTC - Random rotation of all other cities
+    6: {
+      // 20:00 UTC - Random rotation of all other cities
       cities: ['Leipzig', 'Dresden', 'Salzburg', 'Graz', 'Basel', 'Austin', 'Portland', 'Atlanta'],
       name: 'Random Mix',
     },
@@ -12177,10 +12455,26 @@ app.get('/api/cron/turbo-scrape', async (req, res) => {
 
   // Rotate through 3 industries per wave (20 total industries / 6 waves ≈ 3 per wave)
   const industries = [
-    'restaurant', 'hotel', 'dental office', 'law firm', 'auto repair shop',
-    'hair salon', 'gym', 'real estate agency', 'medical clinic', 'retail store',
-    'spa', 'veterinary clinic', 'physiotherapy', 'accounting firm', 'bakery',
-    'coffee shop', 'car dealership', 'optician', 'pharmacy', 'florist'
+    'restaurant',
+    'hotel',
+    'dental office',
+    'law firm',
+    'auto repair shop',
+    'hair salon',
+    'gym',
+    'real estate agency',
+    'medical clinic',
+    'retail store',
+    'spa',
+    'veterinary clinic',
+    'physiotherapy',
+    'accounting firm',
+    'bakery',
+    'coffee shop',
+    'car dealership',
+    'optician',
+    'pharmacy',
+    'florist',
   ];
 
   // Pick 3 industries based on wave number
@@ -12212,7 +12506,8 @@ app.get('/api/cron/turbo-scrape', async (req, res) => {
             let cityScraped = 0;
             let citySkipped = 0;
 
-            for (const place of data.results.slice(0, 10)) { // 10 per combo to save API costs
+            for (const place of data.results.slice(0, 10)) {
+              // 10 per combo to save API costs
               try {
                 // Check if lead already exists (dedup)
                 const existing = await dbGet(
@@ -12314,7 +12609,10 @@ app.get('/api/cron/turbo-scrape', async (req, res) => {
 // Runs 4 times per day at: 07:00, 13:00, 14:00, 20:00 UTC
 app.get('/api/cron/turbo-email', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -12323,23 +12621,45 @@ app.get('/api/cron/turbo-email', async (req, res) => {
 
   // Wave-based geographic targeting for optimal delivery times
   const waveConfig = {
-    1: { // 07:00 UTC = 08:00 CET - DACH Morning
-      regions: ['Berlin', 'München', 'Hamburg', 'Wien', 'Zürich', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf'],
+    1: {
+      // 07:00 UTC = 08:00 CET - DACH Morning
+      regions: [
+        'Berlin',
+        'München',
+        'Hamburg',
+        'Wien',
+        'Zürich',
+        'Frankfurt',
+        'Köln',
+        'Stuttgart',
+        'Düsseldorf',
+      ],
       name: 'DACH Morning',
       limit: 100,
     },
-    2: { // 13:00 UTC = 14:00 CET - DACH Afternoon
+    2: {
+      // 13:00 UTC = 14:00 CET - DACH Afternoon
       regions: ['Leipzig', 'Dresden', 'Salzburg', 'Graz', 'Basel', 'Bern', 'Amsterdam', 'Brüssel'],
       name: 'DACH Afternoon',
       limit: 100,
     },
-    3: { // 14:00 UTC = 09:00 EST - US Morning
+    3: {
+      // 14:00 UTC = 09:00 EST - US Morning
       regions: ['New York', 'Boston', 'Philadelphia', 'Miami', 'Chicago', 'Atlanta', 'Washington'],
       name: 'US East Morning',
       limit: 100,
     },
-    4: { // 20:00 UTC = 15:00 EST = 12:00 PST - US Afternoon
-      regions: ['Los Angeles', 'San Francisco', 'Seattle', 'Denver', 'Phoenix', 'Portland', 'Las Vegas'],
+    4: {
+      // 20:00 UTC = 15:00 EST = 12:00 PST - US Afternoon
+      regions: [
+        'Los Angeles',
+        'San Francisco',
+        'Seattle',
+        'Denver',
+        'Phoenix',
+        'Portland',
+        'Las Vegas',
+      ],
       name: 'US West Afternoon',
       limit: 100,
     },
@@ -12380,7 +12700,31 @@ app.get('/api/cron/turbo-email', async (req, res) => {
         const city = lead.city || '';
 
         // Detect German-speaking cities
-        const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Brüssel', 'Leipzig', 'Dresden', 'Salzburg', 'Graz', 'Basel', 'Bern', 'Amsterdam', 'Munich', 'Cologne', 'Vienna', 'Zurich', 'Geneva'];
+        const germanCities = [
+          'München',
+          'Berlin',
+          'Hamburg',
+          'Frankfurt',
+          'Köln',
+          'Stuttgart',
+          'Düsseldorf',
+          'Wien',
+          'Zürich',
+          'Genf',
+          'Brüssel',
+          'Leipzig',
+          'Dresden',
+          'Salzburg',
+          'Graz',
+          'Basel',
+          'Bern',
+          'Amsterdam',
+          'Munich',
+          'Cologne',
+          'Vienna',
+          'Zurich',
+          'Geneva',
+        ];
         const isGerman = germanCities.some(gc => city.toLowerCase().includes(gc.toLowerCase()));
 
         // Build demo URL with discount if available
@@ -12447,7 +12791,10 @@ P.S. Use code DEMO30 for 30% off if you upgrade.`;
           });
         } else if (brevoApi) {
           await brevoApi.sendTransacEmail({
-            sender: { name: 'Berend from ReviewResponder', email: 'outreach@tryreviewresponder.com' },
+            sender: {
+              name: 'Berend from ReviewResponder',
+              email: 'outreach@tryreviewresponder.com',
+            },
             to: [{ email: lead.email }],
             subject: subject,
             textContent: body,
@@ -12502,7 +12849,10 @@ P.S. Use code DEMO30 for 30% off if you upgrade.`;
 // Requires: YELP_API_KEY environment variable
 app.get('/api/cron/yelp-harvest', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -12518,17 +12868,28 @@ app.get('/api/cron/yelp-harvest', async (req, res) => {
 
   // Cities to harvest - focus on US where Yelp is strongest
   const cities = [
-    'New York, NY', 'Los Angeles, CA', 'Chicago, IL', 'Houston, TX', 'Miami, FL',
-    'San Francisco, CA', 'Seattle, WA', 'Boston, MA', 'Denver, CO', 'Austin, TX',
+    'New York, NY',
+    'Los Angeles, CA',
+    'Chicago, IL',
+    'Houston, TX',
+    'Miami, FL',
+    'San Francisco, CA',
+    'Seattle, WA',
+    'Boston, MA',
+    'Denver, CO',
+    'Austin, TX',
   ];
 
   // Categories that need review responses
   const categories = ['restaurants', 'hotels', 'dentists', 'beautysvc', 'autorepair'];
 
   // Pick city and category based on day rotation
-  const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+  const dayOfYear = Math.floor(
+    (new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24)
+  );
   const todayCity = req.query.city || cities[dayOfYear % cities.length];
-  const todayCategory = req.query.category || categories[Math.floor(dayOfYear / cities.length) % categories.length];
+  const todayCategory =
+    req.query.category || categories[Math.floor(dayOfYear / cities.length) % categories.length];
 
   let totalHarvested = 0;
   let totalSkipped = 0;
@@ -12540,7 +12901,7 @@ app.get('/api/cron/yelp-harvest', async (req, res) => {
 
     const response = await fetch(yelpUrl, {
       headers: {
-        'Authorization': `Bearer ${process.env.YELP_API_KEY}`,
+        Authorization: `Bearer ${process.env.YELP_API_KEY}`,
       },
     });
 
@@ -12621,7 +12982,10 @@ app.get('/api/cron/yelp-harvest', async (req, res) => {
 // GET /api/cron/demo-followup - Send follow-up to people who viewed demo but didn't convert
 app.get('/api/cron/demo-followup', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -12632,8 +12996,12 @@ app.get('/api/cron/demo-followup', async (req, res) => {
   try {
     // Ensure followup_sent_at column exists
     try {
-      await dbQuery(`ALTER TABLE demo_generations ADD COLUMN IF NOT EXISTS followup_sent_at TIMESTAMP`);
-    } catch (e) { /* Column might already exist */ }
+      await dbQuery(
+        `ALTER TABLE demo_generations ADD COLUMN IF NOT EXISTS followup_sent_at TIMESTAMP`
+      );
+    } catch (e) {
+      /* Column might already exist */
+    }
 
     // Find demos viewed >24h ago that haven't converted and no followup sent
     const demoViewers = await dbAll(`
@@ -12665,9 +13033,10 @@ app.get('/api/cron/demo-followup', async (req, res) => {
         // Get one of the AI responses to showcase
         let responsePreview = '';
         if (viewer.generated_responses) {
-          const responses = typeof viewer.generated_responses === 'string'
-            ? JSON.parse(viewer.generated_responses)
-            : viewer.generated_responses;
+          const responses =
+            typeof viewer.generated_responses === 'string'
+              ? JSON.parse(viewer.generated_responses)
+              : viewer.generated_responses;
           if (responses.length > 0) {
             responsePreview = `\n\nHere's one we generated for you:\n"${responses[0].response?.substring(0, 150)}..."\n`;
           }
@@ -12698,13 +13067,16 @@ P.S. Use code DEMOFOLLOWUP for 30% off if you upgrade within 48h.`;
         });
 
         // Mark as followed up
-        await dbQuery(
-          `UPDATE demo_generations SET followup_sent_at = NOW() WHERE id = $1`,
-          [viewer.id]
-        );
+        await dbQuery(`UPDATE demo_generations SET followup_sent_at = NOW() WHERE id = $1`, [
+          viewer.id,
+        ]);
 
         sent++;
-        results.push({ email: viewer.email, business: businessName, demo_token: viewer.demo_token });
+        results.push({
+          email: viewer.email,
+          business: businessName,
+          demo_token: viewer.demo_token,
+        });
 
         await new Promise(r => setTimeout(r, 500));
       } catch (err) {
@@ -12716,7 +13088,8 @@ P.S. Use code DEMOFOLLOWUP for 30% off if you upgrade within 48h.`;
       ok: true,
       sent,
       followups: results,
-      message: sent > 0 ? `Sent ${sent} follow-ups to demo viewers` : 'No demo viewers to follow up',
+      message:
+        sent > 0 ? `Sent ${sent} follow-ups to demo viewers` : 'No demo viewers to follow up',
     });
   } catch (error) {
     console.error('Demo followup error:', error);
@@ -12832,10 +13205,7 @@ async function createMagicLink(email) {
   `);
 
   const token = generateMagicLinkToken();
-  await dbQuery(
-    `INSERT INTO magic_links (token, email) VALUES ($1, $2)`,
-    [token, email]
-  );
+  await dbQuery(`INSERT INTO magic_links (token, email) VALUES ($1, $2)`, [token, email]);
 
   return `https://review-responder.onrender.com/api/auth/magic-login/${token}`;
 }
@@ -12847,7 +13217,10 @@ async function createMagicLink(email) {
 // GET /api/cron/reengage-clickers - Send magic login links to hot leads
 app.all('/api/cron/reengage-clickers', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -12914,10 +13287,29 @@ app.all('/api/cron/reengage-clickers', async (req, res) => {
 
         const businessName = lead.business_name || 'your business';
         const city = lead.city || '';
-        const demoUrl = lead.demo_token ? `https://tryreviewresponder.com/demo/${lead.demo_token}` : null;
+        const demoUrl = lead.demo_token
+          ? `https://tryreviewresponder.com/demo/${lead.demo_token}`
+          : null;
 
         // Detect German-speaking cities
-        const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Brüssel', 'Munich', 'Cologne', 'Vienna', 'Zurich', 'Geneva'];
+        const germanCities = [
+          'München',
+          'Berlin',
+          'Hamburg',
+          'Frankfurt',
+          'Köln',
+          'Stuttgart',
+          'Düsseldorf',
+          'Wien',
+          'Zürich',
+          'Genf',
+          'Brüssel',
+          'Munich',
+          'Cologne',
+          'Vienna',
+          'Zurich',
+          'Geneva',
+        ];
         const isGerman = germanCities.some(gc => city.toLowerCase().includes(gc.toLowerCase()));
 
         let subject, body;
@@ -12963,7 +13355,10 @@ P.S. This link works for 7 days.`;
         // Send via Brevo (higher deliverability for outreach)
         if (brevoApi) {
           await brevoApi.sendTransacEmail({
-            sender: { name: 'Berend from ReviewResponder', email: 'outreach@tryreviewresponder.com' },
+            sender: {
+              name: 'Berend from ReviewResponder',
+              email: 'outreach@tryreviewresponder.com',
+            },
             to: [{ email: lead.email }],
             subject: subject,
             textContent: body,
@@ -12980,10 +13375,10 @@ P.S. This link works for 7 days.`;
         }
 
         // Track reengagement email
-        await dbQuery(
-          `INSERT INTO reengagement_emails (email, magic_link_token) VALUES ($1, $2)`,
-          [lead.email, magicToken]
-        );
+        await dbQuery(`INSERT INTO reengagement_emails (email, magic_link_token) VALUES ($1, $2)`, [
+          lead.email,
+          magicToken,
+        ]);
 
         sent++;
         results.push({
@@ -13018,7 +13413,10 @@ P.S. This link works for 7 days.`;
 // GET /api/cron/demo-expiration-emails - Send urgency emails for expiring demos
 app.all('/api/cron/demo-expiration-emails', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -13029,10 +13427,18 @@ app.all('/api/cron/demo-expiration-emails', async (req, res) => {
   try {
     // Add expiration tracking columns if not exist
     try {
-      await dbQuery(`ALTER TABLE demo_generations ADD COLUMN IF NOT EXISTS expiration_email_day3 BOOLEAN DEFAULT false`);
-      await dbQuery(`ALTER TABLE demo_generations ADD COLUMN IF NOT EXISTS expiration_email_day5 BOOLEAN DEFAULT false`);
-      await dbQuery(`ALTER TABLE demo_generations ADD COLUMN IF NOT EXISTS expired BOOLEAN DEFAULT false`);
-    } catch (e) { /* Columns might already exist */ }
+      await dbQuery(
+        `ALTER TABLE demo_generations ADD COLUMN IF NOT EXISTS expiration_email_day3 BOOLEAN DEFAULT false`
+      );
+      await dbQuery(
+        `ALTER TABLE demo_generations ADD COLUMN IF NOT EXISTS expiration_email_day5 BOOLEAN DEFAULT false`
+      );
+      await dbQuery(
+        `ALTER TABLE demo_generations ADD COLUMN IF NOT EXISTS expired BOOLEAN DEFAULT false`
+      );
+    } catch (e) {
+      /* Columns might already exist */
+    }
 
     const results = {
       day3: [],
@@ -13059,7 +13465,22 @@ app.all('/api/cron/demo-expiration-emails', async (req, res) => {
         const businessName = demo.business_name || 'your business';
         const city = demo.city || '';
 
-        const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Munich', 'Cologne', 'Vienna', 'Zurich'];
+        const germanCities = [
+          'München',
+          'Berlin',
+          'Hamburg',
+          'Frankfurt',
+          'Köln',
+          'Stuttgart',
+          'Düsseldorf',
+          'Wien',
+          'Zürich',
+          'Genf',
+          'Munich',
+          'Cologne',
+          'Vienna',
+          'Zurich',
+        ];
         const isGerman = germanCities.some(gc => city.toLowerCase().includes(gc.toLowerCase()));
 
         let subject, body;
@@ -13093,7 +13514,10 @@ Berend`;
 
         if (brevoApi) {
           await brevoApi.sendTransacEmail({
-            sender: { name: 'Berend from ReviewResponder', email: 'outreach@tryreviewresponder.com' },
+            sender: {
+              name: 'Berend from ReviewResponder',
+              email: 'outreach@tryreviewresponder.com',
+            },
             to: [{ email: demo.email }],
             subject: subject,
             textContent: body,
@@ -13101,7 +13525,9 @@ Berend`;
           });
         }
 
-        await dbQuery('UPDATE demo_generations SET expiration_email_day3 = true WHERE id = $1', [demo.id]);
+        await dbQuery('UPDATE demo_generations SET expiration_email_day3 = true WHERE id = $1', [
+          demo.id,
+        ]);
         results.day3.push({ email: demo.email, business: businessName });
         await new Promise(r => setTimeout(r, 300));
       } catch (e) {
@@ -13128,7 +13554,22 @@ Berend`;
         const businessName = demo.business_name || 'your business';
         const city = demo.city || '';
 
-        const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Munich', 'Cologne', 'Vienna', 'Zurich'];
+        const germanCities = [
+          'München',
+          'Berlin',
+          'Hamburg',
+          'Frankfurt',
+          'Köln',
+          'Stuttgart',
+          'Düsseldorf',
+          'Wien',
+          'Zürich',
+          'Genf',
+          'Munich',
+          'Cologne',
+          'Vienna',
+          'Zurich',
+        ];
         const isGerman = germanCities.some(gc => city.toLowerCase().includes(gc.toLowerCase()));
 
         let subject, body;
@@ -13166,7 +13607,10 @@ Berend`;
 
         if (brevoApi) {
           await brevoApi.sendTransacEmail({
-            sender: { name: 'Berend from ReviewResponder', email: 'outreach@tryreviewresponder.com' },
+            sender: {
+              name: 'Berend from ReviewResponder',
+              email: 'outreach@tryreviewresponder.com',
+            },
             to: [{ email: demo.email }],
             subject: subject,
             textContent: body,
@@ -13174,7 +13618,9 @@ Berend`;
           });
         }
 
-        await dbQuery('UPDATE demo_generations SET expiration_email_day5 = true WHERE id = $1', [demo.id]);
+        await dbQuery('UPDATE demo_generations SET expiration_email_day5 = true WHERE id = $1', [
+          demo.id,
+        ]);
         results.day5.push({ email: demo.email, business: businessName });
         await new Promise(r => setTimeout(r, 300));
       } catch (e) {
@@ -13219,7 +13665,10 @@ Berend`;
 // Schedule at cron-job.org: 0 22-6 * * * (hourly from 22:00-06:00 UTC)
 app.all('/api/cron/night-loop', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -13235,7 +13684,11 @@ app.all('/api/cron/night-loop', async (req, res) => {
     // Hour 22: Hot Lead Follow-Ups (people who clicked but didn't convert)
     if (hour === 22) {
       console.log('🔥 22:00 - Running Hot Lead Follow-Ups (followup-clickers)');
-      actions.push({ hour: 22, action: 'followup-clickers', description: 'Send personalized demos to email clickers' });
+      actions.push({
+        hour: 22,
+        action: 'followup-clickers',
+        description: 'Send personalized demos to email clickers',
+      });
 
       if (!dryRun) {
         // Find clickers who haven't received follow-up yet
@@ -13251,16 +13704,21 @@ app.all('/api/cron/night-loop', async (req, res) => {
           LIMIT 5
         `);
         results.hot_leads_found = clickers.length;
-        results.hot_leads_message = clickers.length > 0
-          ? `Found ${clickers.length} hot leads to follow up`
-          : 'All hot leads already followed up';
+        results.hot_leads_message =
+          clickers.length > 0
+            ? `Found ${clickers.length} hot leads to follow up`
+            : 'All hot leads already followed up';
       }
     }
 
     // Hour 23: Second Follow-Up (better offer to non-converters)
     if (hour === 23) {
       console.log('📧 23:00 - Running Second Follow-Up (1 month free offer)');
-      actions.push({ hour: 23, action: 'second-followup', description: 'Send "1 month free" to non-converters' });
+      actions.push({
+        hour: 23,
+        action: 'second-followup',
+        description: 'Send "1 month free" to non-converters',
+      });
 
       if (!dryRun) {
         const pending = await dbGet(`
@@ -13277,14 +13735,26 @@ app.all('/api/cron/night-loop', async (req, res) => {
     // Hour 0: Stats Collection & Demo Expiration Emails
     if (hour === 0) {
       console.log('📊 00:00 - Collecting nightly stats + Demo Expiration Emails');
-      actions.push({ hour: 0, action: 'stats-collection', description: 'Collect metrics for daily report' });
-      actions.push({ hour: 0, action: 'demo-expiration', description: 'Send urgency emails for expiring demos' });
+      actions.push({
+        hour: 0,
+        action: 'stats-collection',
+        description: 'Collect metrics for daily report',
+      });
+      actions.push({
+        hour: 0,
+        action: 'demo-expiration',
+        description: 'Send urgency emails for expiring demos',
+      });
 
       if (!dryRun) {
         const totalLeads = await dbGet(`SELECT COUNT(*) as count FROM outreach_leads`);
         const totalEmails = await dbGet(`SELECT COUNT(*) as count FROM outreach_emails`);
-        const totalClicks = await dbGet(`SELECT COUNT(DISTINCT email) as count FROM outreach_clicks`);
-        const conversions = await dbGet(`SELECT COUNT(*) as count FROM clicker_followups WHERE converted = TRUE`);
+        const totalClicks = await dbGet(
+          `SELECT COUNT(DISTINCT email) as count FROM outreach_clicks`
+        );
+        const conversions = await dbGet(
+          `SELECT COUNT(*) as count FROM clicker_followups WHERE converted = TRUE`
+        );
 
         results.nightly_stats = {
           total_leads: parseInt(totalLeads?.count || 0),
@@ -13296,10 +13766,14 @@ app.all('/api/cron/night-loop', async (req, res) => {
         // Call demo expiration endpoint internally
         try {
           const baseUrl = process.env.BACKEND_URL || 'https://review-responder.onrender.com';
-          const expirationResponse = await fetch(`${baseUrl}/api/cron/demo-expiration-emails?secret=${process.env.CRON_SECRET}`);
+          const expirationResponse = await fetch(
+            `${baseUrl}/api/cron/demo-expiration-emails?secret=${process.env.CRON_SECRET}`
+          );
           const expirationData = await expirationResponse.json();
           results.demo_expiration = expirationData;
-          console.log(`📆 Demo expiration: ${expirationData.day3_sent || 0} day-3, ${expirationData.day5_sent || 0} day-5, ${expirationData.demos_expired || 0} expired`);
+          console.log(
+            `📆 Demo expiration: ${expirationData.day3_sent || 0} day-3, ${expirationData.day5_sent || 0} day-5, ${expirationData.demos_expired || 0} expired`
+          );
         } catch (e) {
           console.error('Demo expiration call failed:', e.message);
           results.demo_expiration = { error: e.message };
@@ -13310,7 +13784,11 @@ app.all('/api/cron/night-loop', async (req, res) => {
     // Hour 1: Dead Lead Revival
     if (hour === 1) {
       console.log('💀 01:00 - Running Dead Lead Revival');
-      actions.push({ hour: 1, action: 'dead-lead-revival', description: 'Revive leads 7+ days without response' });
+      actions.push({
+        hour: 1,
+        action: 'dead-lead-revival',
+        description: 'Revive leads 7+ days without response',
+      });
 
       if (!dryRun) {
         // Find leads that were emailed 7+ days ago, never clicked, never got revival email
@@ -13333,8 +13811,16 @@ app.all('/api/cron/night-loop', async (req, res) => {
     // Hour 2: A/B Test Evaluation + Re-Engagement Magic Links
     if (hour === 2) {
       console.log('🔬 02:00 - Evaluating A/B Tests + Re-Engagement Magic Links');
-      actions.push({ hour: 2, action: 'ab-test-evaluate', description: 'Evaluate email subject/CTA tests' });
-      actions.push({ hour: 2, action: 'reengage-clickers', description: 'Send magic links to unregistered clickers' });
+      actions.push({
+        hour: 2,
+        action: 'ab-test-evaluate',
+        description: 'Evaluate email subject/CTA tests',
+      });
+      actions.push({
+        hour: 2,
+        action: 'reengage-clickers',
+        description: 'Send magic links to unregistered clickers',
+      });
 
       if (!dryRun) {
         const activeTests = await dbAll(`
@@ -13346,7 +13832,9 @@ app.all('/api/cron/night-loop', async (req, res) => {
         // Call re-engagement endpoint internally
         try {
           const baseUrl = process.env.BACKEND_URL || 'https://review-responder.onrender.com';
-          const reengageResponse = await fetch(`${baseUrl}/api/cron/reengage-clickers?secret=${process.env.CRON_SECRET}`);
+          const reengageResponse = await fetch(
+            `${baseUrl}/api/cron/reengage-clickers?secret=${process.env.CRON_SECRET}`
+          );
           const reengageData = await reengageResponse.json();
           results.reengagement = reengageData;
           console.log(`🔮 Re-engagement: ${reengageData.sent || 0} magic link emails sent`);
@@ -13385,7 +13873,10 @@ app.all('/api/cron/night-loop', async (req, res) => {
 // Added 14.01.2026: Part of night automation system
 app.all('/api/cron/revive-dead-leads', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -13399,7 +13890,9 @@ app.all('/api/cron/revive-dead-leads', async (req, res) => {
     // Ensure revival_sent column exists
     try {
       await dbQuery(`ALTER TABLE outreach_emails ADD COLUMN IF NOT EXISTS revival_sent TIMESTAMP`);
-    } catch (e) { /* Column might already exist */ }
+    } catch (e) {
+      /* Column might already exist */
+    }
 
     // Find leads: emailed 7+ days ago, no clicks, no revival sent
     const deadLeads = await dbAll(`
@@ -13446,7 +13939,23 @@ app.all('/api/cron/revive-dead-leads', async (req, res) => {
         const city = lead.city || '';
 
         // Detect German-speaking cities
-        const germanCities = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Munich', 'Cologne', 'Vienna', 'Zurich', 'Geneva'];
+        const germanCities = [
+          'München',
+          'Berlin',
+          'Hamburg',
+          'Frankfurt',
+          'Köln',
+          'Stuttgart',
+          'Düsseldorf',
+          'Wien',
+          'Zürich',
+          'Genf',
+          'Munich',
+          'Cologne',
+          'Vienna',
+          'Zurich',
+          'Geneva',
+        ];
         const isGerman = germanCities.some(c => city.toLowerCase().includes(c.toLowerCase()));
 
         let subject, body;
@@ -13484,7 +13993,10 @@ P.S. If not interested, just ignore this - I won't bug you again.`;
         // Send via Brevo or Resend
         if (brevoApi) {
           await brevoApi.sendTransacEmail({
-            sender: { name: 'Berend @ ReviewResponder', email: OUTREACH_FROM_EMAIL.replace(/.*<|>.*/g, '') },
+            sender: {
+              name: 'Berend @ ReviewResponder',
+              email: OUTREACH_FROM_EMAIL.replace(/.*<|>.*/g, ''),
+            },
             to: [{ email: lead.email }],
             subject: subject,
             textContent: body,
@@ -13501,10 +14013,9 @@ P.S. If not interested, just ignore this - I won't bug you again.`;
         }
 
         // Mark as revival sent
-        await dbQuery(
-          `UPDATE outreach_emails SET revival_sent = NOW() WHERE id = $1`,
-          [lead.email_id]
-        );
+        await dbQuery(`UPDATE outreach_emails SET revival_sent = NOW() WHERE id = $1`, [
+          lead.email_id,
+        ]);
 
         sent++;
         results.push({ email: lead.email, business: businessName });
@@ -13520,7 +14031,8 @@ P.S. If not interested, just ignore this - I won't bug you again.`;
       success: true,
       sent,
       leads_revived: results,
-      message: sent > 0 ? `Revived ${sent} dead leads with "Problem solved?" email` : 'No emails sent',
+      message:
+        sent > 0 ? `Revived ${sent} dead leads with "Problem solved?" email` : 'No emails sent',
     });
   } catch (error) {
     console.error('Dead lead revival error:', error);
@@ -13532,7 +14044,10 @@ P.S. If not interested, just ignore this - I won't bug you again.`;
 // Added 14.01.2026: Part of night automation system
 app.all('/api/cron/ab-test-evaluate', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -13567,8 +14082,8 @@ app.all('/api/cron/ab-test-evaluate', async (req, res) => {
     const evaluated = [];
 
     for (const test of testsToEvaluate || []) {
-      const ctrA = test.sends_a > 0 ? (test.clicks_a / test.sends_a * 100).toFixed(2) : 0;
-      const ctrB = test.sends_b > 0 ? (test.clicks_b / test.sends_b * 100).toFixed(2) : 0;
+      const ctrA = test.sends_a > 0 ? ((test.clicks_a / test.sends_a) * 100).toFixed(2) : 0;
+      const ctrB = test.sends_b > 0 ? ((test.clicks_b / test.sends_b) * 100).toFixed(2) : 0;
 
       // Winner is variant with higher CTR (need at least 20% relative difference to declare winner)
       let winner = null;
@@ -13579,10 +14094,10 @@ app.all('/api/cron/ab-test-evaluate', async (req, res) => {
       }
 
       if (winner) {
-        await dbQuery(
-          `UPDATE email_ab_tests SET winner = $1, ended_at = NOW() WHERE id = $2`,
-          [winner, test.id]
-        );
+        await dbQuery(`UPDATE email_ab_tests SET winner = $1, ended_at = NOW() WHERE id = $2`, [
+          winner,
+          test.id,
+        ]);
 
         evaluated.push({
           test_name: test.test_name,
@@ -13593,7 +14108,9 @@ app.all('/api/cron/ab-test-evaluate', async (req, res) => {
           ctr_b: `${ctrB}%`,
         });
 
-        console.log(`🏆 A/B Test Winner: ${test.test_name} - Variant ${winner} (${winner === 'A' ? ctrA : ctrB}% CTR)`);
+        console.log(
+          `🏆 A/B Test Winner: ${test.test_name} - Variant ${winner} (${winner === 'A' ? ctrA : ctrB}% CTR)`
+        );
       }
     }
 
@@ -13609,9 +14126,10 @@ app.all('/api/cron/ab-test-evaluate', async (req, res) => {
       evaluated: evaluated.length,
       winners: evaluated,
       active_tests: activeTests || [],
-      message: evaluated.length > 0
-        ? `Found ${evaluated.length} A/B test winner(s)`
-        : 'No tests ready for evaluation yet (need 50+ sends per variant)',
+      message:
+        evaluated.length > 0
+          ? `Found ${evaluated.length} A/B test winner(s)`
+          : 'No tests ready for evaluation yet (need 50+ sends per variant)',
     });
   } catch (error) {
     console.error('A/B test evaluation error:', error);
@@ -13630,7 +14148,9 @@ app.post('/api/admin/create-ab-test', async (req, res) => {
   const { test_name, test_type, variant_a, variant_b } = req.body;
 
   if (!test_name || !test_type || !variant_a || !variant_b) {
-    return res.status(400).json({ error: 'Missing required fields: test_name, test_type, variant_a, variant_b' });
+    return res
+      .status(400)
+      .json({ error: 'Missing required fields: test_name, test_type, variant_a, variant_b' });
   }
 
   try {
@@ -13701,7 +14221,10 @@ app.get('/api/admin/ab-tests', async (req, res) => {
 // Changed from POST to GET for cron-job.org compatibility (14.01.2026)
 app.get('/api/cron/enrich-g2-leads', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -13734,17 +14257,23 @@ app.get('/api/cron/enrich-g2-leads', async (req, res) => {
           }
 
           // Check similarity: found name should START with search name, or search name should be the first word
-          const isGoodMatch = foundName.startsWith(searchName) ||
-                            foundFirstWord === searchName ||
-                            searchName.startsWith(foundFirstWord);
+          const isGoodMatch =
+            foundName.startsWith(searchName) ||
+            foundFirstWord === searchName ||
+            searchName.startsWith(foundFirstWord);
 
           if (isGoodMatch) {
             const website = `https://${companies[0].domain}`;
-            await dbQuery('UPDATE outreach_leads SET website = $1 WHERE id = $2', [website, lead.id]);
+            await dbQuery('UPDATE outreach_leads SET website = $1 WHERE id = $2', [
+              website,
+              lead.id,
+            ]);
             console.log(`✅ Found domain for ${lead.business_name}: ${companies[0].domain}`);
             results.domains_found++;
           } else {
-            console.log(`⚠️ Skipping ${lead.business_name}: best match "${companies[0].name}" doesn't match well enough`);
+            console.log(
+              `⚠️ Skipping ${lead.business_name}: best match "${companies[0].name}" doesn't match well enough`
+            );
           }
         }
         await new Promise(r => setTimeout(r, 300));
@@ -13768,7 +14297,9 @@ app.get('/api/cron/enrich-g2-leads', async (req, res) => {
         if (scrapedEmail) {
           emailFound = scrapedEmail;
           await dbQuery('UPDATE outreach_leads SET email = $1, email_source = $2 WHERE id = $3', [
-            emailFound, 'website_scraper', lead.id
+            emailFound,
+            'website_scraper',
+            lead.id,
           ]);
           results.emails_found++;
           continue;
@@ -13778,7 +14309,10 @@ app.get('/api/cron/enrich-g2-leads', async (req, res) => {
       // Fallback to Hunter.io
       if (!emailFound && process.env.HUNTER_API_KEY) {
         try {
-          const domain = lead.website.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+          const domain = lead.website
+            .replace(/^https?:\/\//, '')
+            .replace(/^www\./, '')
+            .split('/')[0];
           const hunterUrl = `https://api.hunter.io/v2/domain-search?domain=${domain}&api_key=${process.env.HUNTER_API_KEY}`;
           const response = await fetch(hunterUrl);
           const data = await response.json();
@@ -13788,7 +14322,9 @@ app.get('/api/cron/enrich-g2-leads', async (req, res) => {
 
             // Try to match job title
             if (lead.job_title || lead.contact_name) {
-              const titleKeywords = (lead.job_title || lead.contact_name).toLowerCase().split(/\s+/);
+              const titleKeywords = (lead.job_title || lead.contact_name)
+                .toLowerCase()
+                .split(/\s+/);
               const matchingEmail = data.data.emails.find(e => {
                 const position = (e.position || '').toLowerCase();
                 return titleKeywords.some(kw => position.includes(kw));
@@ -13797,12 +14333,15 @@ app.get('/api/cron/enrich-g2-leads', async (req, res) => {
             }
 
             await dbQuery('UPDATE outreach_leads SET email = $1, email_source = $2 WHERE id = $3', [
-              bestEmail.value, 'hunter.io', lead.id
+              bestEmail.value,
+              'hunter.io',
+              lead.id,
             ]);
 
             if (bestEmail.first_name && bestEmail.last_name) {
               await dbQuery('UPDATE outreach_leads SET contact_name = $1 WHERE id = $2', [
-                `${bestEmail.first_name} ${bestEmail.last_name}`, lead.id
+                `${bestEmail.first_name} ${bestEmail.last_name}`,
+                lead.id,
               ]);
             }
             results.emails_found++;
@@ -13815,7 +14354,9 @@ app.get('/api/cron/enrich-g2-leads', async (req, res) => {
     res.json({ success: true, ...results });
   } catch (error) {
     console.error('Enrich G2 leads error:', error);
-    res.status(500).json({ error: 'Failed to enrich leads', details: error.message?.substring(0, 100) });
+    res
+      .status(500)
+      .json({ error: 'Failed to enrich leads', details: error.message?.substring(0, 100) });
   }
 });
 
@@ -13897,13 +14438,19 @@ async function initOutreachTables() {
 
     // Add review alert columns (for personalized outreach with AI-generated response drafts)
     await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS worst_review_text TEXT`);
-    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS worst_review_rating INTEGER`);
+    await dbQuery(
+      `ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS worst_review_rating INTEGER`
+    );
     await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS worst_review_author TEXT`);
     await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS ai_response_draft TEXT`);
-    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS has_bad_review BOOLEAN DEFAULT FALSE`);
+    await dbQuery(
+      `ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS has_bad_review BOOLEAN DEFAULT FALSE`
+    );
 
     // Add columns for scraped leads (G2, Yelp, TripAdvisor)
-    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS lead_type TEXT DEFAULT 'restaurant'`); // 'restaurant', 'g2_competitor', 'tripadvisor'
+    await dbQuery(
+      `ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS lead_type TEXT DEFAULT 'restaurant'`
+    ); // 'restaurant', 'g2_competitor', 'tripadvisor'
     await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS competitor_platform TEXT`); // 'birdeye', 'podium', etc.
     await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS pain_points TEXT[]`); // Array of pain points
     await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS platform_url TEXT`); // Original Yelp/G2/TripAdvisor URL
@@ -13941,7 +14488,9 @@ async function initOutreachTables() {
 
     // Add ab_test_variant column to outreach_emails to track which variant was sent
     await dbQuery(`ALTER TABLE outreach_emails ADD COLUMN IF NOT EXISTS ab_variant TEXT`);
-    await dbQuery(`ALTER TABLE outreach_emails ADD COLUMN IF NOT EXISTS provider TEXT DEFAULT 'resend'`);
+    await dbQuery(
+      `ALTER TABLE outreach_emails ADD COLUMN IF NOT EXISTS provider TEXT DEFAULT 'resend'`
+    );
 
     // Initialize default A/B test for sequence1 subject lines (only if not exists)
     await dbQuery(`
@@ -13967,8 +14516,12 @@ async function initOutreachTables() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    await dbQuery(`CREATE INDEX IF NOT EXISTS idx_sal_type_date ON sales_automation_log(action_type, created_at DESC)`);
-    await dbQuery(`CREATE INDEX IF NOT EXISTS idx_sal_category ON sales_automation_log(action_category)`);
+    await dbQuery(
+      `CREATE INDEX IF NOT EXISTS idx_sal_type_date ON sales_automation_log(action_type, created_at DESC)`
+    );
+    await dbQuery(
+      `CREATE INDEX IF NOT EXISTS idx_sal_category ON sales_automation_log(action_category)`
+    );
 
     console.log('✅ Outreach tables initialized');
   } catch (error) {
@@ -14070,9 +14623,10 @@ async function getSalesState() {
       this_week: {
         emails_sent: parseInt(weekEmails.rows[0]?.sent) || 0,
         emails_opened: parseInt(weekEmails.rows[0]?.opened) || 0,
-        open_rate: weekEmails.rows[0]?.sent > 0
-          ? ((weekEmails.rows[0]?.opened / weekEmails.rows[0]?.sent) * 100).toFixed(1) + '%'
-          : '0%',
+        open_rate:
+          weekEmails.rows[0]?.sent > 0
+            ? ((weekEmails.rows[0]?.opened / weekEmails.rows[0]?.sent) * 100).toFixed(1) + '%'
+            : '0%',
       },
       pending: {
         linkedin_connections: parseInt(pendingLinkedIn.rows[0]?.count) || 0,
@@ -14495,7 +15049,9 @@ function getTemplateForLead(sequenceNum, lead) {
     if (lead.demo_url) {
       return lang === 'de' ? EMAIL_TEMPLATES.review_alert_de : EMAIL_TEMPLATES.review_alert;
     } else {
-      return lang === 'de' ? EMAIL_TEMPLATES.review_alert_no_demo_de : EMAIL_TEMPLATES.review_alert_no_demo;
+      return lang === 'de'
+        ? EMAIL_TEMPLATES.review_alert_no_demo_de
+        : EMAIL_TEMPLATES.review_alert_no_demo;
     }
   }
 
@@ -14509,7 +15065,11 @@ async function getTemplateForLeadWithABTest(sequenceNum, lead) {
   const template = getTemplateForLead(sequenceNum, lead);
 
   // Only apply A/B testing to sequence 1 of default templates (not G2 or review_alert)
-  if (sequenceNum === 1 && !lead.lead_type?.startsWith('g2') && !(lead.has_bad_review && lead.ai_response_draft)) {
+  if (
+    sequenceNum === 1 &&
+    !lead.lead_type?.startsWith('g2') &&
+    !(lead.has_bad_review && lead.ai_response_draft)
+  ) {
     const { subject: abSubject, variant } = await getABTestSubject(lead, template.subject);
     return {
       ...template,
@@ -14544,7 +15104,10 @@ function getOwnerName(businessName) {
   // If ALL CAPS (like "BLOCK HOUSE") or contains hyphen (like "Augustiner-Keller"), use brand name + Team
   if (firstWord === firstWord.toUpperCase() && firstWord.length > 2) {
     // Take first two words if available for brand names
-    const brandName = words.slice(0, 2).join(' ').replace(/\s+(am|im|an|bei|in)\s+.*/i, '');
+    const brandName = words
+      .slice(0, 2)
+      .join(' ')
+      .replace(/\s+(am|im|an|bei|in)\s+.*/i, '');
     return `${brandName} Team`;
   }
 
@@ -14562,26 +15125,35 @@ function getOwnerName(businessName) {
 function getIndustryContext(businessType) {
   const contexts = {
     'accounting firm': 'CPA services, tax preparation, bookkeeping, financial accuracy',
-    'restaurant': 'food quality, dining experience, service, atmosphere',
-    'hotel': 'hospitality, guest comfort, cleanliness, amenities',
+    restaurant: 'food quality, dining experience, service, atmosphere',
+    hotel: 'hospitality, guest comfort, cleanliness, amenities',
     'dental office': 'dental care, patient comfort, oral health',
     'law firm': 'legal services, client representation, professionalism',
     'auto repair shop': 'vehicle repair, honest diagnostics, fair pricing',
     'hair salon': 'styling, customer satisfaction, personal care',
-    'gym': 'fitness, equipment, cleanliness, member experience',
+    gym: 'fitness, equipment, cleanliness, member experience',
     'real estate agency': 'property transactions, client service, local expertise',
     'medical clinic': 'patient care, health services, medical expertise',
     'retail store': 'product quality, customer service, shopping experience',
-    'spa': 'relaxation, wellness, treatment quality',
+    spa: 'relaxation, wellness, treatment quality',
     'veterinary clinic': 'pet care, animal health, compassionate service',
-    'physiotherapy': 'rehabilitation, patient recovery, therapeutic care',
+    physiotherapy: 'rehabilitation, patient recovery, therapeutic care',
   };
   return contexts[businessType?.toLowerCase()] || 'professional services, customer satisfaction';
 }
 
 // Helper: Generate AI response draft for a bad review (used in outreach emails)
 // ========== ANTHROPIC BEST PRACTICES 2025: Full XML Structure ==========
-async function generateReviewAlertDraft(businessName, businessType, reviewText, reviewRating, reviewAuthor, city = null, googleRating = null, totalReviews = null) {
+async function generateReviewAlertDraft(
+  businessName,
+  businessType,
+  reviewText,
+  reviewRating,
+  reviewAuthor,
+  city = null,
+  googleRating = null,
+  totalReviews = null
+) {
   try {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -14627,7 +15199,9 @@ Be warm and specific. Show empathy without being defensive.
 
 <avoid_patterns>
 <forbidden_phrases>
-${AI_SLOP_PHRASES.slice(0, 8).map(p => `- "${p}"`).join('\n')}
+${AI_SLOP_PHRASES.slice(0, 8)
+  .map(p => `- "${p}"`)
+  .join('\n')}
 </forbidden_phrases>
 
 <forbidden_words>
@@ -14715,7 +15289,9 @@ async function generateDemoForLead(lead) {
         console.log(`[1/3] Scraping website: ${websiteToScrape}...`);
         scrapedContext = await scrapeBusinessContext(websiteToScrape);
         if (scrapedContext.description) {
-          console.log(`✓ Website: Found description (${scrapedContext.description.slice(0, 40)}...)`);
+          console.log(
+            `✓ Website: Found description (${scrapedContext.description.slice(0, 40)}...)`
+          );
         }
       } catch (err) {
         console.log(`✗ Website scrape failed: ${err.message}`);
@@ -14738,7 +15314,8 @@ async function generateDemoForLead(lead) {
             const websiteContext = await scrapeBusinessContext(placeDetails.website);
             if (websiteContext.ownerName) scrapedContext.ownerName = websiteContext.ownerName;
             if (websiteContext.foundedYear) scrapedContext.foundedYear = websiteContext.foundedYear;
-            if (websiteContext.specialties?.length) scrapedContext.specialties = websiteContext.specialties;
+            if (websiteContext.specialties?.length)
+              scrapedContext.specialties = websiteContext.specialties;
           } catch {
             // Ignore website scrape errors
           }
@@ -14769,8 +15346,11 @@ async function generateDemoForLead(lead) {
     }
 
     // Log final context status
-    const contextFound = scrapedContext.description || scrapedContext.ownerName || scrapedContext.specialties?.length;
-    console.log(`Context result for ${lead.business_name}: ${contextFound ? '✓ Found' : '✗ None'} (desc: ${!!scrapedContext.description}, owner: ${!!scrapedContext.ownerName}, specialties: ${scrapedContext.specialties?.length || 0})`);
+    const contextFound =
+      scrapedContext.description || scrapedContext.ownerName || scrapedContext.specialties?.length;
+    console.log(
+      `Context result for ${lead.business_name}: ${contextFound ? '✓ Found' : '✗ None'} (desc: ${!!scrapedContext.description}, owner: ${!!scrapedContext.ownerName}, specialties: ${scrapedContext.specialties?.length || 0})`
+    );
 
     // === Generate auto instructions and context ===
     const autoInstructions = generateAutoInstructions(lead, scrapedContext);
@@ -14788,9 +15368,7 @@ async function generateDemoForLead(lead) {
 
     // If not enough negative reviews, fill with others
     if (targetReviews.length < 3) {
-      const remaining = allReviews
-        .filter(r => r.rating > 3)
-        .slice(0, 3 - targetReviews.length);
+      const remaining = allReviews.filter(r => r.rating > 3).slice(0, 3 - targetReviews.length);
       targetReviews.push(...remaining);
     }
 
@@ -14809,8 +15387,8 @@ async function generateDemoForLead(lead) {
         lead.city,
         googleRating,
         totalReviews,
-        autoContext,       // NEW: Pass auto-generated business context
-        autoInstructions   // NEW: Pass auto-generated custom instructions
+        autoContext, // NEW: Pass auto-generated business context
+        autoInstructions // NEW: Pass auto-generated custom instructions
       );
       demos.push({
         review: {
@@ -14892,18 +15470,32 @@ async function scrapeEmailFromWebsite(websiteUrl) {
 
     // Blacklist common non-business emails and tracking domains
     const blacklist = [
-      'example.com', 'email.com', 'domain.com', 'yoursite.com', 'website.com',
-      'sentry.io', 'wixpress.com', 'squarespace.com', 'mailchimp.com',
-      'googleapis.com', 'google.com', 'facebook.com', 'twitter.com',
-      'w3.org', 'schema.org', 'gravatar.com', 'wordpress.com'
+      'example.com',
+      'email.com',
+      'domain.com',
+      'yoursite.com',
+      'website.com',
+      'sentry.io',
+      'wixpress.com',
+      'squarespace.com',
+      'mailchimp.com',
+      'googleapis.com',
+      'google.com',
+      'facebook.com',
+      'twitter.com',
+      'w3.org',
+      'schema.org',
+      'gravatar.com',
+      'wordpress.com',
     ];
 
     for (const pageUrl of pagesToCheck) {
       try {
         const response = await fetch(pageUrl, {
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml',
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            Accept: 'text/html,application/xhtml+xml',
           },
           timeout: 8000,
         });
@@ -14928,18 +15520,44 @@ async function scrapeEmailFromWebsite(websiteUrl) {
         const validEmails = emails
           .map(e => e.toLowerCase())
           .filter(e => !blacklist.some(b => e.includes(b)))
-          .filter(e => !e.includes('png') && !e.includes('jpg') && !e.includes('gif') && !e.includes('.js') && !e.includes('.css'))
+          .filter(
+            e =>
+              !e.includes('png') &&
+              !e.includes('jpg') &&
+              !e.includes('gif') &&
+              !e.includes('.js') &&
+              !e.includes('.css')
+          )
           .filter(e => e.length < 60); // Filter overly long "emails"
 
         // NEUE PRIORISIERUNG: Personal emails first, generic as fallback
         // Generic prefixes (lower priority - these go to receptionists)
-        const genericPrefixes = ['contact', 'info', 'hello', 'support', 'team', 'sales', 'mail', 'office', 'reservations', 'booking', 'reservierung', 'service', 'anfrage', 'kontakt'];
+        const genericPrefixes = [
+          'contact',
+          'info',
+          'hello',
+          'support',
+          'team',
+          'sales',
+          'mail',
+          'office',
+          'reservations',
+          'booking',
+          'reservierung',
+          'service',
+          'anfrage',
+          'kontakt',
+        ];
 
         // Find personal email (NOT starting with generic prefix)
-        const personalEmail = validEmails.find(e => !genericPrefixes.some(p => e.startsWith(p + '@')));
+        const personalEmail = validEmails.find(
+          e => !genericPrefixes.some(p => e.startsWith(p + '@'))
+        );
 
         // Fallback to generic if no personal found
-        const genericEmail = validEmails.find(e => genericPrefixes.some(p => e.startsWith(p + '@')));
+        const genericEmail = validEmails.find(e =>
+          genericPrefixes.some(p => e.startsWith(p + '@'))
+        );
 
         if (personalEmail) {
           console.log(`📧 Found personal email: ${personalEmail} (preferred over generic)`);
@@ -15022,7 +15640,7 @@ async function generatePersonalEmails(domain, teamMembers) {
     .toLowerCase();
 
   // Helper: Convert German umlauts to ASCII
-  const normalizeUmlauts = (str) =>
+  const normalizeUmlauts = str =>
     str
       .toLowerCase()
       .replace(/ä/g, 'ae')
@@ -15032,7 +15650,7 @@ async function generatePersonalEmails(domain, teamMembers) {
       .replace(/[^a-z]/g, ''); // Remove any other special chars
 
   // Helper: Generate email patterns from a name
-  const generatePatterns = (fullName) => {
+  const generatePatterns = fullName => {
     const parts = fullName.trim().split(/\s+/);
     if (parts.length < 1) return [];
 
@@ -15056,7 +15674,7 @@ async function generatePersonalEmails(domain, teamMembers) {
   // Check if domain has MX records (can receive email)
   let hasMxRecords = false;
   try {
-    const dns = await import('dns').then((m) => m.promises);
+    const dns = await import('dns').then(m => m.promises);
     const mxRecords = await dns.resolveMx(cleanDomain);
     hasMxRecords = mxRecords && mxRecords.length > 0;
   } catch {
@@ -15117,7 +15735,7 @@ async function findEmailWithSnov(domain) {
     const searchResponse = await fetch('https://api.snov.io/v2/domain-emails-count', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${tokenData.access_token}`,
+        Authorization: `Bearer ${tokenData.access_token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ domain }),
@@ -15127,7 +15745,8 @@ async function findEmailWithSnov(domain) {
 
     if (searchData.data?.emails && searchData.data.emails.length > 0) {
       // Return first verified email
-      const verifiedEmail = searchData.data.emails.find(e => e.status === 'valid') || searchData.data.emails[0];
+      const verifiedEmail =
+        searchData.data.emails.find(e => e.status === 'valid') || searchData.data.emails[0];
       console.log(`📧 Snov.io found email for ${domain}: ${verifiedEmail.email}`);
       return verifiedEmail.email;
     }
@@ -15189,7 +15808,9 @@ async function scrapeBusinessContext(websiteUrl) {
 
         // Extract meta description as fallback
         if (!result.description) {
-          const metaMatch = html.match(/<meta\s+name=["']description["']\s+content=["']([^"']{20,300})["']/i);
+          const metaMatch = html.match(
+            /<meta\s+name=["']description["']\s+content=["']([^"']{20,300})["']/i
+          );
           if (metaMatch) {
             result.description = metaMatch[1].trim();
           }
@@ -15227,15 +15848,46 @@ async function scrapeBusinessContext(websiteUrl) {
         // Blacklist: Words that look like names but aren't (single-word matches)
         // MOVED UP: Now used for both ownerPatterns AND teamMembers
         const nameBlacklist = [
-          'manager', 'director', 'owner', 'founder', 'chef', 'team', 'about', 'lead',
-          'agent', 'design', 'marketing', 'operations', 'customer', 'integration',
-          'president', 'executive', 'officer', 'head', 'specialist', 'coordinator',
-          'the', 'and', 'for', 'with', 'from', 'into', 'what', 'how', 'our', 'your',
-          'across', 'between', 'through', 'within', 'directly', 'immediately',
+          'manager',
+          'director',
+          'owner',
+          'founder',
+          'chef',
+          'team',
+          'about',
+          'lead',
+          'agent',
+          'design',
+          'marketing',
+          'operations',
+          'customer',
+          'integration',
+          'president',
+          'executive',
+          'officer',
+          'head',
+          'specialist',
+          'coordinator',
+          'the',
+          'and',
+          'for',
+          'with',
+          'from',
+          'into',
+          'what',
+          'how',
+          'our',
+          'your',
+          'across',
+          'between',
+          'through',
+          'within',
+          'directly',
+          'immediately',
         ];
 
         // Helper: Validate if a string is likely a real person name
-        const isValidPersonName = (name) => {
+        const isValidPersonName = name => {
           if (!name) return false;
           const words = name.trim().split(/\s+/);
           // Must have at least 2 words (first + last name)
@@ -15243,12 +15895,12 @@ async function scrapeBusinessContext(websiteUrl) {
           // First word must start with capital letter
           if (!/^[A-ZÄÖÜ]/.test(words[0])) return false;
           // No blacklisted words
-          if (words.some((w) => nameBlacklist.includes(w.toLowerCase()))) return false;
+          if (words.some(w => nameBlacklist.includes(w.toLowerCase()))) return false;
           // No all-lowercase words (except common German particles like "von", "de")
           const allowedLower = ['von', 'van', 'de', 'la', 'le', 'du', 'der', 'den'];
-          if (words.some((w) => /^[a-z]+$/.test(w) && !allowedLower.includes(w))) return false;
+          if (words.some(w => /^[a-z]+$/.test(w) && !allowedLower.includes(w))) return false;
           // Reasonable length per word
-          if (words.some((w) => w.length < 2 || w.length > 20)) return false;
+          if (words.some(w => w.length < 2 || w.length > 20)) return false;
           return true;
         };
 
@@ -15272,9 +15924,20 @@ async function scrapeBusinessContext(websiteUrl) {
         // NEU: Extract team members with roles for personal email generation
         // Priority roles for review management (in order of importance)
         const priorityRoles = [
-          'owner', 'founder', 'ceo', 'geschäftsführer', 'inhaber', 'chef',
-          'marketing', 'customer success', 'customer experience', 'customer service',
-          'manager', 'general manager', 'operations', 'director',
+          'owner',
+          'founder',
+          'ceo',
+          'geschäftsführer',
+          'inhaber',
+          'chef',
+          'marketing',
+          'customer success',
+          'customer experience',
+          'customer service',
+          'manager',
+          'general manager',
+          'operations',
+          'director',
         ];
 
         // Pattern 1: "Role: Name" or "Name, Role" format - STRICTER
@@ -15300,7 +15963,7 @@ async function scrapeBusinessContext(websiteUrl) {
                 }
               }
               // Avoid duplicates
-              if (!result.teamMembers.some((m) => m.name === name)) {
+              if (!result.teamMembers.some(m => m.name === name)) {
                 result.teamMembers.push({ name, role });
               }
             }
@@ -15309,7 +15972,8 @@ async function scrapeBusinessContext(websiteUrl) {
 
         // Pattern 2: Team member cards (common HTML structure)
         // <div class="team-member"><h3>Max Müller</h3><p>Owner</p></div>
-        const teamCardPattern = /<(?:div|article)[^>]*class=["'][^"']*(?:team|staff|member|employee)[^"']*["'][^>]*>[\s\S]*?<(?:h[2-4]|strong|span)[^>]*>([A-Z][a-zäöüß]+(?:\s+[A-Z][a-zäöüß]+){1,2})<\/(?:h[2-4]|strong|span)>[\s\S]*?<(?:p|span|div)[^>]*>([^<]{3,50})<\/(?:p|span|div)>/gi;
+        const teamCardPattern =
+          /<(?:div|article)[^>]*class=["'][^"']*(?:team|staff|member|employee)[^"']*["'][^>]*>[\s\S]*?<(?:h[2-4]|strong|span)[^>]*>([A-Z][a-zäöüß]+(?:\s+[A-Z][a-zäöüß]+){1,2})<\/(?:h[2-4]|strong|span)>[\s\S]*?<(?:p|span|div)[^>]*>([^<]{3,50})<\/(?:p|span|div)>/gi;
         let cardMatch;
         while ((cardMatch = teamCardPattern.exec(html)) !== null) {
           const name = cardMatch[1]?.trim();
@@ -15322,14 +15986,16 @@ async function scrapeBusinessContext(websiteUrl) {
                 break;
               }
             }
-            if (!result.teamMembers.some((m) => m.name === name)) {
+            if (!result.teamMembers.some(m => m.name === name)) {
               result.teamMembers.push({ name, role });
             }
           }
         }
 
         // Pattern 3: JSON-LD structured data (most reliable)
-        const jsonLdMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+        const jsonLdMatch = html.match(
+          /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
+        );
         if (jsonLdMatch) {
           for (const ldScript of jsonLdMatch) {
             try {
@@ -15340,7 +16006,7 @@ async function scrapeBusinessContext(websiteUrl) {
               for (const item of persons) {
                 if (item['@type'] === 'Person' && item.name) {
                   const role = item.jobTitle?.toLowerCase() || 'unknown';
-                  if (!result.teamMembers.some((m) => m.name === item.name)) {
+                  if (!result.teamMembers.some(m => m.name === item.name)) {
                     result.teamMembers.push({ name: item.name, role });
                   }
                 }
@@ -15349,7 +16015,7 @@ async function scrapeBusinessContext(websiteUrl) {
                   for (const emp of item.employee) {
                     if (emp.name) {
                       const role = emp.jobTitle?.toLowerCase() || 'unknown';
-                      if (!result.teamMembers.some((m) => m.name === emp.name)) {
+                      if (!result.teamMembers.some(m => m.name === emp.name)) {
                         result.teamMembers.push({ name: emp.name, role });
                       }
                     }
@@ -15369,8 +16035,8 @@ async function scrapeBusinessContext(websiteUrl) {
 
         // Sort team members by role priority
         result.teamMembers.sort((a, b) => {
-          const aIdx = priorityRoles.findIndex((r) => a.role.includes(r));
-          const bIdx = priorityRoles.findIndex((r) => b.role.includes(r));
+          const aIdx = priorityRoles.findIndex(r => a.role.includes(r));
+          const bIdx = priorityRoles.findIndex(r => b.role.includes(r));
           return (aIdx === -1 ? 999 : aIdx) - (bIdx === -1 ? 999 : bIdx);
         });
 
@@ -15379,9 +16045,12 @@ async function scrapeBusinessContext(websiteUrl) {
         if (listMatches && listMatches.length >= 3) {
           const items = listMatches
             .slice(0, 10)
-            .map((m) => m.replace(/<[^>]+>/g, '').trim())
-            .filter((item) => item.length > 3 && item.length < 50)
-            .filter((item) => !item.toLowerCase().includes('privacy') && !item.toLowerCase().includes('cookie'));
+            .map(m => m.replace(/<[^>]+>/g, '').trim())
+            .filter(item => item.length > 3 && item.length < 50)
+            .filter(
+              item =>
+                !item.toLowerCase().includes('privacy') && !item.toLowerCase().includes('cookie')
+            );
           if (items.length >= 3) {
             result.specialties = items.slice(0, 5);
           }
@@ -15392,7 +16061,7 @@ async function scrapeBusinessContext(websiteUrl) {
           break;
         }
 
-        await new Promise((r) => setTimeout(r, 200));
+        await new Promise(r => setTimeout(r, 200));
       } catch {
         continue;
       }
@@ -15431,8 +16100,22 @@ function extractMentionedItems(reviews) {
         const item = match[1]?.trim();
         // Filter out generic words
         const genericWords = [
-          'food', 'service', 'staff', 'place', 'restaurant', 'hotel', 'experience',
-          'it', 'they', 'them', 'this', 'that', 'everything', 'all', 'we', 'i',
+          'food',
+          'service',
+          'staff',
+          'place',
+          'restaurant',
+          'hotel',
+          'experience',
+          'it',
+          'they',
+          'them',
+          'this',
+          'that',
+          'everything',
+          'all',
+          'we',
+          'i',
         ];
         if (item && item.length > 2 && item.length < 30 && !genericWords.includes(item)) {
           mentions[item] = (mentions[item] || 0) + 1;
@@ -15461,7 +16144,9 @@ function generateAutoInstructions(lead, scrapedContext) {
 
   // 2. Business Specialties (from website or reviews)
   if (scrapedContext.specialties?.length > 0) {
-    instructions.push(`When relevant, mention these specialties: ${scrapedContext.specialties.slice(0, 3).join(', ')}`);
+    instructions.push(
+      `When relevant, mention these specialties: ${scrapedContext.specialties.slice(0, 3).join(', ')}`
+    );
   }
 
   // 3. Founded Year (adds authenticity)
@@ -15479,7 +16164,7 @@ function generateAutoInstructions(lead, scrapedContext) {
 
   // 5. Regional touch for certain cities
   const localCities = ['Munich', 'München', 'Berlin', 'Vienna', 'Wien', 'Zurich', 'Zürich'];
-  if (lead.city && localCities.some((c) => lead.city.toLowerCase().includes(c.toLowerCase()))) {
+  if (lead.city && localCities.some(c => lead.city.toLowerCase().includes(c.toLowerCase()))) {
     instructions.push(`Add subtle local ${lead.city} flair when natural`);
   }
 
@@ -15496,7 +16181,7 @@ function generateAutoContext(lead, scrapedContext, reviews) {
   }
 
   // 2. Popular items from positive reviews
-  const positiveReviews = reviews?.filter((r) => r.rating >= 4) || [];
+  const positiveReviews = reviews?.filter(r => r.rating >= 4) || [];
   const mentionedItems = extractMentionedItems(positiveReviews);
   if (mentionedItems.length > 0) {
     contextParts.push(`Popular with customers: ${mentionedItems.join(', ')}`);
@@ -15538,15 +16223,23 @@ async function findEmailForLead(lead) {
     try {
       const businessContext = await scrapeBusinessContext(lead.website);
       if (businessContext.teamMembers && businessContext.teamMembers.length > 0) {
-        console.log(`👥 Found ${businessContext.teamMembers.length} team members:`, businessContext.teamMembers.slice(0, 3));
+        console.log(
+          `👥 Found ${businessContext.teamMembers.length} team members:`,
+          businessContext.teamMembers.slice(0, 3)
+        );
 
-        const personalResult = await generatePersonalEmails(lead.website, businessContext.teamMembers);
+        const personalResult = await generatePersonalEmails(
+          lead.website,
+          businessContext.teamMembers
+        );
         if (personalResult?.email) {
           // Update lead with contact info
           if (personalResult.contactName) {
             lead.contact_name = personalResult.contactName;
           }
-          console.log(`✅ Personal email generated: ${personalResult.email} for ${personalResult.contactName} (${personalResult.role})`);
+          console.log(
+            `✅ Personal email generated: ${personalResult.email} for ${personalResult.contactName} (${personalResult.role})`
+          );
           return {
             email: personalResult.email,
             source: 'personal_generated',
@@ -15631,9 +16324,10 @@ async function findEmailForLead(lead) {
 
 // Helper: Wrap URLs with click tracking
 function wrapUrlWithTracking(url, email, campaign) {
-  const baseUrl = process.env.NODE_ENV === 'production'
-    ? 'https://review-responder.onrender.com'
-    : 'http://localhost:3001';
+  const baseUrl =
+    process.env.NODE_ENV === 'production'
+      ? 'https://review-responder.onrender.com'
+      : 'http://localhost:3001';
 
   // Add UTM parameters to the target URL if it's our domain
   let targetUrl = url;
@@ -15650,7 +16344,7 @@ function addClickTracking(text, email, campaign) {
   // Match URLs starting with http:// or https://
   const urlRegex = /(https?:\/\/[^\s<>"']+)/g;
 
-  return text.replace(urlRegex, (url) => {
+  return text.replace(urlRegex, url => {
     // Don't track our own tracking URLs (avoid double-wrapping)
     if (url.includes('/api/outreach/track-')) {
       return url;
@@ -15665,9 +16359,9 @@ function fillEmailTemplate(template, lead, campaign = 'main') {
 
   // Truncate review text to ~150 chars for email readability
   const reviewTextTruncated = lead.worst_review_text
-    ? (lead.worst_review_text.length > 150
-        ? lead.worst_review_text.substring(0, 147) + '...'
-        : lead.worst_review_text)
+    ? lead.worst_review_text.length > 150
+      ? lead.worst_review_text.substring(0, 147) + '...'
+      : lead.worst_review_text
     : '';
 
   // G2 competitor specific: format competitor platform name
@@ -15680,9 +16374,9 @@ function fillEmailTemplate(template, lead, campaign = 'main') {
 
   // G2 competitor specific: review quote (truncated)
   const reviewQuote = lead.review_quote
-    ? (lead.review_quote.length > 120
-        ? lead.review_quote.substring(0, 117) + '...'
-        : lead.review_quote)
+    ? lead.review_quote.length > 120
+      ? lead.review_quote.substring(0, 117) + '...'
+      : lead.review_quote
     : '';
 
   const replacements = {
@@ -15717,9 +16411,10 @@ function fillEmailTemplate(template, lead, campaign = 'main') {
 
   // Add open tracking pixel (invisible 1x1 gif at the end)
   if (lead.email) {
-    const baseUrl = process.env.NODE_ENV === 'production'
-      ? 'https://review-responder.onrender.com'
-      : 'http://localhost:3001';
+    const baseUrl =
+      process.env.NODE_ENV === 'production'
+        ? 'https://review-responder.onrender.com'
+        : 'http://localhost:3001';
     const trackingPixel = `<img src="${baseUrl}/api/outreach/track-open?email=${encodeURIComponent(lead.email)}&campaign=${encodeURIComponent(campaign)}" width="1" height="1" style="display:none" alt="" />`;
     body = body + '\n\n' + trackingPixel;
   }
@@ -15968,7 +16663,9 @@ app.post('/api/outreach/test-email', async (req, res) => {
 
   // Check if ANY email provider is available
   if (!resend && !brevoApi) {
-    return res.status(500).json({ error: 'No email provider configured (need RESEND_API_KEY or BREVO_API_KEY)' });
+    return res
+      .status(500)
+      .json({ error: 'No email provider configured (need RESEND_API_KEY or BREVO_API_KEY)' });
   }
 
   const { email, business_name, city } = req.body;
@@ -16113,16 +16810,19 @@ app.get('/api/admin/email-logs', async (req, res) => {
 
   try {
     const limit = parseInt(req.query.limit) || 20;
-    const result = await dbQuery(`
+    const result = await dbQuery(
+      `
       SELECT id, to_email, subject, type, campaign, provider, status, error, message_id, sent_at
       FROM email_logs
       ORDER BY sent_at DESC
       LIMIT $1
-    `, [limit]);
+    `,
+      [limit]
+    );
 
     res.json({
       total: result.rows.length,
-      emails: result.rows
+      emails: result.rows,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -16197,7 +16897,7 @@ app.get('/api/admin/api-costs', async (req, res) => {
       thisMonth: thisMonth.rows,
       trend: trend.rows,
       recentErrors: errors.rows,
-      pricing: API_PRICING
+      pricing: API_PRICING,
     });
   } catch (err) {
     console.error('[api-costs] Error:', err);
@@ -16227,12 +16927,13 @@ app.get('/api/admin/api-credits', async (req, res) => {
     // 1. SerpAPI - Check via API (free call)
     if (process.env.SERPAPI_KEY) {
       try {
-        const serpRes = await fetch(`https://serpapi.com/account.json?api_key=${process.env.SERPAPI_KEY}`);
+        const serpRes = await fetch(
+          `https://serpapi.com/account.json?api_key=${process.env.SERPAPI_KEY}`
+        );
         const serpData = await serpRes.json();
         const used = serpData.this_month_usage || 0;
-        const limit = serpData.plan_searches_left !== undefined
-          ? used + serpData.plan_searches_left
-          : 250; // Free tier default
+        const limit =
+          serpData.plan_searches_left !== undefined ? used + serpData.plan_searches_left : 250; // Free tier default
         credits.push({
           name: 'SerpAPI',
           used,
@@ -16251,7 +16952,9 @@ app.get('/api/admin/api-credits', async (req, res) => {
     // 2. Hunter.io - Check via API (free call)
     if (process.env.HUNTER_API_KEY) {
       try {
-        const hunterRes = await fetch(`https://api.hunter.io/v2/account?api_key=${process.env.HUNTER_API_KEY}`);
+        const hunterRes = await fetch(
+          `https://api.hunter.io/v2/account?api_key=${process.env.HUNTER_API_KEY}`
+        );
         const hunterData = await hunterRes.json();
         const requests = hunterData.data?.requests;
         if (requests?.credits) {
@@ -16291,7 +16994,7 @@ app.get('/api/admin/api-credits', async (req, res) => {
 
         if (tokenData.access_token) {
           const balanceRes = await fetch('https://api.snov.io/v1/get-balance', {
-            headers: { 'Authorization': `Bearer ${tokenData.access_token}` },
+            headers: { Authorization: `Bearer ${tokenData.access_token}` },
           });
           const balanceData = await balanceRes.json();
 
@@ -16484,8 +17187,11 @@ app.get('/api/admin/pipeline-health', async (req, res) => {
 
     // Overall health
     const statuses = [leadQueueStatus, leadEmailStatus, demoStatus, emailStatus];
-    const overallHealth = statuses.includes('critical') ? 'critical'
-      : statuses.includes('warning') ? 'warning' : 'ok';
+    const overallHealth = statuses.includes('critical')
+      ? 'critical'
+      : statuses.includes('warning')
+        ? 'warning'
+        : 'ok';
 
     res.json({
       leads: {
@@ -16522,16 +17228,24 @@ app.get('/api/admin/pipeline-health', async (req, res) => {
         signups: parseInt(funnel.signups_from_outreach) || 0,
         paid: parseInt(funnel.paid_from_outreach) || 0,
         // Conversion rates
-        emailFindRate: funnel.leads_total > 0
-          ? Math.round((funnel.leads_with_email / funnel.leads_total) * 100) : 0,
-        contactRate: funnel.leads_with_email > 0
-          ? Math.round((funnel.leads_contacted / funnel.leads_with_email) * 100) : 0,
-        clickRate: funnel.leads_contacted > 0
-          ? Math.round((funnel.clicks / funnel.leads_contacted) * 100) : 0,
-        signupRate: funnel.clicks > 0
-          ? Math.round((funnel.signups_from_outreach / funnel.clicks) * 100) : 0,
-        paidRate: funnel.signups_from_outreach > 0
-          ? Math.round((funnel.paid_from_outreach / funnel.signups_from_outreach) * 100) : 0,
+        emailFindRate:
+          funnel.leads_total > 0
+            ? Math.round((funnel.leads_with_email / funnel.leads_total) * 100)
+            : 0,
+        contactRate:
+          funnel.leads_with_email > 0
+            ? Math.round((funnel.leads_contacted / funnel.leads_with_email) * 100)
+            : 0,
+        clickRate:
+          funnel.leads_contacted > 0
+            ? Math.round((funnel.clicks / funnel.leads_contacted) * 100)
+            : 0,
+        signupRate:
+          funnel.clicks > 0 ? Math.round((funnel.signups_from_outreach / funnel.clicks) * 100) : 0,
+        paidRate:
+          funnel.signups_from_outreach > 0
+            ? Math.round((funnel.paid_from_outreach / funnel.signups_from_outreach) * 100)
+            : 0,
       },
       health: {
         overall: overallHealth,
@@ -16587,14 +17301,20 @@ app.get('/api/admin/ai-health', async (req, res) => {
 
     // 4. Last generation age
     const lastGenAge = generations.last_generation
-      ? Math.floor((Date.now() - new Date(generations.last_generation).getTime()) / (1000 * 60 * 60))
+      ? Math.floor(
+          (Date.now() - new Date(generations.last_generation).getTime()) / (1000 * 60 * 60)
+        )
       : 999;
 
     // 5. Health status
     const genStatus = lastGenAge > 48 ? 'critical' : lastGenAge > 24 ? 'warning' : 'ok';
     const errorStatus = errorRate > 20 ? 'critical' : errorRate > 10 ? 'warning' : 'ok';
-    const overallHealth = genStatus === 'critical' || errorStatus === 'critical' ? 'critical'
-      : genStatus === 'warning' || errorStatus === 'warning' ? 'warning' : 'ok';
+    const overallHealth =
+      genStatus === 'critical' || errorStatus === 'critical'
+        ? 'critical'
+        : genStatus === 'warning' || errorStatus === 'warning'
+          ? 'warning'
+          : 'ok';
 
     res.json({
       generations: {
@@ -16676,8 +17396,11 @@ app.get('/api/admin/payment-health', async (req, res) => {
       ? Math.floor((Date.now() - new Date(subs.last_paid_signup).getTime()) / (1000 * 60 * 60 * 24))
       : 999;
 
-    const paymentStatus = !stripeConfigured ? 'critical'
-      : (parseInt(payments.failed) > parseInt(payments.successful)) ? 'warning' : 'ok';
+    const paymentStatus = !stripeConfigured
+      ? 'critical'
+      : parseInt(payments.failed) > parseInt(payments.successful)
+        ? 'warning'
+        : 'ok';
 
     res.json({
       subscriptions: {
@@ -16768,8 +17491,14 @@ app.get('/api/admin/user-activity', async (req, res) => {
     const retention = retentionResult.rows[0] || {};
 
     // 5. Calculate health
-    const dauStatus = parseInt(activity.dau) > 5 ? 'ok' : parseInt(activity.dau) > 0 ? 'warning' : 'critical';
-    const responsesStatus = parseInt(responses.today) > 10 ? 'ok' : parseInt(responses.today) > 0 ? 'warning' : 'critical';
+    const dauStatus =
+      parseInt(activity.dau) > 5 ? 'ok' : parseInt(activity.dau) > 0 ? 'warning' : 'critical';
+    const responsesStatus =
+      parseInt(responses.today) > 10
+        ? 'ok'
+        : parseInt(responses.today) > 0
+          ? 'warning'
+          : 'critical';
 
     res.json({
       activeUsers: {
@@ -16794,8 +17523,12 @@ app.get('/api/admin/user-activity', async (req, res) => {
         returningUsersWeek: parseInt(retention.returning_users_week) || 0,
       },
       health: {
-        overall: dauStatus === 'critical' || responsesStatus === 'critical' ? 'critical'
-          : dauStatus === 'warning' || responsesStatus === 'warning' ? 'warning' : 'ok',
+        overall:
+          dauStatus === 'critical' || responsesStatus === 'critical'
+            ? 'critical'
+            : dauStatus === 'warning' || responsesStatus === 'warning'
+              ? 'warning'
+              : 'ok',
         activeUsers: dauStatus,
         responses: responsesStatus,
       },
@@ -16870,7 +17603,7 @@ app.get('/api/admin/usage-analytics', async (req, res) => {
       distribution: distribution.rows,
       stats: stats.rows[0] || {},
       exitSurveys: exitSurveys.rows,
-      limitHitUsers: limitHitUsers.rows
+      limitHitUsers: limitHitUsers.rows,
     });
   } catch (err) {
     console.error('[usage-analytics] Error:', err);
@@ -17134,7 +17867,15 @@ app.post('/api/outreach/send-emails', async (req, res) => {
           (lead_id, email, sequence_number, subject, body, status, sent_at, campaign, ab_variant, provider)
           VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5, $6, $7)
         `,
-          [lead.id, lead.email, template.subject, template.body, campaign, templateWithAB.abVariant, result.provider || 'resend']
+          [
+            lead.id,
+            lead.email,
+            template.subject,
+            template.body,
+            campaign,
+            templateWithAB.abVariant,
+            result.provider || 'resend',
+          ]
         );
 
         // Update lead status
@@ -17200,7 +17941,7 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
       added: 0,
       skipped: 0,
       emails_sent: 0,
-      errors: []
+      errors: [],
     };
 
     for (const lead of leads) {
@@ -17212,10 +17953,12 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
         }
 
         // Check if lead has a bad review (for Review Alert emails)
-        const hasBadReview = lead.worst_review_text && lead.worst_review_rating && lead.worst_review_rating <= 2;
+        const hasBadReview =
+          lead.worst_review_text && lead.worst_review_rating && lead.worst_review_rating <= 2;
 
         // Insert or update lead (including review alert fields)
-        await dbQuery(`
+        await dbQuery(
+          `
           INSERT INTO outreach_leads
             (business_name, business_type, address, city, country, phone, website,
              google_rating, google_reviews_count, email, source, status,
@@ -17232,24 +17975,26 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
             worst_review_rating = COALESCE(EXCLUDED.worst_review_rating, outreach_leads.worst_review_rating),
             worst_review_author = COALESCE(EXCLUDED.worst_review_author, outreach_leads.worst_review_author),
             has_bad_review = COALESCE(EXCLUDED.has_bad_review, outreach_leads.has_bad_review)
-        `, [
-          lead.name || lead.business_name,
-          lead.type || lead.business_type || 'restaurant',
-          lead.address,
-          lead.city,
-          lead.country || 'US',
-          lead.phone,
-          lead.website || lead.tripadvisor_url,
-          lead.rating || lead.google_rating,
-          lead.reviews || lead.google_reviews_count,
-          lead.email,
-          'tripadvisor',
-          'new',
-          lead.worst_review_text || null,
-          lead.worst_review_rating || null,
-          lead.worst_review_author || null,
-          hasBadReview
-        ]);
+        `,
+          [
+            lead.name || lead.business_name,
+            lead.type || lead.business_type || 'restaurant',
+            lead.address,
+            lead.city,
+            lead.country || 'US',
+            lead.phone,
+            lead.website || lead.tripadvisor_url,
+            lead.rating || lead.google_rating,
+            lead.reviews || lead.google_reviews_count,
+            lead.email,
+            'tripadvisor',
+            'new',
+            lead.worst_review_text || null,
+            lead.worst_review_rating || null,
+            lead.worst_review_author || null,
+            hasBadReview,
+          ]
+        );
 
         results.added++;
 
@@ -17258,7 +18003,9 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
           // Generate AI draft for leads with bad reviews
           let aiDraft = lead.ai_response_draft || null;
           if (hasBadReview && lead.worst_review_text && !aiDraft) {
-            console.log(`📝 Generating AI draft for TripAdvisor lead: ${lead.name || lead.business_name}...`);
+            console.log(
+              `📝 Generating AI draft for TripAdvisor lead: ${lead.name || lead.business_name}...`
+            );
             aiDraft = await generateReviewAlertDraft(
               lead.name || lead.business_name,
               lead.type || lead.business_type || 'restaurant',
@@ -17281,7 +18028,7 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
             worst_review_text: lead.worst_review_text,
             worst_review_rating: lead.worst_review_rating,
             worst_review_author: lead.worst_review_author,
-            ai_response_draft: aiDraft
+            ai_response_draft: aiDraft,
           };
 
           const template = fillEmailTemplate(getTemplateForLead(1, leadData), leadData);
@@ -17295,8 +18042,8 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
               campaign: emailCampaign,
               tags: [
                 { name: 'source', value: 'tripadvisor' },
-                { name: 'sequence', value: '1' }
-              ]
+                { name: 'sequence', value: '1' },
+              ],
             });
             results.emails_sent++;
 
@@ -17308,16 +18055,32 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
             if (insertedLead) {
               // Save AI draft if generated
               if (aiDraft) {
-                await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1 WHERE id = $2', [aiDraft, insertedLead.id]);
+                await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1 WHERE id = $2', [
+                  aiDraft,
+                  insertedLead.id,
+                ]);
               }
 
-              await dbQuery(`
+              await dbQuery(
+                `
                 INSERT INTO outreach_emails
                   (lead_id, email, sequence_number, subject, body, status, sent_at, campaign, provider)
                 VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5, $6)
-              `, [insertedLead.id, lead.email, template.subject, template.body, emailCampaign, emailResult.provider || 'resend']);
+              `,
+                [
+                  insertedLead.id,
+                  lead.email,
+                  template.subject,
+                  template.body,
+                  emailCampaign,
+                  emailResult.provider || 'resend',
+                ]
+              );
 
-              await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', ['contacted', insertedLead.id]);
+              await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', [
+                'contacted',
+                insertedLead.id,
+              ]);
             }
           } catch (emailError) {
             results.errors.push(`Email failed for ${lead.name}: ${emailError.message}`);
@@ -17328,11 +18091,13 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
       }
     }
 
-    console.log(`TripAdvisor leads processed: ${results.added} added, ${results.skipped} skipped, ${results.emails_sent} emails sent`);
+    console.log(
+      `TripAdvisor leads processed: ${results.added} added, ${results.skipped} skipped, ${results.emails_sent} emails sent`
+    );
 
     res.json({
       success: true,
-      ...results
+      ...results,
     });
   } catch (error) {
     console.error('Add TripAdvisor leads error:', error);
@@ -17346,7 +18111,10 @@ app.post('/api/outreach/add-tripadvisor-leads', async (req, res) => {
 // ==========================================
 app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
   const cronSecret = req.query.secret || req.query.key;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -17372,7 +18140,7 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
     const results = {
       total: newLeads.length,
       emails_sent: 0,
-      errors: []
+      errors: [],
     };
 
     for (const lead of newLeads) {
@@ -17431,14 +18199,20 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
             );
             if (aiDraft) {
               lead.ai_response_draft = aiDraft;
-              await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1 WHERE id = $2', [aiDraft, lead.id]);
+              await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1 WHERE id = $2', [
+                aiDraft,
+                lead.id,
+              ]);
             }
           }
         }
 
         // Get template for first email (uses review alert template if has_bad_review)
         const template = fillEmailTemplate(getTemplateForLead(1, lead), lead);
-        const emailCampaign = lead.has_bad_review && lead.ai_response_draft ? 'tripadvisor-review-alert' : 'tripadvisor-auto';
+        const emailCampaign =
+          lead.has_bad_review && lead.ai_response_draft
+            ? 'tripadvisor-review-alert'
+            : 'tripadvisor-auto';
 
         // Send email with tracking pixel
         const emailResult = await sendOutreachEmail({
@@ -17448,36 +18222,50 @@ app.get('/api/cron/send-tripadvisor-emails', async (req, res) => {
           campaign: emailCampaign,
           tags: [
             { name: 'source', value: 'tripadvisor' },
-            { name: 'sequence', value: '1' }
-          ]
+            { name: 'sequence', value: '1' },
+          ],
         });
 
         // Update lead status
-        await dbQuery(`
+        await dbQuery(
+          `
           UPDATE outreach_leads
           SET status = 'contacted'
           WHERE id = $1
-        `, [lead.id]);
+        `,
+          [lead.id]
+        );
 
         // Log the email
-        await dbQuery(`
+        await dbQuery(
+          `
           INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign, provider)
           VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5, $6)
-        `, [lead.id, lead.email, template.subject, template.body, emailCampaign, emailResult.provider || 'resend']);
+        `,
+          [
+            lead.id,
+            lead.email,
+            template.subject,
+            template.body,
+            emailCampaign,
+            emailResult.provider || 'resend',
+          ]
+        );
 
         results.emails_sent++;
         console.log(`📧 TripAdvisor email sent to: ${lead.email} (${lead.business_name})`);
 
         // Small delay between emails
         await new Promise(resolve => setTimeout(resolve, 500));
-
       } catch (emailError) {
         results.errors.push(`Failed to email ${lead.business_name}: ${emailError.message}`);
         console.error(`Email error for ${lead.email}:`, emailError.message);
       }
     }
 
-    console.log(`✅ TripAdvisor first emails complete: ${results.emails_sent}/${results.total} emails sent`);
+    console.log(
+      `✅ TripAdvisor first emails complete: ${results.emails_sent}/${results.total} emails sent`
+    );
 
     // ==========================================
     // FOLLOW-UP EMAILS (4 days after first email)
@@ -17536,37 +18324,43 @@ Berend`;
             campaign: 'tripadvisor-followup',
             tags: [
               { name: 'source', value: 'tripadvisor' },
-              { name: 'sequence', value: '2' }
-            ]
+              { name: 'sequence', value: '2' },
+            ],
           });
 
           // Log the follow-up email
-          await dbQuery(`
+          await dbQuery(
+            `
             INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign, provider)
             VALUES ($1, $2, 2, $3, $4, 'sent', NOW(), 'tripadvisor-followup', 'resend')
-          `, [lead.id, lead.email, subject, followupBody]);
+          `,
+            [lead.id, lead.email, subject, followupBody]
+          );
 
           followupResults.sent++;
           console.log(`📧 TripAdvisor follow-up sent to: ${lead.email} (${lead.business_name})`);
 
           // Delay between emails
           await new Promise(resolve => setTimeout(resolve, 500));
-
         } catch (followupError) {
-          followupResults.errors.push(`Followup failed for ${lead.business_name}: ${followupError.message}`);
+          followupResults.errors.push(
+            `Followup failed for ${lead.business_name}: ${followupError.message}`
+          );
           console.error(`Follow-up error for ${lead.email}:`, followupError.message);
         }
       }
     }
 
-    console.log(`✅ TripAdvisor cron complete: ${results.emails_sent} first, ${followupResults.sent} followups`);
+    console.log(
+      `✅ TripAdvisor cron complete: ${results.emails_sent} first, ${followupResults.sent} followups`
+    );
 
     // Minimal response for cron-job.org (has size limit)
     res.json({
       ok: true,
       first: results.emails_sent,
       followup: followupResults.sent,
-      err: results.errors.length + followupResults.errors.length
+      err: results.errors.length + followupResults.errors.length,
     });
   } catch (error) {
     console.error('TripAdvisor cron error:', error);
@@ -17594,34 +18388,50 @@ app.post('/api/outreach/import-scraped-leads', async (req, res) => {
       imported: 0,
       skipped: 0,
       needs_enrichment: 0,
-      errors: []
+      errors: [],
     };
 
     for (const lead of leads) {
       try {
         // Parse Memory MCP format or direct format
-        const businessName = lead.business_name || lead.name ||
-          (lead.observations?.find(o => o.startsWith('business_name:'))?.split(': ')[1]);
-        const city = lead.city ||
-          (lead.observations?.find(o => o.startsWith('city:'))?.split(': ')[1]) || 'Unknown';
-        const source = lead.source ||
-          (lead.observations?.find(o => o.startsWith('source:'))?.split(': ')[1]) || 'scraped';
-        const email = lead.email ||
-          (lead.observations?.find(o => o.startsWith('email:'))?.split(': ')[1]);
-        const phone = lead.phone ||
-          (lead.observations?.find(o => o.startsWith('phone:'))?.split(': ')[1]);
-        const address = lead.address ||
-          (lead.observations?.find(o => o.startsWith('address:'))?.split(': ')[1]);
-        const businessType = lead.business_type ||
-          (lead.observations?.find(o => o.startsWith('business_type:'))?.split(': ')[1]) || 'business';
-        const rating = lead.rating ||
-          parseFloat(lead.observations?.find(o => o.startsWith('rating:'))?.split(': ')[1]) || null;
-        const reviewerName = lead.reviewer ||
-          (lead.observations?.find(o => o.startsWith('reviewer:'))?.split(': ')[1]);
-        const painPoints = lead.pain_points || lead.pain_point ||
-          lead.observations?.filter(o => o.startsWith('pain_point'))?.map(o => o.split(': ')[1])?.join('; ');
-        const competitor = lead.competitor ||
-          (lead.observations?.find(o => o.startsWith('competitor:'))?.split(': ')[1]);
+        const businessName =
+          lead.business_name ||
+          lead.name ||
+          lead.observations?.find(o => o.startsWith('business_name:'))?.split(': ')[1];
+        const city =
+          lead.city ||
+          lead.observations?.find(o => o.startsWith('city:'))?.split(': ')[1] ||
+          'Unknown';
+        const source =
+          lead.source ||
+          lead.observations?.find(o => o.startsWith('source:'))?.split(': ')[1] ||
+          'scraped';
+        const email =
+          lead.email || lead.observations?.find(o => o.startsWith('email:'))?.split(': ')[1];
+        const phone =
+          lead.phone || lead.observations?.find(o => o.startsWith('phone:'))?.split(': ')[1];
+        const address =
+          lead.address || lead.observations?.find(o => o.startsWith('address:'))?.split(': ')[1];
+        const businessType =
+          lead.business_type ||
+          lead.observations?.find(o => o.startsWith('business_type:'))?.split(': ')[1] ||
+          'business';
+        const rating =
+          lead.rating ||
+          parseFloat(lead.observations?.find(o => o.startsWith('rating:'))?.split(': ')[1]) ||
+          null;
+        const reviewerName =
+          lead.reviewer || lead.observations?.find(o => o.startsWith('reviewer:'))?.split(': ')[1];
+        const painPoints =
+          lead.pain_points ||
+          lead.pain_point ||
+          lead.observations
+            ?.filter(o => o.startsWith('pain_point'))
+            ?.map(o => o.split(': ')[1])
+            ?.join('; ');
+        const competitor =
+          lead.competitor ||
+          lead.observations?.find(o => o.startsWith('competitor:'))?.split(': ')[1];
 
         if (!businessName && !reviewerName) {
           results.skipped++;
@@ -17631,24 +18441,28 @@ app.post('/api/outreach/import-scraped-leads', async (req, res) => {
 
         // For G2/competitor leads (reviewer names without business), mark for LinkedIn enrichment
         if (reviewerName && !email && !businessName) {
-          await dbQuery(`
+          await dbQuery(
+            `
             INSERT INTO outreach_leads
               (business_name, contact_name, source, status, business_type, city)
             VALUES ($1, $2, $3, 'needs_enrichment', $4, $5)
             ON CONFLICT (business_name, city) DO NOTHING
-          `, [
-            `${competitor || 'Unknown'} - ${reviewerName}`,
-            reviewerName,
-            source,
-            `competitor_${competitor || 'unknown'}`,
-            city
-          ]);
+          `,
+            [
+              `${competitor || 'Unknown'} - ${reviewerName}`,
+              reviewerName,
+              source,
+              `competitor_${competitor || 'unknown'}`,
+              city,
+            ]
+          );
           results.needs_enrichment++;
           continue;
         }
 
         // Insert or update lead
-        await dbQuery(`
+        await dbQuery(
+          `
           INSERT INTO outreach_leads
             (business_name, business_type, address, city, phone, website,
              google_rating, email, source, status, contact_name)
@@ -17659,19 +18473,21 @@ app.post('/api/outreach/import-scraped-leads', async (req, res) => {
             phone = COALESCE(EXCLUDED.phone, outreach_leads.phone),
             contact_name = COALESCE(EXCLUDED.contact_name, outreach_leads.contact_name),
             google_rating = COALESCE(EXCLUDED.google_rating, outreach_leads.google_rating)
-        `, [
-          businessName || `${competitor} Lead - ${reviewerName}`,
-          businessType,
-          address,
-          city,
-          phone,
-          lead.website,
-          rating,
-          email,
-          source,
-          email ? 'new' : 'needs_enrichment',
-          reviewerName
-        ]);
+        `,
+          [
+            businessName || `${competitor} Lead - ${reviewerName}`,
+            businessType,
+            address,
+            city,
+            phone,
+            lead.website,
+            rating,
+            email,
+            source,
+            email ? 'new' : 'needs_enrichment',
+            reviewerName,
+          ]
+        );
 
         if (email) {
           results.imported++;
@@ -17686,7 +18502,7 @@ app.post('/api/outreach/import-scraped-leads', async (req, res) => {
     res.json({
       success: true,
       message: `Imported ${results.imported} leads, ${results.needs_enrichment} need LinkedIn enrichment`,
-      ...results
+      ...results,
     });
   } catch (error) {
     console.error('Import scraped leads error:', error);
@@ -17719,7 +18535,7 @@ app.post('/api/outreach/linkedin-enrich', async (req, res) => {
       return res.json({
         success: true,
         message: 'No leads need enrichment',
-        leads: []
+        leads: [],
       });
     }
 
@@ -17730,13 +18546,13 @@ app.post('/api/outreach/linkedin-enrich', async (req, res) => {
       name: lead.contact_name,
       business_type: lead.business_type,
       city: lead.city,
-      linkedin_search_url: `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(lead.contact_name)}&origin=GLOBAL_SEARCH_HEADER`
+      linkedin_search_url: `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(lead.contact_name)}&origin=GLOBAL_SEARCH_HEADER`,
     }));
 
     res.json({
       success: true,
       message: `${leadsToEnrich.length} leads need LinkedIn enrichment`,
-      leads: searchQueries
+      leads: searchQueries,
     });
   } catch (error) {
     console.error('LinkedIn enrich error:', error);
@@ -17758,18 +18574,21 @@ app.post('/api/outreach/linkedin-update', async (req, res) => {
   }
 
   try {
-    await dbQuery(`
+    await dbQuery(
+      `
       UPDATE outreach_leads
       SET email = COALESCE($1, email),
           website = COALESCE($2, website),
           business_name = COALESCE($3, business_name),
           status = CASE WHEN $1 IS NOT NULL THEN 'new' ELSE status END
       WHERE id = $4
-    `, [email, linkedin_url, company, lead_id]);
+    `,
+      [email, linkedin_url, company, lead_id]
+    );
 
     res.json({
       success: true,
-      message: email ? 'Lead updated with email - ready for outreach' : 'Lead updated'
+      message: email ? 'Lead updated with email - ready for outreach' : 'Lead updated',
     });
   } catch (error) {
     console.error('LinkedIn update error:', error);
@@ -17986,8 +18805,8 @@ app.get('/api/cron/generate-blog-article', async (req, res) => {
     const articleCount = parseInt(countResult.count) || 0;
 
     // Flatten topics with categories
-    const allTopics = AUTO_BLOG_TOPICS.flatMap((cat) =>
-      cat.topics.map((t) => ({ topic: t, category: cat.category }))
+    const allTopics = AUTO_BLOG_TOPICS.flatMap(cat =>
+      cat.topics.map(t => ({ topic: t, category: cat.category }))
     );
 
     // Rotate through topics
@@ -18091,26 +18910,29 @@ Lines 4+: The full article content in Markdown format (start directly with conte
     // Apply AI slop filter to clean up typical AI phrases
     const content = cleanAISlop(rawContent);
 
-    const wordCount = content.split(/\s+/).filter((w) => w.length > 0).length;
+    const wordCount = content.split(/\s+/).filter(w => w.length > 0).length;
     const readTimeMinutes = Math.ceil(wordCount / 200);
     const slug = generateSlug(title);
 
     // Add internal linking to related articles (SEO boost)
     let contentWithLinks = content;
     try {
-      const relatedArticles = await dbAll(`
+      const relatedArticles = await dbAll(
+        `
         SELECT title, slug FROM blog_articles
         WHERE is_published = TRUE
           AND category = $1
           AND slug IS NOT NULL
         ORDER BY published_at DESC
         LIMIT 3
-      `, [category]);
+      `,
+        [category]
+      );
 
       if (relatedArticles.length > 0) {
-        const relatedSection = `\n\n---\n\n## Related Articles\n\n${relatedArticles.map(a =>
-          `- [${a.title}](/blog/${a.slug})`
-        ).join('\n')}\n`;
+        const relatedSection = `\n\n---\n\n## Related Articles\n\n${relatedArticles
+          .map(a => `- [${a.title}](/blog/${a.slug})`)
+          .join('\n')}\n`;
         contentWithLinks = content + relatedSection;
       }
     } catch (linkError) {
@@ -18201,29 +19023,79 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
     // Step 1: Scrape new leads from multiple cities/industries
     const cities = [
       // US Cities (20)
-      'New York', 'Los Angeles', 'Chicago', 'Houston', 'Miami',
-      'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas',
-      'San Jose', 'Austin', 'Jacksonville', 'San Francisco', 'Seattle',
-      'Denver', 'Boston', 'Las Vegas', 'Portland', 'Atlanta',
+      'New York',
+      'Los Angeles',
+      'Chicago',
+      'Houston',
+      'Miami',
+      'Phoenix',
+      'Philadelphia',
+      'San Antonio',
+      'San Diego',
+      'Dallas',
+      'San Jose',
+      'Austin',
+      'Jacksonville',
+      'San Francisco',
+      'Seattle',
+      'Denver',
+      'Boston',
+      'Las Vegas',
+      'Portland',
+      'Atlanta',
       // UK & Ireland (2)
-      'London', 'Dublin',
+      'London',
+      'Dublin',
       // DACH Region (22)
-      'Berlin', 'München', 'Hamburg', 'Frankfurt', 'Köln',
-      'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf',
-      'Leipzig', 'Dresden', 'Hannover', 'Nürnberg', 'Bremen', 'Essen',
-      'Salzburg', 'Graz', 'Linz', 'Innsbruck',
-      'Basel', 'Bern',
+      'Berlin',
+      'München',
+      'Hamburg',
+      'Frankfurt',
+      'Köln',
+      'Stuttgart',
+      'Düsseldorf',
+      'Wien',
+      'Zürich',
+      'Genf',
+      'Leipzig',
+      'Dresden',
+      'Hannover',
+      'Nürnberg',
+      'Bremen',
+      'Essen',
+      'Salzburg',
+      'Graz',
+      'Linz',
+      'Innsbruck',
+      'Basel',
+      'Bern',
       // Benelux (2)
-      'Amsterdam', 'Brüssel'
+      'Amsterdam',
+      'Brüssel',
     ];
     const industries = [
-      'restaurant', 'hotel', 'dental office', 'law firm',
-      'auto repair shop', 'hair salon', 'gym', 'real estate agency',
-      'medical clinic', 'retail store',
+      'restaurant',
+      'hotel',
+      'dental office',
+      'law firm',
+      'auto repair shop',
+      'hair salon',
+      'gym',
+      'real estate agency',
+      'medical clinic',
+      'retail store',
       // Added 13.01.2026
-      'spa', 'veterinary clinic', 'physiotherapy', 'accounting firm',
+      'spa',
+      'veterinary clinic',
+      'physiotherapy',
+      'accounting firm',
       // Added 14.01.2026
-      'bakery', 'coffee shop', 'car dealership', 'optician', 'pharmacy', 'florist'
+      'bakery',
+      'coffee shop',
+      'car dealership',
+      'optician',
+      'pharmacy',
+      'florist',
     ];
 
     let totalScraped = 0;
@@ -18231,7 +19103,9 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
     // Pick city and industry based on date (better rotation across all cities)
     // Using day of year for city, day of month for industry
     // Can be overridden via query params: ?city=München&industry=restaurant
-    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+    const dayOfYear = Math.floor(
+      (new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24)
+    );
     const todayCity = overrideCity || cities[dayOfYear % cities.length];
     const todayIndustry = overrideIndustry || industries[new Date().getDate() % industries.length];
 
@@ -18246,11 +19120,17 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
         logApiCall({
           provider: 'google_places',
           endpoint: '/api/cron/daily-outreach',
-          metadata: { type: 'textsearch', city: todayCity, industry: todayIndustry, resultsCount: data.results?.length || 0 },
+          metadata: {
+            type: 'textsearch',
+            city: todayCity,
+            industry: todayIndustry,
+            resultsCount: data.results?.length || 0,
+          },
         });
 
         if (data.results) {
-          for (const place of data.results.slice(0, 30)) { // Reduced to 30 to save API costs
+          for (const place of data.results.slice(0, 30)) {
+            // Reduced to 30 to save API costs
             try {
               // Fetch Place Details including reviews for personalized outreach
               const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,reviews&key=${process.env.GOOGLE_PLACES_API_KEY}`;
@@ -18387,7 +19267,9 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
 
           // Track source stats
           emailStats[result.source] = (emailStats[result.source] || 0) + 1;
-          console.log(`✅ Found email for ${lead.business_name}: ${result.email} (${result.source})`);
+          console.log(
+            `✅ Found email for ${lead.business_name}: ${result.email} (${result.source})`
+          );
         }
 
         // Rate limiting between leads
@@ -18402,7 +19284,10 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
       checked: leadsNeedingEmail.length,
       total_found: totalFound,
       by_source: emailStats,
-      success_rate: leadsNeedingEmail.length > 0 ? Math.round(totalFound / leadsNeedingEmail.length * 100) + '%' : '0%',
+      success_rate:
+        leadsNeedingEmail.length > 0
+          ? Math.round((totalFound / leadsNeedingEmail.length) * 100) + '%'
+          : '0%',
     };
 
     // Step 3: Send new cold emails (with AI-generated drafts for bad reviews)
@@ -18453,11 +19338,13 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
                   demoResult.first_review?.rating || null,
                   demoResult.first_review?.text || null,
                   demoResult.first_review?.author || null,
-                  lead.id
+                  lead.id,
                 ]
               );
 
-              console.log(`✅ Demo generated: ${demoResult.demo_url} (${demoResult.reviews_processed} reviews)`);
+              console.log(
+                `✅ Demo generated: ${demoResult.demo_url} (${demoResult.reviews_processed} reviews)`
+              );
             } else {
               // Fallback: Generate single AI draft if demo generation fails (e.g., no reviews found)
               console.log(`⚠️ Demo failed for ${lead.business_name}, trying single AI draft...`);
@@ -18478,10 +19365,10 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
                 if (aiDraft) {
                   lead.ai_response_draft = aiDraft;
                   lead.has_bad_review = true;
-                  await dbQuery('UPDATE outreach_leads SET ai_response_draft = $1, has_bad_review = TRUE WHERE id = $2', [
-                    aiDraft,
-                    lead.id,
-                  ]);
+                  await dbQuery(
+                    'UPDATE outreach_leads SET ai_response_draft = $1, has_bad_review = TRUE WHERE id = $2',
+                    [aiDraft, lead.id]
+                  );
                 }
               }
             }
@@ -18513,7 +19400,15 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
             INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign, ab_variant, provider)
             VALUES ($1, $2, 1, $3, $4, 'sent', NOW(), $5, $6, $7)
           `,
-            [lead.id, lead.email, template.subject, template.body, campaign, templateWithAB.abVariant, emailResult.provider || 'resend']
+            [
+              lead.id,
+              lead.email,
+              template.subject,
+              template.body,
+              campaign,
+              templateWithAB.abVariant,
+              emailResult.provider || 'resend',
+            ]
           );
 
           await dbQuery('UPDATE outreach_leads SET status = $1 WHERE id = $2', [
@@ -18580,7 +19475,15 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
               INSERT INTO outreach_emails (lead_id, email, sequence_number, subject, body, status, sent_at, campaign, provider)
               VALUES ($1, $2, $3, $4, $5, 'sent', NOW(), $6, $7)
             `,
-              [lead.id, lead.email, nextSequence, template.subject, template.body, followupCampaign, emailResult.provider || 'resend']
+              [
+                lead.id,
+                lead.email,
+                nextSequence,
+                template.subject,
+                template.body,
+                followupCampaign,
+                emailResult.provider || 'resend',
+              ]
             );
 
             if (nextSequence === maxSequence) {
@@ -18657,7 +19560,9 @@ app.get('/api/outreach/dashboard', async (req, res) => {
     // Click tracking stats (also filter test emails)
     let emailsClicked = { count: 0 };
     try {
-      emailsClicked = await dbGet(`SELECT COUNT(DISTINCT email) as count FROM outreach_clicks WHERE 1=1 ${TEST_EMAIL_FILTER}`) || { count: 0 };
+      emailsClicked = (await dbGet(
+        `SELECT COUNT(DISTINCT email) as count FROM outreach_clicks WHERE 1=1 ${TEST_EMAIL_FILTER}`
+      )) || { count: 0 };
     } catch (e) {
       // Table might not exist yet
     }
@@ -18666,7 +19571,8 @@ app.get('/api/outreach/dashboard', async (req, res) => {
     let hotLeads = [];
     try {
       const CLICKS_EMAIL_FILTER = getTestEmailExcludeClause('c.email');
-      hotLeads = await dbAll(`
+      hotLeads =
+        (await dbAll(`
         SELECT DISTINCT ON (c.email)
           c.email,
           c.clicked_at,
@@ -18680,7 +19586,7 @@ app.get('/api/outreach/dashboard', async (req, res) => {
         WHERE 1=1 ${CLICKS_EMAIL_FILTER}
           AND c.email NOT LIKE '%vimeo%'
         ORDER BY c.email, c.clicked_at DESC
-      `) || [];
+      `)) || [];
     } catch (e) {
       // Hot leads query failed
     }
@@ -18712,8 +19618,12 @@ app.get('/api/outreach/dashboard', async (req, res) => {
     let magicLinkStats = { sent: 0, clicked: 0, converted: 0 };
     try {
       const mlSent = await dbGet('SELECT COUNT(*) as count FROM reengagement_emails');
-      const mlClicked = await dbGet('SELECT COUNT(*) as count FROM reengagement_emails WHERE clicked_at IS NOT NULL');
-      const mlConverted = await dbGet('SELECT COUNT(*) as count FROM reengagement_emails WHERE registered_at IS NOT NULL');
+      const mlClicked = await dbGet(
+        'SELECT COUNT(*) as count FROM reengagement_emails WHERE clicked_at IS NOT NULL'
+      );
+      const mlConverted = await dbGet(
+        'SELECT COUNT(*) as count FROM reengagement_emails WHERE registered_at IS NOT NULL'
+      );
       magicLinkStats = {
         sent: parseInt(mlSent?.count || 0),
         clicked: parseInt(mlClicked?.count || 0),
@@ -18726,10 +19636,18 @@ app.get('/api/outreach/dashboard', async (req, res) => {
     // Demo Expiration Stats
     let demoExpirationStats = { total: 0, expired: 0, day3_sent: 0, day5_sent: 0 };
     try {
-      const totalDemos = await dbGet('SELECT COUNT(*) as count FROM demo_generations WHERE lead_id IS NOT NULL');
-      const expiredDemos = await dbGet('SELECT COUNT(*) as count FROM demo_generations WHERE expired = true');
-      const day3Sent = await dbGet('SELECT COUNT(*) as count FROM demo_generations WHERE expiration_email_day3 = true');
-      const day5Sent = await dbGet('SELECT COUNT(*) as count FROM demo_generations WHERE expiration_email_day5 = true');
+      const totalDemos = await dbGet(
+        'SELECT COUNT(*) as count FROM demo_generations WHERE lead_id IS NOT NULL'
+      );
+      const expiredDemos = await dbGet(
+        'SELECT COUNT(*) as count FROM demo_generations WHERE expired = true'
+      );
+      const day3Sent = await dbGet(
+        'SELECT COUNT(*) as count FROM demo_generations WHERE expiration_email_day3 = true'
+      );
+      const day5Sent = await dbGet(
+        'SELECT COUNT(*) as count FROM demo_generations WHERE expiration_email_day5 = true'
+      );
       demoExpirationStats = {
         total: parseInt(totalDemos?.count || 0),
         expired: parseInt(expiredDemos?.count || 0),
@@ -18760,7 +19678,8 @@ app.get('/api/outreach/dashboard', async (req, res) => {
       recent_leads: recentLeads,
       recent_emails: recentEmails,
       campaign: campaign,
-      _note: 'Open rate removed - most "opens" are bot scans. Click rate is the real metric. hot_leads = businesses that clicked!',
+      _note:
+        'Open rate removed - most "opens" are bot scans. Click rate is the real metric. hot_leads = businesses that clicked!',
     });
   } catch (error) {
     console.error('Dashboard error:', error);
@@ -18784,59 +19703,82 @@ app.get('/api/outreach/funnel', async (req, res) => {
 
     // Stage 1: Leads
     const totalLeads = await dbGet('SELECT COUNT(*) as count FROM outreach_leads');
-    const leadsWithEmail = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE email IS NOT NULL');
+    const leadsWithEmail = await dbGet(
+      'SELECT COUNT(*) as count FROM outreach_leads WHERE email IS NOT NULL'
+    );
     funnel.leads = {
       total: parseInt(totalLeads?.count || 0),
       with_email: parseInt(leadsWithEmail?.count || 0),
-      email_rate: totalLeads?.count > 0 ? ((leadsWithEmail?.count / totalLeads?.count) * 100).toFixed(1) + '%' : '0%'
+      email_rate:
+        totalLeads?.count > 0
+          ? ((leadsWithEmail?.count / totalLeads?.count) * 100).toFixed(1) + '%'
+          : '0%',
     };
 
     // Stage 2: Emails Sent (excluding test emails)
-    const emailsSent = await dbGet(`SELECT COUNT(*) as count FROM outreach_emails WHERE status = $1 ${TEST_EMAIL_FILTER}`, ['sent']);
+    const emailsSent = await dbGet(
+      `SELECT COUNT(*) as count FROM outreach_emails WHERE status = $1 ${TEST_EMAIL_FILTER}`,
+      ['sent']
+    );
     funnel.emails_sent = parseInt(emailsSent?.count || 0);
 
     // Stage 3: Opens (excluding test emails)
-    const emailsOpened = await dbGet(`SELECT COUNT(*) as count FROM outreach_emails WHERE opened_at IS NOT NULL ${TEST_EMAIL_FILTER}`);
+    const emailsOpened = await dbGet(
+      `SELECT COUNT(*) as count FROM outreach_emails WHERE opened_at IS NOT NULL ${TEST_EMAIL_FILTER}`
+    );
     funnel.opens = {
       count: parseInt(emailsOpened?.count || 0),
-      rate: funnel.emails_sent > 0 ? ((emailsOpened?.count / funnel.emails_sent) * 100).toFixed(1) + '%' : '0%'
+      rate:
+        funnel.emails_sent > 0
+          ? ((emailsOpened?.count / funnel.emails_sent) * 100).toFixed(1) + '%'
+          : '0%',
     };
 
     // Stage 4: Clicks (excluding test emails)
     let clicksData = { count: 0, unique: 0 };
     try {
-      const totalClicks = await dbGet(`SELECT COUNT(*) as count FROM outreach_clicks WHERE 1=1 ${TEST_EMAIL_FILTER}`);
-      const uniqueClicks = await dbGet(`SELECT COUNT(DISTINCT email) as count FROM outreach_clicks WHERE 1=1 ${TEST_EMAIL_FILTER}`);
+      const totalClicks = await dbGet(
+        `SELECT COUNT(*) as count FROM outreach_clicks WHERE 1=1 ${TEST_EMAIL_FILTER}`
+      );
+      const uniqueClicks = await dbGet(
+        `SELECT COUNT(DISTINCT email) as count FROM outreach_clicks WHERE 1=1 ${TEST_EMAIL_FILTER}`
+      );
       clicksData = {
         count: parseInt(totalClicks?.count || 0),
-        unique: parseInt(uniqueClicks?.count || 0)
+        unique: parseInt(uniqueClicks?.count || 0),
       };
     } catch (e) {}
     funnel.clicks = {
       total: clicksData.count,
       unique: clicksData.unique,
-      rate: funnel.emails_sent > 0 ? ((clicksData.unique / funnel.emails_sent) * 100).toFixed(1) + '%' : '0%'
+      rate:
+        funnel.emails_sent > 0
+          ? ((clicksData.unique / funnel.emails_sent) * 100).toFixed(1) + '%'
+          : '0%',
     };
 
     // Stage 5: Signups (users who came from outreach)
     let signups = { count: 0 };
     try {
-      signups = await dbGet(`
+      signups = (await dbGet(`
         SELECT COUNT(*) as count FROM users
         WHERE referral_source LIKE '%outreach%'
            OR referral_source LIKE '%alert%'
            OR email IN (SELECT DISTINCT email FROM outreach_clicks)
-      `) || { count: 0 };
+      `)) || { count: 0 };
     } catch (e) {}
     funnel.signups = {
       count: parseInt(signups?.count || 0),
-      rate: clicksData.unique > 0 ? ((signups?.count / clicksData.unique) * 100).toFixed(1) + '%' : '0%'
+      rate:
+        clicksData.unique > 0
+          ? ((signups?.count / clicksData.unique) * 100).toFixed(1) + '%'
+          : '0%',
     };
 
     // Stage 6: Paid Conversions
     let paidUsers = { count: 0, revenue: 0 };
     try {
-      paidUsers = await dbGet(`
+      paidUsers = (await dbGet(`
         SELECT COUNT(*) as count, COALESCE(SUM(
           CASE subscription_plan
             WHEN 'starter' THEN 29
@@ -18850,12 +19792,15 @@ app.get('/api/outreach/funnel', async (req, res) => {
           AND (referral_source LIKE '%outreach%'
                OR referral_source LIKE '%alert%'
                OR email IN (SELECT DISTINCT email FROM outreach_clicks))
-      `) || { count: 0, revenue: 0 };
+      `)) || { count: 0, revenue: 0 };
     } catch (e) {}
     funnel.paid = {
       count: parseInt(paidUsers?.count || 0),
       monthly_revenue: parseInt(paidUsers?.revenue || 0),
-      conversion_rate: funnel.signups.count > 0 ? ((paidUsers?.count / funnel.signups.count) * 100).toFixed(1) + '%' : '0%'
+      conversion_rate:
+        funnel.signups.count > 0
+          ? ((paidUsers?.count / funnel.signups.count) * 100).toFixed(1) + '%'
+          : '0%',
     };
 
     // ========== PROVIDER BREAKDOWN (Brevo vs Resend) ==========
@@ -18875,7 +19820,7 @@ app.get('/api/outreach/funnel', async (req, res) => {
           providers[p.provider] = {
             sent: parseInt(p.sent || 0),
             opens: parseInt(p.opens || 0),
-            open_rate: p.sent > 0 ? ((p.opens / p.sent) * 100).toFixed(1) + '%' : '0%'
+            open_rate: p.sent > 0 ? ((p.opens / p.sent) * 100).toFixed(1) + '%' : '0%',
           };
         }
       }
@@ -18884,7 +19829,10 @@ app.get('/api/outreach/funnel', async (req, res) => {
     // ========== A/B TEST SUMMARY ==========
     let abTest = null;
     try {
-      const test = await dbGet('SELECT * FROM outreach_ab_tests WHERE test_name = $1 AND is_active = TRUE', ['sequence1_subject']);
+      const test = await dbGet(
+        'SELECT * FROM outreach_ab_tests WHERE test_name = $1 AND is_active = TRUE',
+        ['sequence1_subject']
+      );
       if (test) {
         const variants = [];
         ['a', 'b', 'c', 'd'].forEach(v => {
@@ -18899,7 +19847,7 @@ app.get('/api/outreach/funnel', async (req, res) => {
               subject: test[subjectKey],
               sent,
               opens,
-              open_rate: sent > 0 ? ((opens / sent) * 100).toFixed(1) + '%' : '0%'
+              open_rate: sent > 0 ? ((opens / sent) * 100).toFixed(1) + '%' : '0%',
             });
           }
         });
@@ -18908,7 +19856,7 @@ app.get('/api/outreach/funnel', async (req, res) => {
           variants,
           winner: test.winner,
           total_sent: variants.reduce((sum, v) => sum + v.sent, 0),
-          needs_data: variants.reduce((sum, v) => sum + v.sent, 0) < 120
+          needs_data: variants.reduce((sum, v) => sum + v.sent, 0) < 120,
         };
       }
     } catch (e) {}
@@ -18931,7 +19879,7 @@ app.get('/api/outreach/funnel', async (req, res) => {
         ...c,
         sent: parseInt(c.sent || 0),
         opens: parseInt(c.opens || 0),
-        open_rate: c.sent > 0 ? ((c.opens / c.sent) * 100).toFixed(1) + '%' : '0%'
+        open_rate: c.sent > 0 ? ((c.opens / c.sent) * 100).toFixed(1) + '%' : '0%',
       }));
     } catch (e) {}
 
@@ -18952,7 +19900,7 @@ app.get('/api/outreach/funnel', async (req, res) => {
         date: d.date,
         sent: parseInt(d.sent || 0),
         opens: parseInt(d.opens || 0),
-        open_rate: d.sent > 0 ? ((d.opens / d.sent) * 100).toFixed(1) + '%' : '0%'
+        open_rate: d.sent > 0 ? ((d.opens / d.sent) * 100).toFixed(1) + '%' : '0%',
       }));
     } catch (e) {}
 
@@ -18978,7 +19926,7 @@ app.get('/api/outreach/funnel', async (req, res) => {
     const brevoStatus = {
       configured: !!process.env.BREVO_API_KEY,
       api_key_set: !!process.env.BREVO_API_KEY,
-      active: !!brevoApi
+      active: !!brevoApi,
     };
 
     res.json({
@@ -18986,31 +19934,46 @@ app.get('/api/outreach/funnel', async (req, res) => {
       generated_at: new Date().toISOString(),
       funnel: {
         stages: [
-          { name: 'Leads', value: funnel.leads.total, sub: `${funnel.leads.with_email} with email (${funnel.leads.email_rate})` },
+          {
+            name: 'Leads',
+            value: funnel.leads.total,
+            sub: `${funnel.leads.with_email} with email (${funnel.leads.email_rate})`,
+          },
           { name: 'Emails Sent', value: funnel.emails_sent },
           { name: 'Opens', value: funnel.opens.count, rate: funnel.opens.rate },
           { name: 'Clicks', value: funnel.clicks.unique, rate: funnel.clicks.rate },
           { name: 'Signups', value: funnel.signups.count, rate: funnel.signups.rate },
-          { name: 'Paid', value: funnel.paid.count, rate: funnel.paid.conversion_rate, revenue: `$${funnel.paid.monthly_revenue}/mo` }
+          {
+            name: 'Paid',
+            value: funnel.paid.count,
+            rate: funnel.paid.conversion_rate,
+            revenue: `$${funnel.paid.monthly_revenue}/mo`,
+          },
         ],
         conversion_rates: {
           lead_to_email: funnel.leads.email_rate,
           email_to_open: funnel.opens.rate,
-          open_to_click: funnel.opens.count > 0 ? ((funnel.clicks.unique / funnel.opens.count) * 100).toFixed(1) + '%' : '0%',
+          open_to_click:
+            funnel.opens.count > 0
+              ? ((funnel.clicks.unique / funnel.opens.count) * 100).toFixed(1) + '%'
+              : '0%',
           click_to_signup: funnel.signups.rate,
           signup_to_paid: funnel.paid.conversion_rate,
-          overall: funnel.leads.total > 0 ? ((funnel.paid.count / funnel.leads.total) * 100).toFixed(2) + '%' : '0%'
-        }
+          overall:
+            funnel.leads.total > 0
+              ? ((funnel.paid.count / funnel.leads.total) * 100).toFixed(2) + '%'
+              : '0%',
+        },
       },
       providers: {
         brevo: providers.brevo,
         resend: providers.resend,
-        brevo_status: brevoStatus
+        brevo_status: brevoStatus,
       },
       ab_test: abTest,
       campaigns,
       daily_trends: dailyTrends,
-      top_emails: topEmails
+      top_emails: topEmails,
     });
   } catch (error) {
     console.error('Funnel dashboard error:', error);
@@ -19046,7 +20009,10 @@ app.post('/api/admin/test-email', async (req, res) => {
       const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
       sendSmtpEmail.subject = subject;
       sendSmtpEmail.htmlContent = html;
-      sendSmtpEmail.sender = { name: 'Berend from ReviewResponder', email: 'outreach@tryreviewresponder.com' };
+      sendSmtpEmail.sender = {
+        name: 'Berend from ReviewResponder',
+        email: 'outreach@tryreviewresponder.com',
+      };
       sendSmtpEmail.to = [{ email: to }];
       sendSmtpEmail.tags = ['test', 'brevo-test'];
 
@@ -19058,14 +20024,14 @@ app.post('/api/admin/test-email', async (req, res) => {
         provider: 'brevo',
         to,
         messageId: result.messageId || result.body?.messageId,
-        message: 'Test email sent via Brevo. Check your inbox and spam folder!'
+        message: 'Test email sent via Brevo. Check your inbox and spam folder!',
       });
     } else if (resend) {
       const result = await resend.emails.send({
         from: FROM_EMAIL,
         to,
         subject,
-        html
+        html,
       });
 
       return res.json({
@@ -19073,7 +20039,7 @@ app.post('/api/admin/test-email', async (req, res) => {
         provider: 'resend',
         to,
         messageId: result.id,
-        message: 'Test email sent via Resend'
+        message: 'Test email sent via Resend',
       });
     } else {
       return res.status(500).json({ error: 'No email provider available' });
@@ -19082,7 +20048,7 @@ app.post('/api/admin/test-email', async (req, res) => {
     console.error('[Test Email] Error:', error);
     return res.status(500).json({
       error: 'Failed to send test email',
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -19107,11 +20073,11 @@ async function getRedditAccessToken() {
   const response = await fetch('https://www.reddit.com/api/v1/access_token', {
     method: 'POST',
     headers: {
-      'Authorization': `Basic ${auth}`,
+      Authorization: `Basic ${auth}`,
       'Content-Type': 'application/x-www-form-urlencoded',
-      'User-Agent': 'ReviewResponder/1.0'
+      'User-Agent': 'ReviewResponder/1.0',
     },
-    body: `grant_type=password&username=${username}&password=${password}`
+    body: `grant_type=password&username=${username}&password=${password}`,
   });
 
   const data = await response.json();
@@ -19129,7 +20095,7 @@ async function searchRedditPosts(accessToken, query, subreddit = null) {
     sort: 'new',
     t: 'day', // Last 24 hours
     limit: '10',
-    type: 'link'
+    type: 'link',
   });
 
   if (subreddit) {
@@ -19138,9 +20104,9 @@ async function searchRedditPosts(accessToken, query, subreddit = null) {
 
   const response = await fetch(`${baseUrl}?${params}`, {
     headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'User-Agent': 'ReviewResponder/1.0'
-    }
+      Authorization: `Bearer ${accessToken}`,
+      'User-Agent': 'ReviewResponder/1.0',
+    },
   });
 
   const data = await response.json();
@@ -19182,7 +20148,9 @@ If NOT about reviews: pure helpful advice, no promotion.
 - "We offer..."
 - "Our product..."
 - "I recommend ReviewResponder" (too salesy)
-${AI_SLOP_PHRASES.slice(0, 5).map(p => `- "${p}"`).join('\n')}
+${AI_SLOP_PHRASES.slice(0, 5)
+  .map(p => `- "${p}"`)
+  .join('\n')}
 </forbidden_phrases>
 
 <forbidden_words>
@@ -19210,7 +20178,7 @@ Write a helpful, genuine Reddit comment:`;
         model: 'claude-opus-4-20250514',
         max_tokens: 500,
         system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }]
+        messages: [{ role: 'user', content: userPrompt }],
       });
       return response.content[0].text;
     }
@@ -19222,8 +20190,8 @@ Write a helpful, genuine Reddit comment:`;
         max_tokens: 500,
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ]
+          { role: 'user', content: userPrompt },
+        ],
       });
       return response.choices[0].message.content;
     }
@@ -19240,11 +20208,11 @@ async function postRedditComment(accessToken, postId, comment) {
   const response = await fetch('https://oauth.reddit.com/api/comment', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/x-www-form-urlencoded',
-      'User-Agent': 'ReviewResponder/1.0'
+      'User-Agent': 'ReviewResponder/1.0',
     },
-    body: `thing_id=t3_${postId}&text=${encodeURIComponent(comment)}`
+    body: `thing_id=t3_${postId}&text=${encodeURIComponent(comment)}`,
   });
 
   return response.json();
@@ -19263,7 +20231,8 @@ app.get('/api/cron/reddit-monitor', async (req, res) => {
   if (!process.env.REDDIT_CLIENT_ID) {
     return res.status(500).json({
       error: 'Reddit API not configured',
-      setup: 'Add REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USERNAME, REDDIT_PASSWORD to Render'
+      setup:
+        'Add REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USERNAME, REDDIT_PASSWORD to Render',
     });
   }
 
@@ -19272,7 +20241,7 @@ app.get('/api/cron/reddit-monitor', async (req, res) => {
     comments_generated: 0,
     comments_posted: 0,
     skipped: 0,
-    errors: []
+    errors: [],
   };
 
   try {
@@ -19303,7 +20272,7 @@ app.get('/api/cron/reddit-monitor', async (req, res) => {
     if (remaining <= 0 && !dryRun) {
       return res.json({
         message: 'Daily limit reached (5 comments/day)',
-        results: results
+        results: results,
       });
     }
 
@@ -19322,7 +20291,7 @@ app.get('/api/cron/reddit-monitor', async (req, res) => {
       'marketing',
       'AskMarketing',
       'ecommerce',
-      'startups'
+      'startups',
     ];
 
     // Keywords to search for
@@ -19334,7 +20303,7 @@ app.get('/api/cron/reddit-monitor', async (req, res) => {
       'review management',
       'customer review help',
       'yelp review',
-      'google review response'
+      'google review response',
     ];
 
     const allPosts = [];
@@ -19360,12 +20329,13 @@ app.get('/api/cron/reddit-monitor', async (req, res) => {
     const respondedPosts = await dbAll('SELECT post_id FROM reddit_responses');
     const respondedIds = new Set(respondedPosts.map(r => r.post_id));
 
-    const newPosts = uniquePosts.filter(p =>
-      !respondedIds.has(p.id) &&
-      p.num_comments < 50 && // Not too popular (our comment won't be seen)
-      p.num_comments > 0 && // Has some engagement
-      !p.locked &&
-      !p.archived
+    const newPosts = uniquePosts.filter(
+      p =>
+        !respondedIds.has(p.id) &&
+        p.num_comments < 50 && // Not too popular (our comment won't be seen)
+        p.num_comments > 0 && // Has some engagement
+        !p.locked &&
+        !p.archived
     );
 
     // Process posts (up to remaining daily limit)
@@ -19392,18 +20362,21 @@ app.get('/api/cron/reddit-monitor', async (req, res) => {
 
         if (postResult.success !== false) {
           // Save to database
-          await dbQuery(`
+          await dbQuery(
+            `
             INSERT INTO reddit_responses (post_id, subreddit, post_title, post_url, our_comment, topic)
             VALUES ($1, $2, $3, $4, $5, $6)
             ON CONFLICT (post_id) DO NOTHING
-          `, [
-            post.id,
-            post.subreddit,
-            post.title,
-            `https://reddit.com${post.permalink}`,
-            comment,
-            post.searchKeyword
-          ]);
+          `,
+            [
+              post.id,
+              post.subreddit,
+              post.title,
+              `https://reddit.com${post.permalink}`,
+              comment,
+              post.searchKeyword,
+            ]
+          );
 
           results.comments_posted++;
           console.log(`Posted comment to r/${post.subreddit}: "${post.title}"`);
@@ -19411,7 +20384,6 @@ app.get('/api/cron/reddit-monitor', async (req, res) => {
 
         // Rate limit between posts
         await new Promise(r => setTimeout(r, 2000));
-
       } catch (e) {
         results.errors.push(`Post error: ${post.id} - ${e.message}`);
       }
@@ -19422,9 +20394,8 @@ app.get('/api/cron/reddit-monitor', async (req, res) => {
       dry_run: dryRun,
       daily_limit: dailyLimit,
       remaining_today: remaining - results.comments_posted,
-      results: results
+      results: results,
     });
-
   } catch (error) {
     console.error('Reddit monitor error:', error);
     res.status(500).json({ error: 'Reddit monitor failed', details: error.message });
@@ -19455,7 +20426,7 @@ app.get('/api/admin/reddit-responses', async (req, res) => {
 
     res.json({
       stats: stats,
-      responses: responses
+      responses: responses,
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to get Reddit responses' });
@@ -19474,8 +20445,8 @@ async function searchTwitter(query) {
     const result = await twitterClient.v2.search(query, {
       'tweet.fields': ['author_id', 'created_at', 'public_metrics', 'conversation_id'],
       'user.fields': ['username', 'name'],
-      'expansions': ['author_id'],
-      'max_results': 10
+      expansions: ['author_id'],
+      max_results: 10,
     });
 
     return result.data?.data || [];
@@ -19496,7 +20467,7 @@ async function postTwitterReply(tweetId, replyText) {
     return {
       success: true,
       tweetId: result.data.id,
-      text: result.data.text
+      text: result.data.text,
     };
   } catch (error) {
     console.error('[Twitter] Reply error:', error.message);
@@ -19516,7 +20487,8 @@ app.get('/api/cron/twitter-monitor', async (req, res) => {
   if (!twitterClient) {
     return res.status(500).json({
       error: 'Twitter API not configured',
-      setup: 'Add TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET to Render'
+      setup:
+        'Add TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET to Render',
     });
   }
 
@@ -19524,7 +20496,7 @@ app.get('/api/cron/twitter-monitor', async (req, res) => {
     tweets_found: 0,
     replies_generated: 0,
     replies_posted: 0,
-    errors: []
+    errors: [],
   };
 
   try {
@@ -19563,7 +20535,7 @@ app.get('/api/cron/twitter-monitor', async (req, res) => {
     if (remaining <= 0) {
       return res.json({
         message: 'Daily limit reached (10 auto-replies/day)',
-        results: results
+        results: results,
       });
     }
 
@@ -19575,7 +20547,7 @@ app.get('/api/cron/twitter-monitor', async (req, res) => {
       '"online reputation" help -is:retweet',
       '"google review" response -is:retweet',
       '"schlechte Bewertung" -is:retweet',
-      '"negative Bewertung" hilfe -is:retweet'
+      '"negative Bewertung" hilfe -is:retweet',
     ];
 
     const allTweets = [];
@@ -19645,12 +20617,16 @@ Write the reply directly. No quotes. Just the tweet text.
 
 Write a helpful reply (max 250 chars):`;
 
-        const reply = anthropic ? await anthropic.messages.create({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 100,
-          system: systemPrompt,
-          messages: [{ role: 'user', content: userPrompt }]
-        }).then(r => r.content[0].text.trim()) : null;
+        const reply = anthropic
+          ? await anthropic.messages
+              .create({
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 100,
+                system: systemPrompt,
+                messages: [{ role: 'user', content: userPrompt }],
+              })
+              .then(r => r.content[0].text.trim())
+          : null;
 
         if (reply && reply.length <= 280) {
           results.replies_generated++;
@@ -19664,11 +20640,21 @@ Write a helpful reply (max 250 chars):`;
               console.log(`[Twitter] Posted reply to tweet ${tweet.id}`);
 
               // Save successful post to DB
-              await dbQuery(`
+              await dbQuery(
+                `
                 INSERT INTO twitter_responses (tweet_id, tweet_text, tweet_author, our_reply, our_reply_id, topic, posted)
                 VALUES ($1, $2, $3, $4, $5, $6, TRUE)
                 ON CONFLICT (tweet_id) DO UPDATE SET posted = TRUE, our_reply_id = $5
-              `, [tweet.id, tweet.text, tweet.author_id, reply, postResult.tweetId, tweet.searchKeyword]);
+              `,
+                [
+                  tweet.id,
+                  tweet.text,
+                  tweet.author_id,
+                  reply,
+                  postResult.tweetId,
+                  tweet.searchKeyword,
+                ]
+              );
 
               // Rate limit: wait 30 seconds between posts (stay well under limits)
               await new Promise(r => setTimeout(r, 30000));
@@ -19676,11 +20662,14 @@ Write a helpful reply (max 250 chars):`;
               results.errors.push(`Post failed for ${tweet.id}: ${postResult.error}`);
 
               // Save failed attempt for review
-              await dbQuery(`
+              await dbQuery(
+                `
                 INSERT INTO twitter_responses (tweet_id, tweet_text, tweet_author, our_reply, topic, posted)
                 VALUES ($1, $2, $3, $4, $5, FALSE)
                 ON CONFLICT (tweet_id) DO NOTHING
-              `, [tweet.id, tweet.text, tweet.author_id, reply, tweet.searchKeyword]);
+              `,
+                [tweet.id, tweet.text, tweet.author_id, reply, tweet.searchKeyword]
+              );
             }
           } else {
             // Dry run - just log
@@ -19688,7 +20677,6 @@ Write a helpful reply (max 250 chars):`;
             console.log(`Reply: ${reply}`);
           }
         }
-
       } catch (e) {
         results.errors.push(`Tweet processing error: ${tweet.id} - ${e.message}`);
       }
@@ -19702,9 +20690,8 @@ Write a helpful reply (max 250 chars):`;
         : `Auto-posted ${results.replies_posted} replies via @ExecPsychology`,
       daily_limit: dailyLimit,
       remaining_today: remaining - results.replies_posted,
-      results: results
+      results: results,
     });
-
   } catch (error) {
     console.error('Twitter monitor error:', error);
     res.status(500).json({ error: 'Twitter monitor failed', details: error.message });
@@ -19734,10 +20721,10 @@ app.get('/api/admin/twitter-opportunities', async (req, res) => {
       stats: {
         total: responses.length,
         posted: posted.length,
-        pending: pending.length
+        pending: pending.length,
       },
       posted: posted,
-      pending: pending
+      pending: pending,
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to get Twitter responses' });
@@ -19753,28 +20740,28 @@ const TWEET_CATEGORIES = [
   {
     name: 'business_psychology',
     weight: 30,
-    prompt: `Write a short, insightful tweet about business psychology. Topics: customer behavior, decision-making, trust-building, emotional intelligence in business. Be specific and actionable. No hashtags.`
+    prompt: `Write a short, insightful tweet about business psychology. Topics: customer behavior, decision-making, trust-building, emotional intelligence in business. Be specific and actionable. No hashtags.`,
   },
   {
     name: 'review_management',
     weight: 25,
-    prompt: `Write a short tweet with a practical tip about responding to customer reviews (positive or negative). Share real insight, not generic advice. No hashtags.`
+    prompt: `Write a short tweet with a practical tip about responding to customer reviews (positive or negative). Share real insight, not generic advice. No hashtags.`,
   },
   {
     name: 'business_tip',
     weight: 20,
-    prompt: `Write a short tweet with a counterintuitive or lesser-known business tip. Make it memorable and shareable. No hashtags.`
+    prompt: `Write a short tweet with a counterintuitive or lesser-known business tip. Make it memorable and shareable. No hashtags.`,
   },
   {
     name: 'engagement_question',
     weight: 15,
-    prompt: `Write a short tweet asking business owners an engaging question about their challenges with customer feedback, reviews, or reputation. Make it conversational. No hashtags.`
+    prompt: `Write a short tweet asking business owners an engaging question about their challenges with customer feedback, reviews, or reputation. Make it conversational. No hashtags.`,
   },
   {
     name: 'soft_promo',
     weight: 10,
-    prompt: `Write a short tweet mentioning ReviewResponder (AI tool for responding to customer reviews). Be subtle and value-first - lead with the problem it solves, not the product. Include tryreviewresponder.com naturally. No hashtags.`
-  }
+    prompt: `Write a short tweet mentioning ReviewResponder (AI tool for responding to customer reviews). Be subtle and value-first - lead with the problem it solves, not the product. Include tryreviewresponder.com naturally. No hashtags.`,
+  },
 ];
 
 // Select category based on weights
@@ -19870,13 +20857,17 @@ Just the tweet text.
       model: 'claude-sonnet-4-20250514',
       max_tokens: 100,
       system: systemPrompt,
-      messages: [{ role: 'user', content: `<category>${category.name}</category>\n\n${category.prompt}` }]
+      messages: [
+        { role: 'user', content: `<category>${category.name}</category>\n\n${category.prompt}` },
+      ],
     });
 
     const rawTweet = response.content[0].text.trim();
     const cleanedTweet = cleanAISlop(rawTweet);
 
-    console.log(`[Twitter] Raw: "${rawTweet.substring(0, 50)}..." -> Clean: "${cleanedTweet.substring(0, 50)}..."`);
+    console.log(
+      `[Twitter] Raw: "${rawTweet.substring(0, 50)}..." -> Clean: "${cleanedTweet.substring(0, 50)}..."`
+    );
 
     return cleanedTweet;
   } catch (error) {
@@ -19896,7 +20887,7 @@ async function postTweet(text) {
     return {
       success: true,
       tweetId: result.data.id,
-      text: result.data.text
+      text: result.data.text,
     };
   } catch (error) {
     console.error('[Twitter] Post error:', error.message);
@@ -19916,7 +20907,8 @@ app.get('/api/cron/twitter-post', async (req, res) => {
   if (!twitterClient) {
     return res.status(500).json({
       error: 'Twitter API not configured',
-      setup: 'Add TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET'
+      setup:
+        'Add TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET',
     });
   }
 
@@ -19948,7 +20940,7 @@ app.get('/api/cron/twitter-post', async (req, res) => {
         success: true,
         message: `Daily limit reached (${dailyLimit} tweets/day)`,
         posted_today: postedToday,
-        next_slot: 'Tomorrow'
+        next_slot: 'Tomorrow',
       });
     }
 
@@ -19965,7 +20957,7 @@ app.get('/api/cron/twitter-post', async (req, res) => {
       return res.status(500).json({
         error: 'Generated tweet too long',
         length: tweetText.length,
-        text: tweetText
+        text: tweetText,
       });
     }
 
@@ -19974,7 +20966,7 @@ app.get('/api/cron/twitter-post', async (req, res) => {
       tweet: tweetText,
       length: tweetText.length,
       posted: false,
-      tweet_id: null
+      tweet_id: null,
     };
 
     if (!dryRun) {
@@ -19986,10 +20978,13 @@ app.get('/api/cron/twitter-post', async (req, res) => {
         result.tweet_id = postResult.tweetId;
 
         // Save to database
-        await dbQuery(`
+        await dbQuery(
+          `
           INSERT INTO twitter_scheduled_posts (tweet_text, tweet_id, category, posted, posted_at)
           VALUES ($1, $2, $3, TRUE, NOW())
-        `, [tweetText, postResult.tweetId, category.name]);
+        `,
+          [tweetText, postResult.tweetId, category.name]
+        );
 
         // Log for sales state tracking
         await logSalesAction('twitter_post', 'social', {
@@ -20003,10 +20998,13 @@ app.get('/api/cron/twitter-post', async (req, res) => {
         result.error = postResult.error;
 
         // Save failed attempt
-        await dbQuery(`
+        await dbQuery(
+          `
           INSERT INTO twitter_scheduled_posts (tweet_text, category, posted)
           VALUES ($1, $2, FALSE)
-        `, [tweetText, category.name]);
+        `,
+          [tweetText, category.name]
+        );
       }
     } else {
       console.log(`[Twitter DRY RUN] Would post: "${tweetText}"`);
@@ -20018,9 +21016,8 @@ app.get('/api/cron/twitter-post', async (req, res) => {
       account: '@ExecPsychology',
       daily_limit: dailyLimit,
       posted_today: postedToday + (result.posted ? 1 : 0),
-      result: result
+      result: result,
     });
-
   } catch (error) {
     console.error('Twitter post error:', error);
     res.status(500).json({ error: 'Twitter post failed', details: error.message });
@@ -20053,7 +21050,7 @@ app.get('/api/admin/twitter-posts', async (req, res) => {
       auto_posting: !!twitterClient,
       total_posts: posts.length,
       category_stats: categoryStats,
-      recent_posts: posts
+      recent_posts: posts,
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to get tweet history' });
@@ -20082,7 +21079,7 @@ Mit ReviewResponder koennen Sie auf alle {unanswered} Reviews in unter 10 Minute
 
 Kostenlos testen: https://tryreviewresponder.com?utm_source=yelp_audit&utm_campaign={city}
 
-Beste Gruesse`
+Beste Gruesse`,
   },
   g2_switcher: {
     subject: 'Frustriert mit {competitor}? Es gibt eine bessere Alternative',
@@ -20101,7 +21098,7 @@ Wir bieten Ihnen 14 Tage kostenlos zum Testen: https://tryreviewresponder.com?ut
 
 Falls Sie Fragen haben, antworten Sie einfach auf diese Email.
 
-Beste Gruesse`
+Beste Gruesse`,
   },
   agency_partnership: {
     subject: 'White-Label Review Management fuer {agency_name} Kunden',
@@ -20121,7 +21118,7 @@ Interesse an einem kurzen Gespraech?
 Beste Gruesse,
 ReviewResponder Partner Team
 
-https://tryreviewresponder.com/partners?utm_source=clutch&utm_campaign=agency`
+https://tryreviewresponder.com/partners?utm_source=clutch&utm_campaign=agency`,
   },
   agency_followup_1: {
     subject: 'Re: White-Label Review Management fuer {agency_name}',
@@ -20135,14 +21132,17 @@ Ein Partner berichtet: "Wir haben 5 Kunden in den ersten Monat onboarded - $2,45
 
 Antworten Sie einfach falls Sie mehr erfahren moechten.
 
-Beste Gruesse`
-  }
+Beste Gruesse`,
+  },
 };
 
 // POST /api/sales/yelp-leads - Submit Yelp leads from scraping
 app.post('/api/sales/yelp-leads', async (req, res) => {
   const authKey = req.headers['x-api-key'] || req.query.key;
-  if (!safeCompare(authKey, process.env.ADMIN_SECRET) && !safeCompare(authKey, process.env.CRON_SECRET)) {
+  if (
+    !safeCompare(authKey, process.env.ADMIN_SECRET) &&
+    !safeCompare(authKey, process.env.CRON_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -20157,26 +21157,31 @@ app.post('/api/sales/yelp-leads', async (req, res) => {
 
     for (const lead of leads) {
       // Check if already exists
-      const existing = await dbGet('SELECT id FROM yelp_leads WHERE yelp_url = $1', [lead.yelp_url]);
+      const existing = await dbGet('SELECT id FROM yelp_leads WHERE yelp_url = $1', [
+        lead.yelp_url,
+      ]);
       if (existing) {
         skipped++;
         continue;
       }
 
-      await dbQuery(`
+      await dbQuery(
+        `
         INSERT INTO yelp_leads (business_name, yelp_url, city, category, total_reviews, owner_responses, response_rate, website, phone)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      `, [
-        lead.business_name,
-        lead.yelp_url,
-        lead.city,
-        lead.category,
-        lead.total_reviews || 0,
-        lead.owner_responses || 0,
-        lead.response_rate || 0,
-        lead.website,
-        lead.phone
-      ]);
+      `,
+        [
+          lead.business_name,
+          lead.yelp_url,
+          lead.city,
+          lead.category,
+          lead.total_reviews || 0,
+          lead.owner_responses || 0,
+          lead.response_rate || 0,
+          lead.website,
+          lead.phone,
+        ]
+      );
       inserted++;
     }
 
@@ -20190,7 +21195,10 @@ app.post('/api/sales/yelp-leads', async (req, res) => {
 // POST /api/sales/competitor-leads - Submit G2 competitor leads with auto demo + email
 app.post('/api/sales/competitor-leads', async (req, res) => {
   const authKey = req.headers['x-api-key'] || req.query.key;
-  if (!safeCompare(authKey, process.env.ADMIN_SECRET) && !safeCompare(authKey, process.env.CRON_SECRET)) {
+  if (
+    !safeCompare(authKey, process.env.ADMIN_SECRET) &&
+    !safeCompare(authKey, process.env.CRON_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -20206,7 +21214,7 @@ app.post('/api/sales/competitor-leads', async (req, res) => {
       emails_found: 0,
       demos_generated: 0,
       emails_sent: 0,
-      errors: []
+      errors: [],
     };
 
     for (const lead of leads) {
@@ -20222,24 +21230,27 @@ app.post('/api/sales/competitor-leads', async (req, res) => {
         }
 
         // Insert lead with email if provided
-        const insertResult = await dbQuery(`
+        const insertResult = await dbQuery(
+          `
           INSERT INTO competitor_leads (company_name, reviewer_name, reviewer_title, competitor, star_rating, review_title, complaint_summary, review_date, g2_url, website, email, email_source)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
           RETURNING id
-        `, [
-          lead.company_name,
-          lead.reviewer_name,
-          lead.reviewer_title,
-          lead.competitor,
-          lead.star_rating,
-          lead.review_title,
-          lead.complaint_summary,
-          lead.review_date,
-          lead.g2_url,
-          lead.website,
-          lead.email || null,
-          lead.email ? 'scraped' : null
-        ]);
+        `,
+          [
+            lead.company_name,
+            lead.reviewer_name,
+            lead.reviewer_title,
+            lead.competitor,
+            lead.star_rating,
+            lead.review_title,
+            lead.complaint_summary,
+            lead.review_date,
+            lead.g2_url,
+            lead.website,
+            lead.email || null,
+            lead.email ? 'scraped' : null,
+          ]
+        );
         results.inserted++;
 
         if (lead.email) {
@@ -20289,7 +21300,10 @@ P.S. Happy to hop on a quick call if you want to see how it compares to ${lead.c
                 from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
               });
 
-              await dbQuery('UPDATE competitor_leads SET email_sent = TRUE, email_sent_at = NOW() WHERE id = $1', [leadId]);
+              await dbQuery(
+                'UPDATE competitor_leads SET email_sent = TRUE, email_sent_at = NOW() WHERE id = $1',
+                [leadId]
+              );
               results.emails_sent++;
               results.demos_generated++;
             }
@@ -20327,7 +21341,7 @@ Do NOT mention ${competitor} or that this is a demo. Just write a great review r
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 200,
-      messages: [{ role: 'user', content: prompt }]
+      messages: [{ role: 'user', content: prompt }],
     });
 
     return response.content[0]?.text?.trim() || null;
@@ -20340,7 +21354,10 @@ Do NOT mention ${competitor} or that this is a demo. Just write a great review r
 // POST /api/sales/linkedin-leads - Submit LinkedIn leads
 app.post('/api/sales/linkedin-leads', async (req, res) => {
   const authKey = req.headers['x-api-key'] || req.query.key;
-  if (!safeCompare(authKey, process.env.ADMIN_SECRET) && !safeCompare(authKey, process.env.CRON_SECRET)) {
+  if (
+    !safeCompare(authKey, process.env.ADMIN_SECRET) &&
+    !safeCompare(authKey, process.env.CRON_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -20354,16 +21371,21 @@ app.post('/api/sales/linkedin-leads', async (req, res) => {
     let skipped = 0;
 
     for (const lead of leads) {
-      const existing = await dbGet('SELECT id FROM linkedin_outreach WHERE linkedin_url = $1', [lead.linkedin_url]);
+      const existing = await dbGet('SELECT id FROM linkedin_outreach WHERE linkedin_url = $1', [
+        lead.linkedin_url,
+      ]);
       if (existing) {
         skipped++;
         continue;
       }
 
-      await dbQuery(`
+      await dbQuery(
+        `
         INSERT INTO linkedin_outreach (name, title, company, location, linkedin_url)
         VALUES ($1, $2, $3, $4, $5)
-      `, [lead.name, lead.title, lead.company, lead.location, lead.linkedin_url]);
+      `,
+        [lead.name, lead.title, lead.company, lead.location, lead.linkedin_url]
+      );
       inserted++;
     }
 
@@ -20431,10 +21453,17 @@ app.post('/api/outreach/linkedin-demo', async (req, res) => {
 
         // Generate AI responses for each review
         for (const review of scrapedReviews) {
-          const aiResponse = await generateDemoResponse(review, searchName, null, searchCity, googleRating, totalReviews);
+          const aiResponse = await generateDemoResponse(
+            review,
+            searchName,
+            null,
+            searchCity,
+            googleRating,
+            totalReviews
+          );
           generatedResponses.push({
             review: review,
-            ai_response: aiResponse
+            ai_response: aiResponse,
           });
         }
       } catch (err) {
@@ -20461,32 +21490,61 @@ app.post('/api/outreach/linkedin-demo', async (req, res) => {
     // Save to database (update existing or insert new)
     let linkedinLeadId;
     if (linkedin_url) {
-      const existing = await dbGet('SELECT id FROM linkedin_outreach WHERE linkedin_url = $1', [linkedin_url]);
+      const existing = await dbGet('SELECT id FROM linkedin_outreach WHERE linkedin_url = $1', [
+        linkedin_url,
+      ]);
       if (existing) {
-        await dbQuery(`
+        await dbQuery(
+          `
           UPDATE linkedin_outreach
           SET demo_token = $1, demo_url = $2, connection_note = $3,
               business_name = $4, google_place_id = $5, google_rating = $6
           WHERE id = $7
-        `, [demoToken, demoUrl, connectionNote, searchName, placeId, googleRating, existing.id]);
+        `,
+          [demoToken, demoUrl, connectionNote, searchName, placeId, googleRating, existing.id]
+        );
         linkedinLeadId = existing.id;
       } else {
-        const inserted = await dbGet(`
+        const inserted = await dbGet(
+          `
           INSERT INTO linkedin_outreach (name, company, linkedin_url, demo_token, demo_url, connection_note, business_name, google_place_id, google_rating)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
           RETURNING id
-        `, [req.body.name || contactFirstName, contactCompany, linkedin_url, demoToken, demoUrl, connectionNote, searchName, placeId, googleRating]);
+        `,
+          [
+            req.body.name || contactFirstName,
+            contactCompany,
+            linkedin_url,
+            demoToken,
+            demoUrl,
+            connectionNote,
+            searchName,
+            placeId,
+            googleRating,
+          ]
+        );
         linkedinLeadId = inserted.id;
       }
     }
 
     // Also store in demo_generations if we have reviews
     if (scrapedReviews.length > 0) {
-      await dbQuery(`
+      await dbQuery(
+        `
         INSERT INTO demo_generations (business_name, google_place_id, google_rating, total_reviews, scraped_reviews, demo_token, generated_responses)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         ON CONFLICT (demo_token) DO UPDATE SET generated_responses = $7
-      `, [searchName, placeId, googleRating, totalReviews, JSON.stringify(scrapedReviews), demoToken, JSON.stringify(generatedResponses)]);
+      `,
+        [
+          searchName,
+          placeId,
+          googleRating,
+          totalReviews,
+          JSON.stringify(scrapedReviews),
+          demoToken,
+          JSON.stringify(generatedResponses),
+        ]
+      );
     }
 
     // Log for sales state tracking
@@ -20505,9 +21563,8 @@ app.post('/api/outreach/linkedin-demo', async (req, res) => {
       has_reviews: scrapedReviews.length > 0,
       reviews_processed: scrapedReviews.length,
       google_rating: googleRating,
-      business_name: searchName
+      business_name: searchName,
     });
-
   } catch (error) {
     console.error('LinkedIn demo generation error:', error);
     res.status(500).json({ error: 'Failed to generate LinkedIn demo' });
@@ -20541,11 +21598,14 @@ app.put('/api/outreach/linkedin-demo/:id/sent', async (req, res) => {
   }
 
   try {
-    await dbQuery(`
+    await dbQuery(
+      `
       UPDATE linkedin_outreach
       SET connection_sent = TRUE, connection_sent_at = NOW()
       WHERE id = $1
-    `, [req.params.id]);
+    `,
+      [req.params.id]
+    );
     res.json({ success: true });
   } catch (error) {
     console.error('LinkedIn sent update error:', error);
@@ -20561,11 +21621,14 @@ app.put('/api/outreach/linkedin-demo/:id/accepted', async (req, res) => {
   }
 
   try {
-    await dbQuery(`
+    await dbQuery(
+      `
       UPDATE linkedin_outreach
       SET connection_accepted = TRUE, connection_accepted_at = NOW()
       WHERE id = $1
-    `, [req.params.id]);
+    `,
+      [req.params.id]
+    );
     res.json({ success: true });
   } catch (error) {
     console.error('LinkedIn accepted update error:', error);
@@ -20582,13 +21645,16 @@ app.get('/api/outreach/linkedin-pending', async (req, res) => {
 
   try {
     const limit = Math.min(parseInt(req.query.limit) || 20, 100);
-    const leads = await dbAll(`
+    const leads = await dbAll(
+      `
       SELECT * FROM linkedin_outreach
       WHERE demo_token IS NOT NULL
         AND connection_sent = FALSE
       ORDER BY created_at DESC
       LIMIT $1
-    `, [limit]);
+    `,
+      [limit]
+    );
     res.json({ leads, count: leads.length });
   } catch (error) {
     console.error('LinkedIn pending fetch error:', error);
@@ -20611,7 +21677,7 @@ app.get('/api/cron/linkedin-demo-daily', async (req, res) => {
       searched: 0,
       demos_created: 0,
       demos_failed: 0,
-      leads: []
+      leads: [],
     };
 
     // Strategy 1: Find new restaurants via Google Places (rotate through cities)
@@ -20669,15 +21735,11 @@ app.get('/api/cron/linkedin-demo-daily', async (req, res) => {
             const reviews = await scrapeGoogleReviews(place.place_id, 5);
 
             // Find reviews to respond to (prefer negative, but take any if none)
-            let targetReviews = reviews
-              .filter(r => r.rating <= 3)
-              .slice(0, 3);
+            let targetReviews = reviews.filter(r => r.rating <= 3).slice(0, 3);
 
             // If no negative reviews, take the lowest-rated ones available
             if (targetReviews.length === 0) {
-              targetReviews = reviews
-                .sort((a, b) => a.rating - b.rating)
-                .slice(0, 3);
+              targetReviews = reviews.sort((a, b) => a.rating - b.rating).slice(0, 3);
             }
 
             if (targetReviews.length === 0) {
@@ -20695,9 +21757,9 @@ app.get('/api/cron/linkedin-demo-daily', async (req, res) => {
                   rating: review.rating,
                   author: review.author,
                   date: review.date,
-                  source: 'google'
+                  source: 'google',
                 },
-                ai_response: aiResponse
+                ai_response: aiResponse,
               });
             }
 
@@ -20706,42 +21768,48 @@ app.get('/api/cron/linkedin-demo-daily', async (req, res) => {
             const demoUrl = `https://tryreviewresponder.com/demo/${demoToken}`;
 
             // Save to demo_generations
-            await dbQuery(`
+            await dbQuery(
+              `
               INSERT INTO demo_generations
               (business_name, google_place_id, city, google_rating, total_reviews, scraped_reviews, demo_token, generated_responses)
               VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            `, [
-              place.name,
-              place.place_id,
-              targetCity,
-              place.rating,
-              place.user_ratings_total,
-              JSON.stringify(reviews),
-              demoToken,
-              JSON.stringify(generatedResponses)
-            ]);
+            `,
+              [
+                place.name,
+                place.place_id,
+                targetCity,
+                place.rating,
+                place.user_ratings_total,
+                JSON.stringify(reviews),
+                demoToken,
+                JSON.stringify(generatedResponses),
+              ]
+            );
 
             // Save to linkedin_outreach (without LinkedIn URL - user needs to find it)
             // Simple connection note template - user replaces [NAME] when sending
             const shortBizName = place.name.split(' ').slice(0, 2).join(' ');
             const connectionNote = `Hey [NAME]! Made you something for ${shortBizName}: ${demoUrl} - Berend`;
 
-            const inserted = await dbGet(`
+            const inserted = await dbGet(
+              `
               INSERT INTO linkedin_outreach
               (name, company, business_name, google_place_id, google_rating, demo_token, demo_url, connection_note, notes)
               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
               RETURNING id
-            `, [
-              '[FIND ON LINKEDIN]',
-              place.name,
-              place.name,
-              place.place_id,
-              place.rating,
-              demoToken,
-              demoUrl,
-              connectionNote,
-              `Auto-generated on ${new Date().toISOString().split('T')[0]}. City: ${targetCity}. Reviews: ${place.user_ratings_total}`
-            ]);
+            `,
+              [
+                '[FIND ON LINKEDIN]',
+                place.name,
+                place.name,
+                place.place_id,
+                place.rating,
+                demoToken,
+                demoUrl,
+                connectionNote,
+                `Auto-generated on ${new Date().toISOString().split('T')[0]}. City: ${targetCity}. Reviews: ${place.user_ratings_total}`,
+              ]
+            );
 
             results.demos_created++;
             results.leads.push({
@@ -20751,13 +21819,17 @@ app.get('/api/cron/linkedin-demo-daily', async (req, res) => {
               rating: place.rating,
               reviews: place.user_ratings_total,
               demo_url: demoUrl,
-              negative_reviews: targetReviews.length
+              negative_reviews: targetReviews.length,
             });
 
-            console.log(`[LinkedIn Demo Daily] Created demo for ${place.name} (${place.rating} stars, ${place.user_ratings_total} reviews)`);
-
+            console.log(
+              `[LinkedIn Demo Daily] Created demo for ${place.name} (${place.rating} stars, ${place.user_ratings_total} reviews)`
+            );
           } catch (demoError) {
-            console.error(`[LinkedIn Demo Daily] Failed to create demo for ${place.name}:`, demoError.message);
+            console.error(
+              `[LinkedIn Demo Daily] Failed to create demo for ${place.name}:`,
+              demoError.message
+            );
             results.demos_failed++;
           }
         }
@@ -20769,9 +21841,12 @@ app.get('/api/cron/linkedin-demo-daily', async (req, res) => {
     // Send reminder email if we have new leads
     if (results.leads.length > 0) {
       try {
-        const leadsList = results.leads.map(l =>
-          `- ${l.business_name} (${l.city}) - ${l.rating} stars, ${l.reviews} reviews\n  Demo: ${l.demo_url}`
-        ).join('\n\n');
+        const leadsList = results.leads
+          .map(
+            l =>
+              `- ${l.business_name} (${l.city}) - ${l.rating} stars, ${l.reviews} reviews\n  Demo: ${l.demo_url}`
+          )
+          .join('\n\n');
 
         await resend.emails.send({
           from: 'ReviewResponder <notifications@tryreviewresponder.com>',
@@ -20801,7 +21876,7 @@ app.get('/api/cron/linkedin-demo-daily', async (req, res) => {
             <p style="color: #666; font-size: 12px; margin-top: 30px;">
               Stadt heute: ${targetCity} | Typ: ${searchType} | Gesucht: ${results.searched}
             </p>
-          `
+          `,
         });
         console.log('[LinkedIn Demo Daily] Reminder email sent');
       } catch (emailError) {
@@ -20813,9 +21888,8 @@ app.get('/api/cron/linkedin-demo-daily', async (req, res) => {
       ok: true,
       city: targetCity,
       type: searchType,
-      ...results
+      ...results,
     });
-
   } catch (error) {
     console.error('[LinkedIn Demo Daily] Error:', error);
     res.status(500).json({ error: error.message });
@@ -20825,7 +21899,10 @@ app.get('/api/cron/linkedin-demo-daily', async (req, res) => {
 // POST /api/sales/agency-leads - Submit agency partnership leads
 app.post('/api/sales/agency-leads', async (req, res) => {
   const authKey = req.headers['x-api-key'] || req.query.key;
-  if (!safeCompare(authKey, process.env.ADMIN_SECRET) && !safeCompare(authKey, process.env.CRON_SECRET)) {
+  if (
+    !safeCompare(authKey, process.env.ADMIN_SECRET) &&
+    !safeCompare(authKey, process.env.CRON_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -20839,27 +21916,32 @@ app.post('/api/sales/agency-leads', async (req, res) => {
     let skipped = 0;
 
     for (const lead of leads) {
-      const existing = await dbGet('SELECT id FROM agency_leads WHERE clutch_url = $1', [lead.clutch_url]);
+      const existing = await dbGet('SELECT id FROM agency_leads WHERE clutch_url = $1', [
+        lead.clutch_url,
+      ]);
       if (existing) {
         skipped++;
         continue;
       }
 
-      await dbQuery(`
+      await dbQuery(
+        `
         INSERT INTO agency_leads (agency_name, website, clutch_url, clutch_rating, num_reviews, services, location, min_project_size, hourly_rate, employees)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      `, [
-        lead.agency_name,
-        lead.website,
-        lead.clutch_url,
-        lead.clutch_rating,
-        lead.num_reviews,
-        lead.services,
-        lead.location,
-        lead.min_project_size,
-        lead.hourly_rate,
-        lead.employees
-      ]);
+      `,
+        [
+          lead.agency_name,
+          lead.website,
+          lead.clutch_url,
+          lead.clutch_rating,
+          lead.num_reviews,
+          lead.services,
+          lead.location,
+          lead.min_project_size,
+          lead.hourly_rate,
+          lead.employees,
+        ]
+      );
       inserted++;
     }
 
@@ -20879,17 +21961,25 @@ app.get('/api/sales/dashboard', async (req, res) => {
 
   try {
     const [yelp, competitor, linkedin, agency] = await Promise.all([
-      dbAll('SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE email_sent) as emailed, COUNT(*) FILTER (WHERE replied) as replied FROM yelp_leads'),
-      dbAll('SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE email_sent) as emailed, COUNT(*) FILTER (WHERE replied) as replied FROM competitor_leads'),
-      dbAll('SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE connection_sent) as sent, COUNT(*) FILTER (WHERE connection_accepted) as accepted, COUNT(*) FILTER (WHERE replied) as replied FROM linkedin_outreach'),
-      dbAll('SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE email_sequence > 0) as emailed, COUNT(*) FILTER (WHERE replied) as replied, COUNT(*) FILTER (WHERE interested) as interested FROM agency_leads')
+      dbAll(
+        'SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE email_sent) as emailed, COUNT(*) FILTER (WHERE replied) as replied FROM yelp_leads'
+      ),
+      dbAll(
+        'SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE email_sent) as emailed, COUNT(*) FILTER (WHERE replied) as replied FROM competitor_leads'
+      ),
+      dbAll(
+        'SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE connection_sent) as sent, COUNT(*) FILTER (WHERE connection_accepted) as accepted, COUNT(*) FILTER (WHERE replied) as replied FROM linkedin_outreach'
+      ),
+      dbAll(
+        'SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE email_sequence > 0) as emailed, COUNT(*) FILTER (WHERE replied) as replied, COUNT(*) FILTER (WHERE interested) as interested FROM agency_leads'
+      ),
     ]);
 
     res.json({
       yelp_leads: yelp[0],
       competitor_leads: competitor[0],
       linkedin_outreach: linkedin[0],
-      agency_leads: agency[0]
+      agency_leads: agency[0],
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to get dashboard' });
@@ -20910,7 +22000,7 @@ app.get('/api/admin/scraper-status', async (req, res) => {
       tripadvisor: { low: 20, critical: 10 },
       linkedin: { low: 50, critical: 25 },
       yelp: { low: 20, critical: 10 },
-      agency: { low: 10, critical: 5 }
+      agency: { low: 10, critical: 5 },
     };
 
     // Query all lead sources in parallel
@@ -20923,7 +22013,7 @@ app.get('/api/admin/scraper-status', async (req, res) => {
       agencyLeads,
       emailsToday,
       lastCronRun,
-      lastTripadvisorScrape
+      lastTripadvisorScrape,
     ] = await Promise.all([
       // Main outreach leads (Daily Outreach - excludes TripAdvisor)
       dbGet(`
@@ -20999,7 +22089,7 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         SELECT MAX(sent_at) as last_email
         FROM outreach_emails
         WHERE campaign = 'tripadvisor-review-alert' OR campaign = 'tripadvisor-auto'
-      `)
+      `),
     ]);
 
     // Helper function to determine status
@@ -21023,7 +22113,7 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         emails_today: parseInt(emailsToday?.count || 0),
         status: 'ok',
         last_run: lastCronRun?.last_run || null,
-        priority_reason: '70% aller Leads, automatisch'
+        priority_reason: '70% aller Leads, automatisch',
       },
       {
         tier: 1,
@@ -21031,7 +22121,7 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         type: 'automatic',
         command: null,
         status: 'ok',
-        priority_reason: 'Nurturing, automatisch'
+        priority_reason: 'Nurturing, automatisch',
       },
       {
         tier: 1,
@@ -21039,7 +22129,7 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         type: 'automatic',
         command: null,
         status: 'ok',
-        priority_reason: 'SEO Traffic, 3x/Woche'
+        priority_reason: 'SEO Traffic, 3x/Woche',
       },
       // Tier 2: Manual + High ROI
       {
@@ -21054,7 +22144,7 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         leads_not_contacted: parseInt(competitorLeads?.not_contacted || 0),
         by_competitor: {
           birdeye: parseInt(competitorLeads?.birdeye || 0),
-          podium: parseInt(competitorLeads?.podium || 0)
+          podium: parseInt(competitorLeads?.podium || 0),
         },
         threshold_low: thresholds.g2_competitors.low,
         threshold_critical: thresholds.g2_competitors.critical,
@@ -21064,8 +22154,8 @@ app.get('/api/admin/scraper-status', async (req, res) => {
           '1. Starte: claude --chrome',
           '2. Tippe: /g2-miner birdeye (oder podium)',
           '3. Claude scraped G2 Reviews automatisch',
-          '4. Finde LinkedIn Profiles manuell'
-        ]
+          '4. Finde LinkedIn Profiles manuell',
+        ],
       },
       {
         tier: 2,
@@ -21085,13 +22175,25 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         threshold_critical: thresholds.tripadvisor.critical,
         status: getStatus(parseInt(tripadvisorLeads?.not_contacted || 0), thresholds.tripadvisor),
         priority_reason: 'Restaurants = Hauptzielgruppe, Chrome MCP nötig',
-        available_cities: ['nyc', 'la', 'chicago', 'miami', 'berlin', 'munich', 'hamburg', 'vienna', 'zurich', 'london', 'paris'],
+        available_cities: [
+          'nyc',
+          'la',
+          'chicago',
+          'miami',
+          'berlin',
+          'munich',
+          'hamburg',
+          'vienna',
+          'zurich',
+          'london',
+          'paris',
+        ],
         workflow: [
           '1. Starte: claude --chrome',
           '2. Tippe: /scrape-leads restaurants [city]',
           '3. Claude scraped TripAdvisor automatisch',
-          '4. Cron sendet Emails mit Demos (09:00)'
-        ]
+          '4. Cron sendet Emails mit Demos (09:00)',
+        ],
       },
       {
         tier: 2,
@@ -21109,16 +22211,32 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         limits: {
           connections_today: parseInt(linkedinLeads?.connections_today || 0),
           connections_today_max: 20,
-          connections_today_remaining: Math.max(0, 20 - parseInt(linkedinLeads?.connections_today || 0)),
+          connections_today_remaining: Math.max(
+            0,
+            20 - parseInt(linkedinLeads?.connections_today || 0)
+          ),
           connections_this_week: parseInt(linkedinLeads?.connections_this_week || 0),
           connections_week_max: 100,
-          connections_week_remaining: Math.max(0, 100 - parseInt(linkedinLeads?.connections_this_week || 0)),
+          connections_week_remaining: Math.max(
+            0,
+            100 - parseInt(linkedinLeads?.connections_this_week || 0)
+          ),
           messages_today: parseInt(linkedinLeads?.messages_today || 0),
           messages_today_max: 50,
           messages_today_remaining: Math.max(0, 50 - parseInt(linkedinLeads?.messages_today || 0)),
           // Status indicators
-          daily_status: parseInt(linkedinLeads?.connections_today || 0) >= 20 ? 'limit_reached' : parseInt(linkedinLeads?.connections_today || 0) >= 15 ? 'warning' : 'ok',
-          weekly_status: parseInt(linkedinLeads?.connections_this_week || 0) >= 100 ? 'limit_reached' : parseInt(linkedinLeads?.connections_this_week || 0) >= 80 ? 'warning' : 'ok'
+          daily_status:
+            parseInt(linkedinLeads?.connections_today || 0) >= 20
+              ? 'limit_reached'
+              : parseInt(linkedinLeads?.connections_today || 0) >= 15
+                ? 'warning'
+                : 'ok',
+          weekly_status:
+            parseInt(linkedinLeads?.connections_this_week || 0) >= 100
+              ? 'limit_reached'
+              : parseInt(linkedinLeads?.connections_this_week || 0) >= 80
+                ? 'warning'
+                : 'ok',
         },
         threshold_low: thresholds.linkedin.low,
         threshold_critical: thresholds.linkedin.critical,
@@ -21128,8 +22246,8 @@ app.get('/api/admin/scraper-status', async (req, res) => {
           '1. Starte: claude --chrome',
           '2. Tippe: /linkedin-connect "Restaurant Owner" Germany',
           '3. Claude verbindet automatisch (max 20/Tag)',
-          '4. Follow-up: /linkedin-connect followup'
-        ]
+          '4. Follow-up: /linkedin-connect followup',
+        ],
       },
       // Tier 3: Experimental
       {
@@ -21143,7 +22261,7 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         threshold_low: thresholds.yelp.low,
         threshold_critical: thresholds.yelp.critical,
         status: getStatus(parseInt(yelpLeads?.total || 0), thresholds.yelp),
-        priority_reason: 'Experimentell - niedrige Response Rate Businesses'
+        priority_reason: 'Experimentell - niedrige Response Rate Businesses',
       },
       {
         tier: 3,
@@ -21155,8 +22273,8 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         threshold_low: thresholds.agency.low,
         threshold_critical: thresholds.agency.critical,
         status: getStatus(parseInt(agencyLeads?.total || 0), thresholds.agency),
-        priority_reason: 'White-Label Partners = recurring revenue'
-      }
+        priority_reason: 'White-Label Partners = recurring revenue',
+      },
     ];
 
     // Generate recommendations for critical/low sources
@@ -21174,7 +22292,7 @@ app.get('/api/admin/scraper-status', async (req, res) => {
         leads: s.leads_total,
         threshold: s.threshold_low,
         action: `Starte ${s.scrape_prompt || s.command} - nur ${s.leads_total} Leads`,
-        command: s.scrape_prompt || s.command
+        command: s.scrape_prompt || s.command,
       }));
 
     // Summary stats
@@ -21183,7 +22301,7 @@ app.get('/api/admin/scraper-status', async (req, res) => {
       manual_sources: sources.filter(s => s.type === 'manual').length,
       critical_count: sources.filter(s => s.status === 'critical').length,
       low_count: sources.filter(s => s.status === 'low').length,
-      total_leads: sources.reduce((sum, s) => sum + (s.leads_total || 0), 0)
+      total_leads: sources.reduce((sum, s) => sum + (s.leads_total || 0), 0),
     };
 
     res.json({
@@ -21192,8 +22310,8 @@ app.get('/api/admin/scraper-status', async (req, res) => {
       summary,
       notifications: {
         enabled: true,
-        email: 'berend.mainz@web.de'
-      }
+        email: 'berend.mainz@web.de',
+      },
     });
   } catch (error) {
     console.error('Scraper status error:', error);
@@ -21206,7 +22324,10 @@ app.get('/api/cron/scraper-alerts', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
   const force = req.query.force === 'true';
 
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -21225,11 +22346,15 @@ app.get('/api/cron/scraper-alerts', async (req, res) => {
     }
 
     // Get scraper status
-    const statusResponse = await fetch(`${process.env.BACKEND_URL || 'https://review-responder.onrender.com'}/api/admin/scraper-status?key=${process.env.ADMIN_SECRET}`);
+    const statusResponse = await fetch(
+      `${process.env.BACKEND_URL || 'https://review-responder.onrender.com'}/api/admin/scraper-status?key=${process.env.ADMIN_SECRET}`
+    );
     const status = await statusResponse.json();
 
     // Filter for critical and low sources
-    const criticalSources = status.sources.filter(s => s.status === 'critical' && s.type === 'manual');
+    const criticalSources = status.sources.filter(
+      s => s.status === 'critical' && s.type === 'manual'
+    );
     const lowSources = status.sources.filter(s => s.status === 'low' && s.type === 'manual');
 
     if (criticalSources.length === 0 && lowSources.length === 0) {
@@ -21270,23 +22395,24 @@ app.get('/api/cron/scraper-alerts', async (req, res) => {
     emailBody += `\n\nDashboard: https://tryreviewresponder.com/admin\n`;
 
     // Send email
-    const subject = criticalSources.length > 0
-      ? `Scraper Alert: ${criticalSources.length} kritische Lead-Quelle(n)`
-      : `Scraper Alert: ${lowSources.length} Lead-Quelle(n) niedrig`;
+    const subject =
+      criticalSources.length > 0
+        ? `Scraper Alert: ${criticalSources.length} kritische Lead-Quelle(n)`
+        : `Scraper Alert: ${lowSources.length} Lead-Quelle(n) niedrig`;
 
     await sendEmail({
       to: 'berend.mainz@web.de',
       subject,
       text: emailBody,
       type: 'transactional',
-      campaign: 'scraper-alert'
+      campaign: 'scraper-alert',
     });
 
     res.json({
       ok: true,
       message: 'Alert sent',
       critical: criticalSources.length,
-      low: lowSources.length
+      low: lowSources.length,
     });
   } catch (error) {
     console.error('Scraper alerts error:', error);
@@ -21313,17 +22439,23 @@ app.get('/api/admin/automation-health', async (req, res) => {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
 
-    const todayStats = await dbGet(`
+    const todayStats = await dbGet(
+      `
       SELECT
         COUNT(*) FILTER (WHERE created_at >= $1) as leads_today,
         COUNT(*) FILTER (WHERE demo_url IS NOT NULL AND created_at >= $1) as demos_today,
         COUNT(*) FILTER (WHERE demo_url IS NULL AND ai_response_draft IS NOT NULL AND created_at >= $1) as fallbacks_today
       FROM outreach_leads
-    `, [todayStart.toISOString()]);
+    `,
+      [todayStart.toISOString()]
+    );
 
-    const emailsToday = await dbGet(`
+    const emailsToday = await dbGet(
+      `
       SELECT COUNT(*) as count FROM outreach_emails WHERE created_at >= $1
-    `, [todayStart.toISOString()]);
+    `,
+      [todayStart.toISOString()]
+    );
 
     // 3. Get demo stats
     const demoStats = await dbGet(`
@@ -21357,17 +22489,23 @@ app.get('/api/admin/automation-health', async (req, res) => {
     const last7Days = new Date();
     last7Days.setDate(last7Days.getDate() - 7);
 
-    const recentLeads = await dbGet(`
+    const recentLeads = await dbGet(
+      `
       SELECT COUNT(*) as count FROM outreach_leads WHERE created_at >= $1
-    `, [last7Days.toISOString()]);
+    `,
+      [last7Days.toISOString()]
+    );
 
-    const recentDemos = await dbGet(`
+    const recentDemos = await dbGet(
+      `
       SELECT COUNT(*) as count FROM demo_generations WHERE created_at >= $1
-    `, [last7Days.toISOString()]);
+    `,
+      [last7Days.toISOString()]
+    );
 
     // Calculate estimated API usage
-    const leadsPerDay = Math.round((parseInt(recentLeads?.count || 0)) / 7);
-    const demosPerDay = Math.round((parseInt(recentDemos?.count || 0)) / 7);
+    const leadsPerDay = Math.round(parseInt(recentLeads?.count || 0) / 7);
+    const demosPerDay = Math.round(parseInt(recentDemos?.count || 0) / 7);
 
     // SerpAPI: ~1 request per demo attempt
     const serpApiUsageEstimate = demosPerDay * 30; // Monthly estimate
@@ -21377,10 +22515,13 @@ app.get('/api/admin/automation-health', async (req, res) => {
     const googlePlacesCostEstimate = leadsPerDay * 0.017 * 30; // $0.017 per request
 
     // Hunter.io: Using website scraper, so minimal
-    const hunterUsed = await dbGet(`
+    const hunterUsed = await dbGet(
+      `
       SELECT COUNT(*) as count FROM outreach_leads
       WHERE email_source = 'hunter' AND created_at >= $1
-    `, [last7Days.toISOString()]);
+    `,
+      [last7Days.toISOString()]
+    );
 
     // 6. Check for errors/warnings
     const alerts = [];
@@ -21390,21 +22531,21 @@ app.get('/api/admin/automation-health', async (req, res) => {
     if (serpApiUsageEstimate > effectiveSerpApiLimit * 0.8) {
       alerts.push({
         type: 'warning',
-        message: `SerpAPI usage high: ~${serpApiUsageEstimate}/mo (limit: ${effectiveSerpApiLimit} with ${serpApiKeyCount} key${serpApiKeyCount > 1 ? 's' : ''})`
+        message: `SerpAPI usage high: ~${serpApiUsageEstimate}/mo (limit: ${effectiveSerpApiLimit} with ${serpApiKeyCount} key${serpApiKeyCount > 1 ? 's' : ''})`,
       });
     }
 
     if (serpApiKeyCount === 0 && !process.env.OUTSCRAPER_API_KEY) {
       alerts.push({
         type: 'error',
-        message: 'No review scraping API configured (need SERPAPI_KEY or OUTSCRAPER_API_KEY)'
+        message: 'No review scraping API configured (need SERPAPI_KEY or OUTSCRAPER_API_KEY)',
       });
     }
 
     if (!process.env.GOOGLE_PLACES_API_KEY) {
       alerts.push({
         type: 'error',
-        message: 'GOOGLE_PLACES_API_KEY not configured - lead scraping will fail!'
+        message: 'GOOGLE_PLACES_API_KEY not configured - lead scraping will fail!',
       });
     }
 
@@ -21413,7 +22554,7 @@ app.get('/api/admin/automation-health', async (req, res) => {
     if (hunterUsedCount > hunterLimit * 0.7) {
       alerts.push({
         type: 'warning',
-        message: `Hunter.io ${Math.round(hunterUsedCount/hunterLimit*100)}% used (${hunterUsedCount}/${hunterLimit})`
+        message: `Hunter.io ${Math.round((hunterUsedCount / hunterLimit) * 100)}% used (${hunterUsedCount}/${hunterLimit})`,
       });
     }
 
@@ -21433,64 +22574,76 @@ app.get('/api/admin/automation-health', async (req, res) => {
           leads_scraped: parseInt(todayStats?.leads_today || 0),
           demos_generated: parseInt(todayStats?.demos_today || 0),
           demos_failed_fallback: parseInt(todayStats?.fallbacks_today || 0),
-          emails_sent: parseInt(emailsToday?.count || 0)
-        }
+          emails_sent: parseInt(emailsToday?.count || 0),
+        },
       },
       api_usage: {
         serpapi: {
           estimated_monthly: serpApiUsageEstimate,
           limit: effectiveSerpApiLimit,
           key_count: serpApiKeyCount,
-          percent: effectiveSerpApiLimit > 0 ? Math.round(serpApiUsageEstimate / effectiveSerpApiLimit * 100) : 0,
-          note: serpApiKeyCount > 1 ? `${serpApiKeyCount} keys rotating (${effectiveSerpApiLimit} total searches/mo)` : null
+          percent:
+            effectiveSerpApiLimit > 0
+              ? Math.round((serpApiUsageEstimate / effectiveSerpApiLimit) * 100)
+              : 0,
+          note:
+            serpApiKeyCount > 1
+              ? `${serpApiKeyCount} keys rotating (${effectiveSerpApiLimit} total searches/mo)`
+              : null,
         },
         outscraper: {
           configured: !!process.env.OUTSCRAPER_API_KEY,
           free_tier_limit: 500,
-          note: 'PRIMARY for reviews (500 free/mo), SerpAPI is fallback'
+          note: 'PRIMARY for reviews (500 free/mo), SerpAPI is fallback',
         },
         google_places: {
           estimated_monthly_cost_usd: Math.round(googlePlacesCostEstimate * 100) / 100,
-          configured: !!process.env.GOOGLE_PLACES_API_KEY
+          configured: !!process.env.GOOGLE_PLACES_API_KEY,
         },
         hunter_io: {
           used_this_week: hunterUsedCount,
           limit: hunterLimit,
-          percent: Math.round(hunterUsedCount / hunterLimit * 100),
-          note: 'Last resort - after scraper, pattern guess, snov.io'
+          percent: Math.round((hunterUsedCount / hunterLimit) * 100),
+          note: 'Last resort - after scraper, pattern guess, snov.io',
         },
         snov_io: {
           configured: !!(process.env.SNOV_CLIENT_ID && process.env.SNOV_CLIENT_SECRET),
           free_tier_limit: 50,
-          note: '50 free/month - 3rd fallback after scraper and pattern'
+          note: '50 free/month - 3rd fallback after scraper and pattern',
         },
         email_finding: {
-          fallback_order: ['website_scraper (FREE)', 'pattern_guess (FREE)', 'snov.io (50/mo)', 'hunter.io (25/wk)'],
-          note: 'Multi-fallback system maximizes free tier usage'
-        }
+          fallback_order: [
+            'website_scraper (FREE)',
+            'pattern_guess (FREE)',
+            'snov.io (50/mo)',
+            'hunter.io (25/wk)',
+          ],
+          note: 'Multi-fallback system maximizes free tier usage',
+        },
       },
       funnel: {
         total_leads: totalLeads,
         with_email: withEmail,
-        email_rate: totalLeads > 0 ? `${Math.round(withEmail/totalLeads*100)}%` : '0%',
+        email_rate: totalLeads > 0 ? `${Math.round((withEmail / totalLeads) * 100)}%` : '0%',
         contacted: contacted,
         unique_opens: uniqueOpens,
-        open_rate: contacted > 0 ? `${Math.round(uniqueOpens/contacted*100)}%` : '0%',
+        open_rate: contacted > 0 ? `${Math.round((uniqueOpens / contacted) * 100)}%` : '0%',
         unique_clicks: uniqueClicks,
-        click_rate: contacted > 0 ? `${Math.round(uniqueClicks/contacted*100)}%` : '0%',
-        conversions: converted
+        click_rate: contacted > 0 ? `${Math.round((uniqueClicks / contacted) * 100)}%` : '0%',
+        conversions: converted,
       },
       demos: {
         total: parseInt(demoStats?.total_demos || 0),
         emails_sent: parseInt(demoStats?.with_email || 0),
         pages_viewed: parseInt(demoStats?.viewed || 0),
-        view_rate: parseInt(demoStats?.with_email || 0) > 0
-          ? `${Math.round(parseInt(demoStats?.viewed || 0) / parseInt(demoStats?.with_email || 0) * 100)}%`
-          : '0%',
-        converted: converted
+        view_rate:
+          parseInt(demoStats?.with_email || 0) > 0
+            ? `${Math.round((parseInt(demoStats?.viewed || 0) / parseInt(demoStats?.with_email || 0)) * 100)}%`
+            : '0%',
+        converted: converted,
       },
       alerts,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error('Automation health error:', error);
@@ -21533,13 +22686,13 @@ app.get('/api/admin/test-review-scraper', async (req, res) => {
       reviews: reviews.map(r => ({
         author: r.author,
         rating: r.rating,
-        text: r.text?.substring(0, 100) + (r.text?.length > 100 ? '...' : '')
+        text: r.text?.substring(0, 100) + (r.text?.length > 100 ? '...' : ''),
       })),
       apis_configured: {
         serpapi: !!getNextSerpApiKey(),
         serpapi_keys: getSerpApiKeyCount(),
-        outscraper: !!process.env.OUTSCRAPER_API_KEY
-      }
+        outscraper: !!process.env.OUTSCRAPER_API_KEY,
+      },
     });
   } catch (error) {
     res.status(500).json({
@@ -21548,8 +22701,8 @@ app.get('/api/admin/test-review-scraper', async (req, res) => {
       apis_configured: {
         serpapi: !!getNextSerpApiKey(),
         serpapi_keys: getSerpApiKeyCount(),
-        outscraper: !!process.env.OUTSCRAPER_API_KEY
-      }
+        outscraper: !!process.env.OUTSCRAPER_API_KEY,
+      },
     });
   }
 });
@@ -21558,7 +22711,10 @@ app.get('/api/admin/test-review-scraper', async (req, res) => {
 // Changed from POST to GET for cron-job.org compatibility (14.01.2026)
 app.get('/api/cron/send-yelp-emails', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -21603,7 +22759,10 @@ app.get('/api/cron/send-yelp-emails', async (req, res) => {
             from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
           });
 
-          await dbQuery('UPDATE yelp_leads SET email_sent = TRUE, email_sent_at = NOW() WHERE id = $1', [lead.id]);
+          await dbQuery(
+            'UPDATE yelp_leads SET email_sent = TRUE, email_sent_at = NOW() WHERE id = $1',
+            [lead.id]
+          );
           sent++;
         }
       } catch (emailError) {
@@ -21623,7 +22782,10 @@ app.get('/api/cron/send-yelp-emails', async (req, res) => {
 // Changed from POST to GET for cron-job.org compatibility (14.01.2026)
 app.get('/api/cron/send-g2-emails', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -21663,7 +22825,10 @@ Berend`;
           from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
         });
 
-        await dbQuery('UPDATE competitor_leads SET email_sent = TRUE, email_sent_at = NOW() WHERE id = $1', [lead.id]);
+        await dbQuery(
+          'UPDATE competitor_leads SET email_sent = TRUE, email_sent_at = NOW() WHERE id = $1',
+          [lead.id]
+        );
         results.first_emails++;
       } catch (err) {
         console.error(`G2 first email failed for ${lead.email}:`, err.message);
@@ -21709,7 +22874,10 @@ Berend`;
           from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
         });
 
-        await dbQuery('UPDATE competitor_leads SET followup_sent = TRUE, followup_sent_at = NOW() WHERE id = $1', [lead.id]);
+        await dbQuery(
+          'UPDATE competitor_leads SET followup_sent = TRUE, followup_sent_at = NOW() WHERE id = $1',
+          [lead.id]
+        );
         results.followups++;
       } catch (err) {
         console.error(`G2 followup failed for ${lead.email}:`, err.message);
@@ -21717,7 +22885,9 @@ Berend`;
       }
     }
 
-    console.log(`G2 cron: ${results.first_emails} first, ${results.followups} followups, ${results.failed} failed`);
+    console.log(
+      `G2 cron: ${results.first_emails} first, ${results.followups} followups, ${results.failed} failed`
+    );
     res.json({ ok: true, ...results });
   } catch (error) {
     console.error('G2 email cron error:', error);
@@ -21729,7 +22899,10 @@ Berend`;
 // Changed from POST to GET for cron-job.org compatibility (14.01.2026)
 app.get('/api/cron/send-agency-emails', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -21759,8 +22932,10 @@ app.get('/api/cron/send-agency-emails', async (req, res) => {
     for (const lead of newLeads) {
       try {
         const contactName = lead.contact_name || 'there';
-        const subject = SALES_EMAIL_TEMPLATES.agency_partnership.subject
-          .replace('{agency_name}', lead.agency_name);
+        const subject = SALES_EMAIL_TEMPLATES.agency_partnership.subject.replace(
+          '{agency_name}',
+          lead.agency_name
+        );
 
         const body = SALES_EMAIL_TEMPLATES.agency_partnership.body
           .replace(/{agency_name}/g, lead.agency_name)
@@ -21776,7 +22951,10 @@ app.get('/api/cron/send-agency-emails', async (req, res) => {
             from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
           });
 
-          await dbQuery('UPDATE agency_leads SET email_sequence = 1, last_email_sent = NOW() WHERE id = $1', [lead.id]);
+          await dbQuery(
+            'UPDATE agency_leads SET email_sequence = 1, last_email_sent = NOW() WHERE id = $1',
+            [lead.id]
+          );
           sent++;
         }
       } catch (emailError) {
@@ -21789,8 +22967,10 @@ app.get('/api/cron/send-agency-emails', async (req, res) => {
     for (const lead of followupLeads) {
       try {
         const contactName = lead.contact_name || 'there';
-        const subject = SALES_EMAIL_TEMPLATES.agency_followup_1.subject
-          .replace('{agency_name}', lead.agency_name);
+        const subject = SALES_EMAIL_TEMPLATES.agency_followup_1.subject.replace(
+          '{agency_name}',
+          lead.agency_name
+        );
 
         const body = SALES_EMAIL_TEMPLATES.agency_followup_1.body
           .replace(/{agency_name}/g, lead.agency_name)
@@ -21806,7 +22986,10 @@ app.get('/api/cron/send-agency-emails', async (req, res) => {
             from: process.env.OUTREACH_FROM_EMAIL || FROM_EMAIL,
           });
 
-          await dbQuery('UPDATE agency_leads SET email_sequence = 2, last_email_sent = NOW() WHERE id = $1', [lead.id]);
+          await dbQuery(
+            'UPDATE agency_leads SET email_sequence = 2, last_email_sent = NOW() WHERE id = $1',
+            [lead.id]
+          );
           sent++;
         }
       } catch (emailError) {
@@ -21815,7 +22998,13 @@ app.get('/api/cron/send-agency-emails', async (req, res) => {
       }
     }
 
-    res.json({ success: true, sent, failed, newLeads: newLeads.length, followups: followupLeads.length });
+    res.json({
+      success: true,
+      sent,
+      failed,
+      newLeads: newLeads.length,
+      followups: followupLeads.length,
+    });
   } catch (error) {
     console.error('Agency email cron error:', error);
     res.status(500).json({ error: 'Agency email cron failed' });
@@ -21829,7 +23018,10 @@ app.get('/api/cron/send-agency-emails', async (req, res) => {
 
 app.get('/api/cron/night-blast', async (req, res) => {
   const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (!safeCompare(cronSecret, process.env.CRON_SECRET) && !safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -21852,24 +23044,75 @@ app.get('/api/cron/night-blast', async (req, res) => {
     console.log('📍 Phase 1: Multi-City Scraping...');
 
     const cities = [
-      'New York', 'Los Angeles', 'Chicago', 'Houston', 'Miami',
-      'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas',
-      'San Jose', 'Austin', 'Jacksonville', 'San Francisco', 'Seattle',
-      'Denver', 'Boston', 'Las Vegas', 'Portland', 'Atlanta',
-      'London', 'Dublin',
-      'Berlin', 'München', 'Hamburg', 'Frankfurt', 'Köln',
-      'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Genf',
-      'Leipzig', 'Dresden', 'Hannover', 'Nürnberg', 'Bremen', 'Essen',
-      'Salzburg', 'Graz', 'Linz', 'Innsbruck', 'Basel', 'Bern',
-      'Amsterdam', 'Brüssel'
+      'New York',
+      'Los Angeles',
+      'Chicago',
+      'Houston',
+      'Miami',
+      'Phoenix',
+      'Philadelphia',
+      'San Antonio',
+      'San Diego',
+      'Dallas',
+      'San Jose',
+      'Austin',
+      'Jacksonville',
+      'San Francisco',
+      'Seattle',
+      'Denver',
+      'Boston',
+      'Las Vegas',
+      'Portland',
+      'Atlanta',
+      'London',
+      'Dublin',
+      'Berlin',
+      'München',
+      'Hamburg',
+      'Frankfurt',
+      'Köln',
+      'Stuttgart',
+      'Düsseldorf',
+      'Wien',
+      'Zürich',
+      'Genf',
+      'Leipzig',
+      'Dresden',
+      'Hannover',
+      'Nürnberg',
+      'Bremen',
+      'Essen',
+      'Salzburg',
+      'Graz',
+      'Linz',
+      'Innsbruck',
+      'Basel',
+      'Bern',
+      'Amsterdam',
+      'Brüssel',
     ];
 
     const industries = [
-      'restaurant', 'hotel', 'dental office', 'law firm',
-      'auto repair shop', 'hair salon', 'gym', 'real estate agency',
-      'medical clinic', 'retail store', 'spa', 'veterinary clinic',
-      'physiotherapy', 'accounting firm', 'bakery', 'coffee shop',
-      'car dealership', 'optician', 'pharmacy', 'florist'
+      'restaurant',
+      'hotel',
+      'dental office',
+      'law firm',
+      'auto repair shop',
+      'hair salon',
+      'gym',
+      'real estate agency',
+      'medical clinic',
+      'retail store',
+      'spa',
+      'veterinary clinic',
+      'physiotherapy',
+      'accounting firm',
+      'bakery',
+      'coffee shop',
+      'car dealership',
+      'optician',
+      'pharmacy',
+      'florist',
     ];
 
     let totalScraped = 0;
@@ -21878,7 +23121,9 @@ app.get('/api/cron/night-blast', async (req, res) => {
 
     // Calculate starting index based on hour to avoid overlap between runs
     const hourOfDay = new Date().getHours();
-    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+    const dayOfYear = Math.floor(
+      (new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24)
+    );
     const startCityIndex = (dayOfYear * 3 + Math.floor(hourOfDay / 8)) * citiesToScrape;
 
     if (process.env.GOOGLE_PLACES_API_KEY) {
@@ -21896,7 +23141,12 @@ app.get('/api/cron/night-blast', async (req, res) => {
           logApiCall({
             provider: 'google_places',
             endpoint: '/api/cron/night-blast',
-            metadata: { type: 'textsearch', city, industry, resultsCount: data.results?.length || 0 },
+            metadata: {
+              type: 'textsearch',
+              city,
+              industry,
+              resultsCount: data.results?.length || 0,
+            },
           });
 
           if (data.results) {
@@ -21984,7 +23234,12 @@ app.get('/api/cron/night-blast', async (req, res) => {
         if (emailResult?.email) {
           await dbQuery(
             'UPDATE outreach_leads SET email = $1, email_source = $2, contact_name = $3 WHERE id = $4',
-            [emailResult.email, emailResult.source || 'night_blast', emailResult.contactName || null, lead.id]
+            [
+              emailResult.email,
+              emailResult.source || 'night_blast',
+              emailResult.contactName || null,
+              lead.id,
+            ]
           );
           emailsFound++;
         }
@@ -21994,7 +23249,10 @@ app.get('/api/cron/night-blast', async (req, res) => {
       }
     }
 
-    results.phase2_email_finding = { processed: leadsWithoutEmail.length, emails_found: emailsFound };
+    results.phase2_email_finding = {
+      processed: leadsWithoutEmail.length,
+      emails_found: emailsFound,
+    };
     console.log(`📧 Phase 2 complete: ${emailsFound} emails found`);
 
     // ===== PHASE 3: DEMO GENERATION =====
@@ -22054,7 +23312,10 @@ app.get('/api/cron/night-blast', async (req, res) => {
       }
     }
 
-    results.phase3_demo_generation = { processed: leadsNeedingDemo.length, demos_generated: demosGenerated };
+    results.phase3_demo_generation = {
+      processed: leadsNeedingDemo.length,
+      demos_generated: demosGenerated,
+    };
     console.log(`🎬 Phase 3 complete: ${demosGenerated} demos generated`);
 
     // ===== PHASE 4: HOT LEAD FOLLOW-UPS =====
@@ -22119,7 +23380,9 @@ app.get('/api/cron/night-blast', async (req, res) => {
       );
       const g2EnrichResult = await g2EnrichResponse.json();
       results.phase7_g2_enrichment = g2EnrichResult;
-      console.log(`🎯 Phase 7 complete: ${g2EnrichResult.domainsFound || 0} domains, ${g2EnrichResult.emailsFound || 0} emails found`);
+      console.log(
+        `🎯 Phase 7 complete: ${g2EnrichResult.domainsFound || 0} domains, ${g2EnrichResult.emailsFound || 0} emails found`
+      );
     } catch (e) {
       results.phase7_g2_enrichment = { error: e.message };
       console.error('Phase 7 error:', e.message);
@@ -22195,7 +23458,6 @@ app.get('/api/cron/night-blast', async (req, res) => {
       },
       phases: results,
     });
-
   } catch (error) {
     console.error('Night blast critical error:', error);
     res.status(500).json({
@@ -22292,7 +23554,10 @@ app.get('/api/admin/test-email', authenticateAdmin, async (req, res) => {
       const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
       sendSmtpEmail.subject = 'Brevo Test Email';
       sendSmtpEmail.htmlContent = `<h1>Brevo Test</h1><p>This is a test email sent via Brevo at ${new Date().toISOString()}</p>`;
-      sendSmtpEmail.sender = { name: 'ReviewResponder Test', email: 'hello@tryreviewresponder.com' };
+      sendSmtpEmail.sender = {
+        name: 'ReviewResponder Test',
+        email: 'hello@tryreviewresponder.com',
+      };
       sendSmtpEmail.to = [{ email: testEmail }];
 
       result = await brevoApi.sendTransacEmail(sendSmtpEmail);
@@ -22366,7 +23631,7 @@ app.get('/api/health', async (req, res) => {
     email: {
       resend: resend ? 'configured' : 'not configured',
       brevo: brevoApi ? 'configured' : 'not configured',
-      outreach_provider: brevoApi ? 'brevo' : (resend ? 'resend' : 'none'),
+      outreach_provider: brevoApi ? 'brevo' : resend ? 'resend' : 'none',
     },
     timestamp: new Date().toISOString(),
   });
@@ -22395,14 +23660,18 @@ app.get('/api/admin/cleanup-test-data', async (req, res) => {
 
   try {
     // 1. Outreach Clicks
-    const clicksCount = await pool.query(`SELECT COUNT(*) FROM outreach_clicks WHERE ${whereClause}`);
+    const clicksCount = await pool.query(
+      `SELECT COUNT(*) FROM outreach_clicks WHERE ${whereClause}`
+    );
     results.deleted.outreach_clicks = parseInt(clicksCount.rows[0].count);
     if (!isDryRun && results.deleted.outreach_clicks > 0) {
       await pool.query(`DELETE FROM outreach_clicks WHERE ${whereClause}`);
     }
 
     // 2. Outreach Tracking (and reset opened_at in outreach_emails)
-    const trackingCount = await pool.query(`SELECT COUNT(*) FROM outreach_tracking WHERE ${whereClause}`);
+    const trackingCount = await pool.query(
+      `SELECT COUNT(*) FROM outreach_tracking WHERE ${whereClause}`
+    );
     results.deleted.outreach_tracking = parseInt(trackingCount.rows[0].count);
     if (!isDryRun && results.deleted.outreach_tracking > 0) {
       // Reset opened_at for emails that were tracked by test accounts
@@ -22411,7 +23680,9 @@ app.get('/api/admin/cleanup-test-data', async (req, res) => {
     }
 
     // 3. Outreach Emails
-    const emailsCount = await pool.query(`SELECT COUNT(*) FROM outreach_emails WHERE ${whereClause}`);
+    const emailsCount = await pool.query(
+      `SELECT COUNT(*) FROM outreach_emails WHERE ${whereClause}`
+    );
     results.deleted.outreach_emails = parseInt(emailsCount.rows[0].count);
     if (!isDryRun && results.deleted.outreach_emails > 0) {
       await pool.query(`DELETE FROM outreach_emails WHERE ${whereClause}`);
@@ -22434,24 +23705,32 @@ app.get('/api/admin/cleanup-test-data', async (req, res) => {
     }
 
     // 6. Email Captures
-    const capturesCount = await pool.query(`SELECT COUNT(*) FROM email_captures WHERE ${whereClause}`);
+    const capturesCount = await pool.query(
+      `SELECT COUNT(*) FROM email_captures WHERE ${whereClause}`
+    );
     results.deleted.email_captures = parseInt(capturesCount.rows[0].count);
     if (!isDryRun && results.deleted.email_captures > 0) {
       await pool.query(`DELETE FROM email_captures WHERE ${whereClause}`);
     }
 
     // 7. Competitor Leads
-    const competitorCount = await pool.query(`SELECT COUNT(*) FROM competitor_leads WHERE ${whereClause}`);
+    const competitorCount = await pool.query(
+      `SELECT COUNT(*) FROM competitor_leads WHERE ${whereClause}`
+    );
     results.deleted.competitor_leads = parseInt(competitorCount.rows[0].count);
     if (!isDryRun && results.deleted.competitor_leads > 0) {
       await pool.query(`DELETE FROM competitor_leads WHERE ${whereClause}`);
     }
 
     // 8. Demo Generations (old unconverted demos)
-    const demosCount = await pool.query(`SELECT COUNT(*) FROM demo_generations WHERE created_at < NOW() - INTERVAL '7 days' AND converted_at IS NULL`);
+    const demosCount = await pool.query(
+      `SELECT COUNT(*) FROM demo_generations WHERE created_at < NOW() - INTERVAL '7 days' AND converted_at IS NULL`
+    );
     results.deleted.demo_generations_old = parseInt(demosCount.rows[0].count);
     if (!isDryRun && results.deleted.demo_generations_old > 0) {
-      await pool.query(`DELETE FROM demo_generations WHERE created_at < NOW() - INTERVAL '7 days' AND converted_at IS NULL`);
+      await pool.query(
+        `DELETE FROM demo_generations WHERE created_at < NOW() - INTERVAL '7 days' AND converted_at IS NULL`
+      );
     }
 
     // 9. Users (test accounts) - Must delete all FK-dependent data first
@@ -22475,19 +23754,55 @@ app.get('/api/admin/cleanup-test-data', async (req, res) => {
         };
 
         // Delete in reverse FK order
-        await safeDelete('referrals', `DELETE FROM referrals WHERE referrer_id = ANY($1) OR referred_user_id = ANY($1)`, [userIds]);
-        await safeDelete('affiliate_payouts', `DELETE FROM affiliate_payouts WHERE affiliate_id IN (SELECT id FROM affiliates WHERE user_id = ANY($1))`, [userIds]);
+        await safeDelete(
+          'referrals',
+          `DELETE FROM referrals WHERE referrer_id = ANY($1) OR referred_user_id = ANY($1)`,
+          [userIds]
+        );
+        await safeDelete(
+          'affiliate_payouts',
+          `DELETE FROM affiliate_payouts WHERE affiliate_id IN (SELECT id FROM affiliates WHERE user_id = ANY($1))`,
+          [userIds]
+        );
         await safeDelete('affiliates', `DELETE FROM affiliates WHERE user_id = ANY($1)`, [userIds]);
         await safeDelete('api_keys', `DELETE FROM api_keys WHERE user_id = ANY($1)`, [userIds]);
-        await safeDelete('team_members', `DELETE FROM team_members WHERE team_owner_id = ANY($1) OR member_user_id = ANY($1)`, [userIds]);
-        await safeDelete('user_settings', `DELETE FROM user_settings WHERE user_id = ANY($1)`, [userIds]);
-        results.deleted.responses = await safeDelete('responses', `DELETE FROM responses WHERE user_id = ANY($1)`, [userIds]);
-        results.deleted.templates = await safeDelete('templates', `DELETE FROM templates WHERE user_id = ANY($1)`, [userIds]);
-        await safeDelete('drip_emails', `DELETE FROM drip_emails WHERE user_id = ANY($1)`, [userIds]);
-        await safeDelete('pre_registration_drips', `DELETE FROM pre_registration_drips WHERE email IN (SELECT email FROM users WHERE id = ANY($1))`, [userIds]);
-        await safeDelete('linkedin_outreach', `DELETE FROM linkedin_outreach WHERE user_id = ANY($1)`, [userIds]);
+        await safeDelete(
+          'team_members',
+          `DELETE FROM team_members WHERE team_owner_id = ANY($1) OR member_user_id = ANY($1)`,
+          [userIds]
+        );
+        await safeDelete('user_settings', `DELETE FROM user_settings WHERE user_id = ANY($1)`, [
+          userIds,
+        ]);
+        results.deleted.responses = await safeDelete(
+          'responses',
+          `DELETE FROM responses WHERE user_id = ANY($1)`,
+          [userIds]
+        );
+        results.deleted.templates = await safeDelete(
+          'templates',
+          `DELETE FROM templates WHERE user_id = ANY($1)`,
+          [userIds]
+        );
+        await safeDelete('drip_emails', `DELETE FROM drip_emails WHERE user_id = ANY($1)`, [
+          userIds,
+        ]);
+        await safeDelete(
+          'pre_registration_drips',
+          `DELETE FROM pre_registration_drips WHERE email IN (SELECT email FROM users WHERE id = ANY($1))`,
+          [userIds]
+        );
+        await safeDelete(
+          'linkedin_outreach',
+          `DELETE FROM linkedin_outreach WHERE user_id = ANY($1)`,
+          [userIds]
+        );
         // Clear referred_by references
-        await safeDelete('users_referred', `UPDATE users SET referred_by = NULL WHERE referred_by = ANY($1)`, [userIds]);
+        await safeDelete(
+          'users_referred',
+          `UPDATE users SET referred_by = NULL WHERE referred_by = ANY($1)`,
+          [userIds]
+        );
         // Finally delete users
         await safeDelete('users', `DELETE FROM users WHERE id = ANY($1)`, [userIds]);
       }
@@ -22527,12 +23842,14 @@ app.get('/api/admin/cleanup-test-data', async (req, res) => {
     `);
 
     results.new_metrics = {
-      open_rate: openRate.rows[0].total_emails > 0
-        ? ((openRate.rows[0].opened / openRate.rows[0].total_emails) * 100).toFixed(1) + '%'
-        : '0%',
-      click_rate: clickRate.rows[0].total_emails > 0
-        ? ((clickRate.rows[0].clicked / clickRate.rows[0].total_emails) * 100).toFixed(1) + '%'
-        : '0%',
+      open_rate:
+        openRate.rows[0].total_emails > 0
+          ? ((openRate.rows[0].opened / openRate.rows[0].total_emails) * 100).toFixed(1) + '%'
+          : '0%',
+      click_rate:
+        clickRate.rows[0].total_emails > 0
+          ? ((clickRate.rows[0].clicked / clickRate.rows[0].total_emails) * 100).toFixed(1) + '%'
+          : '0%',
     };
 
     res.json(results);
@@ -22564,14 +23881,22 @@ app.get('/api/admin/reset-test-opens', async (req, res) => {
     ];
     const whereClause = testPatterns.join(' OR ');
 
-    const countBefore = await pool.query(`SELECT COUNT(*) FROM outreach_emails WHERE opened_at IS NOT NULL AND (${whereClause})`);
-    const totalOpened = await pool.query(`SELECT COUNT(*) FROM outreach_emails WHERE opened_at IS NOT NULL`);
+    const countBefore = await pool.query(
+      `SELECT COUNT(*) FROM outreach_emails WHERE opened_at IS NOT NULL AND (${whereClause})`
+    );
+    const totalOpened = await pool.query(
+      `SELECT COUNT(*) FROM outreach_emails WHERE opened_at IS NOT NULL`
+    );
 
     if (!isDryRun) {
-      await pool.query(`UPDATE outreach_emails SET opened_at = NULL WHERE opened_at IS NOT NULL AND (${whereClause})`);
+      await pool.query(
+        `UPDATE outreach_emails SET opened_at = NULL WHERE opened_at IS NOT NULL AND (${whereClause})`
+      );
     }
 
-    const totalOpenedAfter = await pool.query(`SELECT COUNT(*) FROM outreach_emails WHERE opened_at IS NOT NULL`);
+    const totalOpenedAfter = await pool.query(
+      `SELECT COUNT(*) FROM outreach_emails WHERE opened_at IS NOT NULL`
+    );
     const totalEmails = await pool.query(`SELECT COUNT(*) FROM outreach_emails`);
 
     res.json({
@@ -22580,9 +23905,10 @@ app.get('/api/admin/reset-test-opens', async (req, res) => {
       opens_before: parseInt(totalOpened.rows[0].count),
       opens_after: parseInt(totalOpenedAfter.rows[0].count),
       total_emails: parseInt(totalEmails.rows[0].count),
-      new_open_rate: totalEmails.rows[0].count > 0
-        ? ((totalOpenedAfter.rows[0].count / totalEmails.rows[0].count) * 100).toFixed(1) + '%'
-        : '0%',
+      new_open_rate:
+        totalEmails.rows[0].count > 0
+          ? ((totalOpenedAfter.rows[0].count / totalEmails.rows[0].count) * 100).toFixed(1) + '%'
+          : '0%',
     });
   } catch (error) {
     console.error('Reset opens error:', error);
@@ -22599,12 +23925,18 @@ async function runNightBlast(source) {
   console.log(`🌙 [${source}] Starting Night-Blast at ${new Date().toISOString()}`);
   try {
     const baseUrl = process.env.BACKEND_URL || `http://localhost:${PORT}`;
-    const response = await fetch(`${baseUrl}/api/cron/night-blast?secret=${process.env.CRON_SECRET}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const response = await fetch(
+      `${baseUrl}/api/cron/night-blast?secret=${process.env.CRON_SECRET}`,
+      {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
     const result = await response.json();
-    console.log(`🌙 [${source}] Night-Blast completed:`, JSON.stringify(result.summary || result, null, 2));
+    console.log(
+      `🌙 [${source}] Night-Blast completed:`,
+      JSON.stringify(result.summary || result, null, 2)
+    );
     return result;
   } catch (error) {
     console.error(`🌙 [${source}] Night-Blast error:`, error.message);
@@ -22621,19 +23953,19 @@ async function runNightBlast(source) {
 // Night-Blast 1: 21:00 UTC (22:00 Berlin)
 cron.schedule('0 21 * * *', () => runNightBlast('Scheduled-21:00-UTC'), {
   scheduled: true,
-  timezone: 'UTC'
+  timezone: 'UTC',
 });
 
 // Night-Blast 2: 01:00 UTC (02:00 Berlin)
 cron.schedule('0 1 * * *', () => runNightBlast('Scheduled-01:00-UTC'), {
   scheduled: true,
-  timezone: 'UTC'
+  timezone: 'UTC',
 });
 
 // Night-Blast 3: 05:00 UTC (06:00 Berlin)
 cron.schedule('0 5 * * *', () => runNightBlast('Scheduled-05:00-UTC'), {
   scheduled: true,
-  timezone: 'UTC'
+  timezone: 'UTC',
 });
 
 console.log('🌙 Night-Blast Scheduler initialized: 21:00, 01:00, 05:00 UTC');
@@ -22645,12 +23977,18 @@ async function runNightLoop(hour, source) {
   console.log(`🌙 [${source}] Running Night-Loop Hour ${hour} at ${new Date().toISOString()}`);
   try {
     const baseUrl = process.env.BACKEND_URL || `http://localhost:${PORT}`;
-    const response = await fetch(`${baseUrl}/api/cron/night-loop?secret=${process.env.CRON_SECRET}&hour=${hour}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const response = await fetch(
+      `${baseUrl}/api/cron/night-loop?secret=${process.env.CRON_SECRET}&hour=${hour}`,
+      {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
     const result = await response.json();
-    console.log(`🌙 [${source}] Night-Loop Hour ${hour} completed:`, JSON.stringify(result, null, 2).substring(0, 500));
+    console.log(
+      `🌙 [${source}] Night-Loop Hour ${hour} completed:`,
+      JSON.stringify(result, null, 2).substring(0, 500)
+    );
     return result;
   } catch (error) {
     console.error(`🌙 [${source}] Night-Loop Hour ${hour} error:`, error.message);
@@ -22661,14 +23999,14 @@ async function runNightLoop(hour, source) {
 // Night-Loop Hour 0: Demo Expiration Emails (23:00 UTC = 00:00 Berlin)
 cron.schedule('0 23 * * *', () => runNightLoop(0, 'Scheduled-23:00-UTC-Hour0'), {
   scheduled: true,
-  timezone: 'UTC'
+  timezone: 'UTC',
 });
 
 // Night-Loop Hour 2: Re-Engagement Magic Links (01:00 UTC = 02:00 Berlin)
 // Note: Already overlaps with Night-Blast at 01:00, so night-loop runs A/B tests + magic links
 cron.schedule('5 1 * * *', () => runNightLoop(2, 'Scheduled-01:05-UTC-Hour2'), {
   scheduled: true,
-  timezone: 'UTC'
+  timezone: 'UTC',
 });
 
 console.log('🌙 Night-Loop Scheduler initialized: Hour 0 at 23:00 UTC, Hour 2 at 01:05 UTC');
@@ -22678,7 +24016,9 @@ initDatabase()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`✅ Server running on port ${PORT}`);
-      console.log('🌙 Night-Blast jobs scheduled: 21:00, 01:00, 05:00 UTC (22:00, 02:00, 06:00 Berlin)');
+      console.log(
+        '🌙 Night-Blast jobs scheduled: 21:00, 01:00, 05:00 UTC (22:00, 02:00, 06:00 Berlin)'
+      );
     });
   })
   .catch(err => {
