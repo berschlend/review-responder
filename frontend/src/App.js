@@ -295,8 +295,7 @@ const Footer = () => (
         <div>
           <div className="footer-brand">ReviewResponder</div>
           <p className="footer-description">
-            AI-powered review response generator helping businesses maintain their online reputation
-            effortlessly.
+            Professional review responses that sound like you hired a PR team. For busy business owners.
           </p>
         </div>
         <div>
@@ -641,7 +640,7 @@ const InstantDemoWidget = ({
   };
 
   const currentPlaceholder = placeholderMap[detectedContext.businessType] || 'Paste a customer review here to see AI magic...';
-  const currentHeadline = headlineMap[detectedContext.businessType] || 'Try It Now - Free';
+  const currentHeadline = headlineMap[detectedContext.businessType] || 'Get PR-Quality Responses';
   const currentLabel = businessLabelMap[detectedContext.businessType];
 
   const handleGenerate = async () => {
@@ -3147,8 +3146,7 @@ const LandingPage = () => {
               color: 'var(--text-secondary)',
             }}
           >
-            AI-powered responses for Google, Yelp, TripAdvisor & 10+ platforms. Professional replies
-            in one click.
+            Sound like you hired a PR team. Professional responses for Google, Yelp & 10+ platforms in seconds.
           </p>
 
           {/* Instant Demo Widget */}
