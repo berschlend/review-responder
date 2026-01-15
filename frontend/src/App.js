@@ -296,7 +296,7 @@ const Footer = () => (
         <div>
           <div className="footer-brand">ReviewResponder</div>
           <p className="footer-description">
-            Professional review responses that sound like you hired a PR team. For busy business owners.
+            Professional review responses that sound like you hired a professional writer. For busy business owners.
           </p>
         </div>
         <div>
@@ -672,7 +672,7 @@ const InstantDemoWidget = ({
     : placeholderMap[effectiveIndustry] || 'Paste a customer review here to see AI magic...';
   const currentHeadline = leadContext?.businessName
     ? `See How ${leadContext.businessName} Would Respond`
-    : headlineMap[effectiveIndustry] || 'Get PR-Quality Responses';
+    : headlineMap[effectiveIndustry] || 'Try It Now';
   const currentLabel = leadContext?.businessType || businessLabelMap[effectiveIndustry];
 
   const handleGenerate = async () => {
@@ -3182,7 +3182,7 @@ const LandingPage = () => {
               color: 'var(--text-secondary)',
             }}
           >
-            Sound like you hired a PR team. Professional responses for Google, Yelp & 10+ platforms in seconds.
+            Sound like you hired a professional writer. Quality responses for Google, Yelp & 10+ platforms in seconds.
           </p>
 
           {/* Instant Demo Widget */}
@@ -3203,21 +3203,6 @@ const LandingPage = () => {
           flexWrap: 'wrap',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            color: 'var(--text-secondary)',
-            fontSize: '12px',
-            fontWeight: '500',
-            letterSpacing: '0.01em',
-          }}
-        >
-          <Sparkles size={14} style={{ color: 'var(--primary)', opacity: 0.9 }} />
-          <span>Powered by Claude</span>
-        </div>
-        <div style={{ width: '1px', height: '12px', background: 'var(--border-color)' }} />
         <div
           style={{
             display: 'flex',
