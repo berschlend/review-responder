@@ -23724,32 +23724,32 @@ app.get('/api/admin/twitter-opportunities', async (req, res) => {
 // TWITTER AUTO-TWEET SCHEDULER (@ExecPsychology)
 // ============================================
 
-// Tweet content categories and prompts
+// Tweet content categories and prompts - Review Psychology Focus (Updated 15.01.2026)
 const TWEET_CATEGORIES = [
   {
-    name: 'business_psychology',
-    weight: 30,
-    prompt: `Write a short, insightful tweet about business psychology. Topics: customer behavior, decision-making, trust-building, emotional intelligence in business. Be specific and actionable. No hashtags.`,
+    name: 'review_psychology',
+    weight: 35,
+    prompt: `Share a surprising psychological fact about why people write reviews, what triggers negative feedback, or how public responses affect perception. Be specific - cite a study or counterintuitive insight. No hashtags.`,
   },
   {
-    name: 'review_management',
+    name: 'customer_behavior',
     weight: 25,
-    prompt: `Write a short tweet with a practical tip about responding to customer reviews (positive or negative). Share real insight, not generic advice. No hashtags.`,
+    prompt: `Share an insight about customer behavior, loyalty psychology, or why people trust (or distrust) businesses based on how they handle feedback. Focus on the "why" behind customer actions. No hashtags.`,
   },
   {
-    name: 'business_tip',
+    name: 'response_tactics',
     weight: 20,
-    prompt: `Write a short tweet with a counterintuitive or lesser-known business tip. Make it memorable and shareable. No hashtags.`,
+    prompt: `Give a specific, actionable tip for responding to reviews. Be concrete, not generic. Example topics: what NOT to say, timing psychology, how to turn critics into advocates. Avoid "Thank you for your feedback" type advice. No hashtags.`,
   },
   {
-    name: 'engagement_question',
+    name: 'business_insight',
     weight: 15,
-    prompt: `Write a short tweet asking business owners an engaging question about their challenges with customer feedback, reviews, or reputation. Make it conversational. No hashtags.`,
+    prompt: `Share a counterintuitive business insight related to reputation, trust, or customer relationships. Make it memorable and thought-provoking. No hashtags.`,
   },
   {
     name: 'soft_promo',
-    weight: 10,
-    prompt: `Write a short tweet mentioning ReviewResponder (AI tool for responding to customer reviews). Be subtle and value-first - lead with the problem it solves, not the product. Include tryreviewresponder.com naturally. No hashtags.`,
+    weight: 5,
+    prompt: `Mention a common review-response problem (writing time, tone consistency, language barriers), then naturally reference tryreviewresponder.com as a solution. Problem-first, never feature-first. Be subtle. No hashtags.`,
   },
 ];
 
@@ -23805,16 +23805,17 @@ async function generateTweetContent(category) {
   if (!anthropic) return null;
 
   const systemPrompt = `<persona>
-You are @ExecPsychology on Twitter/X - a business psychology expert.
-You help entrepreneurs understand customer behavior and build better businesses.
+You are @ExecPsychology on Twitter/X - the psychology behind customer reviews.
+You explain WHY customers behave the way they do with reviews, and help business owners respond smarter.
+Founder of ReviewResponder (tryreviewresponder.com).
 </persona>
 
 <voice>
 - Insightful but accessible (no jargon)
+- Science-backed but practical
 - Confident but not arrogant
-- Helpful and genuine
 - Occasionally witty, never corny
-- Human, not brand
+- Human, not brand - like a smart friend who knows psychology
 </voice>
 
 <style_rules>
