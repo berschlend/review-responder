@@ -1060,6 +1060,25 @@ async function initDatabase() {
       // Index might already exist
     }
 
+    // Review cache table - prevents redundant API calls
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS review_cache (
+        id SERIAL PRIMARY KEY,
+        google_place_id TEXT UNIQUE NOT NULL,
+        business_name TEXT,
+        reviews JSONB NOT NULL,
+        review_count INTEGER DEFAULT 0,
+        average_rating DECIMAL(2,1),
+        scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        source TEXT DEFAULT 'outscraper'
+      )
+    `);
+    try {
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_review_cache_place ON review_cache(google_place_id)`);
+    } catch (error) {
+      // Index might already exist
+    }
+
     // Affiliates table for affiliate/partner program
     await dbQuery(`
       CREATE TABLE IF NOT EXISTS affiliates (
@@ -5989,18 +6008,70 @@ async function scrapeGoogleReviewsOutscraper(placeId, limit = 10) {
   }));
 }
 
-// Helper: Scrape Google reviews - tries Outscraper first (500 free), falls back to SerpAPI (100 free), then Google Places (5 free per place)
-async function scrapeGoogleReviews(placeId, limit = 10) {
-  // Try Outscraper first (500 free reviews/month vs SerpAPI's 100 searches/month)
+// Helper: Check review cache (48h validity)
+async function getCachedReviews(placeId) {
+  try {
+    const result = await dbQuery(`
+      SELECT reviews, business_name, scraped_at
+      FROM review_cache
+      WHERE google_place_id = $1
+        AND scraped_at > NOW() - INTERVAL '48 hours'
+    `, [placeId]);
+
+    if (result.rows.length > 0) {
+      console.log(`[CACHE HIT] Using cached reviews for ${result.rows[0].business_name || placeId}`);
+      return result.rows[0].reviews;
+    }
+    return null;
+  } catch (err) {
+    console.log(`Cache check failed: ${err.message}`);
+    return null;
+  }
+}
+
+// Helper: Save reviews to cache
+async function cacheReviews(placeId, businessName, reviews) {
+  try {
+    const avgRating = reviews.length > 0
+      ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
+      : 0;
+
+    await dbQuery(`
+      INSERT INTO review_cache (google_place_id, business_name, reviews, review_count, average_rating, scraped_at, source)
+      VALUES ($1, $2, $3, $4, $5, NOW(), 'outscraper')
+      ON CONFLICT (google_place_id)
+      DO UPDATE SET reviews = $3, review_count = $4, average_rating = $5, scraped_at = NOW()
+    `, [placeId, businessName, JSON.stringify(reviews), reviews.length, avgRating.toFixed(1)]);
+
+    console.log(`[CACHE SAVE] Cached ${reviews.length} reviews for ${businessName || placeId}`);
+  } catch (err) {
+    console.log(`Cache save failed: ${err.message}`);
+  }
+}
+
+// Helper: Scrape Google reviews - WITH CACHING + 4 fallbacks
+// Order: 1. Cache → 2. Outscraper → 3. SerpAPI → 4. Google Places → 5. Expired Cache
+async function scrapeGoogleReviews(placeId, limit = 10, businessName = null) {
+  // 1. Check cache first (48h validity) - saves API calls!
+  const cachedReviews = await getCachedReviews(placeId);
+  if (cachedReviews && cachedReviews.length >= Math.min(limit, 3)) {
+    return cachedReviews.slice(0, limit);
+  }
+
+  // 2. Try Outscraper first (500 free reviews/month)
   if (process.env.OUTSCRAPER_API_KEY) {
     try {
-      return await scrapeGoogleReviewsOutscraper(placeId, limit);
+      const reviews = await scrapeGoogleReviewsOutscraper(placeId, limit);
+      if (reviews.length > 0) {
+        await cacheReviews(placeId, businessName, reviews);
+        return reviews;
+      }
     } catch (outsErr) {
       console.log(`Outscraper failed: ${outsErr.message}, trying SerpAPI fallback...`);
     }
   }
 
-  // Fallback to SerpAPI
+  // 3. Fallback to SerpAPI (100 free/month)
   const serpApiKey = getNextSerpApiKey();
   if (serpApiKey) {
     try {
@@ -6012,50 +6083,71 @@ async function scrapeGoogleReviews(placeId, limit = 10) {
         throw new Error(data.error);
       }
 
-      return (
-        data.reviews?.slice(0, limit).map(r => ({
-          text: r.snippet || r.text || '',
-          rating: r.rating || 0,
-          author: r.user?.name || 'Anonymous',
-          date: r.date || '',
-          source: 'google',
-          review_link: r.link || null,
-          review_id: r.review_id || null,
-        })) || []
-      );
+      const reviews = data.reviews?.slice(0, limit).map(r => ({
+        text: r.snippet || r.text || '',
+        rating: r.rating || 0,
+        author: r.user?.name || 'Anonymous',
+        date: r.date || '',
+        source: 'google',
+        review_link: r.link || null,
+        review_id: r.review_id || null,
+      })) || [];
+
+      if (reviews.length > 0) {
+        await cacheReviews(placeId, businessName, reviews);
+        return reviews;
+      }
     } catch (serpErr) {
       console.log(`SerpAPI also failed: ${serpErr.message}`);
     }
   }
 
-  // Final fallback: Google Places API (5 reviews per place, FREE with existing API key)
+  // 4. Fallback: Google Places API (5 reviews per place, FREE with existing API key)
   if (process.env.GOOGLE_PLACES_API_KEY) {
     try {
-      console.log(`Using Google Places API fallback for reviews (5 max per place)...`);
+      console.log(`[GOOGLE PLACES] Using fallback for ${placeId} (5 max)...`);
       const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews&key=${process.env.GOOGLE_PLACES_API_KEY}`;
       const response = await fetch(detailsUrl);
       const data = await response.json();
 
       if (data.status === 'OK' && data.result?.reviews?.length > 0) {
-        console.log(`Google Places returned ${data.result.reviews.length} reviews`);
-        return data.result.reviews.slice(0, limit).map((r) => ({
+        console.log(`[GOOGLE PLACES] Got ${data.result.reviews.length} reviews`);
+        const reviews = data.result.reviews.slice(0, limit).map((r) => ({
           text: r.text || '',
           rating: r.rating || 0,
           author: r.author_name || 'Anonymous',
           date: r.relative_time_description || '',
           source: 'google_places',
-          review_link: null, // Google Places doesn't provide direct review links
+          review_link: null,
           review_id: null,
         }));
+        if (reviews.length > 0) {
+          await cacheReviews(placeId, businessName, reviews);
+          return reviews;
+        }
       }
-      console.log(`Google Places returned no reviews for ${placeId}`);
     } catch (placesErr) {
-      console.log(`Google Places fallback also failed: ${placesErr.message}`);
+      console.log(`[GOOGLE PLACES] Failed: ${placesErr.message}`);
     }
   }
 
-  // Return empty array instead of throwing - allows demo generation to continue with no reviews
-  console.log(`All review APIs failed for ${placeId}, returning empty array`);
+  // 5. Last resort: Check if we have ANY cached reviews (even expired)
+  try {
+    const oldCache = await dbQuery(`
+      SELECT reviews, business_name FROM review_cache
+      WHERE google_place_id = $1
+    `, [placeId]);
+
+    if (oldCache.rows.length > 0 && oldCache.rows[0].reviews?.length > 0) {
+      console.log(`[CACHE EXPIRED] Using expired cache for ${oldCache.rows[0].business_name || placeId}`);
+      return oldCache.rows[0].reviews.slice(0, limit);
+    }
+  } catch (err) {
+    // Ignore
+  }
+
+  // Return empty array instead of throwing - allows demo generation to continue
+  console.log(`[ALL APIS FAILED] No reviews for ${placeId}, returning empty array`);
   return [];
 }
 
@@ -10323,6 +10415,106 @@ app.get('/api/admin/parallel-safe-status', authenticateAdmin, async (req, res) =
   } catch (error) {
     console.error('Parallel-safe status error:', error);
     res.status(500).json({ error: 'Failed to get parallel-safe status', details: error.message });
+  }
+});
+
+// GET /api/admin/review-cache - Review cache stats and management
+app.get('/api/admin/review-cache', async (req, res) => {
+  const key = req.query.key || req.headers['x-admin-key'];
+  if (key !== process.env.ADMIN_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Get cache stats
+    const stats = await dbGet(`
+      SELECT
+        COUNT(*) as total_cached,
+        COUNT(*) FILTER (WHERE scraped_at > NOW() - INTERVAL '48 hours') as fresh_cache,
+        COUNT(*) FILTER (WHERE scraped_at <= NOW() - INTERVAL '48 hours') as stale_cache,
+        SUM(review_count) as total_reviews_cached,
+        MIN(scraped_at) as oldest_cache,
+        MAX(scraped_at) as newest_cache
+      FROM review_cache
+    `);
+
+    // Get recent cache entries
+    const recentEntries = await dbAll(`
+      SELECT business_name, google_place_id, review_count, average_rating, scraped_at, source
+      FROM review_cache
+      ORDER BY scraped_at DESC
+      LIMIT 10
+    `);
+
+    res.json({
+      stats: {
+        totalCached: parseInt(stats.total_cached) || 0,
+        freshCache: parseInt(stats.fresh_cache) || 0,
+        staleCache: parseInt(stats.stale_cache) || 0,
+        totalReviewsCached: parseInt(stats.total_reviews_cached) || 0,
+        oldestCache: stats.oldest_cache,
+        newestCache: stats.newest_cache,
+        cacheHitPotential: `${Math.round((parseInt(stats.fresh_cache) || 0) / Math.max(1, parseInt(stats.total_cached) || 1) * 100)}%`,
+      },
+      recentEntries,
+      info: {
+        cacheValidity: '48 hours',
+        fallbackOrder: ['1. Cache', '2. Outscraper', '3. SerpAPI', '4. Google Places', '5. Expired Cache'],
+      },
+    });
+  } catch (error) {
+    console.error('Review cache stats error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/admin/populate-cache - Pre-populate cache from existing demos
+app.get('/api/admin/populate-cache', async (req, res) => {
+  const key = req.query.key || req.headers['x-admin-key'];
+  if (key !== process.env.ADMIN_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Find demos with reviews that aren't cached yet
+    const demosWithReviews = await dbAll(`
+      SELECT DISTINCT d.google_place_id, d.business_name, d.scraped_reviews
+      FROM demo_generations d
+      LEFT JOIN review_cache rc ON d.google_place_id = rc.google_place_id
+      WHERE d.google_place_id IS NOT NULL
+        AND d.scraped_reviews IS NOT NULL
+        AND jsonb_array_length(d.scraped_reviews) > 0
+        AND rc.id IS NULL
+      LIMIT 100
+    `);
+
+    let populated = 0;
+    for (const demo of demosWithReviews) {
+      try {
+        const reviews = demo.scraped_reviews;
+        const avgRating = reviews.length > 0
+          ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
+          : 0;
+
+        await dbQuery(`
+          INSERT INTO review_cache (google_place_id, business_name, reviews, review_count, average_rating, source)
+          VALUES ($1, $2, $3, $4, $5, 'demo_backfill')
+          ON CONFLICT (google_place_id) DO NOTHING
+        `, [demo.google_place_id, demo.business_name, JSON.stringify(reviews), reviews.length, avgRating.toFixed(1)]);
+        populated++;
+      } catch (err) {
+        console.log(`Cache populate error for ${demo.business_name}: ${err.message}`);
+      }
+    }
+
+    res.json({
+      message: `Populated ${populated} cache entries from existing demos`,
+      demosChecked: demosWithReviews.length,
+      entriesCreated: populated,
+    });
+  } catch (error) {
+    console.error('Cache populate error:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -15696,6 +15888,37 @@ ${reviewText}
 // Returns { demo_url, demo_token, reviews_processed } or null if failed
 async function generateDemoForLead(lead) {
   try {
+    // First: Check if we already have a demo for this business (reuse!)
+    try {
+      const existingDemo = await dbQuery(`
+        SELECT demo_token, google_place_id, generated_responses, scraped_reviews, google_rating, total_reviews
+        FROM demo_generations
+        WHERE business_name ILIKE $1
+          AND generated_responses IS NOT NULL
+          AND jsonb_array_length(generated_responses) >= 3
+        ORDER BY created_at DESC
+        LIMIT 1
+      `, [lead.business_name]);
+
+      if (existingDemo.rows.length > 0) {
+        const demo = existingDemo.rows[0];
+        console.log(`[DEMO REUSE] Found existing demo for ${lead.business_name}: ${demo.demo_token}`);
+        return {
+          success: true,
+          demoToken: demo.demo_token,
+          demoUrl: `https://tryreviewresponder.com/demo/${demo.demo_token}`,
+          responses: demo.generated_responses,
+          reviews: demo.scraped_reviews,
+          placeId: demo.google_place_id,
+          rating: demo.google_rating,
+          totalReviews: demo.total_reviews,
+          reused: true,
+        };
+      }
+    } catch (err) {
+      console.log(`Demo reuse check failed: ${err.message}`);
+    }
+
     // Need review scraping API (SerpAPI or Outscraper) + Google Places
     const hasReviewApi = getSerpApiKeyCount() > 0 || process.env.OUTSCRAPER_API_KEY;
     if (!hasReviewApi || !process.env.GOOGLE_PLACES_API_KEY) {
@@ -15723,8 +15946,8 @@ async function generateDemoForLead(lead) {
       return null;
     }
 
-    // Scrape reviews via SerpAPI (get more than needed to filter)
-    const allReviews = await scrapeGoogleReviews(placeId, 10);
+    // Scrape reviews via SerpAPI (with caching!)
+    const allReviews = await scrapeGoogleReviews(placeId, 10, lead.business_name);
 
     if (!allReviews || allReviews.length < 2) {
       console.log(`Not enough reviews to generate demo for ${lead.business_name}`);

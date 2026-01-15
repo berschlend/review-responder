@@ -39,6 +39,17 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "mcp__claude-in-chrome__tabs_create|mcp__claude-in-chrome__navigate",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo [Chrome MCP] Tab operation detected - remember to register tab"
+          }
+        ]
+      }
     ]
   },
   "permissions": {

@@ -63,6 +63,48 @@ CLAUDE.md lesen → TODO.md checken → Task → Testen → Git push → CLAUDE.
 ### Chrome MCP Regel
 > Im Plan Mode **IMMER** markieren: **🌐 CHROME MCP: JA/NEIN**
 
+### Chrome Tab Management (NEU 15.01.2026)
+
+**Problem:** Parallele Claude Sessions teilen dieselbe Tab-Gruppe = Chaos.
+
+**Lösung:** Session-basiertes Tab Tracking mit Auto-Cleanup.
+
+#### Bei Session-Start (`claude --chrome`):
+```powershell
+# 1. Session setzen (BEVOR claude startet!)
+$env:CLAUDE_SESSION = "1"  # oder "2", "RR", etc.
+claude --chrome
+
+# 2. In Claude: /chrome-init ausführen
+```
+
+#### Während der Session:
+```powershell
+# Nach JEDEM neuen Tab oder Navigate:
+powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\chrome-tab-manager.ps1" -Action register -TabId "[ID]" -TabUrl "[URL]"
+```
+
+#### Bei Session-Ende:
+- Stop-Hook ruft automatisch Tab-Cleanup auf
+- Oder manuell: `/chrome-cleanup`
+
+#### Protected Tabs (werden NIE geschlossen):
+- `*linkedin.com*` - Login-Sessions
+- `*gmail.com*`, `*mail.google.com*` - Email
+- `*stripe.com*` - Payments
+- `*render.com*` - Deployment
+- `*github.com*` - Code
+- `*cron-job.org*` - Cron Jobs
+
+#### Tab Status checken:
+```powershell
+powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\chrome-tab-manager.ps1" -Action status
+```
+
+#### Stale Sessions (>30 min inaktiv):
+- Werden beim Status-Check angezeigt
+- Können manuell bereinigt werden
+
 ---
 
 ## CODE STYLE
