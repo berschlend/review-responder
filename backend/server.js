@@ -27756,6 +27756,299 @@ app.get('/api/admin/omnichannel-stats', async (req, res) => {
   }
 });
 
+// ============== CHROME MCP INTEGRATION ENDPOINTS ==============
+// These endpoints support the night agents for Chrome MCP email finding and demo generation
+
+// GET /api/admin/lead-needs-email - Get a lead that needs high-quality email
+app.get('/api/admin/lead-needs-email', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Find lead that has generic/no email but has a website to scrape
+    const lead = await dbGet(`
+      SELECT id, business_name, city, website, email, google_place_id, google_reviews_count
+      FROM outreach_leads
+      WHERE website IS NOT NULL
+        AND website != ''
+        AND (
+          email IS NULL
+          OR email LIKE 'info@%'
+          OR email LIKE 'contact@%'
+          OR email LIKE 'hello@%'
+          OR email LIKE 'office@%'
+        )
+        AND status = 'new'
+      ORDER BY google_reviews_count DESC NULLS LAST
+      LIMIT 1
+    `);
+
+    res.json(lead || null);
+  } catch (error) {
+    console.error('Lead needs email error:', error);
+    res.status(500).json({ error: 'Failed to get lead' });
+  }
+});
+
+// GET /api/admin/lead-needs-demo - Get a lead that has email but no demo
+app.get('/api/admin/lead-needs-demo', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Find lead with email but no demo yet
+    const lead = await dbGet(`
+      SELECT id, business_name, city, website, email, google_place_id, google_reviews_count
+      FROM outreach_leads
+      WHERE email IS NOT NULL
+        AND email != ''
+        AND demo_url IS NULL
+        AND status = 'new'
+      ORDER BY google_reviews_count DESC NULLS LAST
+      LIMIT 1
+    `);
+
+    res.json(lead || null);
+  } catch (error) {
+    console.error('Lead needs demo error:', error);
+    res.status(500).json({ error: 'Failed to get lead' });
+  }
+});
+
+// GET /api/admin/leads-needing-enrichment - Get batch of leads for enrichment
+app.get('/api/admin/leads-needing-enrichment', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const limit = parseInt(req.query.limit) || 50;
+
+  try {
+    // Get leads needing email (have website but generic/no email)
+    const needsEmail = await dbAll(`
+      SELECT id, business_name, city, website, email, google_reviews_count
+      FROM outreach_leads
+      WHERE website IS NOT NULL AND website != ''
+        AND (
+          email IS NULL
+          OR email LIKE 'info@%'
+          OR email LIKE 'contact@%'
+          OR email LIKE 'hello@%'
+          OR email LIKE 'office@%'
+        )
+        AND status = 'new'
+      ORDER BY google_reviews_count DESC NULLS LAST
+      LIMIT $1
+    `, [Math.ceil(limit / 2)]);
+
+    // Get leads needing demo (have email but no demo)
+    const needsDemo = await dbAll(`
+      SELECT id, business_name, city, email, google_place_id, google_reviews_count
+      FROM outreach_leads
+      WHERE email IS NOT NULL AND email != ''
+        AND demo_url IS NULL
+        AND status = 'new'
+      ORDER BY google_reviews_count DESC NULLS LAST
+      LIMIT $1
+    `, [Math.ceil(limit / 2)]);
+
+    // Get totals for progress tracking
+    const totalNeedsEmail = await dbGet(`
+      SELECT COUNT(*) as count FROM outreach_leads
+      WHERE website IS NOT NULL AND website != ''
+        AND (email IS NULL OR email LIKE 'info@%' OR email LIKE 'contact@%' OR email LIKE 'hello@%' OR email LIKE 'office@%')
+        AND status = 'new'
+    `);
+
+    const totalNeedsDemo = await dbGet(`
+      SELECT COUNT(*) as count FROM outreach_leads
+      WHERE email IS NOT NULL AND email != ''
+        AND demo_url IS NULL
+        AND status = 'new'
+    `);
+
+    res.json({
+      needs_email: needsEmail || [],
+      needs_demo: needsDemo || [],
+      totals: {
+        needs_email: parseInt(totalNeedsEmail?.count || 0),
+        needs_demo: parseInt(totalNeedsDemo?.count || 0)
+      }
+    });
+  } catch (error) {
+    console.error('Leads needing enrichment error:', error);
+    res.status(500).json({ error: 'Failed to get leads' });
+  }
+});
+
+// POST /api/admin/save-found-email - Save email found via Chrome MCP
+app.post('/api/admin/save-found-email', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { lead_id, email, source, confidence, owner_name } = req.body;
+
+  if (!lead_id || !email) {
+    return res.status(400).json({ error: 'lead_id and email are required' });
+  }
+
+  try {
+    // Update the lead with the found email
+    await dbQuery(`
+      UPDATE outreach_leads
+      SET
+        email = $1,
+        email_source = $2,
+        owner_name = COALESCE($3, owner_name),
+        updated_at = NOW()
+      WHERE id = $4
+    `, [email, source || 'chrome_mcp', owner_name, lead_id]);
+
+    console.log(`[Chrome MCP] Saved email for lead ${lead_id}: ${email} (source: ${source}, confidence: ${confidence})`);
+
+    res.json({
+      success: true,
+      lead_id,
+      email,
+      source
+    });
+  } catch (error) {
+    console.error('Save found email error:', error);
+    res.status(500).json({ error: 'Failed to save email' });
+  }
+});
+
+// POST /api/admin/save-demo-from-chrome - Save demo generated via Chrome MCP scraping
+app.post('/api/admin/save-demo-from-chrome', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { lead_id, reviews, responses, source } = req.body;
+
+  if (!lead_id || !reviews || !responses) {
+    return res.status(400).json({ error: 'lead_id, reviews, and responses are required' });
+  }
+
+  try {
+    // Get lead info
+    const lead = await dbGet('SELECT * FROM outreach_leads WHERE id = $1', [lead_id]);
+    if (!lead) {
+      return res.status(404).json({ error: 'Lead not found' });
+    }
+
+    // Generate demo token
+    const demoToken = 'rr-demo-' + require('crypto').randomBytes(6).toString('hex');
+
+    // Store in demo_generations
+    await dbQuery(`
+      INSERT INTO demo_generations (
+        business_name, google_place_id, reviews_data, responses_data,
+        demo_token, source, created_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      ON CONFLICT (google_place_id) WHERE google_place_id IS NOT NULL
+      DO UPDATE SET
+        reviews_data = $3,
+        responses_data = $4,
+        demo_token = $5,
+        updated_at = NOW()
+    `, [
+      lead.business_name,
+      lead.google_place_id,
+      JSON.stringify(reviews),
+      JSON.stringify(responses),
+      demoToken,
+      source || 'chrome_maps_scrape'
+    ]);
+
+    // Update lead with demo URL
+    const demoUrl = `https://tryreviewresponder.com/demo/${demoToken}`;
+    await dbQuery(`
+      UPDATE outreach_leads
+      SET demo_url = $1, demo_token = $2, updated_at = NOW()
+      WHERE id = $3
+    `, [demoUrl, demoToken, lead_id]);
+
+    console.log(`[Chrome MCP] Saved demo for lead ${lead_id}: ${demoUrl} (${reviews.length} reviews)`);
+
+    res.json({
+      success: true,
+      lead_id,
+      demo_url: demoUrl,
+      demo_token: demoToken,
+      reviews_count: reviews.length
+    });
+  } catch (error) {
+    console.error('Save demo from chrome error:', error);
+    res.status(500).json({ error: 'Failed to save demo' });
+  }
+});
+
+// GET /api/admin/premium-ready-count - Count leads with both email AND demo (ready for outreach)
+app.get('/api/admin/premium-ready-count', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const premiumReady = await dbGet(`
+      SELECT COUNT(*) as count
+      FROM outreach_leads
+      WHERE email IS NOT NULL
+        AND email != ''
+        AND email NOT LIKE 'info@%'
+        AND email NOT LIKE 'contact@%'
+        AND demo_url IS NOT NULL
+        AND status = 'new'
+    `);
+
+    const totalWithDemo = await dbGet(`
+      SELECT COUNT(*) as count
+      FROM outreach_leads
+      WHERE demo_url IS NOT NULL
+    `);
+
+    const totalWithEmail = await dbGet(`
+      SELECT COUNT(*) as count
+      FROM outreach_leads
+      WHERE email IS NOT NULL AND email != ''
+    `);
+
+    const totalWithPersonalEmail = await dbGet(`
+      SELECT COUNT(*) as count
+      FROM outreach_leads
+      WHERE email IS NOT NULL
+        AND email != ''
+        AND email NOT LIKE 'info@%'
+        AND email NOT LIKE 'contact@%'
+        AND email NOT LIKE 'hello@%'
+        AND email NOT LIKE 'office@%'
+    `);
+
+    res.json({
+      premium_ready: parseInt(premiumReady?.count || 0),
+      with_demo: parseInt(totalWithDemo?.count || 0),
+      with_email: parseInt(totalWithEmail?.count || 0),
+      with_personal_email: parseInt(totalWithPersonalEmail?.count || 0),
+      conversion_rate: totalWithEmail?.count > 0
+        ? ((premiumReady?.count || 0) / (totalWithEmail?.count) * 100).toFixed(1) + '%'
+        : '0%'
+    });
+  } catch (error) {
+    console.error('Premium ready count error:', error);
+    res.status(500).json({ error: 'Failed to get count' });
+  }
+});
+
 // ============== BATCH PRE-SCRAPING ==============
 // Pre-scrape reviews for leads to fill cache BEFORE daily outreach
 // Run weekly via cron to ensure every lead gets a demo
