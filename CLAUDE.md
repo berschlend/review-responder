@@ -235,19 +235,33 @@ powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\chrome-tab-manager.ps
 | Demo Follow-Up | 12:00 täglich |
 | **Night Loop** | **22:00-06:00 stündlich** |
 
-### Night Automation (NEU 14.01.2026)
-Läuft autonom ohne User-Input:
-- **22:00** - Hot Lead Follow-Ups (Demos für Klicker)
-- **23:00** - Second Follow-Up ("1 Monat gratis")
-- **00:00** - Stats Collection
-- **01:00** - Dead Lead Revival ("Problem solved?")
-- **02:00** - A/B Test Evaluation
-- **03:00-06:00** - Idle
+### Night Blast - VOR DEM SCHLAFEN LAUFEN LASSEN! (15.01.2026)
+
+**Der eine Befehl für die Nacht:**
+```bash
+curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SECRET"
+```
+
+**Was läuft automatisch (9 Phasen):**
+| Phase | Was passiert |
+|-------|-------------|
+| 1 | Multi-City Scraping (5 Städte, 100 Leads) |
+| 2 | Email Finding für neue Leads |
+| 3 | Demo Generation (personalisierte Demos) |
+| 4 | Hot Lead Follow-Ups (Magic Links für Klicker) |
+| 5 | Second Follow-Ups ("1 Monat gratis") |
+| 6 | Demo Follow-Ups (wer Demo angeschaut hat) |
+| 7 | G2 Enrichment (Domains + Emails) |
+| 8 | Source-specific Emails (TripAdvisor, Yelp, G2, Agency) |
+| 9 | **NEU: Social Link Scraping** (Twitter, FB, Instagram, LinkedIn) |
+
+**Output zeigt:**
+- `leads_scraped`, `emails_found`, `demos_generated`
+- `social_links_found`, `social_twitter/facebook/instagram/linkedin`
+- Duration in Sekunden
 
 **Endpoints:**
-- `/api/cron/night-loop` - Master Endpoint (orchestriert alles)
-- `/api/cron/revive-dead-leads` - Reaktiviert 7+ Tage alte Leads
-- `/api/cron/ab-test-evaluate` - Bewertet A/B Tests automatisch
+- `/api/cron/night-blast` - MASTER Endpoint (startet alles)
 
 ---
 
@@ -581,6 +595,34 @@ Oder: `.claude\omnichannel-parallel.ps1` ausführen
 
 **Erkenntnis:** Magic Link Users registrieren sich aber nutzen Produkt nicht aktiv.
 **TODO:** Onboarding-Nudge Email implementieren
+
+---
+
+## KÜRZLICH ERLEDIGT (15.01 Nacht - Omnichannel Integration)
+
+- **Omnichannel Stats Tab im Admin Panel** - Multi-Channel Outreach Tracking
+  - Leads with Demos count
+  - Social Links Found (Twitter, Facebook, Instagram, LinkedIn)
+  - Contacted by Channel stats
+  - Potential Reach (not yet contacted)
+  - Instructions für parallel Claude Sessions
+
+- **Omnichannel Backend Endpoints wiederhergestellt** (waren bei Merge verloren)
+  - `GET /api/admin/leads-for-omnichannel` - Leads mit Demos
+  - `PUT /api/admin/lead-social-links` - Social Links updaten
+  - `PUT /api/admin/mark-channel-contacted` - Channel als kontaktiert markieren
+  - `GET /api/admin/omnichannel-stats` - Stats für Admin Panel
+  - DB-Spalten: `twitter_handle`, `facebook_page`, `instagram_handle`, `linkedin_company`, `channels_contacted` (JSONB)
+
+- **Automatisches Email-Channel-Tracking** - Emails werden in `channels_contacted` getrackt
+  - Funktioniert für Initial Outreach und Follow-Ups
+  - Sequence-Nummer wird mitgespeichert
+
+- **Night Blast Phase 9: Social Link Scraping** - Automatisches Website-Scraping
+  - Extrahiert: Twitter/X, Facebook, Instagram, LinkedIn
+  - Bis zu 50 Leads pro Run
+  - Rate-Limited (500ms zwischen Requests)
+  - Filtert Share/Intent Links raus (nur echte Profile)
 
 ---
 
