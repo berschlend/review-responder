@@ -5985,7 +5985,7 @@ async function scrapeGoogleReviewsOutscraper(placeId, limit = 10) {
   }));
 }
 
-// Helper: Scrape Google reviews - tries Outscraper first (500 free), falls back to SerpAPI (100 free)
+// Helper: Scrape Google reviews - tries Outscraper first (500 free), falls back to SerpAPI (100 free), then Google Places (5 free per place)
 async function scrapeGoogleReviews(placeId, limit = 10) {
   // Try Outscraper first (500 free reviews/month vs SerpAPI's 100 searches/month)
   if (process.env.OUTSCRAPER_API_KEY) {
@@ -6024,7 +6024,35 @@ async function scrapeGoogleReviews(placeId, limit = 10) {
     }
   }
 
-  throw new Error('No review scraping API configured or all APIs failed');
+  // Final fallback: Google Places API (5 reviews per place, FREE with existing API key)
+  if (process.env.GOOGLE_PLACES_API_KEY) {
+    try {
+      console.log(`Using Google Places API fallback for reviews (5 max per place)...`);
+      const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews&key=${process.env.GOOGLE_PLACES_API_KEY}`;
+      const response = await fetch(detailsUrl);
+      const data = await response.json();
+
+      if (data.status === 'OK' && data.result?.reviews?.length > 0) {
+        console.log(`Google Places returned ${data.result.reviews.length} reviews`);
+        return data.result.reviews.slice(0, limit).map((r) => ({
+          text: r.text || '',
+          rating: r.rating || 0,
+          author: r.author_name || 'Anonymous',
+          date: r.relative_time_description || '',
+          source: 'google_places',
+          review_link: null, // Google Places doesn't provide direct review links
+          review_id: null,
+        }));
+      }
+      console.log(`Google Places returned no reviews for ${placeId}`);
+    } catch (placesErr) {
+      console.log(`Google Places fallback also failed: ${placesErr.message}`);
+    }
+  }
+
+  // Return empty array instead of throwing - allows demo generation to continue with no reviews
+  console.log(`All review APIs failed for ${placeId}, returning empty array`);
+  return [];
 }
 
 // Helper: Lookup Google Place ID from business name + city
