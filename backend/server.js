@@ -12048,6 +12048,43 @@ app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
   }
 });
 
+// Admin: Backfill magic link flag for existing users
+app.post('/api/admin/backfill-magic-link-users', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Find all users whose email exists in magic_links with used_at set
+    const result = await dbQuery(`
+      UPDATE users u
+      SET created_via_magic_link = TRUE
+      FROM magic_links ml
+      WHERE LOWER(u.email) = LOWER(ml.email)
+        AND ml.used_at IS NOT NULL
+        AND (u.created_via_magic_link IS NULL OR u.created_via_magic_link = FALSE)
+    `);
+
+    const updated = result.rowCount || 0;
+
+    // Also get count of magic link users for reference
+    const countResult = await dbGet(`
+      SELECT COUNT(*) as total FROM users WHERE created_via_magic_link = TRUE
+    `);
+
+    res.json({
+      ok: true,
+      updated,
+      totalMagicLinkUsers: parseInt(countResult?.total || 0),
+      message: `Backfilled ${updated} users as magic link users`,
+    });
+  } catch (error) {
+    console.error('Backfill magic link error:', error);
+    res.status(500).json({ error: 'Failed to backfill', details: error.message });
+  }
+});
+
 // Admin: Delete obvious fake/test accounts (keyboard spam emails)
 app.delete('/api/admin/cleanup-test-accounts', authenticateAdmin, async (req, res) => {
   try {
