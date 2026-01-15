@@ -12956,6 +12956,33 @@ const DemoPage = () => {
             </span>
           </div>
 
+          {/* URGENCY COUNTDOWN TIMER */}
+          {countdown.hours > 0 || countdown.minutes > 0 || countdown.seconds > 0 ? (
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                marginBottom: '20px',
+                fontWeight: '600',
+                fontSize: '14px',
+                boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+              </svg>
+              <span>30% OFF expires in </span>
+              <span style={{ fontFamily: 'monospace', fontWeight: '700' }}>
+                {String(countdown.hours).padStart(2, '0')}:{String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}
+              </span>
+            </div>
+          ) : null}
+
           <h1
             style={{
               fontSize: 'clamp(32px, 5vw, 44px)',
