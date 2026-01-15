@@ -203,6 +203,114 @@ Vor JEDER größeren Entscheidung:
 4. [ ] Wiederhole ich einen Fehler?
 5. [ ] Sollte ich eskalieren?
 
+### Die 5 Fragen vor JEDER Aktion (V2)
+
+1. **ROI-Frage:** Bringt das uns näher an $1000 MRR?
+2. **Claudius-Frage:** Mache ich das weil es Business-Sinn macht, oder weil ich "nett" sein will?
+3. **Meta-Frage:** Habe ich diese Aktion schon probiert? Was war das Ergebnis?
+4. **Escalation-Frage:** Ist das eine Situation für die ich keine Regel habe?
+5. **Unit-Economics-Frage:** Ist LTV > CAC nach dieser Aktion?
+
+### Procedural Guardrails (NICHT VERHANDELBAR)
+
+**Email-Versand:**
+```
+1. DB-Check: lead.last_contacted_at > 24h?
+2. Email-History: wasEmailRecentlySent() = false?
+3. Lock: acquireLock('outreach-' + leadId)?
+4. Dann senden
+5. recordEmailSend()
+6. releaseLock()
+```
+
+**Discount-Vergabe:**
+```
+1. User-Status checken (siehe Decision Tree oben)
+2. Intent-Level bestimmen (cold/warm/hot)
+3. Passt Discount zum Status? Wenn nein → KEIN DISCOUNT
+4. Discount-Counter heute prüfen
+5. Discount vergeben + loggen
+```
+
+**Demo-Generation:**
+```
+1. Cache checken: existiert Demo für diesen Business?
+2. API-Budget checken: costs_today < $10?
+3. Review-Count checken: business hat >3 Reviews?
+4. Dann generieren
+5. In Cache speichern
+```
+
+### Agent-Spezialisierung
+
+| Agent | Aufgabe | Tools | Entscheidet NICHT über |
+|-------|---------|-------|------------------------|
+| Scraper | Leads sammeln | Web, DB | Ob Lead kontaktiert wird |
+| Outreach | Emails senden | Email, DB | Discount-Höhe (folgt Rules) |
+| Demo | Demos erstellen | API, Cache | Wann Demo gesendet wird |
+| Review | Session analysieren | DB, Stats | Strategie-Änderungen |
+
+### Meta-Learning Loop
+
+```
+JEDEN TAG (oder nach jeder Session):
+
+1. Metriken sammeln:
+   - Emails gesendet: X
+   - Clicks: Y, CTR: Z%
+   - Conversions: A
+   - Discounts vergeben: B
+   - Discount-Conversions: C, ROI: D%
+
+2. Vergleichen mit gestern/letzte Woche:
+   - CTR Trend: ↑/↓/?
+   - Conversion Trend: ↑/↓/?
+
+3. WENN Negative Trends:
+   - Was hat sich geändert?
+   - Subject Lines? Timing? Lead Quality?
+   - Hypothese formulieren
+   - NICHT blind weitermachen
+
+4. Dokumentieren in NACHT-LOG
+```
+
+### Das 70/30 Split
+
+**70% Automatisch:**
+- Standard Cold Outreach (ohne Discount)
+- Follow-Ups nach Zeitplan
+- Demo-Generierung (cached)
+- Drip Campaigns
+- Magic Link Re-Engagement
+- Session Reviews
+
+**30% Human Needed:**
+- Neue Discount-Codes einführen
+- Strategie-Änderungen (z.B. neue Email-Templates)
+- High-Value Targets (z.B. Enterprise)
+- Anomalie-Analyse
+- LinkedIn/Social Outreach (semi-manuell)
+- Erste Kampagne für neue Lead-Quelle
+
+### Unit Economics (LTV:CAC >10:1)
+
+```
+CAC (Customer Acquisition Cost):
+- API Kosten pro Demo: ~$0.10
+- Email Kosten pro Lead: ~$0.01
+- Gesamt CAC: ~$5-10 pro Conversion
+
+LTV (Customer Lifetime Value):
+- Starter ($29/mo) × 6 Mo = $174
+- Pro ($49/mo) × 6 Mo = $294
+- Unlimited ($99/mo) × 6 Mo = $594
+
+Discount-Check:
+- 30% Discount → LTV sinkt ~$50 → Immer noch >10:1? ✅
+- Discount an Non-Converter → CAC ohne LTV → ❌
+```
+
 ---
 
 ### Wichtige Dateien
