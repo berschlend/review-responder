@@ -29826,6 +29826,8 @@ const AdminPage = () => {
   const [usageLoading, setUsageLoading] = useState(false);
   const [creditsData, setCreditsData] = useState(null);
   const [creditsLoading, setCreditsLoading] = useState(false);
+  const [omnichannelData, setOmnichannelData] = useState(null);
+  const [omnichannelLoading, setOmnichannelLoading] = useState(false);
 
   // Use the same API_URL as the rest of the app (already includes /api)
   // Remove /api suffix if present to build admin URLs correctly
@@ -30041,6 +30043,21 @@ const AdminPage = () => {
     }
   };
 
+  const loadOmnichannelData = async key => {
+    const keyToUse = key || adminKey;
+    if (!keyToUse) return;
+    setOmnichannelLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/admin/omnichannel-stats?key=${keyToUse}`);
+      setOmnichannelData(res.data);
+    } catch (err) {
+      console.error('Omnichannel load error:', err);
+      toast.error('Failed to load omnichannel stats');
+    } finally {
+      setOmnichannelLoading(false);
+    }
+  };
+
   const addClaudeNote = async () => {
     if (!newNote.trim()) {
       toast.error('Please enter a note');
@@ -30159,6 +30176,9 @@ const AdminPage = () => {
       }
       if (activeAdminTab === 'usage' && !usageData) {
         loadUsageData();
+      }
+      if (activeAdminTab === 'omnichannel' && !omnichannelData) {
+        loadOmnichannelData();
       }
     }
   }, [activeAdminTab, isAuthenticated, adminKey]);
@@ -30297,6 +30317,13 @@ const AdminPage = () => {
           onClick={() => setActiveAdminTab('usage')}
         >
           Usage Analytics
+        </button>
+        <button
+          className={`btn ${activeAdminTab === 'omnichannel' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('omnichannel')}
+          style={{ background: activeAdminTab === 'omnichannel' ? 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)' : undefined }}
+        >
+          Omnichannel
         </button>
       </div>
 
@@ -33848,6 +33875,245 @@ const AdminPage = () => {
                 Could not load usage analytics
               </p>
               <button className="btn btn-primary" onClick={() => loadUsageData()}>
+                Retry
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Omnichannel Tab - Multi-Channel Outreach Stats */}
+      {activeAdminTab === 'omnichannel' && (
+        <div>
+          {omnichannelLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading omnichannel stats...</div>
+          ) : omnichannelData ? (
+            <>
+              {/* Overview Cards */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: '16px',
+                  marginBottom: '24px',
+                }}
+              >
+                <div
+                  className="card"
+                  style={{
+                    textAlign: 'center',
+                    background: 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)',
+                    color: 'white',
+                  }}
+                >
+                  <div style={{ fontSize: '36px', fontWeight: '700' }}>
+                    {omnichannelData.leads_with_demos || 0}
+                  </div>
+                  <div style={{ opacity: 0.9 }}>Leads with Demos</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '36px', fontWeight: '700', color: '#1DA1F2' }}>
+                    {omnichannelData.social_links_found?.twitter || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-600)' }}>Twitter Found</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '36px', fontWeight: '700', color: '#1877F2' }}>
+                    {omnichannelData.social_links_found?.facebook || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-600)' }}>Facebook Found</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '36px', fontWeight: '700', color: '#E4405F' }}>
+                    {omnichannelData.social_links_found?.instagram || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-600)' }}>Instagram Found</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '36px', fontWeight: '700', color: '#0A66C2' }}>
+                    {omnichannelData.social_links_found?.linkedin || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-600)' }}>LinkedIn Found</div>
+                </div>
+              </div>
+
+              {/* Contacted by Channel */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Contacted by Channel</h3>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                    gap: '12px',
+                  }}
+                >
+                  <div
+                    style={{
+                      padding: '16px',
+                      background: 'var(--gray-50)',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#10B981' }}>
+                      {omnichannelData.contacted_by_channel?.email || 0}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Email</div>
+                  </div>
+                  <div
+                    style={{
+                      padding: '16px',
+                      background: 'var(--gray-50)',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#1DA1F2' }}>
+                      {omnichannelData.contacted_by_channel?.twitter || 0}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Twitter</div>
+                  </div>
+                  <div
+                    style={{
+                      padding: '16px',
+                      background: 'var(--gray-50)',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#1877F2' }}>
+                      {omnichannelData.contacted_by_channel?.facebook || 0}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Facebook</div>
+                  </div>
+                  <div
+                    style={{
+                      padding: '16px',
+                      background: 'var(--gray-50)',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#E4405F' }}>
+                      {omnichannelData.contacted_by_channel?.instagram || 0}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Instagram</div>
+                  </div>
+                  <div
+                    style={{
+                      padding: '16px',
+                      background: 'var(--gray-50)',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div style={{ fontSize: '24px', fontWeight: '700', color: '#0A66C2' }}>
+                      {omnichannelData.contacted_by_channel?.linkedin || 0}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>LinkedIn</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Potential Reach */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Potential Reach (Not Yet Contacted)</h3>
+                <p style={{ color: 'var(--gray-500)', fontSize: '14px', marginBottom: '16px' }}>
+                  Leads with social links found but not yet messaged on that channel
+                </p>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                    gap: '12px',
+                  }}
+                >
+                  <div
+                    style={{
+                      padding: '16px',
+                      background: 'linear-gradient(135deg, #1DA1F2 0%, #0d8bd9 100%)',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                      color: 'white',
+                    }}
+                  >
+                    <div style={{ fontSize: '24px', fontWeight: '700' }}>
+                      {omnichannelData.potential_reach?.twitter || 0}
+                    </div>
+                    <div style={{ fontSize: '12px', opacity: 0.9 }}>Twitter</div>
+                  </div>
+                  <div
+                    style={{
+                      padding: '16px',
+                      background: 'linear-gradient(135deg, #1877F2 0%, #0d65d9 100%)',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                      color: 'white',
+                    }}
+                  >
+                    <div style={{ fontSize: '24px', fontWeight: '700' }}>
+                      {omnichannelData.potential_reach?.facebook || 0}
+                    </div>
+                    <div style={{ fontSize: '12px', opacity: 0.9 }}>Facebook</div>
+                  </div>
+                  <div
+                    style={{
+                      padding: '16px',
+                      background: 'linear-gradient(135deg, #E4405F 0%, #c13584 100%)',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                      color: 'white',
+                    }}
+                  >
+                    <div style={{ fontSize: '24px', fontWeight: '700' }}>
+                      {omnichannelData.potential_reach?.instagram || 0}
+                    </div>
+                    <div style={{ fontSize: '12px', opacity: 0.9 }}>Instagram</div>
+                  </div>
+                  <div
+                    style={{
+                      padding: '16px',
+                      background: 'linear-gradient(135deg, #0A66C2 0%, #004182 100%)',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                      color: 'white',
+                    }}
+                  >
+                    <div style={{ fontSize: '24px', fontWeight: '700' }}>
+                      {omnichannelData.potential_reach?.linkedin || 0}
+                    </div>
+                    <div style={{ fontSize: '12px', opacity: 0.9 }}>LinkedIn</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* How to Use Section */}
+              <div className="card">
+                <h3 style={{ marginTop: 0, marginBottom: '16px' }}>How to Run Omnichannel Blast</h3>
+                <div style={{ background: 'var(--gray-50)', padding: '16px', borderRadius: '8px', fontFamily: 'monospace', fontSize: '14px' }}>
+                  <p style={{ margin: '0 0 12px 0', color: 'var(--gray-600)' }}>1. Start 3 parallel Claude sessions:</p>
+                  <code style={{ display: 'block', marginBottom: '16px', color: '#8B5CF6' }}>
+                    powershell .\.claude\omnichannel-parallel.ps1
+                  </code>
+                  <p style={{ margin: '0 0 12px 0', color: 'var(--gray-600)' }}>2. In each terminal run:</p>
+                  <code style={{ display: 'block', marginBottom: '8px', color: '#1DA1F2' }}>
+                    Terminal 1: claude --chrome then /omnichannel-blast --channel=twitter
+                  </code>
+                  <code style={{ display: 'block', marginBottom: '8px', color: '#1877F2' }}>
+                    Terminal 2: claude --chrome then /omnichannel-blast --channel=facebook
+                  </code>
+                  <code style={{ display: 'block', color: '#E4405F' }}>
+                    Terminal 3: claude --chrome then /omnichannel-blast --channel=instagram
+                  </code>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+                Could not load omnichannel stats
+              </p>
+              <button className="btn btn-primary" onClick={() => loadOmnichannelData()}>
                 Retry
               </button>
             </div>
