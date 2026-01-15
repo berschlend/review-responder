@@ -2850,12 +2850,12 @@ const LandingPage = () => {
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '12px',
-                  marginBottom: '32px',
+                  marginBottom: '24px',
                 }}
               >
                 {[
                   'One-click response generation',
-                  'Maintains brand voice & personality',
+                  'Settings synced with dashboard',
                   'No manual copy-pasting required',
                 ].map((step, i) => (
                   <div
@@ -2874,30 +2874,48 @@ const LandingPage = () => {
                 ))}
               </div>
 
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <Link
-                  to="/extension"
+              {/* Trust Badge - No Signup */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                marginBottom: '16px',
+                fontSize: '12px',
+                color: '#059669',
+                background: 'rgba(5, 150, 105, 0.08)',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                width: 'fit-content'
+              }}>
+                <Check size={14} />
+                <span><strong>No signup required</strong> - download and try instantly</span>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <a
+                  href="/extension-download.zip"
+                  download="ReviewResponder-Extension.zip"
                   className="btn btn-primary"
                   style={{
-                    padding: '8px 16px',
+                    padding: '10px 18px',
                     fontSize: '13px',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
                   }}
                 >
-                  <Download size={14} /> Get Extension
-                </Link>
+                  <Download size={14} /> Download Now - Free
+                </a>
                 <Link
-                  to="/register"
+                  to="/extension"
                   className="btn btn-secondary"
                   style={{
-                    padding: '8px 16px',
+                    padding: '10px 18px',
                     fontSize: '13px',
                     border: '1px solid var(--border-color)',
                   }}
                 >
-                  Sign Up Free
+                  Installation Guide
                 </Link>
               </div>
 
@@ -27162,26 +27180,110 @@ const ExtensionPage = () => {
         className="container"
         style={{ paddingTop: '40px', paddingBottom: '60px', maxWidth: '800px' }}
       >
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+        {/* Hero Section - Download First */}
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <Chrome size={48} style={{ color: 'var(--primary-600)', marginBottom: '16px' }} />
           <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '12px' }}>
-            Install Chrome Extension
+            Get the Chrome Extension
           </h1>
-          <p style={{ color: 'var(--gray-600)' }}>3 simple steps - takes less than 1 minute</p>
-          <div
+          <p style={{ color: 'var(--gray-600)', fontSize: '18px', marginBottom: '20px' }}>
+            Generate AI responses directly on Google Maps, Yelp, TripAdvisor & more
+          </p>
+
+          {/* Primary CTA - Download Now */}
+          <a
+            href="/extension-download.zip"
+            download="ReviewResponder-Extension.zip"
+            className="btn btn-primary"
             style={{
-              background: 'rgba(5, 150, 105, 0.1)',
-              padding: '12px 20px',
-              borderRadius: '8px',
-              marginTop: '16px',
-              display: 'inline-block',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '18px',
+              padding: '14px 28px',
+              marginBottom: '16px'
             }}
           >
-            <p style={{ margin: 0, fontSize: '14px', color: '#059669', fontWeight: '500' }}>
-              Coming soon to Chrome Web Store! For now, install manually below.
-            </p>
+            <Download size={20} />
+            Download Now - Free
+          </a>
+
+          {/* Trust Badges */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '20px',
+            flexWrap: 'wrap',
+            marginTop: '16px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-600)', fontSize: '14px' }}>
+              <Check size={16} style={{ color: '#10b981' }} />
+              No signup required
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-600)', fontSize: '14px' }}>
+              <Check size={16} style={{ color: '#10b981' }} />
+              20 free responses/month
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-600)', fontSize: '14px' }}>
+              <Check size={16} style={{ color: '#10b981' }} />
+              Works on 6 platforms
+            </div>
+          </div>
+
+          {/* Secondary Note - Chrome Store */}
+          <p style={{
+            margin: '20px 0 0',
+            fontSize: '13px',
+            color: 'var(--gray-500)'
+          }}>
+            Coming soon to Chrome Web Store. Manual install takes 1 minute.
+          </p>
+        </div>
+
+        {/* Settings Sync Feature Highlight */}
+        <div
+          className="card"
+          style={{
+            marginBottom: '24px',
+            background: 'linear-gradient(135deg, #f0fdf4, #ecfdf5)',
+            border: '1px solid #bbf7d0'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+            <div style={{
+              background: '#10b981',
+              borderRadius: '12px',
+              padding: '12px',
+              flexShrink: 0
+            }}>
+              <RefreshCw size={24} style={{ color: 'white' }} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px', color: '#065f46' }}>
+                Synced with Your Dashboard
+              </h3>
+              <p style={{ color: '#047857', marginBottom: '12px', fontSize: '14px' }}>
+                Set up once, use everywhere. Your business settings sync automatically.
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#065f46' }}>
+                  <Check size={14} /> Business name & context
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#065f46' }}>
+                  <Check size={14} /> Same tone across platforms
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#065f46' }}>
+                  <Check size={14} /> Response history in one place
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Installation Steps Header */}
+        <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px', color: 'var(--gray-700)' }}>
+          Quick Installation (1 minute)
+        </h2>
 
         <div className="card" style={{ marginBottom: '24px' }}>
           <h2
@@ -27209,20 +27311,14 @@ const ExtensionPage = () => {
             >
               1
             </span>
-            Download & Unzip
+            Unzip the Download
           </h2>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '16px' }}>
-            Download the ZIP file and extract it to any folder (e.g. Desktop).
+          <p style={{ color: 'var(--gray-600)', marginBottom: '8px' }}>
+            Extract the downloaded ZIP file to any folder (e.g. Desktop).
           </p>
-          <a
-            href="/extension-download.zip"
-            download="ReviewResponder-Extension.zip"
-            className="btn btn-primary"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-          >
-            <Download size={18} />
-            Download Extension
-          </a>
+          <p style={{ color: 'var(--gray-500)', fontSize: '13px' }}>
+            Didn't download yet? <a href="/extension-download.zip" download="ReviewResponder-Extension.zip" style={{ color: 'var(--primary-600)' }}>Click here</a>
+          </p>
         </div>
 
         <div className="card" style={{ marginBottom: '24px' }}>
@@ -27330,13 +27426,23 @@ const ExtensionPage = () => {
             >
               3
             </span>
-            Login & Go!
+            Start Generating Responses
           </h2>
-          <p style={{ color: 'var(--gray-600)', marginBottom: '16px' }}>
-            Click the ReviewResponder icon, login with your account, and start generating responses!
+          <p style={{ color: 'var(--gray-600)', marginBottom: '12px' }}>
+            Go to any review on Google Maps, Yelp, or TripAdvisor. Click the ReviewResponder icon and generate your first response.
           </p>
-          <Link to="/register" className="btn btn-primary">
-            Create Free Account
+          <div style={{
+            background: 'rgba(16, 185, 129, 0.1)',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            marginBottom: '16px'
+          }}>
+            <p style={{ margin: 0, fontSize: '14px', color: '#065f46' }}>
+              <strong>No account needed to try!</strong> Create an account later to save your settings and get more responses.
+            </p>
+          </div>
+          <Link to="/register" className="btn" style={{ background: 'var(--gray-100)', color: 'var(--gray-700)' }}>
+            Create Free Account (Optional)
           </Link>
         </div>
 
