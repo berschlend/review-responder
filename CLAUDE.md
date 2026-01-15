@@ -284,6 +284,8 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 ### Admin
 - `GET /api/admin/stats|set-plan|api-costs|scraper-status|user-list`
 - `GET /api/admin/parallel-safe-status`
+- `GET /api/admin/account-usage` - Claude CLI Account Limits (% of daily/weekly)
+- `POST /api/admin/sync-account-usage` - Sync from `.\scripts\Sync-AccountUsage.ps1`
 
 ### Cron
 - `GET /api/cron/daily-outreach|demo-followup|night-blast|night-loop`
