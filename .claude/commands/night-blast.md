@@ -1,4 +1,116 @@
-# Night Blast - Vollautonomer Sales-Agent
+# Night Blast - Alles in einem Befehl
+
+**🌐 CHROME MCP: JA** - Starte mit `claude --chrome`
+
+---
+
+## QUICK MODE (Standard) - Vom Handy via AnyDesk
+
+Wenn du `/night-blast` sagst, mache GENAU das:
+
+### Schritt 1: Server Night Blast triggern
+```bash
+curl -s "https://review-responder.onrender.com/api/cron/night-blast?secret=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
+```
+**Warte auf Response!** (2-5 Minuten)
+
+Das macht automatisch:
+- Multi-City Scraping (5 Städte, ~100 Leads)
+- Email Finding
+- Demo Generation
+- Alle Follow-Ups
+- Social Link Scraping (Twitter, FB, Instagram, LinkedIn)
+
+### Schritt 2: Omnichannel DMs senden (Chrome MCP)
+
+Hole Leads die DMs brauchen:
+```bash
+curl -s "https://review-responder.onrender.com/api/admin/leads-for-omnichannel?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
+```
+
+Für jeden Lead mit Social Links:
+
+**Twitter DM:**
+1. `navigate` zu `twitter.com/messages`
+2. "New Message" → Handle suchen → Message senden
+
+**Facebook:**
+1. `navigate` zu `facebook.com/[page]`
+2. "Message" Button → Message senden
+
+**Instagram:**
+1. `navigate` zu `instagram.com/[handle]`
+2. "Message" Button → Message senden
+
+**Message Template (DE):**
+```
+Hey! 👋
+
+Hab was für [BUSINESS_NAME] gebaut:
+[DEMO_URL]
+
+3 AI-Antworten auf eure echten Google Reviews.
+Kostenlos, einfach mal anschauen.
+
+Berend
+```
+
+**Message Template (EN):**
+```
+Hey! 👋
+
+Built something for [BUSINESS_NAME]:
+[DEMO_URL]
+
+3 AI responses to your actual Google reviews.
+Free to check out.
+
+Berend
+```
+
+Nach jeder DM markieren:
+```bash
+curl -X PUT "https://review-responder.onrender.com/api/admin/mark-channel-contacted" \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-Key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U" \
+  -d '{"lead_id": [ID], "channel": "[twitter/facebook/instagram]"}'
+```
+
+### Schritt 3: Fertig melden
+
+```
+✅ NIGHT BLAST COMPLETE
+
+Server:
+- X Leads gescraped
+- Y Emails gefunden
+- Z Demos generiert
+
+DMs:
+- Twitter: X gesendet
+- Facebook: Y gesendet
+- Instagram: Z gesendet
+
+Gute Nacht! 🌙
+```
+
+### Rate Limits - BEI WARNUNG STOPPEN!
+
+| Platform | Max |
+|----------|-----|
+| Twitter | 30/Tag |
+| Facebook | 20/Tag |
+| Instagram | 20/Tag |
+
+---
+
+## ADVANCED MODE (--autonomous)
+
+Für `/night-blast --autonomous` - Läuft die ganze Nacht autonom:
+
+---
+
+# Night Blast Autonomous - Vollautonomer Sales-Agent
 
 Du bist ein vollautonomer Sales-Agent für ReviewResponder.
 Laufzeit: Die GANZE NACHT (oder bis du gestoppt wirst).
