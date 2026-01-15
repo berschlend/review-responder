@@ -104,6 +104,7 @@ import {
   Smartphone,
   Building2,
   Hammer,
+  Gift,
 } from 'lucide-react';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
@@ -465,6 +466,455 @@ const LandingEmailCapture = ({
         {buttonText} <Sparkles size={18} />
       </button>
     </form>
+  );
+};
+
+// InstantDemoWidget - Try AI response generation before signup
+// Used in Hero sections of all landing pages
+const InstantDemoWidget = ({ platform = '', primaryColor = 'var(--primary)' }) => {
+  const navigate = useNavigate();
+  const [reviewText, setReviewText] = useState('');
+  const [tone, setTone] = useState('professional');
+  const [response, setResponse] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [captureEmail, setCaptureEmail] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [emailCaptured, setEmailCaptured] = useState(() => {
+    return localStorage.getItem('instant_demo_email') === 'true';
+  });
+
+  const handleGenerate = async () => {
+    if (!reviewText.trim() || reviewText.trim().length < 10) {
+      setError('Please enter a review (at least 10 characters)');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    setResponse('');
+    try {
+      const res = await axios.post(`${API_URL}/public/try`, {
+        reviewText: reviewText.trim(),
+        tone,
+      });
+      setResponse(res.data.response);
+    } catch (err) {
+      if (err.response?.status === 429) {
+        setError(err.response?.data?.message || 'Daily limit reached. Sign up for 20 free/month!');
+      } else {
+        setError(err.response?.data?.error || 'Failed to generate. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCopy = () => {
+    if (!emailCaptured) {
+      setShowEmailModal(true);
+      return;
+    }
+    navigator.clipboard.writeText(response);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleEmailSubmit = async e => {
+    e.preventDefault();
+    if (!captureEmail.trim() || !captureEmail.includes('@')) {
+      return;
+    }
+    // Track email capture
+    try {
+      await axios.post(`${API_URL}/capture-email`, {
+        email: captureEmail.trim(),
+        source: `instant_demo_${platform || 'landing'}`,
+      });
+    } catch (err) {
+      // Silent fail
+    }
+    // Set captured state
+    localStorage.setItem('instant_demo_email', 'true');
+    setEmailCaptured(true);
+    setShowEmailModal(false);
+    // Copy the response
+    navigator.clipboard.writeText(response);
+    setCopied(true);
+    // Redirect to register with email pre-filled
+    setTimeout(() => {
+      navigate(`/register?email=${encodeURIComponent(captureEmail.trim())}`);
+    }, 1500);
+  };
+
+  return (
+    <div style={{ maxWidth: '600px', margin: '0 auto', width: '100%' }}>
+      {/* Input Section */}
+      <div
+        style={{
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border-color)',
+          borderRadius: '12px',
+          padding: '20px',
+          marginBottom: '16px',
+        }}
+      >
+        <textarea
+          value={reviewText}
+          onChange={e => setReviewText(e.target.value)}
+          placeholder={`Paste a ${platform ? platform + ' ' : ''}review here to see AI magic...`}
+          style={{
+            width: '100%',
+            minHeight: '100px',
+            padding: '12px',
+            fontSize: '14px',
+            border: '1px solid var(--border-color)',
+            borderRadius: '8px',
+            background: 'var(--bg-primary)',
+            color: 'var(--text-primary)',
+            resize: 'vertical',
+            fontFamily: 'inherit',
+            marginBottom: '12px',
+          }}
+        />
+        <div
+          style={{
+            display: 'flex',
+            gap: '12px',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {['professional', 'friendly', 'formal', 'apologetic'].map(t => (
+              <button
+                key={t}
+                onClick={() => setTone(t)}
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '12px',
+                  borderRadius: '6px',
+                  border: tone === t ? `1px solid ${primaryColor}` : '1px solid var(--border-color)',
+                  background: tone === t ? 'var(--primary-light)' : 'var(--bg-primary)',
+                  color: tone === t ? primaryColor : 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  fontWeight: '500',
+                  textTransform: 'capitalize',
+                }}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={handleGenerate}
+            disabled={loading || !reviewText.trim()}
+            className="btn btn-primary"
+            style={{
+              padding: '10px 20px',
+              fontSize: '14px',
+              fontWeight: '600',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: primaryColor,
+              opacity: loading || !reviewText.trim() ? 0.7 : 1,
+            }}
+          >
+            {loading ? (
+              <>
+                <div
+                  style={{
+                    width: '14px',
+                    height: '14px',
+                    border: '2px solid rgba(255,255,255,0.3)',
+                    borderTopColor: 'white',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite',
+                  }}
+                />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles size={16} />
+                Generate Response
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <div
+          style={{
+            padding: '12px 16px',
+            background: error.includes('Sign up') ? 'var(--primary-light)' : '#FEF2F2',
+            border: error.includes('Sign up') ? `1px solid ${primaryColor}` : '1px solid #FCA5A5',
+            borderRadius: '8px',
+            marginBottom: '16px',
+            color: error.includes('Sign up') ? primaryColor : '#DC2626',
+            fontSize: '13px',
+            textAlign: 'center',
+          }}
+        >
+          {error}
+          {error.includes('Sign up') && (
+            <Link
+              to="/register"
+              style={{ marginLeft: '8px', fontWeight: '600', textDecoration: 'underline' }}
+            >
+              Sign up free
+            </Link>
+          )}
+        </div>
+      )}
+
+      {/* Generated Response */}
+      {response && (
+        <div
+          style={{
+            background: 'var(--bg-secondary)',
+            border: `1px solid ${primaryColor}`,
+            borderRadius: '12px',
+            padding: '20px',
+            marginBottom: '16px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <Sparkles size={16} style={{ color: primaryColor }} />
+            <span
+              style={{
+                fontSize: '12px',
+                fontWeight: '600',
+                color: primaryColor,
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+              }}
+            >
+              AI Response
+            </span>
+          </div>
+          <p
+            style={{
+              fontSize: '14px',
+              lineHeight: '1.6',
+              color: 'var(--text-primary)',
+              margin: 0,
+              whiteSpace: 'pre-wrap',
+            }}
+          >
+            {response}
+          </p>
+          <div
+            style={{
+              marginTop: '16px',
+              paddingTop: '16px',
+              borderTop: '1px solid var(--border-color)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '12px',
+            }}
+          >
+            <button
+              onClick={handleCopy}
+              style={{
+                padding: '8px 16px',
+                fontSize: '13px',
+                fontWeight: '600',
+                borderRadius: '6px',
+                border: '1px solid var(--border-color)',
+                background: copied ? '#10B981' : 'var(--bg-primary)',
+                color: copied ? 'white' : 'var(--text-primary)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              {copied ? (
+                <>
+                  <Check size={14} /> Copied!
+                </>
+              ) : (
+                <>
+                  <Copy size={14} /> Copy Response
+                </>
+              )}
+            </button>
+            <Link
+              to="/register"
+              className="btn btn-primary"
+              style={{
+                padding: '8px 16px',
+                fontSize: '13px',
+                fontWeight: '600',
+                borderRadius: '6px',
+                background: primaryColor,
+              }}
+            >
+              Get 20 Free Responses
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Trust Badges */}
+      <div
+        style={{
+          display: 'flex',
+          gap: '24px',
+          justifyContent: 'center',
+          flexWrap: 'wrap',
+          marginTop: '8px',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            color: 'var(--text-muted)',
+            fontSize: '12px',
+          }}
+        >
+          <Check size={14} style={{ color: 'var(--text-secondary)' }} />
+          No signup required
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            color: 'var(--text-muted)',
+            fontSize: '12px',
+          }}
+        >
+          <Sparkles size={14} style={{ color: 'var(--text-secondary)' }} />
+          See results instantly
+        </div>
+      </div>
+
+      {/* Email Gate Modal */}
+      {showEmailModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px',
+          }}
+          onClick={() => setShowEmailModal(false)}
+        >
+          <div
+            style={{
+              background: 'var(--bg-primary)',
+              borderRadius: '16px',
+              padding: '32px',
+              maxWidth: '420px',
+              width: '100%',
+              textAlign: 'center',
+              boxShadow: '0 25px 50px rgba(0,0,0,0.25)',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div
+              style={{
+                width: '64px',
+                height: '64px',
+                background: 'var(--primary-light)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 20px',
+              }}
+            >
+              <Gift size={32} style={{ color: primaryColor }} />
+            </div>
+            <h3
+              style={{
+                fontSize: '22px',
+                fontWeight: '700',
+                marginBottom: '8px',
+                color: 'var(--text-primary)',
+              }}
+            >
+              Unlock 20 Free Responses!
+            </h3>
+            <p
+              style={{
+                fontSize: '14px',
+                color: 'var(--text-secondary)',
+                marginBottom: '24px',
+                lineHeight: '1.5',
+              }}
+            >
+              Enter your email to copy this response and get <strong>20 free AI responses</strong>{' '}
+              every month.
+            </p>
+            <form onSubmit={handleEmailSubmit}>
+              <input
+                type="email"
+                value={captureEmail}
+                onChange={e => setCaptureEmail(e.target.value)}
+                placeholder="Enter your business email"
+                autoFocus
+                style={{
+                  width: '100%',
+                  padding: '14px 16px',
+                  fontSize: '15px',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '10px',
+                  marginBottom: '12px',
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                }}
+              />
+              <button
+                type="submit"
+                className="btn btn-primary"
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  borderRadius: '10px',
+                  background: primaryColor,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                <Copy size={18} /> Copy & Get Started Free
+              </button>
+            </form>
+            <p
+              style={{
+                fontSize: '11px',
+                color: 'var(--text-muted)',
+                marginTop: '16px',
+              }}
+            >
+              No credit card required. Cancel anytime.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -2437,270 +2887,8 @@ const LandingPage = () => {
             in one click.
           </p>
 
-          {/* Try Before Signup - Demo Box */}
-          <div
-            style={{
-              maxWidth: '600px',
-              margin: '0 auto',
-              width: '100%',
-            }}
-          >
-            {/* Input Section */}
-            <div
-              style={{
-                background: 'var(--bg-secondary)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '12px',
-                padding: '20px',
-                marginBottom: '16px',
-              }}
-            >
-              <textarea
-                value={tryReviewText}
-                onChange={e => setTryReviewText(e.target.value)}
-                placeholder="Paste a customer review here to see how we respond..."
-                style={{
-                  width: '100%',
-                  minHeight: '100px',
-                  padding: '12px',
-                  fontSize: '14px',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  background: 'var(--bg-primary)',
-                  color: 'var(--text-primary)',
-                  resize: 'vertical',
-                  fontFamily: 'inherit',
-                  marginBottom: '12px',
-                }}
-              />
-
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '12px',
-                  flexWrap: 'wrap',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {['professional', 'friendly', 'formal', 'apologetic'].map(tone => (
-                    <button
-                      key={tone}
-                      onClick={() => setTryTone(tone)}
-                      style={{
-                        padding: '6px 12px',
-                        fontSize: '12px',
-                        borderRadius: '6px',
-                        border:
-                          tryTone === tone
-                            ? '1px solid var(--primary)'
-                            : '1px solid var(--border-color)',
-                        background: tryTone === tone ? 'var(--primary-light)' : 'var(--bg-primary)',
-                        color: tryTone === tone ? 'var(--primary)' : 'var(--text-secondary)',
-                        cursor: 'pointer',
-                        fontWeight: '500',
-                        textTransform: 'capitalize',
-                      }}
-                    >
-                      {tone}
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  onClick={handleTryGenerate}
-                  disabled={tryLoading || !tryReviewText.trim()}
-                  className="btn btn-primary"
-                  style={{
-                    padding: '10px 20px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    opacity: tryLoading || !tryReviewText.trim() ? 0.7 : 1,
-                  }}
-                >
-                  {tryLoading ? (
-                    <>
-                      <div
-                        className="spinner"
-                        style={{
-                          width: '14px',
-                          height: '14px',
-                          border: '2px solid rgba(255,255,255,0.3)',
-                          borderTopColor: 'white',
-                          borderRadius: '50%',
-                          animation: 'spin 1s linear infinite',
-                        }}
-                      />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles size={16} />
-                      Generate Response
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Error Message */}
-            {tryError && (
-              <div
-                style={{
-                  padding: '12px 16px',
-                  background: tryError.includes('Sign up') ? 'var(--primary-light)' : '#FEF2F2',
-                  border: tryError.includes('Sign up')
-                    ? '1px solid var(--primary)'
-                    : '1px solid #FCA5A5',
-                  borderRadius: '8px',
-                  marginBottom: '16px',
-                  color: tryError.includes('Sign up') ? 'var(--primary)' : '#DC2626',
-                  fontSize: '13px',
-                  textAlign: 'center',
-                }}
-              >
-                {tryError}
-                {tryError.includes('Sign up') && (
-                  <Link
-                    to="/register"
-                    style={{ marginLeft: '8px', fontWeight: '600', textDecoration: 'underline' }}
-                  >
-                    Sign up free
-                  </Link>
-                )}
-              </div>
-            )}
-
-            {/* Generated Response */}
-            {tryResponse && (
-              <div
-                style={{
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--primary)',
-                  borderRadius: '12px',
-                  padding: '20px',
-                  marginBottom: '16px',
-                }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    marginBottom: '12px',
-                  }}
-                >
-                  <Sparkles size={16} style={{ color: 'var(--primary)' }} />
-                  <span
-                    style={{
-                      fontSize: '12px',
-                      fontWeight: '600',
-                      color: 'var(--primary)',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                    }}
-                  >
-                    AI Response
-                  </span>
-                </div>
-                <p
-                  style={{
-                    fontSize: '14px',
-                    lineHeight: '1.6',
-                    color: 'var(--text-primary)',
-                    margin: 0,
-                    whiteSpace: 'pre-wrap',
-                  }}
-                >
-                  {tryResponse}
-                </p>
-
-                <div
-                  style={{
-                    marginTop: '16px',
-                    paddingTop: '16px',
-                    borderTop: '1px solid var(--border-color)',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    gap: '12px',
-                  }}
-                >
-                  <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                    Like this? Get 20 free responses/month
-                  </span>
-                  <Link
-                    to="/register"
-                    className="btn btn-primary"
-                    style={{
-                      padding: '8px 16px',
-                      fontSize: '13px',
-                      fontWeight: '600',
-                      borderRadius: '6px',
-                    }}
-                  >
-                    Sign Up Free
-                  </Link>
-                </div>
-              </div>
-            )}
-
-            {/* Trust Badges */}
-            <div
-              style={{
-                display: 'flex',
-                gap: '24px',
-                justifyContent: 'center',
-                flexWrap: 'wrap',
-                marginTop: '8px',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  color: 'var(--text-muted)',
-                  fontSize: '12px',
-                }}
-              >
-                <Check size={14} style={{ color: 'var(--text-secondary)' }} />
-                No signup required
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  color: 'var(--text-muted)',
-                  fontSize: '12px',
-                }}
-              >
-                <Sparkles size={14} style={{ color: 'var(--text-secondary)' }} />
-                See results instantly
-              </div>
-              <a
-                href="#demo"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  color: 'var(--text-muted)',
-                  fontSize: '12px',
-                  textDecoration: 'none',
-                }}
-              >
-                <PlayCircle size={14} style={{ color: 'var(--text-secondary)' }} />
-                Watch Demo
-              </a>
-            </div>
-          </div>
+          {/* Instant Demo Widget */}
+          <InstantDemoWidget />
         </div>
       </section>
 
@@ -2819,7 +3007,7 @@ const LandingPage = () => {
                     borderRadius: '4px',
                   }}
                 >
-                  Chrome Web Store - Under Review
+                  Chrome Web Store
                 </span>
               </div>
               <h2
@@ -2919,7 +3107,7 @@ const LandingPage = () => {
                 </Link>
               </div>
 
-              {/* Manual installation instructions while Web Store is under review */}
+              {/* Manual installation instructions for advanced users */}
               <details
                 style={{
                   marginTop: '16px',
@@ -3247,8 +3435,8 @@ const PrivacyPage = () => (
         <p>We use the following services:</p>
         <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
           <li>
-            <strong>OpenAI:</strong> To generate review responses (your review text is sent to their
-            API)
+            <strong>OpenAI & Anthropic (Claude):</strong> To generate review responses (your review
+            text is sent to their APIs)
           </li>
           <li>
             <strong>Stripe:</strong> For payment processing
@@ -14897,7 +15085,7 @@ const GoogleReviewPage = () => {
             replies that boost your local SEO and show customers you care.
           </p>
 
-          <LandingEmailCapture />
+          <InstantDemoWidget />
 
           <div
             style={{
@@ -15123,7 +15311,7 @@ const YelpReviewPage = () => {
             all your reviews with AI - from 5-star praise to 1-star complaints.
           </p>
 
-          <LandingEmailCapture buttonColor="#d32323" />
+          <InstantDemoWidget primaryColor="#d32323" />
 
           <div
             style={{
@@ -16015,7 +16203,7 @@ const LocalBusinessReviewPage = () => {
             every review - from glowing 5-stars to tough complaints.
           </p>
 
-          <LandingEmailCapture buttonColor="#059669" />
+          <InstantDemoWidget primaryColor="#059669" />
 
           <div
             style={{
@@ -16356,7 +16544,7 @@ const NegativeReviewPage = () => {
             show you care - and can turn critics into loyal customers.
           </p>
 
-          <LandingEmailCapture buttonColor="#B71C1C" />
+          <InstantDemoWidget primaryColor="#B71C1C" />
 
           <div
             style={{
@@ -16633,7 +16821,7 @@ const TripAdvisorReviewPage = () => {
             professionally and boost your ranking in the world's largest travel platform.
           </p>
 
-          <LandingEmailCapture buttonColor="#0066cc" />
+          <InstantDemoWidget primaryColor="#0066cc" />
 
           <div
             style={{
@@ -16858,7 +17046,7 @@ const BookingReviewPage = () => {
             guest review professionally and increase your bookings.
           </p>
 
-          <LandingEmailCapture buttonColor="#0066ff" />
+          <InstantDemoWidget primaryColor="#0066ff" />
 
           <div
             style={{
@@ -17083,7 +17271,7 @@ const FacebookReviewPage = () => {
             professionally to grow your local business presence.
           </p>
 
-          <LandingEmailCapture buttonColor="#0a66c2" />
+          <InstantDemoWidget primaryColor="#0a66c2" />
 
           <div
             style={{
@@ -17934,7 +18122,7 @@ const SalonSpaReviewPage = () => {
             professionally and attract more bookings.
           </p>
 
-          <LandingEmailCapture buttonColor="#C2185B" />
+          <InstantDemoWidget primaryColor="#C2185B" />
 
           <div
             style={{
@@ -18199,7 +18387,7 @@ const AutoShopReviewPage = () => {
             reviews professionally and turn first-timers into loyal customers.
           </p>
 
-          <LandingEmailCapture buttonColor="#E65100" />
+          <InstantDemoWidget primaryColor="#E65100" />
 
           <div
             style={{
@@ -18465,7 +18653,7 @@ const TrustpilotReviewPage = () => {
             Trustpilot reviews in seconds with AI.
           </p>
 
-          <LandingEmailCapture buttonColor="#00b67a" />
+          <InstantDemoWidget primaryColor="#00b67a" />
 
           <div
             style={{
@@ -18688,7 +18876,7 @@ const AirbnbReviewPage = () => {
             encourage future bookings.
           </p>
 
-          <LandingEmailCapture buttonColor="#FF5A5F" />
+          <InstantDemoWidget primaryColor="#FF5A5F" />
 
           <div
             style={{
@@ -18949,7 +19137,7 @@ const RealEstateReviewPage = () => {
             to client reviews on Zillow, Realtor.com, and Google.
           </p>
 
-          <LandingEmailCapture buttonColor="#2d5a87" />
+          <InstantDemoWidget primaryColor="#2d5a87" />
 
           <div
             style={{
@@ -19172,7 +19360,7 @@ const GymReviewPage = () => {
             reviews that show you care about every member's fitness journey.
           </p>
 
-          <LandingEmailCapture buttonColor="#ff6b35" />
+          <InstantDemoWidget primaryColor="#ff6b35" />
 
           <div
             style={{
@@ -19433,7 +19621,7 @@ const VetReviewPage = () => {
             compassionate, professional responses to veterinary reviews.
           </p>
 
-          <LandingEmailCapture buttonColor="#4CAF50" />
+          <InstantDemoWidget primaryColor="#4CAF50" />
 
           <div
             style={{
@@ -19696,7 +19884,7 @@ const LawFirmReviewPage = () => {
             Generate ethical, thoughtful responses that build trust.
           </p>
 
-          <LandingEmailCapture buttonColor="#16213e" />
+          <InstantDemoWidget primaryColor="#16213e" />
 
           <div
             style={{
@@ -19957,7 +20145,7 @@ const EcommerceReviewPage = () => {
             address concerns, thank happy customers, and boost your store rating.
           </p>
 
-          <LandingEmailCapture buttonColor="#7c3aed" />
+          <InstantDemoWidget primaryColor="#7c3aed" />
 
           <div
             style={{
@@ -20218,7 +20406,7 @@ const CoffeeShopReviewPage = () => {
             coffee shop's unique personality and keep customers coming back.
           </p>
 
-          <LandingEmailCapture buttonColor="#6f4e37" />
+          <InstantDemoWidget primaryColor="#6f4e37" />
 
           <div
             style={{
@@ -20474,7 +20662,7 @@ const AmazonReviewPage = () => {
             Boost your Amazon seller rating with professional AI-generated responses. Turn negative
             reviews into opportunities.
           </p>
-          <LandingEmailCapture buttonColor="#FF9900" />
+          <InstantDemoWidget primaryColor="#FF9900" />
           <div
             style={{
               display: 'flex',
@@ -20659,7 +20847,7 @@ const G2ReviewPage = () => {
             Win more enterprise deals with professional G2 review responses. Show prospects you care
             about customer success.
           </p>
-          <LandingEmailCapture buttonColor="#FF492C" />
+          <InstantDemoWidget primaryColor="#FF492C" />
           <div
             style={{
               display: 'flex',
@@ -20844,7 +21032,7 @@ const CapterraReviewPage = () => {
             Stand out on Capterra with professional AI-generated responses. Convert more software
             buyers into customers.
           </p>
-          <LandingEmailCapture buttonColor="#044D80" />
+          <InstantDemoWidget primaryColor="#044D80" />
           <div
             style={{
               display: 'flex',
@@ -21029,7 +21217,7 @@ const GlassdoorReviewPage = () => {
             Build a stronger employer brand with professional AI-generated responses. Attract top
             talent by showing you value feedback.
           </p>
-          <LandingEmailCapture buttonColor="#0CAA41" />
+          <InstantDemoWidget primaryColor="#0CAA41" />
           <div
             style={{
               display: 'flex',
@@ -21214,7 +21402,7 @@ const BBBReviewPage = () => {
             Maintain your BBB rating with professional AI-generated responses. Handle complaints
             effectively and build consumer trust.
           </p>
-          <LandingEmailCapture buttonColor="#005A8C" />
+          <InstantDemoWidget primaryColor="#005A8C" />
           <div
             style={{
               display: 'flex',
@@ -21399,7 +21587,7 @@ const PlumberReviewPage = () => {
             Build your plumbing reputation with professional AI-generated responses. Turn satisfied
             customers into referral sources.
           </p>
-          <LandingEmailCapture buttonColor="#1E88E5" />
+          <InstantDemoWidget primaryColor="#1E88E5" />
           <div
             style={{
               display: 'flex',
@@ -21583,7 +21771,7 @@ const ElectricianReviewPage = () => {
             Power up your electrical business with professional AI-generated responses. Show
             customers why you're the trusted choice.
           </p>
-          <LandingEmailCapture buttonColor="#FFA000" />
+          <InstantDemoWidget primaryColor="#FFA000" />
           <div
             style={{
               display: 'flex',
@@ -21768,7 +21956,7 @@ const HVACReviewPage = () => {
             Keep your HVAC business cool under pressure with professional AI-generated responses.
             Turn every review into a growth opportunity.
           </p>
-          <LandingEmailCapture buttonColor="#00ACC1" />
+          <InstantDemoWidget primaryColor="#00ACC1" />
           <div
             style={{
               display: 'flex',
@@ -21952,7 +22140,7 @@ const RoofingReviewPage = () => {
             Raise the roof on your reputation with professional AI-generated responses. Win more
             high-value roofing contracts.
           </p>
-          <LandingEmailCapture buttonColor="#795548" />
+          <InstantDemoWidget primaryColor="#795548" />
           <div
             style={{
               display: 'flex',
@@ -22137,7 +22325,7 @@ const LandscapingReviewPage = () => {
             Help your landscaping business flourish with professional AI-generated responses. Turn
             happy customers into year-round clients.
           </p>
-          <LandingEmailCapture buttonColor="#4CAF50" />
+          <InstantDemoWidget primaryColor="#4CAF50" />
           <div
             style={{
               display: 'flex',
@@ -22322,7 +22510,7 @@ const CleaningReviewPage = () => {
             Keep your cleaning business sparkling with professional AI-generated responses. Turn
             one-time clients into recurring customers.
           </p>
-          <LandingEmailCapture buttonColor="#9C27B0" />
+          <InstantDemoWidget primaryColor="#9C27B0" />
           <div
             style={{
               display: 'flex',
@@ -22509,7 +22697,7 @@ const HealthgradesReviewPage = () => {
             Build patient trust on Healthgrades with professional AI-generated responses. Attract
             more patients with a stellar online reputation.
           </p>
-          <LandingEmailCapture buttonColor="#00A99D" />
+          <InstantDemoWidget primaryColor="#00A99D" />
           <div
             style={{
               display: 'flex',
@@ -22694,7 +22882,7 @@ const ZocdocReviewPage = () => {
             Turn Zocdoc reviews into new patient bookings with professional AI-generated responses.
             Stand out in the competitive healthcare market.
           </p>
-          <LandingEmailCapture buttonColor="#FFA000" />
+          <InstantDemoWidget primaryColor="#FFA000" />
           <div
             style={{
               display: 'flex',
@@ -22879,7 +23067,7 @@ const PhotographerReviewPage = () => {
             Capture more bookings with professional AI-generated responses. Let your reputation
             shine as bright as your photos.
           </p>
-          <LandingEmailCapture buttonColor="#424242" />
+          <InstantDemoWidget primaryColor="#424242" />
           <div
             style={{
               display: 'flex',
@@ -23064,7 +23252,7 @@ const WeddingReviewPage = () => {
             Say "I do" to more bookings with professional AI-generated responses. Build the
             reputation that makes couples choose you.
           </p>
-          <LandingEmailCapture buttonColor="#E91E63" />
+          <InstantDemoWidget primaryColor="#E91E63" />
           <div
             style={{
               display: 'flex',
@@ -23248,7 +23436,7 @@ const PetServiceReviewPage = () => {
             Fetch more customers with professional AI-generated responses. Show pet parents why
             their fur babies are in good hands.
           </p>
-          <LandingEmailCapture buttonColor="#8D6E63" />
+          <InstantDemoWidget primaryColor="#8D6E63" />
           <div
             style={{
               display: 'flex',
@@ -23432,7 +23620,7 @@ const DaycareReviewPage = () => {
             Nurture your reputation with professional AI-generated responses. Help parents feel
             confident choosing your childcare center.
           </p>
-          <LandingEmailCapture buttonColor="#FF7043" />
+          <InstantDemoWidget primaryColor="#FF7043" />
           <div
             style={{
               display: 'flex',
@@ -23617,7 +23805,7 @@ const AccountantReviewPage = () => {
             Balance your books and your reputation with professional AI-generated responses. Build
             client trust during tax season and beyond.
           </p>
-          <LandingEmailCapture buttonColor="#37474F" />
+          <InstantDemoWidget primaryColor="#37474F" />
           <div
             style={{
               display: 'flex',
@@ -23802,7 +23990,7 @@ const InsuranceReviewPage = () => {
             Protect your reputation like you protect your clients. Professional AI-generated
             responses that build trust and close more policies.
           </p>
-          <LandingEmailCapture buttonColor="#1565C0" />
+          <InstantDemoWidget primaryColor="#1565C0" />
           <div
             style={{
               display: 'flex',
@@ -23986,7 +24174,7 @@ const SeniorCareReviewPage = () => {
             Show families the compassionate care you provide with professional AI-generated
             responses. Build trust during difficult decisions.
           </p>
-          <LandingEmailCapture buttonColor="#7B1FA2" />
+          <InstantDemoWidget primaryColor="#7B1FA2" />
           <div
             style={{
               display: 'flex',
@@ -24172,7 +24360,7 @@ const AppStoreReviewPage = () => {
             Boost your app rating with professional AI-generated responses. Reply to iOS App Store
             and Google Play reviews in seconds.
           </p>
-          <LandingEmailCapture buttonColor="#007AFF" />
+          <InstantDemoWidget primaryColor="#007AFF" />
           <div
             style={{
               display: 'flex',
@@ -24410,7 +24598,7 @@ const IndeedReviewPage = () => {
             Build your employer brand with professional AI-generated responses. Turn employee
             feedback into recruitment opportunities.
           </p>
-          <LandingEmailCapture buttonColor="#2164F3" />
+          <InstantDemoWidget primaryColor="#2164F3" />
           <div
             style={{
               display: 'flex',
@@ -24648,7 +24836,7 @@ const ZillowReviewPage = () => {
             Build your realtor reputation with professional AI-generated responses. Turn client
             reviews into more listings and sales.
           </p>
-          <LandingEmailCapture buttonColor="#006AFF" />
+          <InstantDemoWidget primaryColor="#006AFF" />
           <div
             style={{
               display: 'flex',
@@ -24894,7 +25082,7 @@ const TherapyReviewPage = () => {
             Build your therapy practice with professional AI-generated responses. Privacy-aware
             replies that respect client confidentiality.
           </p>
-          <LandingEmailCapture buttonColor="#7C3AED" />
+          <InstantDemoWidget primaryColor="#7C3AED" />
           <div
             style={{
               display: 'flex',
@@ -25131,7 +25319,7 @@ const ThumbtackReviewPage = () => {
             Get more Thumbtack leads with professional AI-generated responses. Turn positive reviews
             into more bookings.
           </p>
-          <LandingEmailCapture buttonColor="#009FD9" />
+          <InstantDemoWidget primaryColor="#009FD9" />
           <div
             style={{
               display: 'flex',
@@ -25369,7 +25557,7 @@ const LinkedInReviewPage = () => {
             Never leave a LinkedIn recommendation unanswered. Generate thoughtful thank you
             responses that strengthen your professional network.
           </p>
-          <LandingEmailCapture buttonColor="#0A66C2" />
+          <InstantDemoWidget primaryColor="#0A66C2" />
           <div
             style={{
               display: 'flex',
@@ -25606,7 +25794,7 @@ const AngiReviewPage = () => {
             Win more jobs on Angi with professional AI-generated review responses. Build your
             contractor reputation and get more leads.
           </p>
-          <LandingEmailCapture buttonColor="#00A651" />
+          <InstantDemoWidget primaryColor="#00A651" />
           <div
             style={{
               display: 'flex',
@@ -25842,7 +26030,7 @@ const ChiropractorReviewPage = () => {
             Build patient trust with professional AI-generated review responses. Grow your
             chiropractic practice with better online reputation.
           </p>
-          <LandingEmailCapture buttonColor="#5C6BC0" />
+          <InstantDemoWidget primaryColor="#5C6BC0" />
           <div
             style={{
               display: 'flex',
@@ -26078,7 +26266,7 @@ const BarberReviewPage = () => {
             Keep your chair full with professional AI-generated review responses. Build loyalty and
             attract new clients to your barbershop.
           </p>
-          <LandingEmailCapture buttonColor="#D32F2F" />
+          <InstantDemoWidget primaryColor="#D32F2F" />
           <div
             style={{
               display: 'flex',
@@ -26314,7 +26502,7 @@ const DermatologistReviewPage = () => {
             Build patient confidence with professional AI-generated review responses. Grow your
             dermatology practice with better online reputation.
           </p>
-          <LandingEmailCapture buttonColor="#26A69A" />
+          <InstantDemoWidget primaryColor="#26A69A" />
           <div
             style={{
               display: 'flex',
@@ -26552,7 +26740,7 @@ const MassageTherapistReviewPage = () => {
             Keep your schedule full with professional AI-generated review responses. Build client
             relationships and attract new bookings.
           </p>
-          <LandingEmailCapture buttonColor="#8E24AA" />
+          <InstantDemoWidget primaryColor="#8E24AA" />
           <div
             style={{
               display: 'flex',
@@ -26790,7 +26978,7 @@ const PersonalTrainerReviewPage = () => {
             Fill your training schedule with professional AI-generated review responses. Build your
             fitness brand and attract new clients.
           </p>
-          <LandingEmailCapture buttonColor="#FF5722" />
+          <InstantDemoWidget primaryColor="#FF5722" />
           <div
             style={{
               display: 'flex',
@@ -27027,7 +27215,7 @@ const AngiListReviewPage = () => {
             Win more home service jobs with professional AI-generated review responses. Stand out
             from competitors on Angi (formerly Angie's List).
           </p>
-          <LandingEmailCapture buttonColor="#FF6F00" />
+          <InstantDemoWidget primaryColor="#FF6F00" />
           <div
             style={{
               display: 'flex',
