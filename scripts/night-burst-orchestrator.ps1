@@ -15,7 +15,8 @@ param(
     [switch]$PlanMode,
     [int]$MaxAgents = 15,
     [int]$MonitorIntervalSeconds = 60,
-    [int]$MaxRestartsPerHour = 3
+    [int]$MaxRestartsPerHour = 3,
+    [int]$MaxTurnsPerSession = 20  # How many tool-call turns before Claude exits
 )
 
 # V7: Global restart tracking for cooldown
@@ -227,8 +228,10 @@ function Start-Agent {
         Set-Location $projectRoot
 
         # Build command arguments
-        # V7 FIX: Use --print so Claude EXITS when done (enables restart detection)
-        $args = @("--print")
+        # V7 FIX: Use --print + --max-turns so Claude EXITS after N turns
+        # This enables restart detection. Each "session" = 20 turns, then restart.
+        # Agents should save state to files so they can resume on restart.
+        $args = @("--print", "--max-turns", "$MaxTurnsPerSession")
         if ($chrome) {
             $args += "--chrome"
         }
@@ -241,7 +244,7 @@ function Start-Agent {
         }
         $args += "/night-burst-$agentNum"
 
-        # Run claude with --print so it exits when done
+        # Run claude with --print --max-turns so it exits after N turns
         claude @args
     } -ArgumentList $sessionName, $config.Chrome, $AgentNum, $ProjectRoot, $selectedConfigDir, $PlanMode
 
