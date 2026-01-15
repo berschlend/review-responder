@@ -7,6 +7,7 @@ import React, {
   useContext,
   Suspense,
   lazy,
+  useMemo,
 } from 'react';
 import {
   BrowserRouter,
