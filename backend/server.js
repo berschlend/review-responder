@@ -12793,10 +12793,28 @@ app.get('/api/cron/hot-lead-attack', async (req, res) => {
       try {
         const businessName = clicker.business_name || 'your business';
         const city = clicker.city || '';
-        const demoToken = clicker.demo_token;
-        const demoUrl = demoToken
-          ? `https://tryreviewresponder.com/demo/${demoToken}?discount=CLICKER30`
-          : null;
+
+        // Generate demo if not exists (clickers are high-value leads!)
+        let demoToken = clicker.demo_token;
+        if (!demoToken && clicker.lead_id) {
+          console.log(`📝 [HotLead] Generating demo for clicker: ${businessName}...`);
+          try {
+            const demoResult = await generateDemoForLead({
+              id: clicker.lead_id,
+              business_name: businessName,
+              city: city,
+              website: clicker.website,
+            });
+            if (demoResult && demoResult.demoToken) {
+              demoToken = demoResult.demoToken;
+              console.log(`✅ [HotLead] Demo generated: ${demoResult.demoUrl}`);
+            }
+          } catch (err) {
+            console.log(`⚠️ [HotLead] Demo failed for ${businessName}: ${err.message}`);
+          }
+        }
+
+        const demoUrl = demoToken ? `https://tryreviewresponder.com/demo/${demoToken}` : null;
 
         // Detect German-speaking cities
         const germanCities = [
@@ -12822,15 +12840,16 @@ app.get('/api/cron/hot-lead-attack', async (req, res) => {
         let subject, body;
 
         if (demoUrl) {
-          // They already have a demo
+          // Send personalized demo
           if (isGerman) {
             subject = `Demo für ${businessName}`;
             body = `Hallo,
 
-hier ist die personalisierte Demo für ${businessName}:
+hier sind 3 AI-generierte Antworten auf echte Google Bewertungen von ${businessName}:
+
 ${demoUrl}
 
-3 AI-generierte Antworten auf eure echten Google Bewertungen.
+30 Sekunden - dann wisst ihr ob der Ton passt.
 
 20 Antworten/Monat kostenlos.
 
@@ -12841,10 +12860,11 @@ ReviewResponder`;
             subject = `Demo for ${businessName}`;
             body = `Hi,
 
-Here's the personalized demo for ${businessName}:
+Here are 3 AI-generated responses to actual Google reviews from ${businessName}:
+
 ${demoUrl}
 
-3 AI-generated responses to your actual Google reviews.
+30 seconds to see if the tone works.
 
 20 responses/month free.
 
@@ -12853,16 +12873,15 @@ Berend
 ReviewResponder`;
           }
         } else {
-          // No demo yet
+          // No demo available - generic message
           if (isGerman) {
             subject = `${businessName} - Google Bewertungen`;
             body = `Hallo,
 
-${businessName} hat Google Bewertungen. Antwortet ihr darauf?
+${businessName} hat Google Bewertungen - antwortet ihr darauf?
 
-ReviewResponder generiert professionelle Antworten in 3 Sekunden.
-
-Hier testen: https://tryreviewresponder.com?ref=hot_lead
+ReviewResponder generiert professionelle Antworten in 3 Sekunden:
+https://tryreviewresponder.com?ref=hot_lead
 
 20 Antworten/Monat kostenlos.
 
@@ -12873,11 +12892,10 @@ ReviewResponder`;
             subject = `${businessName} - Google Reviews`;
             body = `Hi,
 
-${businessName} has Google reviews. Do you respond to them?
+${businessName} has Google reviews - do you respond to them?
 
-ReviewResponder generates professional responses in 3 seconds.
-
-Try it: https://tryreviewresponder.com?ref=hot_lead
+ReviewResponder generates professional responses in 3 seconds:
+https://tryreviewresponder.com?ref=hot_lead
 
 20 responses/month free.
 
@@ -13232,6 +13250,21 @@ app.get('/api/cron/turbo-email', async (req, res) => {
         const firstName = lead.contact_name?.split(' ')[0] || '';
         const city = lead.city || '';
 
+        // Generate demo if not exists (like daily-outreach)
+        let demoToken = lead.demo_token;
+        if (!demoToken) {
+          console.log(`📝 [Turbo] Generating demo for ${businessName}...`);
+          try {
+            const demoResult = await generateDemoForLead(lead);
+            if (demoResult && demoResult.demoToken) {
+              demoToken = demoResult.demoToken;
+              console.log(`✅ [Turbo] Demo generated: ${demoResult.demoUrl}`);
+            }
+          } catch (err) {
+            console.log(`⚠️ [Turbo] Demo failed for ${businessName}: ${err.message}`);
+          }
+        }
+
         // Detect German-speaking cities
         const germanCities = [
           'München',
@@ -13260,9 +13293,9 @@ app.get('/api/cron/turbo-email', async (req, res) => {
         ];
         const isGerman = germanCities.some(gc => city.toLowerCase().includes(gc.toLowerCase()));
 
-        // Build demo URL with discount if available
-        const demoUrl = lead.demo_token
-          ? `https://tryreviewresponder.com/demo/${lead.demo_token}?discount=DEMO30`
+        // Build demo URL (no discount spam)
+        const demoUrl = demoToken
+          ? `https://tryreviewresponder.com/demo/${demoToken}`
           : 'https://tryreviewresponder.com?ref=turbo_email';
 
         let subject, body;
@@ -13276,18 +13309,32 @@ app.get('/api/cron/turbo-email', async (req, res) => {
           ];
           subject = subjects[(wave - 1) % subjects.length];
 
-          body = `Hey${firstName ? ` ${firstName}` : ''},
+          body = demoToken
+            ? `Hey${firstName ? ` ${firstName}` : ''},
 
-ich hab ReviewResponder gebaut - AI die auf Google Bewertungen antwortet. Klingt simpel, spart aber 80% Zeit.
+hier sind 3 AI-generierte Antworten auf echte Google Bewertungen von ${businessName}:
 
-${lead.demo_token ? `Hier ist eine Demo für ${businessName}:\n${demoUrl}` : `Teste es direkt:\n${demoUrl}`}
+${demoUrl}
 
-20 Antworten/Monat kostenlos, keine Kreditkarte.
+30 Sekunden - dann wisst ihr ob der Ton passt.
+
+20 Antworten/Monat kostenlos.
 
 Grüße,
 Berend
+ReviewResponder`
+            : `Hey${firstName ? ` ${firstName}` : ''},
 
-P.S. Code DEMO30 = 30% Rabatt wenn du upgraden willst.`;
+${businessName} hat Google Bewertungen - antwortet ihr darauf?
+
+ReviewResponder generiert professionelle Antworten in 3 Sekunden:
+https://tryreviewresponder.com
+
+20 Antworten/Monat kostenlos.
+
+Grüße,
+Berend
+ReviewResponder`;
         } else {
           // A/B test subjects based on wave
           const subjects = [
@@ -13297,18 +13344,32 @@ P.S. Code DEMO30 = 30% Rabatt wenn du upgraden willst.`;
           ];
           subject = subjects[(wave - 1) % subjects.length];
 
-          body = `Hey${firstName ? ` ${firstName}` : ''},
+          body = demoToken
+            ? `Hey${firstName ? ` ${firstName}` : ''},
 
-I built ReviewResponder - AI that replies to Google reviews. Sounds simple, saves 80% of time.
+Here are 3 AI-generated responses to actual Google reviews from ${businessName}:
 
-${lead.demo_token ? `Here's a demo for ${businessName}:\n${demoUrl}` : `Try it directly:\n${demoUrl}`}
+${demoUrl}
 
-20 responses/month free, no credit card.
+30 seconds to see if the tone works.
+
+20 responses/month free.
 
 Best,
 Berend
+ReviewResponder`
+            : `Hey${firstName ? ` ${firstName}` : ''},
 
-P.S. Use code DEMO30 for 30% off if you upgrade.`;
+${businessName} has Google reviews - do you respond to them?
+
+ReviewResponder generates professional responses in 3 seconds:
+https://tryreviewresponder.com
+
+20 responses/month free.
+
+Best,
+Berend
+ReviewResponder`;
         }
 
         // Use Resend for first 100, Brevo as backup
