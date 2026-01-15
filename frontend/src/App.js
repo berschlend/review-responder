@@ -13510,7 +13510,7 @@ const DemoPage = () => {
             Get Fresh Responses - 30% OFF
           </a>
           <p style={{ marginTop: '16px', color: 'var(--text-muted)', fontSize: '14px' }}>
-            5 responses/month free forever
+            20 responses/month free forever
           </p>
         </div>
       </div>
@@ -15516,7 +15516,7 @@ const GoogleReviewPage = () => {
         '@type': 'Offer',
         price: '0',
         priceCurrency: 'USD',
-        description: 'Free trial with 5 responses/month',
+        description: 'Free trial with 20 responses/month',
       },
     });
     document.head.appendChild(script);
@@ -28619,7 +28619,7 @@ const PricingPage = () => {
         >
           <div>
             <div style={{ fontWeight: '600', fontSize: '14px' }}>Start Free</div>
-            <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>5 responses/month</div>
+            <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>20 responses/month</div>
           </div>
           <Link
             to="/register"
