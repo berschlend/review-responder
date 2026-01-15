@@ -353,9 +353,11 @@ powershell -ExecutionPolicy Bypass -File "C:\Users\Berend Mainz\claude-notify.ps
 **KEIN ZEITLIMIT!** Nur bei diesen Bedingungen stoppen:
 
 - Backend > 10 Min komplett down
-- ALLE API Credits exhausted
 - LinkedIn/Google Warnung/Sperre
 - Berend sagt explizit "Stopp"
+
+**Claude Max Subscription = UNLIMITED!** Keine API Credit Limits.
+Externe APIs (SerpAPI, Outscraper, etc.) haben Limits - aber dann einfach Fallback nutzen.
 
 **NIEMALS von alleine aufhören!** Kein "es ist spät", kein "ich habe genug gemacht".
 Du läufst 24/7 bis einer der obigen Gründe eintritt.
