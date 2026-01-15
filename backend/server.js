@@ -638,6 +638,85 @@ async function sendUsageAlertEmail(user) {
   }
 }
 
+// Send Flash Offer Email (when free user hits 20/20 limit)
+// SAFEGUARDS: Max 1 per user ever, tracked via flash_offer_sent_at
+async function sendFlashOfferEmail(user) {
+  if (!resend && !brevoApi) return false;
+  if (user.flash_offer_sent_at) return false; // Already sent
+  if (user.subscription_plan !== 'free') return false; // Only for free users
+
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'https://tryreviewresponder.com';
+  // 2-hour expiry timestamp
+  const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+  const discountUrl = `${FRONTEND_URL}/pricing?discount=FLASH50&expires=${encodeURIComponent(expiresAt)}`;
+
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: "Your responses are ready - 50% off expires in 2 hours",
+      type: 'transactional',
+      campaign: 'flash_offer',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: white; padding: 30px; border: 1px solid #E5E7EB; border-radius: 0 0 8px 8px; }
+            .timer { background: #FEF2F2; border: 2px solid #EF4444; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0; }
+            .timer-text { font-size: 24px; font-weight: bold; color: #EF4444; }
+            .cta-button { display: inline-block; background: #EF4444; color: white; padding: 16px 32px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 18px; }
+            .price { text-decoration: line-through; color: #9CA3AF; }
+            .new-price { color: #EF4444; font-weight: bold; font-size: 24px; }
+            .footer { text-align: center; padding: 20px; color: #6B7280; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>You've Hit Your Limit!</h1>
+              <p>But here's a one-time offer just for you</p>
+            </div>
+            <div class="content">
+              <p>Hi${user.business_name ? ' ' + user.business_name : ''},</p>
+
+              <p>You've used all <strong>20 free responses</strong> - that means you've seen the value ReviewResponder brings to your business.</p>
+
+              <div class="timer">
+                <p style="margin: 0; color: #6B7280;">This offer expires in</p>
+                <p class="timer-text">2 HOURS</p>
+              </div>
+
+              <p style="text-align: center;">
+                <span class="price">$29/month</span><br>
+                <span class="new-price">$14.50/month</span><br>
+                <small style="color: #6B7280;">50% off your first month</small>
+              </p>
+
+              <p style="text-align: center; margin: 30px 0;">
+                <a href="${discountUrl}" class="cta-button">Claim 50% Off Now</a>
+              </p>
+
+              <p style="color: #6B7280; font-size: 14px; text-align: center;">This is a one-time offer. Once it expires, it's gone forever.</p>
+            </div>
+            <div class="footer">
+              <p>ReviewResponder - AI-Powered Review Responses</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+    console.log(`[Flash Offer] Sent to ${user.email}`);
+    return true;
+  } catch (error) {
+    console.error('[Flash Offer] Failed to send:', error.message);
+    return false;
+  }
+}
+
 // Send Plan Renewal Email (when subscription renews)
 async function sendPlanRenewalEmail(user) {
   if (!resend && !brevoApi) return false;
@@ -1307,6 +1386,10 @@ async function initDatabase() {
       await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verification_token TEXT`);
       await dbQuery(
         `ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verification_expires_at TIMESTAMP`
+      );
+      // Flash offer tracking for limit-hit users
+      await dbQuery(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS flash_offer_sent_at TIMESTAMP`
       );
     } catch (error) {
       // Columns might already exist
@@ -3717,6 +3800,23 @@ ${languageInstruction}
           });
         }
       }
+
+      // Send Flash Offer if FREE user just hit 100% (20/20)
+      // SAFEGUARDS: Only once per user ever, only for free plan
+      if (
+        updatedOwner.subscription_plan === 'free' &&
+        totalUsed >= totalLimit &&
+        previousTotal < totalLimit &&
+        !updatedOwner.flash_offer_sent_at &&
+        process.env.NODE_ENV === 'production'
+      ) {
+        sendFlashOfferEmail(updatedOwner).then(sent => {
+          if (sent) {
+            dbQuery('UPDATE users SET flash_offer_sent_at = NOW() WHERE id = $1', [usageOwnerId]);
+            console.log(`[Flash Offer] Triggered for user ${updatedOwner.email} (hit ${totalUsed}/${totalLimit})`);
+          }
+        });
+      }
     } else {
       // Onboarding demo: return current usage without incrementing
       updatedOwner = usageOwner;
@@ -4444,6 +4544,29 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
         ];
       } catch (err) {
         console.log('WELCOME30/DEMO30 coupon creation error:', err);
+        // Continue without discount if coupon fails
+      }
+    } else if (upperDiscountCode === 'FLASH50') {
+      // Flash Offer - 50% off first month, 2h expiry (sent when user hits limit)
+      try {
+        const coupon = await stripe.coupons.create({
+          percent_off: 50,
+          duration: 'once', // Only first payment
+          id: `FLASH50_${Date.now()}_${user.id}`,
+          redeem_by: Math.floor(Date.now() / 1000) + 2 * 60 * 60, // Valid for 2 hours
+          metadata: {
+            campaign: 'flash_offer_limit_hit',
+            user_id: user.id.toString(),
+          },
+        });
+        discounts = [
+          {
+            coupon: coupon.id,
+          },
+        ];
+        console.log(`[Flash Offer] Coupon FLASH50 created for user ${user.id}`);
+      } catch (err) {
+        console.log('FLASH50 coupon creation error:', err);
         // Continue without discount if coupon fails
       }
     }
