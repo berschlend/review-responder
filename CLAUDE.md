@@ -658,6 +658,36 @@ Oder: `.claude\omnichannel-parallel.ps1` ausführen
 
 ---
 
+## KÜRZLICH ERLEDIGT (15.01 Morgen - Bottleneck-Analyse & Conversion Fixes)
+
+- **Bottleneck-Analyse durchgeführt:**
+  - 🔴 **Bottleneck 1:** Demo View → Conversion = 0% (60 Views, 0 Signups)
+  - 🔴 **Bottleneck 2:** Email Finding Rate = 36% (64% können nicht kontaktiert werden)
+  - 🟡 **Bottleneck 3:** LinkedIn Limit erreicht (2/Monat personalisierte Invites)
+  - 🟡 **Bottleneck 4:** Registered → Paying = 0% (31 User, 0 zahlend)
+  - 🟢 **Bottleneck 5:** Lead Volume OK (2117 Leads, +123 heute)
+
+- **Conversion Fixes implementiert:**
+  - ✅ **Social Proof auf Demo Page** - Ehrliche Stats: "300+ responses generated", "50+ languages", "6 platforms"
+  - ✅ **Upgrade Modal früher** - Zeigt jetzt bei Response 15 statt 20 (5 remaining)
+  - ✅ **Bessere Toast Urgency** - 🚨 Icon bei <= 2 remaining
+
+- **Apollo.io API Integration:**
+  - ✅ `findEmailWithApollo()` Helper-Funktion hinzugefügt
+  - ✅ In Email-Fallback-Kette eingefügt (zwischen Snov.io und Hunter.io)
+  - ✅ 95 free credits/month, findet Decision Makers nach Titel
+  - ✅ Automation-Health Endpoint zeigt Apollo Status
+
+- **Email Finding Fallback-Kette (aktualisiert):**
+  1. Team Page Scraping → Personal Emails (FREE)
+  2. Enhanced Email Finder (Website/Impressum) (FREE)
+  3. Pattern Guesser mit MX Verification (FREE)
+  4. Snov.io (50/mo)
+  5. **Apollo.io (95/mo)** ← NEU
+  6. Hunter.io (25/wk)
+
+---
+
 ## KÜRZLICH ERLEDIGT (15.01 Nacht - Sales Automation Phase 3)
 
 - **Sales Automation komplett** - 4 Event-Trigger laufen 24/7 ohne Claude:
