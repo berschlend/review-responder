@@ -21829,6 +21829,57 @@ app.post('/api/outreach/send-emails', async (req, res) => {
   }
 });
 
+// POST /api/admin/reset-campaign-limit - Reset or increase campaign daily limit
+app.post('/api/admin/reset-campaign-limit', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { campaign = 'main', new_limit, reset_counter } = req.body;
+
+  try {
+    const updates = [];
+    const params = [];
+    let paramIndex = 1;
+
+    if (new_limit !== undefined) {
+      updates.push(`daily_limit = $${paramIndex++}`);
+      params.push(new_limit);
+    }
+
+    if (reset_counter) {
+      updates.push(`sent_today = 0`);
+      updates.push(`last_reset = NOW()`);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ error: 'Provide new_limit or reset_counter: true' });
+    }
+
+    params.push(campaign);
+    await dbQuery(
+      `UPDATE outreach_campaigns SET ${updates.join(', ')} WHERE name = $${paramIndex}`,
+      params
+    );
+
+    const updated = await dbGet('SELECT * FROM outreach_campaigns WHERE name = $1', [campaign]);
+
+    console.log(`📧 Campaign ${campaign} updated: limit=${updated.daily_limit}, sent_today=${updated.sent_today}`);
+
+    res.json({
+      success: true,
+      campaign: updated.name,
+      daily_limit: updated.daily_limit,
+      sent_today: updated.sent_today,
+      remaining: updated.daily_limit - updated.sent_today
+    });
+  } catch (error) {
+    console.error('Reset campaign limit error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==========================================
 // ADD LEADS FROM TRIPADVISOR (Claude in Chrome)
 // ==========================================
