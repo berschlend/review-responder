@@ -5948,21 +5948,31 @@ const DashboardPage = () => {
         toast.success(`Response generated with ${aiLabel}!`);
       }
 
-      // Micro-pricing toast when approaching limit (only for Free users)
+      // CONVERSION: Show upgrade modal earlier for Free users
       const newUsed = res.data.responsesUsed;
       const limit = res.data.responsesLimit;
-      if (user?.plan === 'free' && limit === 20 && newUsed >= 15 && newUsed < 20) {
+      if (user?.plan === 'free' && limit === 20) {
         const remaining = limit - newUsed;
-        setTimeout(() => {
-          toast(`Running low! Only ${remaining} responses left`, {
-            duration: 8000,
-            icon: '⚡',
-            action: {
-              label: 'Get 10 for $5',
-              onClick: () => handleBuyResponsePack(),
-            },
-          });
-        }, 1500); // Delay to not overlap with success toast
+
+        // At response 15 (5 remaining): Show upgrade modal with soft messaging
+        if (newUsed === 15) {
+          setTimeout(() => {
+            setShowUpgradeModal(true);
+          }, 1500);
+        }
+        // At responses 16-19: Show toast with micro-pricing
+        else if (newUsed > 15 && newUsed < 20) {
+          setTimeout(() => {
+            toast(`Only ${remaining} responses left!`, {
+              duration: 8000,
+              icon: remaining <= 2 ? '🚨' : '⚡',
+              action: {
+                label: 'Get 10 for $5',
+                onClick: () => handleBuyResponsePack(),
+              },
+            });
+          }, 1500);
+        }
       }
       // Check if user should see feedback popup
       checkFeedbackStatus();
@@ -13029,6 +13039,43 @@ const DemoPage = () => {
               </span>
             </div>
           ) : null}
+
+          {/* SOCIAL PROOF - Honest stats */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '24px',
+              marginBottom: '24px',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#10b981">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+              </svg>
+              <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>
+                300+ responses generated
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#10b981">
+                <path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" />
+              </svg>
+              <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>
+                50+ languages
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#10b981">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z" />
+              </svg>
+              <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>
+                6 platforms
+              </span>
+            </div>
+          </div>
 
           <h1
             style={{
