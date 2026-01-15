@@ -16053,40 +16053,82 @@ async function scrapeEmailFromWebsite(websiteUrl) {
           )
           .filter(e => e.length < 60); // Filter overly long "emails"
 
-        // NEUE PRIORISIERUNG: Personal emails first, generic as fallback
-        // Generic prefixes (lower priority - these go to receptionists)
+        // === SMART EMAIL PRIORISIERUNG ===
+        // Tier 1: Personal Email Providers (Gmail, Outlook, iCloud = often Owner)
+        const personalProviders = ['gmail.com', 'googlemail.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'yahoo.com', 'gmx.de', 'gmx.net', 'web.de', 't-online.de'];
+
+        // Tier 2: Owner/Manager Keywords
+        const ownerKeywords = ['owner', 'chef', 'manager', 'inhaber', 'geschaeftsfuehrer', 'geschäftsführer', 'direktor', 'director', 'founder', 'gruender', 'gründer', 'ceo', 'boss', 'patron'];
+
+        // Tier 3: Generic Business Prefixes (lowest priority - goes to receptionist)
         const genericPrefixes = [
-          'contact',
-          'info',
-          'hello',
-          'support',
-          'team',
-          'sales',
-          'mail',
-          'office',
-          'reservations',
-          'booking',
-          'reservierung',
-          'service',
-          'anfrage',
-          'kontakt',
+          'contact', 'info', 'hello', 'support', 'team', 'sales', 'mail', 'office',
+          'reservations', 'booking', 'reservierung', 'service', 'anfrage', 'kontakt',
+          'admin', 'help', 'general', 'enquiry', 'enquiries', 'reception', 'front',
+          'post', 'email', 'webmaster', 'web', 'marketing', 'pr', 'press', 'media',
+          'jobs', 'career', 'careers', 'hr', 'recruiting', 'billing', 'invoice', 'accounts',
+          'noreply', 'no-reply', 'donotreply', 'newsletter', 'news', 'updates',
         ];
 
-        // Find personal email (NOT starting with generic prefix)
-        const personalEmail = validEmails.find(
-          e => !genericPrefixes.some(p => e.startsWith(p + '@'))
-        );
+        // Business-type prefixes (NOT personal - often goes to shared inbox)
+        const businessTypePrefixes = [
+          'restaurant', 'cafe', 'hotel', 'bar', 'pub', 'bistro', 'kitchen', 'dining',
+          'flowers', 'florist', 'bakery', 'shop', 'store', 'boutique', 'salon', 'spa',
+          'apotheek', 'apotheke', 'pharmacy', 'clinic', 'praxis', 'dental', 'medical',
+          'studio', 'gallery', 'atelier', 'design', 'photo', 'agency', 'consulting',
+        ];
 
-        // Fallback to generic if no personal found
-        const genericEmail = validEmails.find(e =>
-          genericPrefixes.some(p => e.startsWith(p + '@'))
-        );
+        // Common first names (to detect firstname@ pattern)
+        const commonFirstNames = [
+          'max', 'tom', 'tim', 'jan', 'ben', 'paul', 'mark', 'mike', 'john', 'james', 'david', 'daniel', 'michael', 'chris', 'christian', 'peter', 'stefan', 'thomas', 'andreas', 'martin', 'frank', 'matthias', 'alexander', 'sebastian', 'patrick', 'oliver', 'kevin', 'dennis', 'marcel', 'tobias', 'florian', 'dominik', 'pascal', 'felix', 'lukas', 'jonas', 'leon', 'nico', 'simon', 'julian',
+          'anna', 'lisa', 'sarah', 'laura', 'julia', 'marie', 'sophie', 'lena', 'emma', 'mia', 'hannah', 'lea', 'nina', 'jana', 'katharina', 'maria', 'sandra', 'claudia', 'nicole', 'andrea', 'petra', 'sabine', 'monika', 'karin', 'christine', 'susanne', 'birgit', 'stefanie', 'melanie', 'nadine', 'jessica', 'jennifer', 'vanessa', 'christina', 'daniela', 'katrin', 'anja', 'carole', 'caroline', 'isabelle', 'charlotte', 'tyler', 'ashley', 'brittany', 'emily', 'jessica', 'amanda', 'samantha',
+        ];
 
-        if (personalEmail) {
-          console.log(`📧 Found personal email: ${personalEmail} (preferred over generic)`);
-          return personalEmail;
+        // Helper: Check if email looks like a real person's email
+        const isPersonalEmail = (email) => {
+          const prefix = email.split('@')[0].toLowerCase();
+          const domain = email.split('@')[1]?.toLowerCase() || '';
+
+          // Personal provider = high chance of owner
+          if (personalProviders.some(p => domain === p)) return true;
+
+          // Contains owner keyword
+          if (ownerKeywords.some(k => prefix.includes(k))) return true;
+
+          // Starts with common first name (firstname@ or firstname.lastname@)
+          if (commonFirstNames.some(name => prefix === name || prefix.startsWith(name + '.'))) return true;
+
+          // Contains dot (likely firstname.lastname@)
+          if (prefix.includes('.') && !genericPrefixes.some(g => prefix.startsWith(g))) return true;
+
+          return false;
+        };
+
+        // Helper: Check if email is generic business email
+        const isGenericEmail = (email) => {
+          const prefix = email.split('@')[0].toLowerCase();
+          return genericPrefixes.some(g => prefix === g || prefix.startsWith(g + '.')) ||
+                 businessTypePrefixes.some(b => prefix === b || prefix.startsWith(b));
+        };
+
+        // Sort emails by priority
+        const tier1 = validEmails.filter(e => isPersonalEmail(e));
+        const tier2 = validEmails.filter(e => !isPersonalEmail(e) && !isGenericEmail(e));
+        const tier3 = validEmails.filter(e => isGenericEmail(e));
+
+        // Return best available
+        if (tier1.length > 0) {
+          console.log(`📧 TIER 1 - Personal/Owner email: ${tier1[0]} (best quality)`);
+          return tier1[0];
         }
-        if (genericEmail) return genericEmail;
+        if (tier2.length > 0) {
+          console.log(`📧 TIER 2 - Business email: ${tier2[0]} (medium quality)`);
+          return tier2[0];
+        }
+        if (tier3.length > 0) {
+          console.log(`📧 TIER 3 - Generic email: ${tier3[0]} (fallback)`);
+          return tier3[0];
+        }
         if (validEmails.length > 0) return validEmails[0];
 
         // Small delay between page requests
@@ -16843,6 +16885,56 @@ async function findEmailForLead(lead) {
   }
 
   return null;
+}
+
+// Helper: Check if existing email is "low quality" and should be upgraded
+function isLowQualityEmail(email) {
+  if (!email) return true;
+
+  const prefix = email.split('@')[0].toLowerCase();
+  const domain = email.split('@')[1]?.toLowerCase() || '';
+
+  // Generic prefixes = low quality (goes to receptionist, not decision maker)
+  const genericPrefixes = [
+    'contact', 'info', 'hello', 'support', 'team', 'sales', 'mail', 'office',
+    'reservations', 'booking', 'reservierung', 'service', 'anfrage', 'kontakt',
+    'admin', 'help', 'general', 'enquiry', 'enquiries', 'reception', 'front',
+    'post', 'email', 'webmaster', 'web', 'marketing', 'pr', 'press', 'media',
+  ];
+
+  // Business-type prefixes = low quality (shared inbox)
+  const businessTypePrefixes = [
+    'restaurant', 'cafe', 'hotel', 'bar', 'pub', 'bistro', 'kitchen', 'dining',
+    'flowers', 'florist', 'bakery', 'shop', 'store', 'boutique', 'salon', 'spa',
+    'apotheek', 'apotheke', 'pharmacy', 'clinic', 'praxis', 'dental', 'medical',
+  ];
+
+  // Check if it's generic
+  if (genericPrefixes.some(g => prefix === g || prefix.startsWith(g + '.'))) {
+    return true;
+  }
+
+  // Check if it's business-type
+  if (businessTypePrefixes.some(b => prefix === b || prefix.startsWith(b))) {
+    return true;
+  }
+
+  return false;
+}
+
+// Helper: Check if new email is better than existing
+function isEmailUpgrade(existingEmail, newEmail) {
+  if (!existingEmail) return true;
+  if (!newEmail) return false;
+
+  const existingIsLow = isLowQualityEmail(existingEmail);
+  const newIsLow = isLowQualityEmail(newEmail);
+
+  // New is high quality, existing is low = upgrade
+  if (existingIsLow && !newIsLow) return true;
+
+  // Both same quality = no upgrade needed
+  return false;
 }
 
 // Helper: Wrap URLs with click tracking
@@ -24583,94 +24675,65 @@ app.get('/api/cron/upgrade-leads', async (req, res) => {
   };
 
   try {
-    // PHASE 1: Find emails for leads without email (but with website)
-    console.log('📧 [Upgrade Leads] Phase 1: Email Finding...');
+    // PHASE 1: Find/Upgrade emails for leads
+    // Now also upgrades "low quality" emails (info@, contact@) to personal emails (owner@, firstname@)
+    console.log('📧 [Upgrade Leads] Phase 1: Email Finding & Upgrading...');
+
+    // Find leads that need email OR have low-quality email
     const leadsNeedingEmail = await dbAll(
       `SELECT * FROM outreach_leads
-       WHERE (email IS NULL OR email = '')
-       AND website IS NOT NULL AND website != ''
+       WHERE website IS NOT NULL AND website != ''
        AND google_reviews_count >= 50
+       AND (
+         email IS NULL
+         OR email = ''
+         OR email LIKE 'info@%'
+         OR email LIKE 'contact@%'
+         OR email LIKE 'hello@%'
+         OR email LIKE 'support@%'
+         OR email LIKE 'office@%'
+         OR email LIKE 'mail@%'
+         OR email LIKE 'service@%'
+         OR email LIKE 'kontakt@%'
+         OR email LIKE 'anfrage@%'
+         OR email LIKE 'reservations@%'
+         OR email LIKE 'booking@%'
+       )
        ORDER BY google_reviews_count DESC
        LIMIT $1`,
       [emailLimit]
     );
 
+    console.log(`Found ${leadsNeedingEmail.length} leads needing email upgrade`);
+
     for (const lead of leadsNeedingEmail) {
       results.phase1_email_finding.processed++;
       try {
-        let foundEmail = null;
+        // Use the advanced findEmailForLead function (personal > owner > generic)
+        const emailResult = await findEmailForLead(lead);
 
-        // Try 1: Scrape website for email
-        if (lead.website) {
-          try {
-            const websiteUrl = lead.website.startsWith('http') ? lead.website : `https://${lead.website}`;
-            const response = await fetch(websiteUrl, {
-              timeout: 8000,
-              headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ReviewBot/1.0)' }
-            });
-            const html = await response.text();
+        if (emailResult?.email) {
+          const newEmail = emailResult.email.toLowerCase();
+          const existingEmail = lead.email?.toLowerCase();
 
-            // Find emails in HTML
-            const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-            const emails = html.match(emailRegex) || [];
+          // Only update if new email is better than existing
+          if (isEmailUpgrade(existingEmail, newEmail)) {
+            await dbQuery(
+              `UPDATE outreach_leads
+               SET email = $1,
+                   email_source = $2,
+                   contact_name = COALESCE($3, contact_name)
+               WHERE id = $4`,
+              [newEmail, emailResult.source || 'upgrade_v2', emailResult.contactName || null, lead.id]
+            );
+            results.phase1_email_finding.found++;
 
-            // Filter out generic/bad emails
-            const goodEmails = emails.filter(e => {
-              const lower = e.toLowerCase();
-              return !lower.includes('example') &&
-                     !lower.includes('test@') &&
-                     !lower.includes('noreply') &&
-                     !lower.includes('no-reply') &&
-                     !lower.includes('.png') &&
-                     !lower.includes('.jpg') &&
-                     !lower.includes('wixpress') &&
-                     !lower.includes('sentry.io');
-            });
-
-            // Prefer info@, contact@, hello@ over others
-            const prioritized = goodEmails.sort((a, b) => {
-              const aScore = a.startsWith('info@') ? 3 : a.startsWith('contact@') ? 2 : a.startsWith('hello@') ? 1 : 0;
-              const bScore = b.startsWith('info@') ? 3 : b.startsWith('contact@') ? 2 : b.startsWith('hello@') ? 1 : 0;
-              return bScore - aScore;
-            });
-
-            if (prioritized.length > 0) {
-              foundEmail = prioritized[0];
-            }
-          } catch (err) {
-            // Website scrape failed, try pattern generation
+            const upgradeType = existingEmail ? 'UPGRADED' : 'FOUND';
+            const quality = isLowQualityEmail(newEmail) ? 'generic' : 'PERSONAL';
+            console.log(`📧 ${upgradeType} (${quality}): ${lead.business_name} | ${existingEmail || 'none'} → ${newEmail}`);
+          } else {
+            console.log(`⏭️ Skip: ${lead.business_name} | ${existingEmail} already good quality`);
           }
-        }
-
-        // Try 2: Generate email from domain pattern
-        if (!foundEmail && lead.website) {
-          try {
-            const url = new URL(lead.website.startsWith('http') ? lead.website : `https://${lead.website}`);
-            const domain = url.hostname.replace('www.', '');
-
-            // Try common patterns
-            const patterns = ['info', 'contact', 'hello', 'mail', 'office'];
-            for (const pattern of patterns) {
-              const testEmail = `${pattern}@${domain}`;
-              // Basic format check
-              if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testEmail)) {
-                foundEmail = testEmail;
-                break;
-              }
-            }
-          } catch (err) {
-            // URL parsing failed
-          }
-        }
-
-        // Update lead with found email
-        if (foundEmail) {
-          await dbQuery(
-            `UPDATE outreach_leads SET email = $1, email_source = 'upgrade_scrape' WHERE id = $2`,
-            [foundEmail, lead.id]
-          );
-          results.phase1_email_finding.found++;
-          console.log(`📧 Found email for ${lead.business_name}: ${foundEmail}`);
         }
       } catch (err) {
         results.phase1_email_finding.failed++;
