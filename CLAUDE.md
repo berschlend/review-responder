@@ -15,11 +15,86 @@
 3. CLAUDE.md updaten nach jeder Session
 4. User nur fragen wenn nötig
 5. **Nach Deploy:** "Deployed! Frontend/Backend live in ~2-3 Min"
+6. **Sales/Automation Features:** → Siehe SALES AUTOMATION REGELN unten!
 
 ### Workflow
 ```
 CLAUDE.md lesen → TODO.md checken → Task → Testen → Git push → CLAUDE.md updaten
 ```
+
+---
+
+## SALES AUTOMATION REGELN (PFLICHT!)
+
+> **KRITISCH:** Bei JEDEM Sales/Automation Feature diese Checkliste abarbeiten!
+
+### 1. Admin Panel Integration (IMMER!)
+Jedes neue Feature braucht:
+- [ ] **Admin Endpoint** - `GET /api/admin/[feature-name]` für Status/Stats
+- [ ] **Admin Panel Tab/Card** - Visuell im Frontend unter `/admin`
+- [ ] **Metriken sichtbar** - Zahlen die User sehen will (sent, clicked, converted, etc.)
+
+**Beispiel-Pattern:**
+```javascript
+// Backend: GET /api/admin/magic-link-stats
+app.get('/api/admin/magic-link-stats', adminAuth, async (req, res) => {
+  const stats = await pool.query('SELECT COUNT(*) ...');
+  res.json({ sent: x, clicked: y, converted: z });
+});
+```
+
+### 2. Dokumentation (SOFORT!)
+Bei parallelen Claude Sessions MUSS jeder wissen was läuft:
+
+| Was | Wo dokumentieren |
+|-----|------------------|
+| Neuer Endpoint | API ENDPOINTS Sektion |
+| Neuer Cron Job | CRON JOBS Tabelle |
+| Neue DB-Tabelle | KÜRZLICH ERLEDIGT mit Schema |
+| Neues Feature | COMPLETED FEATURES |
+| Session-Aktionen | NACHT-LOG mit Datum/Zeit |
+
+### 3. Verifikation (JEDES MAL!)
+Nach Implementation:
+- [ ] **Endpoint testen** - `curl` oder Browser-Check
+- [ ] **Admin Panel checken** - Stats werden angezeigt?
+- [ ] **Einen Durchlauf triggern** - Funktioniert der Flow?
+- [ ] **CLAUDE.md updaten** - Andere Sessions wissen Bescheid
+
+### 4. Parallel-Safe Checklist
+Bei Endpoints die mehrere Sessions triggern könnten:
+- [ ] **Lock-Mechanismus** - `acquireLock()` verwenden
+- [ ] **Email-History Check** - `wasEmailRecentlySent()` verwenden
+- [ ] **Idempotent** - Doppel-Ausführung schadet nicht
+
+### 5. Quick Reference: Was gehört wohin?
+
+| Feature-Typ | Admin Panel | Endpoint | Cron |
+|-------------|-------------|----------|------|
+| Email Campaign | Stats Card | `/api/admin/[name]-stats` | Ja |
+| Lead Scraping | Count + Last Run | `/api/admin/scraper-status` | Optional |
+| A/B Test | Results Tab | `/api/admin/ab-tests` | Evaluation |
+| Re-Engagement | Conversion Stats | `/api/cron/[name]` | Ja |
+| New Automation | Dashboard Card | Status Endpoint | Meist Ja |
+
+### 6. Template für neue Automation
+
+```markdown
+## [Feature Name] - [Datum]
+
+**Was:** [1 Satz Beschreibung]
+**Endpoint:** `GET/POST /api/...`
+**Admin:** Stats unter /admin sichtbar? ✅/❌
+**Cron:** [Schedule wenn applicable]
+**Verifiziert:** [Wie getestet]
+
+**Metriken:**
+- sent: X
+- clicked: Y
+- converted: Z
+```
+
+---
 
 ### Wichtige Dateien
 - **CLAUDE.md** - Technische Docs, Code Style
