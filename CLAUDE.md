@@ -107,6 +107,66 @@ powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\chrome-tab-manager.ps
 
 ---
 
+## NACHT-AUTOMATION (Handy → PC via AnyDesk)
+
+> **ZIEL:** Vom Handy aus Claude über Nacht arbeiten lassen.
+
+### Voraussetzungen (bereits installiert ✅)
+- **WSL Ubuntu** mit **tmux** → ✅ Vorhanden
+- **AnyDesk** auf PC + Handy App → Setup erforderlich
+- **PC bleibt an** (Energiesparplan: "Nie schlafen")
+
+### Setup (einmalig):
+1. AnyDesk installieren: https://anydesk.com/de/downloads ✅
+2. AnyDesk PC ID: `1298710422` ✅
+3. Handy: AnyDesk App installieren (iOS/Android)
+4. Energiesparplan: Einstellungen → System → "Nie in Standby"
+
+### Starten (vom Handy):
+```bash
+# 1. AnyDesk App → PC verbinden
+# 2. Windows Terminal öffnen → WSL starten
+wsl
+
+# 3. tmux Session erstellen
+tmux new -s night
+
+# 4. Ins Projekt wechseln
+cd /mnt/c/Users/"Berend Mainz"/Documents/Start-up/reviewresponder-4
+
+# 5. Claude starten
+claude --continue
+
+# 6. Prompt eingeben (z.B. "/night-blast" oder andere Tasks)
+# 7. AnyDesk schließen → Claude läuft weiter!
+```
+
+### Morgens checken:
+```bash
+# 1. AnyDesk verbinden
+# 2. Terminal öffnen
+wsl
+tmux attach -t night
+
+# 3. Output sehen, git log checken
+git log --oneline | head -20
+```
+
+### tmux Shortcuts:
+| Aktion | Shortcut |
+|--------|----------|
+| Detach (Session läuft weiter) | `Ctrl+B`, dann `D` |
+| Session Liste | `tmux ls` |
+| Session killen | `tmux kill-session -t night` |
+| Scroll im Output | `Ctrl+B`, dann `[`, dann Pfeiltasten |
+
+### Warum AnyDesk statt VS Code Tunnel?
+- ❌ VS Code Tunnel: Token läuft nach 24h ab
+- ❌ VS Code Tunnel: WSL verliert Netzwerk nach Sleep
+- ✅ AnyDesk: Funktioniert immer, kein Token-Expiry
+
+---
+
 ## CODE STYLE
 
 ### TypeScript
