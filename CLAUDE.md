@@ -431,7 +431,7 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 
 ## CURRENT TASKS
 
-**Stand: 15.01.2026**
+**Stand: 16.01.2026**
 
 ### Chrome Web Store
 **Status:** Überprüfung läuft (eingereicht 13.01)
@@ -513,6 +513,15 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 ---
 
 ## LEARNINGS
+
+### Rate-Limit Bypass Fix (16.01.2026)
+
+**Problem:** Eingeloggte Free User konnten auf Landing Pages (`/birdeye`, etc.) unbegrenzt Responses via InstantDemoWidget generieren.
+**Ursache:** `/api/public/try` war nur IP-basiert (3/Tag), prüfte nicht ob User eingeloggt war.
+**Fix:**
+- Backend: JWT Token optional prüfen, User-Plan-Limit enforced (`server.js:7477-7815`)
+- Frontend: Authorization Header mitsenden wenn Token vorhanden (`App.js:656-693`)
+- response_count wird jetzt inkrementiert für eingeloggte User
 
 ### Email Deliverability
 - "Hey" statt "Hallo" → Primary Inbox
