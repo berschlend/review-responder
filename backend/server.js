@@ -9913,6 +9913,41 @@ app.get('/api/admin/test-pre-reg-drip', async (req, res) => {
   }
 });
 
+// Test new conversion emails (flash offer, checkout abandonment)
+app.get('/api/admin/test-conversion-email', async (req, res) => {
+  const { email, type, key } = req.query;
+
+  if (!safeCompare(key, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!email || !type) {
+    return res.status(400).json({ error: 'email and type (flash_offer|checkout_abandonment) required' });
+  }
+
+  // Create a mock user for testing
+  const mockUser = {
+    email,
+    business_name: 'Test Business',
+    subscription_plan: 'free',
+  };
+
+  let sent = false;
+  if (type === 'flash_offer') {
+    sent = await sendFlashOfferEmail(mockUser);
+  } else if (type === 'checkout_abandonment') {
+    sent = await sendCheckoutAbandonmentEmail(mockUser, 'starter');
+  } else {
+    return res.status(400).json({ error: 'Invalid type. Use flash_offer or checkout_abandonment' });
+  }
+
+  if (sent) {
+    res.json({ success: true, message: `${type} email sent to ${email}` });
+  } else {
+    res.status(500).json({ error: 'Failed to send email - check logs' });
+  }
+});
+
 // Weekly Summary Email Campaign - Send weekly stats to users who opted in
 // Call this endpoint via cron job (e.g., every Monday at 9am)
 // Changed from POST to GET for cron-job.org compatibility (14.01.2026)
