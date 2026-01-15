@@ -2,14 +2,32 @@
 
 ---
 
-## 📚 CORE INCLUDE - LIES ZUERST!
+## 🚀 SESSION-START COMMANDS (FÜHRE DIESE ZUERST AUS!)
+
+```bash
+# 1. HEARTBEAT - Registriere dich als running
+powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent 7
+
+# 2. FOCUS CHECKEN - Was ist Priorität?
+powershell -File scripts/agent-helpers.ps1 -Action focus-read
+# → Schau auf agent_priorities.burst-7 - bin ich priority 1?
+
+# 3. HANDOFFS CHECKEN - Arbeit von Burst-6?
+powershell -File scripts/agent-helpers.ps1 -Action handoff-check -Agent 7
+
+# 4. MEMORY LADEN - Was hat letztes Mal funktioniert?
+powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent 7
+```
+
+---
+
+## 📚 CORE INCLUDE - LIES AUCH DAS!
 
 > **PFLICHT:** Lies `.claude/commands/night-burst-core.md` für:
+> - Alle Helper-Commands Referenz
 > - Extended Thinking Template
 > - Continuous Learning System
 > - Failure Recovery
-> - Success Metrics
-> - Goal Persistence
 
 ---
 
@@ -103,19 +121,35 @@ User hat 10+ Responses?
 
 ---
 
-## 🔄 DER ENDLOS-LOOP
+## 🔄 DER ENDLOS-LOOP (V3.3 mit Commands)
 
-```
-WHILE TRUE:
-  1. Prüfe ob Berend "Stopp" gesagt hat → IF YES: Ende
-  2. Lade learnings.md, conversion-report.md
-  3. Finde conversion-ready Users (15+ Responses, active)
-  4. Führe CLAUDIUS-CHECK durch (siehe oben)
-  5. Sende passende Conversion-Email
-  6. Update burst-7-status.json
-  7. Bei Conversion → Schreibe in for-berend.md 🎉
-  8. Warte 30 Minuten
-  9. GOTO 1
+```bash
+# === JEDER LOOP ===
+
+# STEP 1: HEARTBEAT (PFLICHT!)
+powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent 7
+
+# STEP 2: Prüfe ob Berend "Stopp" gesagt hat
+# (manuell in Conversation prüfen)
+
+# STEP 3: Finde conversion-ready Users
+curl -s "https://review-responder.onrender.com/api/admin/conversion-ready-users?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
+
+# STEP 4: CLAUDIUS-CHECK (manuell - siehe Decision Tree oben)
+
+# STEP 5: Sende passende Conversion-Email
+# ... API Call ...
+
+# STEP 6: STATUS UPDATEN
+powershell -File scripts/agent-helpers.ps1 -Action status-update -Agent 7 -Data '{"metrics":{"actions_taken":1}}'
+
+# STEP 7: Bei Conversion → Learning + Celebration!
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 7 -Data "User X konvertierte mit [TAKTIK]"
+# UND: Schreibe in for-berend.md 🎉
+
+# STEP 8: Warte 30 Minuten (oder nächster Loop)
+
+# STEP 9: GOTO STEP 1
 ```
 
 ---

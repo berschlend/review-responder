@@ -1,32 +1,74 @@
-# Night-Burst Core V3.2 - JEDER AGENT MUSS DAS INCLUDEN
+# Night-Burst Core V3.3 - JEDER AGENT MUSS DAS INCLUDEN
 
 > Basierend auf Anthropic's "Building Effective Agents" + "Multi-Agent Research System"
-> Updated: V3.2 mit Orchestrator Pattern, Handoff Queue, Focus Tracking
+> Updated: V3.3 mit ausführbaren Helper-Commands für echte Automation
 
 ---
 
-## 🎯 SESSION-START CHECKLIST (V3.2)
+## 🚀 AUSFÜHRBARE HELPER-COMMANDS (V3.3 - NEU!)
 
-**JEDER AGENT muss bei Session-Start:**
+Diese Bash-Commands kannst du DIREKT ausführen um State zu managen:
 
+```bash
+# === HEARTBEAT (JEDER LOOP START!) ===
+powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent [X]
+# Output: "OK: Heartbeat updated for burst-X (loop N)"
+
+# === STATUS LESEN ===
+powershell -File scripts/agent-helpers.ps1 -Action status-read -Agent [X]
+# Output: JSON mit aktuellem Status
+
+# === STATUS UPDATEN ===
+powershell -File scripts/agent-helpers.ps1 -Action status-update -Agent [X] -Data '{"metrics":{"actions_taken":5}}'
+# Output: "OK: Status updated for burst-X"
+
+# === MEMORY LESEN ===
+powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent [X]
+# Output: JSON mit Agent-Memory (learnings, patterns, etc.)
+
+# === MEMORY UPDATEN ===
+powershell -File scripts/agent-helpers.ps1 -Action memory-update -Agent [X] -Data "Subject mit Star Rating hatte 5% CTR"
+# Output: "OK: Memory updated for burst-X"
+
+# === LEARNING HINZUFÜGEN ===
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent [X] -Data "Miami leads konvertieren besser als NYC"
+# Output: "OK: Learning added from burst-X" (schreibt in learnings.md)
+
+# === HANDOFF ERSTELLEN ===
+powershell -File scripts/agent-helpers.ps1 -Action handoff-create -Agent [X] -Data '{"from":"burst-1","to":"burst-2","type":"new_leads","data":{"lead_ids":[1,2,3]}}'
+# Output: "OK: Handoff created: abc123"
+
+# === HANDOFF CHECKEN (pending für mich) ===
+powershell -File scripts/agent-helpers.ps1 -Action handoff-check -Agent [X]
+# Output: JSON Array mit pending handoffs für diesen Agent
+
+# === FOCUS LESEN ===
+powershell -File scripts/agent-helpers.ps1 -Action focus-read
+# Output: JSON mit current-focus.json
 ```
-1. READ current-focus.json
-   └── Bin ich pausiert? → Wenn ja, stoppen
-   └── Was ist meine Priorität? (1=critical, 3=low)
-   └── Was ist tonight_focus? → Align my actions
 
-2. READ handoff-queue.json
-   └── Habe ich pending handoffs? → Process first!
-   └── Nach Bearbeitung: Als "processed" markieren
+---
 
-3. READ agent-memory.json
-   └── Was habe ich letztes Mal gelernt?
-   └── Was funktioniert, was nicht?
+## 🎯 SESSION-START CHECKLIST (V3.3)
 
-4. UPDATE burst-X-status.json
-   └── last_heartbeat: [JETZT]
-   └── status: "running"
-   └── current_loop: +1
+**JEDER AGENT muss bei Session-Start diese Commands ausführen:**
+
+```bash
+# 1. HEARTBEAT - Melde dich beim System an
+powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent [X]
+
+# 2. FOCUS CHECKEN - Was ist gerade Priorität?
+powershell -File scripts/agent-helpers.ps1 -Action focus-read
+# → Wenn agent_priorities.burst-X.priority = 3 und ich nicht high-priority bin: langsamer arbeiten
+# → Wenn paused_agents mich enthält: STOPPEN
+
+# 3. HANDOFFS CHECKEN - Habe ich Arbeit von anderen Agents?
+powershell -File scripts/agent-helpers.ps1 -Action handoff-check -Agent [X]
+# → Wenn pending handoffs: Diese ZUERST bearbeiten!
+
+# 4. MEMORY LADEN - Was weiß ich von letzter Session?
+powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent [X]
+# → Learnings anwenden auf diese Session
 ```
 
 ---
@@ -183,56 +225,49 @@ VOR KOMPLEXER ENTSCHEIDUNG:
 
 ---
 
-## 💓 HEARTBEAT SYSTEM (V3 - KRITISCH!)
+## 💓 HEARTBEAT SYSTEM (V3.3 - MIT AUSFÜHRBAREN COMMANDS!)
 
 **JEDER AGENT muss bei JEDEM Loop-Start:**
 
 ```bash
-# 1. Status-File updaten (Heartbeat)
-# Lese content/claude-progress/burst-X-status.json
-# Update:
-#   - last_heartbeat: [jetzt]
-#   - current_loop: [increment]
-#   - status: "running"
+# SCHRITT 1: HEARTBEAT - Melde dich als "running"
+powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent [X]
 
-# 2. Resource Budget prüfen
-# Lese content/claude-progress/resource-budget.json
+# SCHRITT 2: RESOURCE CHECK (optional, manuell)
+# Lies content/claude-progress/resource-budget.json
 # Check: Habe ich Budget für geplante Aktionen?
-# Wenn NEIN: Skip action oder warte
 
-# 3. Checkpoint prüfen (bei Neustart)
-# Lese content/claude-progress/checkpoint-store.json
-# Check: Habe ich pending checkpoints?
-# Wenn JA: Resume von dort
+# SCHRITT 3: Nach größeren Aktionen - Status updaten
+powershell -File scripts/agent-helpers.ps1 -Action status-update -Agent [X] -Data '{"metrics":{"actions_taken":5}}'
 ```
 
 ### Heartbeat Template (am Anfang jedes Loops):
 
-```
-LOOP START:
-1. Read burst-X-status.json
-2. Update:
-   {
-     "last_heartbeat": "[CURRENT_TIMESTAMP]",
-     "current_loop": [previous + 1],
-     "status": "running",
-     "metrics.actions_taken": [previous + actions_this_loop]
-   }
-3. Write back to file
+```bash
+# JEDER LOOP STARTET MIT:
+powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent [MEINE_NUMMER]
+
+# Das updated automatisch:
+# - last_heartbeat: jetzt
+# - current_loop: +1
+# - status: running
 ```
 
 ### Bei Stuck/Error:
 
+```bash
+# Bei einem Fehler:
+powershell -File scripts/agent-helpers.ps1 -Action status-update -Agent [X] -Data '{"health":{"stuck_detected":true,"last_error":"[ERROR]"},"status":"stuck"}'
+
+# Health Check wird mich restarten
+# WARTE auf Restart (nicht weiter machen)
 ```
-IF stuck OR major_error:
-1. Update status:
-   {
-     "health.stuck_detected": true,
-     "health.last_error": "[ERROR_MESSAGE]",
-     "status": "stuck"
-   }
-2. Health Check wird mich restarten
-3. WARTE auf Restart (nicht weiter machen)
+
+### Learning hinzufügen:
+
+```bash
+# Wenn ich was Neues lerne:
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent [X] -Data "Mein neues Learning hier"
 ```
 
 ---

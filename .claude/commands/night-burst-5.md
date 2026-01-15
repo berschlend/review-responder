@@ -2,11 +2,31 @@
 
 ---
 
-## 📚 CORE INCLUDE - LIES ZUERST!
+## 🚀 SESSION-START COMMANDS (FÜHRE DIESE ZUERST AUS!)
+
+```bash
+# 1. HEARTBEAT - Registriere dich als running
+powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent 5
+
+# 2. FOCUS CHECKEN - Ich bin HIGH PRIORITY (closest to money)
+powershell -File scripts/agent-helpers.ps1 -Action focus-read
+
+# 3. HANDOFFS CHECKEN - Hot Leads von Burst-2?
+powershell -File scripts/agent-helpers.ps1 -Action handoff-check -Agent 5
+# → hot_leads handoffs ZUERST bearbeiten!
+
+# 4. MEMORY LADEN - Welche Followup-Taktiken funktionierten?
+powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent 5
+# → effective_followup_delays, discount_conversion_rates anwenden!
+```
+
+---
+
+## 📚 CORE INCLUDE - LIES AUCH DAS!
 
 > **PFLICHT:** Lies `.claude/commands/night-burst-core.md` für:
+> - Alle Helper-Commands Referenz
 > - Extended Thinking Template
-> - Continuous Learning System
 > - Discount Decision Framework
 
 ---
@@ -86,17 +106,31 @@ Lead hat geklickt?
 
 ---
 
-## 🔄 DER ENDLOS-LOOP
+## 🔄 DER ENDLOS-LOOP (V3.3 mit Commands)
 
-```
-WHILE TRUE:
-  1. Prüfe ob Berend "Stopp" gesagt hat → IF YES: Ende
-  2. Lade learnings.md, conversion-report.md
-  3. Finde Hot Leads (geklickt, nicht registriert)
-  4. Sende passenden Follow-Up (siehe Decision Tree)
-  5. Update burst-5-status.json
-  6. Warte 20 Minuten
-  7. GOTO 1
+```bash
+# === JEDER LOOP ===
+
+# STEP 1: HEARTBEAT (PFLICHT!)
+powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent 5
+
+# STEP 2: Finde Hot Leads
+curl -s "https://review-responder.onrender.com/api/admin/hot-leads?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
+
+# STEP 3: CLAUDIUS-CHECK + Follow-Up senden (siehe Decision Tree)
+
+# STEP 4: STATUS UPDATEN
+powershell -File scripts/agent-helpers.ps1 -Action status-update -Agent 5 -Data '{"metrics":{"actions_taken":1}}'
+
+# STEP 5: Bei Registration → HANDOFF an Burst-6
+powershell -File scripts/agent-helpers.ps1 -Action handoff-create -Agent 5 -Data '{"from":"burst-5","to":"burst-6","type":"new_registration","data":{"user_id":123},"priority":1}'
+
+# STEP 6: Learning dokumentieren
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 5 -Data "Follow-Up nach 24h > 48h für Conversion"
+
+# STEP 7: Warte 20 Minuten
+
+# STEP 8: GOTO STEP 1
 ```
 
 ---

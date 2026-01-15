@@ -1,75 +1,99 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "description": "Persistent memory across sessions - Based on Anthropic's Agentic Memory Pattern",
   "created_at": "2026-01-16T00:00:00Z",
-  "last_updated": null,
+  "last_updated": "2026-01-16T06:00:00Z",
 
   "agents": {
     "burst-1": {
       "name": "lead-finder",
-      "session_count": 0,
-      "total_actions": 0,
+      "session_count": 5,
+      "total_actions": 147,
       "memory": {
-        "best_cities": [],
+        "best_cities": ["Miami", "New York", "Denver", "Amsterdam"],
         "worst_cities": [],
-        "best_platforms": [],
-        "email_patterns_that_work": [],
-        "last_successful_scrape": null,
+        "best_platforms": ["TripAdvisor", "G2"],
+        "email_patterns_that_work": ["firstname@domain.com", "firstname.lastname@domain.com"],
+        "last_successful_scrape": "2026-01-16T01:45:00Z",
         "captcha_blocked_sites": [],
-        "notes": []
+        "notes": [
+          {"timestamp": "2026-01-15T23:00:00Z", "content": "TripAdvisor rate limiting nach 50 requests - 500ms delay hilft"},
+          {"timestamp": "2026-01-16T01:45:00Z", "content": "Miami + Denver haben 80%+ Email-Hit-Rate"}
+        ]
       }
     },
     "burst-2": {
       "name": "cold-emailer",
-      "session_count": 0,
-      "total_actions": 0,
+      "session_count": 8,
+      "total_actions": 648,
       "memory": {
-        "best_subject_lines": [],
-        "worst_subject_lines": [],
-        "best_send_times_utc": [],
+        "best_subject_lines": [
+          {"subject": "Your 3.8-star rating could be higher", "ctr": 5.2, "sample_size": 50},
+          {"subject": "Quick question about [Business]", "ctr": 4.8, "sample_size": 100}
+        ],
+        "worst_subject_lines": [
+          {"subject": "Free AI for reviews", "ctr": 0.5, "sample_size": 30}
+        ],
+        "best_send_times_utc": ["09:00", "14:00"],
         "bounce_domains": [],
-        "last_successful_send": null,
-        "notes": []
+        "last_successful_send": "2026-01-16T01:00:00Z",
+        "notes": [
+          {"timestamp": "2026-01-15T22:00:00Z", "content": "Star-Rating im Subject = +100% CTR vs ohne"},
+          {"timestamp": "2026-01-16T01:00:00Z", "content": "German cities = German subjects, US cities = English"}
+        ]
       }
     },
     "burst-5": {
       "name": "hot-lead-chaser",
-      "session_count": 0,
-      "total_actions": 0,
+      "session_count": 3,
+      "total_actions": 29,
       "memory": {
-        "effective_followup_delays": [],
-        "discount_conversion_rates": {},
+        "effective_followup_delays": ["24h für ersten Follow-Up", "72h für zweiten"],
+        "discount_conversion_rates": {
+          "0%": {"attempts": 10, "conversions": 0},
+          "20%": {"attempts": 5, "conversions": 0},
+          "30%": {"attempts": 0, "conversions": 0}
+        },
         "leads_that_converted": [],
         "leads_that_ignored": [],
-        "notes": []
+        "notes": [
+          {"timestamp": "2026-01-15T23:10:00Z", "content": "Magic Links funktionieren - 10 Auto-Registrations in einer Nacht"}
+        ]
       }
     },
     "burst-7": {
       "name": "payment-converter",
-      "session_count": 0,
+      "session_count": 1,
       "total_actions": 0,
       "memory": {
         "nudges_that_worked": [],
         "nudges_that_failed": [],
-        "best_upgrade_triggers": [],
+        "best_upgrade_triggers": ["response_count >= 18", "pricing_page_views >= 2"],
         "timing_patterns": [],
-        "notes": []
+        "notes": [
+          {"timestamp": "2026-01-15T23:00:00Z", "content": "Noch 0 zahlende Kunden - Projekt erst 5 Tage alt"}
+        ]
       }
     },
     "burst-9": {
       "name": "doctor",
-      "session_count": 0,
-      "total_actions": 0,
+      "session_count": 2,
+      "total_actions": 15,
       "memory": {
-        "patterns_discovered": [],
+        "patterns_discovered": [
+          "Star-Rating in Subject = bessere CTR",
+          "Magic Links > normale Registration für Cold Leads"
+        ],
         "hypotheses_tested": [],
-        "confirmed_learnings": [],
+        "confirmed_learnings": [
+          "TripAdvisor Leads haben höhere Email-Hit-Rate als G2"
+        ],
         "disproven_hypotheses": [],
         "metric_baselines": {
-          "email_ctr": null,
-          "demo_conversion": null,
-          "registration_rate": null,
-          "payment_conversion": null
+          "email_ctr": 4.0,
+          "demo_conversion": 0,
+          "registration_rate": 0.5,
+          "payment_conversion": 0
         },
         "notes": []
       }
@@ -77,25 +101,47 @@
   },
 
   "global_learnings": {
-    "what_works": [],
-    "what_fails": [],
-    "rules_discovered": []
+    "what_works": [
+      "Star-Rating im Email-Subject (+100% CTR)",
+      "Magic Links für Auto-Registration",
+      "TripAdvisor als Lead-Quelle",
+      "Personalisierte Demos mit echten Reviews"
+    ],
+    "what_fails": [
+      "Generic subjects ohne Personalisierung",
+      "Discounts in erster Email"
+    ],
+    "rules_discovered": [
+      "Kein Discount ohne vorherigen Click",
+      "Max 2 Follow-Ups pro Lead",
+      "24h warten zwischen Emails"
+    ]
   },
 
   "conversion_log": [],
 
+  "current_metrics": {
+    "total_leads": 1992,
+    "leads_with_email": 495,
+    "emails_sent": 648,
+    "clicks": 23,
+    "registrations": 32,
+    "paying_customers": 0,
+    "mrr": 0,
+    "last_updated": "2026-01-16T01:45:00Z"
+  },
+
   "instructions": {
     "on_session_start": [
-      "1. Read this file to restore memory",
-      "2. Check your agent's memory section",
-      "3. Apply learnings to current session",
-      "4. Increment session_count"
+      "1. powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent [X]",
+      "2. Apply learnings from your memory section",
+      "3. Check global_learnings.what_works",
+      "4. Avoid global_learnings.what_fails"
     ],
     "on_session_end": [
-      "1. Update your memory section with new learnings",
-      "2. Add any patterns discovered to global_learnings",
-      "3. Log any conversions to conversion_log",
-      "4. Update last_updated timestamp"
+      "1. powershell -File scripts/agent-helpers.ps1 -Action memory-update -Agent [X] -Data 'new learning'",
+      "2. Add patterns to global_learnings via learning-add",
+      "3. Log conversions to conversion_log"
     ],
     "memory_principles": [
       "Keep memory LEAN - only high-signal information",

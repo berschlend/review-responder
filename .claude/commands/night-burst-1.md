@@ -2,12 +2,32 @@
 
 ---
 
-## 📚 CORE INCLUDE - LIES ZUERST!
+## 🚀 SESSION-START COMMANDS (FÜHRE DIESE ZUERST AUS!)
+
+```bash
+# 1. HEARTBEAT - Registriere dich als running
+powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent 1
+
+# 2. FOCUS CHECKEN - Was ist Priorität?
+powershell -File scripts/agent-helpers.ps1 -Action focus-read
+# → Schau auf agent_priorities.burst-1
+
+# 3. HANDOFFS CHECKEN - Arbeit für mich?
+powershell -File scripts/agent-helpers.ps1 -Action handoff-check -Agent 1
+
+# 4. MEMORY LADEN - Welche Städte haben funktioniert?
+powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent 1
+# → best_cities, worst_cities, captcha_blocked_sites anwenden!
+```
+
+---
+
+## 📚 CORE INCLUDE - LIES AUCH DAS!
 
 > **PFLICHT:** Lies `.claude/commands/night-burst-core.md` für:
+> - Alle Helper-Commands Referenz
 > - Extended Thinking Template
 > - Continuous Learning System
-> - Failure Recovery
 > - Success Metrics (Target: >50 Leads, >30 Emails/Nacht)
 
 ---
@@ -74,27 +94,34 @@
 
 ---
 
-## 🔄 DER ENDLOS-LOOP (V3 mit Heartbeat)
+## 🔄 DER ENDLOS-LOOP (V3.3 mit Commands)
 
-```
-WHILE TRUE:
-  ┌─── V3 HEARTBEAT (JEDER LOOP START!) ───┐
-  │ 1. Read burst-1-status.json             │
-  │ 2. Update:                              │
-  │    - last_heartbeat: [JETZT]            │
-  │    - current_loop: [+1]                 │
-  │    - status: "running"                  │
-  │ 3. Write back                           │
-  │ 4. Check resource-budget.json           │
-  │    - Habe ich API Budget?               │
-  └─────────────────────────────────────────┘
+```bash
+# === JEDER LOOP ===
 
-  5. Prüfe ob Berend "Stopp" gesagt hat → IF YES: Ende
-  6. Lade learnings.md, conversion-report.md, berend-feedback.md
-  7. Führe EINEN Scraping-Task aus (siehe Phasen)
-  8. Update burst-1-status.json (metrics)
-  9. Warte 15 Minuten
-  10. GOTO 1
+# STEP 1: HEARTBEAT (PFLICHT!)
+powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent 1
+
+# STEP 2: Prüfe ob Berend "Stopp" gesagt hat
+
+# STEP 3: Status Check
+curl -s "https://review-responder.onrender.com/api/admin/stats?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U" | jq '.leads_without_email'
+
+# STEP 4: Führe EINEN Scraping-Task aus (siehe Phasen)
+# → TripAdvisor, G2, oder andere Quellen
+
+# STEP 5: STATUS UPDATEN nach Erfolg
+powershell -File scripts/agent-helpers.ps1 -Action status-update -Agent 1 -Data '{"metrics":{"actions_taken":1}}'
+
+# STEP 6: Bei neuen Leads → HANDOFF an Burst-2
+powershell -File scripts/agent-helpers.ps1 -Action handoff-create -Agent 1 -Data '{"from":"burst-1","to":"burst-2","type":"new_leads","data":{"lead_ids":[1,2,3]},"priority":2}'
+
+# STEP 7: Learning wenn was Neues gelernt
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 1 -Data "Stadt X hatte 80% Email-Rate"
+
+# STEP 8: Warte 15 Minuten
+
+# STEP 9: GOTO STEP 1
 ```
 
 **⚠️ WICHTIG:** Ohne Heartbeat denkt Health-Check ich bin stuck!
