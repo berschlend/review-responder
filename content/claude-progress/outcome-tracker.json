@@ -1,0 +1,32 @@
+{
+    "version":  "1.0",
+    "description":  "V4 Outcome Tracking - Verknüpft Aktionen mit Ergebnissen (Click, Registration, Payment)",
+    "actions":  [
+                    {
+                        "id":  "action-20260115183036-99",
+                        "outcomes":  {
+                                         "registered":  null,
+                                         "clicked":  null,
+                                         "email_opened":  null,
+                                         "paid":  null
+                                     },
+                        "timestamp":  "2026-01-15T18:30:36Z",
+                        "final_result":  "pending",
+                        "target_id":  "test-123",
+                        "type":  "test_action",
+                        "context":  {
+                                        "test":  "true"
+                                    },
+                        "agent":  "burst-99"
+                    }
+                ],
+    "learnings_derived":  [
+
+                          ],
+    "stats":  {
+                  "total_actions":  1,
+                  "actions_with_outcomes":  0,
+                  "conversion_rate":  0
+              },
+    "last_updated":  "2026-01-15T18:30:36Z"
+}

@@ -1,8 +1,41 @@
 {
-  "version": "1.1",
-  "description": "Current system focus and priorities - Based on First Principles Analysis",
+  "version": "2.0",
+  "description": "V4 Focus with Event Triggers - Based on First Principles Analysis",
   "created_at": "2026-01-16T00:00:00Z",
   "last_updated": "2026-01-15T15:30:00Z",
+
+  "event_triggers": {
+    "user_registered": {
+      "priority": "onboarding",
+      "urgent_agents": [6],
+      "action": "Send onboarding email within 1 hour"
+    },
+    "user_activated": {
+      "priority": "conversion",
+      "urgent_agents": [7],
+      "action": "Start conversion sequence when user hits 15+ responses"
+    },
+    "click_no_registration": {
+      "priority": "re-engagement",
+      "urgent_agents": [5],
+      "action": "Send magic link within 24 hours"
+    },
+    "payment_received": {
+      "priority": "retention",
+      "urgent_agents": [8, 13],
+      "action": "Welcome email + churn prevention setup"
+    },
+    "demo_viewed_3x": {
+      "priority": "hot-lead",
+      "urgent_agents": [5, 7],
+      "action": "Hot demo visitor email with 40% discount"
+    },
+    "user_at_limit": {
+      "priority": "conversion-urgent",
+      "urgent_agents": [7],
+      "action": "Upgrade CTA + discount offer"
+    }
+  },
 
   "first_principles_insight": {
     "diagnosis": "78% of registered users (25/32) never generated a single response",
