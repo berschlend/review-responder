@@ -682,7 +682,7 @@ const InstantDemoWidget = ({
           );
         } else {
           setError(
-            err.response?.data?.message || 'Daily limit reached. Sign up for 20 free/month!'
+            err.response?.data?.message || 'Daily limit reached. Sign up for 5 free/month!'
           );
         }
       } else {
@@ -708,11 +708,14 @@ const InstantDemoWidget = ({
     if (!captureEmail.trim() || !captureEmail.includes('@')) {
       return;
     }
-    // Track email capture
+    // Track email capture with full attribution data
     try {
       await axios.post(`${API_URL}/capture-email`, {
         email: captureEmail.trim(),
-        source: `instant_demo_${platform || 'landing'}`,
+        source: 'instant_demo',
+        landing_page: location.pathname,
+        platform: detectedContext.platform || null,
+        business_type: detectedContext.businessType || null,
       });
     } catch (err) {
       // Silent fail
@@ -802,52 +805,54 @@ const InstantDemoWidget = ({
             marginBottom: '12px',
           }}
         />
+        {/* Tone selector - responsive grid for mobile */}
         <div
           style={{
-            display: 'flex',
-            gap: '12px',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))',
+            gap: '8px',
+            marginBottom: '12px',
           }}
         >
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {['professional', 'friendly', 'formal', 'apologetic'].map(t => (
-              <button
-                key={t}
-                onClick={() => setTone(t)}
-                style={{
-                  padding: '6px 12px',
-                  fontSize: '12px',
-                  borderRadius: '6px',
-                  border: tone === t ? `1px solid ${primaryColor}` : '1px solid var(--border-color)',
-                  background: tone === t ? 'var(--primary-light)' : 'var(--bg-primary)',
-                  color: tone === t ? primaryColor : 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  fontWeight: '500',
-                  textTransform: 'capitalize',
-                }}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={handleGenerate}
-            disabled={loading || !reviewText.trim()}
-            className="btn btn-primary"
-            style={{
-              padding: '10px 20px',
-              fontSize: '14px',
-              fontWeight: '600',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              background: primaryColor,
-              opacity: loading || !reviewText.trim() ? 0.7 : 1,
-            }}
-          >
+          {['professional', 'friendly', 'formal', 'apologetic'].map(t => (
+            <button
+              key={t}
+              onClick={() => setTone(t)}
+              style={{
+                padding: '10px 12px',
+                fontSize: '12px',
+                borderRadius: '6px',
+                border: tone === t ? `1px solid ${primaryColor}` : '1px solid var(--border-color)',
+                background: tone === t ? 'var(--primary-light)' : 'var(--bg-primary)',
+                color: tone === t ? primaryColor : 'var(--text-secondary)',
+                cursor: 'pointer',
+                fontWeight: '500',
+                textTransform: 'capitalize',
+              }}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+        {/* Generate button - full width for better mobile tap target */}
+        <button
+          onClick={handleGenerate}
+          disabled={loading || !reviewText.trim()}
+          className="btn btn-primary"
+          style={{
+            width: '100%',
+            padding: '12px 20px',
+            fontSize: '14px',
+            fontWeight: '600',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            background: primaryColor,
+            opacity: loading || !reviewText.trim() ? 0.7 : 1,
+          }}
+        >
             {loading ? (
               <>
                 <div
@@ -868,8 +873,7 @@ const InstantDemoWidget = ({
                 Generate Response
               </>
             )}
-          </button>
-        </div>
+        </button>
       </div>
 
       {/* Error Message */}
@@ -983,7 +987,7 @@ const InstantDemoWidget = ({
                 background: primaryColor,
               }}
             >
-              Get 20 Free Responses
+              Get 5 Free Responses
             </Link>
           </div>
         </div>
@@ -1077,7 +1081,7 @@ const InstantDemoWidget = ({
                 color: 'var(--text-primary)',
               }}
             >
-              Unlock 20 Free Responses!
+              Unlock 5 Free Responses!
             </h3>
             <p
               style={{
@@ -1127,11 +1131,31 @@ const InstantDemoWidget = ({
                 <Copy size={18} /> Copy & Get Started Free
               </button>
             </form>
+            {/* Skip button for mobile users */}
+            <button
+              onClick={() => {
+                setShowEmailModal(false);
+                navigator.clipboard.writeText(response);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-muted)',
+                fontSize: '13px',
+                cursor: 'pointer',
+                marginTop: '16px',
+                textDecoration: 'underline',
+              }}
+            >
+              No thanks, just copy
+            </button>
             <p
               style={{
                 fontSize: '11px',
                 color: 'var(--text-muted)',
-                marginTop: '16px',
+                marginTop: '8px',
               }}
             >
               No credit card required. Cancel anytime.
@@ -2951,7 +2975,7 @@ const LandingPage = () => {
       console.error('Try generate error:', err.response?.status, err.response?.data, err.message);
       if (err.response?.status === 429) {
         setTryError(
-          err.response?.data?.message || 'Daily limit reached. Sign up for 20 free/month!'
+          err.response?.data?.message || 'Daily limit reached. Sign up for 5 free/month!'
         );
       } else {
         setTryError(
@@ -3818,7 +3842,7 @@ const TermsPage = () => (
           4. Payment & Refunds
         </h2>
         <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
-          <li>Free tier: 20 responses per month, no payment required</li>
+          <li>Free tier: 5 responses per month, no payment required</li>
           <li>Paid plans: Billed monthly or yearly via Stripe</li>
           <li>
             <strong>30-Day Money Back Guarantee:</strong> If you're not satisfied within 30 days,
@@ -3934,15 +3958,30 @@ const PricingCards = ({ showFree = true }) => {
       name: 'Free',
       monthlyPrice: 0,
       yearlyPrice: 0,
-      responses: 20,
+      responses: 5,
       features: [
-        '20 AI responses/month',
+        '5 AI responses/month',
         'All 4 tone options',
         'Any language (auto-detect)',
         'Chrome Extension (all platforms)',
       ],
       buttonText: 'Get Started',
       plan: 'free',
+    },
+    {
+      name: 'Basic',
+      monthlyPrice: 9,
+      yearlyPrice: 7.2, // 20% off
+      responses: 50,
+      features: [
+        '50 AI responses/month',
+        'All 4 tone options',
+        'Chrome Extension (all platforms)',
+        'Email support',
+      ],
+      buttonText: 'Subscribe',
+      plan: 'basic',
+      popular: true, // Drive upgrades to low-friction tier
     },
     {
       name: 'Starter',
@@ -3973,7 +4012,6 @@ const PricingCards = ({ showFree = true }) => {
       ],
       buttonText: 'Subscribe',
       plan: 'professional',
-      popular: true,
     },
     {
       name: 'Unlimited',
@@ -4485,7 +4523,7 @@ const RegisterPage = () => {
     setLoading(true);
     try {
       await register(email, password, businessName, refParam);
-      toast.success('Account created! You have 20 free responses.');
+      toast.success('Account created! You have 5 free responses.');
       navigate('/dashboard');
     } catch (error) {
       toast.error(error.response?.data?.error || 'Registration failed');
@@ -4499,7 +4537,7 @@ const RegisterPage = () => {
       setGoogleLoading(true);
       try {
         await loginWithGoogle(credential, refParam);
-        toast.success('Account created! You have 20 free responses.');
+        toast.success('Account created! You have 5 free responses.');
         navigate('/dashboard');
       } catch (error) {
         toast.error(error.response?.data?.error || 'Google sign-up failed');
@@ -4578,7 +4616,7 @@ const RegisterPage = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Sparkles size={12} style={{ color: 'var(--gray-400)' }} />
             <span style={{ fontSize: '12px', color: 'var(--gray-400)' }}>
-              20 free responses/month
+              5 free responses/month
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -9041,7 +9079,7 @@ Food was amazing, will definitely come back!`}
             }}
           >
             <h2 style={{ marginTop: 0, marginBottom: '8px', fontSize: '24px' }}>
-              You have used all 20 free responses!
+              You have used all 5 free responses!
             </h2>
             <p style={{ color: 'var(--gray-500)', marginBottom: '24px' }}>
               Your reviews are waiting for professional responses...
@@ -12961,7 +12999,7 @@ const VideoDemoPage = () => {
       const data = await res.json();
       if (data.error) {
         setShowSignup(true);
-        toast.success('Sign up for 20 free responses per month!');
+        toast.success('Sign up for 5 free responses per month!');
       } else {
         setResponse(data.response);
         // After showing response, prompt for signup
@@ -13061,7 +13099,7 @@ const VideoDemoPage = () => {
         {showSignup && (
           <div className="bg-orange-500/20 border border-orange-500/50 rounded-xl p-6 animate-fade-in">
             <h3 className="text-xl font-bold text-white mb-2">
-              Get 20 Free Responses Every Month
+              Get 5 Free Responses Every Month
             </h3>
             <p className="text-gray-300 mb-4">
               No credit card required. Cancel anytime.
@@ -13220,7 +13258,7 @@ const DemoPage = () => {
         // Rate limit reached - scroll to CTA section
         if (data.error === 'Daily limit reached' || data.message?.includes('free tries')) {
           setLiveResponse('');
-          toast.success('Love the enthusiasm! Sign up for 20 free responses/month 👇');
+          toast.success('Love the enthusiasm! Sign up for 5 free responses/month 👇');
           setTimeout(() => {
             document
               .getElementById('demo-cta-section')
@@ -13487,7 +13525,7 @@ const DemoPage = () => {
             Get Fresh Responses - 30% OFF
           </a>
           <p style={{ marginTop: '16px', color: 'var(--text-muted)', fontSize: '14px' }}>
-            20 responses/month free forever
+            5 responses/month free forever
           </p>
         </div>
       </div>
@@ -14569,7 +14607,7 @@ const DemoPage = () => {
               }}
             >
               <span style={{ color: 'white', fontSize: '14px', fontWeight: '600' }}>
-                Limited Time: 20 Free/Month
+                Limited Time: 5 Free/Month
               </span>
             </div>
             <h2
@@ -14591,7 +14629,7 @@ const DemoPage = () => {
                 margin: '0 auto 28px',
               }}
             >
-              20 free responses every month. No credit card required.
+              5 free responses every month. No credit card required.
             </p>
             <a
               href={demo.cta_url}
@@ -14817,7 +14855,7 @@ const DemoPage = () => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
-              20 free responses/month
+              5 free responses/month
             </span>
             <span
               style={{
@@ -14945,7 +14983,7 @@ const DemoPage = () => {
               {/* Value Props */}
               <div style={{ marginBottom: '24px' }}>
                 {[
-                  { icon: <Check size={16} />, text: '20 free responses every month' },
+                  { icon: <Check size={16} />, text: '5 free responses every month' },
                   { icon: <Check size={16} />, text: 'No credit card required' },
                   { icon: <Check size={16} />, text: 'Works with Google, Yelp, TripAdvisor' },
                 ].map((item, i) => (
@@ -15493,7 +15531,7 @@ const GoogleReviewPage = () => {
         '@type': 'Offer',
         price: '0',
         priceCurrency: 'USD',
-        description: 'Free trial with 20 responses/month',
+        description: 'Free trial with 5 responses/month',
       },
     });
     document.head.appendChild(script);
@@ -15583,7 +15621,7 @@ const GoogleReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -15671,7 +15709,7 @@ const GoogleReviewPage = () => {
             Start Responding to Google Reviews Today
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            20 free responses/month included. No credit card required.
+            5 free responses/month included. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -15809,7 +15847,7 @@ const YelpReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -15939,7 +15977,7 @@ const YelpReviewPage = () => {
           </h2>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
-            Try Free - 20 Responses Included
+            Try Free - 5 Responses Included
           </Link>
         </div>
       </section>
@@ -16119,7 +16157,7 @@ const RestaurantReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -16257,7 +16295,7 @@ const RestaurantReviewPage = () => {
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
-            Start Free - 20 Responses Included
+            Start Free - 5 Responses Included
           </Link>
         </div>
       </section>
@@ -16437,7 +16475,7 @@ const HotelReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -16701,7 +16739,7 @@ const LocalBusinessReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -17042,7 +17080,7 @@ const NegativeReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -17319,7 +17357,7 @@ const TripAdvisorReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -17407,7 +17445,7 @@ const TripAdvisorReviewPage = () => {
             Start Winning on TripAdvisor Today
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            20 free responses/month. No credit card required.
+            5 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -17544,7 +17582,7 @@ const BookingReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -17632,7 +17670,7 @@ const BookingReviewPage = () => {
             Improve Your Booking.com Performance
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            20 free responses/month. No credit card required.
+            5 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -17769,7 +17807,7 @@ const FacebookReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -17856,7 +17894,7 @@ const FacebookReviewPage = () => {
             Grow Your Facebook Business Presence
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            20 free responses/month. No credit card required.
+            5 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -18040,7 +18078,7 @@ const DentistReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -18353,7 +18391,7 @@ const MedicalPracticeReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -18620,7 +18658,7 @@ const SalonSpaReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -18885,7 +18923,7 @@ const AutoShopReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -19151,7 +19189,7 @@ const TrustpilotReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -19236,7 +19274,7 @@ const TrustpilotReviewPage = () => {
             Boost Your Trustpilot Score Today
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            20 free responses/month. No credit card required.
+            5 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -19374,7 +19412,7 @@ const AirbnbReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -19635,7 +19673,7 @@ const RealEstateReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -19720,7 +19758,7 @@ const RealEstateReviewPage = () => {
             Close More Deals with Better Reviews
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            20 free responses/month. No credit card required.
+            5 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -19858,7 +19896,7 @@ const GymReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -20119,7 +20157,7 @@ const VetReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -20382,7 +20420,7 @@ const LawFirmReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -20643,7 +20681,7 @@ const EcommerceReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -20904,7 +20942,7 @@ const CoffeeShopReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -21159,7 +21197,7 @@ const AmazonReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -21344,7 +21382,7 @@ const G2ReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -21529,7 +21567,7 @@ const CapterraReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -21714,7 +21752,7 @@ const GlassdoorReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -21899,7 +21937,7 @@ const BBBReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -22084,7 +22122,7 @@ const PlumberReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -22268,7 +22306,7 @@ const ElectricianReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -22453,7 +22491,7 @@ const HVACReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -22637,7 +22675,7 @@ const RoofingReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -22822,7 +22860,7 @@ const LandscapingReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -23007,7 +23045,7 @@ const CleaningReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -23194,7 +23232,7 @@ const HealthgradesReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -23379,7 +23417,7 @@ const ZocdocReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -23564,7 +23602,7 @@ const PhotographerReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -23749,7 +23787,7 @@ const WeddingReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -23933,7 +23971,7 @@ const PetServiceReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -24117,7 +24155,7 @@ const DaycareReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -24302,7 +24340,7 @@ const AccountantReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -24487,7 +24525,7 @@ const InsuranceReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -24671,7 +24709,7 @@ const SeniorCareReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -24857,7 +24895,7 @@ const AppStoreReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Clock size={16} /> Save 5+ Hours/Week
@@ -24964,14 +25002,14 @@ const AppStoreReviewPage = () => {
             Ready to improve your app reviews?
           </h3>
           <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
-            20 free responses/month. No credit card required.
+            5 free responses/month. No credit card required.
           </p>
           <Link
             to="/register"
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 20 Responses Included
+            Start Free - 5 Responses Included
           </Link>
         </div>
       </section>
@@ -25095,7 +25133,7 @@ const IndeedReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Clock size={16} /> Save 5+ Hours/Week
@@ -25202,14 +25240,14 @@ const IndeedReviewPage = () => {
             Ready to improve your employer brand?
           </h3>
           <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
-            20 free responses/month. No credit card required.
+            5 free responses/month. No credit card required.
           </p>
           <Link
             to="/register"
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 20 Responses Included
+            Start Free - 5 Responses Included
           </Link>
         </div>
       </section>
@@ -25333,7 +25371,7 @@ const ZillowReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Clock size={16} /> Save 5+ Hours/Week
@@ -25448,14 +25486,14 @@ const ZillowReviewPage = () => {
             Ready to grow your real estate business?
           </h3>
           <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
-            20 free responses/month. No credit card required.
+            5 free responses/month. No credit card required.
           </p>
           <Link
             to="/register"
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 20 Responses Included
+            Start Free - 5 Responses Included
           </Link>
         </div>
       </section>
@@ -25579,7 +25617,7 @@ const TherapyReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Clock size={16} /> Save 5+ Hours/Week
@@ -25693,7 +25731,7 @@ const TherapyReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 20 Responses Included
+            Start Free - 5 Responses Included
           </Link>
         </div>
       </section>
@@ -25816,7 +25854,7 @@ const ThumbtackReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Clock size={16} /> Save 5+ Hours/Week
@@ -25923,14 +25961,14 @@ const ThumbtackReviewPage = () => {
             Ready to get more Thumbtack leads?
           </h3>
           <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
-            20 free responses/month. No credit card required.
+            5 free responses/month. No credit card required.
           </p>
           <Link
             to="/register"
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 20 Responses Included
+            Start Free - 5 Responses Included
           </Link>
         </div>
       </section>
@@ -26054,7 +26092,7 @@ const LinkedInReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Users size={16} /> Build Your Network
@@ -26168,7 +26206,7 @@ const LinkedInReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 20 Responses Included
+            Start Free - 5 Responses Included
           </Link>
         </div>
       </section>
@@ -26291,7 +26329,7 @@ const AngiReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Award size={16} /> Top Pro Status
@@ -26403,7 +26441,7 @@ const AngiReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 20 Responses Included
+            Start Free - 5 Responses Included
           </Link>
         </div>
       </section>
@@ -26527,7 +26565,7 @@ const ChiropractorReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Heart size={16} /> HIPAA Aware
@@ -26640,7 +26678,7 @@ const ChiropractorReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 20 Responses Included
+            Start Free - 5 Responses Included
           </Link>
         </div>
       </section>
@@ -26763,7 +26801,7 @@ const BarberReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Scissors size={16} /> Built for Barbers
@@ -26875,7 +26913,7 @@ const BarberReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 20 Responses Included
+            Start Free - 5 Responses Included
           </Link>
         </div>
       </section>
@@ -26999,7 +27037,7 @@ const DermatologistReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Heart size={16} /> HIPAA Aware
@@ -27113,7 +27151,7 @@ const DermatologistReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 20 Responses Included
+            Start Free - 5 Responses Included
           </Link>
         </div>
       </section>
@@ -27237,7 +27275,7 @@ const MassageTherapistReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Heart size={16} /> Warm & Personal
@@ -27351,7 +27389,7 @@ const MassageTherapistReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 20 Responses Included
+            Start Free - 5 Responses Included
           </Link>
         </div>
       </section>
@@ -27475,7 +27513,7 @@ const PersonalTrainerReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Zap size={16} /> Fitness Focused
@@ -27589,7 +27627,7 @@ const PersonalTrainerReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 20 Responses Included
+            Start Free - 5 Responses Included
           </Link>
         </div>
       </section>
@@ -27712,7 +27750,7 @@ const AngiListReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 20 Free/Month
+              <Star size={16} /> 5 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Wrench size={16} /> All Trades
@@ -27824,7 +27862,7 @@ const AngiListReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 20 Responses Included
+            Start Free - 5 Responses Included
           </Link>
         </div>
       </section>
@@ -27883,7 +27921,7 @@ const ExtensionPage = () => {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-600)', fontSize: '14px' }}>
               <Check size={16} style={{ color: '#10b981' }} />
-              20 free responses/month
+              5 free responses/month
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-600)', fontSize: '14px' }}>
               <Check size={16} style={{ color: '#10b981' }} />
@@ -28147,7 +28185,7 @@ const PricingPage = () => {
     },
     {
       q: 'Is there a free trial?',
-      a: 'Yes! The Free plan gives you 20 responses per month forever - no credit card required. Try it out and upgrade when ready.',
+      a: 'Yes! The Free plan gives you 5 responses per month forever - no credit card required. Try it out and upgrade when ready.',
     },
     {
       q: 'What payment methods do you accept?',
@@ -28596,7 +28634,7 @@ const PricingPage = () => {
         >
           <div>
             <div style={{ fontWeight: '600', fontSize: '14px' }}>Start Free</div>
-            <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>20 responses/month</div>
+            <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>5 responses/month</div>
           </div>
           <Link
             to="/register"
@@ -30708,6 +30746,8 @@ const AdminPage = () => {
   const [creditsLoading, setCreditsLoading] = useState(false);
   const [omnichannelData, setOmnichannelData] = useState(null);
   const [omnichannelLoading, setOmnichannelLoading] = useState(false);
+  const [widgetAnalytics, setWidgetAnalytics] = useState(null);
+  const [widgetLoading, setWidgetLoading] = useState(false);
 
   // Use the same API_URL as the rest of the app (already includes /api)
   // Remove /api suffix if present to build admin URLs correctly
@@ -30938,6 +30978,22 @@ const AdminPage = () => {
     }
   };
 
+  const loadWidgetAnalytics = async () => {
+    if (!adminKey) return;
+    setWidgetLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/admin/widget-analytics`, {
+        headers: getHeaders(),
+      });
+      setWidgetAnalytics(res.data);
+    } catch (err) {
+      console.error('Widget analytics load error:', err);
+      toast.error('Failed to load widget analytics');
+    } finally {
+      setWidgetLoading(false);
+    }
+  };
+
   const addClaudeNote = async () => {
     if (!newNote.trim()) {
       toast.error('Please enter a note');
@@ -31059,6 +31115,9 @@ const AdminPage = () => {
       }
       if (activeAdminTab === 'omnichannel' && !omnichannelData) {
         loadOmnichannelData();
+      }
+      if (activeAdminTab === 'widget' && !widgetAnalytics) {
+        loadWidgetAnalytics();
       }
     }
   }, [activeAdminTab, isAuthenticated, adminKey]);
@@ -31204,6 +31263,13 @@ const AdminPage = () => {
           style={{ background: activeAdminTab === 'omnichannel' ? 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)' : undefined }}
         >
           Omnichannel
+        </button>
+        <button
+          className={`btn ${activeAdminTab === 'widget' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('widget')}
+          style={{ background: activeAdminTab === 'widget' ? 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)' : undefined }}
+        >
+          Widget Analytics
         </button>
       </div>
 

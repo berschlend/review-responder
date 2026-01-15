@@ -699,7 +699,7 @@ async function sendFlashOfferEmail(user) {
             <div class="content">
               <p>Hi${user.business_name ? ' ' + user.business_name : ''},</p>
 
-              <p>You've used all <strong>20 free responses</strong> - that means you've seen the value ReviewResponder brings to your business.</p>
+              <p>You've used all <strong>5 free responses</strong> - that means you've seen the value ReviewResponder brings to your business.</p>
 
               <div class="timer">
                 <p style="margin: 0; color: #6B7280;">This offer expires in</p>
@@ -1000,6 +1000,11 @@ async function initDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Add attribution columns to email_captures (for Widget Analytics)
+    await dbQuery(`ALTER TABLE email_captures ADD COLUMN IF NOT EXISTS landing_page TEXT`);
+    await dbQuery(`ALTER TABLE email_captures ADD COLUMN IF NOT EXISTS platform TEXT`);
+    await dbQuery(`ALTER TABLE email_captures ADD COLUMN IF NOT EXISTS business_type TEXT`);
 
     // Personalized discount links
     await dbQuery(`
@@ -1783,9 +1788,20 @@ const authenticateApiKey = async (req, res, next) => {
 const PLAN_LIMITS = {
   free: {
     smartResponses: 3, // Claude - teaser to show quality
-    standardResponses: 17, // GPT-4o-mini
-    responses: 20, // Total (for backward compatibility)
+    standardResponses: 2, // GPT-4o-mini - REDUCED from 17 to force upgrades
+    responses: 5, // Total - REDUCED from 20 (First Principles: 5 is enough to see value, not enough to stay forever)
     price: 0,
+    teamMembers: 0,
+  },
+  // NEW: Basic tier for low-friction first purchase
+  basic: {
+    smartResponses: 20,
+    standardResponses: 30,
+    responses: 50,
+    price: 900, // $9/mo - the "no-brainer" tier
+    yearlyPrice: 8640, // 20% off: $9 * 12 * 0.8 = $86.40
+    priceId: process.env.STRIPE_BASIC_PRICE_ID,
+    yearlyPriceId: process.env.STRIPE_BASIC_YEARLY_PRICE_ID,
     teamMembers: 0,
   },
   starter: {
@@ -5635,10 +5651,17 @@ app.post('/api/team/leave', authenticateToken, async (req, res) => {
 
 // ============ EMAIL CAPTURE ============
 
-// Capture email from exit-intent popup
+// Capture email from exit-intent popup or instant demo widget
 app.post('/api/capture-email', async (req, res) => {
   try {
-    const { email, discountCode = null, source = 'exit_intent' } = req.body;
+    const {
+      email,
+      discountCode = null,
+      source = 'exit_intent',
+      landing_page = null, // NEW: For widget attribution
+      platform = null, // NEW: For widget attribution
+      business_type = null, // NEW: For widget attribution
+    } = req.body;
 
     // Validate email
     if (!email || !validator.isEmail(email)) {
@@ -5659,11 +5682,11 @@ app.post('/api/capture-email', async (req, res) => {
       });
     }
 
-    // Insert new email
+    // Insert new email with attribution data
     await dbQuery(
-      `INSERT INTO email_captures (email, discount_code, source)
-       VALUES ($1, $2, $3)`,
-      [email.toLowerCase(), discountCode, source]
+      `INSERT INTO email_captures (email, discount_code, source, landing_page, platform, business_type)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [email.toLowerCase(), discountCode, source, landing_page, platform, business_type]
     );
 
     console.log(`✅ Email captured: ${email} (source: ${source})`);
@@ -5747,7 +5770,7 @@ app.post('/api/capture-email', async (req, res) => {
                   </div>
 
                   <div style="text-align: center; margin: 32px 0;">
-                    <a href="${process.env.FRONTEND_URL}/register" style="display: inline-block; background: #4F46E5; color: white; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px;">Start Free - 20 Responses</a>
+                    <a href="${process.env.FRONTEND_URL}/register" style="display: inline-block; background: #4F46E5; color: white; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px;">Start Free - 5 Responses</a>
                   </div>
 
                   <p style="color: #6B7280; font-size: 14px;">Questions? Just reply to this email.</p>
@@ -7455,7 +7478,7 @@ const tryRateLimiter = rateLimit({
   max: 3, // 3 requests per IP per day
   message: {
     error: 'Daily limit reached',
-    message: "You've used all 3 free tries for today. Sign up for 20 free responses/month!",
+    message: "You've used all 3 free tries for today. Sign up for 5 free responses/month!",
     signup_url: 'https://tryreviewresponder.com/register',
   },
   standardHeaders: true,
@@ -7805,7 +7828,7 @@ Write the response directly. No quotes. No "Response:" prefix. Just the review r
       tone: tone,
       message: authenticatedUser
         ? undefined
-        : 'Like this response? Sign up for 20 free responses/month!',
+        : 'Like this response? Sign up for 5 free responses/month!',
       signup_url: authenticatedUser ? undefined : 'https://tryreviewresponder.com/register',
       remaining: authenticatedUser
         ? Math.max(
@@ -9321,7 +9344,7 @@ WHY I BUILT THIS:
 Small business owners shouldn't have to choose between ignoring reviews and spending hours writing responses. Every review deserves a thoughtful reply - but it shouldn't take 10 minutes to write one.
 
 PRICING:
-- Free: 20 responses/month
+- Free: 5 responses/month
 - Starter $29/mo: 300 responses
 - Pro $49/mo: 800 responses + team access + bulk generation
 - Unlimited $99/mo: No limits + API
@@ -9556,7 +9579,7 @@ app.get('/api/cron/send-drip-emails', async (req, res) => {
                   <span>Chrome Extension for one-click responses</span>
                 </div>
 
-                <p style="margin-top: 24px;">You have <strong>20 free responses</strong> to try it. Love it? Use code <strong>WELCOME30</strong> at checkout.</p>
+                <p style="margin-top: 24px;">You have <strong>5 free responses</strong> to try it. Love it? Use code <strong>WELCOME30</strong> at checkout.</p>
 
                 <center style="margin: 30px 0;">
                   <a href="${FRONTEND_URL}/dashboard" class="cta-button">Generate Your First Response →</a>
@@ -9983,7 +10006,7 @@ app.get('/api/cron/send-pre-registration-drips', async (req, res) => {
                 <p><strong>ReviewResponder solves this.</strong> Get professional, personalized responses in seconds - not minutes.</p>
 
                 <center style="margin: 30px 0;">
-                  <a href="${FRONTEND_URL}/register" class="cta-button">Try 20 Free Responses</a>
+                  <a href="${FRONTEND_URL}/register" class="cta-button">Try 5 Free Responses</a>
                 </center>
 
                 <p>Your discount code <strong>${discountCode}</strong> is still valid!</p>
@@ -10088,7 +10111,7 @@ app.get('/api/cron/send-pre-registration-drips', async (req, res) => {
 
                 <p><strong>Quick recap of what you get:</strong></p>
                 <ul>
-                  <li>20 free responses to try (no credit card)</li>
+                  <li>5 free responses to try (no credit card)</li>
                   <li>AI-powered professional responses in seconds</li>
                   <li>Works with Google, Yelp, TripAdvisor & more</li>
                   <li>Chrome extension for one-click responses</li>
@@ -10217,7 +10240,7 @@ app.get('/api/admin/test-pre-reg-drip', async (req, res) => {
     },
     3: {
       subject: 'Why ignoring reviews costs you customers',
-      html: `<!DOCTYPE html><html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#111827;line-height:1.6}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:linear-gradient(135deg,#DC2626 0%,#B91C1C 100%);color:white;padding:40px;text-align:center;border-radius:8px 8px 0 0}.content{background:white;padding:40px;border:1px solid #E5E7EB;border-radius:0 0 8px 8px}.stat-box{background:#FEF2F2;border-left:4px solid #DC2626;padding:16px;margin:16px 0}.cta-button{display:inline-block;background:#4F46E5;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:600}.footer{text-align:center;padding:20px;color:#6B7280;font-size:14px}</style></head><body><div class="container"><div class="header"><h1>The Hidden Cost of Unanswered Reviews</h1></div><div class="content"><p>Hi there!</p><p>Did you know that ignoring reviews could be silently hurting your business?</p><div class="stat-box"><strong>53% of customers</strong> expect businesses to respond to negative reviews within a week.</div><div class="stat-box"><strong>Businesses that respond</strong> to reviews see 12% higher revenue growth.</div><div class="stat-box"><strong>89% of consumers</strong> read business responses before making a purchase decision.</div><p>The problem? Responding to reviews takes time. Crafting the perfect response can take 15-20 minutes.</p><p><strong>ReviewResponder solves this.</strong> Get professional responses in seconds.</p><center style="margin:30px 0"><a href="${FRONTEND_URL}/register" class="cta-button">Try 20 Free Responses</a></center><p>Your discount code <strong>${discountCode}</strong> is still valid!</p><p>Best,<br>The ReviewResponder Team</p></div><div class="footer"><p>ReviewResponder - AI-Powered Review Responses</p></div></div></body></html>`,
+      html: `<!DOCTYPE html><html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#111827;line-height:1.6}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:linear-gradient(135deg,#DC2626 0%,#B91C1C 100%);color:white;padding:40px;text-align:center;border-radius:8px 8px 0 0}.content{background:white;padding:40px;border:1px solid #E5E7EB;border-radius:0 0 8px 8px}.stat-box{background:#FEF2F2;border-left:4px solid #DC2626;padding:16px;margin:16px 0}.cta-button{display:inline-block;background:#4F46E5;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:600}.footer{text-align:center;padding:20px;color:#6B7280;font-size:14px}</style></head><body><div class="container"><div class="header"><h1>The Hidden Cost of Unanswered Reviews</h1></div><div class="content"><p>Hi there!</p><p>Did you know that ignoring reviews could be silently hurting your business?</p><div class="stat-box"><strong>53% of customers</strong> expect businesses to respond to negative reviews within a week.</div><div class="stat-box"><strong>Businesses that respond</strong> to reviews see 12% higher revenue growth.</div><div class="stat-box"><strong>89% of consumers</strong> read business responses before making a purchase decision.</div><p>The problem? Responding to reviews takes time. Crafting the perfect response can take 15-20 minutes.</p><p><strong>ReviewResponder solves this.</strong> Get professional responses in seconds.</p><center style="margin:30px 0"><a href="${FRONTEND_URL}/register" class="cta-button">Try 5 Free Responses</a></center><p>Your discount code <strong>${discountCode}</strong> is still valid!</p><p>Best,<br>The ReviewResponder Team</p></div><div class="footer"><p>ReviewResponder - AI-Powered Review Responses</p></div></div></body></html>`,
     },
     7: {
       subject: 'How Mario saved 5 hours/week on reviews',
@@ -10225,7 +10248,7 @@ app.get('/api/admin/test-pre-reg-drip', async (req, res) => {
     },
     14: {
       subject: 'Last chance: Your exclusive offer expires tomorrow',
-      html: `<!DOCTYPE html><html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#111827;line-height:1.6}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:linear-gradient(135deg,#7C3AED 0%,#5B21B6 100%);color:white;padding:40px;text-align:center;border-radius:8px 8px 0 0}.content{background:white;padding:40px;border:1px solid #E5E7EB;border-radius:0 0 8px 8px}.urgency-box{background:#FEF3C7;border:2px solid #F59E0B;padding:20px;border-radius:8px;margin:20px 0;text-align:center}.cta-button{display:inline-block;background:#7C3AED;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:600}.footer{text-align:center;padding:20px;color:#6B7280;font-size:14px}</style></head><body><div class="container"><div class="header"><h1>Final Reminder</h1><p>Your 50% discount expires tomorrow</p></div><div class="content"><p>Hi there!</p><p>This is my last email about this - I promise!</p><p>Two weeks ago, you showed interest in ReviewResponder. Since then, your competitors have probably responded to dozens of reviews.</p><div class="urgency-box"><p style="margin:0;font-size:18px"><strong>Your code ${discountCode} expires tomorrow.</strong></p><p style="margin:8px 0 0 0;color:#92400E">After that, you'll pay full price.</p></div><p><strong>Quick recap:</strong></p><ul><li>20 free responses to try (no credit card)</li><li>AI-powered professional responses in seconds</li><li>Works with Google, Yelp, TripAdvisor & more</li><li>Chrome extension for one-click responses</li></ul><center style="margin:30px 0"><a href="${FRONTEND_URL}/register" class="cta-button">Use Your 50% Discount Now</a></center><p>Best,<br>The ReviewResponder Team</p></div><div class="footer"><p>ReviewResponder - AI-Powered Review Responses</p><p style="font-size:12px;color:#9CA3AF">This is the last email in this series.</p></div></div></body></html>`,
+      html: `<!DOCTYPE html><html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#111827;line-height:1.6}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:linear-gradient(135deg,#7C3AED 0%,#5B21B6 100%);color:white;padding:40px;text-align:center;border-radius:8px 8px 0 0}.content{background:white;padding:40px;border:1px solid #E5E7EB;border-radius:0 0 8px 8px}.urgency-box{background:#FEF3C7;border:2px solid #F59E0B;padding:20px;border-radius:8px;margin:20px 0;text-align:center}.cta-button{display:inline-block;background:#7C3AED;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:600}.footer{text-align:center;padding:20px;color:#6B7280;font-size:14px}</style></head><body><div class="container"><div class="header"><h1>Final Reminder</h1><p>Your 50% discount expires tomorrow</p></div><div class="content"><p>Hi there!</p><p>This is my last email about this - I promise!</p><p>Two weeks ago, you showed interest in ReviewResponder. Since then, your competitors have probably responded to dozens of reviews.</p><div class="urgency-box"><p style="margin:0;font-size:18px"><strong>Your code ${discountCode} expires tomorrow.</strong></p><p style="margin:8px 0 0 0;color:#92400E">After that, you'll pay full price.</p></div><p><strong>Quick recap:</strong></p><ul><li>5 free responses to try (no credit card)</li><li>AI-powered professional responses in seconds</li><li>Works with Google, Yelp, TripAdvisor & more</li><li>Chrome extension for one-click responses</li></ul><center style="margin:30px 0"><a href="${FRONTEND_URL}/register" class="cta-button">Use Your 50% Discount Now</a></center><p>Best,<br>The ReviewResponder Team</p></div><div class="footer"><p>ReviewResponder - AI-Powered Review Responses</p><p style="font-size:12px;color:#9CA3AF">This is the last email in this series.</p></div></div></body></html>`,
     },
   };
 
@@ -11727,6 +11750,79 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
   } catch (error) {
     console.error('Admin stats error:', error);
     res.status(500).json({ error: 'Failed to get admin stats' });
+  }
+});
+
+// GET /api/admin/widget-analytics - Widget performance analytics
+app.get('/api/admin/widget-analytics', authenticateAdmin, async (req, res) => {
+  try {
+    // Total attempts from public_try_usage
+    const attemptsResult = await dbGet('SELECT COUNT(*) as count FROM public_try_usage');
+    const attempts = parseInt(attemptsResult?.count || 0);
+
+    // Total email captures from instant_demo
+    const capturesResult = await dbGet(`
+      SELECT COUNT(*) as count FROM email_captures
+      WHERE source = 'instant_demo'
+    `);
+    const captures = parseInt(capturesResult?.count || 0);
+
+    // Capture rate
+    const captureRate = attempts > 0 ? ((captures / attempts) * 100).toFixed(1) : 0;
+
+    // By Platform
+    const byPlatform = await dbAll(`
+      SELECT platform, COUNT(*) as captures
+      FROM email_captures
+      WHERE source = 'instant_demo' AND platform IS NOT NULL AND platform != ''
+      GROUP BY platform
+      ORDER BY captures DESC
+      LIMIT 10
+    `) || [];
+
+    // By Business Type
+    const byBusinessType = await dbAll(`
+      SELECT business_type, COUNT(*) as captures
+      FROM email_captures
+      WHERE source = 'instant_demo' AND business_type IS NOT NULL AND business_type != ''
+      GROUP BY business_type
+      ORDER BY captures DESC
+      LIMIT 10
+    `) || [];
+
+    // By Landing Page (top 10)
+    const byLandingPage = await dbAll(`
+      SELECT landing_page, COUNT(*) as captures
+      FROM email_captures
+      WHERE source = 'instant_demo' AND landing_page IS NOT NULL AND landing_page != ''
+      GROUP BY landing_page
+      ORDER BY captures DESC
+      LIMIT 10
+    `) || [];
+
+    // Recent captures (last 7 days trend)
+    const recentTrend = await dbAll(`
+      SELECT DATE(created_at) as date, COUNT(*) as captures
+      FROM email_captures
+      WHERE source = 'instant_demo' AND created_at > NOW() - INTERVAL '7 days'
+      GROUP BY DATE(created_at)
+      ORDER BY date DESC
+    `) || [];
+
+    res.json({
+      summary: {
+        attempts,
+        captures,
+        captureRate: parseFloat(captureRate),
+      },
+      byPlatform,
+      byBusinessType,
+      byLandingPage,
+      recentTrend,
+    });
+  } catch (error) {
+    console.error('Widget analytics error:', error);
+    res.status(500).json({ error: 'Failed to get widget analytics' });
   }
 });
 
@@ -13406,7 +13502,7 @@ ${demoUrl}
 
 Takes 30 seconds to see if the tone matches your brand.
 
-If you like it: 20 responses/month are free.
+If you like it: 5 responses/month are free.
 If not: No worries.
 
 Best,
@@ -13671,7 +13767,7 @@ ${demoUrl}
 
 Takes 30 seconds to see if the tone matches your brand.
 
-If you like it: 20 responses/month are free. If not: No worries, just ignore this.
+If you like it: 5 responses/month are free. If not: No worries, just ignore this.
 
 Best,
 Berend
@@ -13720,7 +13816,7 @@ With ${reviewText}, responding to all of them takes time. ReviewResponder does i
 Try it on your actual reviews here:
 https://tryreviewresponder.com?ref=hot_lead
 
-20 responses/month free, no credit card.
+5 responses/month free, no credit card.
 
 Best,
 Berend
@@ -14530,7 +14626,7 @@ I built ReviewResponder - AI that replies to Google reviews. Sounds simple, save
 
 ${lead.demo_token ? `Here's a demo for ${businessName}:\n${demoUrl}` : `Try it directly:\n${demoUrl}`}
 
-20 responses/month free, no credit card.
+5 responses/month free, no credit card.
 
 Best,
 Berend
@@ -14808,7 +14904,7 @@ app.get('/api/cron/demo-followup', async (req, res) => {
 I noticed you checked out the personalized demo we created for ${businessName} yesterday.
 
 What did you think of the AI-generated review responses?${responsePreview}
-If you'd like to see more, just sign up free - you'll get 20 responses/month at no cost:
+If you'd like to see more, just sign up free - you'll get 5 responses/month at no cost:
 ${demoUrl}
 
 Or if you have questions, just reply to this email!
@@ -15068,7 +15164,7 @@ But I'm curious, what did you think of the AI-generated responses? Did they look
 We've spent a lot of time making them sound human and not "AI-ish". Here's what actual users are saying:
 https://tryreviewresponder.com/testimonials
 
-If you ever want to try it for real, the free plan gives you 20 responses/month.
+If you ever want to try it for real, the free plan gives you 5 responses/month.
 
 Berend`,
       },
@@ -15378,7 +15474,7 @@ ${magicLinkUrl}
 
 ${demoUrl ? `Your personalized demo is still here: ${demoUrl}` : ''}
 
-20 responses/month are free. Just start using it.
+5 responses/month are free. Just start using it.
 
 Best,
 Berend
@@ -15540,7 +15636,7 @@ Your personalized demo for ${businessName} expires in 4 days.
 Check it out before it's gone:
 ${demoUrl}
 
-If you like it: 20 responses/month are free.
+If you like it: 5 responses/month are free.
 
 Best,
 Berend`;
@@ -17430,7 +17526,7 @@ I hear this feedback a lot. That's why I built ReviewResponder - no complex plat
 
 Just AI that writes professional review responses in 3 seconds.
 
-Try 20 free responses: https://tryreviewresponder.com?ref=g2
+Try 5 free responses: https://tryreviewresponder.com?ref=g2
 
 Best,
 Berend
@@ -21563,7 +21659,7 @@ I noticed ${lead.business_name} has ${lead.google_reviews_count || 'several'} re
 Here's a personalized demo showing how it works for ${lead.business_name}:
 ${lead.demo_url || 'https://tryreviewresponder.com?ref=tripadvisor-followup'}
 
-20 free responses, no credit card needed. Takes 30 seconds to try.
+5 free responses, no credit card needed. Takes 30 seconds to try.
 
 Let me know if you have any questions!
 
@@ -24604,7 +24700,7 @@ Here's what a response for your business could look like:
 
 ${aiResponse}
 
-Want to try it? 20 free responses, no credit card:
+Want to try it? 5 free responses, no credit card:
 https://tryreviewresponder.com?ref=g2-${lead.competitor}
 
 Cheers,
@@ -26154,7 +26250,7 @@ Saw your G2 review about ${lead.competitor}. "${(lead.complaint_summary || 'the 
 
 Built something simpler. No contracts, no hidden fees. AI-powered review responses that actually sound human.
 
-20 free responses, no credit card:
+5 free responses, no credit card:
 https://tryreviewresponder.com?ref=g2-${lead.competitor}
 
 Cheers,
