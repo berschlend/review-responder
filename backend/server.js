@@ -523,6 +523,23 @@ async function sendOutreachEmail({ to, subject, html, campaign = 'main', tags = 
     console.log(`[Anti-Spam check] Warning: ${err.message}`);
   }
 
+  // BOUNCE PREDICTION - Skip suspicious emails before sending
+  try {
+    const suspiciousCheck = isSuspiciousEmail(to);
+    if (suspiciousCheck.suspicious) {
+      console.log(`⚠️ Suspicious email skipped: ${to} (${suspiciousCheck.reason})`);
+      // Track for analytics
+      await dbQuery(
+        `INSERT INTO outreach_skipped (email, reason, checked_at) VALUES ($1, $2, NOW())
+         ON CONFLICT (email) DO UPDATE SET reason = $2, checked_at = NOW()`,
+        [to, `suspicious:${suspiciousCheck.reason}`]
+      ).catch(() => {}); // Table might not exist
+      return { success: false, skipped: true, reason: `suspicious:${suspiciousCheck.reason}` };
+    }
+  } catch (err) {
+    console.log(`[Bounce prediction] Warning: ${err.message}`);
+  }
+
   // Check if email is unsubscribed before sending
   try {
     const unsubscribed = await dbGet('SELECT 1 FROM unsubscribes WHERE LOWER(email) = LOWER($1)', [
@@ -18086,9 +18103,64 @@ async function guessAndVerifyEmail(domain, businessName) {
   return null;
 }
 
+// === BUSINESS-TYPE SPECIFIC ROLE PRIORITIZATION ===
+// Different businesses have different decision makers for review management
+const ROLE_PRIORITY_BY_BUSINESS_TYPE = {
+  // Restaurants/Hospitality: Owner makes decisions, chef has pride in reviews
+  restaurant: ['owner', 'founder', 'inhaber', 'geschäftsführer', 'chef', 'manager', 'marketing', 'operations'],
+  cafe: ['owner', 'founder', 'inhaber', 'manager', 'barista', 'marketing'],
+  hotel: ['owner', 'general manager', 'manager', 'marketing', 'guest relations', 'operations'],
+  bar: ['owner', 'founder', 'inhaber', 'manager', 'marketing'],
+
+  // SaaS/Tech: Customer Success owns review responses
+  saas: ['customer success', 'customer experience', 'marketing', 'founder', 'ceo', 'head of growth'],
+  software: ['customer success', 'marketing', 'founder', 'ceo', 'product'],
+  tech: ['customer success', 'marketing', 'founder', 'ceo'],
+
+  // E-Commerce/Retail: Owner or Marketing handles reputation
+  ecommerce: ['owner', 'founder', 'marketing', 'operations', 'customer service'],
+  retail: ['owner', 'store manager', 'marketing', 'operations'],
+  shop: ['owner', 'inhaber', 'manager', 'marketing'],
+
+  // Healthcare/Professional Services: Practice owner or office manager
+  dental: ['owner', 'dentist', 'practice manager', 'office manager'],
+  medical: ['owner', 'doctor', 'practice manager', 'office manager'],
+  clinic: ['owner', 'director', 'practice manager', 'office manager'],
+  spa: ['owner', 'manager', 'marketing'],
+  salon: ['owner', 'inhaber', 'manager', 'stylist'],
+
+  // Default for unknown business types
+  default: ['owner', 'founder', 'ceo', 'geschäftsführer', 'inhaber', 'manager', 'marketing', 'director'],
+};
+
+// Helper: Get role priority score for a business type
+function getRolePriorityScore(role, businessType) {
+  const normalizedType = (businessType || 'default').toLowerCase();
+  const roleNormalized = (role || '').toLowerCase();
+
+  // Find matching business type (partial match)
+  let priorities = ROLE_PRIORITY_BY_BUSINESS_TYPE.default;
+  for (const [type, roles] of Object.entries(ROLE_PRIORITY_BY_BUSINESS_TYPE)) {
+    if (normalizedType.includes(type) || type.includes(normalizedType)) {
+      priorities = roles;
+      break;
+    }
+  }
+
+  // Find role in priority list (lower index = higher priority)
+  for (let i = 0; i < priorities.length; i++) {
+    if (roleNormalized.includes(priorities[i]) || priorities[i].includes(roleNormalized)) {
+      return priorities.length - i; // Higher score = higher priority
+    }
+  }
+
+  return 0; // Unknown role = lowest priority
+}
+
 // Helper: Generate personal emails from team member names (FREE)
 // Converts "Max Müller" → max@domain.com, max.mueller@domain.com, etc.
-async function generatePersonalEmails(domain, teamMembers) {
+// Now with Business-Type specific role prioritization
+async function generatePersonalEmails(domain, teamMembers, businessType = null) {
   if (!teamMembers || teamMembers.length === 0) return null;
 
   // Clean domain
@@ -18143,8 +18215,22 @@ async function generatePersonalEmails(domain, teamMembers) {
 
   if (!hasMxRecords) return null;
 
-  // Generate emails for team members (prioritized by role already)
-  for (const member of teamMembers.slice(0, 3)) {
+  // Sort team members by role priority for this business type
+  const sortedMembers = [...teamMembers].sort((a, b) => {
+    const scoreA = getRolePriorityScore(a.role, businessType);
+    const scoreB = getRolePriorityScore(b.role, businessType);
+    return scoreB - scoreA; // Higher score first
+  });
+
+  if (businessType) {
+    console.log(
+      `📊 Business-type prioritization (${businessType}):`,
+      sortedMembers.slice(0, 3).map(m => `${m.name} (${m.role})`)
+    );
+  }
+
+  // Generate emails for team members (now sorted by business-type priority)
+  for (const member of sortedMembers.slice(0, 3)) {
     // Max 3 members
     const patterns = generatePatterns(member.name);
 
@@ -18288,7 +18374,10 @@ async function scrapeBusinessContext(websiteUrl) {
     ownerName: null,
     foundedYear: null,
     usps: [],
-    teamMembers: [], // NEU: Array of { name, role } for personal email generation
+    teamMembers: [], // Array of { name, role } for personal email generation
+    phoneNumbers: [], // Phone numbers found on website
+    linkedInUrls: [], // LinkedIn profile URLs for team members
+    whatsappNumber: null, // WhatsApp Business number if found
   };
 
   if (!websiteUrl) return result;
@@ -18575,6 +18664,51 @@ async function scrapeBusinessContext(websiteUrl) {
           }
         }
 
+        // === PHONE NUMBER EXTRACTION ===
+        // Patterns for international phone numbers
+        const phonePatterns = [
+          // German: +49 30 12345678, 030-12345678, (030) 12345678
+          /(?:\+49|0049|0)\s*[1-9]\d{1,4}[\s/-]?\d{3,}[\s/-]?\d{0,}/g,
+          // International: +1 234 567 8901, +44 20 1234 5678
+          /\+[1-9]\d{0,3}[\s.-]?\(?\d{1,4}\)?[\s.-]?\d{1,4}[\s.-]?\d{1,9}/g,
+          // Generic: (123) 456-7890, 123-456-7890
+          /\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/g,
+        ];
+        for (const pattern of phonePatterns) {
+          const matches = html.match(pattern) || [];
+          for (const match of matches) {
+            const cleaned = match.replace(/[\s.-]/g, '').replace(/^\+?0+/, '+');
+            // Validate: 8-15 digits after normalization
+            const digitsOnly = cleaned.replace(/\D/g, '');
+            if (digitsOnly.length >= 8 && digitsOnly.length <= 15) {
+              if (!result.phoneNumbers.includes(cleaned) && result.phoneNumbers.length < 3) {
+                result.phoneNumbers.push(cleaned);
+              }
+            }
+          }
+        }
+
+        // === WHATSAPP BUSINESS NUMBER ===
+        // Pattern: wa.me/49123456789 or api.whatsapp.com/send?phone=49123456789
+        const whatsappMatch = html.match(/(?:wa\.me\/|whatsapp\.com\/send\?phone=)(\d{10,15})/i);
+        if (whatsappMatch && !result.whatsappNumber) {
+          result.whatsappNumber = '+' + whatsappMatch[1];
+        }
+
+        // === LINKEDIN PROFILE EXTRACTION ===
+        // Pattern: linkedin.com/in/username or linkedin.com/company/name
+        const linkedInMatches = html.match(
+          /https?:\/\/(?:www\.)?linkedin\.com\/(?:in|company)\/[a-zA-Z0-9_-]+/gi
+        );
+        if (linkedInMatches) {
+          for (const url of linkedInMatches) {
+            const normalized = url.toLowerCase().replace(/\/$/, '');
+            if (!result.linkedInUrls.includes(normalized) && result.linkedInUrls.length < 5) {
+              result.linkedInUrls.push(normalized);
+            }
+          }
+        }
+
         // If we found good content, stop searching
         if (result.description && result.description.length > 100) {
           break;
@@ -18749,7 +18883,8 @@ async function findEmailForLead(lead) {
 
         const personalResult = await generatePersonalEmails(
           lead.website,
-          businessContext.teamMembers
+          businessContext.teamMembers,
+          lead.business_type // Business-type specific role prioritization
         );
         if (personalResult?.email) {
           // Update lead with contact info
@@ -18913,6 +19048,132 @@ function isEmailUpgrade(existingEmail, newEmail) {
 
   // Both same quality = no upgrade needed
   return false;
+}
+
+// === BOUNCE PREDICTION ===
+// Detect suspicious emails BEFORE sending to reduce bounce rate
+function isSuspiciousEmail(email, websiteDomain = null) {
+  if (!email) return { suspicious: true, reason: 'no_email' };
+
+  const prefix = email.split('@')[0].toLowerCase();
+  const emailDomain = email.split('@')[1]?.toLowerCase() || '';
+
+  // 1. Common typos in popular domains
+  const domainTypos = {
+    'gmial.com': 'gmail.com',
+    'gmai.com': 'gmail.com',
+    'gmail.co': 'gmail.com',
+    'gamil.com': 'gmail.com',
+    'gnail.com': 'gmail.com',
+    'gmaill.com': 'gmail.com',
+    'yahooo.com': 'yahoo.com',
+    'yaho.com': 'yahoo.com',
+    'hotmal.com': 'hotmail.com',
+    'hotmai.com': 'hotmail.com',
+    'outloo.com': 'outlook.com',
+    'outlok.com': 'outlook.com',
+  };
+  if (domainTypos[emailDomain]) {
+    return { suspicious: true, reason: 'domain_typo', suggested: email.replace(emailDomain, domainTypos[emailDomain]) };
+  }
+
+  // 2. Disposable/temporary email domains
+  const disposableDomains = [
+    'tempmail.com', 'temp-mail.org', 'guerrillamail.com', 'mailinator.com',
+    '10minutemail.com', 'throwaway.email', 'fakeinbox.com', 'trashmail.com',
+    'yopmail.com', 'tempail.com', 'getnada.com', 'maildrop.cc', 'mailnesia.com',
+    'sharklasers.com', 'guerrillamail.info', 'grr.la', 'spam4.me', 'dispostable.com',
+  ];
+  if (disposableDomains.includes(emailDomain)) {
+    return { suspicious: true, reason: 'disposable_domain' };
+  }
+
+  // 3. Free TLD domains (often spam/fake)
+  const freeTLDs = ['.tk', '.ml', '.ga', '.cf', '.gq'];
+  if (freeTLDs.some(tld => emailDomain.endsWith(tld))) {
+    return { suspicious: true, reason: 'free_tld' };
+  }
+
+  // 4. Email domain doesn't match website domain (and not a known provider)
+  const knownProviders = [
+    'gmail.com', 'googlemail.com', 'outlook.com', 'hotmail.com', 'yahoo.com',
+    'icloud.com', 'me.com', 'gmx.de', 'gmx.net', 'web.de', 't-online.de',
+    'aol.com', 'protonmail.com', 'zoho.com', 'mail.com',
+  ];
+  if (websiteDomain && emailDomain !== websiteDomain && !knownProviders.includes(emailDomain)) {
+    // Different domain but not a known provider - could be suspicious
+    // But don't flag if email domain is a subdomain or parent of website domain
+    const isRelated = emailDomain.includes(websiteDomain) || websiteDomain.includes(emailDomain);
+    if (!isRelated) {
+      return { suspicious: true, reason: 'domain_mismatch', websiteDomain, emailDomain };
+    }
+  }
+
+  // 5. Suspicious prefix patterns
+  const suspiciousPrefixes = [
+    'test', 'demo', 'fake', 'spam', 'asdf', 'qwerty', 'xxxxx',
+    'noreply', 'no-reply', 'donotreply', 'bounce', 'mailer-daemon',
+  ];
+  if (suspiciousPrefixes.some(p => prefix === p || prefix.startsWith(p + '.'))) {
+    return { suspicious: true, reason: 'suspicious_prefix' };
+  }
+
+  // 6. Too short or too long prefix
+  if (prefix.length < 2) {
+    return { suspicious: true, reason: 'prefix_too_short' };
+  }
+  if (prefix.length > 64) {
+    return { suspicious: true, reason: 'prefix_too_long' };
+  }
+
+  // 7. Only numbers in prefix (often auto-generated)
+  if (/^\d+$/.test(prefix)) {
+    return { suspicious: true, reason: 'numeric_prefix' };
+  }
+
+  // Email looks valid
+  return { suspicious: false };
+}
+
+// === DOMAIN REPUTATION CHECK ===
+// Check if domain is trustworthy before sending
+async function checkDomainReputation(domain) {
+  if (!domain) return { valid: false, reason: 'no_domain' };
+
+  try {
+    const dns = await import('dns').then(m => m.promises);
+
+    // 1. Check MX records (can receive email)
+    let hasMX = false;
+    try {
+      const mxRecords = await dns.resolveMx(domain);
+      hasMX = mxRecords && mxRecords.length > 0;
+    } catch (e) {
+      // No MX records = can't receive email
+    }
+
+    if (!hasMX) {
+      return { valid: false, reason: 'no_mx_records' };
+    }
+
+    // 2. Check if domain resolves at all
+    let hasA = false;
+    try {
+      const aRecords = await dns.resolve4(domain);
+      hasA = aRecords && aRecords.length > 0;
+    } catch (e) {
+      // Try AAAA records (IPv6)
+      try {
+        const aaaaRecords = await dns.resolve6(domain);
+        hasA = aaaaRecords && aaaaRecords.length > 0;
+      } catch (e2) {}
+    }
+
+    // Domain is valid and can receive email
+    return { valid: true, hasMX, hasA };
+  } catch (e) {
+    return { valid: false, reason: 'dns_error', error: e.message };
+  }
 }
 
 // Helper: Wrap URLs with click tracking
