@@ -35088,6 +35088,198 @@ const AdminPage = () => {
           )}
         </div>
       )}
+
+      {/* Widget Analytics Tab - InstantDemoWidget Performance */}
+      {activeAdminTab === 'widget' && (
+        <div>
+          {widgetLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading widget analytics...</div>
+          ) : widgetAnalytics ? (
+            <>
+              {/* Summary Cards */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                  gap: '16px',
+                  marginBottom: '24px',
+                }}
+              >
+                <div
+                  className="card"
+                  style={{
+                    textAlign: 'center',
+                    background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                    color: 'white',
+                  }}
+                >
+                  <div style={{ fontSize: '36px', fontWeight: '700' }}>
+                    {widgetAnalytics.summary?.attempts || 0}
+                  </div>
+                  <div style={{ opacity: 0.9 }}>Widget Attempts</div>
+                </div>
+                <div
+                  className="card"
+                  style={{
+                    textAlign: 'center',
+                    background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                    color: 'white',
+                  }}
+                >
+                  <div style={{ fontSize: '36px', fontWeight: '700' }}>
+                    {widgetAnalytics.summary?.captures || 0}
+                  </div>
+                  <div style={{ opacity: 0.9 }}>Email Captures</div>
+                </div>
+                <div
+                  className="card"
+                  style={{
+                    textAlign: 'center',
+                    background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                    color: 'white',
+                  }}
+                >
+                  <div style={{ fontSize: '36px', fontWeight: '700' }}>
+                    {widgetAnalytics.summary?.captureRate || 0}%
+                  </div>
+                  <div style={{ opacity: 0.9 }}>Capture Rate</div>
+                </div>
+              </div>
+
+              {/* By Platform */}
+              {widgetAnalytics.byPlatform?.length > 0 && (
+                <div className="card" style={{ marginBottom: '24px' }}>
+                  <h3 style={{ marginTop: 0, marginBottom: '16px' }}>By Platform</h3>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+                    {widgetAnalytics.byPlatform.map(item => (
+                      <div
+                        key={item.platform}
+                        style={{
+                          padding: '12px 16px',
+                          background: 'var(--gray-50)',
+                          borderRadius: '8px',
+                          minWidth: '100px',
+                          textAlign: 'center',
+                        }}
+                      >
+                        <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--primary)' }}>
+                          {item.captures}
+                        </div>
+                        <div style={{ fontSize: '12px', color: 'var(--gray-500)', textTransform: 'capitalize' }}>
+                          {item.platform}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* By Business Type */}
+              {widgetAnalytics.byBusinessType?.length > 0 && (
+                <div className="card" style={{ marginBottom: '24px' }}>
+                  <h3 style={{ marginTop: 0, marginBottom: '16px' }}>By Business Type</h3>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+                    {widgetAnalytics.byBusinessType.map(item => (
+                      <div
+                        key={item.business_type}
+                        style={{
+                          padding: '12px 16px',
+                          background: 'var(--gray-50)',
+                          borderRadius: '8px',
+                          minWidth: '100px',
+                          textAlign: 'center',
+                        }}
+                      >
+                        <div style={{ fontSize: '20px', fontWeight: '700', color: '#10B981' }}>
+                          {item.captures}
+                        </div>
+                        <div style={{ fontSize: '12px', color: 'var(--gray-500)', textTransform: 'capitalize' }}>
+                          {item.business_type}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* By Landing Page */}
+              {widgetAnalytics.byLandingPage?.length > 0 && (
+                <div className="card" style={{ marginBottom: '24px' }}>
+                  <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Top Landing Pages</h3>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--gray-200)' }}>
+                        <th style={{ textAlign: 'left', padding: '8px 0', color: 'var(--gray-500)', fontSize: '12px' }}>
+                          Landing Page
+                        </th>
+                        <th style={{ textAlign: 'right', padding: '8px 0', color: 'var(--gray-500)', fontSize: '12px' }}>
+                          Captures
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {widgetAnalytics.byLandingPage.map(item => (
+                        <tr key={item.landing_page} style={{ borderBottom: '1px solid var(--gray-100)' }}>
+                          <td style={{ padding: '12px 0', fontSize: '14px' }}>{item.landing_page}</td>
+                          <td style={{ padding: '12px 0', textAlign: 'right', fontWeight: '600' }}>
+                            {item.captures}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Recent Trend */}
+              {widgetAnalytics.recentTrend?.length > 0 && (
+                <div className="card">
+                  <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Last 7 Days</h3>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {widgetAnalytics.recentTrend.map(item => (
+                      <div
+                        key={item.date}
+                        style={{
+                          padding: '8px 12px',
+                          background: 'var(--gray-50)',
+                          borderRadius: '6px',
+                          textAlign: 'center',
+                          minWidth: '70px',
+                        }}
+                      >
+                        <div style={{ fontSize: '16px', fontWeight: '600' }}>{item.captures}</div>
+                        <div style={{ fontSize: '10px', color: 'var(--gray-500)' }}>
+                          {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* No data state */}
+              {!widgetAnalytics.byPlatform?.length &&
+                !widgetAnalytics.byBusinessType?.length &&
+                !widgetAnalytics.byLandingPage?.length && (
+                  <div className="card" style={{ textAlign: 'center', padding: '40px' }}>
+                    <p style={{ color: 'var(--gray-500)' }}>
+                      No widget attribution data yet. Data will appear once users submit emails via the InstantDemoWidget.
+                    </p>
+                  </div>
+                )}
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+                Could not load widget analytics
+              </p>
+              <button className="btn btn-primary" onClick={() => loadWidgetAnalytics()}>
+                Retry
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
