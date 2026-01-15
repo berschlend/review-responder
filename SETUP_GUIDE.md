@@ -11,16 +11,20 @@ This guide will walk you through setting up your ReviewResponder SaaS business f
 Before starting, you need to install:
 
 ### 1. Node.js (Required)
+
 1. Go to https://nodejs.org/
 2. Download the **LTS version** (the button on the left)
 3. Run the installer and click "Next" through all steps
 4. Restart your computer after installation
 
 ### 2. Verify Installation
+
 Open Command Prompt (Windows) or Terminal (Mac) and type:
+
 ```
 node --version
 ```
+
 You should see a version number like `v20.x.x`
 
 ---
@@ -28,6 +32,7 @@ You should see a version number like `v20.x.x`
 ## Step 1: Get Your API Keys
 
 ### OpenAI API Key (For AI Responses)
+
 1. Go to https://platform.openai.com/signup
 2. Create an account or sign in
 3. Go to https://platform.openai.com/api-keys
@@ -37,6 +42,7 @@ You should see a version number like `v20.x.x`
    - $10-20 is plenty to start (each response costs ~$0.001)
 
 ### Stripe Account (For Payments)
+
 1. Go to https://stripe.com and create an account
 2. Complete the account verification (required to accept payments)
 3. Go to https://dashboard.stripe.com/apikeys
@@ -54,6 +60,7 @@ In your Stripe Dashboard:
 ### Create 3 Products:
 
 **Product 1: Starter Plan**
+
 - Name: `Starter Plan`
 - Description: `100 AI review responses per month`
 - Price: `$29.00` / `month` (recurring)
@@ -61,6 +68,7 @@ In your Stripe Dashboard:
 - **Copy the Price ID** (click on the price, it starts with `price_`)
 
 **Product 2: Professional Plan**
+
 - Name: `Professional Plan`
 - Description: `300 AI review responses per month`
 - Price: `$49.00` / `month` (recurring)
@@ -68,6 +76,7 @@ In your Stripe Dashboard:
 - **Copy the Price ID**
 
 **Product 3: Unlimited Plan**
+
 - Name: `Unlimited Plan`
 - Description: `Unlimited AI review responses`
 - Price: `$99.00` / `month` (recurring)
@@ -81,11 +90,13 @@ In your Stripe Dashboard:
 1. Open Command Prompt (Windows) or Terminal (Mac)
 
 2. Navigate to the ReviewResponder folder:
+
    ```
    cd "C:\Users\Berend Mainz\Documents\Start-up\ReviewResponder"
    ```
 
 3. Run the setup wizard:
+
    ```
    node setup.js
    ```
@@ -102,12 +113,15 @@ In your Stripe Dashboard:
 After running the setup wizard:
 
 1. Install all dependencies:
+
    ```
    npm run install-all
    ```
+
    (This takes 2-3 minutes)
 
 2. Start the application:
+
    ```
    npm start
    ```
@@ -193,11 +207,13 @@ Webhooks let Stripe notify your app when payments happen:
 ### Marketing Strategies That Work:
 
 **1. Direct Outreach (Fastest Results)**
+
 - Search Google Maps for local businesses
 - Look for ones with reviews but no responses
 - Send them a personalized email offering a free trial
 
 **Email Template:**
+
 ```
 Subject: Noticed you're not responding to your Google reviews
 
@@ -215,23 +231,27 @@ Best,
 ```
 
 **2. Facebook Groups**
+
 - Join local business owner groups
 - Small business groups
 - Restaurant owner groups
 - Share helpful tips, then mention your tool
 
 **3. Reddit**
+
 - r/smallbusiness
 - r/Entrepreneur
 - r/restaurantowners
 - Provide value first, then soft-pitch
 
 **4. Content Marketing**
+
 - Write blog posts about "How to respond to negative reviews"
 - Create YouTube tutorials
 - Post on LinkedIn about review management
 
 **5. Local Networking**
+
 - Chamber of Commerce events
 - BNI groups
 - Local business meetups
@@ -241,12 +261,14 @@ Best,
 ## Pricing Strategy
 
 Your pricing is already set up:
+
 - **Free**: 20 responses/month (lead generation)
 - **Starter ($29/mo)**: 300 responses (small businesses)
 - **Professional ($49/mo)**: 800 responses (busy businesses)
 - **Unlimited ($99/mo)**: Unlimited (agencies, franchises)
 
 ### Revenue Math:
+
 - 10 Starter customers = $290/month
 - 15 Professional customers = $735/month
 - 5 Unlimited customers = $495/month
@@ -259,20 +281,25 @@ You only need ~25-35 customers to hit $1,000/month!
 ## Troubleshooting
 
 ### "npm is not recognized"
+
 - Make sure you installed Node.js and restarted your computer
 
 ### "Cannot connect to database"
+
 - The SQLite database creates automatically, no action needed
 
 ### "Stripe checkout not working"
+
 - Make sure your Price IDs are correct in the `.env` file
 - Check that your Stripe account is fully verified
 
 ### "OpenAI API error"
+
 - Verify your API key is correct
 - Make sure you have credit in your OpenAI account
 
 ### "Port already in use"
+
 - Another app is using port 5000 or 3000
 - Close other applications or change the PORT in `.env`
 
@@ -281,6 +308,7 @@ You only need ~25-35 customers to hit $1,000/month!
 ## Support & Updates
 
 If you need help:
+
 1. Check the troubleshooting section above
 2. Review your `.env` file settings
 3. Make sure all API keys are correct
@@ -290,6 +318,7 @@ If you need help:
 ## Cost Breakdown
 
 **Monthly Costs:**
+
 - OpenAI API: ~$1-5 (depends on usage, very cheap)
 - Hosting: $0-10 (Railway/Render free tiers available)
 - Stripe: 2.9% + $0.30 per transaction (only when you make money)

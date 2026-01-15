@@ -9,6 +9,7 @@
 ## INTRO (0:00 - 0:15)
 
 ### Szene: Das Problem
+
 - Text-Overlay: "Managing online reviews is exhausting..."
 - Zeige: Notifications von Google, Yelp, TripAdvisor
 - Text: "Hours spent writing responses..."
@@ -19,6 +20,7 @@
 ## EXTENSION QUICK DEMO (0:15 - 0:45)
 
 ### Szene: Extension in Aktion
+
 - Google Maps öffnen → Restaurant mit Reviews
 - Extension "Respond" Button klicken
 - Response in 3 Sekunden generieren
@@ -26,6 +28,7 @@
 - Text-Overlay: "AI-powered responses in seconds"
 
 ### Szene: Multi-Platform
+
 - Kurz Yelp zeigen → Extension funktioniert
 - Kurz TripAdvisor zeigen → Extension funktioniert
 - Text: "Works on Google, Yelp, TripAdvisor & more"
@@ -35,6 +38,7 @@
 ## DASHBOARD INTRO (0:45 - 1:00)
 
 ### Szene: Login & Dashboard
+
 - tryreviewresponder.com öffnen
 - "Get Started Free" klicken
 - Login (oder zeige bereits eingeloggten Dashboard)
@@ -46,6 +50,7 @@
 ## GENERATE FEATURE (1:00 - 1:20)
 
 ### Szene: Manuelle Response-Generierung
+
 - Generate Tab aktiv
 - Review-Text in Textfeld einfügen (oder tippen)
 - Business Name eingeben: "Mario's Italian Kitchen"
@@ -53,6 +58,7 @@
 - Response erscheint
 
 ### Szene: Tones zeigen
+
 - Tone Dropdown öffnen
 - 4 Optionen zeigen: Professional, Friendly, Apologetic, Grateful
 - "Apologetic" auswählen → neu generieren
@@ -64,6 +70,7 @@
 ## VARIATIONS FEATURE (1:20 - 1:35)
 
 ### Szene: A/B/C Optionen
+
 - "Generate 3 Variations" Button klicken
 - Tabs A, B, C erscheinen
 - Durch Tabs klicken
@@ -75,6 +82,7 @@
 ## TEMPLATES (1:35 - 1:50)
 
 ### Szene: Template Library
+
 - Templates Tab öffnen
 - Kategorien zeigen: Restaurant, Hotel, Retail, Healthcare...
 - "Restaurant" öffnen → 10+ Templates
@@ -87,12 +95,14 @@
 ## HISTORY & ANALYTICS (1:50 - 2:05)
 
 ### Szene: History Tab
+
 - History Tab öffnen
 - Liste von generierten Responses
 - Filter/Search zeigen
 - Eine Response anklicken → Details
 
 ### Szene: Analytics Tab (Pro Feature)
+
 - Analytics Tab öffnen
 - Charts zeigen: Responses over time
 - Stats: Total responses, avg. quality score
@@ -103,6 +113,7 @@
 ## BULK & TEAM (2:05 - 2:20)
 
 ### Szene: Bulk Generation
+
 - Bulk Tab öffnen
 - Multiple Reviews einfügen (oder zeigen)
 - "Generate All" klicken
@@ -111,6 +122,7 @@
 - Text: "Handle 20 reviews at once"
 
 ### Szene: Team Feature
+
 - Team Tab öffnen
 - Team Members zeigen
 - "Invite Member" Button
@@ -121,6 +133,7 @@
 ## PRICING & CTA (2:20 - 2:35)
 
 ### Szene: Pricing
+
 - Pricing Page öffnen (oder Section auf Landing Page)
 - 3 Plans zeigen: Starter $29, Pro $49, Unlimited $99
 - Free Tier highlighten: "20 free responses"
@@ -131,6 +144,7 @@
 ## OUTRO (2:35 - 2:45)
 
 ### Szene: Call to Action
+
 - Landing Page Hero Section
 - "Start Free Trial" Button prominent
 - Logo Animation

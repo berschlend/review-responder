@@ -7,17 +7,20 @@
 ## ✅ WAS INSTALLIERT WURDE:
 
 ### 1. Custom Slash Commands (`.claude/commands/`)
+
 - `/test-and-push` - Tests → Manual Check → Git Push
 - `/feature` - Research → Plan → Code → Test → PR
 - `/bug-fix` - Reproduce → Diagnose → Fix → Push
 - `/update-claude-md` - CLAUDE.md updaten nach Session
 
 ### 2. CLAUDE.md Updated
+
 - Boris Workflow dokumentiert
 - 8-Schritte-Methode hinzugefügt
 - Parallel-Workflow erklärt
 
 ### 3. Testing Workflow (`.claude/TESTING.md`)
+
 - Chrome Extension Testing Checkliste
 - Frontend/Backend Testing
 - Mobile Responsive Check
@@ -28,6 +31,7 @@
 ## 🎯 WIE DU JETZT ARBEITEST:
 
 ### Quick Reference:
+
 ```
 1. Type "/" → Slash Commands erscheinen
 2. Wähle Command (z.B. /feature)
@@ -38,6 +42,7 @@
 ### Example Workflow:
 
 #### Feature implementieren:
+
 ```
 Du: /feature
 Claude: Was möchtest du implementieren?
@@ -53,6 +58,7 @@ Claude:
 ```
 
 #### Bug fixen:
+
 ```
 Du: /bug-fix
 Claude: Beschreibe den Bug
@@ -66,6 +72,7 @@ Claude:
 ```
 
 #### Testing vor Push:
+
 ```
 Du: /test-and-push
 Claude:
@@ -82,6 +89,7 @@ Claude:
 ## 🔥 CHROME EXTENSION SETUP (2 Minuten):
 
 ### Installation:
+
 1. **Chrome öffnen** → `chrome://extensions/`
 2. **Developer Mode aktivieren** (Toggle oben rechts)
 3. **"Load unpacked" klicken**
@@ -89,11 +97,13 @@ Claude:
 5. **Login** mit deinem Account (berend.mainz@web.de)
 
 ### Icons erstellen (Optional):
+
 - Open: `chrome-extension/icons/create-icons.html`
 - Download icon16.png, icon48.png, icon128.png
 - Move zu `icons/` folder
 
 ### Testing nach Changes:
+
 1. Gehe zu `chrome://extensions/`
 2. Klicke "Reload" bei ReviewResponder
 3. Teste die Funktionalität
@@ -105,6 +115,7 @@ Claude:
 ## 💪 PARALLEL ARBEITEN (Boris Style):
 
 ### Setup:
+
 1. **Windows Terminal:** Öffne 5 Tabs
    - Tab 1: Claude Code (Main Task)
    - Tab 2: Claude Code (Bug Fixes)
@@ -126,6 +137,7 @@ Claude:
 ## 📋 TESTING CHECKLIST:
 
 ### Vor JEDEM Push:
+
 ```
 □ Manuell getestet?
 □ Chrome Extension geladen? (falls UI changes)
@@ -153,6 +165,7 @@ Claude:
 ## 🚀 NÄCHSTE SCHRITTE:
 
 ### 1. Chrome Extension installieren
+
 ```bash
 # Chrome öffnen:
 chrome://extensions/
@@ -160,16 +173,19 @@ chrome://extensions/
 ```
 
 ### 2. Teste ein Slash Command
+
 ```
 Type: /test-and-push
 Oder: /feature
 ```
 
 ### 3. Multi-Tab Setup
+
 - Öffne mehrere Claude Code Tabs
 - Verschiedene Tasks parallel
 
 ### 4. CLAUDE.md lesen
+
 - Jede Session starts mit CLAUDE.md lesen
 - Siehe "BORIS CHERNY WORKFLOW" Section
 

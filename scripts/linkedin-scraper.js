@@ -92,18 +92,20 @@ async function parseSearchResults(page) {
  */
 function toCSV(profiles) {
   const header = 'Name,Title,Company,Location,Profile URL,Status,Notes\n';
-  const rows = profiles.map(p => {
-    const escape = (str) => `"${(str || '').replace(/"/g, '""')}"`;
-    return [
-      escape(p.name),
-      escape(p.title),
-      escape(p.company),
-      escape(p.location),
-      escape(p.profileUrl),
-      '"pending"',
-      '""'
-    ].join(',');
-  }).join('\n');
+  const rows = profiles
+    .map(p => {
+      const escape = str => `"${(str || '').replace(/"/g, '""')}"`;
+      return [
+        escape(p.name),
+        escape(p.title),
+        escape(p.company),
+        escape(p.location),
+        escape(p.profileUrl),
+        '"pending"',
+        '""',
+      ].join(',');
+    })
+    .join('\n');
 
   return header + rows;
 }
@@ -143,18 +145,21 @@ async function scrapeLinkedIn(searchUrl, options = {}) {
   if (!searchUrl || !searchUrl.includes('linkedin.com')) {
     console.error('Error: Please provide a valid LinkedIn search URL');
     console.log('\nExample:');
-    console.log('  node linkedin-scraper.js "https://www.linkedin.com/search/results/people/?keywords=restaurant%20owner"\n');
+    console.log(
+      '  node linkedin-scraper.js "https://www.linkedin.com/search/results/people/?keywords=restaurant%20owner"\n'
+    );
     process.exit(1);
   }
 
   const browser = await chromium.launch({
     headless: CONFIG.headless,
-    slowMo: 100 // Slow down actions
+    slowMo: 100, // Slow down actions
   });
 
   const context = await browser.newContext({
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    viewport: { width: 1280, height: 800 }
+    userAgent:
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    viewport: { width: 1280, height: 800 },
   });
 
   const page = await context.newPage();
@@ -172,7 +177,7 @@ async function scrapeLinkedIn(searchUrl, options = {}) {
       await page.waitForURL('**/feed/**', { timeout: 60000 });
       console.log('   Login successful!\n');
     } catch {
-      console.log('   Login timeout. Make sure you\'re logged in, then continue.\n');
+      console.log("   Login timeout. Make sure you're logged in, then continue.\n");
     }
 
     await randomDelay(2000, 3000);
@@ -220,9 +225,7 @@ async function scrapeLinkedIn(searchUrl, options = {}) {
     }
 
     // Remove duplicates
-    const uniqueProfiles = Array.from(
-      new Map(allProfiles.map(p => [p.profileUrl, p])).values()
-    );
+    const uniqueProfiles = Array.from(new Map(allProfiles.map(p => [p.profileUrl, p])).values());
 
     console.log(`\n4. Processing ${uniqueProfiles.length} unique profiles...`);
 
@@ -237,7 +240,6 @@ async function scrapeLinkedIn(searchUrl, options = {}) {
     console.log('3. Research each prospect before reaching out');
     console.log('4. Use personalized messages from linkedin-messages.md');
     console.log('5. Track outreach in the tracking spreadsheet\n');
-
   } catch (error) {
     console.error('\nError:', error.message);
 
@@ -308,7 +310,7 @@ IMPORTANT:
   const searchUrl = args[0];
   const options = {
     maxPages: 3,
-    outputName: 'linkedin-prospects'
+    outputName: 'linkedin-prospects',
   };
 
   // Parse options

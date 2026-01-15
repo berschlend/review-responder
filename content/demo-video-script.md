@@ -1,6 +1,7 @@
 # ReviewResponder - Demo Video Script (2 Min)
 
 ## Video-Einstellungen
+
 - **Länge:** 1:45 - 2:00 Min
 - **Format:** 1920x1080 (YouTube) oder 1080x1080 (Social)
 - **Tool:** Loom (mit Facecam) oder OBS
@@ -11,6 +12,7 @@
 ## SCRIPT
 
 ### INTRO (0:00 - 0:15)
+
 **[Zeige: Google Maps mit negativer Review]**
 
 > "Stell dir vor: Ein Kunde hinterlässt eine schlechte Bewertung.
@@ -20,6 +22,7 @@
 ---
 
 ### PROBLEM (0:15 - 0:25)
+
 **[Zeige: Leere Antwort-Box, tippende Hände, Frustation]**
 
 > "Die meisten Geschäftsinhaber ignorieren Reviews - oder schreiben generische Antworten.
@@ -28,6 +31,7 @@
 ---
 
 ### LÖSUNG (0:25 - 0:40)
+
 **[Zeige: ReviewResponder Extension Icon]**
 
 > "ReviewResponder macht das in Sekunden.
@@ -36,24 +40,29 @@
 ---
 
 ### DEMO - CORE FLOW (0:40 - 1:20)
+
 **[Screen Recording: Google Maps]**
 
 **Schritt 1: Review markieren**
+
 > "Ich markiere einfach den Review-Text..."
 
 **[Zeige: Text markieren, Rechtsklick, "Generate Response"]**
 
 **Schritt 2: Response erscheint**
+
 > "...und ReviewResponder generiert sofort eine professionelle Antwort."
 
 **[Zeige: Panel öffnet sich, Response erscheint]**
 
 **Schritt 3: Tone anpassen (optional)**
+
 > "Ich kann den Ton anpassen - professionell, freundlich, oder entschuldigend."
 
 **[Zeige: Tone Dropdown wechseln, Response ändert sich]**
 
 **Schritt 4: Kopieren & Einfügen**
+
 > "Ein Klick kopiert die Antwort. Fertig."
 
 **[Zeige: Copy-Button, Paste in Google Maps Antwort-Feld]**
@@ -61,11 +70,13 @@
 ---
 
 ### FEATURES HIGHLIGHT (1:20 - 1:40)
+
 **[Zeige: Dashboard / Extension Features]**
 
 > "ReviewResponder kann noch mehr:"
 
 **[Schnelle Cuts zwischen Features]**
+
 - "50+ Templates für Restaurants, Hotels, Einzelhandel und mehr"
 - "3 Antwort-Varianten auf einmal - wähle deine Lieblings-Antwort"
 - "Qualitäts-Score für jede Antwort"
@@ -75,6 +86,7 @@
 ---
 
 ### CTA (1:40 - 1:55)
+
 **[Zeige: tryreviewresponder.com Landing Page]**
 
 > "20 Antworten kostenlos. Keine Kreditkarte nötig.
@@ -97,11 +109,13 @@
 ## YOUTUBE TITEL & BESCHREIBUNG
 
 **Titel-Optionen:**
+
 - "Google Reviews beantworten in 10 Sekunden (Chrome Extension)"
 - "Nie wieder Review-Stress: ReviewResponder Demo"
 - "Diese Extension spart Stunden bei Google Bewertungen"
 
 **Beschreibung:**
+
 ```
 Antworte auf Reviews in Sekunden statt Minuten.
 

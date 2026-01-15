@@ -4,6 +4,7 @@ Scrape G2.com fuer unzufriedene Kunden von Konkurrenz-Produkten.
 **KOMPLETT AUTOMATISCH:** Scraping → Email finden → Demo generieren → Email senden
 
 ## Parameter
+
 - $COMPETITOR: Konkurrenzprodukt (z.B. "birdeye", "podium", "reviewtrackers")
 
 ## Workflow
@@ -28,9 +29,10 @@ Scrape G2.com fuer unzufriedene Kunden von Konkurrenz-Produkten.
 3. **Fuer jede Firma:**
 
    a) **Website aus G2 extrahieren:**
+
    ```javascript
    // Oft hat G2 einen Link zur Firma
-   document.querySelector('a[href*="company"]')?.href
+   document.querySelector('a[href*="company"]')?.href;
    ```
 
    b) **Falls keine Website: Google suchen**
@@ -38,6 +40,7 @@ Scrape G2.com fuer unzufriedene Kunden von Konkurrenz-Produkten.
    - Nimm erstes Ergebnis
 
    c) **Email von Website scrapen:**
+
    ```javascript
    // Suche nach mailto: Links
    const emails = [...document.querySelectorAll('a[href^="mailto:"]')]
@@ -53,6 +56,7 @@ Scrape G2.com fuer unzufriedene Kunden von Konkurrenz-Produkten.
 ### Phase 3: An Backend senden
 
 4. **POST zu Backend mit ALLEN Daten:**
+
    ```bash
    curl -X POST "https://review-responder.onrender.com/api/sales/competitor-leads" \
      -H "Content-Type: application/json" \
@@ -65,6 +69,7 @@ Scrape G2.com fuer unzufriedene Kunden von Konkurrenz-Produkten.
    ```
 
    Lead-Format:
+
    ```json
    {
      "company_name": "ABC Corp",
@@ -91,26 +96,30 @@ Scrape G2.com fuer unzufriedene Kunden von Konkurrenz-Produkten.
 ## Report
 
 Am Ende zeigen:
+
 - Reviews gefunden: X
 - Emails gefunden: X/Y (Z%)
 - Demos generiert: X
 - Emails gesendet: X
 
 ## Ziel-Konkurrenten
-| Konkurrent | URL |
-|------------|-----|
-| birdeye | g2.com/products/birdeye/reviews |
-| podium | g2.com/products/podium/reviews |
+
+| Konkurrent     | URL                                    |
+| -------------- | -------------------------------------- |
+| birdeye        | g2.com/products/birdeye/reviews        |
+| podium         | g2.com/products/podium/reviews         |
 | reviewtrackers | g2.com/products/reviewtrackers/reviews |
-| reputation | g2.com/products/reputation-com/reviews |
-| yext | g2.com/products/yext/reviews |
+| reputation     | g2.com/products/reputation-com/reviews |
+| yext           | g2.com/products/yext/reviews           |
 
 ## Beispiel
+
 ```
 /g2-miner birdeye
 ```
 
 ## Wichtig
+
 - Max 20 Reviews pro Durchlauf (Anti-Rate-Limit)
 - Nur 1-2 Sterne Reviews (echte Pain Points)
 - 3-5 Sekunden Pause zwischen Seiten

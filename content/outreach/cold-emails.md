@@ -8,8 +8,14 @@
 ## Tracking Setup
 
 Jede Email enthält einen unsichtbaren Tracking-Pixel:
+
 ```html
-<img src="https://review-responder.onrender.com/api/outreach/track-open?email={{EMAIL}}&campaign={{CAMPAIGN_ID}}" width="1" height="1" style="display:none" />
+<img
+  src="https://review-responder.onrender.com/api/outreach/track-open?email={{EMAIL}}&campaign={{CAMPAIGN_ID}}"
+  width="1"
+  height="1"
+  style="display:none"
+/>
 ```
 
 ---
@@ -19,11 +25,13 @@ Jede Email enthält einen unsichtbaren Tracking-Pixel:
 ### Email 1 (Tag 1) - Der Eisbrecher
 
 **Subject Lines (A/B Test):**
+
 - `Your 1-star reviews are costing you $8,200/year`
 - `Quick question about [Restaurant Name]`
 - `Saw your reviews on Google...`
 
 **Body:**
+
 ```
 Hi {{FIRST_NAME}},
 
@@ -57,11 +65,13 @@ welcome you back soon for our new seasonal menu!"
 ### Email 2 (Tag 4) - Social Proof
 
 **Subject Lines:**
+
 - `How Mario's Trattoria saves 5 hours/week`
 - `Re: Your Google reviews`
 - `Quick follow-up`
 
 **Body:**
+
 ```
 Hi {{FIRST_NAME}},
 
@@ -92,11 +102,13 @@ Berend
 ### Email 3 (Tag 8) - Urgency & Value
 
 **Subject Lines:**
+
 - `Last chance: 50% off ends Friday`
 - `[Restaurant Name] - one more thing`
 - `Did you see this?`
 
 **Body:**
+
 ```
 Hi {{FIRST_NAME}},
 
@@ -130,11 +142,13 @@ templates if you'd prefer to do it manually.
 ### Email 4 (Tag 14) - Break-up Email
 
 **Subject Lines:**
+
 - `Should I close your file?`
 - `Goodbye?`
 - `One last thing before I go`
 
 **Body:**
+
 ```
 Hi {{FIRST_NAME}},
 
@@ -170,11 +184,13 @@ future customers you care.
 ### Email 1 (Tag 1) - Der Eisbrecher
 
 **Subject Lines:**
+
 - `Your TripAdvisor reviews need attention`
 - `Quick question about [Hotel Name]`
 - `89% of travelers read review responses`
 
 **Body:**
+
 ```
 Hi {{FIRST_NAME}},
 
@@ -209,11 +225,13 @@ welcoming you back for another special occasion."
 ### Email 2 (Tag 4) - ROI Focus
 
 **Subject Lines:**
+
 - `The hidden cost of unanswered reviews`
 - `Re: {{HOTEL_NAME}} review responses`
 - `Quick math for you`
 
 **Body:**
+
 ```
 Hi {{FIRST_NAME}},
 
@@ -248,11 +266,13 @@ Berend
 ### Email 3 (Tag 8) - Multilingual Angle
 
 **Subject Lines:**
+
 - `German, French, Spanish, Japanese... covered`
 - `Your international guests deserve a response`
 - `Quick question about [Hotel Name]`
 
 **Body:**
+
 ```
 Hi {{FIRST_NAME}},
 
@@ -288,11 +308,13 @@ P.S. Our Pro plan ($24.50/mo with EARLY50) also includes:
 ### Email 4 (Tag 14) - Break-up Email
 
 **Subject Lines:**
+
 - `Closing your file`
 - `Last email from me`
 - `Before I go...`
 
 **Body:**
+
 ```
 Hi {{FIRST_NAME}},
 
@@ -327,16 +349,18 @@ Berend
 
 ## Sequenz C: Local Service Businesses
 
-*(Plumbers, Electricians, Dentists, Lawyers, Salons, etc.)*
+_(Plumbers, Electricians, Dentists, Lawyers, Salons, etc.)_
 
 ### Email 1 (Tag 1) - Der Eisbrecher
 
 **Subject Lines:**
+
 - `Your Google reviews are your new business card`
 - `Quick question about [Business Name]`
 - `93% of customers check reviews first`
 
 **Body:**
+
 ```
 Hi {{FIRST_NAME}},
 
@@ -374,11 +398,13 @@ else - we're always here to help!"
 ### Email 2 (Tag 4) - Time Savings
 
 **Subject Lines:**
+
 - `Reclaim 3 hours this week`
 - `Re: Your Google reviews`
 - `Quick follow-up`
 
 **Body:**
+
 ```
 Hi {{FIRST_NAME}},
 
@@ -411,11 +437,13 @@ Berend
 ### Email 3 (Tag 8) - Competitor Angle
 
 **Subject Lines:**
+
 - `Your competitors are responding...`
 - `Quick thought about [Business Name]`
 - `Noticed something interesting`
 
 **Body:**
+
 ```
 Hi {{FIRST_NAME}},
 
@@ -448,11 +476,13 @@ Berend
 ### Email 4 (Tag 14) - Break-up Email
 
 **Subject Lines:**
+
 - `Should I stop emailing?`
 - `Last one from me`
 - `Quick goodbye`
 
 **Body:**
+
 ```
 Hi {{FIRST_NAME}},
 
@@ -483,6 +513,7 @@ average rating increase of 0.3 stars. That's meaningful!
 ## Personalisierung Checkliste
 
 Für jede Email ersetzen:
+
 - `{{FIRST_NAME}}` - Vorname des Empfängers
 - `{{BUSINESS_NAME}}` / `{{RESTAURANT_NAME}}` / `{{HOTEL_NAME}}` - Geschäftsname
 - `{{BUSINESS_TYPE}}` - Art des Geschäfts (Plumber, Dentist, etc.)
@@ -494,12 +525,12 @@ Für jede Email ersetzen:
 
 ## Sending Schedule
 
-| Tag | Aktion | Beste Zeit |
-|-----|--------|------------|
-| 1 | Email 1 (Eisbrecher) | Dienstag 10:00 |
-| 4 | Email 2 (Social Proof/ROI) | Freitag 14:00 |
-| 8 | Email 3 (Urgency) | Dienstag 10:00 |
-| 14 | Email 4 (Break-up) | Freitag 14:00 |
+| Tag | Aktion                     | Beste Zeit     |
+| --- | -------------------------- | -------------- |
+| 1   | Email 1 (Eisbrecher)       | Dienstag 10:00 |
+| 4   | Email 2 (Social Proof/ROI) | Freitag 14:00  |
+| 8   | Email 3 (Urgency)          | Dienstag 10:00 |
+| 14  | Email 4 (Break-up)         | Freitag 14:00  |
 
 **Beste Tage:** Dienstag, Mittwoch, Donnerstag
 **Beste Zeiten:** 10:00-11:00 oder 14:00-15:00
@@ -509,17 +540,20 @@ Für jede Email ersetzen:
 ## Response Handling
 
 **Wenn jemand "YES" antwortet:**
+
 1. Persönlich antworten innerhalb 2 Stunden
 2. Account erstellen und Onboarding-Link senden
 3. 14-Tage Trial aktivieren
 4. Follow-up nach 3 Tagen: "Wie läuft's?"
 
 **Wenn jemand "STOP" oder "Unsubscribe" antwortet:**
+
 1. Sofort aus der Liste entfernen
 2. Freundliche Bestätigung senden
 3. Nicht erneut kontaktieren
 
 **Wenn jemand Fragen hat:**
+
 1. Persönlich beantworten
 2. Demo-Video anbieten
 3. Angebot für Live-Walkthrough
@@ -528,26 +562,28 @@ Für jede Email ersetzen:
 
 ## A/B Test Tracking
 
-| Sequenz | Subject Line | Open Rate | Reply Rate |
-|---------|--------------|-----------|------------|
-| Restaurant A | `Your 1-star reviews...` | TBD | TBD |
-| Restaurant A | `Quick question about...` | TBD | TBD |
-| Restaurant A | `Saw your reviews...` | TBD | TBD |
-| Hotel B | `Your TripAdvisor reviews...` | TBD | TBD |
-| Hotel B | `89% of travelers...` | TBD | TBD |
-| Service C | `Your Google reviews...` | TBD | TBD |
-| Service C | `93% of customers...` | TBD | TBD |
+| Sequenz      | Subject Line                  | Open Rate | Reply Rate |
+| ------------ | ----------------------------- | --------- | ---------- |
+| Restaurant A | `Your 1-star reviews...`      | TBD       | TBD        |
+| Restaurant A | `Quick question about...`     | TBD       | TBD        |
+| Restaurant A | `Saw your reviews...`         | TBD       | TBD        |
+| Hotel B      | `Your TripAdvisor reviews...` | TBD       | TBD        |
+| Hotel B      | `89% of travelers...`         | TBD       | TBD        |
+| Service C    | `Your Google reviews...`      | TBD       | TBD        |
+| Service C    | `93% of customers...`         | TBD       | TBD        |
 
 ---
 
 ## Tools für Email-Versand
 
 **Empfohlen:**
+
 - **Instantly.ai** - Beste Deliverability, Warm-up inkludiert
 - **Lemlist** - Gute Personalisierung, teurer
 - **Mailshake** - Einfach zu nutzen, gut für Anfänger
 
 **Setup:**
+
 1. Separate Domain für Outreach (z.B. mail.reviewresponder.io)
 2. SPF, DKIM, DMARC korrekt konfigurieren
 3. Domain 2-3 Wochen "aufwärmen" vor großem Versand
