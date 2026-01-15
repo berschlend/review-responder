@@ -258,6 +258,78 @@ curl -s "https://review-responder.onrender.com/api/cron/revive-dead-leads?secret
 
 ---
 
+### PHASE 6: USER AKTIVIERUNG (HÖCHSTE PRIORITÄT!)
+
+> **WICHTIG:** Registrierte User zu AKTIVEN Usern machen ist wichtiger als neue Leads!
+
+**Check inaktive User (response_count = 0):**
+
+```bash
+# User die registriert aber noch keine Response generiert haben
+curl -s "https://review-responder.onrender.com/api/admin/inactive-users?key=$ADMIN_KEY"
+```
+
+**Onboarding Email Sequence triggern:**
+
+```bash
+# Sendet Day 0, 1, 3, 7 Emails an inaktive User
+curl -s "https://review-responder.onrender.com/api/cron/onboarding-emails?key=$ADMIN_KEY"
+```
+
+**Email Sequence:**
+
+| Tag | Subject | Inhalt |
+|-----|---------|--------|
+| 0 | "Welcome! Here's how to respond to your first review in 30 seconds" | Step-by-step Guide, Chrome Extension Link |
+| 1 | "Your Chrome Extension is waiting" | Direct Download Link, Platforms supported |
+| 3 | "5 reviews are waiting for your response" | Personalisierte Demo mit IHREN Reviews |
+| 7 | "Did you know? Businesses that respond get 9% more revenue" | Stats + Final CTA |
+
+**Erfolgskriterien:**
+- User installed Chrome Extension
+- User generated at least 1 response
+- User visited dashboard after signup
+
+---
+
+### PHASE 7: REVIEW ALERTS (Für User mit Business)
+
+> **Ziel:** User mit neuen Reviews zurückholen für One-Click Response
+
+**Check User mit Business Name:**
+
+```bash
+# User die Business haben aber inaktiv sind
+curl -s "https://review-responder.onrender.com/api/admin/users-for-review-alerts?key=$ADMIN_KEY"
+```
+
+**Review Alerts triggern:**
+
+```bash
+# Scraped neue Reviews, sendet Alerts bei neuen
+curl -s "https://review-responder.onrender.com/api/cron/review-alerts?key=$ADMIN_KEY"
+```
+
+**Workflow:**
+1. Finde User mit `business_name` gesetzt
+2. Lookup Google Place ID für Business
+3. Scrape letzte 5 Reviews
+4. Vergleiche mit `user_review_cache` (24h Check-Interval)
+5. Bei NEUEN Reviews → Alert Email mit One-Click Response Link
+
+**Alert Email Template:**
+```
+Subject: New [RATING]-star review on Google - respond now?
+
+"[REVIEW_TEXT_SNIPPET]..."
+- [REVIEWER_NAME], [DATE]
+
+Click here to respond in 3 seconds:
+[DASHBOARD_LINK]?review_id=[ID]
+```
+
+---
+
 ## STÜNDLICHER REPORT
 
 Nach jeder Stunde:
@@ -299,10 +371,13 @@ TAB STATUS:
 | Minute | Aktion |
 |--------|--------|
 | :00 | Health Check + Hourly Report |
-| :10 | Auto-Scraping (wenn Leads < 50) |
+| :05 | **USER AKTIVIERUNG (Phase 6)** ← HÖCHSTE PRIO! |
+| :15 | **REVIEW ALERTS (Phase 7)** ← User aktivieren |
 | :25 | LinkedIn Follow-ups (wenn pending) |
 | :40 | Outreach Boost (Hot Leads, Dead Leads) |
-| :50 | Cron Job Check + Tab Cleanup |
+| :50 | Auto-Scraping (NUR wenn Conversion läuft!) + Tab Cleanup |
+
+> **WICHTIG:** Phase 6 + 7 kommen VOR Lead-Scraping! Wir haben genug Leads (2000+), wir brauchen CONVERSIONS!
 
 ### Tageszeit-spezifische Aktionen:
 

@@ -2819,7 +2819,7 @@ const LandingPage = () => {
                     borderRadius: '4px',
                   }}
                 >
-                  Chrome Web Store - Coming Soon
+                  Chrome Web Store - Under Review
                 </span>
               </div>
               <h2
@@ -2900,6 +2900,50 @@ const LandingPage = () => {
                   Sign Up Free
                 </Link>
               </div>
+
+              {/* Manual installation instructions while Web Store is under review */}
+              <details
+                style={{
+                  marginTop: '16px',
+                  fontSize: '12px',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                }}
+              >
+                <summary style={{ marginBottom: '8px' }}>
+                  Can't wait? Install manually (30 seconds)
+                </summary>
+                <ol
+                  style={{
+                    marginLeft: '20px',
+                    lineHeight: '1.8',
+                    color: 'var(--text-primary)',
+                  }}
+                >
+                  <li>
+                    <Link to="/extension" style={{ color: 'var(--primary)' }}>
+                      Go to Extension Page
+                    </Link>{' '}
+                    and download the ZIP
+                  </li>
+                  <li>Unzip to a folder on your computer</li>
+                  <li>
+                    Open{' '}
+                    <code
+                      style={{
+                        background: 'var(--bg-tertiary)',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      chrome://extensions
+                    </code>{' '}
+                    in Chrome
+                  </li>
+                  <li>Enable "Developer mode" (top right)</li>
+                  <li>Click "Load unpacked" and select the folder</li>
+                </ol>
+              </details>
             </div>
 
             <div style={{ position: 'relative' }}>

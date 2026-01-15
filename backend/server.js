@@ -9994,6 +9994,579 @@ app.get('/api/admin/test-conversion-email', async (req, res) => {
   }
 });
 
+// =============================================================================
+// ONBOARDING EMAIL SEQUENCE - Activate registered users who haven't used product
+// =============================================================================
+app.all('/api/cron/onboarding-emails', async (req, res) => {
+  // Accept both header and query parameter for secret
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret || req.query.key;
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'Email service not configured' });
+  }
+
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'https://tryreviewresponder.com';
+
+  try {
+    // Create onboarding_emails table if not exists
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS onboarding_emails (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        email_day INTEGER NOT NULL,
+        sent_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(user_id, email_day)
+      )
+    `);
+
+    // Find users with responses_used = 0 (never used the product)
+    const inactiveUsers = await dbQuery(`
+      SELECT u.id, u.email, u.business_name, u.created_at,
+             EXTRACT(DAY FROM NOW() - u.created_at) as days_since_signup
+      FROM users u
+      WHERE u.responses_used = 0
+        AND u.email IS NOT NULL
+        AND u.email_verified = true
+      ORDER BY u.created_at DESC
+      LIMIT 100
+    `);
+
+    console.log(`📧 Onboarding: Found ${inactiveUsers.rows.length} inactive users`);
+
+    let sentCount = 0;
+    let skippedCount = 0;
+    const results = [];
+
+    for (const user of inactiveUsers.rows) {
+      const daysSinceSignup = Math.floor(user.days_since_signup || 0);
+
+      // Determine which email day to send (0, 1, 3, or 7)
+      let emailDay = null;
+      if (daysSinceSignup >= 7) emailDay = 7;
+      else if (daysSinceSignup >= 3) emailDay = 3;
+      else if (daysSinceSignup >= 1) emailDay = 1;
+      else emailDay = 0;
+
+      // Check if we already sent this day's email
+      const alreadySent = await dbGet(`
+        SELECT id FROM onboarding_emails
+        WHERE user_id = $1 AND email_day = $2
+      `, [user.id, emailDay]);
+
+      if (alreadySent) {
+        skippedCount++;
+        continue;
+      }
+
+      // Check parallel-safe: was email recently sent?
+      if (await wasEmailRecentlySent(user.email, 'onboarding')) {
+        skippedCount++;
+        continue;
+      }
+
+      // Build email content based on day
+      let subject, html;
+      const extensionUrl = `${FRONTEND_URL}/extension`;
+      const dashboardUrl = `${FRONTEND_URL}/dashboard`;
+
+      if (emailDay === 0) {
+        subject = "Welcome! Here's how to respond to your first review in 30 seconds";
+        html = `
+          <!DOCTYPE html>
+          <html>
+          <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #1e3a5f;">Welcome to ReviewResponder! 🎉</h2>
+            <p>You just took the first step to never stress about review responses again.</p>
+            <p><strong>Here's how to get started in 30 seconds:</strong></p>
+            <ol>
+              <li><a href="${extensionUrl}" style="color: #3b82f6;">Install our Chrome Extension</a> (free)</li>
+              <li>Go to any review on Google Maps, Yelp, or TripAdvisor</li>
+              <li>Click the ReviewResponder button → Done!</li>
+            </ol>
+            <p style="margin-top: 20px;">
+              <a href="${extensionUrl}" style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                Get Chrome Extension
+              </a>
+            </p>
+            <p style="color: #666; font-size: 14px; margin-top: 30px;">
+              Need help? Just reply to this email.
+            </p>
+            <p style="color: #999; font-size: 12px;">- The ReviewResponder Team</p>
+          </body>
+          </html>
+        `;
+      } else if (emailDay === 1) {
+        subject = "Your Chrome Extension is waiting";
+        html = `
+          <!DOCTYPE html>
+          <html>
+          <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #1e3a5f;">Quick reminder 👋</h2>
+            <p>You signed up for ReviewResponder yesterday but haven't installed the Chrome Extension yet.</p>
+            <p>The extension works on:</p>
+            <ul>
+              <li>✅ Google Maps</li>
+              <li>✅ Yelp</li>
+              <li>✅ TripAdvisor</li>
+              <li>✅ Booking.com</li>
+              <li>✅ Facebook</li>
+              <li>✅ Trustpilot</li>
+            </ul>
+            <p style="margin-top: 20px;">
+              <a href="${extensionUrl}" style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                Install Extension (30 seconds)
+              </a>
+            </p>
+            <p style="color: #666; font-size: 14px; margin-top: 30px;">
+              Already installed? <a href="${dashboardUrl}">Go to your dashboard</a> to generate responses.
+            </p>
+          </body>
+          </html>
+        `;
+      } else if (emailDay === 3) {
+        subject = "5 reviews are waiting for your response";
+        html = `
+          <!DOCTYPE html>
+          <html>
+          <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #1e3a5f;">Your reviews need attention 📝</h2>
+            <p>Studies show that businesses that respond to reviews get:</p>
+            <ul>
+              <li>📈 <strong>9% more revenue</strong> on average</li>
+              <li>⭐ <strong>Higher ratings</strong> over time</li>
+              <li>💬 <strong>More customer engagement</strong></li>
+            </ul>
+            <p>Every day without a response is a missed opportunity.</p>
+            <p style="margin-top: 20px;">
+              <a href="${extensionUrl}" style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                Start Responding Now
+              </a>
+            </p>
+            <p style="color: #666; font-size: 14px; margin-top: 30px;">
+              Takes just 3 seconds per review with our AI.
+            </p>
+          </body>
+          </html>
+        `;
+      } else if (emailDay === 7) {
+        subject = "Did you know? Businesses that respond get 9% more revenue";
+        html = `
+          <!DOCTYPE html>
+          <html>
+          <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #1e3a5f;">Last chance to activate your account</h2>
+            <p>Hey,</p>
+            <p>You signed up for ReviewResponder a week ago but haven't generated any responses yet.</p>
+            <p>I get it - we're all busy. But here's the thing:</p>
+            <blockquote style="border-left: 3px solid #3b82f6; padding-left: 15px; margin: 20px 0; color: #555;">
+              "According to Harvard Business Review, responding to reviews can increase revenue by 9%."
+            </blockquote>
+            <p>Our users save 5-10 hours per week on review responses.</p>
+            <p style="margin-top: 20px;">
+              <a href="${extensionUrl}" style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                Activate Your Free Account
+              </a>
+            </p>
+            <p style="color: #666; font-size: 14px; margin-top: 30px;">
+              If you have any questions, just hit reply. I read every email.
+            </p>
+            <p style="color: #999; font-size: 12px;">- Berend, Founder of ReviewResponder</p>
+          </body>
+          </html>
+        `;
+      }
+
+      // Send email
+      try {
+        if (process.env.NODE_ENV === 'production') {
+          await resend.emails.send({
+            from: FROM_EMAIL,
+            to: user.email,
+            subject,
+            html,
+          });
+        }
+
+        // Record in onboarding_emails table
+        await dbRun(`
+          INSERT INTO onboarding_emails (user_id, email_day)
+          VALUES ($1, $2)
+          ON CONFLICT (user_id, email_day) DO NOTHING
+        `, [user.id, emailDay]);
+
+        // Record for parallel-safety
+        await recordEmailSend(user.email, 'onboarding');
+
+        sentCount++;
+        results.push({
+          email: user.email,
+          day: emailDay,
+          status: 'sent'
+        });
+
+        console.log(`📧 Onboarding Day ${emailDay} sent to ${user.email}`);
+      } catch (emailError) {
+        console.error(`Failed to send onboarding email to ${user.email}:`, emailError.message);
+        results.push({
+          email: user.email,
+          day: emailDay,
+          status: 'error',
+          error: emailError.message
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Onboarding emails: ${sentCount} sent, ${skippedCount} skipped`,
+      total_inactive_users: inactiveUsers.rows.length,
+      sent: sentCount,
+      skipped: skippedCount,
+      results
+    });
+
+  } catch (error) {
+    console.error('Onboarding email error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// =============================================================================
+// REVIEW ALERTS - Notify users about new reviews on their business
+// =============================================================================
+app.all('/api/cron/review-alerts', async (req, res) => {
+  // Accept both header and query parameter for secret
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret || req.query.key;
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'Email service not configured' });
+  }
+
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'https://tryreviewresponder.com';
+
+  try {
+    // Create user_review_cache table if not exists
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS user_review_cache (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        google_place_id TEXT,
+        last_review_ids JSONB DEFAULT '[]',
+        last_checked_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(user_id, google_place_id)
+      )
+    `);
+
+    // Find users with business_name set (they have a business to monitor)
+    const usersWithBusiness = await dbQuery(`
+      SELECT u.id, u.email, u.business_name
+      FROM users u
+      WHERE u.business_name IS NOT NULL
+        AND u.business_name != ''
+        AND u.email IS NOT NULL
+        AND u.email_verified = true
+      LIMIT 50
+    `);
+
+    console.log(`🔔 Review Alerts: Found ${usersWithBusiness.rows.length} users with business`);
+
+    let alertsSent = 0;
+    let reviewsFound = 0;
+    const results = [];
+
+    for (const user of usersWithBusiness.rows) {
+      try {
+        // Check if we already checked in last 24 hours
+        const cachedEntry = await dbGet(`
+          SELECT * FROM user_review_cache
+          WHERE user_id = $1
+            AND last_checked_at > NOW() - INTERVAL '24 hours'
+        `, [user.id]);
+
+        if (cachedEntry) {
+          results.push({
+            user: user.email,
+            status: 'skipped',
+            reason: 'checked_recently'
+          });
+          continue;
+        }
+
+        // Lookup Place ID for business
+        let placeId = null;
+        let businessData = null;
+
+        // Try to find Place ID using Google Places API
+        if (process.env.GOOGLE_API_KEY) {
+          try {
+            const searchUrl = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${encodeURIComponent(user.business_name)}&inputtype=textquery&fields=place_id,name,formatted_address&key=${process.env.GOOGLE_API_KEY}`;
+            const searchResponse = await fetch(searchUrl);
+            const searchData = await searchResponse.json();
+
+            if (searchData.candidates && searchData.candidates.length > 0) {
+              placeId = searchData.candidates[0].place_id;
+              businessData = searchData.candidates[0];
+            }
+          } catch (googleError) {
+            console.error(`Google Places lookup failed for ${user.business_name}:`, googleError.message);
+          }
+        }
+
+        if (!placeId) {
+          results.push({
+            user: user.email,
+            business: user.business_name,
+            status: 'skipped',
+            reason: 'no_place_id'
+          });
+          continue;
+        }
+
+        // Get reviews using our existing scraping logic (from review_cache or API)
+        let reviews = [];
+
+        // First check review_cache
+        const cachedReviews = await dbGet(`
+          SELECT reviews FROM review_cache
+          WHERE google_place_id = $1
+            AND cached_at > NOW() - INTERVAL '48 hours'
+        `, [placeId]);
+
+        if (cachedReviews && cachedReviews.reviews) {
+          reviews = cachedReviews.reviews.slice(0, 5);
+        } else if (process.env.GOOGLE_API_KEY) {
+          // Fallback to Google Places API (limited to 5 reviews)
+          try {
+            const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews&key=${process.env.GOOGLE_API_KEY}`;
+            const detailsResponse = await fetch(detailsUrl);
+            const detailsData = await detailsResponse.json();
+
+            if (detailsData.result && detailsData.result.reviews) {
+              reviews = detailsData.result.reviews.slice(0, 5);
+            }
+          } catch (apiError) {
+            console.error(`Google Places details failed for ${placeId}:`, apiError.message);
+          }
+        }
+
+        if (reviews.length === 0) {
+          results.push({
+            user: user.email,
+            business: user.business_name,
+            status: 'skipped',
+            reason: 'no_reviews_found'
+          });
+          continue;
+        }
+
+        reviewsFound += reviews.length;
+
+        // Get cached review IDs
+        const userCache = await dbGet(`
+          SELECT last_review_ids FROM user_review_cache
+          WHERE user_id = $1 AND google_place_id = $2
+        `, [user.id, placeId]);
+
+        const cachedReviewIds = userCache?.last_review_ids || [];
+
+        // Find new reviews (not in cache)
+        const currentReviewIds = reviews.map(r => r.author_name + '_' + (r.time || r.relative_time_description));
+        const newReviews = reviews.filter(r => {
+          const reviewId = r.author_name + '_' + (r.time || r.relative_time_description);
+          return !cachedReviewIds.includes(reviewId);
+        });
+
+        // Update cache
+        await dbRun(`
+          INSERT INTO user_review_cache (user_id, google_place_id, last_review_ids, last_checked_at)
+          VALUES ($1, $2, $3, NOW())
+          ON CONFLICT (user_id, google_place_id)
+          DO UPDATE SET last_review_ids = $3, last_checked_at = NOW()
+        `, [user.id, placeId, JSON.stringify(currentReviewIds)]);
+
+        // If we have new reviews, send alert
+        if (newReviews.length > 0 && cachedReviewIds.length > 0) {
+          // Only send alerts if this isn't the first check (we have cached IDs)
+          const review = newReviews[0]; // Most recent new review
+          const rating = review.rating || 5;
+          const ratingStars = '⭐'.repeat(rating);
+          const reviewSnippet = (review.text || '').slice(0, 150) + ((review.text || '').length > 150 ? '...' : '');
+          const reviewerName = review.author_name || 'A customer';
+
+          const subject = `New ${rating}-star review on Google - respond now?`;
+          const html = `
+            <!DOCTYPE html>
+            <html>
+            <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #1e3a5f;">New Review Alert! ${ratingStars}</h2>
+              <p>Your business <strong>${user.business_name}</strong> just received a new ${rating}-star review:</p>
+              <blockquote style="border-left: 3px solid ${rating >= 4 ? '#10b981' : '#ef4444'}; padding: 15px; margin: 20px 0; background: #f9fafb; color: #333;">
+                "${reviewSnippet}"
+                <br><br>
+                <em style="color: #666;">- ${reviewerName}</em>
+              </blockquote>
+              <p>Respond quickly to show customers you care!</p>
+              <p style="margin-top: 20px;">
+                <a href="${FRONTEND_URL}/dashboard" style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                  Respond Now (3 seconds)
+                </a>
+              </p>
+              <p style="color: #666; font-size: 14px; margin-top: 30px;">
+                Tip: Use our Chrome Extension to respond directly on Google Maps!
+              </p>
+            </body>
+            </html>
+          `;
+
+          // Check parallel-safe
+          if (await wasEmailRecentlySent(user.email, 'review_alert')) {
+            results.push({
+              user: user.email,
+              business: user.business_name,
+              status: 'skipped',
+              reason: 'email_recently_sent'
+            });
+            continue;
+          }
+
+          // Send alert email
+          if (process.env.NODE_ENV === 'production') {
+            await resend.emails.send({
+              from: FROM_EMAIL,
+              to: user.email,
+              subject,
+              html,
+            });
+          }
+
+          await recordEmailSend(user.email, 'review_alert');
+          alertsSent++;
+
+          results.push({
+            user: user.email,
+            business: user.business_name,
+            status: 'alert_sent',
+            new_reviews: newReviews.length,
+            rating: rating
+          });
+
+          console.log(`🔔 Review Alert sent to ${user.email} for ${user.business_name} (${rating} stars)`);
+        } else {
+          results.push({
+            user: user.email,
+            business: user.business_name,
+            status: 'no_new_reviews',
+            total_reviews: reviews.length,
+            is_first_check: cachedReviewIds.length === 0
+          });
+        }
+
+      } catch (userError) {
+        console.error(`Review alert error for ${user.email}:`, userError.message);
+        results.push({
+          user: user.email,
+          business: user.business_name,
+          status: 'error',
+          error: userError.message
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Review alerts: ${alertsSent} sent, ${reviewsFound} reviews checked`,
+      users_checked: usersWithBusiness.rows.length,
+      alerts_sent: alertsSent,
+      reviews_found: reviewsFound,
+      results
+    });
+
+  } catch (error) {
+    console.error('Review alerts error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Admin endpoint: Get inactive users for Night-Blast Phase 6
+app.get('/api/admin/inactive-users', async (req, res) => {
+  const { key } = req.query;
+  if (!safeCompare(key, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const users = await dbQuery(`
+      SELECT
+        u.id,
+        u.email,
+        u.business_name,
+        u.created_at,
+        u.responses_used,
+        EXTRACT(DAY FROM NOW() - u.created_at) as days_since_signup,
+        (SELECT MAX(email_day) FROM onboarding_emails oe WHERE oe.user_id = u.id) as last_onboarding_day
+      FROM users u
+      WHERE u.responses_used = 0
+        AND u.email IS NOT NULL
+      ORDER BY u.created_at DESC
+      LIMIT 100
+    `);
+
+    res.json({
+      success: true,
+      count: users.rows.length,
+      users: users.rows
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Admin endpoint: Get users for review alerts (Night-Blast Phase 7)
+app.get('/api/admin/users-for-review-alerts', async (req, res) => {
+  const { key } = req.query;
+  if (!safeCompare(key, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const users = await dbQuery(`
+      SELECT
+        u.id,
+        u.email,
+        u.business_name,
+        u.created_at,
+        u.responses_used,
+        (SELECT last_checked_at FROM user_review_cache urc WHERE urc.user_id = u.id LIMIT 1) as last_review_check
+      FROM users u
+      WHERE u.business_name IS NOT NULL
+        AND u.business_name != ''
+        AND u.email IS NOT NULL
+      ORDER BY u.created_at DESC
+      LIMIT 100
+    `);
+
+    res.json({
+      success: true,
+      count: users.rows.length,
+      users: users.rows
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Weekly Summary Email Campaign - Send weekly stats to users who opted in
 // Call this endpoint via cron job (e.g., every Monday at 9am)
 // Changed from POST to GET for cron-job.org compatibility (14.01.2026)
