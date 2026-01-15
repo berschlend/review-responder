@@ -653,18 +653,38 @@ const InstantDemoWidget = ({
     setError('');
     setResponse('');
     try {
-      const res = await axios.post(`${API_URL}/public/try`, {
-        reviewText: reviewText.trim(),
-        tone,
-        context: {
-          platform: detectedContext.platform || undefined,
-          businessType: detectedContext.businessType || undefined,
+      // Include auth token if user is logged in (for proper rate limiting)
+      const token = localStorage.getItem('token');
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const res = await axios.post(
+        `${API_URL}/public/try`,
+        {
+          reviewText: reviewText.trim(),
+          tone,
+          context: {
+            platform: detectedContext.platform || undefined,
+            businessType: detectedContext.businessType || undefined,
+          },
         },
-      });
+        { headers }
+      );
       setResponse(res.data.response);
     } catch (err) {
       if (err.response?.status === 429) {
-        setError(err.response?.data?.message || 'Daily limit reached. Sign up for 20 free/month!');
+        // Check if user needs to upgrade (logged in but limit reached)
+        if (err.response?.data?.upgrade) {
+          setError(
+            `${err.response?.data?.message || 'Monthly limit reached.'} Upgrade to get more responses!`
+          );
+        } else {
+          setError(
+            err.response?.data?.message || 'Daily limit reached. Sign up for 20 free/month!'
+          );
+        }
       } else {
         setError(err.response?.data?.error || 'Failed to generate. Please try again.');
       }

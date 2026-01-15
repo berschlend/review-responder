@@ -7474,6 +7474,42 @@ app.post('/api/public/try', tryRateLimiter, async (req, res) => {
     const { reviewText, tone = 'professional', context = {} } = req.body;
     const { businessType, platform } = context;
 
+    // Check for optional JWT token - if user is logged in, use their plan limits
+    let authenticatedUser = null;
+    const planLimits = { free: 20, starter: 300, pro: 800, unlimited: 999999 };
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userResult = await pool.query(
+          'SELECT id, email, plan, response_count FROM users WHERE id = $1',
+          [decoded.userId]
+        );
+        if (userResult.rows.length > 0) {
+          authenticatedUser = userResult.rows[0];
+        }
+      } catch (tokenError) {
+        // Token invalid or expired - treat as anonymous (use IP rate limit)
+      }
+    }
+
+    // If logged in: Check user's plan limit instead of IP rate limit
+    if (authenticatedUser) {
+      const userLimit = planLimits[authenticatedUser.plan] || 20;
+
+      if (authenticatedUser.response_count >= userLimit) {
+        return res.status(429).json({
+          error: 'Monthly limit reached',
+          message: `You've used all ${userLimit} responses this month. Please upgrade your plan.`,
+          limit: userLimit,
+          used: authenticatedUser.response_count,
+          upgrade: true,
+          upgrade_url: 'https://tryreviewresponder.com/pricing',
+        });
+      }
+    }
+
     if (!reviewText || reviewText.trim().length < 10) {
       return res.status(400).json({ error: 'Please enter a review (at least 10 characters)' });
     }
@@ -7749,12 +7785,34 @@ Write the response directly. No quotes. No "Response:" prefix. Just the review r
       // Table might not exist yet, ignore
     }
 
+    // If authenticated user: Increment their response count
+    if (authenticatedUser) {
+      try {
+        await pool.query('UPDATE users SET response_count = response_count + 1 WHERE id = $1', [
+          authenticatedUser.id,
+        ]);
+        console.log(
+          `[/api/public/try] User ${authenticatedUser.email} response_count incremented (was ${authenticatedUser.response_count})`
+        );
+      } catch (countError) {
+        console.error('[/api/public/try] Failed to increment response_count:', countError.message);
+      }
+    }
+
     res.json({
       success: true,
       response: generatedResponse,
       tone: tone,
-      message: 'Like this response? Sign up for 20 free responses/month!',
-      signup_url: 'https://tryreviewresponder.com/register',
+      message: authenticatedUser
+        ? undefined
+        : 'Like this response? Sign up for 20 free responses/month!',
+      signup_url: authenticatedUser ? undefined : 'https://tryreviewresponder.com/register',
+      remaining: authenticatedUser
+        ? Math.max(
+            0,
+            (planLimits[authenticatedUser.plan] || 20) - authenticatedUser.response_count - 1
+          )
+        : undefined,
     });
   } catch (error) {
     console.error('[/api/public/try] Error:', error.message);
