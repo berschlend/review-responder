@@ -15347,13 +15347,51 @@ Berend`,
   },
 };
 
+// Helper: Extract key complaint from review text for super-personalized subjects
+function extractKeyComplaint(reviewText) {
+  if (!reviewText || reviewText.length < 10) return null;
+
+  const text = reviewText.toLowerCase();
+
+  // Common complaint patterns with keywords
+  const complaintPatterns = [
+    { pattern: /wait(ed|ing)?\s*(for\s*)?([\d]+\s*(min|hour|hr)s?|forever|too long|so long)/i, keyword: 'long wait' },
+    { pattern: /cold\s*(food|pizza|burger|fries|meal)/i, keyword: 'cold food' },
+    { pattern: /(rude|unfriendly|disrespectful)\s*(staff|waiter|server|service)/i, keyword: 'rude staff' },
+    { pattern: /wrong\s*(order|food|item|dish)/i, keyword: 'wrong order' },
+    { pattern: /(over\s*priced|too\s*expensive|not\s*worth)/i, keyword: 'pricing' },
+    { pattern: /(dirty|unclean|disgusting|filthy)/i, keyword: 'cleanliness' },
+    { pattern: /(slow|terrible|awful|horrible)\s*service/i, keyword: 'slow service' },
+    { pattern: /(hair|bug|insect|fly)\s*(in|on)\s*(my|the|our)/i, keyword: 'hygiene issue' },
+    { pattern: /never\s*(coming|going|return)/i, keyword: 'bad experience' },
+    { pattern: /(parking|no\s*space|couldn't\s*park)/i, keyword: 'parking' },
+    { pattern: /(noisy|loud|couldn't\s*hear)/i, keyword: 'noise' },
+    { pattern: /(small\s*portions?|tiny|not\s*enough)/i, keyword: 'portion size' },
+  ];
+
+  for (const { pattern, keyword } of complaintPatterns) {
+    if (pattern.test(text)) {
+      return keyword;
+    }
+  }
+
+  // Fallback: extract first quoted phrase or first 3 words after negative word
+  const negativeMatch = text.match(/(terrible|awful|horrible|worst|bad|disappointing)\s+(\w+\s+\w+\s+\w+)/i);
+  if (negativeMatch) {
+    return negativeMatch[2].trim();
+  }
+
+  return null;
+}
+
 // Email templates for REVIEW ALERT outreach - ENGLISH
 // These are sent when we find a business with a bad review
 const REVIEW_ALERT_TEMPLATES_EN = {
   // With demo link - used when we have 3+ reviews to show
-  // A/B Test Winner: referencing specific star rating gets 100% open rate
+  // SUPER-PERSONALIZED: Uses reviewer name + specific complaint = max open rate
   sequence1: {
-    subject: '{business_name} - noticed your {review_rating}-star review',
+    subject: 'Re: {review_author_first}\'s review{complaint_suffix} at {business_name}',
+    subjectFallback: '{business_name} - noticed your {review_rating}-star review',
     body: `Hi,
 
 I noticed {business_name} has a {review_rating}-star review on Google:
@@ -15378,7 +15416,8 @@ P.S. I'm the founder. Reply if you have questions.`,
   },
   // Fallback for leads without demo (only 1 bad review or demo generation failed)
   sequence1_no_demo: {
-    subject: '{business_name} - saw your {review_rating}-star review',
+    subject: 'Re: {review_author_first}\'s review{complaint_suffix} at {business_name}',
+    subjectFallback: '{business_name} - saw your {review_rating}-star review',
     body: `Hi,
 
 I noticed {business_name} has a {review_rating}-star review on Google:
@@ -15407,9 +15446,10 @@ P.S. I'm the founder. Reply if you have questions.`,
 // Email templates for REVIEW ALERT outreach - GERMAN
 const REVIEW_ALERT_TEMPLATES_DE = {
   // With demo link - personal, conversational tone
-  // A/B Test Winner: referencing specific star rating gets higher open rate
+  // SUPER-PERSONALIZED: Uses reviewer name + specific complaint = max open rate
   sequence1: {
-    subject: '{business_name} - eure {review_rating}-Sterne Bewertung',
+    subject: 'Re: {review_author_first}s Bewertung{complaint_suffix_de} bei {business_name}',
+    subjectFallback: '{business_name} - eure {review_rating}-Sterne Bewertung',
     body: `Hey,
 
 bin gerade auf eine Bewertung von {business_name} gestoßen und dachte mir ich schreib dir mal kurz.
@@ -15430,7 +15470,8 @@ Berend`,
   },
   // Fallback without demo - personal tone
   sequence1_no_demo: {
-    subject: '{business_name} - eure {review_rating}-Sterne Bewertung',
+    subject: 'Re: {review_author_first}s Bewertung{complaint_suffix_de} bei {business_name}',
+    subjectFallback: '{business_name} - eure {review_rating}-Sterne Bewertung',
     body: `Hey,
 
 bin gerade auf eine Bewertung von {business_name} gestoßen und dachte mir ich schreib dir mal kurz.
@@ -17039,6 +17080,53 @@ function fillEmailTemplate(template, lead, campaign = 'main') {
       : lead.review_quote
     : '';
 
+  // === SUPER-PERSONALIZED SUBJECT LINES ===
+  // Extract reviewer's first name (e.g., "John Smith" -> "John")
+  let reviewAuthorFirst = '';
+  if (lead.worst_review_author && lead.worst_review_author !== 'a customer') {
+    const authorName = lead.worst_review_author.trim();
+    // Handle common patterns: "John S.", "John Smith", "John"
+    const firstName = authorName.split(/[\s.]/)[0];
+    // Validate it's a real name (2+ chars, starts with letter)
+    if (firstName && firstName.length >= 2 && /^[A-Za-zÀ-ÿ]/.test(firstName)) {
+      reviewAuthorFirst = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+    }
+  }
+
+  // Extract complaint keyword from review text
+  let complaintSuffix = '';
+  let complaintSuffixDe = '';
+  if (lead.worst_review_text && typeof extractKeyComplaint === 'function') {
+    const complaint = extractKeyComplaint(lead.worst_review_text);
+    if (complaint) {
+      complaintSuffix = ` about '${complaint}'`;
+      // German translations for common complaints
+      const deTranslations = {
+        'long wait': 'lange Wartezeit',
+        'cold food': 'kaltes Essen',
+        'rude staff': 'unfreundliches Personal',
+        'slow service': 'langsamer Service',
+        'dirty': 'unsauber',
+        'overpriced': 'zu teuer',
+        'noisy': 'laut',
+        'small portions': 'kleine Portionen',
+        'bad service': 'schlechter Service',
+        'wrong order': 'falsche Bestellung',
+        'missing items': 'fehlende Artikel',
+        'parking': 'Parken',
+        'reservation': 'Reservierung'
+      };
+      const deComplaint = deTranslations[complaint] || complaint;
+      complaintSuffixDe = ` wegen '${deComplaint}'`;
+    }
+  }
+
+  // Use fallback subject if personalized version can't work
+  // (no reviewer name available for personalized subject)
+  if (!reviewAuthorFirst && template.subjectFallback) {
+    subject = template.subjectFallback;
+  }
+
   const replacements = {
     '{business_name}': lead.business_name || 'your business',
     '{business_type}': lead.business_type || 'business',
@@ -17057,6 +17145,10 @@ function fillEmailTemplate(template, lead, campaign = 'main') {
     '{competitor_platform}': competitorPlatformFormatted,
     '{contact_name_greeting}': contactNameGreeting,
     '{review_quote}': reviewQuote,
+    // Super-personalized subject line replacements
+    '{review_author_first}': reviewAuthorFirst,
+    '{complaint_suffix}': complaintSuffix,
+    '{complaint_suffix_de}': complaintSuffixDe,
   };
 
   for (const [key, value] of Object.entries(replacements)) {

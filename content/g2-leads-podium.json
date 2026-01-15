@@ -1,0 +1,97 @@
+{
+  "source": "G2 Podium Negative Reviews",
+  "scraped_at": "2026-01-15T04:45:00Z",
+  "filter": "1-star reviews",
+  "total_available": 36,
+  "leads": [
+    {
+      "name": "Robert R.",
+      "company": null,
+      "role": "Owner",
+      "company_size": "Small-Business (50 or fewer)",
+      "rating": 0.5,
+      "date": "2025-07-28",
+      "title": "Poor Service, Lock-In Contracts, and Zero Customer Care",
+      "pain_points": [
+        "Lock-in contracts (can't cancel without paying full balance)",
+        "Hidden contract extensions via 'upgrades'",
+        "Account integrated with COMPETITOR's system",
+        "No consistent support (different rep every time)",
+        "Overpriced",
+        "Predatory contract handling"
+      ],
+      "status": "Current User - trapped",
+      "priority": "mega"
+    },
+    {
+      "name": "Verified User in Marketing and Advertising",
+      "company": null,
+      "role": "Marketing Professional",
+      "company_size": "Small-Business (50 or fewer)",
+      "rating": 0,
+      "date": "2024-04-25",
+      "title": "It is not what they say that it is. YOU CANNOT EXPORT YOUR OWN DATA",
+      "pain_points": [
+        "Cannot export own data ('highly shady')",
+        "Videos and tutorials outdated",
+        "Features removed",
+        "Support slow and uninformed",
+        "Cannot cancel",
+        "Number porting took 3 months",
+        "False contract renewal claims"
+      ],
+      "status": "Looking for alternatives",
+      "priority": "high"
+    },
+    {
+      "name": "Jesse V.",
+      "company": null,
+      "role": "Unknown",
+      "company_size": "Unknown",
+      "rating": 0.5,
+      "date": "2025-11-20",
+      "title": "Unfulfilled Promises, Frustrating Experience",
+      "pain_points": [
+        "Software is slow",
+        "Missing features",
+        "Could not cancel despite promises"
+      ],
+      "status": "Extremely frustrated",
+      "priority": "high"
+    },
+    {
+      "name": "Nikki Muncey",
+      "company": null,
+      "role": "Unknown",
+      "company_size": "Small-Business",
+      "rating": 0,
+      "date": "2024-2025",
+      "title": "Lied to during onboarding",
+      "pain_points": [
+        "Lied to during onboarding about cancellation",
+        "Sent to collections despite issues",
+        "Doesn't care about small businesses",
+        "No accountability",
+        "Customer service lies",
+        "Terrible setup"
+      ],
+      "status": "Would not recommend to anyone",
+      "priority": "high"
+    }
+  ],
+  "common_pain_points": [
+    "Lock-in contracts - cannot cancel",
+    "Hidden contract extensions",
+    "Cannot export your own data",
+    "Poor/inconsistent customer support",
+    "False promises during sales",
+    "Software missing features/slow",
+    "Overpriced for what you get"
+  ],
+  "outreach_angle": "Frustrated Podium users trapped in contracts. Emphasize: no contracts, data ownership, transparent pricing, responsive support.",
+  "next_steps": [
+    "Use Apollo.io to find LinkedIn profiles",
+    "Cross-reference with LinkedIn Sales Navigator",
+    "Send personalized outreach mentioning contract frustration"
+  ]
+}

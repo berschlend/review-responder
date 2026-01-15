@@ -1,0 +1,69 @@
+{
+  "source": "G2 Birdeye Negative Reviews",
+  "scraped_at": "2026-01-15T04:30:00Z",
+  "filter": "1-star reviews",
+  "total_available": 19,
+  "leads": [
+    {
+      "name": "ADhesive C.",
+      "company": "ADHESIVE",
+      "role": "Head of Digital",
+      "company_size": "Small-Business (50 or fewer)",
+      "rating": 0,
+      "date": "2025-12-09",
+      "title": "Over-promising and under-delivering caused significant frustration and stress",
+      "pain_points": ["Bugs", "Poor support", "Failed promises", "Contract cancellation ignored"],
+      "status": "Looking to cancel",
+      "priority": "high"
+    },
+    {
+      "name": "Andrew B.",
+      "company": null,
+      "role": "Owner",
+      "company_size": "Small-Business (50 or fewer)",
+      "rating": 0,
+      "date": "2025-08-11",
+      "title": "false promises, and under delivery",
+      "pain_points": ["CRM disconnected", "Empty promises", "Contract hostage"],
+      "status": "Current User - wants out",
+      "priority": "high"
+    },
+    {
+      "name": "Verified User in Accounting",
+      "company": null,
+      "role": "Attorney",
+      "company_size": "Small-Business (50 or fewer)",
+      "rating": 0,
+      "date": "2025-01-23",
+      "title": "The WORST COMPANY I have dealt with in over 30 years as an attorney",
+      "pain_points": ["Spent $4000", "Only 5 reviews in 12 months", "Contract lock-in", "Thousands of clients unused"],
+      "status": "Extremely frustrated",
+      "priority": "high"
+    },
+    {
+      "name": "Colin D.",
+      "company": null,
+      "role": "Director of Marketing Strategy",
+      "company_size": "Mid-Market (51-1000)",
+      "rating": 0,
+      "date": "2024-04-26",
+      "title": "Sadly Updating my Review",
+      "pain_points": ["Spent tens of thousands", "Contract manipulation", "Oversold capabilities", "Just cancelled"],
+      "status": "Just submitted cancellation",
+      "priority": "mega"
+    }
+  ],
+  "common_pain_points": [
+    "Contract lock-in despite non-delivery",
+    "Overselling / False promises by sales",
+    "Poor customer support",
+    "Bugs and errors",
+    "Too expensive for results delivered"
+  ],
+  "outreach_angle": "Frustrated Birdeye customers looking for simpler, more affordable alternative. Emphasize: no contracts, pay-per-use, instant results.",
+  "next_steps": [
+    "Use Apollo.io to find LinkedIn profiles",
+    "Cross-reference with LinkedIn Sales Navigator",
+    "Send personalized outreach mentioning their specific pain points"
+  ]
+}

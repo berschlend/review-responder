@@ -134,81 +134,59 @@ Beim Start, checke was andere machen:
 ls -la content/claude-locks/
 ```
 
-## TAB-MANAGEMENT (Chrome Stability)
+## TAB-MANAGEMENT (Automatisch via Tab Manager)
 
-Chrome kann abstuerzen wenn zu viele Tabs offen sind. Manage deine Tabs!
+Chrome Tab Manager trackt und bereinigt Tabs AUTOMATISCH pro Session.
 
-### Beim Start: Tab-Gruppe registrieren
-
-Hole deine Tab-Gruppe ID mit `tabs_context_mcp` und speichere sie:
+### Beim Start: Session registrieren
 
 ```bash
-echo "GROUP_ID=[deine-gruppe]" > content/claude-locks/my-tabs-$$.lock
+# Session-Name aus Umgebungsvariable (oder "NightBlast" als Default)
+SESSION_NAME="${CLAUDE_SESSION:-NightBlast}"
+echo "Session: $SESSION_NAME"
 ```
 
-### NIEMALS schliessen (Protected Tabs)
+### Nach JEDEM navigate/tabs_create: Tab registrieren
 
-Diese Tabs gehoeren anderen Claudes oder dem User:
-
-- Tabs die NICHT in deiner Tab-Gruppe sind
-- Tabs mit diesen Domains (User braucht sie eingeloggt):
-  - linkedin.com
-  - console.cron-job.org
-  - resend.com
-  - dashboard.stripe.com
-  - dashboard.render.com
-  - console.cloud.google.com
-  - tryreviewresponder.com (eigene App)
-  - mail.google.com (Gmail fuer API Alerts!)
-
-### Wann Tabs schliessen
-
-Nach jedem groesseren Task (alle 15-30 Min):
-
-1. Hole aktuelle Tabs mit `tabs_context_mcp`
-2. Identifiziere Tabs die du geoeffnet hast (in deiner Gruppe)
-3. Schliesse Tabs die:
-   - NICHT in der Protected-Liste sind
-   - Aelter als 10 Minuten unbenutzt
-   - Scraping-Seiten (TripAdvisor, G2, etc.) nach Abschluss
-
-### Tab-Cleanup Routine
-
-Fuehre das regelmaessig aus (z.B. nach jedem HOURLY SUMMARY):
-
-```javascript
-// Im Browser mit javascript_tool ausfuehren:
-// 1. Nur Tabs in MEINER Gruppe anfassen
-// 2. Protected domains NICHT schliessen
-const protectedDomains = [
-  'linkedin.com',
-  'cron-job.org',
-  'resend.com',
-  'stripe.com',
-  'render.com',
-  'cloud.google.com',
-  'tryreviewresponder.com',
-  'chrome://',
-  'about:',
-];
-
-// Pruefe ob Tab protected ist
-function isProtected(url) {
-  return protectedDomains.some(d => url.includes(d));
-}
+```powershell
+powershell -ExecutionPolicy Bypass -File "C:\Users\Berend Mainz\chrome-tab-manager.ps1" -Action register -TabId "[TAB_ID]" -TabUrl "[URL]" -Session "[SESSION_NAME]"
 ```
+
+**WICHTIG:** Ersetze [TAB_ID] mit der echten Tab-ID aus dem Tool-Result!
+
+### Protected Tabs (werden NIEMALS geschlossen)
+
+Diese Domains sind automatisch geschuetzt:
+- `*linkedin.com*` - Login Sessions
+- `*gmail.com*`, `*mail.google.com*` - Email
+- `*stripe.com*` - Payments
+- `*render.com*` - Deployment
+- `*github.com*` - Code
+- `*cron-job.org*` - Cron Jobs
+- `*tryreviewresponder.com*` - Eigene App
+
+### Tab Status checken (bei Problemen)
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "C:\Users\Berend Mainz\chrome-tab-manager.ps1" -Action status
+```
+
+### Manueller Cleanup (falls noetig)
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "C:\Users\Berend Mainz\chrome-tab-manager.ps1" -Action cleanup -Session "[SESSION_NAME]"
+```
+
+### Automatischer Cleanup
+
+- **Stop-Hook:** Wenn du fertig bist, schliesst der Stop-Hook automatisch alle Session-Tabs
+- **Stale Sessions:** Sessions die >30 Min inaktiv sind werden beim naechsten Status-Check angezeigt
 
 ### Max Tabs Regel
 
 - Halte max 10-15 Tabs offen gleichzeitig
-- Wenn du merkst dass Chrome langsam wird: Sofort Tabs schliessen
-- Lieber zu viele Tabs schliessen als Chrome crashen lassen
-
-### Wichtig bei Tab-Aktionen
-
-- IMMER `tabs_context_mcp` zuerst aufrufen um aktuelle Tab-Liste zu bekommen
-- NUR Tabs in deiner eigenen Gruppe schliessen
-- Bei Unsicherheit: Tab NICHT schliessen
+- Tab Manager zeigt dir wie viele Tabs pro Session offen sind
+- Protected Tabs zaehlen NICHT zum Limit (bleiben immer offen)
 
 ## FIRST-PRINCIPLES FRAMEWORK
 
@@ -340,15 +318,23 @@ Leads: +X
 Emails: +Y
 Demos: +Z
 Kreative Experimente: [Was Neues]
-Tabs geschlossen: X (von Y total)
+Tab Status: [X aktiv, Y protected]
 ```
 
-Nach jedem HOURLY SUMMARY: TAB-CLEANUP!
+Nach jedem HOURLY SUMMARY: TAB-STATUS CHECKEN!
 
-1. `tabs_context_mcp` aufrufen
-2. Alle Scraping-Tabs schliessen (TripAdvisor, G2, etc.)
-3. Protected Tabs offen lassen
-4. Ziel: Max 10 Tabs offen
+```powershell
+# 1. Status aller Sessions anzeigen
+powershell -ExecutionPolicy Bypass -File "C:\Users\Berend Mainz\chrome-tab-manager.ps1" -Action status
+
+# 2. Wenn STALE_SESSIONS_JSON angezeigt wird (>30 min inaktiv):
+#    Diese Sessions manuell cleanen:
+powershell -ExecutionPolicy Bypass -File "C:\Users\Berend Mainz\chrome-tab-manager.ps1" -Action cleanup -Session "[STALE_SESSION_NAME]"
+
+# 3. Eigene Session Tabs checken - wenn >15 Tabs, einige schliessen
+```
+
+**Ziel:** Max 10-15 Tabs pro Session. Protected Tabs zaehlen nicht.
 
 ## GMAIL MONITORING (API Alerts)
 
@@ -433,17 +419,57 @@ Bei jeder Marketing-Aenderung in CLAUDE.md notieren:
 
 ## JETZT STARTEN
 
-1. `mkdir -p content/claude-locks`
-2. `tabs_context_mcp` aufrufen - merke dir deine Tab-Gruppe!
-3. Registriere deine Tabs: `echo "started" > content/claude-locks/my-session-$$.lock`
-4. Lies CLAUDE.md fuer Kontext
-5. Health-Check
-6. Groesstes Problem finden
-7. Kreative Loesung entwickeln
-8. Ausfuehren
-9. Dokumentieren
-10. **TAB-CLEANUP** (alle 30-60 Min, nach jedem HOURLY SUMMARY)
-11. Repeat
+### 1. Session initialisieren
+
+```bash
+# Lock-Verzeichnis erstellen
+mkdir -p content/claude-locks
+
+# Session-Name setzen (aus Env oder Default)
+SESSION_NAME="${CLAUDE_SESSION:-NightBlast-$$}"
+echo "Starting session: $SESSION_NAME"
+
+# Lock-File erstellen
+echo "$(date) - $SESSION_NAME - started" > "content/claude-locks/night-blast-$$.lock"
+```
+
+### 2. Chrome Tab Manager initialisieren
+
+```powershell
+# Status checken (zeigt alle aktiven Sessions)
+powershell -ExecutionPolicy Bypass -File "C:\Users\Berend Mainz\chrome-tab-manager.ps1" -Action status
+```
+
+### 3. Tabs Context holen
+
+```
+tabs_context_mcp
+```
+
+Merke dir die Tab-IDs! Nach jedem `navigate` oder `tabs_create`:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "C:\Users\Berend Mainz\chrome-tab-manager.ps1" -Action register -TabId "[ID]" -TabUrl "[URL]" -Session "$SESSION_NAME"
+```
+
+### 4. Hauptloop starten
+
+1. Lies CLAUDE.md fuer Kontext
+2. Health-Check (`/sales-doctor` oder API calls)
+3. Groesstes Problem finden
+4. Kreative Loesung entwickeln
+5. Ausfuehren (Tabs registrieren!)
+6. Dokumentieren
+7. **HOURLY:** Tab Status checken, Stale Sessions cleanen
+8. Repeat
+
+### 5. Bei Session-Ende
+
+Der Stop-Hook ruft automatisch Tab-Cleanup auf. Alternativ manuell:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "C:\Users\Berend Mainz\chrome-tab-manager.ps1" -Action cleanup -Session "$SESSION_NAME"
+```
 
 **Denk dran:**
 
