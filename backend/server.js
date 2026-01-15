@@ -23849,9 +23849,9 @@ Brevity: If you can cut a word, cut it. Punch lands harder.
 </what_makes_tweets_viral>
 
 <format_rules>
-Write one tweet, 180-250 characters. No hashtags (X algorithm penalizes them).
-One emoji maximum, only mid-sentence if it adds punch - never at the start or end.
-Start with the hook - no warm-up phrases.
+CRITICAL: Maximum 220 characters total. Count carefully - this is a hard limit.
+Shorter is better. Aim for 150-200 characters. Cut ruthlessly.
+No hashtags. One emoji max, mid-sentence only. Start with the hook.
 </format_rules>
 
 <output>
