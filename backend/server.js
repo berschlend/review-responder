@@ -1006,6 +1006,19 @@ async function initDatabase() {
     await dbQuery(`ALTER TABLE email_captures ADD COLUMN IF NOT EXISTS platform TEXT`);
     await dbQuery(`ALTER TABLE email_captures ADD COLUMN IF NOT EXISTS business_type TEXT`);
 
+    // Public try usage tracking (for InstantDemoWidget analytics)
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS public_try_usage (
+        id SERIAL PRIMARY KEY,
+        ip_hash TEXT NOT NULL,
+        review_length INTEGER,
+        tone TEXT,
+        platform TEXT,
+        business_type TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // Personalized discount links
     await dbQuery(`
       CREATE TABLE IF NOT EXISTS discount_links (
@@ -7862,12 +7875,11 @@ Respond DIRECTLY. No quotes. No prefix. Just the response text.`;
       generatedResponse = cleanAISlop(generatedResponse);
     }
 
-    // Track try usage for analytics (optional - create table if needed)
+    // Track try usage for analytics
     try {
       await dbQuery(
-        `INSERT INTO public_try_usage (ip_hash, review_length, tone, created_at)
-         VALUES ($1, $2, $3, NOW())
-         ON CONFLICT DO NOTHING`,
+        `INSERT INTO public_try_usage (ip_hash, review_length, tone, platform, business_type, created_at)
+         VALUES ($1, $2, $3, $4, $5, NOW())`,
         [
           crypto
             .createHash('sha256')
@@ -7876,10 +7888,12 @@ Respond DIRECTLY. No quotes. No prefix. Just the response text.`;
             .substring(0, 16),
           reviewText.length,
           tone,
+          platform || null,
+          businessType || null,
         ]
       );
     } catch (trackError) {
-      // Table might not exist yet, ignore
+      console.error('[public_try_usage] Track error:', trackError.message);
     }
 
     // If authenticated user: Increment their response count
@@ -11883,6 +11897,26 @@ app.get('/api/admin/widget-analytics', authenticateAdmin, async (req, res) => {
       ORDER BY date DESC
     `) || [];
 
+    // Attempts by platform (for conversion rate calculation)
+    const attemptsByPlatform = await dbAll(`
+      SELECT platform, COUNT(*) as attempts
+      FROM public_try_usage
+      WHERE platform IS NOT NULL AND platform != ''
+      GROUP BY platform
+      ORDER BY attempts DESC
+      LIMIT 10
+    `) || [];
+
+    // Attempts by business type (for conversion rate calculation)
+    const attemptsByBusinessType = await dbAll(`
+      SELECT business_type, COUNT(*) as attempts
+      FROM public_try_usage
+      WHERE business_type IS NOT NULL AND business_type != ''
+      GROUP BY business_type
+      ORDER BY attempts DESC
+      LIMIT 10
+    `) || [];
+
     res.json({
       summary: {
         attempts,
@@ -11893,6 +11927,8 @@ app.get('/api/admin/widget-analytics', authenticateAdmin, async (req, res) => {
       byBusinessType,
       byLandingPage,
       recentTrend,
+      attemptsByPlatform,
+      attemptsByBusinessType,
     });
   } catch (error) {
     console.error('Widget analytics error:', error);
