@@ -12098,6 +12098,7 @@ app.get('/api/admin/widget-analytics', authenticateAdmin, async (req, res) => {
 });
 
 // GET /api/admin/user-list - List all users with response counts for activation targeting
+// WICHTIG: Unterscheidet Magic Link Users von normalen Signups!
 app.get('/api/admin/user-list', authenticateAdmin, async (req, res) => {
   try {
     const users = await dbAll(`
@@ -12108,6 +12109,8 @@ app.get('/api/admin/user-list', authenticateAdmin, async (req, res) => {
         subscription_plan as plan,
         responses_used as response_count,
         created_at,
+        COALESCE(created_via_magic_link, false) as is_magic_link,
+        CASE WHEN COALESCE(created_via_magic_link, false) THEN 'magic_link' ELSE 'normal_signup' END as signup_source,
         CASE
           WHEN responses_used = 0 THEN 'never_used'
           WHEN responses_used < 5 THEN 'low_usage'
@@ -12123,13 +12126,28 @@ app.get('/api/admin/user-list', authenticateAdmin, async (req, res) => {
       LIMIT 100
     `) || [];
 
-    // Summary stats
+    // Separate magic link vs normal users
+    const magicLinkUsers = users.filter(u => u.is_magic_link);
+    const normalUsers = users.filter(u => !u.is_magic_link);
+
+    // Summary stats - GETRENNT nach Signup Source
     const summary = {
       total: users.length,
       never_used: users.filter(u => u.usage_tier === 'never_used').length,
       low_usage: users.filter(u => u.usage_tier === 'low_usage').length,
       medium_usage: users.filter(u => u.usage_tier === 'medium_usage').length,
       high_usage: users.filter(u => u.usage_tier === 'high_usage').length,
+      // Magic Link vs Normal Breakdown
+      magic_link: {
+        total: magicLinkUsers.length,
+        never_used: magicLinkUsers.filter(u => u.usage_tier === 'never_used').length,
+        active: magicLinkUsers.filter(u => u.usage_tier !== 'never_used').length,
+      },
+      normal_signup: {
+        total: normalUsers.length,
+        never_used: normalUsers.filter(u => u.usage_tier === 'never_used').length,
+        active: normalUsers.filter(u => u.usage_tier !== 'never_used').length,
+      },
     };
 
     res.json({ summary, users });
@@ -16751,8 +16769,10 @@ app.all('/api/cron/activate-dormant-users', async (req, res) => {
     // 2. Created more than 12 hours ago (give them time to explore)
     // 3. Haven't been sent an activation email yet
     // 4. Not test emails
+    // WICHTIG: Trackt ob User via Magic Link kam!
     const dormantUsers = await dbAll(`
-      SELECT id, email, business_name, created_at
+      SELECT id, email, business_name, created_at,
+        COALESCE(created_via_magic_link, false) as is_magic_link
       FROM users
       WHERE responses_used = 0
         AND created_at < NOW() - INTERVAL '12 hours'
@@ -16765,7 +16785,11 @@ app.all('/api/cron/activate-dormant-users', async (req, res) => {
       LIMIT $1
     `, [limit]) || [];
 
-    console.log(`[activate-dormant] Found ${dormantUsers.length} dormant users`);
+    // Separate magic link vs normal users
+    const magicLinkCount = dormantUsers.filter(u => u.is_magic_link).length;
+    const normalCount = dormantUsers.filter(u => !u.is_magic_link).length;
+
+    console.log(`[activate-dormant] Found ${dormantUsers.length} dormant users (${magicLinkCount} magic link, ${normalCount} normal signup)`);
 
     if (dormantUsers.length === 0) {
       return res.json({
@@ -16843,7 +16867,12 @@ P.S. If you don't need this, just ignore this email - we won't write again.`;
       }
 
       if (dryRun) {
-        results.push({ email: user.email, business: user.business_name, would_send: true });
+        results.push({
+          email: user.email,
+          business: user.business_name,
+          signup_source: user.is_magic_link ? 'magic_link' : 'normal_signup',
+          would_send: true
+        });
         continue;
       }
 
@@ -16877,25 +16906,43 @@ P.S. If you don't need this, just ignore this email - we won't write again.`;
         }
 
         sent++;
-        results.push({ email: user.email, business: user.business_name, sent: true });
-        console.log(`[activate-dormant] Sent activation to ${user.email}`);
+        results.push({
+          email: user.email,
+          business: user.business_name,
+          signup_source: user.is_magic_link ? 'magic_link' : 'normal_signup',
+          sent: true
+        });
+        console.log(`[activate-dormant] Sent activation to ${user.email} (${user.is_magic_link ? 'magic_link' : 'normal'})`);
 
         // Small delay between emails
         await new Promise(r => setTimeout(r, 500));
       } catch (err) {
         console.error(`[activate-dormant] Failed to send to ${user.email}:`, err.message);
-        results.push({ email: user.email, error: err.message });
+        results.push({
+          email: user.email,
+          signup_source: user.is_magic_link ? 'magic_link' : 'normal_signup',
+          error: err.message
+        });
       }
     }
+
+    // Count by signup source
+    const sentMagicLink = results.filter(r => r.sent && r.signup_source === 'magic_link').length;
+    const sentNormal = results.filter(r => r.sent && r.signup_source === 'normal_signup').length;
 
     res.json({
       success: true,
       sent,
       dry_run: dryRun,
+      // WICHTIG: Breakdown nach Signup Source
+      breakdown: {
+        magic_link: { found: magicLinkCount, sent: sentMagicLink },
+        normal_signup: { found: normalCount, sent: sentNormal },
+      },
       users_activated: results,
       message: sent > 0
-        ? `Sent ${sent} activation emails to dormant users`
-        : dryRun ? `Would send to ${results.length} users` : 'No emails sent',
+        ? `Sent ${sent} activation emails (${sentMagicLink} magic link, ${sentNormal} normal signup)`
+        : dryRun ? `Would send to ${results.length} users (${magicLinkCount} magic link, ${normalCount} normal)` : 'No emails sent',
     });
   } catch (error) {
     console.error('Dormant user activation error:', error);
