@@ -1,137 +1,88 @@
 # Omnichannel Demo Blast
 
-**Ziel:** Personalisierte Demo über ALLE verfügbaren Kanäle senden.
+**Ziel:** Demo-URLs über ALLE Social Media Kanäle senden.
 
-**🌐 CHROME MCP: JA** - Braucht Browser für Social Media
-
----
-
-## Was dieses Skill macht
-
-Für jeden Lead mit Demo:
-1. **Social Links finden** (von Website scrapen)
-2. **Demo über ALLE Kanäle senden:**
-   - ✅ Email (bereits gesendet)
-   - 🐦 Twitter/X DM
-   - 📘 Facebook Messenger
-   - 📸 Instagram DM
-   - 💼 LinkedIn Message
-   - 📍 Google Business Message
+**🌐 CHROME MCP: JA** - Startet mit `claude --chrome`
 
 ---
 
-## Ablauf
+## Quick Start (vom Handy via AnyDesk)
 
-### Schritt 1: Leads mit Demo aber ohne Multi-Channel holen
+1. AnyDesk öffnen → PC verbinden
+2. Terminal öffnen
+3. `claude --chrome`
+4. `/omnichannel-blast`
 
-```bash
-curl -s "https://review-responder.onrender.com/api/admin/leads-for-omnichannel?key=ADMIN_KEY"
-```
+Das war's. Claude macht den Rest.
 
-Gibt zurück:
-```json
-{
-  "leads": [
-    {
-      "id": 123,
-      "business_name": "Mario's Pizza",
-      "website": "https://mariospizza.com",
-      "demo_url": "https://tryreviewresponder.com/demo/abc123",
-      "email": "mario@pizza.com",
-      "channels_contacted": { "email": true }
-    }
-  ]
-}
-```
+---
 
-### Schritt 2: Social Links scrapen (für jeden Lead)
+## Was passiert automatisch
 
-1. **Chrome MCP öffnen:** `tabs_context_mcp` → neuen Tab erstellen
-2. **Website besuchen:** `navigate` zu `lead.website`
-3. **Social Links finden:** `find` nach "twitter", "facebook", "instagram", etc.
-4. **Links extrahieren:** JavaScript ausführen um hrefs zu holen
+1. **Leads holen** - Alle mit Demo + Social Links aber noch keine DM
+2. **Für jeden Lead:**
+   - Twitter DM senden (wenn Handle vorhanden)
+   - Facebook Message senden (wenn Page vorhanden)
+   - Instagram DM senden (wenn Handle vorhanden)
+   - Als kontaktiert markieren
+3. **Stats zeigen** - Wie viele DMs gesendet
 
-```javascript
-// Social Link Finder Script
-const socialLinks = {};
-const links = document.querySelectorAll('a[href]');
-links.forEach(link => {
-  const href = link.href.toLowerCase();
-  if (href.includes('twitter.com/') || href.includes('x.com/')) {
-    socialLinks.twitter = href;
-  } else if (href.includes('facebook.com/')) {
-    socialLinks.facebook = href;
-  } else if (href.includes('instagram.com/')) {
-    socialLinks.instagram = href;
-  } else if (href.includes('linkedin.com/company/')) {
-    socialLinks.linkedin = href;
-  }
-});
-socialLinks;
-```
+---
 
-### Schritt 3: Lead mit Social Links updaten
+## Ablauf im Detail
+
+### Schritt 1: Leads mit Social Links holen
 
 ```bash
-curl -X PUT "https://review-responder.onrender.com/api/admin/lead-social-links" \
-  -H "Content-Type: application/json" \
-  -H "X-Admin-Key: ADMIN_KEY" \
-  -d '{
-    "lead_id": 123,
-    "twitter_handle": "@mariospizza",
-    "facebook_page": "facebook.com/mariospizza",
-    "instagram_handle": "@mariospizza"
-  }'
+curl -s "https://review-responder.onrender.com/api/admin/leads-for-omnichannel?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
 ```
 
-### Schritt 4: DMs senden (Chrome MCP)
+Die Social Links wurden bereits vom Night Blast (Phase 9) gescraped!
+
+### Schritt 2: DMs senden (Chrome MCP)
 
 **Twitter DM:**
-1. Navigate zu `twitter.com/messages`
-2. Klick "New Message"
-3. Suche nach Handle
-4. Sende Message:
+1. `navigate` zu `twitter.com/messages`
+2. "New Message" klicken
+3. Handle suchen (z.B. @mariospizza)
+4. Message senden:
 
 ```
 Hey! 👋
 
-Hab was Cooles für euch gebaut:
+Hab was für [BUSINESS_NAME] gebaut:
 [DEMO_URL]
 
-3 AI-Antworten für eure echten Google Reviews.
-Kostenlos, einfach anschauen.
+3 AI-Antworten auf eure echten Google Reviews.
+Kostenlos, einfach mal anschauen.
 
 Berend
 ```
 
 **Facebook Messenger:**
-1. Navigate zu `facebook.com/[page]/`
-2. Klick "Message" Button
-3. Sende Message
+1. `navigate` zu `facebook.com/[page]`
+2. "Message" Button klicken
+3. Gleiche Message senden
 
 **Instagram DM:**
-1. Navigate zu `instagram.com/[handle]/`
-2. Klick "Message" Button
-3. Sende Message
+1. `navigate` zu `instagram.com/[handle]`
+2. "Message" Button klicken
+3. Gleiche Message senden
 
-### Schritt 5: Channel als kontaktiert markieren
+### Schritt 3: Als kontaktiert markieren
 
 ```bash
 curl -X PUT "https://review-responder.onrender.com/api/admin/mark-channel-contacted" \
   -H "Content-Type: application/json" \
-  -H "X-Admin-Key: ADMIN_KEY" \
-  -d '{
-    "lead_id": 123,
-    "channel": "twitter",
-    "sent_at": "2026-01-15T10:00:00Z"
-  }'
+  -H "X-Admin-Key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U" \
+  -d '{"lead_id": 123, "channel": "twitter"}'
 ```
 
 ---
 
 ## Message Templates
 
-### Deutsch (für DE/AT/CH Städte)
+### Deutsch (DE/AT/CH Städte)
 ```
 Hey! 👋
 
@@ -159,52 +110,69 @@ Berend
 
 ---
 
-## Parallel Execution (3 Claude Sessions)
+## Rate Limits - WICHTIG!
 
-Terminal 1: Twitter DMs
+| Platform | Tägliches Limit | Max senden |
+|----------|-----------------|------------|
+| Twitter  | ~50/Tag | 30 |
+| Facebook | ~25/Tag | 20 |
+| Instagram | ~30/Tag | 20 |
+
+**Bei JEDER Warnung oder Captcha → SOFORT STOPPEN!**
+
+---
+
+## Der komplette Nacht-Flow
+
+```
+22:00  Night Blast startet automatisch (Server)
+       → Phase 1-8: Leads, Emails, Demos, Follow-ups
+       → Phase 9: Social Links scrapen
+
+~23:00 Du (via AnyDesk vom Handy):
+       → claude --chrome
+       → /omnichannel-blast
+       → Claude sendet DMs
+       → Fertig, schlafen gehen
+```
+
+---
+
+## Channel-spezifisch starten
+
+Nur einen Kanal machen:
+- `/omnichannel-blast --channel=twitter`
+- `/omnichannel-blast --channel=facebook`
+- `/omnichannel-blast --channel=instagram`
+
+Oder alle parallel (3 Terminals):
 ```powershell
+# Terminal 1
 $env:CLAUDE_SESSION = "Twitter"
 claude --chrome
-# Dann: /omnichannel-blast --channel=twitter
-```
+# /omnichannel-blast --channel=twitter
 
-Terminal 2: Facebook Messenger
-```powershell
+# Terminal 2
 $env:CLAUDE_SESSION = "Facebook"
 claude --chrome
-# Dann: /omnichannel-blast --channel=facebook
-```
+# /omnichannel-blast --channel=facebook
 
-Terminal 3: Instagram DMs
-```powershell
+# Terminal 3
 $env:CLAUDE_SESSION = "Instagram"
 claude --chrome
-# Dann: /omnichannel-blast --channel=instagram
+# /omnichannel-blast --channel=instagram
 ```
 
 ---
 
-## Rate Limits beachten!
-
-| Platform | Limit | Empfehlung |
-|----------|-------|------------|
-| Twitter DMs | ~50/Tag | Max 30 senden |
-| Facebook Messenger | ~25/Tag | Max 20 senden |
-| Instagram DMs | ~30/Tag | Max 20 senden |
-| LinkedIn Messages | ~25/Tag | Max 15 senden |
-
-**WICHTIG:** Bei JEDER Warnung SOFORT STOPPEN!
-
----
-
-## Erfolgsmessung
-
-Nach 24h checken:
-1. Wie viele DMs wurden gelesen?
-2. Wie viele haben geantwortet?
-3. Wie viele haben Demo angeschaut?
-4. Conversions?
+## Stats checken
 
 ```bash
-curl "https://review-responder.onrender.com/api/admin/omnichannel-stats?key=ADMIN_KEY"
+curl "https://review-responder.onrender.com/api/admin/omnichannel-stats?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
 ```
+
+Zeigt:
+- Leads mit Demos
+- Social Links gefunden (pro Plattform)
+- DMs gesendet (pro Kanal)
+- Potential Reach (noch nicht kontaktiert)
