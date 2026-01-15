@@ -1481,6 +1481,10 @@ async function initDatabase() {
       await dbQuery(
         `ALTER TABLE users ADD COLUMN IF NOT EXISTS last_abandonment_email_at TIMESTAMP`
       );
+      // Magic link user tracking
+      await dbQuery(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS created_via_magic_link BOOLEAN DEFAULT FALSE`
+      );
     } catch (error) {
       // Columns might already exist
     }
@@ -11990,6 +11994,7 @@ app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
         u.subscription_plan,
         u.created_at,
         u.stripe_customer_id,
+        u.created_via_magic_link,
         COALESCE(r.response_count, 0) as response_count,
         r.last_response_at,
         r.first_response_at
@@ -12021,6 +12026,7 @@ app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
     const testUsers = usersWithFlag.filter(u => u.is_test_account);
     const onboardedReal = realUsers.filter(u => u.onboarding_completed);
     const activeReal = realUsers.filter(u => u.is_active);
+    const magicLinkUsers = realUsers.filter(u => u.created_via_magic_link);
 
     res.json({
       users: usersWithFlag,
@@ -12031,6 +12037,7 @@ app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
         realPaying: realUsers.filter(u => u.subscription_plan !== 'free').length,
         realOnboarded: onboardedReal.length,
         realActive7d: activeReal.length,
+        magicLinkUsers: magicLinkUsers.length,
         onboardingRate:
           realUsers.length > 0 ? Math.round((onboardedReal.length / realUsers.length) * 100) : 0,
       },
@@ -14878,8 +14885,8 @@ app.get('/api/auth/magic-login/:token', async (req, res) => {
       );
 
       const result = await dbQuery(
-        `INSERT INTO users (email, password, business_name, subscription_plan, responses_limit, email_verified)
-         VALUES ($1, $2, $3, 'free', 20, true)
+        `INSERT INTO users (email, password, business_name, subscription_plan, responses_limit, email_verified, created_via_magic_link)
+         VALUES ($1, $2, $3, 'free', 20, true, true)
          RETURNING *`,
         [magicLink.email, hashedPassword, leadInfo?.business_name || null]
       );

@@ -31210,6 +31210,12 @@ const AdminPage = () => {
                   </div>
                   <div style={{ color: 'var(--gray-600)', fontSize: '13px' }}>Real Paying</div>
                 </div>
+                <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
+                  <div style={{ fontSize: '28px', fontWeight: '700', color: '#7C3AED' }}>
+                    {usersData.summary?.magicLinkUsers || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-600)', fontSize: '13px' }}>🔮 Magic Link</div>
+                </div>
               </div>
 
               {/* Users Table */}
@@ -31257,7 +31263,23 @@ const AdminPage = () => {
                           }}
                         >
                           <td style={{ padding: '12px 8px' }}>
-                            <div style={{ fontWeight: '500' }}>{user.email}</div>
+                            <div style={{ fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              {user.email}
+                              {user.created_via_magic_link && (
+                                <span
+                                  style={{
+                                    padding: '2px 6px',
+                                    borderRadius: '4px',
+                                    fontSize: '10px',
+                                    fontWeight: '600',
+                                    background: '#7C3AED',
+                                    color: 'white',
+                                  }}
+                                >
+                                  🔮 MAGIC
+                                </span>
+                              )}
+                            </div>
                           </td>
                           <td style={{ padding: '12px 8px' }}>
                             <span
