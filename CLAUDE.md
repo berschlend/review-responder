@@ -598,6 +598,29 @@ Oder: `.claude\omnichannel-parallel.ps1` ausführen
 
 ---
 
+## KÜRZLICH ERLEDIGT (15.01 Morgen - Demo Page Conversion Analyse)
+
+- **Demo Page Deep Dive** - Warum 58 Views aber 0 Conversions?
+  - **FINDINGS:**
+    - ✅ Email Gate funktioniert korrekt für Demos mit 3 Responses
+    - ✅ 94% der Demos haben 3 Responses (Gate aktiv)
+    - ✅ Email Modal erscheint bei "Unlock with Email"
+    - ✅ Auto-Redirect nach Email-Capture implementiert
+    - ❌ **BUG FIX:** Countdown Timer UI fehlte komplett! (State existierte, UI nicht)
+  - **ROOT CAUSE für 0 Conversions:**
+    - Cold Traffic aus Outreach konvertiert langsam (Projekt erst 5 Tage alt)
+    - Timer war nicht sichtbar → keine Urgency
+    - System braucht Zeit (7-14 Tage für Cold Email Conversions)
+  - **FIX:** Countdown Timer UI hinzugefügt (9e3a2266)
+    - Orange Badge mit "30% OFF expires in HH:MM:SS"
+    - In Hero Section prominent platziert
+
+- **G2 Competitor Mining** - `/g2-miner birdeye` ausgeführt
+  - 1 Lead gefunden (ADhesive - Marketing Agency, nicht ideal als Target)
+  - G2 negative Reviews sind gute Lead-Quelle für unzufriedene Competitor-Kunden
+
+---
+
 ## KÜRZLICH ERLEDIGT (15.01 Nacht - Magic User Nudge)
 
 - **Magic User Activation Nudge** - Separate Onboarding für Magic Link User
