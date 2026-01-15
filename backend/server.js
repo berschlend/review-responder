@@ -16705,6 +16705,191 @@ P.S. Most restaurants save 2-3 hours per week with automated review responses.`;
   }
 });
 
+// ============================================================================
+// GET /api/cron/activate-dormant-users - Send activation emails to ALL users with 0 responses
+// Added 15.01.2026: Broader activation for all dormant users, not just magic link
+// ============================================================================
+app.all('/api/cron/activate-dormant-users', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!brevoApi && !resend) {
+    return res.status(500).json({ error: 'Email service not configured' });
+  }
+
+  const dryRun = req.query.dry_run === 'true';
+  const limit = parseInt(req.query.limit) || 10; // Max 10 per run to avoid spam
+
+  try {
+    // Ensure activation tracking column exists
+    try {
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS activation_email_sent TIMESTAMP`);
+    } catch (e) {
+      /* Column might already exist */
+    }
+
+    // Find ALL dormant users:
+    // 1. Have not used the product (responses_used = 0)
+    // 2. Created more than 12 hours ago (give them time to explore)
+    // 3. Haven't been sent an activation email yet
+    // 4. Not test emails
+    const dormantUsers = await dbAll(`
+      SELECT id, email, business_name, created_at
+      FROM users
+      WHERE responses_used = 0
+        AND created_at < NOW() - INTERVAL '12 hours'
+        AND activation_email_sent IS NULL
+        AND email NOT LIKE '%test%'
+        AND email NOT LIKE '%example%'
+        AND email != 'berend.mainz@web.de'
+        AND email != 'reviewer@tryreviewresponder.com'
+      ORDER BY created_at DESC
+      LIMIT $1
+    `, [limit]) || [];
+
+    console.log(`[activate-dormant] Found ${dormantUsers.length} dormant users`);
+
+    if (dormantUsers.length === 0) {
+      return res.json({
+        success: true,
+        sent: 0,
+        message: 'No dormant users to activate',
+      });
+    }
+
+    let sent = 0;
+    const results = [];
+
+    for (const user of dormantUsers) {
+      // Check email history to avoid duplicates
+      if (typeof wasEmailRecentlySent === 'function') {
+        const recentlySent = await wasEmailRecentlySent(user.email, 'activation', 7 * 24); // 7 days
+        if (recentlySent) {
+          console.log(`[activate-dormant] Skipping ${user.email} - recently sent`);
+          continue;
+        }
+      }
+
+      // Detect language from email domain
+      const isGerman = user.email.includes('.de') ||
+        user.email.includes('.at') ||
+        user.email.includes('.ch') ||
+        (user.business_name && /[äöüß]/i.test(user.business_name));
+
+      const firstName = user.business_name?.split(/[\s,]+/)[0] || '';
+
+      let subject, body;
+
+      if (isGerman) {
+        subject = `${user.business_name || 'Ihr Unternehmen'} - 20 kostenlose KI-Antworten warten`;
+        body = `Hallo${firstName ? ` ${firstName}` : ''},
+
+Sie haben sich bei ReviewResponder angemeldet, aber noch keine Review-Antwort generiert.
+
+**Das dauert nur 30 Sekunden:**
+
+1. Öffnen Sie eine negative Google/Yelp Review
+2. Kopieren Sie den Text
+3. Fügen Sie ihn hier ein → https://tryreviewresponder.com/login
+4. Fertig - professionelle Antwort in Sekunden
+
+Sie haben 20 kostenlose KI-Antworten. Die meisten Restaurants/Hotels sparen damit 2-3 Stunden pro Woche.
+
+Bei Fragen: Einfach auf diese Email antworten.
+
+Beste Grüße,
+Berend von ReviewResponder
+
+P.S. Falls Sie das Produkt nicht brauchen, ignorieren Sie diese Email einfach - wir schreiben nicht nochmal.`;
+      } else {
+        subject = `${user.business_name || 'Your business'} - 20 free AI responses waiting`;
+        body = `Hi${firstName ? ` ${firstName}` : ''},
+
+You signed up for ReviewResponder but haven't generated a response yet.
+
+**It takes just 30 seconds:**
+
+1. Open a negative Google/Yelp review
+2. Copy the text
+3. Paste it here → https://tryreviewresponder.com/login
+4. Done - professional response in seconds
+
+You have 20 free AI responses. Most restaurants/hotels save 2-3 hours per week with this.
+
+Questions? Just reply to this email.
+
+Best,
+Berend from ReviewResponder
+
+P.S. If you don't need this, just ignore this email - we won't write again.`;
+      }
+
+      if (dryRun) {
+        results.push({ email: user.email, business: user.business_name, would_send: true });
+        continue;
+      }
+
+      try {
+        // Send via Resend or Brevo
+        if (resend) {
+          await resend.emails.send({
+            from: 'Berend from ReviewResponder <berend@tryreviewresponder.com>',
+            to: user.email,
+            subject: subject,
+            text: body,
+          });
+        } else if (brevoApi) {
+          await brevoApi.sendTransacEmail({
+            sender: { email: 'berend@tryreviewresponder.com', name: 'Berend from ReviewResponder' },
+            to: [{ email: user.email }],
+            subject: subject,
+            textContent: body,
+          });
+        }
+
+        // Mark as sent
+        await dbQuery(
+          'UPDATE users SET activation_email_sent = NOW() WHERE id = $1',
+          [user.id]
+        );
+
+        // Record in email history if function exists
+        if (typeof recordEmailSend === 'function') {
+          await recordEmailSend(user.email, 'activation', { user_id: user.id });
+        }
+
+        sent++;
+        results.push({ email: user.email, business: user.business_name, sent: true });
+        console.log(`[activate-dormant] Sent activation to ${user.email}`);
+
+        // Small delay between emails
+        await new Promise(r => setTimeout(r, 500));
+      } catch (err) {
+        console.error(`[activate-dormant] Failed to send to ${user.email}:`, err.message);
+        results.push({ email: user.email, error: err.message });
+      }
+    }
+
+    res.json({
+      success: true,
+      sent,
+      dry_run: dryRun,
+      users_activated: results,
+      message: sent > 0
+        ? `Sent ${sent} activation emails to dormant users`
+        : dryRun ? `Would send to ${results.length} users` : 'No emails sent',
+    });
+  } catch (error) {
+    console.error('Dormant user activation error:', error);
+    res.status(500).json({ error: 'Failed to activate dormant users' });
+  }
+});
+
 // GET /api/cron/ab-test-evaluate - Evaluate A/B tests and select winners
 // Added 14.01.2026: Part of night automation system
 app.all('/api/cron/ab-test-evaluate', async (req, res) => {
