@@ -11158,18 +11158,20 @@ app.all('/api/cron/review-alerts', async (req, res) => {
           continue;
         }
 
-        // Get reviews using our existing scraping logic (from review_cache or API)
+        // Get reviews using demo_generations (we already have them!) or Google API
         let reviews = [];
 
-        // First check review_cache
-        const cachedReviews = await dbGet(`
-          SELECT reviews FROM review_cache
+        // First check demo_generations for scraped reviews
+        const demoReviews = await dbGet(`
+          SELECT scraped_reviews FROM demo_generations
           WHERE google_place_id = $1
-            AND cached_at > NOW() - INTERVAL '48 hours'
+            AND scraped_reviews IS NOT NULL
+          ORDER BY created_at DESC LIMIT 1
         `, [placeId]);
 
-        if (cachedReviews && cachedReviews.reviews) {
-          reviews = cachedReviews.reviews.slice(0, 5);
+        if (demoReviews?.scraped_reviews && Array.isArray(demoReviews.scraped_reviews)) {
+          reviews = demoReviews.scraped_reviews.slice(0, 5);
+          console.log(`🔔 Found ${reviews.length} reviews from demo_generations for ${placeId}`);
         } else if (process.env.GOOGLE_API_KEY) {
           // Fallback to Google Places API (limited to 5 reviews)
           try {
