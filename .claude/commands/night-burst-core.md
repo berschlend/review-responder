@@ -90,7 +90,49 @@ powershell -File scripts/agent-helpers.ps1 -Action handoff-check -Agent [X]
 # 4. MEMORY LADEN - Was weiß ich von letzter Session?
 powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent [X]
 # → Learnings anwenden auf diese Session
+
+# 5. RESUME CHECK (KRITISCH BEI RESTART!) - Wo habe ich aufgehört?
+powershell -File scripts/agent-helpers.ps1 -Action status-read -Agent [X]
+# → checkpoints.resume_from: Zeigt wo du weitermachen sollst
+# → checkpoints.last_processed_id: Letzter bearbeiteter Lead/Item
+# → current_loop: Wie viele Loops schon gelaufen
+#
+# WENN resume_from != null:
+#   → Überspringe bereits erledigte Schritte!
+#   → Starte direkt beim angegebenen Schritt
+#
+# WENN last_processed_id != null:
+#   → Leads/Items mit niedrigerer ID wurden schon bearbeitet
+#   → Starte ab last_processed_id + 1
 ```
+
+---
+
+## 🔁 SESSION-END CHECKPOINT (V4 - KRITISCH FÜR RESTART!)
+
+**VOR JEDEM SESSION-ENDE oder bei jedem größeren Schritt:**
+
+```bash
+# Speichere WO du aufgehört hast für den nächsten Start
+powershell -File scripts/agent-helpers.ps1 -Action status-update -Agent [X] -Data '{
+  "checkpoints": {
+    "resume_from": "[AKTUELLER_SCHRITT]",
+    "last_processed_id": "[LETZTER_LEAD_ID]",
+    "last_successful_action": "[WAS_ICH_GETAN_HABE]"
+  }
+}'
+```
+
+**Typische resume_from Werte:**
+| Agent | resume_from Werte |
+|-------|-------------------|
+| Burst-1 | `scrape_leads`, `find_emails`, `check_demos` |
+| Burst-2 | `check_for_new_leads`, `send_emails`, `update_stats` |
+| Burst-5 | `check_clickers`, `send_followups`, `check_registrations` |
+| Burst-6 | `check_inactive`, `send_onboarding`, `check_activated` |
+| Burst-7 | `check_active_users`, `send_nudges`, `check_payments` |
+
+**WICHTIG:** Bei RESTART wird der Agent dort weitermachen wo er aufgehört hat!
 
 ---
 

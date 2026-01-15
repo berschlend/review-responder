@@ -16,7 +16,7 @@
 param(
     [Parameter(Mandatory=$true)]
     [ValidateSet("heartbeat", "focus-read", "handoff-check", "handoff-create",
-                 "memory-read", "status-update", "learning-add",
+                 "memory-read", "status-read", "status-update", "learning-add",
                  "track-outcome", "check-outcomes", "derive-learning")]
     [string]$Action,
 
@@ -225,6 +225,49 @@ switch ($Action) {
         }
 
         Write-Host ""
+    }
+
+    "status-read" {
+        # Read agent status file for resume/checkpoint info
+        $statusFile = Join-Path $ProgressDir "burst-$Agent-status.json"
+
+        if (Test-Path $statusFile) {
+            $status = Get-Content $statusFile -Raw | ConvertFrom-Json
+
+            Write-Host ""
+            Write-Host "=== BURST-$Agent STATUS (RESUME INFO) ===" -ForegroundColor Cyan
+            Write-Host "Status: $($status.status)" -ForegroundColor $(if ($status.status -eq "running") { "Green" } else { "Yellow" })
+            Write-Host "Current Loop: $($status.current_loop)"
+            Write-Host "Last Heartbeat: $($status.last_heartbeat)"
+
+            # KRITISCH: Resume-Informationen
+            if ($status.checkpoints) {
+                Write-Host ""
+                Write-Host "=== CHECKPOINT (Resume Here!) ===" -ForegroundColor Magenta
+                if ($status.checkpoints.resume_from) {
+                    Write-Host "RESUME FROM: $($status.checkpoints.resume_from)" -ForegroundColor Green
+                } else {
+                    Write-Host "resume_from: (not set - start fresh)" -ForegroundColor Gray
+                }
+                if ($status.checkpoints.last_processed_id) {
+                    Write-Host "LAST PROCESSED ID: $($status.checkpoints.last_processed_id)" -ForegroundColor Yellow
+                    Write-Host "  → Start processing from ID > $($status.checkpoints.last_processed_id)" -ForegroundColor Gray
+                }
+                if ($status.checkpoints.last_successful_action) {
+                    Write-Host "Last Action: $($status.checkpoints.last_successful_action)"
+                }
+            }
+
+            # Metrics summary
+            if ($status.metrics) {
+                Write-Host ""
+                Write-Host "Session Metrics: Actions=$($status.metrics.actions_taken), Errors=$($status.metrics.errors_count)"
+            }
+
+            Write-Host ""
+        } else {
+            Write-Host "No status file found for Burst-$Agent - starting fresh" -ForegroundColor Yellow
+        }
     }
 
     "status-update" {
