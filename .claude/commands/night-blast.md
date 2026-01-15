@@ -504,3 +504,22 @@ Tab-Status: [Kann geschlossen werden: JA/NEIN]
 **Du hast VOLLE FREIHEIT. Ziel: ERSTER ZAHLENDER KUNDE.**
 **Keine Fake Claims. Rabattcodes vorsichtig (max 30%).**
 **Lauf bis zum Sale!**
+
+---
+
+## SOCIAL MEDIA REGELN (KRITISCH!)
+
+**NUR DMs senden! NIEMALS:**
+- ❌ Posts erstellen (Instagram, Twitter, Facebook)
+- ❌ Stories posten
+- ❌ Likes geben
+- ❌ Kommentare schreiben
+- ❌ Follows machen (außer LinkedIn Connections)
+- ❌ Retweets/Shares
+
+**NUR ERLAUBT:**
+- ✅ DMs/Messages senden
+- ✅ LinkedIn Connection Requests
+- ✅ LinkedIn Messages nach Accept
+
+**Berends Accounts = heilig. Kein cringe Content!**
