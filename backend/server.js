@@ -5950,18 +5950,54 @@ function getSerpApiKeyCount() {
   ).length;
 }
 
-// Helper: Scrape Google reviews via Outscraper (fallback/alternative to SerpAPI)
-// Free tier: 500 reviews, no phone verification needed
-async function scrapeGoogleReviewsOutscraper(placeId, limit = 10) {
-  if (!process.env.OUTSCRAPER_API_KEY) {
-    throw new Error('OUTSCRAPER_API_KEY not configured');
+// Outscraper Multi-Key Rotation (500 reviews/month per key = 2500/mo with 5 keys)
+// Keys: OUTSCRAPER_API_KEY, OUTSCRAPER_API_KEY_2, OUTSCRAPER_API_KEY_3, etc.
+let outscraperKeyIndex = 0;
+function getNextOutscraperKey() {
+  const keys = [
+    process.env.OUTSCRAPER_API_KEY,
+    process.env.OUTSCRAPER_API_KEY_2,
+    process.env.OUTSCRAPER_API_KEY_3,
+    process.env.OUTSCRAPER_API_KEY_4,
+    process.env.OUTSCRAPER_API_KEY_5,
+  ].filter(Boolean);
+
+  if (keys.length === 0) {
+    return null;
   }
+
+  // Round-robin rotation
+  const key = keys[outscraperKeyIndex % keys.length];
+  outscraperKeyIndex++;
+  return key;
+}
+
+function getOutscraperKeyCount() {
+  return [
+    process.env.OUTSCRAPER_API_KEY,
+    process.env.OUTSCRAPER_API_KEY_2,
+    process.env.OUTSCRAPER_API_KEY_3,
+    process.env.OUTSCRAPER_API_KEY_4,
+    process.env.OUTSCRAPER_API_KEY_5,
+  ].filter(Boolean).length;
+}
+
+// Helper: Scrape Google reviews via Outscraper (PRIMARY - with key rotation)
+// Free tier: 500 reviews/month per account = scales with more keys!
+async function scrapeGoogleReviewsOutscraper(placeId, limit = 10) {
+  const apiKey = getNextOutscraperKey();
+  if (!apiKey) {
+    throw new Error('No OUTSCRAPER_API_KEY configured');
+  }
+
+  const keyCount = getOutscraperKeyCount();
+  console.log(`[OUTSCRAPER] Using key ${(outscraperKeyIndex % keyCount) + 1}/${keyCount} for ${placeId}`);
 
   const url = `https://api.app.outscraper.com/maps/reviews-v3?query=${placeId}&reviewsLimit=${limit}&async=false&sort=lowest_rating`;
 
   const response = await fetch(url, {
     headers: {
-      'X-API-KEY': process.env.OUTSCRAPER_API_KEY,
+      'X-API-KEY': apiKey,
     },
   });
 
@@ -23261,9 +23297,13 @@ app.get('/api/admin/automation-health', async (req, res) => {
               : null,
         },
         outscraper: {
-          configured: !!process.env.OUTSCRAPER_API_KEY,
-          free_tier_limit: 500,
-          note: 'PRIMARY for reviews (500 free/mo), SerpAPI is fallback',
+          configured: getOutscraperKeyCount() > 0,
+          key_count: getOutscraperKeyCount(),
+          limit_per_key: 500,
+          total_limit: getOutscraperKeyCount() * 500,
+          note: getOutscraperKeyCount() > 1
+            ? `${getOutscraperKeyCount()} keys rotating (${getOutscraperKeyCount() * 500} reviews/mo total)`
+            : 'PRIMARY for reviews (500 free/mo)',
         },
         google_places: {
           estimated_monthly_cost_usd: Math.round(googlePlacesCostEstimate * 100) / 100,
