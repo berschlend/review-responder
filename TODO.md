@@ -91,17 +91,17 @@
 
 ### Videos (nach Extension Release)
 
-- [ ] **Video 1:** Extension Demo v2 (45 Sek) → ExtensionPromoCard
-  - 📋 **DETAILLIERTER PLAN:** `~/.claude-acc3/plans/calm-tumbling-iverson.md`
-  - 🎯 **Salt Bae Hook Flow (OPTIMIERT):**
-    - 0:00-0:05 Hook: "SALT BAE LOST $2M to reviews like this"
-    - 0:05-0:12 Pain: NUSR-ET 1-Star Review zoom
-    - 0:12-0:35 Magic Moment (ONE SHOT - keine Cuts!)
-    - 0:35-0:45 CTA: "YOUR worst review. Right now."
-  - 🏪 **Demo Business:** NUSR-ET Steakhouse New York (Salt Bae!)
-  - 📝 **Beste Reviews:** "waited 50 minutes", "$600 steak overcooked"
+- [ ] **Video 1:** Extension Demo (15 Sek ZUERST, dann 45 Sek A/B Test)
+  - 📋 **15s Script:** `content/video-15s-ultra.md`
+  - 📋 **45s Plan:** `~/.claude-acc3/plans/calm-tumbling-iverson.md`
+  - 🎯 **First Principles Erkenntnisse:**
+    - ✅ 15s > 45s (70% vs 30% Completion Rate)
+    - ✅ "YOUR review" > "Salt Bae" (direkt > celebrity)
+    - ✅ Stumm > Voice-Over (85% Sound-Off)
+    - ✅ YouTube SEO > LinkedIn (Intent-basiert)
+  - 🆕 **Landing Page LIVE:** `/video-demo` (tryreviewresponder.com/video-demo)
   - 🎬 **Tools:** OBS Studio (heruntergeladen) + DaVinci Resolve
-  - 📊 **Distribution:** LinkedIn FIRST (B2B), dann YouTube Ads
+  - 📊 **A/B Test:** 15s vs 45s, "YOUR review" vs "Salt Bae"
 
 - [ ] **Video 2:** Full Walkthrough (2 Min) → Landing Page
   - 0:00-0:30 Extension installieren & erste Review
