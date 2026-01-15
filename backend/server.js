@@ -14380,8 +14380,34 @@ app.all('/api/cron/night-loop', async (req, res) => {
       }
     }
 
-    // Hour 3-5: Preparation & Idle
-    if (hour >= 3 && hour <= 5) {
+    // Hour 3: Magic User Nudge - Activate users who clicked magic links but haven't used product
+    if (hour === 3) {
+      console.log('🔮 03:00 - Running Magic User Activation Nudge');
+      actions.push({
+        hour: 3,
+        action: 'nudge-magic-users',
+        description: 'Nudge magic link users who haven\'t used the product',
+      });
+
+      if (!dryRun) {
+        // Call magic nudge endpoint internally
+        try {
+          const baseUrl = process.env.BACKEND_URL || 'https://review-responder.onrender.com';
+          const nudgeResponse = await fetch(
+            `${baseUrl}/api/cron/nudge-magic-users?secret=${process.env.CRON_SECRET}`
+          );
+          const nudgeData = await nudgeResponse.json();
+          results.magic_nudge = nudgeData;
+          console.log(`🔮📧 Magic nudge: ${nudgeData.sent || 0} activation emails sent`);
+        } catch (e) {
+          console.error('Magic nudge call failed:', e.message);
+          results.magic_nudge = { error: e.message };
+        }
+      }
+    }
+
+    // Hour 4-5: Preparation & Idle
+    if (hour >= 4 && hour <= 5) {
       console.log(`😴 ${hour}:00 - Night cycle winding down`);
       actions.push({ hour, action: 'idle', description: 'Preparing for morning outreach' });
     }
@@ -14585,6 +14611,189 @@ P.S. If not interested, just ignore this - I won't bug you again.`;
   } catch (error) {
     console.error('Dead lead revival error:', error);
     res.status(500).json({ error: 'Failed to revive dead leads' });
+  }
+});
+
+// ============================================================================
+// GET /api/cron/nudge-magic-users - Send activation emails to inactive magic link users
+// Added 15.01.2026: Magic link users who clicked but never used the product
+// ============================================================================
+app.all('/api/cron/nudge-magic-users', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!brevoApi && !resend) {
+    return res.status(500).json({ error: 'Email service not configured' });
+  }
+
+  const dryRun = req.query.dry_run === 'true';
+
+  try {
+    // Ensure nudge tracking column exists on users table
+    try {
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS magic_nudge_sent TIMESTAMP`);
+    } catch (e) {
+      /* Column might already exist */
+    }
+
+    // Find magic link users who:
+    // 1. Were created via magic link (email in magic_links with used_at NOT NULL)
+    // 2. Have not used the product (responses_used = 0)
+    // 3. Created more than 24 hours ago
+    // 4. Haven't been nudged yet
+    const inactiveMagicUsers = await dbAll(`
+      SELECT DISTINCT ON (u.email)
+        u.id, u.email, u.business_name, u.created_at,
+        ml.used_at as magic_link_used_at,
+        l.city, l.contact_name
+      FROM users u
+      INNER JOIN magic_links ml ON LOWER(u.email) = LOWER(ml.email)
+      LEFT JOIN outreach_leads l ON LOWER(u.email) = LOWER(l.email)
+      WHERE ml.used_at IS NOT NULL
+        AND u.responses_used = 0
+        AND u.created_at < NOW() - INTERVAL '24 hours'
+        AND u.magic_nudge_sent IS NULL
+        ${getTestEmailExcludeClause('u.email')}
+      ORDER BY u.email, u.created_at DESC
+      LIMIT 20
+    `);
+
+    if (inactiveMagicUsers.length === 0) {
+      return res.json({
+        success: true,
+        sent: 0,
+        message: 'No inactive magic link users to nudge',
+      });
+    }
+
+    if (dryRun) {
+      return res.json({
+        success: true,
+        dry_run: true,
+        users_found: inactiveMagicUsers.length,
+        users: inactiveMagicUsers.map(u => ({
+          email: u.email,
+          business: u.business_name,
+          created: u.created_at
+        })),
+        message: `Would nudge ${inactiveMagicUsers.length} inactive magic link users`,
+      });
+    }
+
+    let sent = 0;
+    const results = [];
+
+    for (const user of inactiveMagicUsers) {
+      try {
+        // PARALLEL-SAFE: Check if nudge was recently sent
+        const recentlySent = await wasEmailRecentlySent(user.email, 'magic_nudge', 60);
+        if (recentlySent) {
+          console.log(`⏭️ Skipping ${user.email} - magic nudge recently sent`);
+          continue;
+        }
+
+        const businessName = user.business_name || user.contact_name || 'your business';
+        const city = user.city || '';
+        const firstName = user.contact_name?.split(' ')[0] || '';
+
+        // Detect German-speaking cities
+        const germanCities = [
+          'München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart',
+          'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Munich', 'Cologne',
+          'Vienna', 'Zurich', 'Geneva'
+        ];
+        const isGerman = germanCities.some(c => city.toLowerCase().includes(c.toLowerCase()));
+
+        let subject, body;
+
+        if (isGerman) {
+          subject = firstName ? `${firstName}, dein Account ist bereit` : `Dein Account ist bereit`;
+          body = `Hey${firstName ? ` ${firstName}` : ''},
+
+du hast vorgestern auf unseren Demo-Link geklickt - cool!
+
+Du hast jetzt ein kostenloses ReviewResponder Konto:
+→ 20 KI-Antworten gratis
+→ Funktioniert mit Google, Yelp, TripAdvisor, etc.
+→ Keine Kreditkarte nötig
+
+Einfach einloggen und ausprobieren:
+https://tryreviewresponder.com/login
+
+Falls du Fragen hast, antworte einfach auf diese Email.
+
+Grüße,
+Berend
+
+P.S. Die meisten Restaurants sparen 2-3 Stunden pro Woche mit automatischen Review-Antworten.`;
+        } else {
+          subject = firstName ? `${firstName}, your account is ready` : `Your account is ready`;
+          body = `Hey${firstName ? ` ${firstName}` : ''},
+
+You clicked our demo link the other day - awesome!
+
+You now have a free ReviewResponder account:
+→ 20 AI responses free
+→ Works with Google, Yelp, TripAdvisor, etc.
+→ No credit card needed
+
+Just log in and try it out:
+https://tryreviewresponder.com/login
+
+If you have any questions, just reply to this email.
+
+Best,
+Berend
+
+P.S. Most restaurants save 2-3 hours per week with automated review responses.`;
+        }
+
+        // Send email
+        const emailResult = await sendEmailWithFallback({
+          to: user.email,
+          subject,
+          html: `<div style="font-family: Arial, sans-serif; max-width: 600px; line-height: 1.6;">${body.replace(/\n/g, '<br>').replace(/(https:\/\/[^\s<]+)/g, '<a href="$1" style="color: #2563eb;">$1</a>')}</div>`,
+          text: body,
+          tags: ['magic_nudge', 'activation'],
+        });
+
+        if (!emailResult.success) {
+          console.error(`Failed to send magic nudge to ${user.email}:`, emailResult.error);
+          continue;
+        }
+
+        // Mark user as nudged
+        await dbQuery('UPDATE users SET magic_nudge_sent = NOW() WHERE id = $1', [user.id]);
+
+        // Record in email history for parallel-safety
+        await recordEmailSend(user.email, 'magic_nudge', 1, `magic_nudge:${user.email}:${Date.now()}`);
+
+        sent++;
+        results.push({ email: user.email, business: businessName });
+        console.log(`🔮📧 Magic nudge sent to ${user.email} (${businessName})`);
+
+        await new Promise(r => setTimeout(r, 500));
+      } catch (err) {
+        console.error(`Failed to send magic nudge to ${user.email}:`, err.message);
+      }
+    }
+
+    res.json({
+      success: true,
+      sent,
+      users_nudged: results,
+      message: sent > 0
+        ? `Sent ${sent} activation nudges to inactive magic link users`
+        : 'No nudges sent',
+    });
+  } catch (error) {
+    console.error('Magic user nudge error:', error);
+    res.status(500).json({ error: 'Failed to nudge magic users' });
   }
 });
 
