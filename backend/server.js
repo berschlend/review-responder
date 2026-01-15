@@ -89,10 +89,6 @@ const FROM_EMAIL = process.env.FROM_EMAIL || 'ReviewResponder <hello@tryreviewre
 const OUTREACH_FROM_EMAIL =
   process.env.OUTREACH_FROM_EMAIL || 'Berend von ReviewResponder <outreach@tryreviewresponder.com>';
 
-// Call booking CTA for all outreach emails (increases conversion through personal touch)
-const CALL_CTA_DE = `\n\nP.S. Fragen? Antworte kurz und wir machen nen 10-Min Call.`;
-const CALL_CTA_EN = `\n\nP.S. Questions? Just reply and we'll do a quick 10-min call.`;
-
 // ==========================================
 // API COST TRACKING
 // ==========================================
@@ -430,19 +426,7 @@ async function sendEmail({
 // Checks unsubscribe list before sending (CAN-SPAM compliance)
 
 async function sendOutreachEmail({ to, subject, html, campaign = 'main', tags = [] }) {
-  // ANTI-SPAM: Full check before sending (format, suppression, frequency)
-  try {
-    const spamCheck = await canSendOutreachEmail(to);
-    if (!spamCheck.canSend) {
-      console.log(`📧 Skipped (${spamCheck.reason}): ${to}`);
-      return { success: false, skipped: true, reason: spamCheck.reason };
-    }
-  } catch (err) {
-    // Don't block on anti-spam check errors
-    console.log(`[Anti-Spam check] Warning: ${err.message}`);
-  }
-
-  // Check if email is unsubscribed before sending (CAN-SPAM)
+  // Check if email is unsubscribed before sending
   try {
     const unsubscribed = await dbGet('SELECT 1 FROM unsubscribes WHERE LOWER(email) = LOWER($1)', [
       to,
@@ -474,7 +458,7 @@ async function sendOutreachEmail({ to, subject, html, campaign = 'main', tags = 
     finalHtml = html + unsubscribeFooter;
   }
 
-  const result = await sendEmail({
+  return sendEmail({
     to,
     subject,
     html: finalHtml,
@@ -483,13 +467,6 @@ async function sendOutreachEmail({ to, subject, html, campaign = 'main', tags = 
     tags,
     addTrackingPixel: true,
   });
-
-  // ANTI-SPAM: Record successful send for frequency tracking
-  if (result && result.messageId) {
-    await recordEmailSend(to, 'outreach');
-  }
-
-  return result;
 }
 
 // ==========================================
@@ -1075,25 +1052,6 @@ async function initDatabase() {
     try {
       await dbQuery(`CREATE INDEX IF NOT EXISTS idx_demo_token ON demo_generations(demo_token)`);
       await dbQuery(`CREATE INDEX IF NOT EXISTS idx_demo_lead ON demo_generations(lead_id)`);
-    } catch (error) {
-      // Index might already exist
-    }
-
-    // Review cache table - prevents redundant API calls
-    await dbQuery(`
-      CREATE TABLE IF NOT EXISTS review_cache (
-        id SERIAL PRIMARY KEY,
-        google_place_id TEXT UNIQUE NOT NULL,
-        business_name TEXT,
-        reviews JSONB NOT NULL,
-        review_count INTEGER DEFAULT 0,
-        average_rating DECIMAL(2,1),
-        scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        source TEXT DEFAULT 'outscraper'
-      )
-    `);
-    try {
-      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_review_cache_place ON review_cache(google_place_id)`);
     } catch (error) {
       // Index might already exist
     }
@@ -6027,70 +5985,39 @@ async function scrapeGoogleReviewsOutscraper(placeId, limit = 10) {
   }));
 }
 
-// Helper: Check review cache (48h validity)
-async function getCachedReviews(placeId) {
+// Helper: Scrape Google reviews - tries cache first, then Outscraper (500 free), SerpAPI (100 free), Google Places (5 free)
+async function scrapeGoogleReviews(placeId, limit = 10) {
+  // FIRST: Check if we have cached reviews from previous scrapes (saves 50-70% of API calls!)
   try {
-    const result = await dbQuery(`
-      SELECT reviews, business_name, scraped_at
-      FROM review_cache
-      WHERE google_place_id = $1
-        AND scraped_at > NOW() - INTERVAL '48 hours'
-    `, [placeId]);
-
-    if (result.rows.length > 0) {
-      console.log(`[CACHE HIT] Using cached reviews for ${result.rows[0].business_name || placeId}`);
-      return result.rows[0].reviews;
+    const cached = await dbQuery(
+      `SELECT scraped_reviews FROM demo_generations
+       WHERE google_place_id = $1
+       AND scraped_reviews IS NOT NULL
+       AND created_at > NOW() - INTERVAL '30 days'
+       ORDER BY created_at DESC LIMIT 1`,
+      [placeId]
+    );
+    if (cached.rows.length > 0 && cached.rows[0].scraped_reviews) {
+      const cachedReviews = JSON.parse(cached.rows[0].scraped_reviews);
+      if (cachedReviews.length > 0) {
+        console.log(`Using ${cachedReviews.length} cached reviews for ${placeId} (saving API call!)`);
+        return cachedReviews.slice(0, limit);
+      }
     }
-    return null;
-  } catch (err) {
-    console.log(`Cache check failed: ${err.message}`);
-    return null;
-  }
-}
-
-// Helper: Save reviews to cache
-async function cacheReviews(placeId, businessName, reviews) {
-  try {
-    const avgRating = reviews.length > 0
-      ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
-      : 0;
-
-    await dbQuery(`
-      INSERT INTO review_cache (google_place_id, business_name, reviews, review_count, average_rating, scraped_at, source)
-      VALUES ($1, $2, $3, $4, $5, NOW(), 'outscraper')
-      ON CONFLICT (google_place_id)
-      DO UPDATE SET reviews = $3, review_count = $4, average_rating = $5, scraped_at = NOW()
-    `, [placeId, businessName, JSON.stringify(reviews), reviews.length, avgRating.toFixed(1)]);
-
-    console.log(`[CACHE SAVE] Cached ${reviews.length} reviews for ${businessName || placeId}`);
-  } catch (err) {
-    console.log(`Cache save failed: ${err.message}`);
-  }
-}
-
-// Helper: Scrape Google reviews - WITH CACHING + 4 fallbacks
-// Order: 1. Cache → 2. Outscraper → 3. SerpAPI → 4. Google Places → 5. Expired Cache
-async function scrapeGoogleReviews(placeId, limit = 10, businessName = null) {
-  // 1. Check cache first (48h validity) - saves API calls!
-  const cachedReviews = await getCachedReviews(placeId);
-  if (cachedReviews && cachedReviews.length >= Math.min(limit, 3)) {
-    return cachedReviews.slice(0, limit);
+  } catch (cacheErr) {
+    console.log(`Cache check failed: ${cacheErr.message}, proceeding with API...`);
   }
 
-  // 2. Try Outscraper first (500 free reviews/month)
+  // Try Outscraper first (500 free reviews/month vs SerpAPI's 100 searches/month)
   if (process.env.OUTSCRAPER_API_KEY) {
     try {
-      const reviews = await scrapeGoogleReviewsOutscraper(placeId, limit);
-      if (reviews.length > 0) {
-        await cacheReviews(placeId, businessName, reviews);
-        return reviews;
-      }
+      return await scrapeGoogleReviewsOutscraper(placeId, limit);
     } catch (outsErr) {
       console.log(`Outscraper failed: ${outsErr.message}, trying SerpAPI fallback...`);
     }
   }
 
-  // 3. Fallback to SerpAPI (100 free/month)
+  // Fallback to SerpAPI
   const serpApiKey = getNextSerpApiKey();
   if (serpApiKey) {
     try {
@@ -6102,71 +6029,90 @@ async function scrapeGoogleReviews(placeId, limit = 10, businessName = null) {
         throw new Error(data.error);
       }
 
-      const reviews = data.reviews?.slice(0, limit).map(r => ({
-        text: r.snippet || r.text || '',
-        rating: r.rating || 0,
-        author: r.user?.name || 'Anonymous',
-        date: r.date || '',
-        source: 'google',
-        review_link: r.link || null,
-        review_id: r.review_id || null,
-      })) || [];
-
-      if (reviews.length > 0) {
-        await cacheReviews(placeId, businessName, reviews);
-        return reviews;
-      }
+      return (
+        data.reviews?.slice(0, limit).map(r => ({
+          text: r.snippet || r.text || '',
+          rating: r.rating || 0,
+          author: r.user?.name || 'Anonymous',
+          date: r.date || '',
+          source: 'google',
+          review_link: r.link || null,
+          review_id: r.review_id || null,
+        })) || []
+      );
     } catch (serpErr) {
       console.log(`SerpAPI also failed: ${serpErr.message}`);
     }
   }
 
-  // 4. Fallback: Google Places API (5 reviews per place, FREE with existing API key)
+  // Fallback to Apify (Free tier: $5/month credits = ~10,000 reviews!)
+  if (process.env.APIFY_API_TOKEN) {
+    try {
+      console.log(`Trying Apify Google Maps Reviews scraper...`);
+      const apifyResponse = await fetch(
+        'https://api.apify.com/v2/acts/compass~google-maps-reviews-scraper/run-sync-get-dataset-items?token=' +
+          process.env.APIFY_API_TOKEN,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            placeIds: [placeId],
+            maxReviews: limit,
+            language: 'en',
+            sort: 'lowest', // Get negative reviews first!
+          }),
+        }
+      );
+
+      if (apifyResponse.ok) {
+        const apifyData = await apifyResponse.json();
+        if (apifyData.length > 0 && apifyData[0].reviews?.length > 0) {
+          console.log(`Apify returned ${apifyData[0].reviews.length} reviews`);
+          return apifyData[0].reviews.slice(0, limit).map((r) => ({
+            text: r.text || r.snippet || '',
+            rating: r.stars || r.rating || 0,
+            author: r.name || r.author || 'Anonymous',
+            date: r.publishedAtDate || r.date || '',
+            source: 'apify',
+            review_link: r.reviewUrl || null,
+            review_id: r.reviewId || null,
+          }));
+        }
+      }
+      console.log(`Apify returned no reviews for ${placeId}`);
+    } catch (apifyErr) {
+      console.log(`Apify also failed: ${apifyErr.message}`);
+    }
+  }
+
+  // Final fallback: Google Places API (5 reviews per place, FREE with existing API key)
   if (process.env.GOOGLE_PLACES_API_KEY) {
     try {
-      console.log(`[GOOGLE PLACES] Using fallback for ${placeId} (5 max)...`);
+      console.log(`Using Google Places API fallback for reviews (5 max per place)...`);
       const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews&key=${process.env.GOOGLE_PLACES_API_KEY}`;
       const response = await fetch(detailsUrl);
       const data = await response.json();
 
       if (data.status === 'OK' && data.result?.reviews?.length > 0) {
-        console.log(`[GOOGLE PLACES] Got ${data.result.reviews.length} reviews`);
-        const reviews = data.result.reviews.slice(0, limit).map((r) => ({
+        console.log(`Google Places returned ${data.result.reviews.length} reviews`);
+        return data.result.reviews.slice(0, limit).map((r) => ({
           text: r.text || '',
           rating: r.rating || 0,
           author: r.author_name || 'Anonymous',
           date: r.relative_time_description || '',
           source: 'google_places',
-          review_link: null,
+          review_link: null, // Google Places doesn't provide direct review links
           review_id: null,
         }));
-        if (reviews.length > 0) {
-          await cacheReviews(placeId, businessName, reviews);
-          return reviews;
-        }
       }
+      console.log(`Google Places returned no reviews for ${placeId}`);
     } catch (placesErr) {
-      console.log(`[GOOGLE PLACES] Failed: ${placesErr.message}`);
+      console.log(`Google Places fallback also failed: ${placesErr.message}`);
     }
   }
 
-  // 5. Last resort: Check if we have ANY cached reviews (even expired)
-  try {
-    const oldCache = await dbQuery(`
-      SELECT reviews, business_name FROM review_cache
-      WHERE google_place_id = $1
-    `, [placeId]);
-
-    if (oldCache.rows.length > 0 && oldCache.rows[0].reviews?.length > 0) {
-      console.log(`[CACHE EXPIRED] Using expired cache for ${oldCache.rows[0].business_name || placeId}`);
-      return oldCache.rows[0].reviews.slice(0, limit);
-    }
-  } catch (err) {
-    // Ignore
-  }
-
-  // Return empty array instead of throwing - allows demo generation to continue
-  console.log(`[ALL APIS FAILED] No reviews for ${placeId}, returning empty array`);
+  // Return empty array instead of throwing - allows demo generation to continue with no reviews
+  console.log(`All review APIs failed for ${placeId}, returning empty array`);
   return [];
 }
 
@@ -10437,106 +10383,6 @@ app.get('/api/admin/parallel-safe-status', authenticateAdmin, async (req, res) =
   }
 });
 
-// GET /api/admin/review-cache - Review cache stats and management
-app.get('/api/admin/review-cache', async (req, res) => {
-  const key = req.query.key || req.headers['x-admin-key'];
-  if (key !== process.env.ADMIN_SECRET) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  try {
-    // Get cache stats
-    const stats = await dbGet(`
-      SELECT
-        COUNT(*) as total_cached,
-        COUNT(*) FILTER (WHERE scraped_at > NOW() - INTERVAL '48 hours') as fresh_cache,
-        COUNT(*) FILTER (WHERE scraped_at <= NOW() - INTERVAL '48 hours') as stale_cache,
-        SUM(review_count) as total_reviews_cached,
-        MIN(scraped_at) as oldest_cache,
-        MAX(scraped_at) as newest_cache
-      FROM review_cache
-    `);
-
-    // Get recent cache entries
-    const recentEntries = await dbAll(`
-      SELECT business_name, google_place_id, review_count, average_rating, scraped_at, source
-      FROM review_cache
-      ORDER BY scraped_at DESC
-      LIMIT 10
-    `);
-
-    res.json({
-      stats: {
-        totalCached: parseInt(stats.total_cached) || 0,
-        freshCache: parseInt(stats.fresh_cache) || 0,
-        staleCache: parseInt(stats.stale_cache) || 0,
-        totalReviewsCached: parseInt(stats.total_reviews_cached) || 0,
-        oldestCache: stats.oldest_cache,
-        newestCache: stats.newest_cache,
-        cacheHitPotential: `${Math.round((parseInt(stats.fresh_cache) || 0) / Math.max(1, parseInt(stats.total_cached) || 1) * 100)}%`,
-      },
-      recentEntries,
-      info: {
-        cacheValidity: '48 hours',
-        fallbackOrder: ['1. Cache', '2. Outscraper', '3. SerpAPI', '4. Google Places', '5. Expired Cache'],
-      },
-    });
-  } catch (error) {
-    console.error('Review cache stats error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// GET /api/admin/populate-cache - Pre-populate cache from existing demos
-app.get('/api/admin/populate-cache', async (req, res) => {
-  const key = req.query.key || req.headers['x-admin-key'];
-  if (key !== process.env.ADMIN_SECRET) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  try {
-    // Find demos with reviews that aren't cached yet
-    const demosWithReviews = await dbAll(`
-      SELECT DISTINCT d.google_place_id, d.business_name, d.scraped_reviews
-      FROM demo_generations d
-      LEFT JOIN review_cache rc ON d.google_place_id = rc.google_place_id
-      WHERE d.google_place_id IS NOT NULL
-        AND d.scraped_reviews IS NOT NULL
-        AND jsonb_array_length(d.scraped_reviews) > 0
-        AND rc.id IS NULL
-      LIMIT 100
-    `);
-
-    let populated = 0;
-    for (const demo of demosWithReviews) {
-      try {
-        const reviews = demo.scraped_reviews;
-        const avgRating = reviews.length > 0
-          ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length
-          : 0;
-
-        await dbQuery(`
-          INSERT INTO review_cache (google_place_id, business_name, reviews, review_count, average_rating, source)
-          VALUES ($1, $2, $3, $4, $5, 'demo_backfill')
-          ON CONFLICT (google_place_id) DO NOTHING
-        `, [demo.google_place_id, demo.business_name, JSON.stringify(reviews), reviews.length, avgRating.toFixed(1)]);
-        populated++;
-      } catch (err) {
-        console.log(`Cache populate error for ${demo.business_name}: ${err.message}`);
-      }
-    }
-
-    res.json({
-      message: `Populated ${populated} cache entries from existing demos`,
-      demosChecked: demosWithReviews.length,
-      entriesCreated: populated,
-    });
-  } catch (error) {
-    console.error('Cache populate error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
 // GET /api/admin/sales-dashboard - Comprehensive sales dashboard data
 app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
   try {
@@ -10984,106 +10830,6 @@ app.get('/api/admin/email-dashboard', authenticateAdmin, async (req, res) => {
   } catch (error) {
     console.error('Email dashboard error:', error);
     res.status(500).json({ error: 'Failed to get email dashboard', details: error.message });
-  }
-});
-
-// GET /api/admin/anti-spam - Anti-spam dashboard and management
-app.get('/api/admin/anti-spam', authenticateAdmin, async (req, res) => {
-  try {
-    // Suppression list stats
-    let suppressions = [];
-    try {
-      suppressions = await dbAll(`
-        SELECT reason, COUNT(*) as count
-        FROM email_suppressions
-        GROUP BY reason
-        ORDER BY count DESC
-      `);
-    } catch (e) {
-      console.error('Suppressions query error:', e.message);
-    }
-
-    // Recent suppressions
-    let recentSuppressions = [];
-    try {
-      recentSuppressions = await dbAll(`
-        SELECT email_address, reason, details, created_at
-        FROM email_suppressions
-        ORDER BY created_at DESC
-        LIMIT 20
-      `);
-    } catch (e) {
-      console.error('Recent suppressions query error:', e.message);
-    }
-
-    // Frequency cap violations (emails that were blocked)
-    let frequencyBlocked = 0;
-    try {
-      const result = await dbGet(`
-        SELECT COUNT(DISTINCT email_address) as count
-        FROM email_send_history
-        WHERE sent_at > NOW() - INTERVAL '7 days'
-        GROUP BY email_address
-        HAVING COUNT(*) >= ${MAX_EMAILS_PER_WEEK}
-      `);
-      frequencyBlocked = parseInt(result?.count || 0);
-    } catch (e) {
-      // Table might not exist yet
-    }
-
-    // Top recipients this week (to spot potential spam issues)
-    let topRecipients = [];
-    try {
-      topRecipients = await dbAll(`
-        SELECT email_address, COUNT(*) as emails_this_week
-        FROM email_send_history
-        WHERE sent_at > NOW() - INTERVAL '7 days'
-        GROUP BY email_address
-        ORDER BY emails_this_week DESC
-        LIMIT 10
-      `);
-    } catch (e) {
-      console.error('Top recipients query error:', e.message);
-    }
-
-    res.json({
-      config: {
-        maxEmailsPerWeek: MAX_EMAILS_PER_WEEK,
-      },
-      suppressions: {
-        byReason: suppressions,
-        recent: recentSuppressions,
-        total: suppressions.reduce((sum, s) => sum + parseInt(s.count || 0), 0),
-      },
-      frequencyTracking: {
-        atLimit: frequencyBlocked,
-        topRecipients: topRecipients.map(r => ({
-          email: r.email_address,
-          count: parseInt(r.emails_this_week),
-          atLimit: parseInt(r.emails_this_week) >= MAX_EMAILS_PER_WEEK,
-        })),
-      },
-    });
-  } catch (error) {
-    console.error('Anti-spam dashboard error:', error);
-    res.status(500).json({ error: 'Failed to get anti-spam dashboard', details: error.message });
-  }
-});
-
-// POST /api/admin/anti-spam/suppress - Manually suppress an email
-app.post('/api/admin/anti-spam/suppress', authenticateAdmin, async (req, res) => {
-  const { email, reason = 'manual', details } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ error: 'Email required' });
-  }
-
-  try {
-    await suppressEmail(email, reason, details || 'Manually suppressed by admin');
-    res.json({ success: true, message: `${email} suppressed (${reason})` });
-  } catch (error) {
-    console.error('Suppress email error:', error);
-    res.status(500).json({ error: 'Failed to suppress email', details: error.message });
   }
 });
 
@@ -12187,7 +11933,7 @@ Falls es gefällt: 20 Antworten/Monat sind kostenlos.
 Falls nicht: Kein Problem.
 
 Grüße,
-Berend${CALL_CTA_DE}`;
+Berend`;
         } else {
           subject = `Built something for ${businessName}`;
           body = `Hey,
@@ -12203,7 +11949,7 @@ If you like it: 20 responses/month are free.
 If not: No worries.
 
 Best,
-Berend${CALL_CTA_EN}`;
+Berend`;
         }
 
         // Send via Brevo (to avoid hitting Resend limits)
@@ -12433,72 +12179,92 @@ app.all('/api/cron/followup-clickers', async (req, res) => {
         let subject, body;
 
         if (demoUrl) {
-          // Email WITH personalized demo link
+          // Email WITH personalized demo link - much better conversion!
           if (isGerman) {
-            subject = `Demo für ${businessName}`;
-            body = `Hallo,
+            subject = `3 AI-Antworten für ${businessName} – schon fertig`;
+            body = `Hey,
 
-hier sind 3 AI-generierte Antworten auf echte Google Bewertungen von ${businessName}:
+ich hab gesehen, dass ihr auf meine Email geklickt habt.
+
+Statt lange zu reden, hab ich einfach mal gemacht: Hier sind 3 AI-generierte Antworten auf eure echten Google Bewertungen:
 
 ${demoUrl}
 
-30 Sekunden und ihr seht ob der Ton passt.
+Schaut euch an ob der Ton passt. Dauert 30 Sekunden.
 
-20 Antworten/Monat kostenlos.
+Falls es gefällt: 20 Antworten/Monat sind kostenlos. Falls nicht: Kein Problem, einfach ignorieren.
 
 Grüße,
 Berend
-ReviewResponder${CALL_CTA_DE}`;
-          } else {
-            subject = `Demo for ${businessName}`;
-            body = `Hi,
 
-Here are 3 AI-generated responses to actual Google reviews from ${businessName}:
+P.S. Code CLICKER30 = 30% Rabatt wenn ihr upgraden wollt.`;
+          } else {
+            subject = `3 AI responses for ${businessName} – already done`;
+            body = `Hey,
+
+I noticed someone from ${businessName} clicked on my email.
+
+Instead of asking for a call, I just went ahead and made this for you: 3 AI-generated responses to your actual Google reviews:
 
 ${demoUrl}
 
-30 seconds to see if the tone works.
+Takes 30 seconds to see if the tone matches your brand.
 
-20 responses/month free.
+If you like it: 20 responses/month are free. If not: No worries, just ignore this.
 
 Best,
 Berend
-ReviewResponder${CALL_CTA_EN}`;
+
+P.S. Use code CLICKER30 for 30% off if you upgrade.`;
           }
         } else {
-          // Fallback email WITHOUT demo
+          // Fallback email WITHOUT demo (if demo generation failed)
           if (isGerman) {
-            subject = `${businessName} - Google Bewertungen`;
+            const reviewText = reviewCount
+              ? `Mit über ${reviewCount.toLocaleString('de-DE')} Google Bewertungen`
+              : 'Mit so vielen Bewertungen';
+            subject = reviewCount
+              ? `${reviewCount.toLocaleString('de-DE')}+ Bewertungen – wie antwortet ihr?`
+              : `Kurze Frage zu ${businessName}`;
 
-            body = `Hallo,
+            body = `Hey,
 
-${businessName} hat Google Bewertungen. Antwortet ihr darauf?
+ich hab gesehen, dass ihr auf meine Email geklickt habt.
 
-ReviewResponder generiert professionelle Antworten in 3 Sekunden statt 5 Minuten.
+${reviewText} habt ihr wahrscheinlich einiges zu tun beim Beantworten. ReviewResponder macht das in Sekunden statt Minuten.
 
-Hier testen: https://tryreviewresponder.com?ref=hot_lead
+Hier könnt ihr es direkt an euren echten Bewertungen testen:
+https://tryreviewresponder.com?ref=hot_lead
 
-20 Antworten/Monat kostenlos.
+20 Antworten/Monat kostenlos, keine Kreditkarte.
 
 Grüße,
 Berend
-ReviewResponder${CALL_CTA_DE}`;
+
+P.S. Code CLICKER30 = 30% Rabatt wenn ihr upgraden wollt.`;
           } else {
-            subject = `${businessName} - Google Reviews`;
+            const reviewText = reviewCount
+              ? `${reviewCount.toLocaleString()} reviews`
+              : 'hundreds of reviews';
+            subject = reviewCount
+              ? `${reviewCount.toLocaleString()}+ reviews – how do you respond?`
+              : `Quick question about ${businessName}`;
 
-            body = `Hi,
+            body = `Hey,
 
-${businessName} has Google reviews. Do you respond to them?
+I noticed someone from ${businessName} clicked on my email.
 
-ReviewResponder generates professional responses in 3 seconds instead of 5 minutes.
+With ${reviewText}, responding to all of them takes time. ReviewResponder does it in seconds instead of minutes.
 
-Try it: https://tryreviewresponder.com?ref=hot_lead
+Try it on your actual reviews here:
+https://tryreviewresponder.com?ref=hot_lead
 
-20 responses/month free.
+20 responses/month free, no credit card.
 
 Best,
 Berend
-ReviewResponder${CALL_CTA_EN}`;
+
+P.S. Use code CLICKER30 for 30% off if you upgrade.`;
           }
         }
 
@@ -12793,28 +12559,10 @@ app.get('/api/cron/hot-lead-attack', async (req, res) => {
       try {
         const businessName = clicker.business_name || 'your business';
         const city = clicker.city || '';
-
-        // Generate demo if not exists (clickers are high-value leads!)
-        let demoToken = clicker.demo_token;
-        if (!demoToken && clicker.lead_id) {
-          console.log(`📝 [HotLead] Generating demo for clicker: ${businessName}...`);
-          try {
-            const demoResult = await generateDemoForLead({
-              id: clicker.lead_id,
-              business_name: businessName,
-              city: city,
-              website: clicker.website,
-            });
-            if (demoResult && demoResult.demoToken) {
-              demoToken = demoResult.demoToken;
-              console.log(`✅ [HotLead] Demo generated: ${demoResult.demoUrl}`);
-            }
-          } catch (err) {
-            console.log(`⚠️ [HotLead] Demo failed for ${businessName}: ${err.message}`);
-          }
-        }
-
-        const demoUrl = demoToken ? `https://tryreviewresponder.com/demo/${demoToken}` : null;
+        const demoToken = clicker.demo_token;
+        const demoUrl = demoToken
+          ? `https://tryreviewresponder.com/demo/${demoToken}?discount=CLICKER30`
+          : null;
 
         // Detect German-speaking cities
         const germanCities = [
@@ -12840,68 +12588,68 @@ app.get('/api/cron/hot-lead-attack', async (req, res) => {
         let subject, body;
 
         if (demoUrl) {
-          // Send personalized demo
+          // They already have a demo - quick nudge
           if (isGerman) {
-            subject = `Demo für ${businessName}`;
-            body = `Hallo,
+            subject = `Gesehen aber nicht getestet? 🎯`;
+            body = `Hey,
 
-hier sind 3 AI-generierte Antworten auf echte Google Bewertungen von ${businessName}:
+ich hab gesehen, dass du gerade auf meine Email geklickt hast.
 
+Falls du die Demo verpasst hast - hier nochmal der direkte Link:
 ${demoUrl}
 
-30 Sekunden - dann wisst ihr ob der Ton passt.
+30 Sekunden und du weißt ob ReviewResponder zu ${businessName} passt.
 
-20 Antworten/Monat kostenlos.
+Code CLICKER30 = 30% Rabatt wenn du upgraden willst.
 
 Grüße,
-Berend
-ReviewResponder`;
+Berend`;
           } else {
-            subject = `Demo for ${businessName}`;
-            body = `Hi,
+            subject = `Saw you checking us out 👀`;
+            body = `Hey,
 
-Here are 3 AI-generated responses to actual Google reviews from ${businessName}:
+I noticed you just clicked through to ReviewResponder.
 
+In case you missed the demo I made for ${businessName}:
 ${demoUrl}
 
-30 seconds to see if the tone works.
+Takes 30 seconds to see if the AI responses match your brand voice.
 
-20 responses/month free.
+Use code CLICKER30 for 30% off if you decide to upgrade.
 
 Best,
-Berend
-ReviewResponder`;
+Berend`;
           }
         } else {
-          // No demo available - generic message
+          // No demo yet - offer to make one
           if (isGerman) {
-            subject = `${businessName} - Google Bewertungen`;
-            body = `Hallo,
+            subject = `Soll ich was für ${businessName} machen?`;
+            body = `Hey,
 
-${businessName} hat Google Bewertungen - antwortet ihr darauf?
+ich hab gesehen, dass du gerade auf meine Email geklickt hast.
 
-ReviewResponder generiert professionelle Antworten in 3 Sekunden:
-https://tryreviewresponder.com?ref=hot_lead
+Wenn du willst, mache ich dir eine kostenlose Demo mit echten AI-Antworten auf eure Google Bewertungen.
 
-20 Antworten/Monat kostenlos.
+Antworte einfach mit "Ja" und ich schick dir den Link in 5 Minuten.
 
 Grüße,
 Berend
-ReviewResponder`;
+
+P.S. Code CLICKER30 = 30% Rabatt wenn du später upgraden willst.`;
           } else {
-            subject = `${businessName} - Google Reviews`;
-            body = `Hi,
+            subject = `Want me to make something for ${businessName}?`;
+            body = `Hey,
 
-${businessName} has Google reviews - do you respond to them?
+I noticed you just clicked on my email.
 
-ReviewResponder generates professional responses in 3 seconds:
-https://tryreviewresponder.com?ref=hot_lead
+Want me to create a free demo with real AI responses to your Google reviews?
 
-20 responses/month free.
+Just reply "Yes" and I'll send you the link in 5 minutes.
 
 Best,
 Berend
-ReviewResponder`;
+
+P.S. Use code CLICKER30 for 30% off if you upgrade later.`;
           }
         }
 
@@ -13250,21 +12998,6 @@ app.get('/api/cron/turbo-email', async (req, res) => {
         const firstName = lead.contact_name?.split(' ')[0] || '';
         const city = lead.city || '';
 
-        // Generate demo if not exists (like daily-outreach)
-        let demoToken = lead.demo_token;
-        if (!demoToken) {
-          console.log(`📝 [Turbo] Generating demo for ${businessName}...`);
-          try {
-            const demoResult = await generateDemoForLead(lead);
-            if (demoResult && demoResult.demoToken) {
-              demoToken = demoResult.demoToken;
-              console.log(`✅ [Turbo] Demo generated: ${demoResult.demoUrl}`);
-            }
-          } catch (err) {
-            console.log(`⚠️ [Turbo] Demo failed for ${businessName}: ${err.message}`);
-          }
-        }
-
         // Detect German-speaking cities
         const germanCities = [
           'München',
@@ -13293,9 +13026,9 @@ app.get('/api/cron/turbo-email', async (req, res) => {
         ];
         const isGerman = germanCities.some(gc => city.toLowerCase().includes(gc.toLowerCase()));
 
-        // Build demo URL (no discount spam)
-        const demoUrl = demoToken
-          ? `https://tryreviewresponder.com/demo/${demoToken}`
+        // Build demo URL with discount if available
+        const demoUrl = lead.demo_token
+          ? `https://tryreviewresponder.com/demo/${lead.demo_token}?discount=DEMO30`
           : 'https://tryreviewresponder.com?ref=turbo_email';
 
         let subject, body;
@@ -13309,32 +13042,18 @@ app.get('/api/cron/turbo-email', async (req, res) => {
           ];
           subject = subjects[(wave - 1) % subjects.length];
 
-          body = demoToken
-            ? `Hey${firstName ? ` ${firstName}` : ''},
+          body = `Hey${firstName ? ` ${firstName}` : ''},
 
-hier sind 3 AI-generierte Antworten auf echte Google Bewertungen von ${businessName}:
+ich hab ReviewResponder gebaut - AI die auf Google Bewertungen antwortet. Klingt simpel, spart aber 80% Zeit.
 
-${demoUrl}
+${lead.demo_token ? `Hier ist eine Demo für ${businessName}:\n${demoUrl}` : `Teste es direkt:\n${demoUrl}`}
 
-30 Sekunden - dann wisst ihr ob der Ton passt.
-
-20 Antworten/Monat kostenlos.
+20 Antworten/Monat kostenlos, keine Kreditkarte.
 
 Grüße,
 Berend
-ReviewResponder`
-            : `Hey${firstName ? ` ${firstName}` : ''},
 
-${businessName} hat Google Bewertungen - antwortet ihr darauf?
-
-ReviewResponder generiert professionelle Antworten in 3 Sekunden:
-https://tryreviewresponder.com
-
-20 Antworten/Monat kostenlos.
-
-Grüße,
-Berend
-ReviewResponder`;
+P.S. Code DEMO30 = 30% Rabatt wenn du upgraden willst.`;
         } else {
           // A/B test subjects based on wave
           const subjects = [
@@ -13344,32 +13063,18 @@ ReviewResponder`;
           ];
           subject = subjects[(wave - 1) % subjects.length];
 
-          body = demoToken
-            ? `Hey${firstName ? ` ${firstName}` : ''},
+          body = `Hey${firstName ? ` ${firstName}` : ''},
 
-Here are 3 AI-generated responses to actual Google reviews from ${businessName}:
+I built ReviewResponder - AI that replies to Google reviews. Sounds simple, saves 80% of time.
 
-${demoUrl}
+${lead.demo_token ? `Here's a demo for ${businessName}:\n${demoUrl}` : `Try it directly:\n${demoUrl}`}
 
-30 seconds to see if the tone works.
-
-20 responses/month free.
+20 responses/month free, no credit card.
 
 Best,
 Berend
-ReviewResponder`
-            : `Hey${firstName ? ` ${firstName}` : ''},
 
-${businessName} has Google reviews - do you respond to them?
-
-ReviewResponder generates professional responses in 3 seconds:
-https://tryreviewresponder.com
-
-20 responses/month free.
-
-Best,
-Berend
-ReviewResponder`;
+P.S. Use code DEMO30 for 30% off if you upgrade.`;
         }
 
         // Use Resend for first 100, Brevo as backup
@@ -13925,7 +13630,7 @@ ${demoUrl ? `Deine personalisierte Demo ist immer noch hier: ${demoUrl}` : ''}
 Grüße,
 Berend
 
-P.S. Der Link funktioniert 7 Tage. Fragen? Einfach antworten – 10-Min Call geht immer.`;
+P.S. Der Link funktioniert 7 Tage.`;
         } else {
           subject = `Your account is ready – no password needed`;
           body = `Hey,
@@ -13943,7 +13648,7 @@ ${demoUrl ? `Your personalized demo is still here: ${demoUrl}` : ''}
 Best,
 Berend
 
-P.S. Link works for 7 days. Questions? Just reply – happy to do a quick 10-min call.`;
+P.S. This link works for 7 days.`;
         }
 
         // Send via Brevo (higher deliverability for outreach)
@@ -14090,7 +13795,7 @@ ${demoUrl}
 Falls sie dir gefällt: 20 Antworten/Monat kostenlos.
 
 Grüße,
-Berend${CALL_CTA_DE}`;
+Berend`;
         } else {
           subject = `Your ${businessName} demo expires in 4 days`;
           body = `Hey,
@@ -14103,7 +13808,7 @@ ${demoUrl}
 If you like it: 20 responses/month are free.
 
 Best,
-Berend${CALL_CTA_EN}`;
+Berend`;
         }
 
         if (brevoApi) {
@@ -14181,7 +13886,7 @@ Danach sind die AI-generierten Antworten für deine echten Bewertungen weg.
 Falls du sie behalten willst: Einfach kostenlos registrieren.
 
 Grüße,
-Berend${CALL_CTA_DE}`;
+Berend`;
         } else {
           subject = `Last chance: ${businessName} demo expires TOMORROW`;
           body = `Hey,
@@ -14196,7 +13901,7 @@ After that, the AI-generated responses for your real reviews will be gone.
 If you want to keep them: Just sign up for free.
 
 Best,
-Berend${CALL_CTA_EN}`;
+Berend`;
         }
 
         if (brevoApi) {
@@ -15070,16 +14775,6 @@ async function initOutreachTables() {
     await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS demo_token TEXT`); // Unique demo page token
     await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS demo_url TEXT`); // Full demo page URL
 
-    // Multi-Channel Contact Discovery (Omnichannel Outreach)
-    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS twitter_handle TEXT`);
-    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS facebook_page TEXT`);
-    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS instagram_handle TEXT`);
-    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS linkedin_company TEXT`);
-    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS google_business_url TEXT`);
-    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS contact_form_url TEXT`);
-    // Track which channels we've reached out through
-    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS channels_contacted JSONB DEFAULT '{}'::jsonb`);
-
     // A/B Testing table for email subject lines
     await dbQuery(`
       CREATE TABLE IF NOT EXISTS outreach_ab_tests (
@@ -15185,23 +14880,10 @@ async function initOutreachTables() {
     await dbQuery(`CREATE INDEX IF NOT EXISTS idx_email_history_addr ON email_send_history(email_address, email_type)`);
     await dbQuery(`CREATE INDEX IF NOT EXISTS idx_email_history_time ON email_send_history(sent_at DESC)`);
 
-    // Email suppressions - for bounces, complaints, and global frequency cap
-    await dbQuery(`
-      CREATE TABLE IF NOT EXISTS email_suppressions (
-        id SERIAL PRIMARY KEY,
-        email_address TEXT NOT NULL,
-        reason VARCHAR(50) NOT NULL,
-        details TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(email_address, reason)
-      )
-    `);
-    await dbQuery(`CREATE INDEX IF NOT EXISTS idx_suppressions_email ON email_suppressions(LOWER(email_address))`);
-
     // Clean up expired locks automatically
     await dbQuery(`DELETE FROM processing_locks WHERE expires_at < NOW()`);
 
-    console.log('✅ Outreach tables initialized (with parallel-safe system + anti-spam)');
+    console.log('✅ Outreach tables initialized (with parallel-safe system)');
   } catch (error) {
     console.error('Error initializing outreach tables:', error);
   }
@@ -15209,116 +14891,6 @@ async function initOutreachTables() {
 
 // Call this after main initDatabase
 initOutreachTables();
-
-// ============================================
-// ANTI-SPAM HELPER FUNCTIONS
-// ============================================
-
-// Maximum outreach emails per recipient per week (prevents spam complaints)
-const MAX_EMAILS_PER_WEEK = 4;
-
-/**
- * Validate email format (basic check)
- */
-function isValidEmailFormat(email) {
-  if (!email || typeof email !== 'string') return false;
-  // Basic regex - not too strict to allow edge cases
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email.trim());
-}
-
-/**
- * Check if email is suppressed (bounced, complained, etc.)
- */
-async function isEmailSuppressed(email) {
-  if (!email) return true;
-  try {
-    const suppressed = await dbGet(
-      'SELECT reason FROM email_suppressions WHERE LOWER(email_address) = LOWER($1) LIMIT 1',
-      [email.trim()]
-    );
-    return suppressed !== null;
-  } catch (err) {
-    console.error('[Anti-Spam] Error checking suppression:', err.message);
-    return false; // Don't block on DB errors
-  }
-}
-
-/**
- * Check if we've sent too many emails to this address this week
- * Returns true if over limit (should NOT send)
- */
-async function isOverEmailFrequencyLimit(email) {
-  if (!email) return true;
-  try {
-    const result = await dbGet(`
-      SELECT COUNT(*) as count FROM email_send_history
-      WHERE LOWER(email_address) = LOWER($1)
-      AND sent_at > NOW() - INTERVAL '7 days'
-    `, [email.trim()]);
-    const count = parseInt(result?.count || 0);
-    return count >= MAX_EMAILS_PER_WEEK;
-  } catch (err) {
-    console.error('[Anti-Spam] Error checking frequency:', err.message);
-    return false; // Don't block on DB errors
-  }
-}
-
-/**
- * Record email send for frequency tracking
- */
-async function recordEmailSend(email, emailType = 'outreach') {
-  if (!email) return;
-  try {
-    await dbQuery(`
-      INSERT INTO email_send_history (email_address, email_type)
-      VALUES ($1, $2)
-    `, [email.trim().toLowerCase(), emailType]);
-  } catch (err) {
-    // Silently fail - this is just tracking
-    console.error('[Anti-Spam] Error recording send:', err.message);
-  }
-}
-
-/**
- * Add email to suppression list (e.g., after bounce)
- */
-async function suppressEmail(email, reason = 'bounce', details = null) {
-  if (!email) return;
-  try {
-    await dbQuery(`
-      INSERT INTO email_suppressions (email_address, reason, details)
-      VALUES ($1, $2, $3)
-      ON CONFLICT (email_address, reason) DO NOTHING
-    `, [email.trim().toLowerCase(), reason, details]);
-    console.log(`[Anti-Spam] Suppressed ${email} (${reason})`);
-  } catch (err) {
-    console.error('[Anti-Spam] Error suppressing email:', err.message);
-  }
-}
-
-/**
- * Full anti-spam check before sending outreach email
- * Returns { canSend: boolean, reason?: string }
- */
-async function canSendOutreachEmail(email) {
-  // 1. Validate format
-  if (!isValidEmailFormat(email)) {
-    return { canSend: false, reason: 'invalid_format' };
-  }
-
-  // 2. Check suppression list (bounces, complaints)
-  if (await isEmailSuppressed(email)) {
-    return { canSend: false, reason: 'suppressed' };
-  }
-
-  // 3. Check frequency limit (max X per week)
-  if (await isOverEmailFrequencyLimit(email)) {
-    return { canSend: false, reason: 'frequency_limit' };
-  }
-
-  return { canSend: true };
-}
 
 // ============================================
 // PARALLEL-SAFE HELPER FUNCTIONS
@@ -15640,34 +15212,44 @@ const EMAIL_TEMPLATES_EN = {
     subject: '{business_name} - quick question',
     body: `Hi,
 
-{business_name} has {review_count}+ Google reviews. Do you respond to them?
+I noticed {business_name} has {review_count}+ Google reviews - impressive!
 
-ReviewResponder generates professional responses in 3 seconds instead of 5 minutes.
+Quick question: How much time does your team spend responding to customer reviews each week?
 
-20 responses/month free: https://tryreviewresponder.com
+I built a tool that helps with exactly this - 3 seconds per response instead of 5 minutes.
 
-Best,
+If you're interested: https://tryreviewresponder.com
+
+Cheers,
 Berend
-ReviewResponder`,
+
+P.S. I'm the founder, feel free to reply if you have any questions.`,
   },
   sequence2: {
     subject: 'Re: {business_name}',
-    body: `Hi again,
+    body: `Hey,
 
-Businesses that respond to reviews get higher ratings on average (Harvard study).
+just wanted to check if you saw my last email.
 
-If review management takes time: https://tryreviewresponder.com
+Businesses that respond to reviews get higher ratings and up to 9% more revenue (Harvard study) - but I get that time is tight.
 
-Best,
+If you have 2 minutes: https://tryreviewresponder.com
+
+Cheers,
 Berend`,
   },
   sequence3: {
     subject: '{business_name}',
     body: `Hi,
 
-Last message - if reviews pile up: https://tryreviewresponder.com
+last email from me - promise!
 
-Best,
+If review management isn't a priority right now, no worries.
+
+But if you ever find reviews piling up: https://tryreviewresponder.com is there.
+
+Wishing you continued success!
+
 Berend`,
   },
 };
@@ -15676,36 +15258,46 @@ Berend`,
 const EMAIL_TEMPLATES_DE = {
   sequence1: {
     subject: '{business_name} - kurze Frage',
-    body: `Hallo,
+    body: `Hi,
 
-{business_name} hat {review_count} Google Bewertungen. Antwortet ihr darauf?
+ich hab gesehen dass {business_name} über {review_count} Google Reviews hat - Respekt!
 
-ReviewResponder generiert professionelle Antworten in 3 Sekunden statt 5 Minuten.
+Kurze Frage: Wie viel Zeit verbringt ihr pro Woche damit, auf Kundenrezensionen zu antworten?
 
-20 Antworten/Monat kostenlos: https://tryreviewresponder.com
+Ich hab ein Tool gebaut das genau dabei hilft - 3 Sekunden pro Antwort statt 5 Minuten.
+
+Falls interessant: https://tryreviewresponder.com
 
 Grüße,
 Berend
-ReviewResponder`,
+
+P.S. Bin der Gründer, bei Fragen einfach antworten.`,
   },
   sequence2: {
     subject: 'Re: {business_name}',
-    body: `Hallo nochmal,
+    body: `Hey nochmal,
 
-Businesses die auf Reviews antworten bekommen im Schnitt bessere Bewertungen (Harvard Studie).
+wollte nur kurz nachfragen ob du meine letzte Mail gesehen hast.
 
-Falls Review-Management mal Zeit kostet: https://tryreviewresponder.com
+Wer auf Reviews antwortet bekommt bessere Bewertungen und bis zu 9% mehr Umsatz (Harvard Studie) - aber ich versteh dass Zeit knapp ist.
+
+Falls du mal 2 Minuten hast: https://tryreviewresponder.com
 
 Grüße,
 Berend`,
   },
   sequence3: {
     subject: '{business_name}',
-    body: `Hallo,
+    body: `Hi,
 
-letzte Nachricht - falls Reviews mal liegen bleiben: https://tryreviewresponder.com
+letzte Mail von mir - versprochen!
 
-Viel Erfolg,
+Falls Review-Management gerade keine Priorität ist, kein Problem.
+
+Aber falls Reviews mal liegen bleiben: https://tryreviewresponder.com ist da.
+
+Viel Erfolg weiterhin!
+
 Berend`,
   },
 };
@@ -15714,11 +15306,12 @@ Berend`,
 // These are sent when we find a business with a bad review
 const REVIEW_ALERT_TEMPLATES_EN = {
   // With demo link - used when we have 3+ reviews to show
+  // A/B Test Winner: referencing specific star rating gets 100% open rate
   sequence1: {
-    subject: '{business_name} - response draft',
+    subject: '{business_name} - noticed your {review_rating}-star review',
     body: `Hi,
 
-{business_name} has a {review_rating}-star review on Google:
+I noticed {business_name} has a {review_rating}-star review on Google:
 
 "{review_text_truncated}"
 - {review_author}
@@ -16168,37 +15761,6 @@ ${reviewText}
 // Returns { demo_url, demo_token, reviews_processed } or null if failed
 async function generateDemoForLead(lead) {
   try {
-    // First: Check if we already have a demo for this business (reuse!)
-    try {
-      const existingDemo = await dbQuery(`
-        SELECT demo_token, google_place_id, generated_responses, scraped_reviews, google_rating, total_reviews
-        FROM demo_generations
-        WHERE business_name ILIKE $1
-          AND generated_responses IS NOT NULL
-          AND jsonb_array_length(generated_responses) >= 3
-        ORDER BY created_at DESC
-        LIMIT 1
-      `, [lead.business_name]);
-
-      if (existingDemo.rows.length > 0) {
-        const demo = existingDemo.rows[0];
-        console.log(`[DEMO REUSE] Found existing demo for ${lead.business_name}: ${demo.demo_token}`);
-        return {
-          success: true,
-          demoToken: demo.demo_token,
-          demoUrl: `https://tryreviewresponder.com/demo/${demo.demo_token}`,
-          responses: demo.generated_responses,
-          reviews: demo.scraped_reviews,
-          placeId: demo.google_place_id,
-          rating: demo.google_rating,
-          totalReviews: demo.total_reviews,
-          reused: true,
-        };
-      }
-    } catch (err) {
-      console.log(`Demo reuse check failed: ${err.message}`);
-    }
-
     // Need review scraping API (SerpAPI or Outscraper) + Google Places
     const hasReviewApi = getSerpApiKeyCount() > 0 || process.env.OUTSCRAPER_API_KEY;
     if (!hasReviewApi || !process.env.GOOGLE_PLACES_API_KEY) {
@@ -16226,8 +15788,8 @@ async function generateDemoForLead(lead) {
       return null;
     }
 
-    // Scrape reviews via SerpAPI (with caching!)
-    const allReviews = await scrapeGoogleReviews(placeId, 10, lead.business_name);
+    // Scrape reviews via SerpAPI (get more than needed to filter)
+    const allReviews = await scrapeGoogleReviews(placeId, 10);
 
     if (!allReviews || allReviews.length < 2) {
       console.log(`Not enough reviews to generate demo for ${lead.business_name}`);
@@ -17363,16 +16925,6 @@ function fillEmailTemplate(template, lead, campaign = 'main') {
   for (const [key, value] of Object.entries(replacements)) {
     subject = subject.replace(new RegExp(key, 'g'), value);
     body = body.replace(new RegExp(key, 'g'), value);
-  }
-
-  // Add Demo Call CTA to all outreach emails (increases conversion through personal touch)
-  // Detect language based on city
-  const isGerman = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Munich', 'Cologne', 'Vienna', 'Zurich'].some(gc => (lead.city || '').toLowerCase().includes(gc.toLowerCase()));
-  const callCta = isGerman ? CALL_CTA_DE : CALL_CTA_EN;
-
-  // Only add CTA if not already present in body
-  if (!body.includes('10-min') && !body.includes('10-Min')) {
-    body = body + callCta;
   }
 
   // Add click tracking to all URLs in body (if we have lead email)
@@ -24008,198 +23560,6 @@ app.get('/api/cron/send-agency-emails', async (req, res) => {
   } catch (error) {
     console.error('Agency email cron error:', error);
     res.status(500).json({ error: 'Agency email cron failed' });
-  }
-});
-
-// ============== OMNICHANNEL OUTREACH ==============
-// Multi-channel outreach via Twitter, Facebook, Instagram, LinkedIn
-// Uses Chrome MCP for browser automation - no API costs!
-
-// GET /api/admin/leads-for-omnichannel - Get leads with demos ready for multi-channel outreach
-app.get('/api/admin/leads-for-omnichannel', async (req, res) => {
-  const authKey = req.headers['x-admin-key'] || req.query.key;
-  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  try {
-    const channel = req.query.channel; // Optional: filter by channel not yet contacted
-    const limit = parseInt(req.query.limit) || 20;
-
-    let query = `
-      SELECT
-        l.id, l.business_name, l.website, l.email, l.city, l.contact_name,
-        l.demo_url, l.demo_token,
-        l.twitter_handle, l.facebook_page, l.instagram_handle, l.linkedin_company,
-        l.channels_contacted
-      FROM outreach_leads l
-      WHERE l.demo_url IS NOT NULL
-        AND l.website IS NOT NULL
-        ${getTestEmailExcludeClause('l.email')}
-    `;
-
-    // Filter by channel if specified
-    if (channel) {
-      query += ` AND (l.channels_contacted IS NULL OR NOT (l.channels_contacted ? '${channel}'))`;
-    }
-
-    query += ` ORDER BY l.created_at DESC LIMIT $1`;
-
-    const leads = await dbAll(query, [limit]);
-
-    res.json({
-      success: true,
-      count: leads.length,
-      leads: leads,
-      channels: ['twitter', 'facebook', 'instagram', 'linkedin'],
-    });
-  } catch (error) {
-    console.error('Omnichannel leads error:', error);
-    res.status(500).json({ error: 'Failed to get leads' });
-  }
-});
-
-// PUT /api/admin/lead-social-links - Update lead with discovered social links
-app.put('/api/admin/lead-social-links', async (req, res) => {
-  const authKey = req.headers['x-admin-key'];
-  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  const { lead_id, twitter_handle, facebook_page, instagram_handle, linkedin_company, google_business_url, contact_form_url } = req.body;
-
-  if (!lead_id) {
-    return res.status(400).json({ error: 'lead_id required' });
-  }
-
-  try {
-    const updates = [];
-    const values = [];
-    let paramIndex = 1;
-
-    if (twitter_handle !== undefined) {
-      updates.push(`twitter_handle = $${paramIndex++}`);
-      values.push(twitter_handle);
-    }
-    if (facebook_page !== undefined) {
-      updates.push(`facebook_page = $${paramIndex++}`);
-      values.push(facebook_page);
-    }
-    if (instagram_handle !== undefined) {
-      updates.push(`instagram_handle = $${paramIndex++}`);
-      values.push(instagram_handle);
-    }
-    if (linkedin_company !== undefined) {
-      updates.push(`linkedin_company = $${paramIndex++}`);
-      values.push(linkedin_company);
-    }
-    if (google_business_url !== undefined) {
-      updates.push(`google_business_url = $${paramIndex++}`);
-      values.push(google_business_url);
-    }
-    if (contact_form_url !== undefined) {
-      updates.push(`contact_form_url = $${paramIndex++}`);
-      values.push(contact_form_url);
-    }
-
-    if (updates.length === 0) {
-      return res.status(400).json({ error: 'No social links provided' });
-    }
-
-    values.push(lead_id);
-    await dbQuery(
-      `UPDATE outreach_leads SET ${updates.join(', ')} WHERE id = $${paramIndex}`,
-      values
-    );
-
-    res.json({ success: true, updated: updates.length });
-  } catch (error) {
-    console.error('Update social links error:', error);
-    res.status(500).json({ error: 'Failed to update' });
-  }
-});
-
-// PUT /api/admin/mark-channel-contacted - Mark a channel as contacted for a lead
-app.put('/api/admin/mark-channel-contacted', async (req, res) => {
-  const authKey = req.headers['x-admin-key'];
-  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  const { lead_id, channel, message_sent, error: sendError } = req.body;
-
-  if (!lead_id || !channel) {
-    return res.status(400).json({ error: 'lead_id and channel required' });
-  }
-
-  const validChannels = ['email', 'twitter', 'facebook', 'instagram', 'linkedin', 'google_business', 'contact_form'];
-  if (!validChannels.includes(channel)) {
-    return res.status(400).json({ error: `Invalid channel. Valid: ${validChannels.join(', ')}` });
-  }
-
-  try {
-    // Update channels_contacted JSONB
-    await dbQuery(
-      `UPDATE outreach_leads
-       SET channels_contacted = COALESCE(channels_contacted, '{}'::jsonb) || $1::jsonb
-       WHERE id = $2`,
-      [JSON.stringify({ [channel]: { sent_at: new Date().toISOString(), success: !sendError, error: sendError || null } }), lead_id]
-    );
-
-    res.json({ success: true, channel, lead_id });
-  } catch (error) {
-    console.error('Mark channel contacted error:', error);
-    res.status(500).json({ error: 'Failed to update' });
-  }
-});
-
-// GET /api/admin/omnichannel-stats - Get stats on multi-channel outreach
-app.get('/api/admin/omnichannel-stats', async (req, res) => {
-  const authKey = req.headers['x-admin-key'] || req.query.key;
-  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  try {
-    // Count leads with demos
-    const leadsWithDemos = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE demo_url IS NOT NULL');
-
-    // Count leads with social links found
-    const withTwitter = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE twitter_handle IS NOT NULL');
-    const withFacebook = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE facebook_page IS NOT NULL');
-    const withInstagram = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE instagram_handle IS NOT NULL');
-    const withLinkedIn = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE linkedin_company IS NOT NULL');
-
-    // Count contacted by channel (from JSONB)
-    const contactedByChannel = {};
-    for (const channel of ['email', 'twitter', 'facebook', 'instagram', 'linkedin']) {
-      const result = await dbGet(
-        `SELECT COUNT(*) as count FROM outreach_leads WHERE channels_contacted ? $1`,
-        [channel]
-      );
-      contactedByChannel[channel] = parseInt(result?.count || 0);
-    }
-
-    res.json({
-      success: true,
-      leads_with_demos: parseInt(leadsWithDemos?.count || 0),
-      social_links_found: {
-        twitter: parseInt(withTwitter?.count || 0),
-        facebook: parseInt(withFacebook?.count || 0),
-        instagram: parseInt(withInstagram?.count || 0),
-        linkedin: parseInt(withLinkedIn?.count || 0),
-      },
-      contacted_by_channel: contactedByChannel,
-      potential_reach: {
-        twitter: parseInt(withTwitter?.count || 0) - contactedByChannel.twitter,
-        facebook: parseInt(withFacebook?.count || 0) - contactedByChannel.facebook,
-        instagram: parseInt(withInstagram?.count || 0) - contactedByChannel.instagram,
-        linkedin: parseInt(withLinkedIn?.count || 0) - contactedByChannel.linkedin,
-      },
-    });
-  } catch (error) {
-    console.error('Omnichannel stats error:', error);
-    res.status(500).json({ error: 'Failed to get stats' });
   }
 });
 
