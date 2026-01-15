@@ -1,31 +1,70 @@
-﻿{
-    "loop_interval":  "30m",
-    "learnings_applied":  [
+{
+  "agent": "burst-14-lead-scorer",
+  "version": "3.0",
+  "status": "running",
+  "started_at": "2026-01-15T21:32:42Z",
+  "last_heartbeat": "2026-01-15T23:45:00Z",
+  "current_loop": 1,
+  "loop_interval": "30m",
 
-                          ],
-    "current_loop":  1,
-    "started_at":  "2026-01-15T21:32:42Z",
-    "version":  "3.0",
-    "agent":  "burst-14-lead-scorer",
-    "escalations_pending":  [
+  "metrics": {
+    "leads_scored": 41,
+    "segments": {
+      "mega_hot": 1,
+      "hot": 14,
+      "warm": 25,
+      "cool": 1,
+      "cold": 0
+    },
+    "hot_percentage": "36.6%",
+    "avg_score": 71,
+    "actions_taken": 1,
+    "errors_count": 0,
+    "success_rate": 100
+  },
 
-                            ],
-    "checkpoints":  {
-                        "resume_from":  null,
-                        "last_successful_action":  null,
-                        "last_processed_id":  null
-                    },
-    "health":  {
-                   "api_budget_ok":  true,
-                   "memory_ok":  true,
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "metrics":  {
-                    "success_rate":  0,
-                    "errors_count":  0,
-                    "actions_taken":  0
-                },
-    "status":  "running",
-    "last_heartbeat":  "2026-01-15T21:37:09Z"
+  "top_leads": [
+    {"business": "IntercityHotel Hamburg", "score": 90, "segment": "mega_hot"},
+    {"business": "AWAY SPA Edinburgh", "score": 88, "segment": "hot"},
+    {"business": "Pearle-Optik Graz", "score": 88, "segment": "hot"},
+    {"business": "Leonardo Hotel München", "score": 85, "segment": "hot"},
+    {"business": "ibis Wien Mariahilf", "score": 82, "segment": "hot"}
+  ],
+
+  "insights": {
+    "new_clicks_today": 3,
+    "hotel_chain_interest": "HIGH - Accor, Leonardo, 25hours, IntercityHotel all engaged",
+    "geographic_pattern": "DACH region = 40% of hot leads",
+    "recommendation": "Focus follow-ups on hotel chains - potential for multi-property deals"
+  },
+
+  "checkpoints": {
+    "last_successful_action": "2026-01-15T23:45:00Z",
+    "last_processed_id": null,
+    "resume_from": null
+  },
+
+  "health": {
+    "stuck_detected": false,
+    "last_error": null,
+    "api_budget_ok": true,
+    "memory_ok": true
+  },
+
+  "escalations_pending": [
+    {
+      "type": "mega_hot_lead",
+      "lead": "IntercityHotel Hamburg",
+      "email": "info@treudelberg.com",
+      "score": 90,
+      "reason": "Score 90+ - clicked today, hotel chain = enterprise potential"
+    }
+  ],
+
+  "learnings_applied": [
+    "Hotel chains get +10 fit bonus for multi-property potential",
+    "Clicks within 24h get +15 behavior bonus"
+  ],
+
+  "next_run": "2026-01-16T00:15:00Z"
 }

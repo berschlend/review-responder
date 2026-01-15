@@ -1,6 +1,60 @@
 # ReviewResponder - Todo Liste
 
-> Letzte Aktualisierung: 15.01.2026
+> Letzte Aktualisierung: 16.01.2026
+
+---
+
+## 🔴 NIGHT-BURST V3.1 VERIFIZIERUNG (16.01.2026 Morgen)
+
+**Task Scheduler startet heute Nacht um 01:30 deutscher Zeit.**
+
+### Was passiert um 01:30:
+
+```
+01:30 → Task Scheduler startet night-burst-launcher.ps1
+         ↓
+       Launcher setzt High Performance Power Plan (kein Sleep)
+         ↓
+       Launcher startet night-burst-orchestrator.ps1
+         ↓
+       Für jeden der 15 Agents:
+         1. Get-BestAccount.ps1 wählt Account mit niedrigstem Usage
+            (aus .claude-acc1, .claude-acc2, .claude-acc3)
+         2. Agent startet mit:
+            - $env:CLAUDE_CONFIG_DIR = Gewählter Account
+            - $env:CLAUDE_SESSION = "BURST1..15"
+            - --dangerously-skip-permissions (Full Autonomy)
+            - --chrome (für Burst-1 Lead Finder, Burst-3 Social DM)
+         3. Agent führt seinen Slash-Command aus (/night-burst-1 bis /night-burst-15)
+         ↓
+       Agents arbeiten autonom die Nacht durch
+         ↓
+11:30 → Auto-Stop nach 10 Stunden
+       Power Plan wird zurückgesetzt
+```
+
+### Morgen früh verifizieren:
+
+- [ ] **Log-File checken:** `logs/night-burst-2026-01-16.log`
+  ```powershell
+  Get-Content ".\logs\night-burst-2026-01-16.log"
+  ```
+- [ ] **Agent Registry prüfen:** Welche Agents liefen?
+  ```powershell
+  Get-Content ".\content\claude-progress\agent-registry.json"
+  ```
+- [ ] **Account Usage checken:** Wurden alle 3 Accounts genutzt?
+  ```powershell
+  .\scripts\Get-BestAccount.ps1 -Verbose
+  ```
+- [ ] **Morning Report lesen:** `content/claude-progress/for-berend.md`
+- [ ] **Learnings checken:** `content/claude-progress/learnings.md`
+
+### Bei Problemen:
+
+- **Agents nicht gestartet?** → Log auf Fehler prüfen, Claude CLI testen
+- **Nur 1 Account genutzt?** → stats-cache.json der Accounts prüfen
+- **PC war im Sleep?** → Power Settings checken, High Performance als Default
 
 ---
 

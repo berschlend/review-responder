@@ -1,31 +1,39 @@
-﻿{
-    "loop_interval":  "2h",
-    "learnings_applied":  [
-
-                          ],
-    "current_loop":  2,
-    "started_at":  "2026-01-15T21:32:41Z",
-    "version":  "3.0",
-    "agent":  "burst-5-hot-lead-chaser",
-    "escalations_pending":  [
-
-                            ],
-    "checkpoints":  {
-                        "resume_from":  null,
-                        "last_successful_action":  null,
-                        "last_processed_id":  null
-                    },
-    "health":  {
-                   "api_budget_ok":  true,
-                   "memory_ok":  true,
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "metrics":  {
-                    "success_rate":  0,
-                    "errors_count":  0,
-                    "actions_taken":  0
-                },
-    "status":  "running",
-    "last_heartbeat":  "2026-01-15T21:36:17Z"
+{
+  "agent": "burst-5-hot-lead-chaser",
+  "version": "3.0",
+  "status": "running",
+  "started_at": "2026-01-16T12:00:00Z",
+  "last_heartbeat": "2026-01-16T12:05:00Z",
+  "current_loop": 1,
+  "loop_interval": "20min",
+  "metrics": {
+    "hot_leads_found": 41,
+    "followup_1_sent": 41,
+    "followup_2_sent": 26,
+    "followup_2_pending": 14,
+    "magic_links_sent": 0,
+    "discounts_given": 0,
+    "conversions": 0,
+    "actions_taken": 1,
+    "success_rate": 100,
+    "errors_count": 0
+  },
+  "health": {
+    "api_budget_ok": true,
+    "memory_ok": true,
+    "stuck_detected": false,
+    "last_error": null
+  },
+  "checkpoints": {
+    "last_successful_action": "checked_hot_leads",
+    "last_processed_id": null,
+    "resume_from": null
+  },
+  "learnings_applied": [
+    "24h timing for FU1",
+    "72h timing for FU2",
+    "No discount on FU1"
+  ],
+  "escalations_pending": [],
+  "notes": "All 41 clickers have FU1. 26 have FU2. 14 pending (need 72h since FU1). System fully automated via /api/cron/second-followup."
 }

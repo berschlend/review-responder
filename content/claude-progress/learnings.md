@@ -376,3 +376,15 @@ User klicken Magic Link → werden registriert → nutzen Produkt NIE → erreic
 ### [2026-01-15 21:39] Burst-6
 - Die meisten medium_usage User (5-9 Responses) sind Test-Accounts. Echte Business-User starten bei 0 und brauchen Activation-Emails.
 
+
+### [2026-01-15 21:39] Burst-12
+- RETENTION ist der wahre Bottleneck, nicht Activation. 12 aktive User stoppen ALLE bei 5-6 Responses. NIEMAND naehert sich dem 20-Response-Limit. Root Cause: PULL-Modell (User muss aktiv kommen) funktioniert nicht. Loesung: PUSH-Modell (Review Alerts) oder High-Volume-Targeting (>1000 Reviews).
+
+
+### [2026-01-15 21:40] Burst-7
+- 16.01.2026: 0 conversion-ready users - alle 38 User unter 15 responses. Höchster: 8. Bottleneck ist Activation nicht Conversion.
+
+
+### [2026-01-15 21:40] Burst-9
+- CTR Drop 5.0%% -> 3.3%% bei mehr Emails (813->1259). Moegliche Email Fatigue oder Lead Quality Drop. Monitor next 24h.
+

@@ -1,31 +1,39 @@
-﻿{
-    "loop_interval":  "4h",
-    "learnings_applied":  [
-
-                          ],
-    "current_loop":  1,
-    "started_at":  "2026-01-15T21:32:42Z",
-    "version":  "3.0",
-    "agent":  "burst-12-creative-strategist",
-    "escalations_pending":  [
-
-                            ],
-    "checkpoints":  {
-                        "resume_from":  null,
-                        "last_successful_action":  null,
-                        "last_processed_id":  null
-                    },
-    "health":  {
-                   "api_budget_ok":  true,
-                   "memory_ok":  true,
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "metrics":  {
-                    "success_rate":  0,
-                    "errors_count":  0,
-                    "actions_taken":  0
-                },
-    "status":  "running",
-    "last_heartbeat":  "2026-01-15T21:37:19Z"
+{
+  "agent": "burst-12-creative-strategist",
+  "version": "3.0",
+  "status": "running",
+  "last_heartbeat": "2026-01-16T06:35:00Z",
+  "started_at": "2026-01-15T21:32:42Z",
+  "current_loop": 2,
+  "loop_interval": "4h",
+  "stagnation_detected": true,
+  "current_proposal": "Review Alerts + High-Volume Targeting",
+  "pending_approval": true,
+  "active_tests": [],
+  "completed_tests": 0,
+  "winning_tests": 0,
+  "ideas_proposed": 3,
+  "ideas_approved": 1,
+  "metrics": {
+    "actions_taken": 1,
+    "success_rate": 100,
+    "errors_count": 0
+  },
+  "checkpoints": {
+    "last_processed_id": null,
+    "last_successful_action": "approval_request_submitted",
+    "resume_from": null
+  },
+  "health": {
+    "api_budget_ok": true,
+    "memory_ok": true,
+    "stuck_detected": false,
+    "last_error": null
+  },
+  "learnings_applied": [
+    "RETENTION ist der wahre Bottleneck, nicht Activation"
+  ],
+  "escalations_pending": [],
+  "stuck": false,
+  "needs_berend": ["Strategy Approval: Review Alerts vs High-Volume Targeting"]
 }
