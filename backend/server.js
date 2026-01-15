@@ -14794,7 +14794,7 @@ Berend`,
     });
   } catch (error) {
     console.error('Exit survey followup error:', error);
-    res.status(500).json({ error: 'Failed to send exit survey followups' });
+    res.status(500).json({ error: 'Failed to send exit survey followups', details: error.message });
   }
 });
 
