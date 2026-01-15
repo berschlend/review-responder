@@ -471,8 +471,17 @@ const LandingEmailCapture = ({
 
 // InstantDemoWidget - Try AI response generation before signup
 // Used in Hero sections of all landing pages
-const InstantDemoWidget = ({ platform = '', primaryColor = 'var(--primary)' }) => {
+// Props:
+//   platform: Review platform (google, yelp, tripadvisor, etc.)
+//   businessType: Business type (restaurant, hotel, dentist, salon, etc.)
+//   primaryColor: Theme color for buttons
+const InstantDemoWidget = ({
+  platform = '',
+  businessType = '',
+  primaryColor = 'var(--primary)',
+}) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [reviewText, setReviewText] = useState('');
   const [tone, setTone] = useState('professional');
   const [response, setResponse] = useState('');
@@ -484,6 +493,92 @@ const InstantDemoWidget = ({ platform = '', primaryColor = 'var(--primary)' }) =
   const [emailCaptured, setEmailCaptured] = useState(() => {
     return localStorage.getItem('instant_demo_email') === 'true';
   });
+
+  // Auto-detect context from URL path if not provided via props
+  const detectedContext = useMemo(() => {
+    const path = location.pathname.toLowerCase();
+
+    // Platform detection from URL
+    const platformMap = {
+      '/google-review': 'google',
+      '/yelp-review': 'yelp',
+      '/tripadvisor-review': 'tripadvisor',
+      '/trip-advisor': 'tripadvisor',
+      '/booking-review': 'booking',
+      '/facebook-review': 'facebook',
+      '/trustpilot-review': 'trustpilot',
+      '/amazon-review': 'amazon',
+      '/g2-review': 'g2',
+      '/capterra-review': 'capterra',
+      '/glassdoor-review': 'glassdoor',
+      '/healthgrades-review': 'healthgrades',
+      '/zocdoc-review': 'zocdoc',
+      '/airbnb-review': 'airbnb',
+      '/indeed-review': 'indeed',
+      '/zillow-review': 'zillow',
+      '/thumbtack-review': 'thumbtack',
+      '/linkedin-review': 'linkedin',
+      '/angi-review': 'angi',
+      '/app-store-review': 'appstore',
+      '/bbb-review': 'bbb',
+    };
+
+    // Business type detection from URL
+    const businessTypeMap = {
+      '/restaurant-review': 'restaurant',
+      '/hotel-review': 'hotel',
+      '/dentist-review': 'dentist',
+      '/medical-practice': 'medical',
+      '/salon-spa': 'salon',
+      '/auto-shop': 'automotive',
+      '/law-firm': 'legal',
+      '/real-estate': 'realestate',
+      '/gym-review': 'fitness',
+      '/vet-review': 'medical',
+      '/ecommerce-review': 'ecommerce',
+      '/coffee-shop': 'restaurant',
+      '/senior-care': 'medical',
+      '/therapy-review': 'medical',
+      '/chiropractor-review': 'medical',
+      '/dermatologist-review': 'medical',
+      '/barber-review': 'salon',
+      '/massage-therapist': 'salon',
+      '/personal-trainer': 'fitness',
+      '/pet-service': 'pets',
+      '/daycare-review': 'childcare',
+      '/accountant-review': 'financial',
+      '/insurance-review': 'financial',
+      '/photographer-review': 'creative',
+      '/wedding-review': 'events',
+      '/plumber-review': 'homeservices',
+      '/electrician-review': 'homeservices',
+      '/hvac-review': 'homeservices',
+      '/roofing-review': 'homeservices',
+      '/landscaping-review': 'homeservices',
+      '/cleaning-review': 'homeservices',
+    };
+
+    let detectedPlatform = platform;
+    let detectedBusinessType = businessType;
+
+    // Check platform matches
+    for (const [urlPart, plat] of Object.entries(platformMap)) {
+      if (path.includes(urlPart)) {
+        detectedPlatform = plat;
+        break;
+      }
+    }
+
+    // Check business type matches
+    for (const [urlPart, bizType] of Object.entries(businessTypeMap)) {
+      if (path.includes(urlPart)) {
+        detectedBusinessType = bizType;
+        break;
+      }
+    }
+
+    return { platform: detectedPlatform, businessType: detectedBusinessType };
+  }, [location.pathname, platform, businessType]);
 
   const handleGenerate = async () => {
     if (!reviewText.trim() || reviewText.trim().length < 10) {
@@ -497,6 +592,10 @@ const InstantDemoWidget = ({ platform = '', primaryColor = 'var(--primary)' }) =
       const res = await axios.post(`${API_URL}/public/try`, {
         reviewText: reviewText.trim(),
         tone,
+        context: {
+          platform: detectedContext.platform || undefined,
+          businessType: detectedContext.businessType || undefined,
+        },
       });
       setResponse(res.data.response);
     } catch (err) {
@@ -1451,6 +1550,21 @@ const Navbar = () => {
 
       {/* Mobile Menu Overlay */}
       <div className={`mobile-menu-overlay ${mobileMenuOpen ? 'open' : ''}`}>
+        {/* Close Button */}
+        <button
+          className="mobile-menu-close"
+          onClick={closeMobileMenu}
+          aria-label="Close menu"
+        >
+          <X size={24} />
+        </button>
+
+        {/* Home Link - Always visible */}
+        <Link to="/" onClick={closeMobileMenu} className="mobile-menu-home">
+          <Home size={20} />
+          Home
+        </Link>
+
         {user ? (
           <>
             <Link to="/dashboard" onClick={closeMobileMenu}>
@@ -9415,8 +9529,7 @@ const ProfilePage = () => {
                   </>
                 ) : (
                   <>
-                    <strong>Set a password</strong> to login to the Chrome Extension. Google Sign-In
-                    for the extension is coming soon!
+                    <strong>Set a password</strong> to login to the Chrome Extension.
                   </>
                 )}
               </p>
@@ -15085,7 +15198,7 @@ const GoogleReviewPage = () => {
             replies that boost your local SEO and show customers you care.
           </p>
 
-          <InstantDemoWidget />
+          <InstantDemoWidget platform="google" />
 
           <div
             style={{
@@ -15311,7 +15424,7 @@ const YelpReviewPage = () => {
             all your reviews with AI - from 5-star praise to 1-star complaints.
           </p>
 
-          <InstantDemoWidget primaryColor="#d32323" />
+          <InstantDemoWidget platform="yelp" primaryColor="#d32323" />
 
           <div
             style={{
@@ -27407,14 +27520,6 @@ const ExtensionPage = () => {
             </div>
           </div>
 
-          {/* Secondary Note - Chrome Store */}
-          <p style={{
-            margin: '20px 0 0',
-            fontSize: '13px',
-            color: 'var(--gray-500)'
-          }}>
-            Coming soon to Chrome Web Store. Manual install takes 1 minute.
-          </p>
         </div>
 
         {/* Settings Sync Feature Highlight */}

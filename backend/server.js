@@ -7382,7 +7382,8 @@ const tryRateLimiter = rateLimit({
 // POST /api/public/try - Generate AI response without signup
 app.post('/api/public/try', tryRateLimiter, async (req, res) => {
   try {
-    const { reviewText, tone = 'professional' } = req.body;
+    const { reviewText, tone = 'professional', context = {} } = req.body;
+    const { businessType, platform } = context;
 
     if (!reviewText || reviewText.trim().length < 10) {
       return res.status(400).json({ error: 'Please enter a review (at least 10 characters)' });
@@ -7392,7 +7393,7 @@ app.post('/api/public/try', tryRateLimiter, async (req, res) => {
       return res.status(400).json({ error: 'Review text too long (max 2000 characters)' });
     }
 
-    // Zero-context system prompt (optimized for demo without business context)
+    // Tone description
     const toneDescription =
       tone === 'friendly'
         ? 'Warm and casual'
@@ -7402,18 +7403,141 @@ app.post('/api/public/try', tryRateLimiter, async (req, res) => {
             ? 'Sincere and apologetic'
             : 'Professional but warm';
 
-    const systemPrompt = `<system>
-You generate professional review responses for businesses.
+    // Business-type specific context for better responses
+    const businessContextMap = {
+      restaurant: {
+        role: 'restaurant owner or manager',
+        details: 'food quality, service speed, ambiance, menu items, chef specialties',
+        examples: 'dishes, drinks, dining experience, reservations',
+      },
+      hotel: {
+        role: 'hotel manager or hospitality professional',
+        details: 'room quality, cleanliness, amenities, staff service, check-in experience',
+        examples: 'room types, facilities, breakfast, location convenience',
+      },
+      dentist: {
+        role: 'dental practice owner or office manager',
+        details: 'treatment quality, staff friendliness, wait times, pain management, explanations',
+        examples: 'procedures, hygiene, appointment scheduling, patient comfort',
+      },
+      medical: {
+        role: 'medical practice administrator',
+        details: 'care quality, doctor attentiveness, wait times, staff professionalism',
+        examples: 'consultations, treatments, follow-up care, office environment',
+      },
+      salon: {
+        role: 'salon owner or stylist',
+        details: 'service quality, stylist skills, ambiance, pricing, results',
+        examples: 'haircuts, coloring, treatments, styling, appointments',
+      },
+      automotive: {
+        role: 'auto shop owner or service manager',
+        details: 'repair quality, pricing transparency, turnaround time, communication',
+        examples: 'repairs, maintenance, diagnostics, customer service',
+      },
+      legal: {
+        role: 'law firm partner or office manager',
+        details: 'legal expertise, communication, responsiveness, case outcomes',
+        examples: 'consultations, case handling, fees, client relationships',
+      },
+      realestate: {
+        role: 'real estate agent or broker',
+        details: 'market knowledge, responsiveness, negotiation skills, communication',
+        examples: 'property showings, transactions, client support, local expertise',
+      },
+      fitness: {
+        role: 'gym owner or fitness manager',
+        details: 'equipment quality, cleanliness, staff helpfulness, class variety',
+        examples: 'workouts, trainers, facilities, membership value',
+      },
+      ecommerce: {
+        role: 'online store owner or customer service manager',
+        details: 'product quality, shipping speed, packaging, customer support',
+        examples: 'orders, returns, product descriptions, delivery experience',
+      },
+      pets: {
+        role: 'pet service owner (groomer, vet, boarding)',
+        details: 'animal care quality, staff gentleness, facility cleanliness, pet comfort',
+        examples: 'grooming, boarding, veterinary care, pet handling, scheduling',
+      },
+      childcare: {
+        role: 'childcare center director or daycare owner',
+        details: 'child safety, staff qualifications, activities, communication with parents',
+        examples: 'daily care, learning activities, meals, pickup/dropoff, updates',
+      },
+      financial: {
+        role: 'financial advisor or insurance agent',
+        details: 'expertise, trustworthiness, communication, advice quality, responsiveness',
+        examples: 'consultations, policies, claims handling, financial planning',
+      },
+      creative: {
+        role: 'photographer, videographer, or creative professional',
+        details: 'artistic quality, professionalism, delivery time, creativity, pricing',
+        examples: 'photo sessions, video production, editing, final deliverables',
+      },
+      events: {
+        role: 'event planner or wedding coordinator',
+        details: 'organization, creativity, vendor coordination, communication, execution',
+        examples: 'weddings, parties, corporate events, decorations, timeline management',
+      },
+      homeservices: {
+        role: 'home service professional (plumber, electrician, contractor)',
+        details: 'work quality, punctuality, pricing transparency, cleanliness, expertise',
+        examples: 'repairs, installations, estimates, cleanup, warranties',
+      },
+    };
 
-<context>
+    // Platform-specific hints
+    const platformHints = {
+      google: 'This review is from Google Maps/Google Business Profile.',
+      yelp: 'This review is from Yelp.',
+      tripadvisor: 'This review is from TripAdvisor.',
+      booking: 'This review is from Booking.com.',
+      facebook: 'This review is from Facebook.',
+      trustpilot: 'This review is from Trustpilot.',
+      amazon: 'This review is from Amazon.',
+      g2: 'This review is from G2 (software reviews).',
+      capterra: 'This review is from Capterra (software reviews).',
+      glassdoor: 'This review is from Glassdoor (employer reviews).',
+      healthgrades: 'This review is from Healthgrades (medical provider reviews).',
+      zocdoc: 'This review is from Zocdoc (doctor reviews).',
+      airbnb: 'This review is from Airbnb.',
+    };
+
+    // Build contextual system prompt
+    const bizContext = businessType ? businessContextMap[businessType.toLowerCase()] : null;
+    const platHint = platform ? platformHints[platform.toLowerCase()] : null;
+
+    let contextSection;
+    if (bizContext) {
+      contextSection = `<context>
+You are responding as a ${bizContext.role}.
+${platHint ? platHint + '\n' : ''}
+Focus on details relevant to your business: ${bizContext.details}.
+Common topics include: ${bizContext.examples}.
+Extract from the review:
+- Language (respond in same language as review)
+- Sentiment (positive/negative/mixed)
+- Reviewer name (if apparent)
+- Specific details mentioned
+</context>`;
+    } else {
+      contextSection = `<context>
 This is a DEMO without business context. The user has NOT set up their profile yet.
+${platHint ? platHint + '\n' : ''}
 Extract ALL useful information directly from the review text itself:
 - Language (respond in same language as review)
 - Sentiment (positive/negative/mixed)
 - Specific details mentioned (food, service, rooms, staff names, etc.)
 - Reviewer name (if apparent from the review text)
 - Business type hints (restaurant, hotel, clinic, salon, etc.)
-</context>
+</context>`;
+    }
+
+    const systemPrompt = `<system>
+You generate professional review responses for businesses.
+
+${contextSection}
 
 <output_format>
 - Length: 2-4 sentences (short and impactful for demo)

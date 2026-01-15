@@ -950,6 +950,39 @@ body {
   background: var(--border-color);
 }
 
+/* Mobile Menu Close Button */
+.mobile-menu-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  border: none;
+  border-radius: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s;
+}
+
+.mobile-menu-close:hover {
+  background: var(--border-color);
+}
+
+/* Mobile Menu Home Link */
+.mobile-menu-home {
+  background: var(--primary) !important;
+  color: white !important;
+}
+
+.mobile-menu-home:hover {
+  background: var(--primary-hover) !important;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
