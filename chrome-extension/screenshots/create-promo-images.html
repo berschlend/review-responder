@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chrome Web Store Promo Images Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #1a1a2e;
+            color: white;
+            padding: 40px;
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .instructions {
+            background: #2d2d44;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .instructions ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin: 8px 0;
+        }
+        .canvas-container {
+            margin: 30px 0;
+            display: inline-block;
+        }
+        .label {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        /* Small Promo Tile 440x280 */
+        .promo-small {
+            width: 440px;
+            height: 280px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+        .promo-small .logo {
+            font-size: 36px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 12px;
+        }
+        .promo-small .tagline {
+            font-size: 18px;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 20px;
+        }
+        .promo-small .cta {
+            font-size: 16px;
+            color: #ffd700;
+            font-weight: 600;
+        }
+
+        /* Marquee Promo 1400x560 */
+        .promo-marquee {
+            width: 1400px;
+            height: 560px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 0;
+            display: flex;
+            padding: 60px 80px;
+            box-sizing: border-box;
+        }
+        .marquee-left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .marquee-right {
+            width: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .marquee-right img {
+            max-width: 100%;
+            max-height: 440px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .promo-marquee .logo {
+            font-size: 56px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+        .promo-marquee .tagline {
+            font-size: 28px;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 40px;
+        }
+        .promo-marquee .features {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .promo-marquee .features li {
+            font-size: 22px;
+            color: white;
+            margin: 14px 0;
+            display: flex;
+            align-items: center;
+        }
+        .promo-marquee .features li::before {
+            content: "✓";
+            color: #4ade80;
+            font-weight: bold;
+            margin-right: 12px;
+            font-size: 24px;
+        }
+        .promo-marquee .cta {
+            font-size: 26px;
+            color: #ffd700;
+            font-weight: 600;
+            margin-top: 40px;
+        }
+
+        /* Screenshot placeholder */
+        .screenshot-placeholder {
+            width: 460px;
+            height: 400px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 14px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>Chrome Web Store Promo Images</h1>
+
+    <div class="instructions">
+        <strong>How to save these images:</strong>
+        <ol>
+            <li>Right-click on each image below</li>
+            <li>Select "Inspect" to open DevTools</li>
+            <li>Right-click the element in DevTools → "Capture node screenshot"</li>
+            <li>Or use Windows Snipping Tool (Win+Shift+S) to capture exact dimensions</li>
+            <li>Save as PNG (24-bit, no alpha)</li>
+        </ol>
+        <p style="margin-top: 15px; color: #ffd700;"><strong>Important:</strong> No platform names listed! No pricing! Chrome-safe version.</p>
+    </div>
+
+    <!-- Small Promo Tile 440x280 -->
+    <div class="canvas-container">
+        <div class="label">Small Promo Tile (440 x 280)</div>
+        <div class="promo-small">
+            <div class="logo">ReviewResponder</div>
+            <div class="tagline">AI-Powered Review Responses</div>
+            <div class="cta">Reply in seconds, not hours</div>
+        </div>
+    </div>
+
+    <br><br>
+
+    <!-- Marquee Promo 1400x560 -->
+    <div class="canvas-container">
+        <div class="label">Marquee Promo (1400 x 560)</div>
+        <div class="promo-marquee">
+            <div class="marquee-left">
+                <div class="logo">ReviewResponder</div>
+                <div class="tagline">AI-Powered Review Responses</div>
+                <ul class="features">
+                    <li>Generate personalized responses in 3 seconds</li>
+                    <li>Auto-detects language and responds accordingly</li>
+                    <li>Add business context for branded replies</li>
+                    <li>4 response tones to match any situation</li>
+                </ul>
+                <div class="cta">Reply to reviews in seconds, not hours!</div>
+            </div>
+            <div class="marquee-right">
+                <div class="screenshot-placeholder">
+                    [Add screenshot-2-generated-response.png here]<br>
+                    Or capture from browser
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <br><br>
+
+    <div class="instructions">
+        <strong>Checklist - Chrome Safe:</strong>
+        <ul style="list-style: none; padding-left: 0;">
+            <li>✅ No platform names listed (Google Maps, Yelp, etc.)</li>
+            <li>✅ No "50+ languages" - using "Auto-detects language"</li>
+            <li>✅ No pricing information</li>
+            <li>✅ No unverifiable claims</li>
+            <li>✅ No superlatives (#1, best, fastest)</li>
+        </ul>
+    </div>
+</body>
+</html>

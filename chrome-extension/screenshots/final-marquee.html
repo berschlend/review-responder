@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Final Marquee - Screenshot This!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #1a1a2e;
+            padding: 20px;
+        }
+        .instructions {
+            color: white;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #2d2d44;
+            border-radius: 8px;
+        }
+        .instructions h2 { color: #ffd700; margin-bottom: 10px; }
+
+        /* Marquee Promo 1400x560 - EXACT SIZE */
+        .promo-marquee {
+            width: 1400px;
+            height: 560px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            padding: 50px 60px;
+            position: relative;
+        }
+        .marquee-left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-right: 40px;
+        }
+        .marquee-right {
+            width: 520px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .screenshot-container {
+            width: 480px;
+            height: 420px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .screenshot-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: right top;
+        }
+        .promo-marquee .logo {
+            font-size: 52px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 6px;
+            font-style: italic;
+        }
+        .promo-marquee .tagline {
+            font-size: 26px;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 35px;
+        }
+        .promo-marquee .features {
+            list-style: none;
+        }
+        .promo-marquee .features li {
+            font-size: 20px;
+            color: white;
+            margin: 12px 0;
+            display: flex;
+            align-items: center;
+        }
+        .promo-marquee .features li::before {
+            content: "✓";
+            color: #4ade80;
+            font-weight: bold;
+            margin-right: 12px;
+            font-size: 22px;
+        }
+        .promo-marquee .cta {
+            font-size: 24px;
+            color: #ffd700;
+            font-weight: 600;
+            margin-top: 35px;
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <h2>MARQUEE PROMO (1400 x 560)</h2>
+        <p>1. Use <strong>Win+Shift+S</strong> to screenshot ONLY the purple box below</p>
+        <p>2. Save as: <strong>promo-marquee-1400x560.png</strong></p>
+        <p>3. Make sure to capture exactly 1400x560 pixels</p>
+    </div>
+
+    <!-- SCREENSHOT THIS BOX - 1400x560 -->
+    <div class="promo-marquee">
+        <div class="marquee-left">
+            <div class="logo">ReviewResponder</div>
+            <div class="tagline">AI-Powered Review Responses</div>
+            <ul class="features">
+                <li>Generate personalized responses in 3 seconds</li>
+                <li>Auto-detects language and responds accordingly</li>
+                <li>Add business context for branded replies</li>
+                <li>4 response tones to match any situation</li>
+            </ul>
+            <div class="cta">Reply to reviews in seconds, not hours!</div>
+        </div>
+        <div class="marquee-right">
+            <div class="screenshot-container">
+                <img src="screenshot-2-generated-response.png" alt="ReviewResponder Panel">
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Final Small Tile - Screenshot This!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #1a1a2e;
+            padding: 20px;
+        }
+        .instructions {
+            color: white;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #2d2d44;
+            border-radius: 8px;
+        }
+        .instructions h2 { color: #ffd700; margin-bottom: 10px; }
+
+        /* Small Promo Tile 440x280 - EXACT SIZE */
+        .promo-small {
+            width: 440px;
+            height: 280px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 30px;
+        }
+        .promo-small .logo {
+            font-size: 38px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 12px;
+            font-style: italic;
+        }
+        .promo-small .tagline {
+            font-size: 18px;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 25px;
+        }
+        .promo-small .cta {
+            font-size: 17px;
+            color: #ffd700;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <h2>SMALL PROMO TILE (440 x 280)</h2>
+        <p>1. Use <strong>Win+Shift+S</strong> to screenshot ONLY the purple box below</p>
+        <p>2. Save as: <strong>promo-small-440x280.png</strong></p>
+        <p>3. Make sure to capture exactly 440x280 pixels</p>
+    </div>
+
+    <!-- SCREENSHOT THIS BOX - 440x280 -->
+    <div class="promo-small">
+        <div class="logo">ReviewResponder</div>
+        <div class="tagline">AI-Powered Review Responses</div>
+        <div class="cta">Reply in seconds, not hours</div>
+    </div>
+</body>
+</html>

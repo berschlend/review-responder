@@ -11538,6 +11538,45 @@ app.get('/api/admin/set-plan', async (req, res) => {
   }
 });
 
+// GET /api/admin/set-test-password - Set password for test account (Chrome Web Store review)
+app.get('/api/admin/set-test-password', async (req, res) => {
+  const { email, password, key } = req.query;
+  const adminSecret = process.env.ADMIN_SECRET;
+
+  if (!adminSecret || !safeCompare(key, adminSecret)) {
+    return res.status(401).json({ error: 'Invalid admin key' });
+  }
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password required' });
+  }
+
+  try {
+    const user = await dbGet(
+      'SELECT id, email FROM users WHERE LOWER(email) = LOWER($1)',
+      [email]
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: `User not found: ${email}` });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await dbQuery('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, user.id]);
+
+    console.log(`✅ Admin set password for test account: ${email}`);
+
+    res.json({
+      success: true,
+      message: `Password updated for ${email}`,
+      note: 'Use this account for Chrome Web Store review testing'
+    });
+  } catch (error) {
+    console.error('Admin set-test-password error:', error);
+    res.status(500).json({ error: 'Failed to update password' });
+  }
+});
+
 // GET /api/admin/delete-user - Delete user completely (for testing)
 app.get('/api/admin/delete-user', async (req, res) => {
   const { email, key } = req.query;
