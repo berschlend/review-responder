@@ -1,18 +1,20 @@
-# Night-Burst Launcher - For Windows Task Scheduler
+# Night-Burst Launcher V3.1 - For Windows Task Scheduler
 # This script can run detached from any terminal
+# Now with Plan Mode and automatic account rotation support
 #
 # Setup Task Scheduler:
 # 1. Open Task Scheduler (taskschd.msc)
-# 2. Create Basic Task: "Night-Burst Auto-Start"
-# 3. Trigger: Daily at 22:00
+# 2. Create Basic Task: "Night-Burst"
+# 3. Trigger: Daily at 01:30
 # 4. Action: Start Program
 #    - Program: powershell.exe
-#    - Arguments: -ExecutionPolicy Bypass -WindowStyle Hidden -File "C:\Users\Berend Mainz\Documents\Start-up\reviewresponder-3\scripts\night-burst-launcher.ps1"
+#    - Arguments: -ExecutionPolicy Bypass -WindowStyle Hidden -File "C:\Users\Berend Mainz\Documents\Start-up\ReviewResponder\scripts\night-burst-launcher.ps1" -PlanMode
 # 5. Conditions: Uncheck "Start only if on AC power"
 # 6. Settings: Check "Run task as soon as possible after a scheduled start is missed"
 
 param(
     [switch]$Test,
+    [switch]$PlanMode,
     [int]$MaxDurationHours = 10  # Auto-stop after 10 hours (08:00 next day)
 )
 
@@ -72,10 +74,11 @@ function Restore-Sleep {
 
 function Start-NightBurst {
     Write-Log "========================================"
-    Write-Log " NIGHT-BURST LAUNCHER STARTED"
+    Write-Log " NIGHT-BURST LAUNCHER V3.1 STARTED"
     Write-Log "========================================"
     Write-Log "Project: $ProjectRoot"
     Write-Log "Max Duration: $MaxDurationHours hours"
+    Write-Log "Plan Mode: $PlanMode"
 
     # Check prerequisites
     if (-not (Test-ClaudeAvailable)) {
@@ -113,13 +116,32 @@ function Start-NightBurst {
 
         Write-Log "Starting orchestrator..."
 
+        # Build orchestrator arguments
+        $orchArgs = "-ExecutionPolicy Bypass -File `"$orchestratorPath`""
+        if ($PlanMode) {
+            $orchArgs += " -PlanMode"
+        }
+
         # Use Start-Process to run detached
         $process = Start-Process -FilePath "powershell.exe" `
-            -ArgumentList "-ExecutionPolicy Bypass -File `"$orchestratorPath`"" `
+            -ArgumentList $orchArgs `
             -WindowStyle Hidden `
             -PassThru
 
         Write-Log "Orchestrator started with PID: $($process.Id)"
+
+        # Start plan monitor if in plan mode
+        if ($PlanMode) {
+            $planMonitorPath = Join-Path $ProjectRoot "scripts\night-burst-plan-monitor.ps1"
+            if (Test-Path $planMonitorPath) {
+                Write-Log "Starting plan monitor..."
+                $monitorProcess = Start-Process -FilePath "powershell.exe" `
+                    -ArgumentList "-ExecutionPolicy Bypass -File `"$planMonitorPath`"" `
+                    -WindowStyle Hidden `
+                    -PassThru
+                Write-Log "Plan monitor started with PID: $($monitorProcess.Id)"
+            }
+        }
 
         # Update running file with orchestrator PID
         $running = Get-Content $runningFile | ConvertFrom-Json
@@ -169,23 +191,25 @@ function Show-SetupInstructions {
     Write-Host @"
 
     ╔═══════════════════════════════════════════════════════════════╗
-    ║           NIGHT-BURST AUTO-START SETUP                        ║
+    ║           NIGHT-BURST V3.1 AUTO-START SETUP                  ║
     ╠═══════════════════════════════════════════════════════════════╣
     ║                                                               ║
-    ║  To run Night-Burst automatically every night at 22:00:       ║
+    ║  To run Night-Burst with Plan Mode every night at 01:30:     ║
     ║                                                               ║
     ║  1. Open Task Scheduler:                                      ║
     ║     Win + R → taskschd.msc → Enter                           ║
     ║                                                               ║
     ║  2. Click "Create Basic Task..."                             ║
-    ║     Name: Night-Burst Auto-Start                             ║
+    ║     Name: Night-Burst                                        ║
     ║                                                               ║
-    ║  3. Trigger: Daily, 22:00                                    ║
+    ║  3. Trigger: Daily, 01:30                                    ║
     ║                                                               ║
     ║  4. Action: Start a program                                  ║
     ║     Program: powershell.exe                                  ║
-    ║     Arguments: -ExecutionPolicy Bypass -WindowStyle Hidden   ║
-    ║                -File "$ProjectRoot\scripts\night-burst-launcher.ps1" ║
+    ║     Arguments:                                               ║
+    ║       -ExecutionPolicy Bypass -WindowStyle Hidden            ║
+    ║       -File "$ProjectRoot\scripts\night-burst-launcher.ps1"  ║
+    ║       -PlanMode                                              ║
     ║                                                               ║
     ║  5. In Properties → Conditions:                              ║
     ║     [ ] Uncheck "Start only if on AC power"                  ║
@@ -195,12 +219,20 @@ function Show-SetupInstructions {
     ║     [x] "Run task as soon as possible after missed start"    ║
     ║     [x] "If task fails, restart every 5 minutes"             ║
     ║                                                               ║
+    ║  Features:                                                    ║
+    ║  - Automatic account rotation (3 accounts, usage-based)      ║
+    ║  - Plan mode: Agents create plans, wait for your approval    ║
+    ║  - Notification when all 15 plans are ready                  ║
+    ║                                                               ║
     ╚═══════════════════════════════════════════════════════════════╝
 
 "@ -ForegroundColor Cyan
 
-    Write-Host "Quick Test Command:" -ForegroundColor Yellow
-    Write-Host "  .\scripts\night-burst-launcher.ps1 -Test" -ForegroundColor White
+    Write-Host "Quick Test Commands:" -ForegroundColor Yellow
+    Write-Host "  .\scripts\night-burst-launcher.ps1 -Test           # Quick 1-min test" -ForegroundColor White
+    Write-Host "  .\scripts\night-burst-launcher.ps1 -PlanMode       # Start with plan mode" -ForegroundColor White
+    Write-Host "  .\scripts\night-burst-orchestrator.ps1 -PlanMode   # Orchestrator only" -ForegroundColor White
+    Write-Host "  .\scripts\Get-BestAccount.ps1 -Verbose             # Check account selection" -ForegroundColor White
     Write-Host ""
 }
 

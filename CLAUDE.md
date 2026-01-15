@@ -514,6 +514,17 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 
 ## LEARNINGS
 
+### Frontend Build Crash Debug (16.01.2026)
+
+**Problem:** Website komplett down - weisse Seite, React App laedt nicht.
+**Ursache 1:** ESLint-Kommentar `// eslint-disable-line react-hooks/exhaustive-deps` referenzierte nicht-installiertes Plugin → Build failed auf Render
+**Ursache 2:** `useMemo` wurde verwendet aber nicht aus React importiert → Runtime ReferenceError
+**Fix:**
+1. ESLint-Kommentar entfernen (Zeile 519)
+2. `useMemo` zum Import hinzufuegen (Zeile 10)
+**Debugging:** Render Dashboard → Events → "Failed deploy" → Browser Console für Runtime-Errors checken
+**Lesson:** Bei "weisse Seite" IMMER Browser Console checken - Build-Success heisst nicht Runtime-Success!
+
 ### Rate-Limit Bypass Fix (16.01.2026)
 
 **Problem:** Eingeloggte Free User konnten auf Landing Pages (`/birdeye`, etc.) unbegrenzt Responses via InstantDemoWidget generieren.
