@@ -844,6 +844,53 @@ BEHAVIOR (0-30):
 
 ---
 
+## SESSION-LOG 15.01.2026 ~14:00-15:30 UTC
+
+**Session:** First Principles User Activation
+**Fokus:** 0 zahlende Kunden trotz 32 registrierten Usern
+
+**First Principles Analyse:**
+```
+SYMPTOM: 0 zahlende Kunden
+ECHTES PROBLEM: 68% der User haben das Produkt NIE benutzt (0 responses)
+BISHERIGER ANSATZ: Mehr Leads generieren (2000+)
+WARUM ES NICHT FUNKTIONIERT: User registrieren → aber nutzen nicht → treffen nie Paywall
+NEUER ANSATZ: Existierende 32 User aktivieren
+```
+
+**Aktionen:**
+1. **Widget Analytics gefixt** - `public_try_usage` Tabelle erstellt
+2. **User-List Endpoint** - `GET /api/admin/user-list` für Activation Targeting
+3. **Dormant User Activation Cron** - `GET /api/cron/activate-dormant-users`
+   - Sendet Activation Emails an User mit 0 responses
+   - German/English Detection
+   - 12h Delay nach Signup
+   - Max 10/run um Spam zu vermeiden
+4. **24 Activation Emails gesendet** an echte Businesses:
+   - The Dolder Grand (Zürich)
+   - Augustiner Klosterwirt (München)
+   - Komodo Miami
+   - The Smith (New York)
+   - 25hours Hotel Zürich
+   - etc.
+5. **Night Loop Integration** - Läuft automatisch um 03:00 UTC
+
+**User Distribution entdeckt:**
+- 38 total users
+- 26 (68%) never_used (0 responses)
+- 7 low_usage (1-4 responses)
+- 5 medium_usage (5-14 responses)
+- 0 high_usage (15+) → NIEMAND trifft das Limit!
+
+**Neue Endpoints:**
+- `GET /api/admin/widget-analytics` - Widget Performance
+- `GET /api/admin/user-list` - User Activity Distribution
+- `GET /api/cron/activate-dormant-users` - Dormant User Activation
+
+**Commits:** `2b042e2c`, `f815d8ba`, `e64c0118`, `afeecf5e`, `af46d7cd`
+
+---
+
 ## SESSION-LOG 15.01.2026 ~15:00 UTC
 
 **Session:** PR-Team Messaging Update
