@@ -365,11 +365,13 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 
 ---
 
-## LINKEDIN OUTREACH STATUS (14.01.2026)
+## LINKEDIN OUTREACH STATUS (15.01.2026)
 
 > **WICHTIG für neue Claude Sessions:** Diese Daten VOR LinkedIn-Aktionen checken!
 
 ### Pending Connections (DB: `linkedin_leads`)
+
+**Restaurant Owners (14.01):**
 | Name | Company | Demo URL | Connection Sent |
 |------|---------|----------|-----------------|
 | Max T. | Nachtcafé Dortmund | rr-demo-6f4a2d | **JA (14.01)** |
@@ -377,6 +379,23 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 | Issa | Oceans Kassel | rr-demo-8a2f5d | **JA (14.01)** |
 | Katharina P. | Augustiner am Platzl | rr-demo-9c1d4e | **JA (14.01)** |
 | Lena F. | Luisenbad | rr-demo-3e7b2a | **JA (14.01)** |
+
+**Hotel Managers (15.01) - Neu in DB:**
+| Name | Company | Location | Status |
+|------|---------|----------|--------|
+| Wolfgang Groos | Soaltee Westend Premier Hotel | Frankfurt | Gespeichert |
+| Marcel Heinemann | Premier Inn Deutschland | Leipzig | Gespeichert |
+| Zarifa Huseynova | Odyssey Hotel Group / Marriott | Frankfurt | Gespeichert |
+| Sabrina Weigelt | Kempinski Hotel Berchtesgaden | Bayern | Gespeichert |
+
+**Restaurant Owners vom früheren Session (15.01) - In DB:**
+| Name | Company | Location |
+|------|---------|----------|
+| Rudy Pellino | Restaurant Owner | Munich |
+| Renate Broekhuis | Restaurant Owner | Hamburg |
+| Daniel Baer | Restaurant Owner | Stuttgart |
+| Maria Petzold | Restaurant Owner | Dresden |
+| Daniela Heykes-Stromann | Restaurant Owner | NRW |
 
 **ACHTUNG:** DB-Feld `connection_sent` ist NICHT zuverlässig!
 → IMMER LinkedIn direkt checken unter: linkedin.com/mynetwork/invitation-manager/sent/
@@ -582,6 +601,37 @@ claude --chrome
 # /omnichannel-blast --channel=instagram
 ```
 Oder: `.claude\omnichannel-parallel.ps1` ausführen
+
+---
+
+## SESSION-LOG 15.01.2026 ~09:00 UTC
+
+**Session:** LinkedIn Outreach - Hotel Managers Germany
+**Aktionen:**
+1. **Bottleneck-Analyse durchgeführt** - 5 Haupt-Bottlenecks identifiziert
+   - Demo Page Conversion = 0% (größtes Problem)
+   - Email Finding Rate = 36%
+   - LinkedIn Limit erreicht
+   - Free→Paid = 0%
+   - Lead Volume OK
+2. **Conversion Fixes implementiert:**
+   - Social Proof auf Demo Page
+   - Upgrade Modal bei Response 15 (statt 20)
+   - Apollo.io API Integration für Email Finding
+3. **LinkedIn Hotel Manager Outreach:**
+   - Suche: "Hotel Manager Germany"
+   - 4 neue Leads in DB gespeichert:
+     - Wolfgang Groos (Soaltee Westend Premier)
+     - Marcel Heinemann (Premier Inn)
+     - Zarifa Huseynova (Marriott)
+     - Sabrina Weigelt (Kempinski)
+   - 5 weitere Restaurant Owners aus vorheriger Session
+4. **Git Commits:** Social Proof + Apollo API + Upgrade Modal
+
+**Nächste Schritte (für zukünftige Sessions):**
+- LinkedIn: `/linkedin-connect followup` für Accepted Connections
+- Demo Page: A/B Test für Headline starten
+- Email Finding: Pattern-Guessing für DE-Namen verbessern
 
 ---
 
