@@ -89,6 +89,10 @@ const FROM_EMAIL = process.env.FROM_EMAIL || 'ReviewResponder <hello@tryreviewre
 const OUTREACH_FROM_EMAIL =
   process.env.OUTREACH_FROM_EMAIL || 'Berend von ReviewResponder <outreach@tryreviewresponder.com>';
 
+// Call booking CTA for all outreach emails (increases conversion through personal touch)
+const CALL_CTA_DE = `\n\nP.S. Fragen? Antworte kurz und wir machen nen 10-Min Call.`;
+const CALL_CTA_EN = `\n\nP.S. Questions? Just reply and we'll do a quick 10-min call.`;
+
 // ==========================================
 // API COST TRACKING
 // ==========================================
@@ -11872,7 +11876,7 @@ Falls es gefällt: 20 Antworten/Monat sind kostenlos.
 Falls nicht: Kein Problem.
 
 Grüße,
-Berend`;
+Berend${CALL_CTA_DE}`;
         } else {
           subject = `Built something for ${businessName}`;
           body = `Hey,
@@ -11888,7 +11892,7 @@ If you like it: 20 responses/month are free.
 If not: No worries.
 
 Best,
-Berend`;
+Berend${CALL_CTA_EN}`;
         }
 
         // Send via Brevo (to avoid hitting Resend limits)
@@ -12134,9 +12138,7 @@ Schaut euch an ob der Ton passt. Dauert 30 Sekunden.
 Falls es gefällt: 20 Antworten/Monat sind kostenlos. Falls nicht: Kein Problem, einfach ignorieren.
 
 Grüße,
-Berend
-
-P.S. Code CLICKER30 = 30% Rabatt wenn ihr upgraden wollt.`;
+Berend${CALL_CTA_DE}`;
           } else {
             subject = `3 AI responses for ${businessName} – already done`;
             body = `Hey,
@@ -12152,9 +12154,7 @@ Takes 30 seconds to see if the tone matches your brand.
 If you like it: 20 responses/month are free. If not: No worries, just ignore this.
 
 Best,
-Berend
-
-P.S. Use code CLICKER30 for 30% off if you upgrade.`;
+Berend${CALL_CTA_EN}`;
           }
         } else {
           // Fallback email WITHOUT demo (if demo generation failed)
@@ -12178,9 +12178,7 @@ https://tryreviewresponder.com?ref=hot_lead
 20 Antworten/Monat kostenlos, keine Kreditkarte.
 
 Grüße,
-Berend
-
-P.S. Code CLICKER30 = 30% Rabatt wenn ihr upgraden wollt.`;
+Berend${CALL_CTA_DE}`;
           } else {
             const reviewText = reviewCount
               ? `${reviewCount.toLocaleString()} reviews`
@@ -12201,9 +12199,7 @@ https://tryreviewresponder.com?ref=hot_lead
 20 responses/month free, no credit card.
 
 Best,
-Berend
-
-P.S. Use code CLICKER30 for 30% off if you upgrade.`;
+Berend${CALL_CTA_EN}`;
           }
         }
 
@@ -13569,7 +13565,7 @@ ${demoUrl ? `Deine personalisierte Demo ist immer noch hier: ${demoUrl}` : ''}
 Grüße,
 Berend
 
-P.S. Der Link funktioniert 7 Tage.`;
+P.S. Der Link funktioniert 7 Tage. Fragen? Einfach antworten – 10-Min Call geht immer.`;
         } else {
           subject = `Your account is ready – no password needed`;
           body = `Hey,
@@ -13587,7 +13583,7 @@ ${demoUrl ? `Your personalized demo is still here: ${demoUrl}` : ''}
 Best,
 Berend
 
-P.S. This link works for 7 days.`;
+P.S. Link works for 7 days. Questions? Just reply – happy to do a quick 10-min call.`;
         }
 
         // Send via Brevo (higher deliverability for outreach)
@@ -13734,7 +13730,7 @@ ${demoUrl}
 Falls sie dir gefällt: 20 Antworten/Monat kostenlos.
 
 Grüße,
-Berend`;
+Berend${CALL_CTA_DE}`;
         } else {
           subject = `Your ${businessName} demo expires in 4 days`;
           body = `Hey,
@@ -13747,7 +13743,7 @@ ${demoUrl}
 If you like it: 20 responses/month are free.
 
 Best,
-Berend`;
+Berend${CALL_CTA_EN}`;
         }
 
         if (brevoApi) {
@@ -13825,7 +13821,7 @@ Danach sind die AI-generierten Antworten für deine echten Bewertungen weg.
 Falls du sie behalten willst: Einfach kostenlos registrieren.
 
 Grüße,
-Berend`;
+Berend${CALL_CTA_DE}`;
         } else {
           subject = `Last chance: ${businessName} demo expires TOMORROW`;
           body = `Hey,
@@ -13840,7 +13836,7 @@ After that, the AI-generated responses for your real reviews will be gone.
 If you want to keep them: Just sign up for free.
 
 Best,
-Berend`;
+Berend${CALL_CTA_EN}`;
         }
 
         if (brevoApi) {
@@ -16864,6 +16860,16 @@ function fillEmailTemplate(template, lead, campaign = 'main') {
   for (const [key, value] of Object.entries(replacements)) {
     subject = subject.replace(new RegExp(key, 'g'), value);
     body = body.replace(new RegExp(key, 'g'), value);
+  }
+
+  // Add Demo Call CTA to all outreach emails (increases conversion through personal touch)
+  // Detect language based on city
+  const isGerman = ['München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Wien', 'Zürich', 'Munich', 'Cologne', 'Vienna', 'Zurich'].some(gc => (lead.city || '').toLowerCase().includes(gc.toLowerCase()));
+  const callCta = isGerman ? CALL_CTA_DE : CALL_CTA_EN;
+
+  // Only add CTA if not already present in body
+  if (!body.includes('10-min') && !body.includes('10-Min')) {
+    body = body + callCta;
   }
 
   // Add click tracking to all URLs in body (if we have lead email)

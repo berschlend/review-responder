@@ -13815,6 +13815,15 @@ const DemoPage = () => {
                 <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
               </svg>
             </a>
+            {/* Book a Call CTA - Personal Touch */}
+            <p style={{ marginTop: '20px', color: 'rgba(255,255,255,0.9)', fontSize: '14px' }}>
+              Questions? <a
+                href="mailto:berend.mainz@web.de?subject=ReviewResponder%20Demo%20Call&body=Hey%20Berend%2C%0A%0AI%20checked%20out%20the%20demo%20and%20have%20some%20questions.%20Can%20we%20do%20a%20quick%2010-min%20call%3F%0A%0AThanks!"
+                style={{ color: 'white', fontWeight: '600', textDecoration: 'underline' }}
+              >
+                Book a quick 10-min call
+              </a>
+            </p>
           </div>
         </div>
 
