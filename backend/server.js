@@ -450,10 +450,10 @@ async function sendOutreachEmail({ to, subject, html, campaign = 'main', tags = 
     const unsubscribeLink = `${baseUrl}/api/outreach/unsubscribe?email=${encodeURIComponent(to)}`;
     const unsubscribeFooter = `
 <br><br>
-<div style="border-top: 1px solid #E5E7EB; padding-top: 12px; margin-top: 20px; font-size: 12px; color: #6B7280; text-align: center;">
-  <a href="${unsubscribeLink}" style="color: #6B7280; text-decoration: underline;">Unsubscribe from these emails</a>
-  <br>
-  ReviewResponder | Berend Mainz
+<div style="border-top: 1px solid #E5E7EB; padding-top: 16px; margin-top: 24px; font-size: 12px; color: #9CA3AF; text-align: center; line-height: 1.5;">
+  <p style="margin: 0 0 8px 0;">You're receiving this because we thought ReviewResponder could help your business.</p>
+  <p style="margin: 0;">Don't want to hear from us? <a href="${unsubscribeLink}" style="color: #6B7280; text-decoration: underline;">Unsubscribe instantly</a></p>
+  <p style="margin: 12px 0 0 0; color: #D1D5DB;">ReviewResponder | Berlin, Germany</p>
 </div>`;
     finalHtml = html + unsubscribeFooter;
   }
