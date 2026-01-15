@@ -125,4 +125,25 @@
 
                                                                              }
                                                              }
-                              
+                                         }
+                      },
+    "instructions":  {
+                         "for_source_agent":  [
+                                                  "1. When you have work for another agent, add to queue",
+                                                  "2. Include all necessary data (IDs, context)",
+                                                  "3. Set appropriate priority",
+                                                  "4. Don\u0027t wait for processing - continue your work"
+                                              ],
+                         "for_orchestrator":  [
+                                                  "1. Check queue every hour",
+                                                  "2. Group by target agent for efficiency",
+                                                  "3. Spawn target agent with batch of handoffs",
+                                                  "4. Move to processed after completion"
+                                              ],
+                         "for_target_agent":  [
+                                                  "1. Check if you have pending handoffs at session start",
+                                                  "2. Process handoffs before regular loop",
+                                                  "3. Update status when done"
+                                              ]
+                     }
+}

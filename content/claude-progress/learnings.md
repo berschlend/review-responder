@@ -400,3 +400,7 @@ User klicken Magic Link → werden registriert → nutzen Produkt NIE → erreic
 ### [2026-01-15 21:42] Burst-4
 - Hot leads without demos often have API matching issues. 100 demos exist today but 20 hot leads get No reviews error because Business name doesnt match Google Place. Need better Place ID enrichment.
 
+
+### [2026-01-15 21:44] Burst-5
+- Hot Lead Click-to-Register Conversion ist 90% (9/10). ABER: 100% dieser User haben 0 responses. Problem ist nicht Click-to-Register, sondern Register-to-Activate.
+
