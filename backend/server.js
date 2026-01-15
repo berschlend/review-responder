@@ -23936,6 +23936,7 @@ app.get('/api/cron/night-blast', async (req, res) => {
     phase6_demo_followups: null,
     phase7_g2_enrichment: null,
     phase8_source_emails: null,
+    phase9_social_scraping: null,
   };
 
   try {
@@ -24341,6 +24342,134 @@ app.get('/api/cron/night-blast', async (req, res) => {
     results.phase8_source_emails = sourceEmailResults;
     console.log('📬 Phase 8 complete');
 
+    // ===== PHASE 9: SOCIAL LINK SCRAPING =====
+    // Scrape websites for Twitter, Facebook, Instagram, LinkedIn links
+    console.log('🔗 Phase 9: Social Link Scraping...');
+
+    try {
+      const socialScrapeResults = { checked: 0, found: 0, twitter: 0, facebook: 0, instagram: 0, linkedin: 0 };
+
+      // Get leads with websites but no social links (limit 50 per run)
+      const leadsNeedingSocial = await dbAll(`
+        SELECT id, business_name, website
+        FROM outreach_leads
+        WHERE website IS NOT NULL
+          AND website != ''
+          AND twitter_handle IS NULL
+          AND facebook_page IS NULL
+          AND instagram_handle IS NULL
+          AND linkedin_company IS NULL
+          AND demo_url IS NOT NULL
+        ORDER BY created_at DESC
+        LIMIT 50
+      `);
+
+      console.log(`🔗 Found ${leadsNeedingSocial.length} leads needing social links`);
+
+      for (const lead of leadsNeedingSocial) {
+        try {
+          // Fetch website with timeout
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+          let url = lead.website;
+          if (!url.startsWith('http')) {
+            url = 'https://' + url;
+          }
+
+          const response = await fetch(url, {
+            signal: controller.signal,
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            },
+          });
+          clearTimeout(timeout);
+
+          if (response.ok) {
+            const html = await response.text();
+
+            // Extract social links using regex
+            const socialLinks = {};
+
+            // Twitter/X
+            const twitterMatch = html.match(/href=["'](https?:\/\/(www\.)?(twitter\.com|x\.com)\/[^"'\s>]+)["']/i);
+            if (twitterMatch) {
+              const handle = twitterMatch[1].split('/').pop().split('?')[0];
+              if (handle && handle.length > 0 && handle !== 'share' && handle !== 'intent') {
+                socialLinks.twitter_handle = '@' + handle.replace('@', '');
+                socialScrapeResults.twitter++;
+              }
+            }
+
+            // Facebook
+            const facebookMatch = html.match(/href=["'](https?:\/\/(www\.)?facebook\.com\/[^"'\s>]+)["']/i);
+            if (facebookMatch) {
+              const page = facebookMatch[1].split('facebook.com/')[1]?.split('?')[0];
+              if (page && page.length > 0 && page !== 'sharer' && page !== 'share') {
+                socialLinks.facebook_page = 'facebook.com/' + page;
+                socialScrapeResults.facebook++;
+              }
+            }
+
+            // Instagram
+            const instagramMatch = html.match(/href=["'](https?:\/\/(www\.)?instagram\.com\/[^"'\s>]+)["']/i);
+            if (instagramMatch) {
+              const handle = instagramMatch[1].split('instagram.com/')[1]?.split('?')[0].split('/')[0];
+              if (handle && handle.length > 0 && handle !== 'p' && handle !== 'reel') {
+                socialLinks.instagram_handle = '@' + handle.replace('@', '');
+                socialScrapeResults.instagram++;
+              }
+            }
+
+            // LinkedIn
+            const linkedinMatch = html.match(/href=["'](https?:\/\/(www\.)?linkedin\.com\/company\/[^"'\s>]+)["']/i);
+            if (linkedinMatch) {
+              const company = linkedinMatch[1].split('company/')[1]?.split('?')[0].split('/')[0];
+              if (company && company.length > 0) {
+                socialLinks.linkedin_company = company;
+                socialScrapeResults.linkedin++;
+              }
+            }
+
+            // Update lead if we found any social links
+            if (Object.keys(socialLinks).length > 0) {
+              const updates = [];
+              const values = [];
+              let paramIndex = 1;
+
+              for (const [key, value] of Object.entries(socialLinks)) {
+                updates.push(`${key} = $${paramIndex++}`);
+                values.push(value);
+              }
+
+              values.push(lead.id);
+              await dbQuery(
+                `UPDATE outreach_leads SET ${updates.join(', ')} WHERE id = $${paramIndex}`,
+                values
+              );
+
+              socialScrapeResults.found++;
+              console.log(`✅ Found social links for ${lead.business_name}: ${JSON.stringify(socialLinks)}`);
+            }
+          }
+
+          socialScrapeResults.checked++;
+
+          // Rate limit: 500ms between requests
+          await new Promise(r => setTimeout(r, 500));
+        } catch (scrapeError) {
+          // Silently skip failed websites
+          socialScrapeResults.checked++;
+        }
+      }
+
+      results.phase9_social_scraping = socialScrapeResults;
+      console.log(`🔗 Phase 9 complete: ${socialScrapeResults.found}/${socialScrapeResults.checked} leads got social links`);
+    } catch (e) {
+      results.phase9_social_scraping = { error: e.message };
+      console.error('Phase 9 error:', e.message);
+    }
+
     // ===== FINAL SUMMARY =====
     const duration = Math.round((Date.now() - startTime) / 1000);
     console.log(`🌙 NIGHT BLAST COMPLETE in ${duration}s`);
@@ -24355,6 +24484,11 @@ app.get('/api/cron/night-blast', async (req, res) => {
         hot_lead_followups: results.phase4_hot_lead_followups?.sent || 0,
         second_followups: results.phase5_second_followups?.sent || 0,
         demo_followups: results.phase6_demo_followups?.sent || 0,
+        social_links_found: results.phase9_social_scraping?.found || 0,
+        social_twitter: results.phase9_social_scraping?.twitter || 0,
+        social_facebook: results.phase9_social_scraping?.facebook || 0,
+        social_instagram: results.phase9_social_scraping?.instagram || 0,
+        social_linkedin: results.phase9_social_scraping?.linkedin || 0,
       },
       phases: results,
     });
