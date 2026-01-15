@@ -366,8 +366,9 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 - [ ] Snov.io API Keys in Render
 
 ### SEO Landing Pages
-- **46+ live** (Plattformen + Branchen)
-- Email-Capture → 4-Email Drip über 14 Tage
+- **49 live** (Plattformen + Branchen)
+- **InstantDemoWidget** in Hero Section → Try AI → Email Gate → Signup
+- 4-Email Drip über 14 Tage nach Signup
 
 ### Outreach Metriken (14.01 Nacht 22:30 UTC)
 - **1,988 Leads** (+1,460 heute!)
@@ -872,6 +873,27 @@ BEHAVIOR (0-30):
 
 **Erkenntnis:** Magic Link Users registrieren sich aber nutzen Produkt nicht aktiv.
 **DONE:** Onboarding-Nudge Email implementiert! (siehe unten)
+
+---
+
+## KÜRZLICH ERLEDIGT (15.01 Mittag - InstantDemoWidget auf allen Landing Pages)
+
+- **First Principles Fix:** Demo Page Conversion = 0% weil SEO Traffic keinen Wert sah
+- **Neue Komponente: `InstantDemoWidget`** (frontend/src/App.js)
+  - User können Review eingeben und sofort AI Response sehen
+  - Tone Selector (4 Optionen)
+  - **Email Gate:** Copy Button zeigt Modal → Email erfassen
+  - Nach Email: Auto-Redirect zu `/register?email=...`
+  - Rate Limit: 3 pro IP pro Tag (Backend `/api/public/try`)
+- **Integration:**
+  - ✅ LandingPage Hero Section (ersetzt inline Code)
+  - ✅ Alle 49 SEO Landing Pages (ersetzt `LandingEmailCapture`)
+- **Conversion Flow:**
+  ```
+  VORHER: Landing → Email Capture → Signup → Bounce (kein Wert)
+  JETZT: Landing → Instant Demo → WOW! → Email Gate → Signup
+  ```
+- **Commit:** `467c4079` - "feat: add InstantDemoWidget to all landing pages"
 
 ---
 
