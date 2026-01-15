@@ -278,16 +278,25 @@ Läuft autonom ohne User-Input:
 - "45 minutes is way too long. That's on us."
 - "Fair point about the noise. We're looking at that."
 
-### API Limits (KRITISCH 14.01.2026!)
-- **SerpAPI: 960% ÜBER LIMIT** ← Demo-Generierung schlägt fehl!
-- **Outscraper: 500/Monat** (Primary, auch am Limit)
-- Google Places: nur 5 Reviews → nicht nutzbar
+### API Limits + Caching (15.01.2026 - MIT CACHING!)
+- **SerpAPI: 1380% ÜBER LIMIT** (100/mo, braucht mehr Keys)
+- **Outscraper: 500/Monat** (Primary für Reviews)
+- **Google Places: FALLBACK** (5 Reviews/Place, ~$150/mo Cost)
 - Hunter.io: 25/Monat → Website Scraper als Primary
 
-**WORKAROUND wenn APIs am Limit:**
-1. TripAdvisor Scraping funktioniert noch (`/scrape-leads`)
-2. Chrome MCP für manuelles Scraping (instabil aber möglich)
-3. Demo-Generierung ohne Reviews → Fallback-Template
+**NEUES CACHING-SYSTEM (15.01 implementiert):**
+1. **Review Cache:** 189+ Einträge mit 1296+ Reviews gecached
+2. **Demo Reuse:** Existierende Demos werden für gleichen Business wiederverwendet
+3. **Fallback Order:** Cache → Outscraper → SerpAPI → Google Places → Expired Cache
+
+**Cache Endpoints:**
+- `GET /api/admin/review-cache?key=...` - Cache Stats anzeigen
+- `GET /api/admin/populate-cache?key=...` - Cache von existierenden Demos befüllen
+
+**WORKAROUND für NEUE Businesses:**
+1. Cache hilft nur bei bereits gescrapten Businesses
+2. Für neue: TripAdvisor Scraping (`/scrape-leads`)
+3. Oder warten bis API-Reset (monatlich)
 
 ---
 
@@ -500,6 +509,25 @@ Läuft autonom ohne User-Input:
 - **Internal Scheduler** - node-cron für komplette Autonomie
   - Night-Loop läuft jetzt ohne externe cron-job.org
   - Alle Tasks vollautomatisch über Nacht
+
+---
+
+## KÜRZLICH ERLEDIGT (15.01 Morgen - First Principles Fix)
+
+- **Review Caching System implementiert** - Reduziert API-Kosten drastisch:
+  - Neue `review_cache` Tabelle (48h Validität)
+  - 189 Einträge mit 1296 Reviews aus existierenden Demos befüllt
+  - Cache-Check vor jedem API-Call
+  - Expired Cache als letzter Fallback
+- **Demo Reuse Logic** - Existierende Demos werden wiederverwendet:
+  - Prüft erst ob Demo für gleichen Business existiert
+  - Spart API-Calls und Zeit
+- **Google Places als Fallback** - Jetzt 4. Option im Chain:
+  - Fallback Order: Cache → Outscraper → SerpAPI → Google Places → Expired Cache
+  - Google Places gibt 5 Reviews pro Place (kostenlos mit API Key)
+- **Admin Endpoints für Cache:**
+  - `/api/admin/review-cache` - Stats anzeigen
+  - `/api/admin/populate-cache` - Cache von Demos befüllen
 
 ---
 
