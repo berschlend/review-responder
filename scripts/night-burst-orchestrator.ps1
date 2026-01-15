@@ -13,6 +13,48 @@ param(
 $ErrorActionPreference = "Continue"
 $ProjectRoot = Split-Path -Parent (Split-Path -Parent $PSCommandPath)
 $ProgressDir = Join-Path $ProjectRoot "content\claude-progress"
+$BackendUrl = "https://review-responder.onrender.com"
+
+# === BACKEND WAKE-UP FUNCTION ===
+# Render free tier sleeps after inactivity. Wake it up before starting agents.
+function Wake-Backend {
+    param(
+        [int]$MaxAttempts = 10,
+        [int]$InitialDelaySeconds = 5
+    )
+
+    Write-Host "[WAKE-UP] Waking up Render backend..." -ForegroundColor Yellow
+    Write-Host "[WAKE-UP] (Render free tier sleeps after inactivity, this may take 30-60 seconds)" -ForegroundColor Gray
+
+    $attempt = 0
+    $delay = $InitialDelaySeconds
+
+    while ($attempt -lt $MaxAttempts) {
+        $attempt++
+        Write-Host "[WAKE-UP] Attempt $attempt/$MaxAttempts..." -NoNewline -ForegroundColor Cyan
+
+        # Use curl.exe to check - any HTTP response (even 401) means backend is awake
+        # Note: curl.exe is the actual curl binary, not PowerShell's Invoke-WebRequest alias
+        $result = curl.exe -s -o NUL -w "%{http_code}" --connect-timeout 30 "$BackendUrl/api/admin/stats" 2>&1
+
+        if ($result -match '^\d{3}$') {
+            $statusCode = [int]$result
+            if ($statusCode -ge 200 -and $statusCode -lt 600) {
+                Write-Host " OK! (HTTP $statusCode)" -ForegroundColor Green
+                Write-Host "[WAKE-UP] Backend is awake and ready!" -ForegroundColor Green
+                return $true
+            }
+        }
+
+        Write-Host " still waking up, waiting ${delay}s..." -ForegroundColor Yellow
+        Start-Sleep -Seconds $delay
+        $delay = [Math]::Min($delay * 1.5, 30)  # Exponential backoff, max 30s
+    }
+
+    Write-Host "[WAKE-UP] WARNING: Backend may still be sleeping after $MaxAttempts attempts!" -ForegroundColor Red
+    Write-Host "[WAKE-UP] Agents may experience connection errors. Consider checking Render dashboard." -ForegroundColor Red
+    return $false
+}
 
 # Agent Configuration
 $AgentConfig = @{
@@ -311,8 +353,19 @@ Initialize-AgentRegistry
 Initialize-ResourceBudget
 Initialize-CheckpointStore
 
-# Phase 3: Start all agents
-Write-Host "`n[PHASE 3] Starting agents..." -ForegroundColor Yellow
+# Phase 3: Wake up backend before starting agents
+Write-Host "`n[PHASE 3] Waking up backend..." -ForegroundColor Yellow
+$backendReady = Wake-Backend -MaxAttempts 10 -InitialDelaySeconds 5
+if (-not $backendReady) {
+    $continue = Read-Host "[WAKE-UP] Continue anyway? (y/n)"
+    if ($continue -ne "y") {
+        Write-Host "[ORCHESTRATOR] Aborted. Backend not ready." -ForegroundColor Red
+        exit 1
+    }
+}
+
+# Phase 4: Start all agents
+Write-Host "`n[PHASE 4] Starting agents..." -ForegroundColor Yellow
 $jobs = @()
 for ($i = 1; $i -le $MaxAgents; $i++) {
     $job = Start-Agent -AgentNum $i

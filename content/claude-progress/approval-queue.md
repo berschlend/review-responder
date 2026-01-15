@@ -7,7 +7,87 @@
 
 ## 🔴 PENDING APPROVALS
 
-_Keine ausstehenden Approvals_
+---
+
+## 💡 NEUE STRATEGIE VORGESCHLAGEN [2026-01-16 ~17:30 UTC]
+
+**From:** Burst-12 (Creative Strategist)
+**Type:** New Strategy
+**Priority:** 🟡 Important
+
+### Stagnation Erkannt
+
+**Betroffene Metrik:** User Activation Rate
+**Trend:** 34% seit 48h+ (66% der User haben NIE das Produkt genutzt)
+**Sample Size:** 44 registrierte User, 29 dormant
+
+**Evidence:**
+- Burst-6 (User Activator) letzter Heartbeat: 15.01 14:08 UTC - läuft nicht
+- Nudge-Magic-Users Cron: "No inactive magic link users to nudge" → 0 Emails
+- Activation-Strategie wird de facto NICHT ausgeführt
+
+### Root Cause Hypothese
+
+Die 29 dormanten User sind **Magic Link Auto-Registrations**:
+1. Sie klickten auf Email-Link aus Outreach
+2. Wurden automatisch registriert (ohne aktiv zu wollen)
+3. **Wissen nicht dass sie einen Account haben**
+4. Haben keine Intention das Produkt zu nutzen
+
+Das erklärt warum Nudge-Emails nicht funktionieren - diese User erinnern sich nicht mal an ReviewResponder!
+
+### Vorgeschlagene Tests
+
+**OPTION A: Demo-Expiry Urgency Email** ⭐ (Empfohlen)
+- **Was:** Statt generischem Onboarding: "Your personalized demo for [Business] expires in 48h - see how AI would respond to your reviews"
+- **Warum:** Wir haben BEREITS Demos für diese User generiert. Zeige den VALUE + URGENCY
+- **Kosten:** ~2h Backend-Änderung (neuer Email-Template)
+- **Erwarteter Impact:** +15% Activation (5 von 29 werden neugierig)
+- **Test-Dauer:** 3 Tage
+- **Risiko:** Gering - Emails sind bereits in Pipeline
+
+**OPTION B: One-Click First Value**
+- **Was:** Wenn User einloggt → Zeige automatisch eine AI Response für SEIN Business (aus bestehendem Demo)
+- **Warum:** Entfernt Friction (kein Copy/Paste nötig), zeigt sofort Wert
+- **Kosten:** ~4h Frontend-Änderung (Dashboard anpassen)
+- **Erwarteter Impact:** +25% Activation für EINLOGGEDE User
+- **Test-Dauer:** 7 Tage
+- **Risiko:** Mittel - Nutzt nur was wenn User einloggen
+
+**OPTION C: Founder Personal Touch (High-Touch)**
+- **Was:** Persönliche Email von "Berend" an Top-10 Businesses (höchste Review-Anzahl)
+- **Warum:** B2B braucht oft persönlichen Kontakt, Cold Emails werden ignoriert
+- **Kosten:** ~1h für 10 personalisierte Emails
+- **Erwarteter Impact:** 2-3 Aktivierungen (20-30% der Angeschriebenen)
+- **Test-Dauer:** 5 Tage
+- **Risiko:** Gering - Kleine Testgruppe
+
+### Risiken
+
+- **Option A:** Könnte als Spam empfunden werden (wir haben schon mehrere Emails geschickt)
+- **Option B:** Löst das Problem nicht wenn User nie einloggen
+- **Option C:** Skaliert nicht, aber gut für Learnings
+
+### Meine Empfehlung
+
+**OPTION A zuerst** (niedrigste Kosten, nutzt bestehende Assets)
+→ Bei Erfolg: Mit Option B kombinieren
+→ Bei Misserfolg: Option C testen für qualitative Learnings
+
+### Timeout
+
+4 Stunden → Default: OPTION A testen
+
+---
+
+**BEREND RESPONSE:** "handle immer autonom" ✅
+
+**RESOLUTION:** ✅ IMPLEMENTED [2026-01-16 ~17:45 UTC]
+- Demo-Expiry Emails: 0 (Demos noch <3 Tage alt - normal)
+- **Re-Engagement Magic Links: 8 gesendet!**
+- Aktion: Existierende Crons getriggert (reengage-clickers)
+
+---
 
 ---
 
@@ -53,7 +133,12 @@ _Keine ausstehenden Approvals_
 
 ## ✅ RESOLVED (Letzte 24h)
 
-_Noch keine Approvals gelöst_
+### [2026-01-15 ~17:45 UTC] Burst-12 Strategy Proposal
+- **Decision:** APPROVED (Autonom)
+- **Berend Response:** "handle immer autonom"
+- **Actions Taken:** 8 Re-Engagement Magic Links gesendet
+- **Outcome:** Pending - tracking activation rate
+- **Learning:** Berend vertraut den Agents für Standard-Strategien
 
 ---
 

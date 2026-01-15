@@ -97,11 +97,12 @@ const OUTREACH_FROM_EMAIL =
 const API_PRICING = {
   anthropic: {
     'claude-sonnet-4-20250514': { input: 3, output: 15 },
+    'claude-3-5-haiku-20241022': { input: 0.8, output: 4 }, // Standard AI
     'claude-opus-4-5-20250514': { input: 15, output: 75 },
     'claude-opus-4-20250514': { input: 15, output: 75 },
   },
   openai: {
-    'gpt-4o-mini': { input: 0.15, output: 0.6 },
+    'gpt-4o-mini': { input: 0.15, output: 0.6 }, // Fallback only
     'gpt-4o': { input: 2.5, output: 10 },
   },
   google: {
@@ -3824,34 +3825,73 @@ ${languageInstruction}
         });
       }
     } else {
-      // Use GPT-4o-mini for Standard AI (or fallback if no Anthropic key)
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemMessage },
-          { role: 'user', content: userMessage },
-        ],
-        max_tokens: 350,
-        temperature: 0.6,
-        presence_penalty: 0.1,
-        frequency_penalty: 0.1,
-      });
-      generatedResponse = completion.choices[0].message.content.trim();
+      // Use Claude Haiku for Standard AI (better quality than GPT-4o-mini)
+      if (anthropic) {
+        try {
+          const response = await anthropic.messages.create({
+            model: 'claude-3-5-haiku-20241022',
+            max_tokens: 350,
+            system: systemMessage,
+            messages: [{ role: 'user', content: userMessage }],
+          });
+          generatedResponse = response.content[0].text.trim();
 
-      // Log API call for cost tracking
-      logApiCall({
-        provider: 'openai',
-        model: 'gpt-4o-mini',
-        endpoint: '/api/generate',
-        userId: req.user?.id,
-        inputTokens: completion.usage?.prompt_tokens || 0,
-        outputTokens: completion.usage?.completion_tokens || 0,
-      });
+          logApiCall({
+            provider: 'anthropic',
+            model: 'claude-3-5-haiku-20241022',
+            endpoint: '/api/generate (standard)',
+            userId: req.user?.id,
+            inputTokens: response.usage?.input_tokens || 0,
+            outputTokens: response.usage?.output_tokens || 0,
+          });
+        } catch (haikuError) {
+          // Fallback to GPT-4o-mini if Haiku fails
+          console.warn(`[Haiku Fallback] ${haikuError.message} - using GPT-4o-mini`);
+          const completion = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: systemMessage },
+              { role: 'user', content: userMessage },
+            ],
+            max_tokens: 350,
+            temperature: 0.6,
+          });
+          generatedResponse = completion.choices[0].message.content.trim();
 
-      // If we intended smart but fell back, mark as standard
-      if (useModel === 'smart' && !anthropic) {
-        useModel = 'standard';
+          logApiCall({
+            provider: 'openai',
+            model: 'gpt-4o-mini',
+            endpoint: '/api/generate (haiku-fallback)',
+            userId: req.user?.id,
+            inputTokens: completion.usage?.prompt_tokens || 0,
+            outputTokens: completion.usage?.completion_tokens || 0,
+          });
+        }
+      } else {
+        // Fallback to GPT-4o-mini if no Anthropic key
+        const completion = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: systemMessage },
+            { role: 'user', content: userMessage },
+          ],
+          max_tokens: 350,
+          temperature: 0.6,
+        });
+        generatedResponse = completion.choices[0].message.content.trim();
+
+        logApiCall({
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+          endpoint: '/api/generate (no-anthropic)',
+          userId: req.user?.id,
+          inputTokens: completion.usage?.prompt_tokens || 0,
+          outputTokens: completion.usage?.completion_tokens || 0,
+        });
       }
+
+      // Mark as standard
+      useModel = 'standard';
     }
 
     // Apply AI slop filter to clean up typical AI phrases
@@ -4083,23 +4123,48 @@ app.post('/api/generate-variations', authenticateToken, async (req, res) => {
       ? `\nTEMPLATE STYLE GUIDE: Use this template as a style reference. Match its tone, structure, and approach, but adapt the content to the specific review:\n"${templateContent}"`
       : '';
 
-    // Generate all 3 variations in parallel
+    // Generate all 3 variations in parallel using Claude Haiku
     const variationPromises = variationStyles.map(async (style, index) => {
       const systemMessage = `You are responding to a customer review for ${businessName || 'our business'}. Tone: ${toneStyle}. ${style.instruction} ${languageInstruction}${templateGuide}`;
 
       const userMessage = `${reviewRating ? `[${reviewRating} star review] ` : ''}${reviewText}`;
 
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemMessage },
-          { role: 'user', content: userMessage },
-        ],
-        max_tokens: 350,
-        temperature: style.temp,
-      });
+      let rawResponse;
+      if (anthropic) {
+        try {
+          const response = await anthropic.messages.create({
+            model: 'claude-3-5-haiku-20241022',
+            max_tokens: 350,
+            system: systemMessage,
+            messages: [{ role: 'user', content: userMessage }],
+          });
+          rawResponse = response.content[0].text.trim();
+        } catch {
+          // Fallback to GPT-4o-mini
+          const completion = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: systemMessage },
+              { role: 'user', content: userMessage },
+            ],
+            max_tokens: 350,
+            temperature: style.temp,
+          });
+          rawResponse = completion.choices[0].message.content.trim();
+        }
+      } else {
+        const completion = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: systemMessage },
+            { role: 'user', content: userMessage },
+          ],
+          max_tokens: 350,
+          temperature: style.temp,
+        });
+        rawResponse = completion.choices[0].message.content.trim();
+      }
 
-      const rawResponse = completion.choices[0].message.content.trim();
       const generatedResponse = cleanAISlop(rawResponse);
       const quality = evaluateResponseQuality(generatedResponse, reviewText, tone, reviewRating);
 
@@ -11933,6 +11998,48 @@ app.get('/api/admin/widget-analytics', authenticateAdmin, async (req, res) => {
   } catch (error) {
     console.error('Widget analytics error:', error);
     res.status(500).json({ error: 'Failed to get widget analytics' });
+  }
+});
+
+// GET /api/admin/user-list - List all users with response counts for activation targeting
+app.get('/api/admin/user-list', authenticateAdmin, async (req, res) => {
+  try {
+    const users = await dbAll(`
+      SELECT
+        id,
+        email,
+        name,
+        plan,
+        response_count,
+        created_at,
+        CASE
+          WHEN response_count = 0 THEN 'never_used'
+          WHEN response_count < 5 THEN 'low_usage'
+          WHEN response_count < 15 THEN 'medium_usage'
+          WHEN response_count >= 15 THEN 'high_usage'
+        END as usage_tier,
+        EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400 as days_since_signup
+      FROM users
+      WHERE email NOT LIKE '%test%'
+        AND email NOT LIKE '%example%'
+        AND email != 'berend.mainz@web.de'
+      ORDER BY response_count DESC, created_at DESC
+      LIMIT 100
+    `) || [];
+
+    // Summary stats
+    const summary = {
+      total: users.length,
+      never_used: users.filter(u => u.usage_tier === 'never_used').length,
+      low_usage: users.filter(u => u.usage_tier === 'low_usage').length,
+      medium_usage: users.filter(u => u.usage_tier === 'medium_usage').length,
+      high_usage: users.filter(u => u.usage_tier === 'high_usage').length,
+    };
+
+    res.json({ summary, users });
+  } catch (error) {
+    console.error('User list error:', error);
+    res.status(500).json({ error: 'Failed to get user list' });
   }
 });
 

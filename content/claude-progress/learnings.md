@@ -10,6 +10,7 @@
 
 | Rule | Warum | Gelernt am |
 |------|-------|------------|
+| **BACKEND WECKEN vor API-Calls!** | Render schläft, 30-60s Wake-Up nötig | 16.01.2026 |
 | KEIN Discount in Cold Emails | Devalues Product, Claudius-Fehler | Setup |
 | Max 30% Discount | LTV > CAC muss gelten | Setup |
 | Discount NUR mit Deadline | Ohne Urgency keine Conversion | Setup |
@@ -238,3 +239,100 @@ _Noch keine Daten_
 ---
 
 *Diese Datei wird von Burst-9 (Doctor) gepflegt und von allen Agents gelesen.*
+
+### [2026-01-15 14:09] Burst-3
+- Burst-3 correctly recognized PAUSED status from current-focus.json and stopped - System priority works
+
+
+### [2026-01-15 14:27] Burst-12
+- Activation stagnation (34%): Nudge-cron finds 0 users because Magic Link users don't know they have accounts. Need different approach: urgency emails about expiring demos, or friction reduction on login.
+
+### [2026-01-15 14:34] Burst-2
+- **POST /api/outreach/send-emails** is the correct endpoint for cold email batch sending
+- Campaign "main" has 50/day limit, works great for automated outreach
+- Sent 50 emails in 4 batches (5+15+20+10) - all successful, 0% bounce
+- Global 100/day limit shared across all email types
+- **NO DISCOUNT in cold emails** - only value (demo links) - CRITICAL
+
+
+### [2026-01-15 14:29] Burst-13
+- Burst-13 correctly paused - 0 paying users means 0 churn risk. Activation (Burst-6) is the real bottleneck.
+
+
+### [2026-01-15 16:30] Burst-4 - CRITICAL FINDING
+- **LinkedIn demo endpoint `/api/outreach/linkedin-demo` works reliably**
+- Other endpoints fail with "No reviews" error:
+  - `/api/admin/send-hot-lead-demos` → 0 demos (all "No reviews")
+  - `/api/cron/generate-demos` → 0 demos
+- **Root cause:** LinkedIn endpoint uses different Google Places lookup flow
+- **Solution:** Use LinkedIn endpoint for ALL demo generation tasks
+- **Result:** 25 demos generated in 1 session vs 0 with other endpoints
+- **Cost:** ~$0.08 per demo (AI responses + Google Places API)
+- **Recommendation for future:** Fix other endpoints or redirect to LinkedIn endpoint
+
+
+### [2026-01-15 15:24] Burst-12
+- Autonomes Handeln: reengage-clickers Endpoint sendet Magic Links an Clicker ohne Account. 8 Emails erfolgreich gesendet. Demo-Expiry braucht 3+ Tage alte Demos.
+
+
+### [2026-01-15 15:26] Burst-14
+- Scoring Model v2: Klick=+25, Personal Email=+10, Hotel/Restaurant Bonus=+5. 31.6% der Clickers sind Hot (Score 75+). Höchster Score: 88 (AWAY SPA Edinburgh).
+
+
+### [2026-01-15 20:30] Burst-9 - CRITICAL PATTERN: Magic Click ≠ Conversion
+
+**Beobachtung:** Magic Link Clicks konvertieren NICHT zu Zahlungen
+**Daten:**
+- 68 Magic Links gesendet
+- 35 geklickt (51% CTR - SEHR GUT!)
+- 0 Conversions (0%)
+- 66% der User (29/44) haben 0 Responses generiert
+- 0 User am 20-Response-Limit
+
+**Root Cause:** ACTIVATION ist der Bottleneck!
+User klicken Magic Link → werden registriert → nutzen Produkt NIE → erreichen nie Limit → kein Grund zu zahlen
+
+**Empfehlung:**
+1. PAUSE Lead Generation (2125 Leads = genug)
+2. PRIORITY 1: User Activation via Onboarding Emails
+3. DANN: Payment Conversion (wenn User Limit erreichen)
+
+**Metriken Update:**
+- CTR jetzt 5.0% (vs 4% Baseline) - Lead Gen funktioniert!
+- Problem ist downstream: Activation → Limit → Payment
+
+
+### [2026-01-15 15:30] Burst-9
+- CTR ist 5% (gut!) - Problem ist Activation: 66% User nutzen Produkt nie, 0 am Limit
+
+### [2026-01-15 15:37] Burst-15 (Approval Gate)
+- **First Approval Processed:** Burst-12 Strategy Proposal
+- **Berend Response:** "handle immer autonom" = Standard-Strategien brauchen keine Einzelfreigabe
+- **Actions Taken:** 8 Magic Link Re-Engagement Emails gesendet
+- **Learning:** Berend vertraut den Agents für Standard-Marketing-Strategien
+- **Für Zukunft:** Nur wirklich kritische Entscheidungen (>30% Discount, First Conversion) brauchen explizite Approval
+
+
+### [2026-01-15 15:41] Burst-8
+- Burst-8 Check 15.01: 0 paying users, 0 upgrade candidates. Highest Free user at 6/20 (30%). Upgrade function not needed until Burst-7 converts first customers.
+
+
+### [2026-01-15 15:42] Burst-6
+- Activation rate 33.3% erreicht (Ziel >30%), aber 0 User am Limit. Die 6 User mit 5-9 Responses sind kritisch - brauchen Encouragement weiterzumachen um Limit zu erreichen.
+
+
+### [2026-01-15 15:44] Burst-5
+- 46% der Clicker (19/41) registrieren sich aber nutzen Produkt nicht - Handoff an Burst-6 statt mehr Follow-Ups
+
+
+### [2026-01-15 16:09] Burst-12
+- Zwei verschiedene Activation-Probleme identifiziert: (1) 66% komplett dormant - brauchen Magic Links, (2) 6 User mit 5-9 Responses stoppen zu frueh - brauchen Encouragement. Unterschiedliche Strategien fuer unterschiedliche Segmente!
+
+
+### [2026-01-15 16:46] Burst-4
+- Session COMPLETE: 49 Demos fuer alle 41 Hot Leads generiert. API Cost .20. LinkedIn-Endpoint ist zuverlaessig!
+
+
+### [2026-01-15 16:56] Burst-1
+- Hunter.io findet keine Emails für kleine Coffee Shops - Night-Blast mit Website-Scraping ist effektiver
+

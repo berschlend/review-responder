@@ -1,0 +1,18 @@
+{
+  "agent": "burst-15-approval-gate",
+  "status": "running",
+  "last_run": "2026-01-15T17:55:00Z",
+  "pending_approvals": 0,
+  "pending_details": [],
+  "resolved_last_24h": 1,
+  "resolved_details": [{
+    "from": "burst-12",
+    "type": "new_strategy",
+    "resolution": "APPROVED_AUTONOMOUS",
+    "berend_response": "handle immer autonom",
+    "actions_taken": "8 Magic Links sent via reengage-clickers",
+    "resolved_at": "2026-01-15T17:45:00Z"
+  }],
+  "timeouts_last_24h": 0,
+  "loops_completed": 22
+}

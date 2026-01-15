@@ -1,0 +1,28 @@
+﻿{
+    "current_loop":  2,
+    "version":  "3.3",
+    "agent":  "burst-6",
+    "health":  {
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "started_at":  "2026-01-15T14:08:09Z",
+    "status":  "running",
+    "last_heartbeat":  "2026-01-15T15:43:12Z",
+    "metrics":  {
+                    "errors_count":  0,
+                    "actions_taken":  1,
+                    "inactive_users_found":  31,
+                    "activation_rate":  33.3,
+                    "users_with_5plus_responses":  6,
+                    "onboarding_emails_sent":  0,
+                    "upgrade_nudges_sent":  0
+                },
+    "session_notes":  [
+                          "Loop 1: Found 31 inactive users, 26 real (excluding test accounts)",
+                          "Onboarding emails already processed today (0 new sent)",
+                          "Magic nudge: no inactive magic users to nudge",
+                          "Activation rate at 33.3% - meets \u003e30% target",
+                          "6 users have 5-9 responses (upgrade candidates when they hit limit)"
+                      ]
+}

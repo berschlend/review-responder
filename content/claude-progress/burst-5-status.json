@@ -1,0 +1,26 @@
+﻿{
+    "current_loop":  2,
+    "version":  "3.3",
+    "agent":  "burst-5",
+    "health":  {
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "started_at":  "2026-01-15T14:07:10Z",
+    "status":  "running",
+    "last_heartbeat":  "2026-01-15T15:45:44Z",
+    "metrics":  {
+                    "errors_count":  0,
+                    "actions_taken":  1,
+                    "hot_leads_found":  41,
+                    "already_followed_up":  41,
+                    "converted_but_dormant":  19,
+                    "ready_for_second_followup":  0,
+                    "multi_clickers":  0
+                },
+    "findings":  {
+                     "key_insight":  "19 von 41 Clickern haben sich registriert aber 0 Responses - brauchen Onboarding nicht Follow-Up",
+                     "handoff_created":  "burst-6 dormant_converted_users",
+                     "next_action":  "Warte 20 Min dann neuer Check"
+                 }
+}

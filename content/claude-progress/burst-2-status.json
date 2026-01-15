@@ -1,0 +1,44 @@
+{
+  "agent": "burst-2-cold-emailer",
+  "version": "3.0",
+  "status": "waiting_for_reset",
+  "started_at": "2026-01-15T23:30:00Z",
+  "last_heartbeat": "2026-01-15T23:45:00Z",
+  "current_loop": 6,
+  "checkpoints": {
+    "last_successful_action": "all_channels_exhausted",
+    "last_processed_id": null,
+    "resume_from": "wait_for_midnight_utc"
+  },
+  "metrics": {
+    "actions_taken": 6,
+    "emails_sent_today": 51,
+    "emails_sent_total": 51,
+    "bounced": 0,
+    "errors_count": 0,
+    "followups_sent": 1
+  },
+  "health": {
+    "stuck_detected": false,
+    "last_error": null,
+    "api_budget_ok": true
+  },
+  "escalations_pending": [],
+  "channels_status": {
+    "cold_email_main": "50/50 - LIMIT REACHED",
+    "followups": "1 sent, 0 candidates remaining",
+    "reengage_clickers": "0 - no hot leads",
+    "demo_expiration": "0 - demos too new (<3 days)",
+    "dead_lead_revival": "0 - all revived or clicked",
+    "tripadvisor": "0 - no leads",
+    "yelp": "0 - no leads",
+    "g2": "0 - no leads"
+  },
+  "session_summary": {
+    "total_emails_sent": 51,
+    "cold_emails": 50,
+    "followups": 1,
+    "target_achieved": true,
+    "next_reset": "00:00 UTC"
+  }
+}

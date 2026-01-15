@@ -45,6 +45,21 @@ powershell -File scripts/agent-helpers.ps1 -Action handoff-check -Agent [X]
 # === FOCUS LESEN ===
 powershell -File scripts/agent-helpers.ps1 -Action focus-read
 # Output: JSON mit current-focus.json
+
+# === ADMIN API CALLS (mit Auth Header!) ===
+# WICHTIG: Admin Endpoints brauchen x-admin-key Header!
+curl -s -H "x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U" "https://review-responder.onrender.com/api/admin/stats"
+# Weitere Admin Endpoints:
+# /api/admin/stats - Generelle Stats
+# /api/outreach/dashboard - Outreach Metriken & Hot Leads
+# /api/admin/parallel-safe-status - Lock & Email Status
+# /api/admin/api-costs - API Kosten Übersicht
+# /api/admin/omnichannel-stats - Social Channel Stats
+
+# === BACKEND WECKEN (KRITISCH!) ===
+powershell -File scripts/agent-helpers.ps1 -Action wake-backend
+# Output: "OK: Backend is awake and ready!" oder Fehler
+# MUSS als ERSTES bei Session-Start ausgeführt werden!
 ```
 
 ---
@@ -54,6 +69,12 @@ powershell -File scripts/agent-helpers.ps1 -Action focus-read
 **JEDER AGENT muss bei Session-Start diese Commands ausführen:**
 
 ```bash
+# 0. BACKEND WECKEN - Render schläft nach Inaktivität! (30-60s)
+powershell -File scripts/agent-helpers.ps1 -Action wake-backend
+# ↑ KRITISCH! Ohne diesen Step schlagen alle API-Calls fehl!
+# Alternative (falls PowerShell nicht funktioniert):
+# curl -s --retry 5 --retry-delay 10 --retry-connrefused --connect-timeout 60 "https://review-responder.onrender.com/api/admin/stats"
+
 # 1. HEARTBEAT - Melde dich beim System an
 powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent [X]
 
@@ -389,14 +410,44 @@ ALLE 5 LOOPS:
 
 ## 🛡️ FAILURE RECOVERY SYSTEM
 
+### 🌐 BACKEND WAKE-UP (WICHTIG!)
+
+> **Render Free Tier schläft nach Inaktivität!**
+> Das Backend braucht 30-60 Sekunden zum Aufwachen.
+
+**VOR DEM ERSTEN API-CALL:**
+
+```bash
+# Wake-Up mit Retry-Logic (nutze diesen Befehl!)
+curl -s --retry 5 --retry-delay 10 --retry-connrefused --connect-timeout 60 "https://review-responder.onrender.com/api/admin/stats" || echo "Backend waking up..."
+```
+
+**BEI API CONNECTION ERROR:**
+
+```
+WENN "connection refused" ODER "timeout" ODER "ECONNRESET":
+
+1. NICHT PANIKIEREN - Backend schläft wahrscheinlich nur
+2. Warte 30 Sekunden
+3. Retry mit curl --retry Flag:
+   curl -s --retry 3 --retry-delay 15 --connect-timeout 30 "[URL]"
+4. Wenn nach 3 Retries immer noch Fehler:
+   - Log Error in status-file
+   - Warte 2 Minuten
+   - Retry einmal mehr
+5. Wenn immer noch Fehler → Escalate zu for-berend.md
+```
+
 ### Error Handling Matrix
 
 | Error Type | Immediate Action | Fallback | Escalation |
 |------------|-----------------|----------|------------|
+| Connection Refused | Wait 30s, retry 3x | Wake-up curl | Nach 5min → for-berend.md |
 | API 429 (Rate Limit) | Wait 60s, retry | Switch to cached data | Nach 3x → for-berend.md |
 | API 500 (Server Error) | Wait 30s, retry 2x | Skip, continue mit nächstem | Log Error, continue |
 | API 401 (Auth) | STOP | N/A | 🔴 SOFORT for-berend.md |
-| Network Timeout | Retry 2x | Skip | Log, continue |
+| Network Timeout | Retry 3x mit --retry | Skip | Log, continue |
+| ECONNRESET | Wait 15s, retry 2x | N/A | Log, continue |
 | Unexpected Response | Validate Schema | Use fallback | Document Pattern |
 | Email Bounce | Mark lead invalid | Skip | Update lead status |
 

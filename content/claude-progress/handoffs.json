@@ -1,0 +1,53 @@
+[
+  {
+    "id": "handoff-5-to-6-001",
+    "from": "burst-5",
+    "to": "burst-6",
+    "type": "dormant_converted_users",
+    "priority": 1,
+    "created_at": "2026-01-15T14:00:00Z",
+    "status": "pending",
+    "data": {
+      "count": 19,
+      "user_ids": [103, 102, 101, 100, 99, 98, 97, 96, 94, 93, 92, 91, 89, 86, 84, 83, 82, 81, 80],
+      "emails": [
+        "H0796@accor.com",
+        "info@kentwood.com",
+        "info@pia.be",
+        "welcome@sonnenberg-zurich.ch",
+        "hello@shopviu.com",
+        "h9057@accor.com",
+        "info@thedoldergrand.com",
+        "info@hummelklappen.se",
+        "dining@edgewaterhotel.com",
+        "info@wildginger.net",
+        "guestservices@steak44.com",
+        "info@bostoniapublichouse.com",
+        "i.schmidt@tv-turm.de",
+        "reservation.web@madamebrasserie.com",
+        "info@marriott.com",
+        "info@romanolaw.com",
+        "awayspa.edinburgh@whotels.com",
+        "langstrasse@25hours-hotels.com",
+        "community@bullring.co.uk"
+      ],
+      "message": "19 Hot Leads haben geklickt und sich registriert aber 0 Responses. Sie brauchen Onboarding-Nudge!"
+    }
+  },
+  {
+    "id": "handoff-1-to-2-002",
+    "from": "burst-1",
+    "to": "burst-2",
+    "type": "new_leads_with_email",
+    "priority": 2,
+    "created_at": "2026-01-15T23:00:00Z",
+    "status": "pending",
+    "data": {
+      "leads_added": 89,
+      "emails_found": 69,
+      "sources": ["night_blast", "tripadvisor"],
+      "cities": ["Dallas", "San Diego", "San Antonio", "Philadelphia", "Denver"],
+      "message": "69 neue Leads mit Email bereit fuer Cold Outreach. Night-Blast Session war erfolgreich."
+    }
+  }
+]

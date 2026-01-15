@@ -8,7 +8,7 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read")]
+    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend")]
     [string]$Action,
 
     [int]$Agent = 0,
@@ -202,6 +202,40 @@ switch ($Action) {
             Get-Content $focusFile
         } else {
             Write-Output "{}"
+        }
+    }
+
+    "wake-backend" {
+        # Wake up Render backend (sleeps after inactivity)
+        # Uses curl directly since it handles HTTP errors more gracefully
+        $BackendUrl = "https://review-responder.onrender.com/api/admin/stats"
+        $MaxAttempts = 10
+        $Delay = 5
+
+        Write-Output "[WAKE-UP] Waking up Render backend..."
+
+        for ($i = 1; $i -le $MaxAttempts; $i++) {
+            Write-Output "[WAKE-UP] Attempt $i/$MaxAttempts..."
+
+            # Use curl.exe to check - any HTTP response (even 401) means backend is awake
+            # Note: curl.exe is the actual curl binary, not PowerShell's Invoke-WebRequest alias
+            $result = curl.exe -s -o NUL -w "%{http_code}" --connect-timeout 30 $BackendUrl 2>&1
+
+            if ($result -match '^\d{3}$') {
+                $statusCode = [int]$result
+                if ($statusCode -ge 200 -and $statusCode -lt 600) {
+                    Write-Output "OK: Backend is awake and ready! (HTTP $statusCode)"
+                    break
+                }
+            }
+
+            if ($i -lt $MaxAttempts) {
+                Write-Output "[WAKE-UP] Connection failed, waiting ${Delay}s..."
+                Start-Sleep -Seconds $Delay
+                $Delay = [Math]::Min($Delay * 1.5, 30)
+            } else {
+                Write-Output "WARNING: Backend may still be sleeping after $MaxAttempts attempts"
+            }
         }
     }
 }

@@ -1,15 +1,859 @@
 {
-  "last_updated": null,
-  "total_scored": 0,
+  "last_updated": "2026-01-15T15:24:26.978Z",
+  "total_scored": 38,
   "segments": {
-    "hot": 0,
-    "warm": 0,
+    "hot": 12,
+    "warm": 26,
     "cool": 0,
     "cold": 0
   },
-  "top_10": [],
-  "new_hot_leads": [],
-  "score_changes": [],
+  "top_10": [
+    {
+      "email": "awayspa.edinburgh@whotels.com",
+      "business": "AWAY® SPA",
+      "city": "Edinburgh",
+      "reviews": 37,
+      "score": 88,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 23,
+        "behavior": 30
+      },
+      "clicked_hours_ago": 17,
+      "segment": "hot"
+    },
+    {
+      "email": "advantageclub@leonardo-hotels.com",
+      "business": "Leonardo Hotel & Residenz München",
+      "city": "Munich",
+      "reviews": 4343,
+      "score": 85,
+      "breakdown": {
+        "engagement": 40,
+        "fit": 15,
+        "behavior": 30
+      },
+      "clicked_hours_ago": 8,
+      "segment": "hot"
+    },
+    {
+      "email": "onlinebestellung@pearle.at",
+      "business": "Pearle-Optik Graz",
+      "city": "Graz",
+      "reviews": 36,
+      "score": 83,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 23,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 15,
+      "segment": "hot"
+    },
+    {
+      "email": "langstrasse@25hours-hotels.com",
+      "business": "25hours Hotel Zürich",
+      "city": "Zürich",
+      "reviews": 3387,
+      "score": 80,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 30
+      },
+      "clicked_hours_ago": 17,
+      "segment": "hot"
+    },
+    {
+      "email": "welcome@sonnenberg-zurich.ch",
+      "business": "Restaurant Sonnenberg",
+      "city": "Zürich",
+      "reviews": 1053,
+      "score": 80,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 30
+      },
+      "clicked_hours_ago": 15,
+      "segment": "hot"
+    },
+    {
+      "email": "orders@petitpierrebakery.com",
+      "business": "Petit Pierre Bakery",
+      "city": "Seattle",
+      "reviews": 772,
+      "score": 77,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 17,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 18,
+      "segment": "hot"
+    },
+    {
+      "email": "dining@edgewaterhotel.com",
+      "business": "Six Seven Restaurant",
+      "city": "Seattle",
+      "reviews": 2183,
+      "score": 75,
+      "breakdown": {
+        "engagement": 30,
+        "fit": 15,
+        "behavior": 30
+      },
+      "clicked_hours_ago": 47,
+      "segment": "hot"
+    },
+    {
+      "email": "H0796@accor.com",
+      "business": "ibis Wien Mariahilf",
+      "city": "Wien",
+      "reviews": 4234,
+      "score": 75,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 12,
+      "segment": "hot"
+    },
+    {
+      "email": "h9057@accor.com",
+      "business": "Novotel London Canary Wharf",
+      "city": "London",
+      "reviews": 4589,
+      "score": 75,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 15,
+      "segment": "hot"
+    },
+    {
+      "email": "info@treudelberg.com",
+      "business": "IntercityHotel Hamburg",
+      "city": "Hamburg",
+      "reviews": 2752,
+      "score": 75,
+      "breakdown": {
+        "engagement": 40,
+        "fit": 15,
+        "behavior": 20
+      },
+      "clicked_hours_ago": 6,
+      "segment": "hot"
+    }
+  ],
+  "new_hot_leads": [
+    {
+      "email": "awayspa.edinburgh@whotels.com",
+      "business": "AWAY® SPA",
+      "city": "Edinburgh",
+      "reviews": 37,
+      "score": 88,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 23,
+        "behavior": 30
+      },
+      "clicked_hours_ago": 17,
+      "segment": "hot"
+    },
+    {
+      "email": "advantageclub@leonardo-hotels.com",
+      "business": "Leonardo Hotel & Residenz München",
+      "city": "Munich",
+      "reviews": 4343,
+      "score": 85,
+      "breakdown": {
+        "engagement": 40,
+        "fit": 15,
+        "behavior": 30
+      },
+      "clicked_hours_ago": 8,
+      "segment": "hot"
+    },
+    {
+      "email": "onlinebestellung@pearle.at",
+      "business": "Pearle-Optik Graz",
+      "city": "Graz",
+      "reviews": 36,
+      "score": 83,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 23,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 15,
+      "segment": "hot"
+    },
+    {
+      "email": "langstrasse@25hours-hotels.com",
+      "business": "25hours Hotel Zürich",
+      "city": "Zürich",
+      "reviews": 3387,
+      "score": 80,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 30
+      },
+      "clicked_hours_ago": 17,
+      "segment": "hot"
+    },
+    {
+      "email": "welcome@sonnenberg-zurich.ch",
+      "business": "Restaurant Sonnenberg",
+      "city": "Zürich",
+      "reviews": 1053,
+      "score": 80,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 30
+      },
+      "clicked_hours_ago": 15,
+      "segment": "hot"
+    },
+    {
+      "email": "orders@petitpierrebakery.com",
+      "business": "Petit Pierre Bakery",
+      "city": "Seattle",
+      "reviews": 772,
+      "score": 77,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 17,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 18,
+      "segment": "hot"
+    },
+    {
+      "email": "dining@edgewaterhotel.com",
+      "business": "Six Seven Restaurant",
+      "city": "Seattle",
+      "reviews": 2183,
+      "score": 75,
+      "breakdown": {
+        "engagement": 30,
+        "fit": 15,
+        "behavior": 30
+      },
+      "clicked_hours_ago": 47,
+      "segment": "hot"
+    },
+    {
+      "email": "H0796@accor.com",
+      "business": "ibis Wien Mariahilf",
+      "city": "Wien",
+      "reviews": 4234,
+      "score": 75,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 12,
+      "segment": "hot"
+    },
+    {
+      "email": "h9057@accor.com",
+      "business": "Novotel London Canary Wharf",
+      "city": "London",
+      "reviews": 4589,
+      "score": 75,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 15,
+      "segment": "hot"
+    },
+    {
+      "email": "info@treudelberg.com",
+      "business": "IntercityHotel Hamburg",
+      "city": "Hamburg",
+      "reviews": 2752,
+      "score": 75,
+      "breakdown": {
+        "engagement": 40,
+        "fit": 15,
+        "behavior": 20
+      },
+      "clicked_hours_ago": 6,
+      "segment": "hot"
+    },
+    {
+      "email": "leasing@kprcenters.com",
+      "business": "Vestavia Hills City Center",
+      "city": "Birmingham",
+      "reviews": 1748,
+      "score": 75,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 15,
+      "segment": "hot"
+    },
+    {
+      "email": "zuerich@trattoria-sempre.ch",
+      "business": "Trattoria Sempre Zürich",
+      "city": "Zürich",
+      "reviews": 2437,
+      "score": 75,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 15,
+      "segment": "hot"
+    }
+  ],
+  "mega_hot_leads": [],
+  "all_scored": [
+    {
+      "email": "awayspa.edinburgh@whotels.com",
+      "business": "AWAY® SPA",
+      "city": "Edinburgh",
+      "reviews": 37,
+      "score": 88,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 23,
+        "behavior": 30
+      },
+      "clicked_hours_ago": 17,
+      "segment": "hot"
+    },
+    {
+      "email": "advantageclub@leonardo-hotels.com",
+      "business": "Leonardo Hotel & Residenz München",
+      "city": "Munich",
+      "reviews": 4343,
+      "score": 85,
+      "breakdown": {
+        "engagement": 40,
+        "fit": 15,
+        "behavior": 30
+      },
+      "clicked_hours_ago": 8,
+      "segment": "hot"
+    },
+    {
+      "email": "onlinebestellung@pearle.at",
+      "business": "Pearle-Optik Graz",
+      "city": "Graz",
+      "reviews": 36,
+      "score": 83,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 23,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 15,
+      "segment": "hot"
+    },
+    {
+      "email": "langstrasse@25hours-hotels.com",
+      "business": "25hours Hotel Zürich",
+      "city": "Zürich",
+      "reviews": 3387,
+      "score": 80,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 30
+      },
+      "clicked_hours_ago": 17,
+      "segment": "hot"
+    },
+    {
+      "email": "welcome@sonnenberg-zurich.ch",
+      "business": "Restaurant Sonnenberg",
+      "city": "Zürich",
+      "reviews": 1053,
+      "score": 80,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 30
+      },
+      "clicked_hours_ago": 15,
+      "segment": "hot"
+    },
+    {
+      "email": "orders@petitpierrebakery.com",
+      "business": "Petit Pierre Bakery",
+      "city": "Seattle",
+      "reviews": 772,
+      "score": 77,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 17,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 18,
+      "segment": "hot"
+    },
+    {
+      "email": "dining@edgewaterhotel.com",
+      "business": "Six Seven Restaurant",
+      "city": "Seattle",
+      "reviews": 2183,
+      "score": 75,
+      "breakdown": {
+        "engagement": 30,
+        "fit": 15,
+        "behavior": 30
+      },
+      "clicked_hours_ago": 47,
+      "segment": "hot"
+    },
+    {
+      "email": "H0796@accor.com",
+      "business": "ibis Wien Mariahilf",
+      "city": "Wien",
+      "reviews": 4234,
+      "score": 75,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 12,
+      "segment": "hot"
+    },
+    {
+      "email": "h9057@accor.com",
+      "business": "Novotel London Canary Wharf",
+      "city": "London",
+      "reviews": 4589,
+      "score": 75,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 15,
+      "segment": "hot"
+    },
+    {
+      "email": "info@treudelberg.com",
+      "business": "IntercityHotel Hamburg",
+      "city": "Hamburg",
+      "reviews": 2752,
+      "score": 75,
+      "breakdown": {
+        "engagement": 40,
+        "fit": 15,
+        "behavior": 20
+      },
+      "clicked_hours_ago": 6,
+      "segment": "hot"
+    },
+    {
+      "email": "leasing@kprcenters.com",
+      "business": "Vestavia Hills City Center",
+      "city": "Birmingham",
+      "reviews": 1748,
+      "score": 75,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 15,
+      "segment": "hot"
+    },
+    {
+      "email": "zuerich@trattoria-sempre.ch",
+      "business": "Trattoria Sempre Zürich",
+      "city": "Zürich",
+      "reviews": 2437,
+      "score": 75,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 15,
+      "segment": "hot"
+    },
+    {
+      "email": "afif@alicetoronto.com",
+      "business": "Alice Restaurant & Bar",
+      "city": null,
+      "reviews": 0,
+      "score": 73,
+      "breakdown": {
+        "engagement": 30,
+        "fit": 13,
+        "behavior": 30
+      },
+      "clicked_hours_ago": 46,
+      "segment": "warm"
+    },
+    {
+      "email": "community@bullring.co.uk",
+      "business": "Bullring",
+      "city": "Birmingham",
+      "reviews": 56381,
+      "score": 73,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 13,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 17,
+      "segment": "warm"
+    },
+    {
+      "email": "info@hummelklappen.se",
+      "business": "Hummelkläppen",
+      "city": "Stockholm",
+      "reviews": 10,
+      "score": 73,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 23,
+        "behavior": 15
+      },
+      "clicked_hours_ago": 15,
+      "segment": "warm"
+    },
+    {
+      "email": "info@pia.be",
+      "business": "DBM Tax & Accounting",
+      "city": "Brüssel",
+      "reviews": 8,
+      "score": 73,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 23,
+        "behavior": 15
+      },
+      "clicked_hours_ago": 15,
+      "segment": "warm"
+    },
+    {
+      "email": "hello@shopviu.com",
+      "business": "VIU flagship store",
+      "city": "Graz",
+      "reviews": 119,
+      "score": 70,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 20,
+        "behavior": 15
+      },
+      "clicked_hours_ago": 15,
+      "segment": "warm"
+    },
+    {
+      "email": "info@kentwood.com",
+      "business": "Kentwood Real Estate",
+      "city": "Denver",
+      "reviews": 115,
+      "score": 70,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 20,
+        "behavior": 15
+      },
+      "clicked_hours_ago": 15,
+      "segment": "warm"
+    },
+    {
+      "email": "info@terrasse-zuerich.ch",
+      "business": "terrasse Restaurant",
+      "city": "Zürich",
+      "reviews": 2339,
+      "score": 70,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 20
+      },
+      "clicked_hours_ago": 15,
+      "segment": "warm"
+    },
+    {
+      "email": "pmuszynski@thecapitalgrille.com",
+      "business": "The Capital Grille",
+      "city": "Seattle",
+      "reviews": 2096,
+      "score": 70,
+      "breakdown": {
+        "engagement": 30,
+        "fit": 15,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 33,
+      "segment": "warm"
+    },
+    {
+      "email": "bren@ldry.com",
+      "business": "Brenners Steakhouse",
+      "city": "Houston",
+      "reviews": 0,
+      "score": 68,
+      "breakdown": {
+        "engagement": 30,
+        "fit": 13,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 47,
+      "segment": "warm"
+    },
+    {
+      "email": "guestservices@steak44.com",
+      "business": "Steak 44",
+      "city": "Phoenix",
+      "reviews": 0,
+      "score": 68,
+      "breakdown": {
+        "engagement": 30,
+        "fit": 13,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 47,
+      "segment": "warm"
+    },
+    {
+      "email": "i.schmidt@tv-turm.de",
+      "business": "Sphere Tim Raue",
+      "city": "Berlin",
+      "reviews": 8474,
+      "score": 68,
+      "breakdown": {
+        "engagement": 30,
+        "fit": 13,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 47,
+      "segment": "warm"
+    },
+    {
+      "email": "lgho@ldry.com",
+      "business": "La Griglia",
+      "city": "Houston",
+      "reviews": 0,
+      "score": 68,
+      "breakdown": {
+        "engagement": 30,
+        "fit": 13,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 33,
+      "segment": "warm"
+    },
+    {
+      "email": "nye@komodomiami.com",
+      "business": "Komodo Miami",
+      "city": "Miami",
+      "reviews": 7240,
+      "score": 68,
+      "breakdown": {
+        "engagement": 30,
+        "fit": 13,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 47,
+      "segment": "warm"
+    },
+    {
+      "email": "reservation.web@madamebrasserie.com",
+      "business": "Madame Brasserie",
+      "city": "Paris",
+      "reviews": 0,
+      "score": 68,
+      "breakdown": {
+        "engagement": 30,
+        "fit": 13,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 27,
+      "segment": "warm"
+    },
+    {
+      "email": "willkommen@augustiner-klosterwirt.de",
+      "business": "Augustiner Klosterwirt",
+      "city": "München",
+      "reviews": 13395,
+      "score": 68,
+      "breakdown": {
+        "engagement": 30,
+        "fit": 13,
+        "behavior": 25
+      },
+      "clicked_hours_ago": 47,
+      "segment": "warm"
+    },
+    {
+      "email": "info@romanolaw.com",
+      "business": "Romano Law",
+      "city": "New York",
+      "reviews": 325,
+      "score": 67,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 17,
+        "behavior": 15
+      },
+      "clicked_hours_ago": 17,
+      "segment": "warm"
+    },
+    {
+      "email": "info@marriott.com",
+      "business": "Sheraton Grand Edinburgh",
+      "city": "Edinburgh",
+      "reviews": 2449,
+      "score": 65,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 15
+      },
+      "clicked_hours_ago": 15,
+      "segment": "warm"
+    },
+    {
+      "email": "info@thedoldergrand.com",
+      "business": "The Dolder Grand",
+      "city": "Zürich",
+      "reviews": 3838,
+      "score": 65,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 15,
+        "behavior": 15
+      },
+      "clicked_hours_ago": 15,
+      "segment": "warm"
+    },
+    {
+      "email": "hello@stjamesquarter.com",
+      "business": "St James Quarter",
+      "city": "Edinburgh",
+      "reviews": 9691,
+      "score": 63,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 13,
+        "behavior": 15
+      },
+      "clicked_hours_ago": 15,
+      "segment": "warm"
+    },
+    {
+      "email": "info@hilton.com",
+      "business": "Hilton Los Angeles Airport",
+      "city": "Los Angeles",
+      "reviews": 11849,
+      "score": 63,
+      "breakdown": {
+        "engagement": 35,
+        "fit": 13,
+        "behavior": 15
+      },
+      "clicked_hours_ago": 15,
+      "segment": "warm"
+    },
+    {
+      "email": "info@alderandashsea.com",
+      "business": "Alder & Ash",
+      "city": "Seattle",
+      "reviews": 653,
+      "score": 62,
+      "breakdown": {
+        "engagement": 30,
+        "fit": 17,
+        "behavior": 15
+      },
+      "clicked_hours_ago": 31,
+      "segment": "warm"
+    },
+    {
+      "email": "hello@tulio.com",
+      "business": "Tulio",
+      "city": "Seattle",
+      "reviews": 0,
+      "score": 58,
+      "breakdown": {
+        "engagement": 30,
+        "fit": 13,
+        "behavior": 15
+      },
+      "clicked_hours_ago": 47,
+      "segment": "warm"
+    },
+    {
+      "email": "info@bostoniapublichouse.com",
+      "business": "Bostonia Public House",
+      "city": "Boston",
+      "reviews": 0,
+      "score": 58,
+      "breakdown": {
+        "engagement": 30,
+        "fit": 13,
+        "behavior": 15
+      },
+      "clicked_hours_ago": 47,
+      "segment": "warm"
+    },
+    {
+      "email": "info@thesmithrestaurant.com",
+      "business": "The Smith",
+      "city": "New York",
+      "reviews": 6152,
+      "score": 58,
+      "breakdown": {
+        "engagement": 30,
+        "fit": 13,
+        "behavior": 15
+      },
+      "clicked_hours_ago": 47,
+      "segment": "warm"
+    },
+    {
+      "email": "info@wildginger.net",
+      "business": "Wild Ginger",
+      "city": "Seattle",
+      "reviews": 0,
+      "score": 58,
+      "breakdown": {
+        "engagement": 30,
+        "fit": 13,
+        "behavior": 15
+      },
+      "clicked_hours_ago": 47,
+      "segment": "warm"
+    },
+    {
+      "email": "info@wirtshausinderau.de",
+      "business": "Wirtshaus in der Au",
+      "city": "München",
+      "reviews": 5624,
+      "score": 58,
+      "breakdown": {
+        "engagement": 30,
+        "fit": 13,
+        "behavior": 15
+      },
+      "clicked_hours_ago": 47,
+      "segment": "warm"
+    }
+  ],
   "scoring_model": {
     "version": "1.0",
     "engagement": {

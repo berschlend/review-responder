@@ -1,74 +1,105 @@
-{
-  "version": "1.0",
-  "description": "Agent-to-Agent handoff queue for coordinated workflows",
-  "created_at": "2026-01-16T00:00:00Z",
-  "last_processed": null,
+﻿{
+    "version":  "1.0",
+    "description":  "Agent-to-Agent handoff queue for coordinated workflows",
+    "created_at":  "2026-01-16T00:00:00Z",
+    "last_processed":  null,
+    "queue":  [
+                  {
+                      "from":  "burst-4",
+                      "to":  "burst-6",
+                      "type":  "notification",
+                      "message":  "49 personalisierte Demos generiert fuer alle Hot Leads. Demo-Links in DB vorhanden. Diese User brauchen Activation!",
+                      "id":  "6c8d46e3",
+                      "created_at":  "2026-01-15T16:47:07Z",
+                      "status":  "pending"
+                  }
+              ],
+    "processed":  [
 
-  "queue": [],
+                  ],
+    "schema":  {
+                   "handoff_entry":  {
+                                         "id":  "uuid",
+                                         "from":  "burst-X (source agent)",
+                                         "to":  "burst-Y (target agent)",
+                                         "type":  "new_leads|hot_leads|demo_ready|follow_up_needed|escalation",
+                                         "data":  {
+                                                      "description":  "Payload varies by type"
+                                                  },
+                                         "priority":  "1=critical, 2=high, 3=normal",
+                                         "created_at":  "timestamp",
+                                         "status":  "pending|in_progress|processed|failed",
+                                         "processed_at":  "timestamp or null"
+                                     }
+               },
+    "handoff_types":  {
+                          "new_leads":  {
+                                            "from":  "burst-1 (Lead Finder)",
+                                            "to":  "burst-2 (Cold Emailer)",
+                                            "data_format":  {
+                                                                "lead_ids":  [
 
-  "processed": [],
+                                                                             ]
+                                                            }
+                                        },
+                          "hot_leads":  {
+                                            "from":  "burst-2 (Cold Emailer)",
+                                            "to":  "burst-5 (Hot Lead Chaser)",
+                                            "data_format":  {
+                                                                "lead_ids":  [
 
-  "schema": {
-    "handoff_entry": {
-      "id": "uuid",
-      "from": "burst-X (source agent)",
-      "to": "burst-Y (target agent)",
-      "type": "new_leads|hot_leads|demo_ready|follow_up_needed|escalation",
-      "data": {
-        "description": "Payload varies by type"
-      },
-      "priority": "1=critical, 2=high, 3=normal",
-      "created_at": "timestamp",
-      "status": "pending|in_progress|processed|failed",
-      "processed_at": "timestamp or null"
-    }
-  },
+                                                                             ],
+                                                                "click_data":  {
 
-  "handoff_types": {
-    "new_leads": {
-      "from": "burst-1 (Lead Finder)",
-      "to": "burst-2 (Cold Emailer)",
-      "data_format": { "lead_ids": [] }
-    },
-    "hot_leads": {
-      "from": "burst-2 (Cold Emailer)",
-      "to": "burst-5 (Hot Lead Chaser)",
-      "data_format": { "lead_ids": [], "click_data": {} }
-    },
-    "demo_ready": {
-      "from": "burst-4 (Demo Generator)",
-      "to": "burst-5 (Hot Lead Chaser)",
-      "data_format": { "demo_id": "", "lead_id": "", "demo_url": "" }
-    },
-    "follow_up_needed": {
-      "from": "burst-5 (Hot Lead Chaser)",
-      "to": "burst-7 (Payment Converter)",
-      "data_format": { "user_id": "", "trigger": "" }
-    },
-    "escalation": {
-      "from": "any",
-      "to": "burst-9 (Doctor)",
-      "data_format": { "issue": "", "severity": "", "context": {} }
-    }
-  },
+                                                                               }
+                                                            }
+                                        },
+                          "demo_ready":  {
+                                             "from":  "burst-4 (Demo Generator)",
+                                             "to":  "burst-5 (Hot Lead Chaser)",
+                                             "data_format":  {
+                                                                 "demo_id":  "",
+                                                                 "lead_id":  "",
+                                                                 "demo_url":  ""
+                                                             }
+                                         },
+                          "follow_up_needed":  {
+                                                   "from":  "burst-5 (Hot Lead Chaser)",
+                                                   "to":  "burst-7 (Payment Converter)",
+                                                   "data_format":  {
+                                                                       "user_id":  "",
+                                                                       "trigger":  ""
+                                                                   }
+                                               },
+                          "escalation":  {
+                                             "from":  "any",
+                                             "to":  "burst-9 (Doctor)",
+                                             "data_format":  {
+                                                                 "issue":  "",
+                                                                 "severity":  "",
+                                                                 "context":  {
 
-  "instructions": {
-    "for_source_agent": [
-      "1. When you have work for another agent, add to queue",
-      "2. Include all necessary data (IDs, context)",
-      "3. Set appropriate priority",
-      "4. Don't wait for processing - continue your work"
-    ],
-    "for_orchestrator": [
-      "1. Check queue every hour",
-      "2. Group by target agent for efficiency",
-      "3. Spawn target agent with batch of handoffs",
-      "4. Move to processed after completion"
-    ],
-    "for_target_agent": [
-      "1. Check if you have pending handoffs at session start",
-      "2. Process handoffs before regular loop",
-      "3. Update status when done"
-    ]
-  }
+                                                                             }
+                                                             }
+                                         }
+                      },
+    "instructions":  {
+                         "for_source_agent":  [
+                                                  "1. When you have work for another agent, add to queue",
+                                                  "2. Include all necessary data (IDs, context)",
+                                                  "3. Set appropriate priority",
+                                                  "4. Don\u0027t wait for processing - continue your work"
+                                              ],
+                         "for_orchestrator":  [
+                                                  "1. Check queue every hour",
+                                                  "2. Group by target agent for efficiency",
+                                                  "3. Spawn target agent with batch of handoffs",
+                                                  "4. Move to processed after completion"
+                                              ],
+                         "for_target_agent":  [
+                                                  "1. Check if you have pending handoffs at session start",
+                                                  "2. Process handoffs before regular loop",
+                                                  "3. Update status when done"
+                                              ]
+                     }
 }

@@ -838,6 +838,9 @@ BEHAVIOR (0-30):
 - ❌ Gleiche Fehler wiederholen
 - ❌ Positive Reports bei schlechten Zahlen
 - ❌ Eskalation vergessen
+- ❌ **Pricing/Business-Logik ändern ohne User-Approval** (15.01 Incident: Free 20→5, neuer $9 Tier = REVERT!)
+
+**Goldene Regel:** Bei Pricing, Limits, Tiers → IMMER erst fragen, NIE autonom implementieren!
 
 ---
 
