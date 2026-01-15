@@ -6676,42 +6676,31 @@ const DashboardPage = () => {
             </span>
           )}
         </button>
-        <button
-          className="dashboard-tab"
-          onClick={() => setActiveTab('blog')}
-          style={{
-            padding: '12px 20px',
-            background: activeTab === 'blog' ? 'var(--primary-50)' : 'transparent',
-            border: 'none',
-            borderBottom:
-              activeTab === 'blog' ? '2px solid var(--primary-600)' : '2px solid transparent',
-            color: activeTab === 'blog' ? 'var(--primary-600)' : 'var(--gray-600)',
-            fontWeight: activeTab === 'blog' ? '600' : '500',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '14px',
-            marginBottom: '-1px',
-          }}
-        >
-          <BookOpen size={18} />
-          Blog Generator
-          {!canUseBlog && (
-            <span
-              style={{
-                background: 'var(--primary-600)',
-                color: 'white',
-                padding: '2px 6px',
-                borderRadius: '4px',
-                fontSize: '10px',
-                fontWeight: '600',
-              }}
-            >
-              PRO
-            </span>
-          )}
-        </button>
+        {/* Blog Tab - Only visible for Pro+ users (not relevant for restaurant/hotel owners in Free tier) */}
+        {canUseBlog && (
+          <button
+            className="dashboard-tab"
+            onClick={() => setActiveTab('blog')}
+            style={{
+              padding: '12px 20px',
+              background: activeTab === 'blog' ? 'var(--primary-50)' : 'transparent',
+              border: 'none',
+              borderBottom:
+                activeTab === 'blog' ? '2px solid var(--primary-600)' : '2px solid transparent',
+              color: activeTab === 'blog' ? 'var(--primary-600)' : 'var(--gray-600)',
+              fontWeight: activeTab === 'blog' ? '600' : '500',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '14px',
+              marginBottom: '-1px',
+            }}
+          >
+            <BookOpen size={18} />
+            Blog Generator
+          </button>
+        )}
         <button
           className="dashboard-tab"
           onClick={() => setActiveTab('api')}
