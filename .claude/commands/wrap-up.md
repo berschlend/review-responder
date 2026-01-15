@@ -43,8 +43,25 @@ Nutze Edit Tool um neue Learnings in CLAUDE.md einzufuegen:
 - **Loesung:** Was funktioniert?
 ```
 
-### 4. Handoff generieren
-Was muss der naechste Claude wissen?
+### 4. Handoff in TODO.md persistieren
+Wenn etwas BLOCKED/WAITING ist:
+
+1. Oeffne TODO.md
+2. Finde die Tabelle unter `## ⏳ BLOCKED / WAITING`
+3. Fuege neue Zeile hinzu oder update existierende:
+
+```markdown
+| Was | Wartet auf | Seit | Naechste Aktion |
+|-----|------------|------|-----------------|
+| [Feature/Task] | [Worauf gewartet wird] | [Datum] | [Was dann passieren soll] |
+```
+
+**Beispiele:**
+- `Chrome Extension v1.6.2 | Chrome Review | 15.01 | Bei Approval → Google Ads`
+- `LinkedIn Outreach | Connection Accepts | 14.01 | Follow-up Messages senden`
+- `API Integration | API Key von User | 15.01 | Integration fertigstellen`
+
+**Aufräumen:** Entferne Einträge die >7 Tage alt und erledigt sind.
 
 ## Output Format:
 
@@ -57,11 +74,9 @@ TODO: [X Tasks in_progress]
 CLAUDE.MD: [Datum] - [Aktuell/Veraltet]
 LEARNINGS: [Persistiert/Keine neuen]
 
-HANDOFF:
-- Aktiv: [Was laeuft noch / muss fortgesetzt werden]
-- Blocked: [Worauf wird gewartet]
-- API: [Limit-Status wenn relevant]
-- Naechste Schritte: [Konkrete Tasks fuer naechste Session]
+HANDOFF (in TODO.md BLOCKED Section):
+- [X neue Eintraege / Keine neuen]
+- Blocked: [Kurze Zusammenfassung was wartet]
 
 FAZIT: [Empfehlung]
 ===

@@ -4,19 +4,22 @@
 
 ---
 
-## 🔴 CHROME WEB STORE - Resubmission (15.01.2026)
+## ⏳ BLOCKED / WAITING
 
-Extension wurde wegen "Keyword-Spam" abgelehnt. Neue Version ready!
+| Was | Wartet auf | Seit | Nächste Aktion |
+|-----|------------|------|----------------|
+| Chrome Extension v1.6.2 | Chrome Review (1-3 Tage) | 15.01 | Bei Approval → Google Ads schalten |
 
-### Sofort erledigen:
-- [ ] **ZIP v1.6.2 hochladen** - `chrome-extension-v1.6.2.zip`
-- [ ] **Description updaten** - Siehe Plan-File: `~/.claude-acc3/plans/serene-questing-garden.md`
-- [ ] **Promo-Bilder updaten** - `promo-small-440x280.png` + `promo-marquee-1400x560.png`
-- [ ] **Privacy-Tab ausfüllen** - Alle Texte in Plan-File
-- [ ] **Testanweisungen eintragen:**
-  - Email: `reviewer@tryreviewresponder.com`
-  - Passwort: `ChromeReview2026!`
-- [ ] **Submit for Review**
+---
+
+## ✅ CHROME WEB STORE - Eingereicht (15.01.2026)
+
+- [x] ZIP v1.6.2 hochgeladen
+- [x] Description ohne Keyword-Spam
+- [x] Promo-Bilder (440x280 + 1400x560)
+- [x] Privacy-Tab ausgefüllt
+- [x] Test-Account: `reviewer@tryreviewresponder.com` / `ChromeReview2026!`
+- [x] Submitted for Review
 
 ### Nach neuem Demo-Video:
 - [ ] **YouTube Demo URL updaten** im Chrome Web Store
