@@ -2,12 +2,30 @@
 
 ---
 
-## 📚 CORE INCLUDE - LIES ZUERST!
+## 🚀 SESSION-START COMMANDS (FÜHRE DIESE ZUERST AUS!)
+
+```bash
+# 1. HEARTBEAT - Registriere dich als running
+powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent 4
+
+# 2. FOCUS CHECKEN - Meine Priorität?
+powershell -File scripts/agent-helpers.ps1 -Action focus-read
+# → Demos helfen bei Activation = noch relevant
+
+# 3. HANDOFFS CHECKEN - Demo-Requests?
+powershell -File scripts/agent-helpers.ps1 -Action handoff-check -Agent 4
+
+# 4. MEMORY LADEN - Cache-Status?
+powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent 4
+```
+
+---
+
+## 📚 CORE INCLUDE - LIES AUCH DAS!
 
 > **PFLICHT:** Lies `.claude/commands/night-burst-core.md` für:
-> - Extended Thinking Template
+> - Alle Helper-Commands Referenz
 > - Failure Recovery (API Errors!)
-> - Success Metrics
 
 ---
 

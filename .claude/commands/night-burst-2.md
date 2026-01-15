@@ -2,12 +2,32 @@
 
 ---
 
-## 📚 CORE INCLUDE - LIES ZUERST!
+## 🚀 SESSION-START COMMANDS (FÜHRE DIESE ZUERST AUS!)
+
+```bash
+# 1. HEARTBEAT - Registriere dich als running
+powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent 2
+
+# 2. FOCUS CHECKEN - Bin ich pausiert?
+powershell -File scripts/agent-helpers.ps1 -Action focus-read
+# → ACHTUNG: Wenn paused_agents "burst-2" enthält → STOPPEN!
+# → First Principles: Activation > Lead Generation
+
+# 3. HANDOFFS CHECKEN - Neue Leads von Burst-1?
+powershell -File scripts/agent-helpers.ps1 -Action handoff-check -Agent 2
+
+# 4. MEMORY LADEN - Beste Subject Lines?
+powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent 2
+# → best_subject_lines anwenden!
+```
+
+---
+
+## 📚 CORE INCLUDE - LIES AUCH DAS!
 
 > **PFLICHT:** Lies `.claude/commands/night-burst-core.md` für:
+> - Alle Helper-Commands Referenz
 > - Extended Thinking Template
-> - Continuous Learning System
-> - Failure Recovery
 > - Success Metrics (Target: >50 Emails, >3% CTR/Nacht)
 
 ---
@@ -72,30 +92,36 @@
 
 ---
 
-## 🔄 DER ENDLOS-LOOP (V3 mit Heartbeat)
+## 🔄 DER ENDLOS-LOOP (V3.3 mit Commands)
 
-```
-WHILE TRUE:
-  ┌─── V3 HEARTBEAT (JEDER LOOP START!) ───┐
-  │ 1. Read burst-2-status.json             │
-  │ 2. Update:                              │
-  │    - last_heartbeat: [JETZT]            │
-  │    - current_loop: [+1]                 │
-  │    - status: "running"                  │
-  │ 3. Write back                           │
-  │ 4. Check resource-budget.json           │
-  │    - resend_emails.used < limit?        │
-  └─────────────────────────────────────────┘
+```bash
+# === JEDER LOOP ===
 
-  5. Prüfe ob Berend "Stopp" gesagt hat → IF YES: Ende
-  6. Prüfe Daily Limit (100 Emails)
-     - IF REACHED: Warte bis 00:00 UTC, dann reset
-  7. Lade learnings.md für beste Subject Lines
-  8. Sende EINE Email (OHNE DISCOUNT!)
-  9. Update burst-2-status.json (metrics)
-  10. Update resource-budget.json: resend_emails.used++
-  11. Warte 5 Minuten
-  12. GOTO 1
+# STEP 1: HEARTBEAT (PFLICHT!)
+powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent 2
+
+# STEP 2: FOCUS CHECK - Bin ich pausiert?
+powershell -File scripts/agent-helpers.ps1 -Action focus-read
+# → Wenn burst-2 in paused_agents: STOPPE und warte
+
+# STEP 3: Daily Limit prüfen (100 Emails)
+# → IF REACHED: Warte bis 00:00 UTC
+
+# STEP 4: Sende EINE Email (OHNE DISCOUNT!)
+# ... Email senden via API ...
+
+# STEP 5: STATUS UPDATEN
+powershell -File scripts/agent-helpers.ps1 -Action status-update -Agent 2 -Data '{"metrics":{"actions_taken":1}}'
+
+# STEP 6: Bei Klick → HANDOFF an Burst-5
+powershell -File scripts/agent-helpers.ps1 -Action handoff-create -Agent 2 -Data '{"from":"burst-2","to":"burst-5","type":"hot_leads","data":{"lead_ids":[123]},"priority":1}'
+
+# STEP 7: Learning dokumentieren
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 2 -Data "Subject X hatte 5% CTR"
+
+# STEP 8: Warte 5 Minuten
+
+# STEP 9: GOTO STEP 1
 ```
 
 **⚠️ WICHTIG:** Ohne Heartbeat denkt Health-Check ich bin stuck!

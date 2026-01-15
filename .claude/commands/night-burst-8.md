@@ -2,12 +2,28 @@
 
 ---
 
-## 📚 CORE INCLUDE - LIES ZUERST!
+## 🚀 SESSION-START COMMANDS (FÜHRE DIESE ZUERST AUS!)
 
-> **PFLICHT:** Lies `.claude/commands/night-burst-core.md` für:
-> - Extended Thinking Template
-> - Continuous Learning System
-> - LTV > CAC Validation
+```bash
+# 1. HEARTBEAT
+powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent 8
+
+# 2. FOCUS CHECKEN - Bin ich pausiert?
+powershell -File scripts/agent-helpers.ps1 -Action focus-read
+# → Aktuell pausiert: Keine paying customers to upgrade
+
+# 3. HANDOFFS CHECKEN
+powershell -File scripts/agent-helpers.ps1 -Action handoff-check -Agent 8
+
+# 4. MEMORY LADEN
+powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent 8
+```
+
+---
+
+## 📚 CORE INCLUDE
+
+> **PFLICHT:** Lies `.claude/commands/night-burst-core.md` für Helper-Commands
 
 ---
 

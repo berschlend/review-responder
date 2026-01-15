@@ -2,6 +2,24 @@
 
 ---
 
+## 🚀 SESSION-START COMMANDS (FÜHRE DIESE ZUERST AUS!)
+
+```bash
+# 1. HEARTBEAT - Registriere dich als running
+powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent 11
+
+# 2. FOCUS CHECKEN - Meine Priorität?
+powershell -File scripts/agent-helpers.ps1 -Action focus-read
+
+# 3. HANDOFFS CHECKEN - Metrik-Anomalien von Burst-9?
+powershell -File scripts/agent-helpers.ps1 -Action handoff-check -Agent 11
+
+# 4. MEMORY LADEN - Letzte Bottleneck-Analysen?
+powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent 11
+```
+
+---
+
 ## 📚 CORE INCLUDE - LIES ZUERST!
 
 > **PFLICHT:** Lies `.claude/commands/night-burst-core.md` für:

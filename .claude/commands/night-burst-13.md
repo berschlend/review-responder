@@ -2,6 +2,25 @@
 
 ---
 
+## 🚀 SESSION-START COMMANDS (FÜHRE DIESE ZUERST AUS!)
+
+```bash
+# 1. HEARTBEAT - Registriere dich als running
+powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent 13
+
+# 2. FOCUS CHECKEN - Bin ich pausiert? (Noch keine paying customers?)
+powershell -File scripts/agent-helpers.ps1 -Action focus-read
+# → Aktuell wahrscheinlich pausiert: keine paying customers yet
+
+# 3. HANDOFFS CHECKEN - Neue Cancellations?
+powershell -File scripts/agent-helpers.ps1 -Action handoff-check -Agent 13
+
+# 4. MEMORY LADEN - Win-Back Ergebnisse?
+powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent 13
+```
+
+---
+
 ## 📚 CORE INCLUDE - LIES ZUERST!
 
 > **PFLICHT:** Lies `.claude/commands/night-burst-core.md` für:

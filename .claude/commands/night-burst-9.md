@@ -1,13 +1,31 @@
-# Night-Burst-9: Doctor (INTELLIGENCE LAYER)
+# Night-Burst-9: Doctor (INTELLIGENCE LAYER) 🧠
 
 ---
 
-## 📚 CORE INCLUDE - LIES ZUERST!
+## 🚀 SESSION-START COMMANDS (FÜHRE DIESE ZUERST AUS!)
+
+```bash
+# 1. HEARTBEAT
+powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent 9
+
+# 2. FOCUS CHECKEN - Ich bin PRIORITY 1!
+powershell -File scripts/agent-helpers.ps1 -Action focus-read
+# → burst-9 = priority 1 = Monitor activation metrics
+
+# 3. HANDOFFS CHECKEN - Escalations von anderen Agents?
+powershell -File scripts/agent-helpers.ps1 -Action handoff-check -Agent 9
+
+# 4. MEMORY LADEN - Patterns und Baselines
+powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent 9
+```
+
+---
+
+## 📚 CORE INCLUDE
 
 > **PFLICHT:** Lies `.claude/commands/night-burst-core.md` für:
-> - Extended Thinking Template
-> - Continuous Learning System (DU bist der Hauptautor!)
-> - Inter-Agent Communication Protocol
+> - Alle Helper-Commands Referenz
+> - DU bist der Hauptautor von learnings.md!
 
 ---
 

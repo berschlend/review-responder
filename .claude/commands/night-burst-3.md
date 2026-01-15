@@ -2,12 +2,30 @@
 
 ---
 
-## 📚 CORE INCLUDE - LIES ZUERST!
+## 🚀 SESSION-START COMMANDS (FÜHRE DIESE ZUERST AUS!)
+
+```bash
+# 1. HEARTBEAT - Registriere dich als running
+powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent 3
+
+# 2. FOCUS CHECKEN - Bin ich pausiert?
+powershell -File scripts/agent-helpers.ps1 -Action focus-read
+# → ACHTUNG: Wenn paused_agents "burst-3" enthält → STOPPEN!
+
+# 3. HANDOFFS CHECKEN - Leads mit Social Handles?
+powershell -File scripts/agent-helpers.ps1 -Action handoff-check -Agent 3
+
+# 4. MEMORY LADEN - Platform-Warnungen?
+powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent 3
+```
+
+---
+
+## 📚 CORE INCLUDE - LIES AUCH DAS!
 
 > **PFLICHT:** Lies `.claude/commands/night-burst-core.md` für:
-> - Extended Thinking Template
+> - Alle Helper-Commands Referenz
 > - Failure Recovery (CRITICAL bei Platform Warnings!)
-> - Success Metrics
 
 ---
 
