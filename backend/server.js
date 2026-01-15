@@ -25799,10 +25799,18 @@ app.get('/api/admin/automation-health', async (req, res) => {
       });
     }
 
-    if (serpApiKeyCount === 0 && !process.env.OUTSCRAPER_API_KEY) {
+    if (serpApiKeyCount === 0 && !process.env.OUTSCRAPER_API_KEY && !process.env.SERPER_API_KEY) {
       alerts.push({
         type: 'error',
-        message: 'No review scraping API configured (need SERPAPI_KEY or OUTSCRAPER_API_KEY)',
+        message: 'No review scraping API configured (need SERPER_API_KEY, SERPAPI_KEY, or OUTSCRAPER_API_KEY)',
+      });
+    }
+
+    // Serper.dev check - now our primary review scraper!
+    if (process.env.SERPER_API_KEY) {
+      alerts.push({
+        type: 'info',
+        message: 'Serper.dev configured as PRIMARY review scraper (2500 free credits/mo)',
       });
     }
 
@@ -25963,9 +25971,11 @@ app.get('/api/admin/test-review-scraper', async (req, res) => {
         text: r.text?.substring(0, 100) + (r.text?.length > 100 ? '...' : ''),
       })),
       apis_configured: {
+        serper: !!process.env.SERPER_API_KEY,
         serpapi: !!getNextSerpApiKey(),
         serpapi_keys: getSerpApiKeyCount(),
         outscraper: !!process.env.OUTSCRAPER_API_KEY,
+        outscraper_keys: getOutscraperKeyCount(),
       },
     });
   } catch (error) {
@@ -25973,9 +25983,11 @@ app.get('/api/admin/test-review-scraper', async (req, res) => {
       success: false,
       error: error.message,
       apis_configured: {
+        serper: !!process.env.SERPER_API_KEY,
         serpapi: !!getNextSerpApiKey(),
         serpapi_keys: getSerpApiKeyCount(),
         outscraper: !!process.env.OUTSCRAPER_API_KEY,
+        outscraper_keys: getOutscraperKeyCount(),
       },
     });
   }
