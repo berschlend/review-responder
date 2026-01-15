@@ -717,6 +717,75 @@ async function sendFlashOfferEmail(user) {
   }
 }
 
+// Send Checkout Abandonment Email (when checkout session expires)
+// SAFEGUARD: Max 1 per user per week
+async function sendCheckoutAbandonmentEmail(user, plan) {
+  if (!resend && !brevoApi) return false;
+
+  // Check if we sent one recently (within 7 days)
+  if (user.last_abandonment_email_at) {
+    const daysSince = (Date.now() - new Date(user.last_abandonment_email_at).getTime()) / (1000 * 60 * 60 * 24);
+    if (daysSince < 7) return false;
+  }
+
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'https://tryreviewresponder.com';
+  const pricingUrl = `${FRONTEND_URL}/pricing?discount=COMEBACK20`;
+
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: "Your checkout didn't complete - here's 20% off",
+      type: 'transactional',
+      campaign: 'checkout_abandonment',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: white; padding: 30px; border: 1px solid #E5E7EB; border-radius: 0 0 8px 8px; }
+            .cta-button { display: inline-block; background: #4F46E5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; }
+            .footer { text-align: center; padding: 20px; color: #6B7280; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Something went wrong?</h1>
+            </div>
+            <div class="content">
+              <p>Hi${user.business_name ? ' ' + user.business_name : ''},</p>
+
+              <p>I noticed you started checking out for the <strong>${plan || 'Starter'}</strong> plan but didn't finish.</p>
+
+              <p>No worries - here's <strong>20% off</strong> if you want to complete your upgrade:</p>
+
+              <p style="text-align: center; margin: 30px 0;">
+                <a href="${pricingUrl}" class="cta-button">Complete Your Upgrade (20% Off)</a>
+              </p>
+
+              <p style="color: #6B7280; font-size: 14px;">If you ran into any issues or have questions, just reply to this email. I'm here to help!</p>
+
+              <p>Cheers,<br>Berend</p>
+            </div>
+            <div class="footer">
+              <p>ReviewResponder - AI-Powered Review Responses</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+    console.log(`[Checkout Abandonment] Email sent to ${user.email}`);
+    return true;
+  } catch (error) {
+    console.error('[Checkout Abandonment] Failed to send:', error.message);
+    return false;
+  }
+}
+
 // Send Plan Renewal Email (when subscription renews)
 async function sendPlanRenewalEmail(user) {
   if (!resend && !brevoApi) return false;
@@ -1390,6 +1459,10 @@ async function initDatabase() {
       // Flash offer tracking for limit-hit users
       await dbQuery(
         `ALTER TABLE users ADD COLUMN IF NOT EXISTS flash_offer_sent_at TIMESTAMP`
+      );
+      // Checkout abandonment tracking
+      await dbQuery(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS last_abandonment_email_at TIMESTAMP`
       );
     } catch (error) {
       // Columns might already exist
@@ -4569,6 +4642,29 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
         console.log('FLASH50 coupon creation error:', err);
         // Continue without discount if coupon fails
       }
+    } else if (upperDiscountCode === 'COMEBACK20') {
+      // Checkout Abandonment - 20% off, 7 days expiry
+      try {
+        const coupon = await stripe.coupons.create({
+          percent_off: 20,
+          duration: 'once', // Only first payment
+          id: `COMEBACK20_${Date.now()}_${user.id}`,
+          redeem_by: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // Valid for 7 days
+          metadata: {
+            campaign: 'checkout_abandonment',
+            user_id: user.id.toString(),
+          },
+        });
+        discounts = [
+          {
+            coupon: coupon.id,
+          },
+        ];
+        console.log(`[Checkout Abandonment] Coupon COMEBACK20 created for user ${user.id}`);
+      } catch (err) {
+        console.log('COMEBACK20 coupon creation error:', err);
+        // Continue without discount if coupon fails
+      }
     }
 
     const sessionConfig = {
@@ -4800,6 +4896,26 @@ async function handleStripeWebhook(req, res) {
               user.id,
             ]
           );
+        }
+        break;
+      }
+
+      case 'checkout.session.expired': {
+        // User started checkout but didn't complete
+        const session = event.data.object;
+        const userId = session.metadata?.userId;
+        const plan = session.metadata?.plan;
+
+        if (userId && process.env.NODE_ENV === 'production') {
+          const user = await dbGet('SELECT * FROM users WHERE id = $1', [userId]);
+          if (user && user.subscription_plan === 'free') {
+            sendCheckoutAbandonmentEmail(user, plan).then(sent => {
+              if (sent) {
+                dbQuery('UPDATE users SET last_abandonment_email_at = NOW() WHERE id = $1', [userId]);
+              }
+            });
+            console.log(`[Checkout Abandoned] User ${userId} didn't complete ${plan} checkout`);
+          }
         }
         break;
       }

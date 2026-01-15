@@ -3395,7 +3395,7 @@ const PricingCards = ({ showFree = true }) => {
   const urlParams = new URLSearchParams(location.search);
   const discountFromUrl = urlParams.get('discount') || localStorage.getItem('pending_discount');
 
-  // Valid discount codes (including new welcome/demo codes + flash offer)
+  // Valid discount codes (including welcome/demo/flash/abandonment)
   const validDiscountCodes = [
     'EARLY50',
     'SAVE20',
@@ -3404,6 +3404,7 @@ const PricingCards = ({ showFree = true }) => {
     'DEMO30',
     'DEMOFOLLOWUP',
     'FLASH50',
+    'COMEBACK20',
   ];
   const activeDiscount = validDiscountCodes.includes(discountFromUrl?.toUpperCase())
     ? discountFromUrl.toUpperCase()
