@@ -23205,7 +23205,7 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
         SELECT l.* FROM outreach_leads l
         LEFT JOIN outreach_emails e ON l.id = e.lead_id
         WHERE l.email IS NOT NULL AND l.status = 'new' AND e.id IS NULL
-        LIMIT 100
+        LIMIT 200
       `);
 
       let sent = 0;
@@ -23385,7 +23385,7 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
           AND e.replied_at IS NULL
         GROUP BY l.id
         HAVING MAX(e.sequence_number) < 3
-        LIMIT 50
+        LIMIT 100
       `);
 
       let followupsSent = 0;
