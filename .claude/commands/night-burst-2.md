@@ -124,8 +124,17 @@ powershell -File scripts/agent-helpers.ps1 -Action focus-read
 # STEP 5: STATUS UPDATEN
 powershell -File scripts/agent-helpers.ps1 -Action status-update -Agent 2 -Data '{"metrics":{"actions_taken":1}}'
 
-# STEP 6: Bei Klick → HANDOFF an Burst-5
-powershell -File scripts/agent-helpers.ps1 -Action handoff-create -Agent 2 -Data '{"from":"burst-2","to":"burst-5","type":"hot_leads","data":{"lead_ids":[123]},"priority":1}'
+# STEP 6: Bei Klick → SPAWNE Sub-Agent für Follow-Up!
+# Nutze Task Tool:
+# Task(
+#   subagent_type: "general-purpose",
+#   prompt: "Du bist Burst-5 (Hot Lead Chaser).
+#            Lies: .claude/commands/night-burst-5.md
+#            AUFGABE: Follow-Up für diesen Hot Lead.
+#            LEAD: id=123, geklickt am [datum]",
+#   run_in_background: true
+# )
+# → DANACH SOFORT WEITERARBEITEN!
 
 # STEP 7: Learning dokumentieren
 powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 2 -Data "Subject X hatte 5% CTR"
@@ -348,11 +357,27 @@ WENN ICH STUCK BIN:
 
 ---
 
-## 🔗 INTEGRATION MIT ANDEREN AGENTS
+## 🔗 SUB-AGENT SPAWNING (V6)
 
-- **Burst-1 (Lead Finder):** Liefert mir Leads
-- **Burst-5 (Hot Lead Chaser):** Übernimmt wenn Lead klickt
-- **Burst-9 (Doctor):** Analysiert meine CTR
+Wenn ich andere Fähigkeiten brauche, SPAWNE ich Sub-Agents:
+
+| Brauche | Spawne | Beispiel |
+|---------|--------|----------|
+| Follow-Up für Klicker | Burst-5 | "Follow-Up Hot Lead [Business]" |
+| Demo generieren | Burst-4 | "Generiere Demo für [Business]" |
+
+**NIEMALS Handoff schreiben und stoppen!**
+**IMMER Task Tool nutzen und WEITERARBEITEN!**
+
+```
+Task(
+  subagent_type: "general-purpose",
+  prompt: "Du bist Burst-5. Lies: .claude/commands/night-burst-5.md
+           AUFGABE: Follow-Up für [Lead]",
+  run_in_background: true
+)
+→ Ich arbeite sofort weiter!
+```
 
 ---
 

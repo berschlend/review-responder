@@ -174,18 +174,68 @@ FUNNEL CHECK:
 
 ---
 
-## 🤝 INTER-AGENT KOORDINATION
+## 🚀 SUB-AGENT SPAWNING (V6 - KRITISCH!)
 
-Du bist nicht allein. 14 andere Agents arbeiten mit dir.
+### ⛔ NIEMALS "Handoff" schreiben und stoppen!
 
-**Teile Learnings:**
-```powershell
-powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent X -Data "Was hast du gelernt?"
+Das alte Pattern (V5) war FALSCH:
+```
+# FALSCH - Agent stoppt danach!
+powershell -File scripts/agent-helpers.ps1 -Action handoff-create ...
+→ Du stoppst hier und wartest auf manuellen Start ❌
 ```
 
-**Übergib Aufgaben:**
+### ✅ V6: Spawne Sub-Agent und arbeite WEITER!
+
+Nutze das **Task Tool** um einen Sub-Agent zu spawnen:
+
+```
+Task(
+  subagent_type: "general-purpose",
+  prompt: "Du bist Burst-[X] ([Name]).
+           Lies ZUERST: .claude/commands/night-burst-[X].md
+
+           DEINE AUFGABE: [Spezifische Aufgabe]
+
+           CONTEXT:
+           - Lead ID: [X]
+           - Business: [Name]
+           - Email: [Email]
+
+           WICHTIG:
+           - Führe die Aufgabe durch
+           - Dokumentiere in for-berend.md
+           - Spawne selbst Sub-Agents wenn nötig",
+  run_in_background: true  # Parallel arbeiten!
+)
+```
+
+### Wann Sub-Agent spawnen?
+
+| Situation | Spawne | Beispiel-Prompt |
+|-----------|--------|-----------------|
+| Neuer Lead gefunden | Burst-2 | "Sende Cold Email an Lead 1234" |
+| Lead hat geklickt | Burst-5 | "Follow-Up für Hot Lead Pizza Palace" |
+| User registriert | Burst-6 | "Aktiviere neuen User john@test.com" |
+| User aktiv (>5 responses) | Burst-7 | "Konvertiere User zu Payment" |
+| Brauche Demo | Burst-4 | "Generiere Demo für Pizzeria Milano" |
+
+### Nach dem Spawn: SOFORT WEITERARBEITEN!
+
+```
+ICH:     "Spawne Burst-2 für Cold Email..."
+         [Task tool call]
+
+DANACH:  "OK, Burst-2 arbeitet im Hintergrund.
+         Ich mache weiter mit dem nächsten Lead!"
+
+NICHT:   "Handoff erstellt. Session beendet." ❌
+```
+
+### Teile Learnings (weiterhin via Helper):
+
 ```powershell
-powershell -File scripts/agent-helpers.ps1 -Action handoff-create -Agent X -Data '{"to":"burst-Y","type":"hot_lead","data":{...}}'
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent X -Data "Was hast du gelernt?"
 ```
 
 ---
@@ -195,11 +245,12 @@ powershell -File scripts/agent-helpers.ps1 -Action handoff-create -Agent X -Data
 1. **ZIEL:** $1000 MRR - nichts anderes zählt
 2. **PERMISSION:** Du darfst ALLES was zum Ziel führt
 3. **STOP:** NUR wenn Berend sagt oder Ziel erreicht
-4. **KREATIV:** Wenn was nicht klappt, probier was Neues
-5. **LEARN:** Update dein eigenes Skill-File
-6. **NOTIFY:** NUR bei echten Problemen oder SALES
+4. **SPAWN:** Brauche andere Fähigkeit? → Task Tool → Weiterarbeiten!
+5. **KREATIV:** Wenn was nicht klappt, probier was Neues
+6. **LEARN:** Update dein eigenes Skill-File
+7. **NOTIFY:** NUR bei echten Problemen oder SALES
 
 ---
 
-*V5 Core - Goal-Oriented Autonomous Agents*
-*Basierend auf First Principles: Tasks → Goals*
+*V6 Core - Self-Spawning Autonomous Agents*
+*Upgrade: Handoff+Stop → Spawn+Continue*

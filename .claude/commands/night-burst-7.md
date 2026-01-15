@@ -417,12 +417,17 @@ WENN ICH STUCK BIN:
 
 ---
 
-## 🔗 INTEGRATION MIT ANDEREN AGENTS
+## 🔗 SUB-AGENT SPAWNING (V6)
 
-- **Burst-6 (User Activator):** Liefert User mit 15+ Responses
-- **Burst-8 (Upgrader):** Übernimmt zahlende Kunden
-- **Burst-9 (Doctor):** Trackt Conversion Rate
-- **Burst-10 (Briefer):** Meldet jede Conversion!
+Wenn ich andere Fähigkeiten brauche, SPAWNE ich Sub-Agents:
+
+| Brauche | Spawne | Beispiel |
+|---------|--------|----------|
+| Upgrade-Kampagne | Burst-8 | "Upgrade zahlenden Kunden" |
+| Churn prevention | Burst-13 | "Re-engage inaktiven Zahler" |
+
+**NIEMALS Handoff schreiben und stoppen!**
+**IMMER Task Tool nutzen und WEITERARBEITEN!**
 
 ---
 

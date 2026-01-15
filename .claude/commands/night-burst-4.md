@@ -311,11 +311,17 @@ WENN ICH STUCK BIN:
 
 ---
 
-## 🔗 INTEGRATION MIT ANDEREN AGENTS
+## 🔗 SUB-AGENT SPAWNING (V6)
 
-- **Burst-1 (Lead Finder):** Liefert Business-Namen
-- **Burst-5 (Hot Lead Chaser):** Nutzt meine Demos für Follow-Ups
-- **Burst-9 (Doctor):** Trackt Demo Conversion Rate
+Wenn ich andere Fähigkeiten brauche, SPAWNE ich Sub-Agents:
+
+| Brauche | Spawne | Beispiel |
+|---------|--------|----------|
+| Follow-Up mit Demo | Burst-5 | "Sende Demo an Hot Lead" |
+| Email mit Demo | Burst-2 | "Cold Email mit Demo-Link" |
+
+**NIEMALS Handoff schreiben und stoppen!**
+**IMMER Task Tool nutzen und WEITERARBEITEN!**
 
 ---
 

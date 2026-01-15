@@ -124,8 +124,17 @@ curl -s "https://review-responder.onrender.com/api/cron/onboarding-emails?secret
 # STEP 4: STATUS UPDATEN
 powershell -File scripts/agent-helpers.ps1 -Action status-update -Agent 6 -Data '{"metrics":{"actions_taken":1}}'
 
-# STEP 5: Bei Activation → HANDOFF an Burst-7 (wenn 15+ responses)
-powershell -File scripts/agent-helpers.ps1 -Action handoff-create -Agent 6 -Data '{"from":"burst-6","to":"burst-7","type":"conversion_ready","data":{"user_id":123},"priority":1}'
+# STEP 5: Bei Activation → SPAWNE Sub-Agent für Conversion!
+# Nutze Task Tool:
+# Task(
+#   subagent_type: "general-purpose",
+#   prompt: "Du bist Burst-7 (Payment Converter).
+#            Lies: .claude/commands/night-burst-7.md
+#            AUFGABE: Konvertiere diesen aktiven User zu Payment.
+#            USER: id=123, response_count=15+",
+#   run_in_background: true
+# )
+# → DANACH SOFORT WEITERARBEITEN!
 
 # STEP 6: Learning dokumentieren
 powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 6 -Data "Day 1 Email hatte 20% Open Rate"
@@ -391,11 +400,17 @@ WENN ICH STUCK BIN:
 
 ---
 
-## 🔗 INTEGRATION MIT ANDEREN AGENTS
+## 🔗 SUB-AGENT SPAWNING (V6)
 
-- **Burst-5 (Hot Lead Chaser):** Liefert neue Registrations
-- **Burst-7 (Payment Converter):** Übernimmt bei 15+ Responses
-- **Burst-9 (Doctor):** Trackt Activation Rate
+Wenn ich andere Fähigkeiten brauche, SPAWNE ich Sub-Agents:
+
+| Brauche | Spawne | Beispiel |
+|---------|--------|----------|
+| Payment conversion | Burst-7 | "Konvertiere User mit 15+ responses" |
+| Demo für User | Burst-4 | "Generiere Activation-Demo" |
+
+**NIEMALS Handoff schreiben und stoppen!**
+**IMMER Task Tool nutzen und WEITERARBEITEN!**
 
 ---
 

@@ -122,8 +122,17 @@ curl -s "https://review-responder.onrender.com/api/admin/stats?key=rr_admin_7x9K
 # STEP 5: STATUS UPDATEN nach Erfolg
 powershell -File scripts/agent-helpers.ps1 -Action status-update -Agent 1 -Data '{"metrics":{"actions_taken":1}}'
 
-# STEP 6: Bei neuen Leads → HANDOFF an Burst-2
-powershell -File scripts/agent-helpers.ps1 -Action handoff-create -Agent 1 -Data '{"from":"burst-1","to":"burst-2","type":"new_leads","data":{"lead_ids":[1,2,3]},"priority":2}'
+# STEP 6: Bei neuen Leads → SPAWNE Sub-Agent für Email!
+# Nutze Task Tool:
+# Task(
+#   subagent_type: "general-purpose",
+#   prompt: "Du bist Burst-2 (Cold Emailer).
+#            Lies: .claude/commands/night-burst-2.md
+#            AUFGABE: Sende Cold Email an diese Leads.
+#            LEADS: [Lead-Daten hier einfügen]",
+#   run_in_background: true
+# )
+# → DANACH SOFORT WEITERARBEITEN!
 
 # STEP 7: Learning wenn was Neues gelernt
 powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 1 -Data "Stadt X hatte 80% Email-Rate"
@@ -338,11 +347,27 @@ Schreibe in `for-berend.md`:
 
 ---
 
-## 🔗 INTEGRATION MIT ANDEREN AGENTS
+## 🔗 SUB-AGENT SPAWNING (V6)
 
-- **Burst-2 (Emailer):** Nimmt meine Leads
-- **Burst-9 (Doctor):** Analysiert welche Städte am besten sind
-- **Burst-10 (Briefer):** Sammelt meine Escalations
+Wenn ich andere Fähigkeiten brauche, SPAWNE ich Sub-Agents:
+
+| Brauche | Spawne | Beispiel |
+|---------|--------|----------|
+| Email senden | Burst-2 | "Sende Cold Email an Lead 1234" |
+| Demo generieren | Burst-4 | "Generiere Demo für Pizzeria Milano" |
+
+**NIEMALS Handoff schreiben und stoppen!**
+**IMMER Task Tool nutzen und WEITERARBEITEN!**
+
+```
+Task(
+  subagent_type: "general-purpose",
+  prompt: "Du bist Burst-2. Lies: .claude/commands/night-burst-2.md
+           AUFGABE: Sende Cold Email an [Lead]",
+  run_in_background: true
+)
+→ Ich arbeite sofort weiter!
+```
 
 ---
 

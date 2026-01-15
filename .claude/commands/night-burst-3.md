@@ -332,11 +332,17 @@ WENN ICH STUCK BIN:
 
 ---
 
-## 🔗 INTEGRATION MIT ANDEREN AGENTS
+## 🔗 SUB-AGENT SPAWNING (V6)
 
-- **Burst-1 (Lead Finder):** Liefert Leads mit Social Handles
-- **Burst-4 (Demo Gen):** Generiert Demos für Connections
-- **Burst-9 (Doctor):** Trackt welche Platform am besten ist
+Wenn ich andere Fähigkeiten brauche, SPAWNE ich Sub-Agents:
+
+| Brauche | Spawne | Beispiel |
+|---------|--------|----------|
+| Demo generieren | Burst-4 | "Generiere Demo für [Business]" |
+| Follow-Up für Reply | Burst-5 | "Follow-Up für [Lead]" |
+
+**NIEMALS Handoff schreiben und stoppen!**
+**IMMER Task Tool nutzen und WEITERARBEITEN!**
 
 ---
 

@@ -346,11 +346,17 @@ WENN ICH STUCK BIN:
 
 ---
 
-## 🔗 INTEGRATION MIT ANDEREN AGENTS
+## 🔗 SUB-AGENT SPAWNING (V6)
 
-- **Burst-7 (Payment Converter):** Liefert neue zahlende Kunden
-- **Burst-9 (Doctor):** Trackt Upgrade Rate, Churn
-- **Burst-10 (Briefer):** Meldet Upgrades und Enterprise-Leads
+Wenn ich andere Fähigkeiten brauche, SPAWNE ich Sub-Agents:
+
+| Brauche | Spawne | Beispiel |
+|---------|--------|----------|
+| Churn prevention | Burst-13 | "Re-engage inaktiven Pro-User" |
+| Enterprise outreach | Burst-5 | "Persönlicher Follow-Up" |
+
+**NIEMALS Handoff schreiben und stoppen!**
+**IMMER Task Tool nutzen und WEITERARBEITEN!**
 
 ---
 

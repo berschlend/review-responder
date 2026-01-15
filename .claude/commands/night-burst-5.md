@@ -134,8 +134,17 @@ curl -s "https://review-responder.onrender.com/api/admin/hot-leads?key=rr_admin_
 # STEP 4: STATUS UPDATEN
 powershell -File scripts/agent-helpers.ps1 -Action status-update -Agent 5 -Data '{"metrics":{"actions_taken":1}}'
 
-# STEP 5: Bei Registration → HANDOFF an Burst-6
-powershell -File scripts/agent-helpers.ps1 -Action handoff-create -Agent 5 -Data '{"from":"burst-5","to":"burst-6","type":"new_registration","data":{"user_id":123},"priority":1}'
+# STEP 5: Bei Registration → SPAWNE Sub-Agent für Activation!
+# Nutze Task Tool:
+# Task(
+#   subagent_type: "general-purpose",
+#   prompt: "Du bist Burst-6 (User Activator).
+#            Lies: .claude/commands/night-burst-6.md
+#            AUFGABE: Aktiviere diesen neuen User.
+#            USER: id=123, email=[email]",
+#   run_in_background: true
+# )
+# → DANACH SOFORT WEITERARBEITEN!
 
 # STEP 6: Learning dokumentieren
 powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 5 -Data "Follow-Up nach 24h > 48h für Conversion"
@@ -331,12 +340,28 @@ WENN ICH STUCK BIN:
 
 ---
 
-## 🔗 INTEGRATION MIT ANDEREN AGENTS
+## 🔗 SUB-AGENT SPAWNING (V6)
 
-- **Burst-2 (Cold Emailer):** Liefert Leads die klicken
-- **Burst-4 (Demo Gen):** Generiert Demos für meine Follow-Ups
-- **Burst-6 (User Activator):** Übernimmt wenn Lead registriert
-- **Burst-9 (Doctor):** Trackt meine Conversion Rate
+Wenn ich andere Fähigkeiten brauche, SPAWNE ich Sub-Agents:
+
+| Brauche | Spawne | Beispiel |
+|---------|--------|----------|
+| User aktivieren | Burst-6 | "Aktiviere neuen User [email]" |
+| Demo generieren | Burst-4 | "Generiere Demo für [Business]" |
+| Payment conversion | Burst-7 | "Konvertiere aktiven User" |
+
+**NIEMALS Handoff schreiben und stoppen!**
+**IMMER Task Tool nutzen und WEITERARBEITEN!**
+
+```
+Task(
+  subagent_type: "general-purpose",
+  prompt: "Du bist Burst-6. Lies: .claude/commands/night-burst-6.md
+           AUFGABE: Aktiviere [User]",
+  run_in_background: true
+)
+→ Ich arbeite sofort weiter!
+```
 
 ---
 
