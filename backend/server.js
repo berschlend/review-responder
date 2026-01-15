@@ -16311,6 +16311,19 @@ app.all('/api/cron/night-loop', async (req, res) => {
           console.error('Magic nudge call failed:', e.message);
           results.magic_nudge = { error: e.message };
         }
+
+        // Also run broader dormant user activation
+        try {
+          const activateResponse = await fetch(
+            `${baseUrl}/api/cron/activate-dormant-users?secret=${process.env.CRON_SECRET}&limit=10`
+          );
+          const activateData = await activateResponse.json();
+          results.dormant_activation = activateData;
+          console.log(`🚀📧 Dormant activation: ${activateData.sent || 0} emails sent`);
+        } catch (e) {
+          console.error('Dormant activation call failed:', e.message);
+          results.dormant_activation = { error: e.message };
+        }
       }
     }
 
