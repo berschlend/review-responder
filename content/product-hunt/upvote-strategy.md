@@ -144,7 +144,7 @@ das Unternehmen hilft, professionelle Review-Antworten in Sekunden zu generieren
 Was ReviewResponder kann:
 ✅ AI-generierte Antworten für Google, Yelp & mehr
 ✅ 4 verschiedene Tonalitäten
-✅ 50+ Sprachen automatisch erkannt
+✅ Jede Sprache (auto-detect)
 ✅ Chrome Extension für direktes Antworten
 
 🎁 Heute 60% OFF mit Code HUNTLAUNCH!
@@ -170,7 +170,7 @@ Antworten in Sekunden mit AI.
 
 3/ Features:
 - 4 Tonalitäten (Professional, Friendly, Formal, Apologetic)
-- 50+ Sprachen automatisch
+- Jede Sprache (auto-detect)
 - Chrome Extension für Google Maps
 - Business Context für Personalisierung
 

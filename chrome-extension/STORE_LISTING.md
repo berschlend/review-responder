@@ -22,7 +22,7 @@ Just click the "Respond" button next to any review, or select the review text - 
 
 ⚡ **Lightning Fast** - Responses in under 3 seconds
 🎯 **One-Click Responses** - Generate directly on the review page
-🌍 **50+ Languages** - Auto-detects and responds in reviewer's language
+🌍 **Any Language** - Auto-detects and responds in reviewer's language
 🎨 **4 Response Tones** - Professional, Friendly, Formal, or Apologetic
 ✨ **Personalized** - AI crafts unique replies based on each review
 🏢 **Business Context** - Add your business name & details for branded responses
@@ -63,7 +63,7 @@ Klicke einfach auf "Respond" neben einer Bewertung, oder markiere den Bewertungs
 
 ⚡ **Blitzschnell** - Antworten in unter 3 Sekunden
 🎯 **Ein-Klick-Antworten** - Direkt auf der Bewertungsseite generieren
-🌍 **50+ Sprachen** - Erkennt automatisch die Sprache der Bewertung
+🌍 **Jede Sprache** - Erkennt automatisch die Sprache der Bewertung
 🎨 **4 Antwort-Töne** - Professionell, Freundlich, Formell oder Entschuldigend
 ✨ **Personalisiert** - KI erstellt einzigartige Antworten für jede Bewertung
 🏢 **Business Context** - Füge deinen Firmennamen hinzu für gebrandete Antworten

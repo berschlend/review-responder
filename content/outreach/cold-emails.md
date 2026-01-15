@@ -83,7 +83,7 @@ short version:
 
 - 10 seconds per review response (vs. 5-10 minutes manually)
 - AI matches your restaurant's tone and personality
-- Works in 50+ languages (great for tourist areas)
+- Any language with auto-detect (great for tourist areas)
 - 50% launch discount with code EARLY50
 
 One restaurant owner told me: "I used to spend Sunday evenings
@@ -290,7 +290,7 @@ ReviewResponder detects the review language and responds naturally:
 
 All while maintaining your hotel's voice and professionalism.
 
-We support 50+ languages out of the box.
+Any language with auto-detect built in.
 
 Want to try it? Reply YES for your free trial.
 

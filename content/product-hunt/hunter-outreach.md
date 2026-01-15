@@ -77,7 +77,7 @@ Hi [Name],
 I've been following your Product Hunt activity and noticed you've hunted several AI/SaaS products. I'm reaching out because I think ReviewResponder might be a great fit for your portfolio.
 
 **What is ReviewResponder?**
-An AI-powered tool that generates professional, personalized responses to customer reviews in seconds. We support 50+ languages and have a Chrome Extension that works directly on Google Maps.
+An AI-powered tool that generates professional, personalized responses to customer reviews in seconds. Any language with auto-detect. Plus a Chrome Extension that works directly on Google Maps.
 
 **Why it's interesting:**
 - Solves a real pain point for local businesses

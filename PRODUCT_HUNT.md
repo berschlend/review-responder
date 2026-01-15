@@ -14,7 +14,7 @@ Alternative options:
 
 ## Description (260 chars max)
 
-**"ReviewResponder generates professional, personalized responses to customer reviews in seconds. Choose from 4 tones, supports 50+ languages, and works directly on Google Maps via Chrome Extension. Save hours weekly on review management."** (239 chars)
+**"ReviewResponder generates professional, personalized responses to customer reviews in seconds. Choose from 4 tones, any language (auto-detect), and works directly on Google Maps via Chrome Extension. Save hours weekly on review management."** (239 chars)
 
 ---
 
@@ -24,7 +24,7 @@ Alternative options:
 
 2. **4 Response Tones** - Choose between Professional, Friendly, Formal, or Apologetic to match your brand voice
 
-3. **50+ Languages** - Automatic language detection and response in the customer's language
+3. **Any Language** - Automatic language detection and response in the customer's language
 
 4. **Chrome Extension** - Reply directly on Google Maps with one click - no copy-pasting needed
 
@@ -44,7 +44,7 @@ The problem: Every business owner knows they should respond to reviews - it boos
 The solution: ReviewResponder uses AI to generate professional, personalized responses in seconds. Just paste the review, pick your tone (Professional, Friendly, Formal, or Apologetic), and you're done.
 
 What makes it special:
-- Works in 50+ languages automatically
+- Any language with auto-detect
 - Chrome Extension for Google Maps - respond without leaving the page
 - Add your business context once, get personalized responses forever
 - 4 different tones to match any situation

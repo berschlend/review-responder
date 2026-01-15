@@ -16,7 +16,7 @@ ReviewResponder uses AI to generate professional, personalized responses in seco
 Key Features:
 • AI-powered responses using GPT-4o-mini
 • 4 response tones: Professional, Friendly, Formal, Apologetic
-• 50+ languages with automatic detection
+• Any language (auto-detect)
 • Chrome Extension for Google Maps
 • Business context for personalized responses
 

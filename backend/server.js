@@ -5741,7 +5741,7 @@ app.post('/api/capture-email', async (req, res) => {
                     <ul style="margin: 12px 0 0 0; padding-left: 20px;">
                       <li>AI-powered review responses in seconds</li>
                       <li>4 different tones (Professional, Friendly, Apologetic, Grateful)</li>
-                      <li>50+ languages supported</li>
+                      <li>Any language (auto-detect)</li>
                       <li>Chrome Extension for all major platforms</li>
                     </ul>
                   </div>
@@ -9040,7 +9040,7 @@ The ReviewResponder Chrome Extension works directly on review platforms:
 - One click to copy or paste directly
 
 KEY FEATURES:
-- Automatic language detection (50+ languages)
+- Any language with auto-detect
 - 4 tone options: Professional, Friendly, Apologetic, Enthusiastic
 - Business context - AI knows your specific business details
 - Bulk generation for catching up on multiple reviews (Pro plan)
@@ -9411,7 +9411,7 @@ app.get('/api/cron/send-drip-emails', async (req, res) => {
         `,
       },
       10: {
-        subject: 'Did you know? You can respond in 50+ languages',
+        subject: 'Did you know? We auto-detect any language',
         html: `
           <!DOCTYPE html>
           <html>
@@ -9434,7 +9434,7 @@ app.get('/api/cron/send-drip-emails', async (req, res) => {
               <div class="content">
                 <p>Hi${user.business_name ? ' ' + user.business_name : ''}!</p>
 
-                <p>Did you know ReviewResponder can handle reviews in <strong>50+ languages</strong>?</p>
+                <p>Did you know ReviewResponder can handle reviews in <strong>any language</strong>?</p>
 
                 <div class="feature-box">
                   <strong>Auto-Detection:</strong> Paste a review in German, French, Spanish, Chinese - any language! The AI automatically detects it and responds in the same language.

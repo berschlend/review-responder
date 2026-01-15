@@ -53,7 +53,7 @@ Key features:
 
 ✅ AI-powered responses (GPT-4o + Claude hybrid)
 ✅ 4 tones + AI tone recommendation
-✅ 50+ languages (auto-detected!)
+✅ Any language (auto-detect)
 ✅ 3 response variations at once
 ✅ Quality score for each response
 ✅ 50+ industry templates
@@ -130,7 +130,7 @@ Now what?
 
 ReviewResponder detects the language automatically and responds in kind.
 
-50+ languages. Zero translation effort.
+Any language. Zero translation effort.
 
 Support your international customers effortlessly.
 

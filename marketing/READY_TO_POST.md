@@ -66,7 +66,7 @@ But who has time to write thoughtful responses to every review?
 
 I built ReviewResponder - an AI tool that generates professional review responses in seconds.
 
-✅ Works in 50+ languages
+✅ Any language (auto-detect)
 ✅ 4 tone options (professional, friendly, formal, apologetic)
 ✅ Free to try (20 responses)
 

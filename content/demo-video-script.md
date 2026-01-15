@@ -80,7 +80,7 @@
 - "50+ Templates für Restaurants, Hotels, Einzelhandel und mehr"
 - "3 Antwort-Varianten auf einmal - wähle deine Lieblings-Antwort"
 - "Qualitäts-Score für jede Antwort"
-- "Automatische Spracherkennung in 50+ Sprachen"
+- "Automatische Spracherkennung (jede Sprache)"
 - "Auto-Save: Entwürfe gehen nie verloren"
 
 ---
@@ -129,7 +129,7 @@ Features:
 ✅ 4 verschiedene Tones + AI-Empfehlung
 ✅ 3 Antwort-Varianten auf einmal
 ✅ Qualitäts-Score für jede Antwort
-✅ 50+ Sprachen (automatisch erkannt)
+✅ Jede Sprache (auto-detect)
 ✅ 50+ Branchen-Templates
 
 Timestamps:
