@@ -507,19 +507,12 @@ Tab-Status: [Kann geschlossen werden: JA/NEIN]
 
 ---
 
-## SOCIAL MEDIA REGELN (KRITISCH!)
+## INSTAGRAM REGELN (KRITISCH!)
 
-**NUR DMs senden! NIEMALS:**
-- ❌ Posts erstellen (Instagram, Twitter, Facebook)
-- ❌ Stories posten
+**Berends PRIVATER Account! NUR DMs senden, NIEMALS:**
+- ❌ Posts/Stories erstellen
 - ❌ Likes geben
 - ❌ Kommentare schreiben
-- ❌ Follows machen (außer LinkedIn Connections)
-- ❌ Retweets/Shares
+- ❌ Follows machen
 
-**NUR ERLAUBT:**
-- ✅ DMs/Messages senden
-- ✅ LinkedIn Connection Requests
-- ✅ LinkedIn Messages nach Accept
-
-**Berends Accounts = heilig. Kein cringe Content!**
+**NUR ERLAUBT:** ✅ DMs an Business-Accounts senden
