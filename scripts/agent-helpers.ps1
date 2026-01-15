@@ -1,241 +1,265 @@
-# Night-Burst Agent Helper Functions
-# These can be called from within Claude sessions to manage state
-#
-# Usage (from Claude via Bash tool):
-#   powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent 1
-#   powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent 5
-#   powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 2 -Data "Subject with star rating works"
+<#
+.SYNOPSIS
+    Night-Burst Agent Helper Commands
+.DESCRIPTION
+    PowerShell script providing helper functions for Night-Burst agents.
+    Enables inter-agent coordination, heartbeat tracking, and shared state.
+.PARAMETER Action
+    The action to perform: heartbeat, focus-read, handoff-check, handoff-create,
+    memory-read, status-update, learning-add
+.PARAMETER Agent
+    The agent number (1-15)
+.PARAMETER Data
+    JSON data for actions that require input
+#>
 
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend")]
+    [ValidateSet("heartbeat", "focus-read", "handoff-check", "handoff-create",
+                 "memory-read", "status-update", "learning-add")]
     [string]$Action,
 
-    [int]$Agent = 0,
-    [string]$Data = "",
-    [string]$Key = "",
-    [string]$Value = ""
+    [int]$Agent,
+
+    [string]$Data
 )
 
-$ErrorActionPreference = "Stop"
-$ProjectRoot = Split-Path -Parent (Split-Path -Parent $PSCommandPath)
-$ProgressDir = Join-Path $ProjectRoot "content\claude-progress"
+# Paths
+$ProgressDir = Join-Path $PSScriptRoot "..\content\claude-progress"
+
+# Ensure progress directory exists
+if (-not (Test-Path $ProgressDir)) {
+    New-Item -ItemType Directory -Path $ProgressDir -Force | Out-Null
+}
 
 function Get-Timestamp {
-    return (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+    return (Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ")
 }
 
-function Get-StatusFile {
-    param([int]$AgentNum)
-    return Join-Path $ProgressDir "burst-$AgentNum-status.json"
-}
-
-function Initialize-StatusIfNeeded {
-    param([int]$AgentNum)
-
-    $file = Get-StatusFile -AgentNum $AgentNum
-    if (-not (Test-Path $file)) {
-        $status = @{
-            agent = "burst-$AgentNum"
-            version = "3.3"
-            status = "running"
-            started_at = Get-Timestamp
-            last_heartbeat = Get-Timestamp
-            current_loop = 0
-            metrics = @{
-                actions_taken = 0
-                errors_count = 0
-            }
-            health = @{
-                stuck_detected = $false
-                last_error = $null
-            }
-        }
-        $status | ConvertTo-Json -Depth 10 | Set-Content -Path $file -Encoding UTF8
-    }
+function Write-AgentLog {
+    param([string]$Message, [string]$Level = "INFO")
+    $ts = Get-Timestamp
+    Write-Host "[$ts] [$Level] Burst-$Agent`: $Message"
 }
 
 switch ($Action) {
     "heartbeat" {
-        Initialize-StatusIfNeeded -AgentNum $Agent
-        $file = Get-StatusFile -AgentNum $Agent
-        $status = Get-Content $file | ConvertFrom-Json
+        # Update agent status file with heartbeat
+        $statusFile = Join-Path $ProgressDir "burst-$Agent-status.json"
+
+        if (Test-Path $statusFile) {
+            $status = Get-Content $statusFile | ConvertFrom-Json
+        } else {
+            $status = @{
+                agent = "burst-$Agent"
+                status = "starting"
+                started_at = Get-Timestamp
+                current_loop = 0
+                metrics = @{
+                    actions_taken = 0
+                    errors_count = 0
+                }
+                health = @{
+                    stuck_detected = $false
+                    last_error = $null
+                }
+                stuck = $false
+                needs_berend = @()
+            }
+        }
+
         $status.last_heartbeat = Get-Timestamp
-        $status.current_loop = $status.current_loop + 1
         $status.status = "running"
-        $status | ConvertTo-Json -Depth 10 | Set-Content -Path $file -Encoding UTF8
-        Write-Output "OK: Heartbeat updated for burst-$Agent (loop $($status.current_loop))"
-    }
-
-    "status-read" {
-        $file = Get-StatusFile -AgentNum $Agent
-        if (Test-Path $file) {
-            Get-Content $file
+        if ($status.PSObject.Properties.Name -contains "current_loop") {
+            $status.current_loop++
         } else {
-            Write-Output "{}"
-        }
-    }
-
-    "status-update" {
-        Initialize-StatusIfNeeded -AgentNum $Agent
-        $file = Get-StatusFile -AgentNum $Agent
-        $status = Get-Content $file | ConvertFrom-Json
-
-        # Parse Data as JSON updates
-        if ($Data) {
-            $updates = $Data | ConvertFrom-Json
-            foreach ($prop in $updates.PSObject.Properties) {
-                if ($prop.Name -eq "metrics") {
-                    foreach ($metric in $prop.Value.PSObject.Properties) {
-                        $status.metrics.$($metric.Name) = $metric.Value
-                    }
-                } elseif ($prop.Name -eq "health") {
-                    foreach ($h in $prop.Value.PSObject.Properties) {
-                        $status.health.$($h.Name) = $h.Value
-                    }
-                } else {
-                    $status.$($prop.Name) = $prop.Value
-                }
-            }
+            $status | Add-Member -NotePropertyName "current_loop" -NotePropertyValue 1 -Force
         }
 
-        $status.last_heartbeat = Get-Timestamp
-        $status | ConvertTo-Json -Depth 10 | Set-Content -Path $file -Encoding UTF8
-        Write-Output "OK: Status updated for burst-$Agent"
+        $status | ConvertTo-Json -Depth 10 | Set-Content $statusFile
+        Write-AgentLog "Heartbeat registered (loop $($status.current_loop))"
     }
 
-    "memory-read" {
-        $memoryFile = Join-Path $ProgressDir "agent-memory.json"
-        if (Test-Path $memoryFile) {
-            $memory = Get-Content $memoryFile | ConvertFrom-Json
-            if ($Agent -gt 0 -and $memory.agents."burst-$Agent") {
-                $memory.agents."burst-$Agent" | ConvertTo-Json -Depth 10
+    "focus-read" {
+        # Read current focus and priorities
+        $focusFile = Join-Path $ProgressDir "current-focus.json"
+
+        if (Test-Path $focusFile) {
+            $focus = Get-Content $focusFile -Raw | ConvertFrom-Json
+
+            Write-Host ""
+            Write-Host "=== CURRENT FOCUS ===" -ForegroundColor Cyan
+
+            # Check if agent is paused
+            if ($focus.paused_agents -contains "burst-$Agent") {
+                Write-Host "STATUS: PAUSED" -ForegroundColor Yellow
+                Write-Host "Reason: Lead generation paused - focus on activation" -ForegroundColor Yellow
             } else {
-                $memory | ConvertTo-Json -Depth 10
-            }
-        } else {
-            Write-Output "{}"
-        }
-    }
-
-    "memory-update" {
-        $memoryFile = Join-Path $ProgressDir "agent-memory.json"
-        if (Test-Path $memoryFile) {
-            $memory = Get-Content $memoryFile | ConvertFrom-Json
-
-            if ($Agent -gt 0) {
+                # Get agent priority
                 $agentKey = "burst-$Agent"
-                if (-not $memory.agents.$agentKey) {
-                    $memory.agents | Add-Member -NotePropertyName $agentKey -NotePropertyValue @{
-                        session_count = 0
-                        total_actions = 0
-                        memory = @{ notes = @() }
+                if ($focus.agent_priorities.PSObject.Properties.Name -contains $agentKey) {
+                    $priority = $focus.agent_priorities.$agentKey
+                    $priorityColor = switch ($priority.priority) {
+                        1 { "Green" }
+                        2 { "Yellow" }
+                        3 { "Red" }
+                        default { "White" }
                     }
-                }
-
-                # Increment session count
-                $memory.agents.$agentKey.session_count++
-
-                # Add data to notes if provided
-                if ($Data) {
-                    $note = @{
-                        timestamp = Get-Timestamp
-                        content = $Data
-                    }
-                    if (-not $memory.agents.$agentKey.memory.notes) {
-                        $memory.agents.$agentKey.memory | Add-Member -NotePropertyName "notes" -NotePropertyValue @()
-                    }
-                    $memory.agents.$agentKey.memory.notes += $note
+                    Write-Host "PRIORITY: $($priority.priority)" -ForegroundColor $priorityColor
+                    Write-Host "REASON: $($priority.reason)" -ForegroundColor White
                 }
             }
 
-            $memory.last_updated = Get-Timestamp
-            $memory | ConvertTo-Json -Depth 10 | Set-Content -Path $memoryFile -Encoding UTF8
-            Write-Output "OK: Memory updated for burst-$Agent"
-        }
-    }
-
-    "learning-add" {
-        $learningsFile = Join-Path $ProgressDir "learnings.md"
-        if ($Data -and (Test-Path $learningsFile)) {
-            $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm"
-            $entry = "`n### [$timestamp] Burst-$Agent`n- $Data`n"
-            Add-Content -Path $learningsFile -Value $entry -Encoding UTF8
-            Write-Output "OK: Learning added from burst-$Agent"
-        }
-    }
-
-    "handoff-create" {
-        $handoffFile = Join-Path $ProgressDir "handoff-queue.json"
-        if (Test-Path $handoffFile) {
-            $handoff = Get-Content $handoffFile | ConvertFrom-Json
-
-            if ($Data) {
-                $entry = $Data | ConvertFrom-Json
-                $entry | Add-Member -NotePropertyName "id" -NotePropertyValue ([guid]::NewGuid().ToString().Substring(0,8))
-                $entry | Add-Member -NotePropertyName "created_at" -NotePropertyValue (Get-Timestamp)
-                $entry | Add-Member -NotePropertyName "status" -NotePropertyValue "pending"
-
-                $handoff.queue += $entry
-                $handoff | ConvertTo-Json -Depth 10 | Set-Content -Path $handoffFile -Encoding UTF8
-                Write-Output "OK: Handoff created: $($entry.id)"
+            # Show first principles insight if available
+            if ($focus.first_principles_insight) {
+                Write-Host ""
+                Write-Host "INSIGHT: $($focus.first_principles_insight.diagnosis)" -ForegroundColor Magenta
+                Write-Host "BOTTLENECK: $($focus.first_principles_insight.bottleneck)" -ForegroundColor Magenta
             }
+
+            Write-Host ""
+        } else {
+            Write-Host "No focus file found - operating with default priorities" -ForegroundColor Yellow
         }
     }
 
     "handoff-check" {
+        # Check for handoffs addressed to this agent
         $handoffFile = Join-Path $ProgressDir "handoff-queue.json"
+
         if (Test-Path $handoffFile) {
-            $handoff = Get-Content $handoffFile | ConvertFrom-Json
-            $pending = $handoff.queue | Where-Object { $_.to -eq "burst-$Agent" -and $_.status -eq "pending" }
-            if ($pending) {
-                $pending | ConvertTo-Json -Depth 10
+            $handoffs = Get-Content $handoffFile -Raw | ConvertFrom-Json
+            $myHandoffs = $handoffs.pending | Where-Object { $_.to -eq "burst-$Agent" }
+
+            if ($myHandoffs.Count -gt 0) {
+                Write-Host ""
+                Write-Host "=== INCOMING HANDOFFS ===" -ForegroundColor Green
+                foreach ($h in $myHandoffs) {
+                    Write-Host "From: $($h.from)" -ForegroundColor Cyan
+                    Write-Host "Type: $($h.type)"
+                    Write-Host "Priority: $($h.priority)"
+                    Write-Host "Data: $($h.data | ConvertTo-Json -Compress)"
+                    Write-Host "---"
+                }
             } else {
-                Write-Output "[]"
+                Write-Host "No pending handoffs for Burst-$Agent" -ForegroundColor Gray
+            }
+        } else {
+            # Initialize empty handoff queue
+            @{
+                pending = @()
+                completed = @()
+            } | ConvertTo-Json -Depth 10 | Set-Content $handoffFile
+            Write-Host "Handoff queue initialized" -ForegroundColor Gray
+        }
+    }
+
+    "handoff-create" {
+        # Create a new handoff for another agent
+        if (-not $Data) {
+            Write-Host "ERROR: -Data required for handoff-create" -ForegroundColor Red
+            exit 1
+        }
+
+        $handoffFile = Join-Path $ProgressDir "handoff-queue.json"
+        $handoffData = $Data | ConvertFrom-Json
+
+        if (Test-Path $handoffFile) {
+            $handoffs = Get-Content $handoffFile -Raw | ConvertFrom-Json
+        } else {
+            $handoffs = @{
+                pending = @()
+                completed = @()
             }
         }
-    }
 
-    "focus-read" {
-        $focusFile = Join-Path $ProgressDir "current-focus.json"
-        if (Test-Path $focusFile) {
-            Get-Content $focusFile
-        } else {
-            Write-Output "{}"
+        $newHandoff = @{
+            id = [guid]::NewGuid().ToString()
+            from = $handoffData.from
+            to = $handoffData.to
+            type = $handoffData.type
+            data = $handoffData.data
+            priority = $handoffData.priority
+            created_at = Get-Timestamp
         }
+
+        $handoffs.pending += $newHandoff
+        $handoffs | ConvertTo-Json -Depth 10 | Set-Content $handoffFile
+
+        Write-AgentLog "Handoff created: $($handoffData.type) -> $($handoffData.to)"
     }
 
-    "wake-backend" {
-        # Wake up Render backend (sleeps after inactivity)
-        # Uses curl directly since it handles HTTP errors more gracefully
-        $BackendUrl = "https://review-responder.onrender.com/api/admin/stats"
-        $MaxAttempts = 10
-        $Delay = 5
+    "memory-read" {
+        # Read learnings and memory relevant to this agent
+        $learningsFile = Join-Path $ProgressDir "learnings.md"
+        $memoryFile = Join-Path $ProgressDir "agent-memory.json"
 
-        Write-Output "[WAKE-UP] Waking up Render backend..."
+        Write-Host ""
+        Write-Host "=== AGENT MEMORY ===" -ForegroundColor Cyan
 
-        for ($i = 1; $i -le $MaxAttempts; $i++) {
-            Write-Output "[WAKE-UP] Attempt $i/$MaxAttempts..."
+        # Read agent-specific memory
+        if (Test-Path $memoryFile) {
+            $memory = Get-Content $memoryFile -Raw | ConvertFrom-Json
+            $agentKey = "burst-$Agent"
 
-            # Use curl.exe to check - any HTTP response (even 401) means backend is awake
-            # Note: curl.exe is the actual curl binary, not PowerShell's Invoke-WebRequest alias
-            $result = curl.exe -s -o NUL -w "%{http_code}" --connect-timeout 30 $BackendUrl 2>&1
-
-            if ($result -match '^\d{3}$') {
-                $statusCode = [int]$result
-                if ($statusCode -ge 200 -and $statusCode -lt 600) {
-                    Write-Output "OK: Backend is awake and ready! (HTTP $statusCode)"
-                    break
+            if ($memory.PSObject.Properties.Name -contains $agentKey) {
+                $agentMemory = $memory.$agentKey
+                Write-Host "Last successful action: $($agentMemory.last_successful_action)" -ForegroundColor Green
+                if ($agentMemory.learnings_applied) {
+                    Write-Host "Applied learnings: $($agentMemory.learnings_applied -join ', ')" -ForegroundColor Yellow
                 }
             }
-
-            if ($i -lt $MaxAttempts) {
-                Write-Output "[WAKE-UP] Connection failed, waiting ${Delay}s..."
-                Start-Sleep -Seconds $Delay
-                $Delay = [Math]::Min($Delay * 1.5, 30)
-            } else {
-                Write-Output "WARNING: Backend may still be sleeping after $MaxAttempts attempts"
-            }
         }
+
+        # Show recent learnings from learnings.md
+        if (Test-Path $learningsFile) {
+            Write-Host ""
+            Write-Host "Learnings file available - read for detailed patterns" -ForegroundColor Gray
+        }
+
+        Write-Host ""
+    }
+
+    "status-update" {
+        # Update agent status with custom data
+        if (-not $Data) {
+            Write-Host "ERROR: -Data required for status-update" -ForegroundColor Red
+            exit 1
+        }
+
+        $statusFile = Join-Path $ProgressDir "burst-$Agent-status.json"
+        $updateData = $Data | ConvertFrom-Json
+
+        if (Test-Path $statusFile) {
+            $status = Get-Content $statusFile | ConvertFrom-Json
+        } else {
+            $status = @{}
+        }
+
+        # Merge update data into status
+        foreach ($prop in $updateData.PSObject.Properties) {
+            $status | Add-Member -NotePropertyName $prop.Name -NotePropertyValue $prop.Value -Force
+        }
+
+        $status.last_updated = Get-Timestamp
+        $status | ConvertTo-Json -Depth 10 | Set-Content $statusFile
+
+        Write-AgentLog "Status updated"
+    }
+
+    "learning-add" {
+        # Add a new learning to learnings.md
+        if (-not $Data) {
+            Write-Host "ERROR: -Data required for learning-add" -ForegroundColor Red
+            exit 1
+        }
+
+        $learningsFile = Join-Path $ProgressDir "learnings.md"
+        $ts = Get-Date -Format "yyyy-MM-dd HH:mm"
+
+        $learningEntry = "`n## [$ts] Learning from Burst-$Agent`n`n$Data`n`n---`n"
+
+        Add-Content -Path $learningsFile -Value $learningEntry
+        Write-AgentLog "Learning added to learnings.md"
     }
 }
