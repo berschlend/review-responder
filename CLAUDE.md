@@ -207,49 +207,128 @@ powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\chrome-tab-manager.ps
 
 ---
 
-## NACHT-AUTOMATION (Handy → PC via AnyDesk)
+## NIGHT-BURST V3.1 - PRODUCTION SYSTEM (Updated 16.01.2026)
 
-> **ZIEL:** Vom Handy aus Claude über Nacht arbeiten lassen.
+> **ZIEL:** 15 autonome Claude Agents die jede Nacht arbeiten.
+> **Basierend auf:** Anthropic's "Building Effective Agents" + "Effective Context Engineering"
 
-### Voraussetzungen (bereits installiert ✅)
-- **WSL Ubuntu** mit **tmux** → ✅ Vorhanden
-- **AnyDesk** auf PC + Handy App → Setup erforderlich
-- **PC bleibt an** (Energiesparplan: "Nie schlafen")
+### Quick Start (JEDEN ABEND)
 
-### Setup (einmalig):
-1. AnyDesk installieren: https://anydesk.com/de/downloads ✅
-2. AnyDesk PC ID: `1298710422` ✅
-3. Handy: AnyDesk App installieren (iOS/Android)
-4. Energiesparplan: Einstellungen → System → "Nie in Standby"
+```powershell
+# Option 1: Interactive Menu
+.\scripts\start-night.ps1
 
-### Starten (vom Handy):
-```bash
-# 1. AnyDesk App → PC verbinden
-# 2. Windows Terminal öffnen → WSL starten
-wsl
+# Option 2: Direct Start (all 15 agents)
+.\scripts\night-burst-orchestrator.ps1
 
-# 3. tmux Session erstellen
-tmux new -s night
-
-# 4. Ins Projekt wechseln
-cd /mnt/c/Users/"Berend Mainz"/Documents/Start-up/reviewresponder-4
-
-# 5. Claude starten
-claude --continue
-
-# 6. Prompt eingeben (z.B. "/night-blast" oder andere Tasks)
-# 7. AnyDesk schließen → Claude läuft weiter!
+# Option 3: Light Mode (5 priority agents)
+.\scripts\night-burst-orchestrator.ps1 -MaxAgents 5
 ```
 
-### Morgens checken:
-```bash
-# 1. AnyDesk verbinden
-# 2. Terminal öffnen
-wsl
-tmux attach -t night
+### Scripts Overview
 
-# 3. Output sehen, git log checken
-git log --oneline | head -20
+| Script | Purpose |
+|--------|---------|
+| `start-night.ps1` | **THE ONE COMMAND** - Interactive menu |
+| `night-burst-orchestrator.ps1` | Starts/stops all agents |
+| `night-burst-session-manager.ps1` | Handles context limits |
+| `night-burst-health-check.ps1` | Monitors agent health |
+| `night-burst-recovery.ps1` | Recovers crashed agents |
+| `night-burst-launcher.ps1` | For Task Scheduler |
+| `night-burst-morning-report.ps1` | Generates morning report |
+
+### Auto-Start (Task Scheduler)
+
+```
+1. Win+R → taskschd.msc
+2. Create Basic Task: "Night-Burst"
+3. Trigger: Daily 22:00
+4. Action: powershell.exe -File "...\scripts\night-burst-launcher.ps1"
+5. Conditions: Uncheck "AC power only"
+```
+
+### Morning Routine
+
+```powershell
+# Generate morning report
+.\scripts\night-burst-morning-report.ps1 -Open
+
+# Check status
+.\scripts\night-burst-orchestrator.ps1 -Status
+
+# Stop if still running
+.\scripts\night-burst-orchestrator.ps1 -Stop
+```
+
+### The 15 Agents
+
+| # | Agent | Priority | Chrome? | Loop |
+|---|-------|----------|---------|------|
+| 1 | Lead Finder | 1 | Yes | 4h |
+| 2 | Cold Emailer | 1 | No | 6h |
+| 3 | Social DM | 3 | Yes | 8h |
+| 4 | Demo Generator | 2 | No | 4h |
+| 5 | Hot Lead Chaser | 1 | No | 2h |
+| 6 | User Activator | 2 | No | 4h |
+| 7 | Payment Converter | 1 | No | 3h |
+| 8 | Upgrader | 3 | No | 6h |
+| 9 | Doctor | 2 | No | 1h |
+| 10 | Morning Briefer | 3 | No | 24h |
+| 11 | Bottleneck Analyzer | 3 | No | 2h |
+| 12 | Creative Strategist | 3 | No | 4h |
+| 13 | Churn Prevention | 2 | No | 6h |
+| 14 | Lead Scorer | 2 | No | 30m |
+| 15 | Approval Gate | 1 | No | 5m |
+
+Priority 1 = Critical (always run), 2 = Important, 3 = Nice-to-have
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `content/claude-progress/agent-memory.json` | Persistent memory |
+| `content/claude-progress/verification-log.json` | Action verification |
+| `content/claude-progress/learnings.md` | What works/fails |
+| `content/claude-progress/for-berend.md` | Morning report |
+| `content/claude-progress/agent-registry.json` | Running agents |
+| `content/claude-progress/resource-budget.json` | API limits |
+
+### Troubleshooting
+
+**Agents not starting?**
+```powershell
+# Check Claude CLI
+claude --version
+
+# Check logs
+Get-Content logs\night-burst-*.log -Tail 50
+```
+
+**Context limit errors?**
+- Session Manager auto-restarts agents every 90 min
+- Or use: `.\night-burst-session-manager.ps1 -AgentNum 2`
+
+**PC going to sleep?**
+- Set Power Plan: Settings → System → Power → Never sleep
+- Or: Launcher script temporarily sets High Performance mode
+
+---
+
+## LEGACY: AnyDesk Remote Access
+
+> Alternative wenn Task Scheduler nicht klappt
+
+### AnyDesk Setup
+- PC ID: `1298710422`
+- Handy: AnyDesk App installieren
+
+### WSL + tmux (detached sessions)
+```bash
+wsl
+tmux new -s night
+cd /mnt/c/Users/"Berend Mainz"/Documents/Start-up/reviewresponder-3
+.\scripts\start-night.ps1
+# Ctrl+B, D to detach
 ```
 
 ### tmux Shortcuts:
