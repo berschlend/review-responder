@@ -9,7 +9,94 @@
 
 ---
 
-## 💡 NEUE STRATEGIE VORGESCHLAGEN [2026-01-16 ~17:30 UTC]
+## 💡 NEUE STRATEGIE VORGESCHLAGEN [2026-01-16 ~06:30 UTC]
+
+**From:** Burst-12 (Creative Strategist)
+**Type:** New Strategy - PIVOT ERFORDERLICH
+**Priority:** 🔴 Critical
+
+### Stagnation Erkannt - NEUES PROBLEM IDENTIFIZIERT
+
+**Betroffene Metrik:** User Retention (nicht mehr Activation!)
+**Trend:** 0 User am 20-Response-Limit seit Launch (5 Tage)
+**Sample Size:** 12 aktive User mit 1-8 Responses
+
+**CRITICAL INSIGHT:**
+Das Problem ist NICHT Activation. Wir haben 12 aktive User.
+Das Problem ist: **ALLE STOPPEN bei 5-6 Responses!**
+
+**Evidence:**
+| User | Responses | Status |
+|------|-----------|--------|
+| Berend (Admin) | 8 | Highest! |
+| rolicupo.twitch | 6 | Stopped |
+| berend.jakob.mainz | 5 | Stopped |
+| rolicupo.games | 5 | Stopped |
+| breihosen | 5 | Stopped |
+| matiasaseff | 4 | Stopped |
+| Alle anderen | 1-3 | Stopped |
+
+**Keiner nähert sich dem Limit!**
+→ Activation funktioniert (31.6%)
+→ Aber Users haben keinen ONGOING NEED
+
+### Root Cause Hypothese
+
+**Das Produkt löst kein wiederkehrendes Problem:**
+1. Restaurant bekommt 2-3 neue Reviews/Woche
+2. User testet ReviewResponder 5-6x → "nice tool"
+3. User hat keine neuen Reviews → vergisst uns
+4. PULL-Modell funktioniert nicht (User muss aktiv kommen)
+
+**Das ist ein PRODUCT-MARKET FIT Problem, nicht Marketing!**
+
+### Vorgeschlagene Pivots
+
+**OPTION A: Push statt Pull - Review Alerts** ⭐ (Empfohlen)
+- **Was:** Wöchentlicher Email-Alert: "3 neue Reviews für [Business] - Jetzt antworten?"
+- **Warum:** Aktuell muss User aktiv kommen. Mit Alerts BRINGEN WIR DIE ARBEIT ZU IHNEN.
+- **Kosten:** ~4h Backend (Review Monitoring + Weekly Digest)
+- **Erwarteter Impact:** +50% weekly retention (6/12 User kommen zurück)
+- **Test-Dauer:** 2 Wochen
+- **Risiko:** Mittel - braucht zuverlässiges Review-Monitoring
+
+**OPTION B: High-Volume Business Pivot**
+- **Was:** NUR noch Businesses mit >1000 Reviews targeten
+- **Warum:** Hot Leads: Bullring (56k), Augustiner (13k), Hilton (11k) Reviews
+- **Logik:** Restaurant mit 50 Reviews braucht uns 2x/Monat. Hotel mit 5000 braucht uns TÄGLICH!
+- **Kosten:** ~2h Targeting-Anpassung
+- **Erwarteter Impact:** 10x mehr Usage pro User
+- **Test-Dauer:** 1 Woche (nächste 50 Emails)
+- **Risiko:** Gering - einfach zu testen
+
+**OPTION C: Competitor Monitoring Feature**
+- **Was:** "See how competitors respond to reviews"
+- **Warum:** Competitive Intelligence als Hook für wiederkehrende Nutzung
+- **Kosten:** ~8h Development
+- **Erwarteter Impact:** Unklar - Feature-Bet
+- **Test-Dauer:** 2 Wochen nach Launch
+- **Risiko:** Hoch - könnte floppen
+
+### Meine Empfehlung
+
+**BEIDE A + B gleichzeitig:**
+- Option B ist HEUTE testbar (Targeting ändern = 0 Code)
+- Option A braucht Development aber löst ROOT CAUSE
+
+**Dies ist kein Marketing-Fix. Dies ist Product-Fix.**
+
+### Timeout
+
+4 Stunden → Default: OPTION B testen (niedrigste Kosten)
+
+---
+
+**BEREND RESPONSE:** [waiting]
+**RESOLUTION:** [pending]
+
+---
+
+## 💡 RESOLVED: STRATEGIE [2026-01-16 ~17:30 UTC]
 
 **From:** Burst-12 (Creative Strategist)
 **Type:** New Strategy

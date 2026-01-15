@@ -1,55 +1,31 @@
-{
-  "agent": "burst-9-doctor",
-  "version": "3.3",
-  "status": "running",
-  "current_loop": 1,
-  "started_at": "2026-01-15T20:30:00Z",
-  "last_heartbeat": "2026-01-15T20:30:00Z",
-  "metrics_snapshot": {
-    "leads": 2125,
-    "leads_with_email": 767,
-    "emails_sent": 813,
-    "email_ctr": "5.0%",
-    "hot_leads": 41,
-    "magic_links_sent": 68,
-    "magic_links_clicked": 35,
-    "registrations": 32,
-    "users_at_limit": 0,
-    "conversions": 0,
-    "mrr": 0
-  },
-  "alerts": [
-    "CRITICAL: Magic Link Gap - 35 clicks, 0 conversions",
-    "CRITICAL: 66% users dormant (never used product)",
-    "CRITICAL: 0 users at limit (no upgrade trigger)",
-    "WARNING: Burst-5, 6, 7 STALE (>6h since heartbeat)"
-  ],
-  "agents_status": {
-    "burst-1": "paused",
-    "burst-2": "paused",
-    "burst-3": "paused",
-    "burst-4": "healthy",
-    "burst-5": "stale",
-    "burst-6": "stale",
-    "burst-7": "stale",
-    "burst-8": "paused"
-  },
-  "new_learnings": 1,
-  "health": {
-    "stuck_detected": false,
-    "last_error": null,
-    "errors_count": 0,
-    "actions_taken": 3
-  },
-  "analysis_summary": {
-    "diagnosis": "Lead Gen funktioniert (CTR 5%), Problem ist Activation",
-    "bottleneck": "Registration -> Usage (66% dormant)",
-    "recommendation": "Focus Burst-6 (User Activator)"
-  },
-  "next_check": "2026-01-15T21:30:00Z",
-  "stuck": false,
-  "needs_berend": [
-    "Decision: Agents neu starten?",
-    "Decision: Limit von 20 auf 10 senken?"
-  ]
+﻿{
+    "loop_interval":  "1h",
+    "learnings_applied":  [
+
+                          ],
+    "current_loop":  1,
+    "started_at":  "2026-01-15T21:32:42Z",
+    "version":  "3.0",
+    "agent":  "burst-9-doctor",
+    "escalations_pending":  [
+
+                            ],
+    "checkpoints":  {
+                        "resume_from":  null,
+                        "last_successful_action":  null,
+                        "last_processed_id":  null
+                    },
+    "health":  {
+                   "api_budget_ok":  true,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "metrics":  {
+                    "success_rate":  0,
+                    "errors_count":  0,
+                    "actions_taken":  0
+                },
+    "status":  "running",
+    "last_heartbeat":  "2026-01-15T21:37:14Z"
 }

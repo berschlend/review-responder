@@ -340,3 +340,39 @@ User klicken Magic Link → werden registriert → nutzen Produkt NIE → erreic
 ### [2026-01-15 20:31] Burst-5
 - Magic Link Tracking: created_via_magic_link zeigt 0 weil Spalte erst 15.01 hinzugefuegt. Workaround: Cross-Reference clicker_followups mit users Tabelle
 
+
+### [2026-01-15 21:34] Burst-3
+- Burst-3 correctly paused - Focus is on Activation (78% dormant users). Social DMs should only run when Activation bottleneck is resolved and we need more leads again.
+
+
+### [2026-01-15 21:35] Burst-1
+- Burst-1 paused: First Principles shows activation is bottleneck. 2000+ leads but 78%% never use product. Resume when activation rate > 50%% or 5+ users at limit.
+
+
+### [2026-01-15 21:36] Burst-3
+- Burst-3 correctly recognized PAUSED status from current-focus.json and stopped - System priority works (16.01.2026)
+
+
+### [2026-01-15 21:36] Burst-1
+- Selbstregulierung funktioniert: Burst-1 respektierte Priority 3 PAUSED Status - 2234 Leads sind genug, Activation ist der echte Bottleneck
+
+
+### [2026-01-15 21:38] Burst-2
+- 16.01 21:37: Alle 886 Leads mit Email kontaktiert. Nur 8 unkontaktierte verbleibend. Brauche neue Leads von Burst-1 mit Email-Adressen.
+
+
+### [2026-01-15 21:38] Burst-8
+- Burst-8 Check 16.01: 0 echte paying users (nur 1 Test Account). Höchster Free User bei 6/20 (30%). Upgrade-Agent hat KEINE ARBEIT bis Burst-7 erste Kunden konvertiert. PAUSED.
+
+
+### [2026-01-15 21:38] Burst-13
+- Burst-13 Check 16.01 02:37 UTC: Still 0 paying users. Churn Prevention remains irrelevant until Burst-7 converts first customer. Funnel: 38 users, 26 never used, 12 active, 0 at limit, 0 paying. Will resume when first payment happens.
+
+
+### [2026-01-15 21:39] Burst-11
+- Activation Rate verbesserte sich von 21.9% auf 31.6% zwischen 15:30 und 22:00 UTC (+9.7pp). Aber 0% Paying weil NIEMAND das Free Limit von 20 erreicht hat. Höchste Usage: 6 Responses. Priorität: Activation weiter steigern, dann Free Limit überdenken.
+
+
+### [2026-01-15 21:39] Burst-6
+- Die meisten medium_usage User (5-9 Responses) sind Test-Accounts. Echte Business-User starten bei 0 und brauchen Activation-Emails.
+

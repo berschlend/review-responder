@@ -1,33 +1,31 @@
-{
-  "current_loop": 2,
-  "version": "3.3",
-  "agent": "burst-5",
-  "health": {
-    "stuck_detected": false,
-    "last_error": null
-  },
-  "started_at": "2026-01-15T14:07:10Z",
-  "status": "running",
-  "last_heartbeat": "2026-01-15T15:50:00Z",
-  "metrics": {
-    "errors_count": 0,
-    "actions_taken": 2,
-    "hot_leads_found": 41,
-    "already_followed_up": 41,
-    "converted_but_dormant": 19,
-    "ready_for_second_followup": 0,
-    "multi_clickers": 0,
-    "hot_demo_visitors_emailed": 1
-  },
-  "findings": {
-    "key_insight": "19 von 41 Clickern haben sich registriert aber 0 Responses - brauchen Onboarding nicht Follow-Up",
-    "magic_link_tracking_issue": "created_via_magic_link Spalte zeigt 0, aber wir wissen 19 Clicker sind registriert (Cross-Reference mit clicker_followups)",
-    "handoff_created": "burst-6 dormant_converted_users (19 users)",
-    "next_action": "Warte auf neue Clicks oder 2-Tage Regel für Second Follow-Up"
-  },
-  "learnings": [
-    "46% der Clicker (19/41) registrieren sich aber nutzen Produkt nicht",
-    "Magic Link Tracking funktioniert nur für NEUE User (Spalte erst 15.01 hinzugefuegt)",
-    "Cross-Reference clicker_followups mit users Tabelle um echte Conversions zu finden"
-  ]
+﻿{
+    "loop_interval":  "2h",
+    "learnings_applied":  [
+
+                          ],
+    "current_loop":  2,
+    "started_at":  "2026-01-15T21:32:41Z",
+    "version":  "3.0",
+    "agent":  "burst-5-hot-lead-chaser",
+    "escalations_pending":  [
+
+                            ],
+    "checkpoints":  {
+                        "resume_from":  null,
+                        "last_successful_action":  null,
+                        "last_processed_id":  null
+                    },
+    "health":  {
+                   "api_budget_ok":  true,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "metrics":  {
+                    "success_rate":  0,
+                    "errors_count":  0,
+                    "actions_taken":  0
+                },
+    "status":  "running",
+    "last_heartbeat":  "2026-01-15T21:36:17Z"
 }

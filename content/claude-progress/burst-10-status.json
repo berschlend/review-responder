@@ -1,40 +1,31 @@
-{
-  "agent": "burst-10-morning-briefer",
-  "version": "3.3",
-  "status": "running",
-  "started_at": "2026-01-15T23:15:00Z",
-  "last_heartbeat": "2026-01-15T23:15:00Z",
-  "current_loop": 1,
-  "agents_health": {
-    "burst-1": "stale",
-    "burst-2": "healthy",
-    "burst-3": "paused",
-    "burst-4": "stale",
-    "burst-5": "stale",
-    "burst-6": "stale",
-    "burst-7": "stale",
-    "burst-8": "stale",
-    "burst-9": "not_found"
-  },
-  "metrics_snapshot": {
-    "leads": 2125,
-    "emails_sent": 978,
-    "clicks": 41,
-    "click_rate": "4.2%",
-    "users": 32,
-    "paying": 0,
-    "mrr": 0
-  },
-  "hot_items": 2,
-  "decisions_pending": 1,
-  "last_briefing": "2026-01-15T23:15:00Z",
-  "health": {
-    "stuck_detected": false,
-    "last_error": null
-  },
-  "stuck": false,
-  "needs_berend": [
-    "7/8 Agents sind stale - Neustart nötig?",
-    "Burst-12 Strategy Proposal in approval-queue.md wartet auf Antwort"
-  ]
+﻿{
+    "loop_interval":  "24h",
+    "learnings_applied":  [
+
+                          ],
+    "current_loop":  0,
+    "started_at":  "2026-01-15T21:32:42Z",
+    "version":  "3.0",
+    "agent":  "burst-10-morning-briefer",
+    "escalations_pending":  [
+
+                            ],
+    "checkpoints":  {
+                        "resume_from":  null,
+                        "last_successful_action":  null,
+                        "last_processed_id":  null
+                    },
+    "health":  {
+                   "api_budget_ok":  true,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "metrics":  {
+                    "success_rate":  0,
+                    "errors_count":  0,
+                    "actions_taken":  0
+                },
+    "status":  "initializing",
+    "last_heartbeat":  null
 }

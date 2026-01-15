@@ -18,7 +18,7 @@
 |-------|-------------------|--------|
 | Burst-1 Lead Finder | 22:32 UTC | ACTIVE - Email Finding |
 | Burst-2 Cold Emailer | 23:30 UTC | OK |
-| Burst-3 Social DM | 14:08 UTC | PAUSED |
+| Burst-3 Social DM | 16.01 11:XX UTC | ⏸️ PAUSED (Priority 3, Activation ist Bottleneck) |
 | Burst-4 Demo Gen | JETZT | ✅ ACTIVE - 49 Demos done |
 | Burst-5 Hot Lead | 14:07 UTC | STALE 11h |
 | Burst-6 Activator | 14:08 UTC | STALE 11h |

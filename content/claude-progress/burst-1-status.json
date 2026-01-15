@@ -1,34 +1,36 @@
-﻿{
-    "agent":  "burst-1",
-    "version":  "3.3",
-    "status":  "running",
-    "started_at":  "2026-01-15T22:30:00Z",
-    "last_heartbeat":  "2026-01-15T18:14:11Z",
-    "current_loop":  9,
-    "current_action":  "Loop 3 complete, starting Loop 4",
-    "metrics":  {
-                    "actions_taken":  4,
-                    "errors_count":  1,
-                    "leads_at_session_start":  2125,
-                    "leads_now":  2214,
-                    "leads_added":  89,
-                    "leads_with_email_start":  767,
-                    "leads_with_email_now":  836,
-                    "emails_found":  69,
-                    "hot_leads":  41,
-                    "users":  32
-                },
-    "health":  {
-                   "stuck_detected":  false,
-                   "last_error":  "Night-blast 520 timeout (leads still added)"
-               },
-    "session_log":  [
-                        "22:30 - Started, checked focus (Priority 3 - PAUSED)",
-                        "22:32 - Berend override: \u0027weiter\u0027, resumed",
-                        "22:35 - Hunter.io email finding: 0 found (small biz limitation)",
-                        "22:40 - Night-blast triggered",
-                        "22:50 - Night-blast running, +54 emails so far",
-                        "23:00 - Night-blast complete (520 timeout but leads added)",
-                        "23:00 - Loop 3 done: +89 leads, +69 emails"
-                    ]
+{
+    "loop_interval": "4h",
+    "learnings_applied": [
+        "2026-01-15: PAUSED due to activation bottleneck",
+        "2026-01-16: Confirmed PAUSED - 2234 leads sufficient, focus on activation"
+    ],
+    "current_loop": 3,
+    "started_at": "2026-01-16T07:15:00Z",
+    "version": "3.0",
+    "agent": "burst-1-lead-finder",
+    "escalations_pending": [],
+    "checkpoints": {
+        "resume_from": null,
+        "last_successful_action": "verified_pause_status",
+        "last_processed_id": null
+    },
+    "health": {
+        "api_budget_ok": true,
+        "memory_ok": true,
+        "stuck_detected": false,
+        "last_error": null
+    },
+    "metrics": {
+        "total_leads": 2234,
+        "leads_with_email": 886,
+        "email_rate": "39.6%",
+        "success_rate": 0,
+        "errors_count": 0,
+        "actions_taken": 0,
+        "note": "2234 leads sufficient, activation is bottleneck not lead gen"
+    },
+    "status": "paused",
+    "pause_reason": "ACTIVATION_BOTTLENECK - 78% of users never generate a single response. More leads = more dead registrations. Waiting for Burst-6 to improve activation rate.",
+    "last_heartbeat": "2026-01-16T07:15:00Z",
+    "resume_when": "activation_rate > 50% OR users_at_limit > 5"
 }

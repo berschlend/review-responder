@@ -1,94 +1,31 @@
-{
-  "agent": "burst-14-lead-scorer",
-  "version": "2.0",
-  "status": "running",
-  "last_run": "2026-01-15T21:30:00.000Z",
-  "last_successful_action": "2026-01-15T21:30:00.000Z",
-  "current_loop": 1,
-  "last_heartbeat": "2026-01-15T21:30:00.000Z",
+﻿{
+    "loop_interval":  "30m",
+    "learnings_applied":  [
 
-  "goal_progress": {
-    "target_metric": "Accurate lead prioritization for other agents",
-    "current_value": 38,
-    "percentage": 100
-  },
+                          ],
+    "current_loop":  1,
+    "started_at":  "2026-01-15T21:32:42Z",
+    "version":  "3.0",
+    "agent":  "burst-14-lead-scorer",
+    "escalations_pending":  [
 
-  "session_stats": {
-    "actions_taken": 1,
-    "successes": 1,
-    "failures": 0,
-    "skipped": 0,
-    "leads_scored": 38
-  },
-
-  "scoring_results": {
-    "total_leads_analyzed": 40,
-    "valid_leads_scored": 38,
-    "segments": {
-      "hot": 12,
-      "warm": 26,
-      "cool": 0,
-      "cold": 0
-    },
-    "hot_percentage": "31.6%",
-    "average_score": 72,
-    "mega_hot_count": 0,
-    "top_score": 88
-  },
-
-  "top_5_leads": [
-    {
-      "business": "AWAY SPA",
-      "city": "Edinburgh",
-      "score": 88,
-      "reason": "Personal email + SPA + Sweet spot reviews (37)"
-    },
-    {
-      "business": "Leonardo Hotel Muenchen",
-      "city": "Munich",
-      "score": 85,
-      "reason": "Hotel + Recent click + Large review base"
-    },
-    {
-      "business": "Pearle-Optik Graz",
-      "city": "Graz",
-      "score": 83,
-      "reason": "Personal email prefix + Perfect review count (36)"
-    },
-    {
-      "business": "25hours Hotel Zuerich",
-      "city": "Zuerich",
-      "score": 80,
-      "reason": "Hotel chain + Strong engagement"
-    },
-    {
-      "business": "Restaurant Sonnenberg",
-      "city": "Zuerich",
-      "score": 80,
-      "reason": "Restaurant + Good review count (1053)"
-    }
-  ],
-
-  "recommended_actions": {
-    "for_burst_5": "Follow up immediately with top 12 hot leads",
-    "for_burst_7": "Prepare discount offers for leads scoring 75+",
-    "for_burst_2": "Prioritize warm leads (26) in next outreach"
-  },
-
-  "health": {
-    "errors_last_hour": 0,
-    "warnings_last_hour": 0,
-    "api_calls_remaining": "N/A",
-    "stuck_detected": false
-  },
-
-  "learnings_this_session": [
-    "Click = strongest buying signal, weighted +25",
-    "Personal emails correlate with decision makers",
-    "Hotel/SPA/Restaurant verticals most engaged"
-  ],
-
-  "stuck": false,
-  "stuck_reason": null,
-  "needs_berend": []
+                            ],
+    "checkpoints":  {
+                        "resume_from":  null,
+                        "last_successful_action":  null,
+                        "last_processed_id":  null
+                    },
+    "health":  {
+                   "api_budget_ok":  true,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "metrics":  {
+                    "success_rate":  0,
+                    "errors_count":  0,
+                    "actions_taken":  0
+                },
+    "status":  "running",
+    "last_heartbeat":  "2026-01-15T21:37:09Z"
 }

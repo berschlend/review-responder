@@ -1,16 +1,52 @@
-﻿{
-    "current_loop":  2,
-    "version":  "3.3",
-    "agent":  "burst-8",
-    "health":  {
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "started_at":  "2026-01-15T14:08:41Z",
-    "status":  "running",
-    "last_heartbeat":  "2026-01-15T15:44:40Z",
-    "metrics":  {
-                    "errors_count":  0,
-                    "actions_taken":  0
-                }
+{
+  "agent": "burst-8-upgrader",
+  "version": "3.0",
+  "status": "paused",
+  "reason": "No paying customers to upgrade. Burst-7 must convert first.",
+  "started_at": "2026-01-15T21:32:41Z",
+  "last_heartbeat": "2026-01-15T21:45:00Z",
+  "current_loop": 1,
+  "loop_interval": "6h",
+  "metrics": {
+    "starter_users": 1,
+    "pro_users": 0,
+    "unlimited_users": 1,
+    "upgrade_candidates": 0,
+    "emails_sent": 0,
+    "upgrades_today": 0,
+    "mrr_increase": 0,
+    "actions_taken": 1,
+    "errors_count": 0,
+    "success_rate": 100
+  },
+  "analysis": {
+    "highest_free_user": {
+      "email": "rolicupo.twitch@gmail.com",
+      "responses": 6,
+      "limit": 20,
+      "percentage": 30
+    },
+    "test_accounts_excluded": ["reviewer@tryreviewresponder.com"],
+    "owner_accounts_excluded": ["Berend.mainz@web.de"]
+  },
+  "checkpoints": {
+    "last_processed_id": null,
+    "last_successful_action": "2026-01-15T21:45:00Z",
+    "resume_from": null
+  },
+  "health": {
+    "stuck_detected": false,
+    "last_error": null,
+    "api_budget_ok": true,
+    "memory_ok": true
+  },
+  "learnings_applied": [
+    "No paying users = nothing to upgrade",
+    "Wait for Burst-7 to convert first customers"
+  ],
+  "escalations_pending": [],
+  "resume_conditions": [
+    "First paying customer (Starter or Pro)",
+    "When burst-7 reports successful conversion"
+  ]
 }

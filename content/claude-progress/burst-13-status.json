@@ -1,16 +1,52 @@
-﻿{
-    "current_loop":  2,
-    "version":  "3.3",
-    "agent":  "burst-13",
-    "health":  {
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "started_at":  "2026-01-15T14:10:44Z",
-    "status":  "running",
-    "last_heartbeat":  "2026-01-15T15:20:50Z",
-    "metrics":  {
-                    "errors_count":  0,
-                    "actions_taken":  0
-                }
+{
+  "agent": "burst-13-churn-prevention",
+  "version": "3.0",
+  "status": "paused",
+  "paused_reason": "0 paying users = 0 churn risk. Activation is the bottleneck, not retention.",
+  "started_at": "2026-01-15T21:32:42Z",
+  "last_heartbeat": "2026-01-15T21:37:19Z",
+  "current_loop": 1,
+  "loop_interval": "6h",
+  "first_principles_analysis": {
+    "question": "Can there be churn without paying customers?",
+    "answer": "NO - Churn = paying customer stops paying",
+    "current_state": {
+      "paying_users": 0,
+      "total_users": 38,
+      "never_used": 26,
+      "active_users": 12
+    },
+    "conclusion": "I am irrelevant until Burst-7 (Payment Converter) succeeds"
+  },
+  "at_risk_users": {
+    "paying": 0,
+    "free_power": 0,
+    "cancelled": 0
+  },
+  "resume_conditions": [
+    "First paying customer acquired",
+    "Any user with subscription_status = 'active' (not 'free')",
+    "Berend manually requests churn analysis"
+  ],
+  "metrics": {
+    "actions_taken": 0,
+    "errors_count": 0,
+    "success_rate": 0
+  },
+  "health": {
+    "stuck_detected": false,
+    "last_error": null,
+    "memory_ok": true,
+    "api_budget_ok": true
+  },
+  "checkpoints": {
+    "last_processed_id": null,
+    "last_successful_action": null,
+    "resume_from": null
+  },
+  "escalations_pending": [],
+  "learnings_applied": [
+    "Burst-13 correctly paused - 0 paying users means 0 churn risk. Activation (Burst-6) is the real bottleneck."
+  ],
+  "next_check": "When notified of first payment or in 6 hours"
 }

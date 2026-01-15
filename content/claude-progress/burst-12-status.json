@@ -1,38 +1,31 @@
-{
-  "agent": "burst-12-creative-strategist",
-  "version": "3.3",
-  "status": "running",
-  "current_loop": 1,
-  "started_at": "2026-01-16T17:30:00Z",
-  "last_heartbeat": "2026-01-16T18:00:00Z",
-  "stagnation_detected": true,
-  "current_proposal": "activation_strategy_alternatives",
-  "pending_approval": false,
-  "active_tests": ["reengage-clickers-magic-links"],
-  "completed_tests": 0,
-  "winning_tests": 0,
-  "ideas_proposed": 1,
-  "ideas_approved": 1,
-  "next_strategy_if_fail": "Option B: One-Click First Value - Magic Link to action page instead of dashboard",
-  "session_results": {
-    "strategy_proposed": "Demo-Expiry + Re-Engagement",
-    "approval": "autonomous",
-    "actions_taken": [
-      "Triggered demo-expiration-emails (0 sent - demos too new)",
-      "Triggered reengage-clickers (8 magic links sent!)",
-      "Analyzed conversion-report.md for insights"
-    ],
-    "key_insight": "35 Magic Link clicks but 0 conversions - users dont know what to do after landing"
-  },
-  "health": {
-    "stuck_detected": false,
-    "last_error": null
-  },
-  "metrics": {
-    "actions_taken": 4,
-    "errors_count": 0
-  },
-  "stuck": false,
-  "needs_berend": [],
-  "next_loop_in": "4 hours"
+﻿{
+    "loop_interval":  "4h",
+    "learnings_applied":  [
+
+                          ],
+    "current_loop":  1,
+    "started_at":  "2026-01-15T21:32:42Z",
+    "version":  "3.0",
+    "agent":  "burst-12-creative-strategist",
+    "escalations_pending":  [
+
+                            ],
+    "checkpoints":  {
+                        "resume_from":  null,
+                        "last_successful_action":  null,
+                        "last_processed_id":  null
+                    },
+    "health":  {
+                   "api_budget_ok":  true,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "metrics":  {
+                    "success_rate":  0,
+                    "errors_count":  0,
+                    "actions_taken":  0
+                },
+    "status":  "running",
+    "last_heartbeat":  "2026-01-15T21:37:19Z"
 }

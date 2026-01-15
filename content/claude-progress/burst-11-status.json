@@ -1,59 +1,53 @@
 {
-  "agent": "burst-11-bottleneck-analyzer",
-  "version": "3.3",
-  "status": "running",
-  "started_at": "2026-01-15T15:30:00Z",
-  "last_heartbeat": "2026-01-15T15:30:00Z",
-  "current_loop": 1,
-  "current_bottleneck": {
-    "step": "Registration → Activation",
-    "from_count": 32,
-    "to_count": 7,
-    "conversion": 21.9,
-    "status": "critical",
-    "trend": "stagnant"
-  },
-  "funnel_snapshot": {
-    "leads": 2125,
-    "leads_with_email": 782,
-    "emails_sent": 978,
-    "clicks": 41,
-    "hot_leads": 40,
-    "registered": 32,
-    "active": 7,
-    "paying": 0,
-    "click_rate": 4.2,
-    "activation_rate": 21.9
-  },
-  "recommendations": [
-    {
-      "priority": 1,
-      "action": "Fix Registration → Activation",
-      "target_agents": ["burst-6"],
-      "expected_impact": "21.9% → 40%+"
+    "agent": "burst-11-bottleneck-analyzer",
+    "version": "3.0",
+    "status": "running",
+    "last_heartbeat": "2026-01-15T22:00:00Z",
+    "started_at": "2026-01-15T21:32:42Z",
+    "current_loop": 2,
+    "loop_interval": "2h",
+    "metrics": {
+        "actions_taken": 1,
+        "success_rate": 100,
+        "errors_count": 0
     },
-    {
-      "priority": 2,
-      "action": "Monitor Active → Paying",
-      "target_agents": ["burst-7"],
-      "expected_impact": "Wait for sample size"
+    "current_bottleneck": {
+        "step": "Reg->Active",
+        "conversion": 31.6,
+        "status": "warning",
+        "trend": "improving",
+        "previous": 21.9
     },
-    {
-      "priority": 3,
-      "action": "PAUSE Lead Finding",
-      "target_agents": ["burst-1"],
-      "expected_impact": "Resource conservation"
-    }
-  ],
-  "health": {
-    "stuck_detected": false,
-    "last_error": null
-  },
-  "metrics": {
-    "reports_generated": 1,
-    "bottlenecks_identified": 1,
-    "actions_taken": 1,
-    "errors_count": 0
-  },
-  "next_run": "2026-01-15T17:30:00Z"
+    "funnel_snapshot": {
+        "leads": 2236,
+        "with_email": 886,
+        "emails_sent": 1259,
+        "clicks": 41,
+        "hot_leads": 40,
+        "registered": 38,
+        "active": 12,
+        "paying": 0,
+        "timestamp": "2026-01-15T22:00:00Z"
+    },
+    "recommendations": [
+        "PRIORITY 1: Burst-6 verstärken - 26 Ghost Users aktivieren",
+        "PRIORITY 2: Monitor Active->Paying (0% aber niemand erreicht Limit)",
+        "PRIORITY 3: Lead Finding PAUSE - genug Leads vorhanden"
+    ],
+    "health": {
+        "stuck_detected": false,
+        "last_error": null,
+        "api_budget_ok": true,
+        "memory_ok": true
+    },
+    "checkpoints": {
+        "last_successful_action": "2026-01-15T22:00:00Z",
+        "last_processed_id": null,
+        "resume_from": null
+    },
+    "escalations_pending": [],
+    "learnings_applied": [
+        "Activation Rate von 21.9% auf 31.6% verbessert (+9.7pp)",
+        "0% Paying weil Free Limit (20) nicht erreicht wird"
+    ]
 }

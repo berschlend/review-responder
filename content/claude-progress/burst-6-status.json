@@ -1,28 +1,48 @@
-﻿{
-    "current_loop":  2,
-    "version":  "3.3",
-    "agent":  "burst-6",
-    "health":  {
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "started_at":  "2026-01-15T14:08:09Z",
-    "status":  "running",
-    "last_heartbeat":  "2026-01-15T15:43:12Z",
-    "metrics":  {
-                    "errors_count":  0,
-                    "actions_taken":  1,
-                    "inactive_users_found":  31,
-                    "activation_rate":  33.3,
-                    "users_with_5plus_responses":  6,
-                    "onboarding_emails_sent":  0,
-                    "upgrade_nudges_sent":  0
-                },
-    "session_notes":  [
-                          "Loop 1: Found 31 inactive users, 26 real (excluding test accounts)",
-                          "Onboarding emails already processed today (0 new sent)",
-                          "Magic nudge: no inactive magic users to nudge",
-                          "Activation rate at 33.3% - meets \u003e30% target",
-                          "6 users have 5-9 responses (upgrade candidates when they hit limit)"
-                      ]
+{
+    "agent": "burst-6-user-activator",
+    "version": "3.0",
+    "status": "running",
+    "started_at": "2026-01-15T21:32:41Z",
+    "last_heartbeat": "2026-01-15T21:45:00Z",
+    "current_loop": 1,
+    "loop_interval": "4h",
+    "metrics": {
+        "actions_taken": 1,
+        "success_rate": 100,
+        "errors_count": 0,
+        "activation_emails_sent": 1,
+        "encouragement_sent": 0,
+        "upgrade_nudges_sent": 0
+    },
+    "user_analysis": {
+        "total_users": 38,
+        "never_used": 26,
+        "low_usage": 7,
+        "medium_usage": 5,
+        "high_usage": 0,
+        "activation_rate": "31.6%",
+        "users_at_limit": 0
+    },
+    "this_session": {
+        "dormant_user_activated": "H0796@accor.com (ibis Wien Mariahilf)",
+        "magic_link_users_nudged": 0,
+        "note": "Most medium_usage users are test accounts (rolicupo, berend.jakob) - no real business users to encourage"
+    },
+    "checkpoints": {
+        "last_successful_action": "2026-01-15T21:42:00Z",
+        "last_processed_id": null,
+        "resume_from": null
+    },
+    "health": {
+        "api_budget_ok": true,
+        "memory_ok": true,
+        "stuck_detected": false,
+        "last_error": null
+    },
+    "learnings_applied": [
+        "Magic Links bringen Registrations aber keine Conversions",
+        "78% der User nutzen Produkt nie",
+        "Activation ist der Bottleneck"
+    ],
+    "escalations_pending": []
 }

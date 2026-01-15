@@ -28431,9 +28431,11 @@ app.get('/api/health', async (req, res) => {
     database: dbStatus,
     databaseUrl: process.env.DATABASE_URL ? 'configured' : 'MISSING',
     email: {
+      ses: sesClient ? 'configured' : 'not configured',
       resend: resend ? 'configured' : 'not configured',
       brevo: brevoApi ? 'configured' : 'not configured',
-      outreach_provider: brevoApi ? 'brevo' : resend ? 'resend' : 'none',
+      mailersend: mailerSendClient ? 'configured' : 'not configured',
+      primary_provider: sesClient ? 'ses' : brevoApi ? 'brevo' : resend ? 'resend' : 'none',
     },
     timestamp: new Date().toISOString(),
   });

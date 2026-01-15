@@ -12,6 +12,16 @@
                       "id":  "6c8d46e3",
                       "created_at":  "2026-01-15T16:47:07Z",
                       "status":  "pending"
+                  },
+                  {
+                      "from":  "burst-2",
+                      "to":  "burst-1",
+                      "type":  "request",
+                      "priority": 1,
+                      "message":  "URGENT: All 886 leads with email addresses have been contacted. Only 8 uncontacted leads with email remain. Need MORE leads with valid email addresses! Currently 1328 leads without email.",
+                      "id":  "b2-lead-request-20260115",
+                      "created_at":  "2026-01-15T21:38:00Z",
+                      "status":  "pending"
                   }
               ],
     "processed":  [

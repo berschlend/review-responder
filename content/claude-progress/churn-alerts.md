@@ -7,7 +7,7 @@
 
 ## At-Risk Summary
 
-**Letztes Update:** 2026-01-15T14:30:00Z
+**Letztes Update:** 2026-01-16T02:38:00Z
 
 | Kategorie | Count | Trend |
 |-----------|-------|-------|
@@ -23,16 +23,27 @@
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| Total Users | 32 | |
+| Total Users | 38 | +6 seit gestern |
 | Paying Users | 0 | Keine Churn-Gefahr |
-| Users with 0 Responses | 31 | Activation Problem, nicht Churn |
-| Users with 1-9 Responses | 1 | testemailhejss@gmail.com (5) |
-| Users with 10+ Responses | 0 | Keine Power User |
+| Never Used (0 Responses) | 26 | 68% - Activation Problem |
+| Low Usage (1-4 Responses) | 7 | Potential churners wenn sie Free bleiben |
+| Medium Usage (5-14 Responses) | 5 | Getting closer to limit |
+| High Usage (15+ Responses) | 0 | Niemand nahe am Limit |
 | Users at 20 Response Limit | 0 | Niemand hat Limit erreicht |
+
+### Top Active Users (closest to limit)
+
+| User | Plan | Responses | % to Limit |
+|------|------|-----------|------------|
+| Berend.mainz@web.de | unlimited | 8 | N/A (unlimited) |
+| rolicupo.twitch@gmail.com | free | 6 | 30% |
+| berend.jakob.mainz@gmail.com | free | 5 | 25% |
+| rolicupo.games@gmail.com | free | 5 | 25% |
+| breihosen@gmail.com | free | 5 | 25% |
 
 ---
 
-## Why Churn Prevention is Not Active
+## Why Churn Prevention is Paused
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -43,11 +54,12 @@
 │ AKTUELL:                                                     │
 │ - 0 zahlende Kunden                                         │
 │ - 0 User die jemals Limit erreicht haben                    │
-│ - 31 von 32 Users haben NIEMALS Product genutzt             │
+│ - 26 von 38 Users haben NIEMALS Product genutzt             │
 │                                                              │
 │ BOTTLENECK IST NICHT CHURN:                                 │
 │ - Bottleneck ist ACTIVATION (Burst-6)                       │
 │ - Users registrieren sich, nutzen Product aber nicht        │
+│ - Dann PAYMENT (Burst-7) wenn sie Limit erreichen          │
 │                                                              │
 │ WANN WIRD BURST-13 RELEVANT?                                │
 │ 1. Wenn erster zahlender Kunde da ist                       │
@@ -118,11 +130,14 @@
 
 ## Next Steps for Burst-13
 
-1. **WAIT** - Fokus ist auf Activation (Burst-6)
-2. **MONITOR** - Checke alle 6h ob sich etwas ändert
-3. **ACTIVATE** - Wenn erster zahlender Kunde oder Power User erscheint
+1. **PAUSED** - Fokus liegt auf Activation (Burst-6) und Payment (Burst-7)
+2. **MONITOR** - Checke alle 6h ob sich Status ändert
+3. **RESUME CONDITIONS:**
+   - First paying customer acquired
+   - User cancels subscription
+   - Berend manually requests churn analysis
 
 ---
 
 *Diese Datei wird von Burst-13 alle 6 Stunden aktualisiert.*
-*Nächster Check: 2026-01-15T20:30:00Z*
+*Nächster Check: 2026-01-16T08:38:00Z*

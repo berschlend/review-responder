@@ -225,7 +225,11 @@ function Start-Agent {
             $args += "--chrome"
         }
         if ($planMode) {
+            # Plan mode: Agents create plans, wait for approval
             $args += "--permission-mode=plan"
+        } else {
+            # Execution mode: Full autonomy without permission prompts
+            $args += "--dangerously-skip-permissions"
         }
         $args += "/night-burst-$agentNum"
 

@@ -1,43 +1,40 @@
 {
-  "agent": "burst-2-cold-emailer",
-  "version": "3.0",
-  "status": "waiting_for_leads",
-  "started_at": "2026-01-15T23:30:00Z",
-  "last_heartbeat": "2026-01-15T20:30:00Z",
-  "current_loop": 8,
-  "checkpoints": {
-    "last_successful_action": "sent_143_emails_waiting_for_new_leads",
-    "last_processed_id": null,
-    "resume_from": "check_for_new_leads"
-  },
-  "metrics": {
-    "actions_taken": 8,
-    "emails_sent_today": 143,
-    "emails_sent_total": 143,
-    "bounced": 0,
-    "errors_count": 0,
-    "followups_sent": 1
-  },
-  "health": {
-    "stuck_detected": false,
-    "last_error": null,
-    "api_budget_ok": true
-  },
-  "escalations_pending": [],
-  "channels_status": {
-    "cold_email_main": "143/200 sent - NO NEW LEADS",
-    "followups": "1 sent, 0 candidates (need 24-48h)",
-    "reengage_clickers": "0 - no new clickers",
-    "demo_expiration": "0 - demos too new",
-    "dead_lead_revival": "0 - all processed"
-  },
-  "session_summary": {
-    "total_emails_sent": 144,
-    "cold_emails": 143,
-    "followups": 1,
-    "target_achieved": true,
-    "limit_increased": "50 → 200",
-    "new_endpoint_deployed": "/api/admin/reset-campaign-limit",
-    "blocker": "Need Burst-1 to scrape new leads"
-  }
+    "loop_interval": "6h",
+    "learnings_applied": [
+        "Star rating in subject line",
+        "No discount in cold emails",
+        "POST /api/outreach/send-emails is correct endpoint"
+    ],
+    "current_loop": 1,
+    "started_at": "2026-01-15T21:32:41Z",
+    "version": "3.0",
+    "agent": "burst-2-cold-emailer",
+    "escalations_pending": [],
+    "checkpoints": {
+        "resume_from": null,
+        "last_successful_action": "status_check",
+        "last_processed_id": null
+    },
+    "health": {
+        "api_budget_ok": true,
+        "memory_ok": true,
+        "stuck_detected": false,
+        "last_error": null
+    },
+    "metrics": {
+        "success_rate": 100,
+        "errors_count": 0,
+        "actions_taken": 30,
+        "emails_sent_session": 29,
+        "emails_sent_today": 122,
+        "emails_remaining_today": 78,
+        "total_emails_sent": 1259,
+        "clicks": 41,
+        "ctr": "3.3%",
+        "leads_exhausted": true,
+        "leads_with_email_remaining": 8
+    },
+    "status": "waiting_for_leads",
+    "last_heartbeat": "2026-01-15T21:37:30Z",
+    "note": "All leads with email contacted. Waiting for Burst-1 to find more leads with emails."
 }

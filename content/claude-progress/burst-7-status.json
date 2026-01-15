@@ -1,64 +1,51 @@
-﻿{
-    "agent":  "burst-7-payment-converter",
-    "version":  "3.3",
-    "status":  "running",
-    "started_at":  "2026-01-16T09:15:00Z",
-    "last_heartbeat":  "2026-01-15T20:21:52Z",
-    "current_loop":  10,
-    "health":  {
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "metrics":  {
-                    "actions_taken":  0,
-                    "nudges_sent":  0,
-                    "discounts_given":  0,
-                    "conversions_today":  0,
-                    "revenue_today":  0
-                },
-    "analysis":  {
-                     "conversion_ready_users":  0,
-                     "users_at_limit":  0,
-                     "highest_response_count":  6,
-                     "demo_stats":  {
-                                        "total_demos":  596,
-                                        "viewed":  62,
-                                        "conversions":  0
-                                    },
-                     "power_users_tracked":  [
-                                                 {
-                                                     "email":  "rolicupo.twitch@gmail.com",
-                                                     "responses":  6,
-                                                     "last_active":  "2026-01-11"
-                                                 },
-                                                 {
-                                                     "email":  "rolicupo.games@gmail.com",
-                                                     "responses":  5,
-                                                     "last_active":  "2026-01-11"
-                                                 },
-                                                 {
-                                                     "email":  "matiasaseff@hotmail.com",
-                                                     "responses":  4,
-                                                     "last_active":  "2026-01-11"
-                                                 },
-                                                 {
-                                                     "email":  "andrehoellering1732004@gmail.com",
-                                                     "responses":  3,
-                                                     "last_active":  "2026-01-14"
-                                                 }
-                                             ],
-                     "reason":  "No users at 15+ responses. All power users inactive 4-5 days. Waiting for Burst-6 activation."
-                 },
-    "claudius_guard":  {
-                           "discounts_without_qualification":  0,
-                           "premature_nudges_prevented":  0,
-                           "ltv_cac_violations":  0
-                       },
-    "insights":  [
-                     "62 demo views but 0 conversions - funnel leak before my stage",
-                     "Power users have been inactive for 4-5 days",
-                     "Need Burst-6 to reactivate users or get new active signups"
-                 ],
-    "next_check":  "2026-01-16T10:45:00Z",
-    "notes":  "Continuing to monitor. Will act immediately when first user hits 15+ responses."
+{
+  "agent": "burst-7-payment-converter",
+  "version": "3.0",
+  "status": "waiting",
+  "last_heartbeat": "2026-01-15T21:45:00Z",
+  "started_at": "2026-01-15T21:32:41Z",
+  "current_loop": 1,
+  "loop_interval": "3h",
+  "metrics": {
+    "actions_taken": 0,
+    "errors_count": 0,
+    "success_rate": 0,
+    "users_checked": 38,
+    "conversion_ready_users": 0,
+    "nudges_sent": 0,
+    "discounts_given": 0,
+    "conversions_today": 0,
+    "revenue_today": 0
+  },
+  "health": {
+    "stuck_detected": false,
+    "last_error": null,
+    "api_budget_ok": true,
+    "memory_ok": true
+  },
+  "checkpoints": {
+    "last_successful_action": "user_check",
+    "last_processed_id": null,
+    "resume_from": null
+  },
+  "analysis": {
+    "timestamp": "2026-01-15T21:45:00Z",
+    "total_users": 38,
+    "never_used": 26,
+    "low_usage": 7,
+    "medium_usage": 5,
+    "high_usage": 0,
+    "highest_response_count": 8,
+    "bottleneck": "ACTIVATION - 68% of users have 0 responses",
+    "blocking_issue": "No users at 15+ responses = nothing to convert"
+  },
+  "hot_leads_status": {
+    "total_hot_leads": 41,
+    "registered_hot_leads": 10,
+    "hot_leads_with_responses": 0,
+    "gap": "Hot leads register but don't use product"
+  },
+  "escalations_pending": [],
+  "learnings_applied": [],
+  "next_action": "Wait for Burst-6 to activate users, then re-check"
 }

@@ -1,146 +1,145 @@
-{
-  "orchestrator_version": "3.0",
-  "started_at": null,
-  "last_updated": null,
-  "agents": {
-    "burst-1": {
-      "name": "lead-finder",
-      "status": "pending",
-      "pid": null,
-      "chrome": true,
-      "loop_interval": "4h",
-      "started_at": null,
-      "last_seen": null
-    },
-    "burst-2": {
-      "name": "cold-emailer",
-      "status": "pending",
-      "pid": null,
-      "chrome": false,
-      "loop_interval": "6h",
-      "started_at": null,
-      "last_seen": null
-    },
-    "burst-3": {
-      "name": "social-dm",
-      "status": "pending",
-      "pid": null,
-      "chrome": true,
-      "loop_interval": "8h",
-      "started_at": null,
-      "last_seen": null
-    },
-    "burst-4": {
-      "name": "demo-generator",
-      "status": "pending",
-      "pid": null,
-      "chrome": false,
-      "loop_interval": "4h",
-      "started_at": null,
-      "last_seen": null
-    },
-    "burst-5": {
-      "name": "hot-lead-chaser",
-      "status": "pending",
-      "pid": null,
-      "chrome": false,
-      "loop_interval": "2h",
-      "started_at": null,
-      "last_seen": null
-    },
-    "burst-6": {
-      "name": "user-activator",
-      "status": "pending",
-      "pid": null,
-      "chrome": false,
-      "loop_interval": "4h",
-      "started_at": null,
-      "last_seen": null
-    },
-    "burst-7": {
-      "name": "payment-converter",
-      "status": "pending",
-      "pid": null,
-      "chrome": false,
-      "loop_interval": "3h",
-      "started_at": null,
-      "last_seen": null
-    },
-    "burst-8": {
-      "name": "upgrader",
-      "status": "pending",
-      "pid": null,
-      "chrome": false,
-      "loop_interval": "6h",
-      "started_at": null,
-      "last_seen": null
-    },
-    "burst-9": {
-      "name": "doctor",
-      "status": "pending",
-      "pid": null,
-      "chrome": false,
-      "loop_interval": "1h",
-      "started_at": null,
-      "last_seen": null
-    },
-    "burst-10": {
-      "name": "morning-briefer",
-      "status": "pending",
-      "pid": null,
-      "chrome": false,
-      "loop_interval": "24h",
-      "started_at": null,
-      "last_seen": null
-    },
-    "burst-11": {
-      "name": "bottleneck-analyzer",
-      "status": "pending",
-      "pid": null,
-      "chrome": false,
-      "loop_interval": "2h",
-      "started_at": null,
-      "last_seen": null
-    },
-    "burst-12": {
-      "name": "creative-strategist",
-      "status": "pending",
-      "pid": null,
-      "chrome": false,
-      "loop_interval": "4h",
-      "started_at": null,
-      "last_seen": null
-    },
-    "burst-13": {
-      "name": "churn-prevention",
-      "status": "pending",
-      "pid": null,
-      "chrome": false,
-      "loop_interval": "6h",
-      "started_at": null,
-      "last_seen": null
-    },
-    "burst-14": {
-      "name": "lead-scorer",
-      "status": "pending",
-      "pid": null,
-      "chrome": false,
-      "loop_interval": "30m",
-      "started_at": null,
-      "last_seen": null
-    },
-    "burst-15": {
-      "name": "approval-gate",
-      "status": "pending",
-      "pid": null,
-      "chrome": false,
-      "loop_interval": "5m",
-      "started_at": null,
-      "last_seen": null
-    }
-  },
-  "total_agents": 15,
-  "running_agents": 0,
-  "stopped_agents": 0,
-  "stuck_agents": 0
+﻿{
+    "total_agents":  15,
+    "running_agents":  15,
+    "plan_mode":  false,
+    "agents":  {
+                   "burst-14":  {
+                                    "account":  ".claude-acc3",
+                                    "name":  "lead-scorer",
+                                    "pid":  27,
+                                    "chrome":  false,
+                                    "last_seen":  null,
+                                    "status":  "running",
+                                    "started_at":  "2026-01-15T21:33:07Z"
+                                },
+                   "burst-9":  {
+                                   "account":  ".claude-acc3",
+                                   "name":  "doctor",
+                                   "pid":  17,
+                                   "chrome":  false,
+                                   "last_seen":  null,
+                                   "status":  "running",
+                                   "started_at":  "2026-01-15T21:32:58Z"
+                               },
+                   "burst-10":  {
+                                    "account":  ".claude-acc3",
+                                    "name":  "morning-briefer",
+                                    "pid":  19,
+                                    "chrome":  false,
+                                    "last_seen":  null,
+                                    "status":  "running",
+                                    "started_at":  "2026-01-15T21:32:59Z"
+                                },
+                   "burst-11":  {
+                                    "account":  ".claude-acc3",
+                                    "name":  "bottleneck-analyzer",
+                                    "pid":  21,
+                                    "chrome":  false,
+                                    "last_seen":  null,
+                                    "status":  "running",
+                                    "started_at":  "2026-01-15T21:33:00Z"
+                                },
+                   "burst-7":  {
+                                   "account":  ".claude-acc3",
+                                   "name":  "payment-converter",
+                                   "pid":  13,
+                                   "chrome":  false,
+                                   "last_seen":  null,
+                                   "status":  "running",
+                                   "started_at":  "2026-01-15T21:32:53Z"
+                               },
+                   "burst-2":  {
+                                   "account":  ".claude-acc3",
+                                   "name":  "cold-emailer",
+                                   "pid":  3,
+                                   "chrome":  false,
+                                   "last_seen":  null,
+                                   "status":  "running",
+                                   "started_at":  "2026-01-15T21:32:46Z"
+                               },
+                   "burst-6":  {
+                                   "account":  ".claude-acc3",
+                                   "name":  "user-activator",
+                                   "pid":  11,
+                                   "chrome":  false,
+                                   "last_seen":  null,
+                                   "status":  "running",
+                                   "started_at":  "2026-01-15T21:32:51Z"
+                               },
+                   "burst-4":  {
+                                   "account":  ".claude-acc3",
+                                   "name":  "demo-generator",
+                                   "pid":  7,
+                                   "chrome":  false,
+                                   "last_seen":  null,
+                                   "status":  "running",
+                                   "started_at":  "2026-01-15T21:32:48Z"
+                               },
+                   "burst-3":  {
+                                   "account":  ".claude-acc3",
+                                   "name":  "social-dm",
+                                   "pid":  5,
+                                   "chrome":  true,
+                                   "last_seen":  null,
+                                   "status":  "running",
+                                   "started_at":  "2026-01-15T21:32:47Z"
+                               },
+                   "burst-13":  {
+                                    "account":  ".claude-acc3",
+                                    "name":  "churn-prevention",
+                                    "pid":  25,
+                                    "chrome":  false,
+                                    "last_seen":  null,
+                                    "status":  "running",
+                                    "started_at":  "2026-01-15T21:33:05Z"
+                                },
+                   "burst-15":  {
+                                    "account":  ".claude-acc3",
+                                    "name":  "approval-gate",
+                                    "pid":  29,
+                                    "chrome":  false,
+                                    "last_seen":  null,
+                                    "status":  "running",
+                                    "started_at":  "2026-01-15T21:33:08Z"
+                                },
+                   "burst-1":  {
+                                   "account":  ".claude-acc3",
+                                   "name":  "lead-finder",
+                                   "pid":  1,
+                                   "chrome":  true,
+                                   "last_seen":  null,
+                                   "status":  "running",
+                                   "started_at":  "2026-01-15T21:32:45Z"
+                               },
+                   "burst-5":  {
+                                   "account":  ".claude-acc3",
+                                   "name":  "hot-lead-chaser",
+                                   "pid":  9,
+                                   "chrome":  false,
+                                   "last_seen":  null,
+                                   "status":  "running",
+                                   "started_at":  "2026-01-15T21:32:49Z"
+                               },
+                   "burst-8":  {
+                                   "account":  ".claude-acc3",
+                                   "name":  "upgrader",
+                                   "pid":  15,
+                                   "chrome":  false,
+                                   "last_seen":  null,
+                                   "status":  "running",
+                                   "started_at":  "2026-01-15T21:32:56Z"
+                               },
+                   "burst-12":  {
+                                    "account":  ".claude-acc3",
+                                    "name":  "creative-strategist",
+                                    "pid":  23,
+                                    "chrome":  false,
+                                    "last_seen":  null,
+                                    "status":  "running",
+                                    "started_at":  "2026-01-15T21:33:03Z"
+                                }
+               },
+    "stopped_agents":  15,
+    "orchestrator_version":  "3.1",
+    "started_at":  "2026-01-15T21:32:23Z"
 }

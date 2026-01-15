@@ -1,0 +1,88 @@
+﻿{
+    "summary":  {
+                    "healthy":  14,
+                    "restarted":  0,
+                    "stuck":  0,
+                    "unhealthy":  0
+                },
+    "agents":  {
+                   "burst-14":  {
+                                    "Status":  "healthy",
+                                    "Message":  "Running normally (loop 1)",
+                                    "NeedsRestart":  false
+                                },
+                   "burst-9":  {
+                                   "Status":  "healthy",
+                                   "Message":  "Running normally (loop 1)",
+                                   "NeedsRestart":  false
+                               },
+                   "burst-10":  {
+                                    "Status":  "starting",
+                                    "Message":  "Agent initializing",
+                                    "NeedsRestart":  false
+                                },
+                   "burst-11":  {
+                                    "Status":  "healthy",
+                                    "Message":  "Running normally (loop 2)",
+                                    "NeedsRestart":  false
+                                },
+                   "burst-7":  {
+                                   "Status":  "healthy",
+                                   "Message":  "Running normally (loop 1)",
+                                   "NeedsRestart":  false
+                               },
+                   "burst-2":  {
+                                   "Status":  "healthy",
+                                   "Message":  "Running normally (loop 1)",
+                                   "NeedsRestart":  false
+                               },
+                   "burst-6":  {
+                                   "Status":  "healthy",
+                                   "Message":  "Running normally (loop 1)",
+                                   "NeedsRestart":  false
+                               },
+                   "burst-4":  {
+                                   "Status":  "healthy",
+                                   "Message":  "Running normally (loop 2)",
+                                   "NeedsRestart":  false
+                               },
+                   "burst-3":  {
+                                   "Status":  "healthy",
+                                   "Message":  "Running normally (loop 2)",
+                                   "NeedsRestart":  false
+                               },
+                   "burst-13":  {
+                                    "Status":  "healthy",
+                                    "Message":  "Running normally (loop 1)",
+                                    "NeedsRestart":  false
+                                },
+                   "burst-15":  {
+                                    "Status":  "healthy",
+                                    "Message":  "Running normally (loop 1)",
+                                    "NeedsRestart":  false
+                                },
+                   "burst-1":  {
+                                   "Status":  "healthy",
+                                   "Message":  "Running normally (loop 3)",
+                                   "NeedsRestart":  false
+                               },
+                   "burst-5":  {
+                                   "Status":  "healthy",
+                                   "Message":  "Running normally (loop 2)",
+                                   "NeedsRestart":  false
+                               },
+                   "burst-8":  {
+                                   "Status":  "healthy",
+                                   "Message":  "Running normally (loop 1)",
+                                   "NeedsRestart":  false
+                               },
+                   "burst-12":  {
+                                    "Status":  "healthy",
+                                    "Message":  "Running normally (loop 1)",
+                                    "NeedsRestart":  false
+                                }
+               },
+    "timestamp":  "2026-01-15T21:39:43Z",
+    "check_interval_min":  5,
+    "stuck_threshold_min":  30
+}
