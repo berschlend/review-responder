@@ -15009,6 +15009,16 @@ async function initOutreachTables() {
     await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS demo_token TEXT`); // Unique demo page token
     await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS demo_url TEXT`); // Full demo page URL
 
+    // Multi-Channel Contact Discovery (Omnichannel Outreach)
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS twitter_handle TEXT`);
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS facebook_page TEXT`);
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS instagram_handle TEXT`);
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS linkedin_company TEXT`);
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS google_business_url TEXT`);
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS contact_form_url TEXT`);
+    // Track which channels we've reached out through
+    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS channels_contacted JSONB DEFAULT '{}'::jsonb`);
+
     // A/B Testing table for email subject lines
     await dbQuery(`
       CREATE TABLE IF NOT EXISTS outreach_ab_tests (
@@ -23937,6 +23947,198 @@ app.get('/api/cron/send-agency-emails', async (req, res) => {
   } catch (error) {
     console.error('Agency email cron error:', error);
     res.status(500).json({ error: 'Agency email cron failed' });
+  }
+});
+
+// ============== OMNICHANNEL OUTREACH ==============
+// Multi-channel outreach via Twitter, Facebook, Instagram, LinkedIn
+// Uses Chrome MCP for browser automation - no API costs!
+
+// GET /api/admin/leads-for-omnichannel - Get leads with demos ready for multi-channel outreach
+app.get('/api/admin/leads-for-omnichannel', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const channel = req.query.channel; // Optional: filter by channel not yet contacted
+    const limit = parseInt(req.query.limit) || 20;
+
+    let query = `
+      SELECT
+        l.id, l.business_name, l.website, l.email, l.city, l.contact_name,
+        l.demo_url, l.demo_token,
+        l.twitter_handle, l.facebook_page, l.instagram_handle, l.linkedin_company,
+        l.channels_contacted
+      FROM outreach_leads l
+      WHERE l.demo_url IS NOT NULL
+        AND l.website IS NOT NULL
+        ${getTestEmailExcludeClause('l.email')}
+    `;
+
+    // Filter by channel if specified
+    if (channel) {
+      query += ` AND (l.channels_contacted IS NULL OR NOT (l.channels_contacted ? '${channel}'))`;
+    }
+
+    query += ` ORDER BY l.created_at DESC LIMIT $1`;
+
+    const leads = await dbAll(query, [limit]);
+
+    res.json({
+      success: true,
+      count: leads.length,
+      leads: leads,
+      channels: ['twitter', 'facebook', 'instagram', 'linkedin'],
+    });
+  } catch (error) {
+    console.error('Omnichannel leads error:', error);
+    res.status(500).json({ error: 'Failed to get leads' });
+  }
+});
+
+// PUT /api/admin/lead-social-links - Update lead with discovered social links
+app.put('/api/admin/lead-social-links', async (req, res) => {
+  const authKey = req.headers['x-admin-key'];
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { lead_id, twitter_handle, facebook_page, instagram_handle, linkedin_company, google_business_url, contact_form_url } = req.body;
+
+  if (!lead_id) {
+    return res.status(400).json({ error: 'lead_id required' });
+  }
+
+  try {
+    const updates = [];
+    const values = [];
+    let paramIndex = 1;
+
+    if (twitter_handle !== undefined) {
+      updates.push(`twitter_handle = $${paramIndex++}`);
+      values.push(twitter_handle);
+    }
+    if (facebook_page !== undefined) {
+      updates.push(`facebook_page = $${paramIndex++}`);
+      values.push(facebook_page);
+    }
+    if (instagram_handle !== undefined) {
+      updates.push(`instagram_handle = $${paramIndex++}`);
+      values.push(instagram_handle);
+    }
+    if (linkedin_company !== undefined) {
+      updates.push(`linkedin_company = $${paramIndex++}`);
+      values.push(linkedin_company);
+    }
+    if (google_business_url !== undefined) {
+      updates.push(`google_business_url = $${paramIndex++}`);
+      values.push(google_business_url);
+    }
+    if (contact_form_url !== undefined) {
+      updates.push(`contact_form_url = $${paramIndex++}`);
+      values.push(contact_form_url);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ error: 'No social links provided' });
+    }
+
+    values.push(lead_id);
+    await dbQuery(
+      `UPDATE outreach_leads SET ${updates.join(', ')} WHERE id = $${paramIndex}`,
+      values
+    );
+
+    res.json({ success: true, updated: updates.length });
+  } catch (error) {
+    console.error('Update social links error:', error);
+    res.status(500).json({ error: 'Failed to update' });
+  }
+});
+
+// PUT /api/admin/mark-channel-contacted - Mark a channel as contacted for a lead
+app.put('/api/admin/mark-channel-contacted', async (req, res) => {
+  const authKey = req.headers['x-admin-key'];
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { lead_id, channel, message_sent, error: sendError } = req.body;
+
+  if (!lead_id || !channel) {
+    return res.status(400).json({ error: 'lead_id and channel required' });
+  }
+
+  const validChannels = ['email', 'twitter', 'facebook', 'instagram', 'linkedin', 'google_business', 'contact_form'];
+  if (!validChannels.includes(channel)) {
+    return res.status(400).json({ error: `Invalid channel. Valid: ${validChannels.join(', ')}` });
+  }
+
+  try {
+    // Update channels_contacted JSONB
+    await dbQuery(
+      `UPDATE outreach_leads
+       SET channels_contacted = COALESCE(channels_contacted, '{}'::jsonb) || $1::jsonb
+       WHERE id = $2`,
+      [JSON.stringify({ [channel]: { sent_at: new Date().toISOString(), success: !sendError, error: sendError || null } }), lead_id]
+    );
+
+    res.json({ success: true, channel, lead_id });
+  } catch (error) {
+    console.error('Mark channel contacted error:', error);
+    res.status(500).json({ error: 'Failed to update' });
+  }
+});
+
+// GET /api/admin/omnichannel-stats - Get stats on multi-channel outreach
+app.get('/api/admin/omnichannel-stats', async (req, res) => {
+  const authKey = req.headers['x-admin-key'] || req.query.key;
+  if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Count leads with demos
+    const leadsWithDemos = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE demo_url IS NOT NULL');
+
+    // Count leads with social links found
+    const withTwitter = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE twitter_handle IS NOT NULL');
+    const withFacebook = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE facebook_page IS NOT NULL');
+    const withInstagram = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE instagram_handle IS NOT NULL');
+    const withLinkedIn = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE linkedin_company IS NOT NULL');
+
+    // Count contacted by channel (from JSONB)
+    const contactedByChannel = {};
+    for (const channel of ['email', 'twitter', 'facebook', 'instagram', 'linkedin']) {
+      const result = await dbGet(
+        `SELECT COUNT(*) as count FROM outreach_leads WHERE channels_contacted ? $1`,
+        [channel]
+      );
+      contactedByChannel[channel] = parseInt(result?.count || 0);
+    }
+
+    res.json({
+      success: true,
+      leads_with_demos: parseInt(leadsWithDemos?.count || 0),
+      social_links_found: {
+        twitter: parseInt(withTwitter?.count || 0),
+        facebook: parseInt(withFacebook?.count || 0),
+        instagram: parseInt(withInstagram?.count || 0),
+        linkedin: parseInt(withLinkedIn?.count || 0),
+      },
+      contacted_by_channel: contactedByChannel,
+      potential_reach: {
+        twitter: parseInt(withTwitter?.count || 0) - contactedByChannel.twitter,
+        facebook: parseInt(withFacebook?.count || 0) - contactedByChannel.facebook,
+        instagram: parseInt(withInstagram?.count || 0) - contactedByChannel.instagram,
+        linkedin: parseInt(withLinkedIn?.count || 0) - contactedByChannel.linkedin,
+      },
+    });
+  } catch (error) {
+    console.error('Omnichannel stats error:', error);
+    res.status(500).json({ error: 'Failed to get stats' });
   }
 });
 
