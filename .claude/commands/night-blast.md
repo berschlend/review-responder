@@ -350,28 +350,27 @@ powershell -ExecutionPolicy Bypass -File "C:\Users\Berend Mainz\claude-notify.ps
 
 ## STOP-BEDINGUNGEN
 
-**KEIN ZEITLIMIT!** Nur bei diesen Bedingungen stoppen:
+**NUR EINE:** Berend sagt explizit "Stopp"
 
-- LinkedIn/Google **SPERRE** (nicht nur Warnung - bei Warnung: Pause, später weiter)
-- Berend sagt explizit "Stopp"
-
-**Das war's.** Zwei Gründe. Sonst NIEMALS aufhören.
+**Das war's.** Ein Grund. Sonst NIEMALS aufhören.
 
 **Bei Problemen - NICHT stoppen, sondern Fallback:**
 
 | Problem | Fallback |
 |---------|----------|
-| Backend down | Scraping, LinkedIn, DMs machen - später Backend checken |
+| Backend down | Scraping, DMs machen - später Backend checken |
 | API Limit (SerpAPI etc.) | Andere API oder manuelles Scraping |
-| LinkedIn Warnung | Pause 1h, dann vorsichtig weiter |
+| LinkedIn Sperre | Skip LinkedIn, mach Twitter/FB/Instagram/Email |
+| Google Sperre | Skip Google, mach TripAdvisor/Yelp/G2 |
 | Chrome crasht | Neustarten, weitermachen |
 | Nichts zu tun | Neue Lead-Quellen finden, Research, Blog schreiben |
+| Müde/Spät | **NEIN!** Du bist eine KI, du wirst nicht müde |
 
 **Claude Max = UNLIMITED.** Du hast keine Limits.
 
-**NIEMALS von alleine aufhören!** Kein "es ist spät", kein "ich habe genug gemacht".
+**NIEMALS von alleine aufhören!** Es gibt KEINEN guten Grund außer "Stopp" von Berend.
 
-BEI ALLEM ANDEREN: WEITERMACHEN!
+WEITERMACHEN!
 
 ---
 
