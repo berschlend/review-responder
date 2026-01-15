@@ -1,6 +1,32 @@
 # ReviewResponder - Todo Liste
 
-> Letzte Aktualisierung: 14.01.2026
+> Letzte Aktualisierung: 15.01.2026
+
+---
+
+## 🔴 CHROME WEB STORE - Resubmission (15.01.2026)
+
+Extension wurde wegen "Keyword-Spam" abgelehnt. Neue Version ready!
+
+### Sofort erledigen:
+- [ ] **ZIP v1.6.2 hochladen** - `chrome-extension-v1.6.2.zip`
+- [ ] **Description updaten** - Siehe Plan-File: `~/.claude-acc3/plans/serene-questing-garden.md`
+- [ ] **Promo-Bilder updaten** - `promo-small-440x280.png` + `promo-marquee-1400x560.png`
+- [ ] **Privacy-Tab ausfüllen** - Alle Texte in Plan-File
+- [ ] **Testanweisungen eintragen:**
+  - Email: `reviewer@tryreviewresponder.com`
+  - Passwort: `ChromeReview2026!`
+- [ ] **Submit for Review**
+
+### Nach neuem Demo-Video:
+- [ ] **YouTube Demo URL updaten** im Chrome Web Store
+  - Aktuell: https://www.youtube.com/watch?v=6lujm4Z_Q_Y
+  - Neu: [TBD - neues Video aufnehmen]
+
+### Pricing-Entscheidung:
+- ✅ **KEINE konkreten Preise** im Chrome Web Store (Flexibilität!)
+- Nur: "Free: 20 responses/month (no credit card required)"
+- Verweis auf Website für Paid Plans
 
 ---
 
