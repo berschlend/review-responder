@@ -1,0 +1,74 @@
+{
+  "version": "1.0",
+  "description": "Current system focus and priorities - Updated by Orchestrator",
+  "created_at": "2026-01-16T00:00:00Z",
+  "last_updated": null,
+
+  "current_bottleneck": {
+    "type": null,
+    "description": null,
+    "identified_at": null,
+    "assigned_agents": []
+  },
+
+  "funnel_status": {
+    "leads_total": 0,
+    "leads_with_email": 0,
+    "emails_sent_today": 0,
+    "clicks_today": 0,
+    "hot_leads": 0,
+    "registrations_today": 0,
+    "conversions_today": 0,
+    "last_checked": null
+  },
+
+  "agent_priorities": {
+    "burst-1": { "priority": 2, "reason": "Normal lead flow" },
+    "burst-2": { "priority": 2, "reason": "Normal email flow" },
+    "burst-3": { "priority": 3, "reason": "Social is secondary" },
+    "burst-4": { "priority": 2, "reason": "Demos on demand" },
+    "burst-5": { "priority": 1, "reason": "Hot leads = closest to money" },
+    "burst-6": { "priority": 2, "reason": "Activate registered users" },
+    "burst-7": { "priority": 1, "reason": "Convert = Revenue!" },
+    "burst-8": { "priority": 3, "reason": "Upgrades come later" },
+    "burst-9": { "priority": 1, "reason": "Intelligence always needed" },
+    "burst-10": { "priority": 3, "reason": "Morning report only" },
+    "burst-11": { "priority": 3, "reason": "Analysis can wait" },
+    "burst-12": { "priority": 3, "reason": "Strategy is slow" },
+    "burst-13": { "priority": 2, "reason": "Churn prevention" },
+    "burst-14": { "priority": 2, "reason": "Scoring helps prioritize" },
+    "burst-15": { "priority": 1, "reason": "Approval gate critical" }
+  },
+
+  "tonight_focus": {
+    "primary_goal": "Get first paying customer",
+    "strategy": "Focus on Hot Lead Chaser + Payment Converter",
+    "success_criteria": "1 conversion = success",
+    "set_by": null,
+    "set_at": null
+  },
+
+  "resource_allocation": {
+    "api_budget_remaining_pct": 100,
+    "email_budget_remaining_pct": 100,
+    "high_priority_agents": ["burst-5", "burst-7", "burst-9"],
+    "paused_agents": []
+  },
+
+  "next_actions": [],
+
+  "instructions": {
+    "when_to_update": [
+      "At session start (check current focus)",
+      "When bottleneck changes",
+      "When funnel metrics change significantly",
+      "When orchestrator decides new priorities"
+    ],
+    "how_agents_use_this": [
+      "1. Check if you're paused before running",
+      "2. Check your priority level",
+      "3. Align your actions with tonight_focus",
+      "4. If bottleneck is in your domain, work harder"
+    ]
+  }
+}

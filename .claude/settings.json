@@ -16,6 +16,26 @@
             "command": "npx prettier --write \"$CLAUDE_FILE_PATH\" 2>/dev/null || true"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -Command \"$ts = Get-Date -Format 'yyyy-MM-ddTHH:mm:ss'; Add-Content -Path 'logs/agent-actions.log' -Value \\\"[$ts] Bash: $env:CLAUDE_TOOL_INPUT\\\" -ErrorAction SilentlyContinue\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -Command \"$ts = Get-Date -Format 'yyyy-MM-ddTHH:mm:ss'; $session = $env:CLAUDE_SESSION; Add-Content -Path 'logs/sessions.log' -Value \\\"[$ts] Session Started: $session\\\" -ErrorAction SilentlyContinue\""
+          }
+        ]
       }
     ],
     "Notification": [

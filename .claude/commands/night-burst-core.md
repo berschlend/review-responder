@@ -1,11 +1,82 @@
-# Night-Burst Core V3.1 - JEDER AGENT MUSS DAS INCLUDEN
+# Night-Burst Core V3.2 - JEDER AGENT MUSS DAS INCLUDEN
 
-> Basierend auf Anthropic's "Building Effective Agents" + MCP Best Practices
-> Updated: V3.1 mit Agentic Memory, Verification, Extended Thinking
+> Basierend auf Anthropic's "Building Effective Agents" + "Multi-Agent Research System"
+> Updated: V3.2 mit Orchestrator Pattern, Handoff Queue, Focus Tracking
 
 ---
 
-## 🧠 AGENTIC MEMORY SYSTEM (V3.1 - NEU!)
+## 🎯 SESSION-START CHECKLIST (V3.2)
+
+**JEDER AGENT muss bei Session-Start:**
+
+```
+1. READ current-focus.json
+   └── Bin ich pausiert? → Wenn ja, stoppen
+   └── Was ist meine Priorität? (1=critical, 3=low)
+   └── Was ist tonight_focus? → Align my actions
+
+2. READ handoff-queue.json
+   └── Habe ich pending handoffs? → Process first!
+   └── Nach Bearbeitung: Als "processed" markieren
+
+3. READ agent-memory.json
+   └── Was habe ich letztes Mal gelernt?
+   └── Was funktioniert, was nicht?
+
+4. UPDATE burst-X-status.json
+   └── last_heartbeat: [JETZT]
+   └── status: "running"
+   └── current_loop: +1
+```
+
+---
+
+## 🔄 HANDOFF SYSTEM (V3.2 - NEU!)
+
+> Basierend auf Anthropic's "Multi-Agent Research System"
+> "Lead agent decomposes queries into subtasks and describes them to subagents"
+
+**WENN DU ARBEIT FÜR EINEN ANDEREN AGENT HAST:**
+
+```
+1. Add to handoff-queue.json:
+   {
+     "id": "[UUID]",
+     "from": "burst-X",
+     "to": "burst-Y",
+     "type": "new_leads|hot_leads|demo_ready|escalation",
+     "data": { ... },
+     "priority": 1,
+     "created_at": "[NOW]",
+     "status": "pending"
+   }
+
+2. DON'T WAIT - Continue your work
+3. Orchestrator will process queue hourly
+```
+
+**HANDOFF FILE:** `content/claude-progress/handoff-queue.json`
+
+---
+
+## 🎯 FOCUS TRACKING (V3.2 - NEU!)
+
+> Alle Agents arbeiten auf das gleiche Ziel hin
+
+**VOR JEDER AKTION CHECK:**
+
+```
+Read current-focus.json:
+- tonight_focus.primary_goal → Was ist das Hauptziel?
+- current_bottleneck → Bin ich relevant für den Bottleneck?
+- agent_priorities.burst-X.priority → Wie wichtig bin ich gerade?
+```
+
+**FOCUS FILE:** `content/claude-progress/current-focus.json`
+
+---
+
+## 🧠 AGENTIC MEMORY SYSTEM (V3.1)
 
 > Basierend auf Anthropic's "Structured Note-Taking" Pattern
 > "Agents regularly write notes persisted to memory outside of the context window"
