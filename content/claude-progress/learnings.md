@@ -336,3 +336,7 @@ User klicken Magic Link → werden registriert → nutzen Produkt NIE → erreic
 ### [2026-01-15 16:56] Burst-1
 - Hunter.io findet keine Emails für kleine Coffee Shops - Night-Blast mit Website-Scraping ist effektiver
 
+
+### [2026-01-15 20:31] Burst-5
+- Magic Link Tracking: created_via_magic_link zeigt 0 weil Spalte erst 15.01 hinzugefuegt. Workaround: Cross-Reference clicker_followups mit users Tabelle
+

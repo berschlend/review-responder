@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
+    "@aws-sdk/client-ses": "^3.970.0",
     "@getbrevo/brevo": "^3.0.1",
     "@google/generative-ai": "^0.21.0",
     "@sendgrid/mail": "^8.1.6",

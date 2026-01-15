@@ -20,6 +20,7 @@ const sgMail = require('@sendgrid/mail');
 const Mailgun = require('mailgun.js');
 const FormData = require('form-data');
 const { MailerSend, EmailParams, Sender, Recipient } = require('mailersend');
+const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
 const cron = require('node-cron');
 const {
   getFewShotExamples,
@@ -109,13 +110,28 @@ if (process.env.MAILERSEND_API_KEY) {
   console.log('[MailerSend] Initialized');
 }
 
+// Amazon SES (62,000/month free if sending from EC2, otherwise $0.10/1000)
+// Best option for scale - no daily limits, just monthly
+let sesClient = null;
+if (process.env.AWS_SES_ACCESS_KEY_ID && process.env.AWS_SES_SECRET_ACCESS_KEY) {
+  sesClient = new SESClient({
+    region: process.env.AWS_SES_REGION || 'eu-central-1',
+    credentials: {
+      accessKeyId: process.env.AWS_SES_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SES_SECRET_ACCESS_KEY,
+    },
+  });
+  console.log('[Amazon SES] Initialized - Region:', process.env.AWS_SES_REGION || 'eu-central-1');
+}
+
 // ==========================================
 // MULTI-PROVIDER EMAIL SYSTEM
 // ==========================================
 // Round-robin through providers to maximize daily email volume
-// Limits: Brevo 300/day, MailerSend 100/day, SendGrid 100/day, Mailgun 166/day, Resend 100/day
+// Priority: SES (unlimited) → Brevo (300) → MailerSend (100) → others
 
 const EMAIL_PROVIDER_LIMITS = {
+  ses: 50000, // Effectively unlimited - $0.10/1000 emails
   brevo: 300,
   mailersend: 100, // 3000/month ÷ 30 days
   sendgrid: 100,
@@ -140,7 +156,7 @@ async function getProviderCountsToday() {
       GROUP BY provider
     `);
 
-    const counts = { brevo: 0, mailersend: 0, sendgrid: 0, mailgun: 0, resend: 0 };
+    const counts = { ses: 0, brevo: 0, mailersend: 0, sendgrid: 0, mailgun: 0, resend: 0 };
     result.rows.forEach(row => {
       if (counts.hasOwnProperty(row.provider)) {
         counts[row.provider] = parseInt(row.count);
@@ -151,7 +167,7 @@ async function getProviderCountsToday() {
     return counts;
   } catch (err) {
     console.error('[Email] Failed to get provider counts:', err.message);
-    return { brevo: 0, mailersend: 0, sendgrid: 0, mailgun: 0, resend: 0 };
+    return { ses: 0, brevo: 0, mailersend: 0, sendgrid: 0, mailgun: 0, resend: 0 };
   }
 }
 
@@ -159,8 +175,9 @@ async function getProviderCountsToday() {
 async function selectEmailProvider() {
   const counts = await getProviderCountsToday();
 
-  // Priority order: Brevo (highest limit) → MailerSend → Mailgun → SendGrid → Resend
+  // Priority order: SES (unlimited) → Brevo (300) → MailerSend (100) → others
   const providers = [
+    { name: 'ses', available: sesClient !== null },
     { name: 'brevo', available: brevoApi !== null },
     { name: 'mailersend', available: mailerSendClient !== null },
     { name: 'mailgun', available: mailgunClient !== null },
@@ -426,8 +443,42 @@ async function sendEmail({
     triedProviders.add(provider);
 
     try {
+      // ========== AMAZON SES ==========
+      if (provider === 'ses' && sesClient) {
+        const command = new SendEmailCommand({
+          Source: `${fromName} <${fromEmail}>`,
+          Destination: {
+            ToAddresses: [to],
+          },
+          Message: {
+            Subject: {
+              Data: subject,
+              Charset: 'UTF-8',
+            },
+            Body: {
+              ...(finalHtml && {
+                Html: {
+                  Data: finalHtml,
+                  Charset: 'UTF-8',
+                },
+              }),
+              ...(finalText && {
+                Text: {
+                  Data: finalText,
+                  Charset: 'UTF-8',
+                },
+              }),
+            },
+          },
+          ReplyToAddresses: replyTo ? [replyTo] : undefined,
+        });
+
+        const result = await sesClient.send(command);
+        messageId = result.MessageId || `ses_${Date.now()}`;
+        console.log(`[Amazon SES] ${type} email sent to ${to} (campaign: ${campaign || 'none'})`);
+      }
       // ========== BREVO ==========
-      if (provider === 'brevo' && brevoApi) {
+      else if (provider === 'brevo' && brevoApi) {
         const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
         sendSmtpEmail.subject = subject;
         if (finalHtml) sendSmtpEmail.htmlContent = finalHtml;
@@ -12719,6 +12770,14 @@ app.get('/api/admin/email-providers', authenticateAdmin, async (req, res) => {
 
     const providers = [
       {
+        name: 'ses',
+        available: sesClient !== null,
+        limit: EMAIL_PROVIDER_LIMITS.ses,
+        used: counts.ses,
+        remaining: EMAIL_PROVIDER_LIMITS.ses - counts.ses,
+        note: 'Amazon SES - $0.10/1000 emails, effectively unlimited',
+      },
+      {
         name: 'brevo',
         available: brevoApi !== null,
         limit: EMAIL_PROVIDER_LIMITS.brevo,
@@ -12769,6 +12828,7 @@ app.get('/api/admin/email-providers', authenticateAdmin, async (req, res) => {
         utilization_percent: totalLimit > 0 ? Math.round((totalUsed / totalLimit) * 100) : 0,
       },
       setup_instructions: {
+        ses: !process.env.AWS_SES_ACCESS_KEY_ID ? 'Add AWS_SES_ACCESS_KEY_ID, AWS_SES_SECRET_ACCESS_KEY, AWS_SES_REGION to Render' : '✓ Configured',
         mailersend: !process.env.MAILERSEND_API_KEY ? 'Add MAILERSEND_API_KEY to Render env vars' : '✓ Configured',
         sendgrid: !process.env.SENDGRID_API_KEY ? 'Add SENDGRID_API_KEY to Render env vars' : '✓ Configured',
         mailgun: !process.env.MAILGUN_API_KEY ? 'Add MAILGUN_API_KEY and MAILGUN_DOMAIN to Render env vars' : '✓ Configured',
@@ -12788,6 +12848,7 @@ app.get('/api/admin/email-dashboard', authenticateAdmin, async (req, res) => {
       total_today: 0,
       total_failed: 0,
       by_provider: {
+        ses: { sent: 0, today: 0, failed: 0 },
         brevo: { sent: 0, today: 0, failed: 0 },
         mailersend: { sent: 0, today: 0, failed: 0 },
         sendgrid: { sent: 0, today: 0, failed: 0 },

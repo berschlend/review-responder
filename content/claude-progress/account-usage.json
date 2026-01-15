@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "description": "Central account usage tracking for Night-Burst account rotation",
+  "created_at": "2026-01-15T23:30:00Z",
+  "last_updated": "2026-01-15T23:30:00Z",
+  "accounts": {
+    ".claude-acc1": {
+      "email": "Berend.mainz@web.de",
+      "last_used": null,
+      "agents_today": [],
+      "tokens_today": 0
+    },
+    ".claude-acc2": {
+      "email": "berend.jakob.mainz@gmail.com",
+      "last_used": null,
+      "agents_today": [],
+      "tokens_today": 0
+    },
+    ".claude-acc3": {
+      "email": "breihosen@gmail.com",
+      "last_used": null,
+      "agents_today": [],
+      "tokens_today": 0
+    }
+  },
+  "rotation_strategy": "lowest_usage",
+  "notes": "Usage data is read from each account's stats-cache.json file"
+}

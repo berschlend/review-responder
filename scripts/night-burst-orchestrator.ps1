@@ -1,12 +1,16 @@
-# Night-Burst V3 Orchestrator
+# Night-Burst V3.1 Orchestrator
 # One command to start all 15 agents with full autonomy
+# Now with automatic account rotation and plan mode support
 #
 # Usage: .\scripts\night-burst-orchestrator.ps1
+#        .\scripts\night-burst-orchestrator.ps1 -PlanMode  # Start in plan mode (wait for approval)
 # Stop:  .\scripts\night-burst-orchestrator.ps1 -Stop
+# Status: .\scripts\night-burst-orchestrator.ps1 -Status
 
 param(
     [switch]$Stop,
     [switch]$Status,
+    [switch]$PlanMode,
     [int]$MaxAgents = 15
 )
 
@@ -121,8 +125,9 @@ function Initialize-AgentRegistry {
     $registryFile = Join-Path $ProgressDir "agent-registry.json"
 
     $registry = @{
-        orchestrator_version = "3.0"
+        orchestrator_version = "3.1"
         started_at = Get-Timestamp
+        plan_mode = $PlanMode.IsPresent
         agents = @{}
         total_agents = $MaxAgents
         running_agents = 0
@@ -136,6 +141,7 @@ function Initialize-AgentRegistry {
             status = "pending"
             pid = $null
             chrome = $config.Chrome
+            account = $null
             started_at = $null
             last_seen = $null
         }
@@ -186,11 +192,19 @@ function Initialize-CheckpointStore {
 }
 
 function Start-Agent {
-    param([int]$AgentNum)
+    param(
+        [int]$AgentNum,
+        [switch]$PlanMode = $false
+    )
 
     $config = $AgentConfig[$AgentNum]
     $sessionName = "BURST$AgentNum"
-    $chromeFlag = if ($config.Chrome) { "--chrome" } else { "" }
+
+    # NEU: Account mit niedrigstem Usage wählen
+    $getBestAccountScript = Join-Path $PSScriptRoot "Get-BestAccount.ps1"
+    $selectedConfigDir = & $getBestAccountScript
+    $selectedAccount = Split-Path $selectedConfigDir -Leaf
+    Write-Host "[ACCOUNT] Agent $AgentNum using account: $selectedAccount" -ForegroundColor Magenta
 
     # Update registry
     $registryFile = Join-Path $ProgressDir "agent-registry.json"
@@ -198,28 +212,37 @@ function Start-Agent {
 
     # Start Claude in background job
     $job = Start-Job -Name $sessionName -ScriptBlock {
-        param($session, $chrome, $agentNum, $projectRoot)
+        param($session, $chrome, $agentNum, $projectRoot, $configDir, $planMode)
 
+        # NEU: Account-Auswahl via CLAUDE_CONFIG_DIR
+        $env:CLAUDE_CONFIG_DIR = $configDir
         $env:CLAUDE_SESSION = $session
         Set-Location $projectRoot
 
-        # Run claude with the night-burst command
+        # Build command arguments
+        $args = @()
         if ($chrome) {
-            claude --chrome "/night-burst-$agentNum"
-        } else {
-            claude "/night-burst-$agentNum"
+            $args += "--chrome"
         }
-    } -ArgumentList $sessionName, $config.Chrome, $AgentNum, $ProjectRoot
+        if ($planMode) {
+            $args += "--permission-mode=plan"
+        }
+        $args += "/night-burst-$agentNum"
 
-    # Update registry with PID
+        # Run claude with the night-burst command
+        claude @args
+    } -ArgumentList $sessionName, $config.Chrome, $AgentNum, $ProjectRoot, $selectedConfigDir, $PlanMode
+
+    # Update registry with PID and account info
     $registry.agents."burst-$AgentNum".status = "running"
     $registry.agents."burst-$AgentNum".pid = $job.Id
     $registry.agents."burst-$AgentNum".started_at = Get-Timestamp
+    $registry.agents."burst-$AgentNum".account = $selectedAccount
     $registry.running_agents++
 
     $registry | ConvertTo-Json -Depth 10 | Set-Content -Path $registryFile -Encoding UTF8
 
-    Write-Host "[START] Burst-$AgentNum ($($config.Name)) started as job $($job.Id)" -ForegroundColor Cyan
+    Write-Host "[START] Burst-$AgentNum ($($config.Name)) started as job $($job.Id) on $selectedAccount" -ForegroundColor Cyan
 
     return $job
 }
@@ -366,9 +389,16 @@ if (-not $backendReady) {
 
 # Phase 4: Start all agents
 Write-Host "`n[PHASE 4] Starting agents..." -ForegroundColor Yellow
+if ($PlanMode) {
+    Write-Host "[PLAN MODE] Agents will start in plan mode and wait for approval" -ForegroundColor Magenta
+}
 $jobs = @()
 for ($i = 1; $i -le $MaxAgents; $i++) {
-    $job = Start-Agent -AgentNum $i
+    if ($PlanMode) {
+        $job = Start-Agent -AgentNum $i -PlanMode
+    } else {
+        $job = Start-Agent -AgentNum $i
+    }
     $jobs += $job
     Start-Sleep -Milliseconds 500  # Stagger starts
 }

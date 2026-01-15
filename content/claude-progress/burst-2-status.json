@@ -1,19 +1,19 @@
 {
   "agent": "burst-2-cold-emailer",
   "version": "3.0",
-  "status": "waiting_for_reset",
+  "status": "waiting_for_leads",
   "started_at": "2026-01-15T23:30:00Z",
-  "last_heartbeat": "2026-01-15T23:45:00Z",
-  "current_loop": 6,
+  "last_heartbeat": "2026-01-15T20:30:00Z",
+  "current_loop": 8,
   "checkpoints": {
-    "last_successful_action": "all_channels_exhausted",
+    "last_successful_action": "sent_143_emails_waiting_for_new_leads",
     "last_processed_id": null,
-    "resume_from": "wait_for_midnight_utc"
+    "resume_from": "check_for_new_leads"
   },
   "metrics": {
-    "actions_taken": 6,
-    "emails_sent_today": 51,
-    "emails_sent_total": 51,
+    "actions_taken": 8,
+    "emails_sent_today": 143,
+    "emails_sent_total": 143,
     "bounced": 0,
     "errors_count": 0,
     "followups_sent": 1
@@ -25,20 +25,19 @@
   },
   "escalations_pending": [],
   "channels_status": {
-    "cold_email_main": "50/50 - LIMIT REACHED",
-    "followups": "1 sent, 0 candidates remaining",
-    "reengage_clickers": "0 - no hot leads",
-    "demo_expiration": "0 - demos too new (<3 days)",
-    "dead_lead_revival": "0 - all revived or clicked",
-    "tripadvisor": "0 - no leads",
-    "yelp": "0 - no leads",
-    "g2": "0 - no leads"
+    "cold_email_main": "143/200 sent - NO NEW LEADS",
+    "followups": "1 sent, 0 candidates (need 24-48h)",
+    "reengage_clickers": "0 - no new clickers",
+    "demo_expiration": "0 - demos too new",
+    "dead_lead_revival": "0 - all processed"
   },
   "session_summary": {
-    "total_emails_sent": 51,
-    "cold_emails": 50,
+    "total_emails_sent": 144,
+    "cold_emails": 143,
     "followups": 1,
     "target_achieved": true,
-    "next_reset": "00:00 UTC"
+    "limit_increased": "50 → 200",
+    "new_endpoint_deployed": "/api/admin/reset-campaign-limit",
+    "blocker": "Need Burst-1 to scrape new leads"
   }
 }
