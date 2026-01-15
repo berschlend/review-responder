@@ -18217,6 +18217,66 @@ async function findEmailWithSnov(domain) {
   }
 }
 
+// Helper: Find email using Apollo.io API (95 free credits/month)
+async function findEmailWithApollo(domain, companyName) {
+  if (!process.env.APOLLO_API_KEY) {
+    return null;
+  }
+
+  try {
+    // Apollo's Organization Enrich API can find contacts by domain
+    const response = await fetch('https://api.apollo.io/api/v1/organizations/enrich', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Api-Key': process.env.APOLLO_API_KEY,
+      },
+      body: JSON.stringify({
+        domain: domain,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.organization?.estimated_num_employees > 0) {
+      // Try to find people at this organization
+      const peopleResponse = await fetch('https://api.apollo.io/api/v1/mixed_people/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Api-Key': process.env.APOLLO_API_KEY,
+        },
+        body: JSON.stringify({
+          organization_ids: [data.organization.id],
+          person_titles: ['Owner', 'Manager', 'Director', 'CEO', 'Founder', 'General Manager'],
+          page: 1,
+          per_page: 5,
+        }),
+      });
+
+      const peopleData = await peopleResponse.json();
+
+      if (peopleData.people && peopleData.people.length > 0) {
+        // Find first person with email
+        const personWithEmail = peopleData.people.find(p => p.email);
+        if (personWithEmail) {
+          console.log(`🚀 Apollo found: ${personWithEmail.email} (${personWithEmail.name})`);
+          return {
+            email: personWithEmail.email,
+            contactName: personWithEmail.name,
+            title: personWithEmail.title,
+          };
+        }
+      }
+    }
+
+    return null;
+  } catch (e) {
+    console.error('Apollo.io error:', e.message);
+    return null;
+  }
+}
+
 // ============== AUTO BUSINESS CONTEXT FOR DEMOS ==============
 // Scrape website + analyze reviews to generate high-quality demo responses
 
@@ -18749,6 +18809,21 @@ async function findEmailForLead(lead) {
     if (emailFound) {
       source = 'snov.io';
       return { email: emailFound, source };
+    }
+  } catch (e) {}
+
+  // 3.5 Apollo.io (95 free credits/month) - finds decision makers
+  try {
+    const apolloResult = await findEmailWithApollo(domain, lead.business_name);
+    if (apolloResult?.email) {
+      if (apolloResult.contactName) {
+        lead.contact_name = apolloResult.contactName;
+      }
+      return {
+        email: apolloResult.email,
+        source: 'apollo.io',
+        contactName: apolloResult.contactName,
+      };
     }
   } catch (e) {}
 
@@ -25229,11 +25304,17 @@ app.get('/api/admin/automation-health', async (req, res) => {
           free_tier_limit: 50,
           note: '50 free/month - 3rd fallback after scraper and pattern',
         },
+        apollo_io: {
+          configured: !!process.env.APOLLO_API_KEY,
+          free_tier_limit: 95,
+          note: '95 free credits/month - finds decision makers',
+        },
         email_finding: {
           fallback_order: [
             'website_scraper (FREE)',
             'pattern_guess (FREE)',
             'snov.io (50/mo)',
+            'apollo.io (95/mo)',
             'hunter.io (25/wk)',
           ],
           note: 'Multi-fallback system maximizes free tier usage',
