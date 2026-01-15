@@ -1,8 +1,10 @@
-# Night-Burst V4.0 Orchestrator (V7 Agent-Level Restart)
+# Night-Burst V4.0 Orchestrator (V7 Heartbeat-Based Restart)
 # One command to start all 15 agents with full autonomy
-# Now with automatic account rotation, plan mode, AND agent-level restart loop
+# Now with automatic account rotation, plan mode, AND heartbeat-based restart
 #
-# V7 NEW: Agents that stop are automatically restarted within 60 seconds!
+# V7 NEW: Monitors HEARTBEAT files - if agent stops updating, it gets restarted!
+# Agents run INTERACTIVELY and can work as long as they want.
+# Only restarted if heartbeat goes stale (default: 10 minutes).
 #
 # Usage: .\scripts\night-burst-orchestrator.ps1
 #        .\scripts\night-burst-orchestrator.ps1 -PlanMode  # Start in plan mode (wait for approval)
@@ -16,7 +18,7 @@ param(
     [int]$MaxAgents = 15,
     [int]$MonitorIntervalSeconds = 60,
     [int]$MaxRestartsPerHour = 3,
-    [int]$MaxTurnsPerSession = 20  # How many tool-call turns before Claude exits
+    [int]$HeartbeatTimeoutMinutes = 10  # Restart if no heartbeat for this long
 )
 
 # V7: Global restart tracking for cooldown
@@ -228,10 +230,10 @@ function Start-Agent {
         Set-Location $projectRoot
 
         # Build command arguments
-        # V7 FIX: Use --print + --max-turns so Claude EXITS after N turns
-        # This enables restart detection. Each "session" = 20 turns, then restart.
-        # Agents should save state to files so they can resume on restart.
-        $args = @("--print", "--max-turns", "$MaxTurnsPerSession")
+        # V7: Run Claude INTERACTIVELY (no --print)
+        # Claude will work as long as it wants
+        # Detection happens via HEARTBEAT files, not job state
+        $args = @()
         if ($chrome) {
             $args += "--chrome"
         }
@@ -244,7 +246,7 @@ function Start-Agent {
         }
         $args += "/night-burst-$agentNum"
 
-        # Run claude with --print --max-turns so it exits after N turns
+        # Run claude interactively - it stays running
         claude @args
     } -ArgumentList $sessionName, $config.Chrome, $AgentNum, $ProjectRoot, $selectedConfigDir, $PlanMode
 
@@ -370,60 +372,105 @@ function Restart-Agent {
     return $job
 }
 
-# V7: Monitor loop - check all agents and restart dead ones
+# V7: Monitor loop - check HEARTBEAT files and restart stuck agents
 function Start-AgentMonitorLoop {
     param(
         [switch]$PlanMode = $false
     )
 
-    Write-Host "`n[MONITOR V7] Starting agent-level monitor loop (check every ${MonitorIntervalSeconds}s)..." -ForegroundColor Cyan
-    Write-Host "[MONITOR V7] Dead agents will be automatically restarted (max $MaxRestartsPerHour/hour per agent)" -ForegroundColor Gray
+    Write-Host "`n[MONITOR V7] Starting HEARTBEAT-based monitor loop (check every ${MonitorIntervalSeconds}s)..." -ForegroundColor Cyan
+    Write-Host "[MONITOR V7] Agents with stale heartbeat (>${HeartbeatTimeoutMinutes}min) will be restarted" -ForegroundColor Gray
+    Write-Host "[MONITOR V7] Max $MaxRestartsPerHour restarts per agent per hour (cooldown)" -ForegroundColor Gray
 
     $registryFile = Join-Path $ProgressDir "agent-registry.json"
     $loopCount = 0
 
     while ($true) {
         $loopCount++
-        $deadAgents = @()
-        $runningAgents = 0
+        $stuckAgents = @()
+        $activeAgents = 0
+        $now = (Get-Date).ToUniversalTime()
 
-        # Check each agent
+        # Check each agent's HEARTBEAT (not job state!)
         for ($i = 1; $i -le $MaxAgents; $i++) {
-            $jobName = "BURST$i"
-            $job = Get-Job -Name $jobName -ErrorAction SilentlyContinue
+            $statusFile = Join-Path $ProgressDir "burst-$i-status.json"
+            $isStuck = $false
 
-            if ($job) {
-                if ($job.State -eq "Running") {
-                    $runningAgents++
-                } elseif ($job.State -eq "Completed" -or $job.State -eq "Failed" -or $job.State -eq "Stopped") {
-                    $deadAgents += $i
-                    # Clean up the dead job
-                    Remove-Job -Job $job -Force -ErrorAction SilentlyContinue
+            if (Test-Path $statusFile) {
+                try {
+                    $status = Get-Content $statusFile -Raw | ConvertFrom-Json
+
+                    if ($status.last_heartbeat) {
+                        $lastBeat = [DateTime]::Parse($status.last_heartbeat)
+                        $minutesAgo = ($now - $lastBeat).TotalMinutes
+
+                        if ($minutesAgo -gt $HeartbeatTimeoutMinutes) {
+                            # Heartbeat is stale - agent is stuck!
+                            $isStuck = $true
+                            Write-Host "[STALE] Burst-$i last heartbeat ${minutesAgo}min ago (>${HeartbeatTimeoutMinutes}min)" -ForegroundColor Yellow
+                        } else {
+                            $activeAgents++
+                        }
+                    } else {
+                        # No heartbeat yet - agent might be starting
+                        # Check if job exists and give it time
+                        $job = Get-Job -Name "BURST$i" -ErrorAction SilentlyContinue
+                        if (-not $job) {
+                            $isStuck = $true
+                        } else {
+                            # Job exists, just no heartbeat yet - count as active
+                            $activeAgents++
+                        }
+                    }
+                } catch {
+                    # JSON parse error - file might be corrupt
+                    Write-Host "[ERROR] Burst-$i status file corrupt: $_" -ForegroundColor Red
                 }
             } else {
-                # Job doesn't exist at all
-                $deadAgents += $i
+                # No status file - job might have never started properly
+                $job = Get-Job -Name "BURST$i" -ErrorAction SilentlyContinue
+                if (-not $job) {
+                    $isStuck = $true
+                }
+            }
+
+            if ($isStuck) {
+                $stuckAgents += $i
             }
         }
 
-        # Restart dead agents
-        foreach ($agentNum in $deadAgents) {
+        # Restart stuck agents
+        foreach ($agentNum in $stuckAgents) {
+            # Kill existing job first (it might be running but stuck)
+            $job = Get-Job -Name "BURST$agentNum" -ErrorAction SilentlyContinue
+            if ($job) {
+                Write-Host "[KILL] Stopping stuck job BURST$agentNum..." -ForegroundColor Yellow
+                Stop-Job -Job $job -ErrorAction SilentlyContinue
+                Remove-Job -Job $job -Force -ErrorAction SilentlyContinue
+            }
+
+            # Restart
             Restart-Agent -AgentNum $agentNum -PlanMode:$PlanMode
             Start-Sleep -Milliseconds 500  # Stagger restarts
         }
 
         # Update registry
         if (Test-Path $registryFile) {
-            $registry = Get-Content $registryFile | ConvertFrom-Json
-            $registry.running_agents = $runningAgents
-            $registry.stopped_agents = $MaxAgents - $runningAgents
-            $registry | ConvertTo-Json -Depth 10 | Set-Content -Path $registryFile -Encoding UTF8
+            try {
+                $registry = Get-Content $registryFile -Raw | ConvertFrom-Json
+                $registry.running_agents = $activeAgents
+                $registry.stopped_agents = $MaxAgents - $activeAgents
+                $registry | ConvertTo-Json -Depth 10 | Set-Content -Path $registryFile -Encoding UTF8
+            } catch {
+                # Ignore registry update errors
+            }
         }
 
         # Log status every 5 loops (5 minutes if 60s interval)
         if ($loopCount % 5 -eq 0) {
             $timestamp = Get-Date -Format "HH:mm:ss"
-            Write-Host "[$timestamp] Running: $runningAgents/$MaxAgents | Dead: $($deadAgents.Count) | Restarted: $($deadAgents.Count)" -ForegroundColor $(if ($deadAgents.Count -gt 0) { "Yellow" } else { "Green" })
+            $color = if ($stuckAgents.Count -gt 0) { "Yellow" } else { "Green" }
+            Write-Host "[$timestamp] Active: $activeAgents/$MaxAgents | Stuck: $($stuckAgents.Count) | Restarted: $($stuckAgents.Count)" -ForegroundColor $color
         }
 
         Start-Sleep -Seconds $MonitorIntervalSeconds
