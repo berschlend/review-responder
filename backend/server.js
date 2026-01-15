@@ -19748,12 +19748,13 @@ app.get('/api/admin/pipeline-health', async (req, res) => {
 
   try {
     // 1. Lead Pipeline Stats
+    // Note: outreach_leads uses status column ('new', 'contacted', etc.) not boolean 'contacted'
     const leadsResult = await dbQuery(`
       SELECT
         COUNT(*) as total,
         COUNT(*) FILTER (WHERE email IS NOT NULL) as with_email,
-        COUNT(*) FILTER (WHERE contacted = FALSE AND email IS NOT NULL) as in_queue,
-        COUNT(*) FILTER (WHERE contacted = TRUE) as contacted,
+        COUNT(*) FILTER (WHERE status != 'contacted' AND email IS NOT NULL) as in_queue,
+        COUNT(*) FILTER (WHERE status = 'contacted') as contacted,
         COUNT(*) FILTER (WHERE demo_url IS NULL AND email IS NOT NULL) as needs_demo
       FROM outreach_leads
     `);
@@ -19787,7 +19788,7 @@ app.get('/api/admin/pipeline-health', async (req, res) => {
       SELECT
         (SELECT COUNT(*) FROM outreach_leads) as leads_total,
         (SELECT COUNT(*) FROM outreach_leads WHERE email IS NOT NULL) as leads_with_email,
-        (SELECT COUNT(*) FROM outreach_leads WHERE contacted = TRUE) as leads_contacted,
+        (SELECT COUNT(*) FROM outreach_leads WHERE status = 'contacted') as leads_contacted,
         (SELECT COUNT(*) FROM email_clicks) as clicks,
         (SELECT COUNT(*) FROM users WHERE source = 'outreach') as signups_from_outreach,
         (SELECT COUNT(*) FROM users WHERE subscription_plan != 'free' AND source = 'outreach') as paid_from_outreach
@@ -19919,12 +19920,12 @@ app.get('/api/admin/ai-health', async (req, res) => {
     const generations = generationsResult.rows[0] || {};
 
     // 2. AI API call stats from logs
+    // Note: Table uses error_message (not error) and has no completed_at column
     const apiStatsResult = await dbQuery(`
       SELECT
         provider,
         COUNT(*) as calls,
-        COUNT(*) FILTER (WHERE error IS NOT NULL) as errors,
-        ROUND(AVG(EXTRACT(EPOCH FROM (completed_at - created_at)) * 1000)) as avg_latency_ms
+        COUNT(*) FILTER (WHERE error_message IS NOT NULL OR status = 'error') as errors
       FROM api_call_logs
       WHERE created_at >= CURRENT_DATE - INTERVAL '24 hours'
       GROUP BY provider
@@ -19969,7 +19970,6 @@ app.get('/api/admin/ai-health', async (req, res) => {
           provider: s.provider,
           calls: parseInt(s.calls) || 0,
           errors: parseInt(s.errors) || 0,
-          avgLatencyMs: parseInt(s.avg_latency_ms) || 0,
         })),
         status: errorStatus,
       },
@@ -20071,6 +20071,40 @@ app.get('/api/admin/payment-health', async (req, res) => {
   }
 });
 
+// Paying Users - List all paying customers for Sales Doctor
+app.get('/api/admin/paying-users', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!process.env.ADMIN_SECRET || !safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const result = await dbQuery(`
+      SELECT
+        id,
+        email,
+        name,
+        subscription_plan,
+        subscription_status,
+        responses_used,
+        source,
+        created_at
+      FROM users
+      WHERE subscription_plan != 'free'
+      ORDER BY created_at DESC
+    `);
+
+    res.json({
+      paying_users: result.rows,
+      count: result.rows.length,
+      lastUpdated: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('[paying-users] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // User Activity - Check if users are actually using the product
 // Used by /sales-doctor to verify product engagement
 app.get('/api/admin/user-activity', async (req, res) => {
@@ -20118,10 +20152,15 @@ app.get('/api/admin/user-activity', async (req, res) => {
     const limits = limitResult.rows[0] || {};
 
     // 4. New vs returning users
+    // Note: No last_login column in users table, so we estimate returning users
+    // by checking if they have responses in the last 7 days but account is older
     const retentionResult = await dbQuery(`
       SELECT
         COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '7 days') as new_users_week,
-        COUNT(*) FILTER (WHERE created_at < CURRENT_DATE - INTERVAL '7 days' AND last_login >= CURRENT_DATE - INTERVAL '7 days') as returning_users_week
+        (SELECT COUNT(DISTINCT user_id) FROM responses
+         WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
+         AND user_id IN (SELECT id FROM users WHERE created_at < CURRENT_DATE - INTERVAL '7 days' ${excludeEmails})
+        ) as returning_users_week
       FROM users
       WHERE 1=1 ${excludeEmails}
     `);
@@ -24677,7 +24716,8 @@ app.get('/api/sales/dashboard', async (req, res) => {
 
 // GET /api/admin/scraper-status - Scraper status dashboard with priorities
 app.get('/api/admin/scraper-status', async (req, res) => {
-  const authKey = req.headers['x-api-key'] || req.query.key;
+  // Accept both x-api-key and x-admin-key for consistency with other admin endpoints
+  const authKey = req.headers['x-api-key'] || req.headers['x-admin-key'] || req.query.key;
   if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
