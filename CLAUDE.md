@@ -964,6 +964,27 @@ BEHAVIOR (0-30):
 
 ---
 
+## KÜRZLICH ERLEDIGT (15.01 Nachmittag - InstantDemoWidget Phase 2+3)
+
+- **Phase 2: Kontextuelle AI + UI**
+  - Backend: 16 businessType + 13 platform Kontexte für bessere Responses
+  - Frontend: Auto-Detection aus URL-Pfad (useMemo)
+  - Kontextuelle Headlines ("See How Your Restaurant Would Respond")
+  - Kontextuelle Placeholders (realistische Beispiel-Reviews)
+  - "Optimized for [X] Reviews" Badge
+
+- **Phase 3: Attribution + Analytics (First Principles: "Can't measure = Can't optimize")**
+  - `email_captures` Tabelle erweitert: `landing_page`, `platform`, `business_type`
+  - Neuer Admin Tab "Widget Analytics" mit:
+    - Summary: Attempts | Captures | Capture Rate
+    - Breakdown: By Platform, By Business Type, By Landing Page
+    - Last 7 Days Trend
+  - Mobile UX: Skip-Button, 2x2 Grid Tone-Buttons, Full-width Generate
+
+- **Commits:** `de0598e5`, `f912703d`, `12f9c63c`
+
+---
+
 ## KÜRZLICH ERLEDIGT (15.01 Mittag - InstantDemoWidget auf allen Landing Pages)
 
 - **First Principles Fix:** Demo Page Conversion = 0% weil SEO Traffic keinen Wert sah

@@ -682,7 +682,7 @@ const InstantDemoWidget = ({
           );
         } else {
           setError(
-            err.response?.data?.message || 'Daily limit reached. Sign up for 5 free/month!'
+            err.response?.data?.message || 'Daily limit reached. Sign up for 20 free/month!'
           );
         }
       } else {
@@ -987,7 +987,7 @@ const InstantDemoWidget = ({
                 background: primaryColor,
               }}
             >
-              Get 5 Free Responses
+              Get 20 Free Responses
             </Link>
           </div>
         </div>
@@ -1081,7 +1081,7 @@ const InstantDemoWidget = ({
                 color: 'var(--text-primary)',
               }}
             >
-              Unlock 5 Free Responses!
+              Unlock 20 Free Responses!
             </h3>
             <p
               style={{
@@ -2975,7 +2975,7 @@ const LandingPage = () => {
       console.error('Try generate error:', err.response?.status, err.response?.data, err.message);
       if (err.response?.status === 429) {
         setTryError(
-          err.response?.data?.message || 'Daily limit reached. Sign up for 5 free/month!'
+          err.response?.data?.message || 'Daily limit reached. Sign up for 20 free/month!'
         );
       } else {
         setTryError(
@@ -3841,7 +3841,7 @@ const TermsPage = () => (
           4. Payment & Refunds
         </h2>
         <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
-          <li>Free tier: 5 responses per month, no payment required</li>
+          <li>Free tier: 20 responses per month, no payment required</li>
           <li>Paid plans: Billed monthly or yearly via Stripe</li>
           <li>
             <strong>30-Day Money Back Guarantee:</strong> If you're not satisfied within 30 days,
@@ -13084,7 +13084,7 @@ const VideoDemoPage = () => {
         {showSignup && (
           <div className="bg-orange-500/20 border border-orange-500/50 rounded-xl p-6 animate-fade-in">
             <h3 className="text-xl font-bold text-white mb-2">
-              Get 5 Free Responses Every Month
+              Get 20 Free Responses Every Month
             </h3>
             <p className="text-gray-300 mb-4">
               No credit card required. Cancel anytime.
@@ -15962,7 +15962,7 @@ const YelpReviewPage = () => {
           </h2>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
-            Try Free - 5 Responses Included
+            Try Free - 20 Responses Included
           </Link>
         </div>
       </section>
@@ -16280,7 +16280,7 @@ const RestaurantReviewPage = () => {
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
-            Start Free - 5 Responses Included
+            Start Free - 20 Responses Included
           </Link>
         </div>
       </section>
@@ -24994,7 +24994,7 @@ const AppStoreReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 5 Responses Included
+            Start Free - 20 Responses Included
           </Link>
         </div>
       </section>
@@ -25232,7 +25232,7 @@ const IndeedReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 5 Responses Included
+            Start Free - 20 Responses Included
           </Link>
         </div>
       </section>
@@ -25478,7 +25478,7 @@ const ZillowReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 5 Responses Included
+            Start Free - 20 Responses Included
           </Link>
         </div>
       </section>
@@ -25716,7 +25716,7 @@ const TherapyReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 5 Responses Included
+            Start Free - 20 Responses Included
           </Link>
         </div>
       </section>
@@ -25953,7 +25953,7 @@ const ThumbtackReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 5 Responses Included
+            Start Free - 20 Responses Included
           </Link>
         </div>
       </section>
@@ -26191,7 +26191,7 @@ const LinkedInReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 5 Responses Included
+            Start Free - 20 Responses Included
           </Link>
         </div>
       </section>
@@ -26426,7 +26426,7 @@ const AngiReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 5 Responses Included
+            Start Free - 20 Responses Included
           </Link>
         </div>
       </section>
@@ -26663,7 +26663,7 @@ const ChiropractorReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 5 Responses Included
+            Start Free - 20 Responses Included
           </Link>
         </div>
       </section>
@@ -26898,7 +26898,7 @@ const BarberReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 5 Responses Included
+            Start Free - 20 Responses Included
           </Link>
         </div>
       </section>
@@ -27136,7 +27136,7 @@ const DermatologistReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 5 Responses Included
+            Start Free - 20 Responses Included
           </Link>
         </div>
       </section>
@@ -27374,7 +27374,7 @@ const MassageTherapistReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 5 Responses Included
+            Start Free - 20 Responses Included
           </Link>
         </div>
       </section>
@@ -27612,7 +27612,7 @@ const PersonalTrainerReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 5 Responses Included
+            Start Free - 20 Responses Included
           </Link>
         </div>
       </section>
@@ -27847,7 +27847,7 @@ const AngiListReviewPage = () => {
             className="btn btn-primary"
             style={{ padding: '16px 32px', fontSize: '18px' }}
           >
-            Start Free - 5 Responses Included
+            Start Free - 20 Responses Included
           </Link>
         </div>
       </section>
@@ -28170,7 +28170,7 @@ const PricingPage = () => {
     },
     {
       q: 'Is there a free trial?',
-      a: 'Yes! The Free plan gives you 5 responses per month forever - no credit card required. Try it out and upgrade when ready.',
+      a: 'Yes! The Free plan gives you 20 responses per month forever - no credit card required. Try it out and upgrade when ready.',
     },
     {
       q: 'What payment methods do you accept?',
