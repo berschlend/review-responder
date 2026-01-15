@@ -91,18 +91,17 @@
 
 ### Videos (nach Extension Release)
 
-- [ ] **Video 1:** Extension Demo v2 (60 Sek) → ExtensionPromoCard
+- [ ] **Video 1:** Extension Demo v2 (45 Sek) → ExtensionPromoCard
   - 📋 **DETAILLIERTER PLAN:** `~/.claude-acc3/plans/calm-tumbling-iverson.md`
-  - 🎯 **First Principles Conversion Flow:**
-    - 0:00-0:05 Hook (Silent, 1-Star Review)
-    - 0:05-0:12 Pain ("1000 potential customers see this")
+  - 🎯 **Salt Bae Hook Flow (OPTIMIERT):**
+    - 0:00-0:05 Hook: "SALT BAE LOST $2M to reviews like this"
+    - 0:05-0:12 Pain: NUSR-ET 1-Star Review zoom
     - 0:12-0:35 Magic Moment (ONE SHOT - keine Cuts!)
-    - 0:35-0:45 Relief ("32 seconds. Done.")
-    - 0:45-0:52 Business Context Teaser
-    - 0:52-1:00 Specific CTA ("YOUR worst review")
-  - 🏪 **Demo Business:** Komodo Miami (4.4⭐, 7,256 Reviews)
-  - 📝 **Kandidat Review:** Albert H - "CLUBSERAUNT - If you like over paying for mediocre food..."
-  - 🎬 **Tools:** OBS Studio + DaVinci Resolve/CapCut
+    - 0:35-0:45 CTA: "YOUR worst review. Right now."
+  - 🏪 **Demo Business:** NUSR-ET Steakhouse New York (Salt Bae!)
+  - 📝 **Beste Reviews:** "waited 50 minutes", "$600 steak overcooked"
+  - 🎬 **Tools:** OBS Studio (heruntergeladen) + DaVinci Resolve
+  - 📊 **Distribution:** LinkedIn FIRST (B2B), dann YouTube Ads
 
 - [ ] **Video 2:** Full Walkthrough (2 Min) → Landing Page
   - 0:00-0:30 Extension installieren & erste Review

@@ -712,6 +712,48 @@ const InstantDemoWidget = ({
 
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto', width: '100%' }}>
+      {/* Contextual Headline */}
+      <h3
+        style={{
+          fontSize: '20px',
+          fontWeight: '600',
+          marginBottom: '12px',
+          color: 'var(--text-primary)',
+          textAlign: 'center',
+        }}
+      >
+        {currentHeadline}
+      </h3>
+
+      {/* Optimized Badge */}
+      {currentLabel && (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: '16px',
+          }}
+        >
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 12px',
+              fontSize: '12px',
+              fontWeight: '500',
+              background: 'var(--primary-light)',
+              color: primaryColor,
+              borderRadius: '20px',
+              border: `1px solid ${primaryColor}`,
+            }}
+          >
+            <Sparkles size={14} />
+            Optimized for {currentLabel} Reviews
+          </span>
+        </div>
+      )}
+
       {/* Input Section */}
       <div
         style={{
@@ -725,7 +767,7 @@ const InstantDemoWidget = ({
         <textarea
           value={reviewText}
           onChange={e => setReviewText(e.target.value)}
-          placeholder={`Paste a ${platform ? platform + ' ' : ''}review here to see AI magic...`}
+          placeholder={currentPlaceholder}
           style={{
             width: '100%',
             minHeight: '100px',

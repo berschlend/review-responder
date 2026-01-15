@@ -1112,6 +1112,69 @@ BEHAVIOR (0-30):
 
 ---
 
+## NACHT-LOG 15.01.2026 23:10 UTC
+
+**Session:** Night Blast (Second Wave)
+**Aktionen:**
+1. **Magic Link Re-Engagement** - 11 neue Emails an Hot Leads
+   - `/api/cron/reengage-clickers` getriggert
+   - Alle unregistrierten Clicker bekamen Magic Links
+2. **🎉 10 NEUE USER-REGISTRIERUNGEN via Magic Links!**
+   - The Smith (New York), Sphere Tim Raue (Berlin)
+   - Komodo Miami, Augustiner Klosterwirt (München)
+   - Madame Brasserie (Paris), Zurich Marriott
+   - Romano Law (New York), AWAY SPA (Edinburgh)
+   - 25hours Hotel (Zürich), Bullring (Birmingham)
+3. **Outreach Blast** - 50 Emails gesendet (Daily Limit erreicht)
+   - 648 Total Emails gesendet (Session Start: 572)
+   - 376 Leads kontaktiert (Session Start: 301)
+4. **TripAdvisor Lead Import** - House of Food Porn (Miami)
+5. **LinkedIn Check** - 1 pending (Bjoern Hiller, Block House)
+
+**Metriken (23:10 UTC):**
+- 1992 Leads (+4)
+- 495 Leads mit Email (+31)
+- 648 Emails gesendet (+76)
+- 23 Clicks (stabil)
+- 10 neue Registrierungen (via Magic Links!)
+- 0 Zahlende Kunden (noch nicht)
+
+**Erkenntnisse:**
+- Magic Links funktionieren - Users werden auto-registriert
+- ABER: Keiner hat das Produkt noch aktiv genutzt (response_count: 0)
+- Nächster Schritt: Warten auf User-Aktivität oder Onboarding-Nudge implementieren
+
+---
+
+## NACHT-LOG 15.01.2026 01:45
+
+**Session:** Night Blast (Continued)
+**Aktionen:**
+1. **Re-Engagement Blast** - 29 Magic Link Emails an Hot Leads gesendet
+   - `/api/cron/reengage-clickers` 3x getriggert
+   - Alle 23 Clickers + neue bekommen Magic Login Links
+2. **V2 Conversion Gates Validiert** - Alles funktioniert:
+   - Nur 1 Response sichtbar (Rest hinter Email-Gate)
+   - Copy-Button triggert Email-Modal
+   - Auto-Redirect zu /register nach Email-Eingabe
+   - Email wird pre-filled, Discount wird angezeigt
+3. **TripAdvisor Scraping** - 14 neue Leads mit Email:
+   - Miami (6): Barsecco, Mayami Wynwood, Café La Trova, Marabu, ADRIFT Mare, House of Food Porn
+   - Amsterdam (4): Arles, Restaurant Red, The Pantry, Midtown Grill
+   - Denver (4): Buckhorn Exchange, Anise Vietnamese, Marco's Coal-Fired, Izakaya Den
+4. **LinkedIn Check** - 1 ausstehende Einladung (Bjoern Hiller, Block House)
+
+**Metriken (01:45 UTC):**
+- 19 User (11 neu via Magic Links)
+- 7 Aktiviert (36.8% Activation Rate)
+- 448 Total Responses
+- 0 Zahlende Kunden
+
+**Erkenntnis:** Magic Link Users registrieren sich aber nutzen Produkt nicht aktiv.
+**TODO:** Onboarding-Nudge Email implementieren
+
+---
+
 ## KÜRZLICH ERLEDIGT (15.01 Nacht)
 
 - **Magic Link Authentication System** - Passwordless Login für Hot Leads
