@@ -12929,6 +12929,178 @@ const BlogArticlePage = () => {
   );
 };
 
+// Video Demo Landing Page - Minimal friction for video traffic
+// First Principles: Direct path from video → instant demo → signup
+const VideoDemoPage = () => {
+  const [reviewText, setReviewText] = useState('');
+  const [response, setResponse] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
+  const [email, setEmail] = useState('');
+  const navigate = useNavigate();
+
+  // Track UTM source
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const source = params.get('utm_source') || 'direct';
+    sessionStorage.setItem('video_source', source);
+  }, []);
+
+  const generateResponse = async () => {
+    if (!reviewText.trim() || reviewText.length < 20) {
+      toast.error('Please paste a review (at least 20 characters)');
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/public/try`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reviewText, tone: 'professional' }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        setShowSignup(true);
+        toast.success('Sign up for 20 free responses per month!');
+      } else {
+        setResponse(data.response);
+        // After showing response, prompt for signup
+        setTimeout(() => setShowSignup(true), 3000);
+      }
+    } catch (err) {
+      toast.error('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignup = (e) => {
+    e.preventDefault();
+    if (!email.includes('@')) {
+      toast.error('Please enter a valid email');
+      return;
+    }
+    navigate(`/register?email=${encodeURIComponent(email)}&source=video-demo`);
+  };
+
+  const copyResponse = () => {
+    if (!response) return;
+    navigator.clipboard.writeText(response);
+    toast.success('Copied! Sign up for unlimited responses');
+    setShowSignup(true);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white">
+      <div className="max-w-3xl mx-auto px-4 py-12">
+        {/* Hero - Ultra Simple */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            Respond to YOUR Review
+          </h1>
+          <p className="text-xl text-gray-300">
+            Paste it below. Get a response in 15 seconds.
+          </p>
+        </div>
+
+        {/* Step 1: Paste Review */}
+        <div className="bg-gray-800 rounded-xl p-6 mb-6">
+          <label className="block text-sm font-medium text-gray-400 mb-2">
+            Step 1: Paste your worst review
+          </label>
+          <textarea
+            value={reviewText}
+            onChange={(e) => setReviewText(e.target.value)}
+            placeholder="Paste the negative review here... (e.g., 'The service was terrible, we waited 45 minutes...')"
+            className="w-full h-32 bg-gray-700 border border-gray-600 rounded-lg p-4 text-white placeholder-gray-500 focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+          />
+          <button
+            onClick={generateResponse}
+            disabled={loading || !reviewText.trim()}
+            className="w-full mt-4 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-600 text-white font-bold py-4 px-6 rounded-lg text-lg transition-all flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Generating...
+              </>
+            ) : (
+              <>Generate Response</>
+            )}
+          </button>
+        </div>
+
+        {/* Step 2: Response */}
+        {response && (
+          <div className="bg-green-900/30 border border-green-500/50 rounded-xl p-6 mb-6 animate-fade-in">
+            <div className="flex justify-between items-start mb-3">
+              <label className="block text-sm font-medium text-green-400">
+                Your AI Response (ready to post!)
+              </label>
+              <button
+                onClick={copyResponse}
+                className="text-green-400 hover:text-green-300 text-sm flex items-center gap-1"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                Copy
+              </button>
+            </div>
+            <p className="text-white text-lg leading-relaxed">{response}</p>
+            <p className="text-green-400 text-sm mt-4 font-medium">
+              ✓ Human-sounding, not AI fluff
+            </p>
+          </div>
+        )}
+
+        {/* Step 3: Signup (appears after response) */}
+        {showSignup && (
+          <div className="bg-orange-500/20 border border-orange-500/50 rounded-xl p-6 animate-fade-in">
+            <h3 className="text-xl font-bold text-white mb-2">
+              Get 20 Free Responses Every Month
+            </h3>
+            <p className="text-gray-300 mb-4">
+              No credit card required. Cancel anytime.
+            </p>
+            <form onSubmit={handleSignup} className="flex gap-3">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:ring-2 focus:ring-orange-500"
+              />
+              <button
+                type="submit"
+                className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-lg transition-all"
+              >
+                Start Free
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Social Proof */}
+        <div className="mt-10 text-center text-gray-400">
+          <p className="text-sm">
+            Join 500+ businesses responding to reviews faster
+          </p>
+          <div className="flex justify-center gap-6 mt-4 opacity-60">
+            <span>Google</span>
+            <span>Yelp</span>
+            <span>TripAdvisor</span>
+            <span>Facebook</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Demo Landing Page - Personalized demo for cold outreach
 const DemoPage = () => {
   const { token } = useParams();
@@ -34889,6 +35061,7 @@ const AppContent = () => {
           <Route path="/blog" element={<BlogListPage />} />
           <Route path="/blog/:slug" element={<BlogArticlePage />} />
           <Route path="/demo/:token" element={<DemoPage />} />
+          <Route path="/video-demo" element={<VideoDemoPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/extension" element={<ExtensionPage />} />
