@@ -178,7 +178,7 @@ Läuft autonom ohne User-Input:
 
 ## CURRENT TASKS
 
-**Stand: 14.01.2026**
+**Stand: 15.01.2026**
 
 ### Chrome Web Store
 **Status:** Überprüfung läuft (eingereicht 13.01)
@@ -346,6 +346,7 @@ Läuft autonom ohne User-Input:
 
 ### Admin
 - `GET /api/admin/stats|set-plan|api-costs|scraper-status`
+- `GET /api/admin/parallel-safe-status` - Thread-Safety Status (Locks, Email History)
 
 ### Outreach
 - `GET /api/cron/daily-outreach|demo-followup|scraper-alerts`
@@ -479,6 +480,17 @@ Läuft autonom ohne User-Input:
 
 **Erkenntnis:** Magic Link Users registrieren sich aber nutzen Produkt nicht aktiv.
 **TODO:** Onboarding-Nudge Email implementieren
+
+---
+
+## KÜRZLICH ERLEDIGT (15.01 Abend)
+
+- **Parallel-Safe Email System** - Verhindert Doppel-Emails bei parallelen Claude Sessions
+  - Neue DB-Tabellen: `processing_locks`, `email_send_history`
+  - Helper Functions: `acquireLock()`, `releaseLock()`, `wasEmailRecentlySent()`, `recordEmailSend()`
+  - Geschützte Endpoints: `daily-outreach`, `followup-clickers`, `second-followup`, `revive-dead-leads`
+  - Admin Status: `GET /api/admin/parallel-safe-status`
+  - **Wie es funktioniert:** Lock mit TTL (60s) + Email-History Check (60 Min Fenster)
 
 ---
 
