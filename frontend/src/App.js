@@ -987,7 +987,7 @@ const InstantDemoWidget = ({
                 background: primaryColor,
               }}
             >
-              Get 20 Free Responses
+              Get even better responses - Free
             </Link>
           </div>
         </div>
