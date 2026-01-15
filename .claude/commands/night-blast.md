@@ -1,28 +1,61 @@
-# Night Blast - Vollautonomer 24/7 Sales-Agent
+# Night Blast - Autonomer Sales-Agent bis zum Ersten Sale
 
-Du bist ein vollautonomer Sales-Agent für ReviewResponder.
-**Laufzeit: UNBEGRENZT!** Du läufst 24/7 bis Berend explizit "Stopp" sagt.
-Ziel: Sales generieren - Tag und Nacht, ohne Pause.
+**Ziel: ERSTER ZAHLENDER KUNDE für ReviewResponder**
 
-**INTEGRIERT:** automate-sales, sales-doctor, scrape-leads, linkedin-connect
+Du arbeitest OHNE Zeitlimit bis Berend explizit "Stopp" sagt.
+**Claude Max = UNLIMITED!** Keine API Limits für Claude.
 
 ---
 
-## AUTONOME NACHT-ROUTINE
+## PHASE 0: SETUP CHECK (VOR DEM START!)
 
-### PHASE 0: STARTUP (Einmalig)
+### Chrome Token prüfen
 
 ```bash
-# 1. Secrets laden
+# Falls Chrome MCP nach ~1 Stunde abbricht:
+claude setup-token
+# Erstellt 1-Jahr Token statt 1-Stunde OAuth
+```
+
+### Logins prüfen
+
+| Plattform | URL | Benötigt für |
+|-----------|-----|--------------|
+| Twitter/X | twitter.com | DMs |
+| Facebook | facebook.com | Page Messages |
+| Instagram | instagram.com | DMs |
+| LinkedIn | linkedin.com | Connections |
+| Gmail | mail.google.com | Alerts |
+| Stripe | dashboard.stripe.com | Sale Detection! |
+
+### Fehlende Logins anfragen
+
+```
+=== NIGHT BLAST SETUP ===
+✅ Eingeloggt: [Liste]
+❌ FEHLT: [Liste]
+
+Bitte einloggen bei: [Plattformen]
+Sag "ready" wenn fertig.
+```
+
+**WARTE auf User-Bestätigung!**
+
+### Vorherige Session laden
+
+```bash
+if [ -f "content/claude-progress/night-blast-status.json" ]; then
+    cat content/claude-progress/night-blast-status.json
+    grep -A5 "NIGHT-LOG" CLAUDE.md | tail -20
+fi
+```
+
+### Session initialisieren
+
+```bash
+mkdir -p content/claude-locks content/claude-progress
 ADMIN_KEY=$(grep ADMIN_SECRET .claude/secrets.local | cut -d'=' -f2)
-
-# 2. Lock-Verzeichnis erstellen
-mkdir -p content/claude-locks
-
-# 3. Session registrieren
 echo "$(date) - NightBlast - $$" > content/claude-locks/nightblast-$$.lock
-
-# 4. Tab-Gruppe holen (Chrome MCP)
 tabs_context_mcp
 ```
 
@@ -348,9 +381,33 @@ powershell -ExecutionPolicy Bypass -File "C:\Users\Berend Mainz\claude-notify.ps
 
 ---
 
+## CIRCUIT BREAKER (Ralph Loop Pattern)
+
+Nach JEDER Aktion Progress-File updaten:
+
+```bash
+cat > content/claude-progress/night-blast-status.json << EOF
+{"session_id": "$SESSION_ID", "last_checkpoint": "$(date)", "loops_without_progress": [0 wenn Progress, sonst +1]}
+EOF
+```
+
+**Circuit Breaker:**
+- `loops_without_progress >= 3` → STRATEGIE WECHSELN!
+- `loops_without_progress >= 5` → First Principles: Was ist das ECHTE Problem?
+
+---
+
 ## STOP-BEDINGUNGEN
 
-**NUR EINE:** Berend sagt explizit "Stopp"
+### ✅ ERFOLGS-STOP: ERSTER SALE!
+
+```
+=== 🎉 ERSTER SALE! 🎉 ===
+Kunde: [NAME] | Plan: [PLAN] | Betrag: [EUR]
+→ CLAUDE.md updaten! → Berend benachrichtigen! → Weitermachen!
+```
+
+### ❌ NUR EINE Stopp-Bedingung: Berend sagt explizit "Stopp"
 
 **Das war's.** Ein Grund. Sonst NIEMALS aufhören.
 
@@ -413,4 +470,37 @@ Nach JEDER Session, update CLAUDE.md:
 6. Tab Cleanup
 7. Repeat
 
-**Du hast VOLLE FREIHEIT. Das Ziel: Erster zahlender Kunde.**
+---
+
+## END-OF-SESSION REVIEW
+
+```
+=== SESSION REVIEW ===
+Laufzeit: [START] - [ENDE]
+Ergebnis: [SALE / KEIN SALE]
+
+Metriken: Leads: XXX | Emails: XXX | DMs: XXX | Clicks: XXX | Sales: XXX
+
+Learnings für nächsten Claude:
+- [Learning 1]
+- [Learning 2]
+
+Was vom User gebraucht wird:
+- [ ] [Falls Login fehlt]
+
+Tab-Status: [Kann geschlossen werden: JA/NEIN]
+```
+
+---
+
+## QUELLEN
+
+- [Ralph Claude Code](https://github.com/frankbria/ralph-claude-code) - Autonomous Loop
+- [Anthropic Best Practices](https://www.anthropic.com/engineering/claude-code-best-practices)
+- Chrome Token Fix: `claude setup-token` für 1-Jahr Token
+
+---
+
+**Du hast VOLLE FREIHEIT. Ziel: ERSTER ZAHLENDER KUNDE.**
+**Keine Fake Claims. Rabattcodes vorsichtig (max 30%).**
+**Lauf bis zum Sale!**
