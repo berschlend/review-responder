@@ -419,13 +419,110 @@ async function sendEmail({
 }
 
 // ==========================================
+// ANTI-SPAM SYSTEM (Only for Outreach Emails)
+// ==========================================
+// WICHTIG: Diese Checks gelten NUR für Outreach/Marketing Emails!
+// Transaktionale Emails (Passwort-Reset, Registrierung, etc.) sind NICHT betroffen.
+
+const MAX_EMAILS_PER_WEEK = 4; // Max outreach emails per recipient per week
+
+// Check if email format is valid
+function isValidEmailFormat(email) {
+  if (!email || typeof email !== 'string') return false;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email.trim());
+}
+
+// Check if email is on suppression list (bounces, complaints)
+async function isEmailSuppressed(email) {
+  try {
+    const result = await dbGet(
+      'SELECT reason FROM email_suppressions WHERE LOWER(email_address) = LOWER($1)',
+      [email]
+    );
+    return result ? { suppressed: true, reason: result.reason } : { suppressed: false };
+  } catch (err) {
+    // Table might not exist yet
+    return { suppressed: false };
+  }
+}
+
+// Check if we've sent too many emails to this recipient recently
+async function isOverEmailFrequencyLimit(email) {
+  try {
+    const result = await dbGet(
+      `SELECT COUNT(*) as count FROM email_logs
+       WHERE LOWER(to_email) = LOWER($1)
+       AND type = 'outreach'
+       AND sent_at > NOW() - INTERVAL '7 days'`,
+      [email]
+    );
+    const count = parseInt(result?.count || 0);
+    return { overLimit: count >= MAX_EMAILS_PER_WEEK, count };
+  } catch (err) {
+    return { overLimit: false, count: 0 };
+  }
+}
+
+// Add email to suppression list
+async function suppressEmail(email, reason = 'bounce', details = null) {
+  try {
+    await pool.query(
+      `INSERT INTO email_suppressions (email_address, reason, details, created_at)
+       VALUES ($1, $2, $3, NOW())
+       ON CONFLICT (email_address, reason) DO UPDATE SET details = $3, created_at = NOW()`,
+      [email.toLowerCase(), reason, details]
+    );
+    console.log(`📧 Suppressed: ${email} (${reason})`);
+    return true;
+  } catch (err) {
+    console.error(`[suppressEmail] Error: ${err.message}`);
+    return false;
+  }
+}
+
+// Full anti-spam check for outreach emails
+async function canSendOutreachEmail(email) {
+  // 1. Format check
+  if (!isValidEmailFormat(email)) {
+    return { canSend: false, reason: 'invalid_format' };
+  }
+
+  // 2. Suppression check
+  const suppression = await isEmailSuppressed(email);
+  if (suppression.suppressed) {
+    return { canSend: false, reason: `suppressed_${suppression.reason}` };
+  }
+
+  // 3. Frequency check
+  const frequency = await isOverEmailFrequencyLimit(email);
+  if (frequency.overLimit) {
+    return { canSend: false, reason: `frequency_limit_${frequency.count}` };
+  }
+
+  return { canSend: true };
+}
+
+// ==========================================
 // OUTREACH EMAIL HELPER - WITH OPEN TRACKING
 // ==========================================
 // Wrapper around sendEmail() for backwards compatibility
 // Automatically adds tracking pixel and uses 'outreach' type
 // Checks unsubscribe list before sending (CAN-SPAM compliance)
+// INCLUDES ANTI-SPAM CHECKS (frequency cap, suppression list)
 
 async function sendOutreachEmail({ to, subject, html, campaign = 'main', tags = [] }) {
+  // ANTI-SPAM CHECK (only for outreach, not transactional!)
+  try {
+    const spamCheck = await canSendOutreachEmail(to);
+    if (!spamCheck.canSend) {
+      console.log(`📧 Skipped (${spamCheck.reason}): ${to}`);
+      return { success: false, skipped: true, reason: spamCheck.reason };
+    }
+  } catch (err) {
+    console.log(`[Anti-Spam check] Warning: ${err.message}`);
+  }
+
   // Check if email is unsubscribed before sending
   try {
     const unsubscribed = await dbGet('SELECT 1 FROM unsubscribes WHERE LOWER(email) = LOWER($1)', [
@@ -14965,6 +15062,21 @@ async function initOutreachTables() {
       `CREATE INDEX IF NOT EXISTS idx_unsubscribes_email ON unsubscribes(LOWER(email))`
     );
 
+    // Email Suppressions table - for bounces, complaints (anti-spam)
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS email_suppressions (
+        id SERIAL PRIMARY KEY,
+        email_address TEXT NOT NULL,
+        reason VARCHAR(50) NOT NULL,
+        details TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(email_address, reason)
+      )
+    `);
+    await dbQuery(
+      `CREATE INDEX IF NOT EXISTS idx_email_suppressions_email ON email_suppressions(LOWER(email_address))`
+    );
+
     // Initialize default A/B test for sequence1 subject lines (only if not exists)
     await dbQuery(`
       INSERT INTO outreach_ab_tests (test_name, variant_a_subject, variant_b_subject, variant_c_subject, variant_d_subject)
@@ -16335,6 +16447,223 @@ async function scrapeEmailFromWebsite(websiteUrl) {
   }
 }
 
+// === IMPRESSUM SCRAPER (DE/AT/CH) ===
+// German/Austrian/Swiss websites MUST have Impressum by law = reliable owner data
+async function scrapeImpressum(websiteUrl) {
+  try {
+    let url = websiteUrl;
+    if (!url.startsWith('http')) {
+      url = 'https://' + url;
+    }
+
+    // Check if it's a DACH domain (Germany, Austria, Switzerland)
+    const domain = url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].toLowerCase();
+
+    // Impressum pages (German legal requirement)
+    const impressumPages = [
+      url.replace(/\/$/, '') + '/impressum',
+      url.replace(/\/$/, '') + '/imprint',
+      url.replace(/\/$/, '') + '/legal',
+      url.replace(/\/$/, '') + '/legal-notice',
+      url.replace(/\/$/, '') + '/rechtliches',
+      url.replace(/\/$/, '') + '/kontakt',
+      url.replace(/\/$/, '') + '/about',
+      url.replace(/\/$/, '') + '/ueber-uns',
+    ];
+
+    // Patterns to find owner/manager names in Impressum
+    const ownerPatterns = [
+      // German patterns (most common)
+      /Geschäftsführer(?:in)?[:\s]+([A-ZÄÖÜa-zäöüß\-\s]+?)(?=<|,|\n|;|\(|Telefon|Tel|Fax|Email|E-Mail|USt|Steuer|HRB|Amtsgericht|$)/gi,
+      /Inhaber(?:in)?[:\s]+([A-ZÄÖÜa-zäöüß\-\s]+?)(?=<|,|\n|;|\(|Telefon|Tel|Fax|Email|E-Mail|USt|Steuer|$)/gi,
+      /Vertretungsberechtigte?r?[:\s]+([A-ZÄÖÜa-zäöüß\-\s]+?)(?=<|,|\n|;|\(|Telefon|Tel|Fax|Email|$)/gi,
+      /Verantwortlich(?:er)?[:\s]+([A-ZÄÖÜa-zäöüß\-\s]+?)(?=<|,|\n|;|\(|Telefon|Tel|Fax|Email|$)/gi,
+      /Betreiber[:\s]+([A-ZÄÖÜa-zäöüß\-\s]+?)(?=<|,|\n|;|\(|Telefon|Tel|Fax|Email|$)/gi,
+      // English patterns
+      /Owner[:\s]+([A-Za-z\-\s]+?)(?=<|,|\n|;|\(|Phone|Fax|Email|$)/gi,
+      /Manager[:\s]+([A-Za-z\-\s]+?)(?=<|,|\n|;|\(|Phone|Fax|Email|$)/gi,
+      /Director[:\s]+([A-Za-z\-\s]+?)(?=<|,|\n|;|\(|Phone|Fax|Email|$)/gi,
+      /CEO[:\s]+([A-Za-z\-\s]+?)(?=<|,|\n|;|\(|Phone|Fax|Email|$)/gi,
+      /Founder[:\s]+([A-Za-z\-\s]+?)(?=<|,|\n|;|\(|Phone|Fax|Email|$)/gi,
+    ];
+
+    for (const pageUrl of impressumPages) {
+      try {
+        const response = await fetch(pageUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'text/html,application/xhtml+xml',
+            'Accept-Language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
+          },
+          timeout: 8000,
+        });
+
+        if (!response.ok) continue;
+
+        const html = await response.text();
+        // Strip HTML tags for easier text parsing
+        const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+
+        // Try to find owner name
+        for (const pattern of ownerPatterns) {
+          const match = pattern.exec(text);
+          if (match && match[1]) {
+            let ownerName = match[1].trim();
+
+            // Clean up the name
+            ownerName = ownerName
+              .replace(/\s+/g, ' ')
+              .replace(/^\s*Dr\.?\s*/i, '') // Remove Dr.
+              .replace(/^\s*Prof\.?\s*/i, '') // Remove Prof.
+              .replace(/\s*\(.*\)\s*$/, '') // Remove parentheses
+              .trim();
+
+            // Validate it looks like a real name (2+ words, 2+ chars each word, starts with capital)
+            const nameParts = ownerName.split(/\s+/);
+            if (nameParts.length >= 2 &&
+                nameParts.every(part => part.length >= 2 && /^[A-ZÄÖÜ]/.test(part)) &&
+                ownerName.length >= 5 && ownerName.length <= 50) {
+
+              console.log(`📋 IMPRESSUM: Found owner "${ownerName}" on ${pageUrl}`);
+              return {
+                ownerName: ownerName,
+                source: pageUrl,
+                domain: domain
+              };
+            }
+          }
+          // Reset regex lastIndex for next iteration
+          pattern.lastIndex = 0;
+        }
+
+        await new Promise(r => setTimeout(r, 200));
+      } catch (e) {
+        continue;
+      }
+    }
+
+    return null;
+  } catch (e) {
+    console.error('Impressum scrape error:', e.message);
+    return null;
+  }
+}
+
+// === OWNER NAME → EMAIL PATTERN GENERATOR ===
+// Generate potential email addresses from owner name and validate
+async function generateEmailsFromOwnerName(ownerName, domain) {
+  if (!ownerName || !domain) return null;
+
+  // Clean domain
+  const cleanDomain = domain
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .split('/')[0]
+    .toLowerCase();
+
+  // Parse name
+  const nameParts = ownerName.trim().split(/\s+/);
+  if (nameParts.length < 2) return null;
+
+  const firstName = nameParts[0].toLowerCase();
+  const lastName = nameParts[nameParts.length - 1].toLowerCase();
+
+  // Convert German umlauts for email
+  const normalizeForEmail = (str) => {
+    return str
+      .replace(/ä/g, 'ae')
+      .replace(/ö/g, 'oe')
+      .replace(/ü/g, 'ue')
+      .replace(/ß/g, 'ss')
+      .replace(/[^a-z0-9.-]/g, ''); // Remove any other special chars
+  };
+
+  const firstNorm = normalizeForEmail(firstName);
+  const lastNorm = normalizeForEmail(lastName);
+  const firstInitial = firstNorm.charAt(0);
+
+  // Common email patterns (ordered by likelihood)
+  const patterns = [
+    `${firstNorm}@${cleanDomain}`,                    // max@restaurant.de
+    `${firstNorm}.${lastNorm}@${cleanDomain}`,        // max.mustermann@restaurant.de
+    `${firstNorm}${lastNorm}@${cleanDomain}`,         // maxmustermann@restaurant.de
+    `${firstInitial}.${lastNorm}@${cleanDomain}`,     // m.mustermann@restaurant.de
+    `${firstInitial}${lastNorm}@${cleanDomain}`,      // mmustermann@restaurant.de
+    `${lastNorm}@${cleanDomain}`,                     // mustermann@restaurant.de
+    `${firstNorm}-${lastNorm}@${cleanDomain}`,        // max-mustermann@restaurant.de
+    `${lastNorm}.${firstNorm}@${cleanDomain}`,        // mustermann.max@restaurant.de
+  ];
+
+  // Check if domain has MX records (can receive email)
+  try {
+    const dns = await import('dns').then(m => m.promises);
+    const mxRecords = await dns.resolveMx(cleanDomain);
+
+    if (mxRecords && mxRecords.length > 0) {
+      // Domain can receive email - return best guess patterns
+      console.log(`📧 Generated ${patterns.length} email patterns for ${ownerName} @ ${cleanDomain}`);
+      return {
+        ownerName: ownerName,
+        domain: cleanDomain,
+        primaryEmail: patterns[0], // firstname@domain is most common
+        allPatterns: patterns,
+        mxVerified: true
+      };
+    }
+  } catch (e) {
+    // MX lookup failed, but still return patterns
+    console.log(`⚠️ MX lookup failed for ${cleanDomain}, returning patterns anyway`);
+    return {
+      ownerName: ownerName,
+      domain: cleanDomain,
+      primaryEmail: patterns[0],
+      allPatterns: patterns,
+      mxVerified: false
+    };
+  }
+
+  return null;
+}
+
+// === ENHANCED EMAIL FINDING (Impressum + Pattern Generation) ===
+// Combines Impressum scraping with owner email pattern generation
+async function findEnhancedEmail(websiteUrl) {
+  // First try regular scraping
+  const scrapedEmail = await scrapeEmailFromWebsite(websiteUrl);
+
+  // If we found a personal/owner email (not info@/contact@), use it
+  if (scrapedEmail) {
+    const prefix = scrapedEmail.split('@')[0].toLowerCase();
+    const genericPrefixes = ['info', 'contact', 'hello', 'office', 'mail', 'team', 'support', 'service'];
+    if (!genericPrefixes.some(g => prefix === g || prefix.startsWith(g + '.'))) {
+      return { email: scrapedEmail, source: 'website_scrape', isPersonal: true };
+    }
+  }
+
+  // For all domains, try Impressum scraping + pattern generation
+  const impressum = await scrapeImpressum(websiteUrl);
+  if (impressum && impressum.ownerName) {
+    const emailPatterns = await generateEmailsFromOwnerName(impressum.ownerName, impressum.domain);
+    if (emailPatterns && emailPatterns.primaryEmail) {
+      return {
+        email: emailPatterns.primaryEmail,
+        ownerName: impressum.ownerName,
+        allPatterns: emailPatterns.allPatterns,
+        source: 'impressum_pattern',
+        isPersonal: true,
+        mxVerified: emailPatterns.mxVerified
+      };
+    }
+  }
+
+  // Fallback to scraped email (even if generic)
+  if (scrapedEmail) {
+    return { email: scrapedEmail, source: 'website_scrape', isPersonal: false };
+  }
+
+  return null;
+}
+
 // Helper: Guess common email patterns and verify they exist (FREE)
 async function guessAndVerifyEmail(domain, businessName) {
   // Common email patterns for businesses
@@ -17006,16 +17335,25 @@ async function findEmailForLead(lead) {
     }
   }
 
-  // 1. Website scraper (FREE - best quality, now with personal-first priority)
+  // 1. Enhanced email finder: Website + Impressum (DE/AT/CH) + Owner patterns
   if (lead.website) {
     try {
-      emailFound = await scrapeEmailFromWebsite(lead.website);
-      if (emailFound) {
-        source = 'website_scraper';
-        console.log(`🌐 Website scraper found: ${emailFound}`);
-        return { email: emailFound, source };
+      const enhanced = await findEnhancedEmail(lead.website);
+      if (enhanced?.email) {
+        source = enhanced.source || 'website_scraper';
+        console.log(
+          `🌐 Enhanced finder: ${enhanced.email} (source: ${source}, personal: ${enhanced.isPersonal})`
+        );
+        // If we found owner name via Impressum, update lead
+        if (enhanced.ownerName) {
+          lead.contact_name = enhanced.ownerName;
+          console.log(`📋 Owner from Impressum: ${enhanced.ownerName}`);
+        }
+        return { email: enhanced.email, source, ownerName: enhanced.ownerName };
       }
-    } catch (e) {}
+    } catch (e) {
+      console.log('Enhanced email finder failed:', e.message);
+    }
   }
 
   // 2. Email pattern guesser with MX verification (FREE)
@@ -24967,6 +25305,129 @@ app.get('/api/health', async (req, res) => {
     },
     timestamp: new Date().toISOString(),
   });
+});
+
+// ==========================================
+// ANTI-SPAM ADMIN ENDPOINTS
+// ==========================================
+
+// GET /api/admin/anti-spam - Dashboard showing suppressions and frequency stats
+app.get('/api/admin/anti-spam', async (req, res) => {
+  const { key } = req.query;
+  const adminSecret = process.env.ADMIN_SECRET;
+
+  if (!adminSecret || !safeCompare(key, adminSecret)) {
+    return res.status(401).json({ error: 'Invalid admin key' });
+  }
+
+  try {
+    // Get suppression stats
+    const suppressions = await dbQuery(`
+      SELECT reason, COUNT(*) as count
+      FROM email_suppressions
+      GROUP BY reason
+      ORDER BY count DESC
+    `);
+
+    // Get recent suppressions
+    const recentSuppressions = await dbQuery(`
+      SELECT email_address, reason, details, created_at
+      FROM email_suppressions
+      ORDER BY created_at DESC
+      LIMIT 20
+    `);
+
+    // Get emails approaching frequency limit (3+ in last 7 days)
+    const frequencyWarnings = await dbQuery(`
+      SELECT to_email, COUNT(*) as emails_this_week
+      FROM email_logs
+      WHERE type = 'outreach'
+      AND sent_at > NOW() - INTERVAL '7 days'
+      GROUP BY to_email
+      HAVING COUNT(*) >= 3
+      ORDER BY COUNT(*) DESC
+      LIMIT 50
+    `);
+
+    // Get skip stats from today
+    const todaySkips = await dbQuery(`
+      SELECT
+        COUNT(*) FILTER (WHERE status = 'skipped') as skipped_today,
+        COUNT(*) FILTER (WHERE status = 'sent') as sent_today
+      FROM email_logs
+      WHERE type = 'outreach'
+      AND sent_at > NOW() - INTERVAL '1 day'
+    `);
+
+    res.json({
+      success: true,
+      config: {
+        max_emails_per_week: MAX_EMAILS_PER_WEEK,
+        note: 'Anti-spam nur für Outreach Emails. Transaktionale Emails (Passwort, etc.) sind NICHT betroffen.'
+      },
+      stats: {
+        total_suppressed: suppressions.rows.reduce((sum, r) => sum + parseInt(r.count), 0),
+        by_reason: suppressions.rows,
+        emails_approaching_limit: frequencyWarnings.rows.length,
+        today: todaySkips.rows[0] || { skipped_today: 0, sent_today: 0 }
+      },
+      recent_suppressions: recentSuppressions.rows,
+      frequency_warnings: frequencyWarnings.rows.slice(0, 10),
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/admin/anti-spam/suppress - Manually suppress an email
+app.post('/api/admin/anti-spam/suppress', async (req, res) => {
+  const { key } = req.query;
+  const { email, reason, details } = req.body;
+  const adminSecret = process.env.ADMIN_SECRET;
+
+  if (!adminSecret || !safeCompare(key, adminSecret)) {
+    return res.status(401).json({ error: 'Invalid admin key' });
+  }
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email required' });
+  }
+
+  try {
+    await suppressEmail(email, reason || 'manual', details || 'Added via admin');
+    res.json({ success: true, suppressed: email, reason: reason || 'manual' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/admin/anti-spam/unsuppress - Remove email from suppression list
+app.delete('/api/admin/anti-spam/unsuppress', async (req, res) => {
+  const { key, email } = req.query;
+  const adminSecret = process.env.ADMIN_SECRET;
+
+  if (!adminSecret || !safeCompare(key, adminSecret)) {
+    return res.status(401).json({ error: 'Invalid admin key' });
+  }
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email required' });
+  }
+
+  try {
+    const result = await pool.query(
+      'DELETE FROM email_suppressions WHERE LOWER(email_address) = LOWER($1)',
+      [email]
+    );
+    res.json({
+      success: true,
+      removed: result.rowCount > 0,
+      email
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // GET /api/admin/cleanup-test-data - Remove all test data from database
