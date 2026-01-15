@@ -2335,7 +2335,6 @@ const LandingPage = () => {
   return (
     <div>
       {!user && <ExitIntentPopup />}
-      <ProductHuntLaunchBanner />
 
       {/* Referral Banner */}
       {referralBanner && (
@@ -3391,19 +3390,12 @@ const PricingCards = ({ showFree = true }) => {
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [loadingPlan, setLoadingPlan] = useState(null); // Track which plan is loading
 
-  // Get discount code from URL parameter (e.g., ?discount=EARLY50) or localStorage
+  // Get discount code from URL parameter (e.g., ?discount=DEMO30) or localStorage
   const urlParams = new URLSearchParams(location.search);
   const discountFromUrl = urlParams.get('discount') || localStorage.getItem('pending_discount');
 
-  // Valid discount codes (including new welcome/demo codes)
-  const validDiscountCodes = [
-    'EARLY50',
-    'SAVE20',
-    'HUNTLAUNCH',
-    'WELCOME30',
-    'DEMO30',
-    'DEMOFOLLOWUP',
-  ];
+  // Valid discount codes - ONLY 30% off codes (professional, not desperate)
+  const validDiscountCodes = ['WELCOME30', 'DEMO30'];
   const activeDiscount = validDiscountCodes.includes(discountFromUrl?.toUpperCase())
     ? discountFromUrl.toUpperCase()
     : null;
@@ -3504,11 +3496,10 @@ const PricingCards = ({ showFree = true }) => {
   const displayPlans = showFree ? plans : plans.filter(p => p.plan !== 'free');
   const isYearly = billingCycle === 'yearly';
 
-  // Discount details for each code
+  // Discount details for each code - ONLY 30% professional discounts
   const discountDetails = {
-    EARLY50: { percent: 50, label: 'Early Access' },
-    SAVE20: { percent: 20, label: 'Special Offer' },
-    HUNTLAUNCH: { percent: 60, label: 'Product Hunt Special' },
+    WELCOME30: { percent: 30, label: 'Welcome Offer' },
+    DEMO30: { percent: 30, label: 'Demo Special' },
   };
   const currentDiscount = activeDiscount ? discountDetails[activeDiscount] : null;
 
@@ -27742,12 +27733,10 @@ const ClaimDiscountPage = () => {
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isExpired, setIsExpired] = useState(false);
 
-  // Static discount info for fallback (direct codes like EARLY50)
+  // Static discount info for fallback - ONLY 30% professional codes
   const staticDiscountInfo = {
-    EARLY50: { percent: 50, label: 'Early Access', duration: '12 months' },
-    HUNTLAUNCH: { percent: 60, label: 'Product Hunt Special', duration: '12 months' },
-    DEMOFOLLOWUP: { percent: 30, label: 'Demo Special', duration: '3 months' },
-    SAVE20: { percent: 20, label: 'Special Offer', duration: '12 months' },
+    WELCOME30: { percent: 30, label: 'Welcome Offer', duration: '3 months' },
+    DEMO30: { percent: 30, label: 'Demo Special', duration: '3 months' },
   };
 
   // Check if code is a token (8 chars) or a discount code

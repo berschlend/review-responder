@@ -4153,85 +4153,19 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
 
     const user = await dbGet('SELECT * FROM users WHERE id = $1', [req.user.id]);
 
-    // Check for discount code
+    // Check for discount code - ONLY 30% professional discounts allowed
+    // Valid codes: WELCOME30, DEMO30 (both 30% off for 3 months)
     let discounts = [];
     const upperDiscountCode = discountCode ? discountCode.toUpperCase() : '';
 
-    if (upperDiscountCode === 'EARLY50') {
-      // Create a 50% off coupon for early adopters (valid for 12 months)
-      try {
-        const coupon = await stripe.coupons.create({
-          percent_off: 50,
-          duration: 'repeating',
-          duration_in_months: 12,
-          id: `EARLY50_${Date.now()}_${user.id}`,
-          metadata: {
-            campaign: 'early_adopter',
-            user_id: user.id.toString(),
-          },
-        });
-        discounts = [
-          {
-            coupon: coupon.id,
-          },
-        ];
-      } catch (err) {
-        console.log('Coupon creation error:', err);
-        // Continue without discount if coupon fails
-      }
-    } else if (upperDiscountCode === 'HUNTLAUNCH') {
-      // Product Hunt Launch - 60% off for first 24 hours
-      try {
-        const coupon = await stripe.coupons.create({
-          percent_off: 60,
-          duration: 'once', // Only first payment
-          id: `HUNTLAUNCH_${Date.now()}_${user.id}`,
-          redeem_by: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // Valid for 24 hours
-          metadata: {
-            campaign: 'product_hunt_launch',
-            user_id: user.id.toString(),
-          },
-        });
-        discounts = [
-          {
-            coupon: coupon.id,
-          },
-        ];
-      } catch (err) {
-        console.log('HUNTLAUNCH coupon creation error:', err);
-        // Continue without discount if coupon fails
-      }
-    } else if (upperDiscountCode === 'DEMOFOLLOWUP') {
-      // Demo follow-up - 30% off for 48 hours
-      try {
-        const coupon = await stripe.coupons.create({
-          percent_off: 30,
-          duration: 'repeating',
-          duration_in_months: 3,
-          id: `DEMOFOLLOWUP_${Date.now()}_${user.id}`,
-          redeem_by: Math.floor(Date.now() / 1000) + 48 * 60 * 60, // Valid for 48 hours
-          metadata: {
-            campaign: 'demo_followup',
-            user_id: user.id.toString(),
-          },
-        });
-        discounts = [
-          {
-            coupon: coupon.id,
-          },
-        ];
-      } catch (err) {
-        console.log('DEMOFOLLOWUP coupon creation error:', err);
-        // Continue without discount if coupon fails
-      }
-    } else if (upperDiscountCode === 'WELCOME30' || upperDiscountCode === 'DEMO30') {
+    if (upperDiscountCode === 'WELCOME30' || upperDiscountCode === 'DEMO30') {
       // Welcome/Demo signup - 30% off for 7 days (first 3 months)
       try {
         const coupon = await stripe.coupons.create({
           percent_off: 30,
           duration: 'repeating',
           duration_in_months: 3,
-          id: `WELCOME30_${Date.now()}_${user.id}`,
+          id: `${upperDiscountCode}_${Date.now()}_${user.id}`,
           redeem_by: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // Valid for 7 days
           metadata: {
             campaign: upperDiscountCode === 'DEMO30' ? 'demo_signup' : 'welcome_email',
@@ -4244,7 +4178,7 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
           },
         ];
       } catch (err) {
-        console.log('WELCOME30/DEMO30 coupon creation error:', err);
+        console.log('Coupon creation error:', err);
         // Continue without discount if coupon fails
       }
     }
