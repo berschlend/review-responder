@@ -841,6 +841,21 @@ BEHAVIOR (0-30):
 
 ---
 
+## SESSION-LOG 15.01.2026 ~15:00 UTC
+
+**Session:** PR-Team Messaging Update
+**Aktionen:**
+1. **First Principles Analyse:** "Besser als du selbst" Messaging → zu aggressiv
+2. **Messaging Update deployed:**
+   - Hero: "Sound like you hired a PR team"
+   - InstantDemoWidget: "Get PR-Quality Responses"
+   - Footer: Updated value prop
+3. **Commit:** `85ff0b5e`
+
+**Erkenntnis:** Messaging-Änderungen sind nice-to-have, User Activation bleibt der echte Bottleneck (10 registrierte User, 0 aktive Nutzung).
+
+---
+
 ## SESSION-LOG 15.01.2026 ~09:00 UTC
 
 **Session:** LinkedIn Outreach - Hotel Managers Germany
