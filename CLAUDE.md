@@ -351,6 +351,12 @@ Läuft autonom ohne User-Input:
 ### Outreach
 - `GET /api/cron/daily-outreach|demo-followup|scraper-alerts`
 
+### Omnichannel (NEU 15.01)
+- `GET /api/admin/leads-for-omnichannel` - Leads mit Demo für Multi-Channel
+- `PUT /api/admin/lead-social-links` - Social Links updaten
+- `PUT /api/admin/mark-channel-contacted` - Kanal als kontaktiert markieren
+- `GET /api/admin/omnichannel-stats` - Multi-Channel Stats
+
 ---
 
 ## COMPLETED FEATURES
@@ -385,9 +391,29 @@ Läuft autonom ohne User-Input:
 
 **SEMI-MANUELL (erfordert `claude --chrome`):**
 - `/linkedin-connect` - Demos werden auto-generiert, Connection Requests manuell
+- `/omnichannel-blast` - **NEU!** Multi-Channel Outreach (Twitter, FB, Instagram, LinkedIn)
 - `/scrape-leads` - TripAdvisor Scraping
 - `/g2-miner` - G2 Competitor Mining
 - `/yelp-audit` - Yelp Lead Auditing
+
+### Omnichannel Parallel Setup (3 Claude Sessions)
+```powershell
+# Terminal 1: Twitter
+$env:CLAUDE_SESSION = "Twitter"
+claude --chrome
+# /omnichannel-blast --channel=twitter
+
+# Terminal 2: Facebook
+$env:CLAUDE_SESSION = "Facebook"
+claude --chrome
+# /omnichannel-blast --channel=facebook
+
+# Terminal 3: Instagram
+$env:CLAUDE_SESSION = "Instagram"
+claude --chrome
+# /omnichannel-blast --channel=instagram
+```
+Oder: `.claude\omnichannel-parallel.ps1` ausführen
 
 ---
 
