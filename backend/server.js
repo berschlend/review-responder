@@ -1914,6 +1914,22 @@ async function initDatabase() {
       // Columns might already exist
     }
 
+    // Claude CLI Account Usage tracking (for Night-Burst account rotation)
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS claude_account_usage (
+        id SERIAL PRIMARY KEY,
+        account_name VARCHAR(50) NOT NULL,
+        email VARCHAR(255),
+        date DATE NOT NULL,
+        tokens_today BIGINT DEFAULT 0,
+        tokens_week BIGINT DEFAULT 0,
+        messages_today INTEGER DEFAULT 0,
+        sessions_today INTEGER DEFAULT 0,
+        synced_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(account_name, date)
+      )
+    `);
+
     console.log('📊 Database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -21289,6 +21305,129 @@ app.get('/api/admin/api-credits', async (req, res) => {
     });
   } catch (err) {
     console.error('[api-credits] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Claude CLI Account Usage - Sync from local scripts
+// POST endpoint receives usage data from Sync-AccountUsage.ps1
+app.post('/api/admin/sync-account-usage', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!process.env.ADMIN_SECRET || !safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { accounts } = req.body;
+
+  if (!accounts || !Array.isArray(accounts)) {
+    return res.status(400).json({ error: 'accounts array required' });
+  }
+
+  try {
+    const results = [];
+    const today = new Date().toISOString().split('T')[0];
+
+    for (const acc of accounts) {
+      // Calculate week tokens (sum of last 7 days)
+      const tokensWeek = acc.tokens_week || acc.tokens_today || 0;
+
+      // Upsert for today
+      await dbQuery(
+        `INSERT INTO claude_account_usage (account_name, email, date, tokens_today, tokens_week, messages_today, sessions_today, synced_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+         ON CONFLICT (account_name, date)
+         DO UPDATE SET tokens_today = $4, tokens_week = $5, messages_today = $6, sessions_today = $7, synced_at = NOW()`,
+        [
+          acc.account_name,
+          acc.email,
+          today,
+          acc.tokens_today || 0,
+          tokensWeek,
+          acc.messages_today || 0,
+          acc.sessions_today || 0,
+        ]
+      );
+
+      results.push({
+        account: acc.account_name,
+        tokens_today: acc.tokens_today || 0,
+        status: 'synced',
+      });
+    }
+
+    res.json({
+      success: true,
+      synced: results.length,
+      accounts: results,
+      synced_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('[sync-account-usage] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Claude CLI Account Usage - Get current usage for Admin Panel
+app.get('/api/admin/account-usage', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.key;
+  if (!process.env.ADMIN_SECRET || !safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  // Configurable limits (Claude Pro ~45M tokens/month, ~11M/week, ~1.5M/day)
+  const DAILY_LIMIT = parseInt(process.env.CLAUDE_DAILY_TOKEN_LIMIT) || 1500000;
+  const WEEKLY_LIMIT = parseInt(process.env.CLAUDE_WEEKLY_TOKEN_LIMIT) || 11000000;
+
+  try {
+    const today = new Date().toISOString().split('T')[0];
+
+    // Get latest data for each account
+    const result = await dbQuery(`
+      SELECT DISTINCT ON (account_name)
+        account_name, email, date, tokens_today, tokens_week, messages_today, sessions_today, synced_at
+      FROM claude_account_usage
+      ORDER BY account_name, date DESC
+    `);
+
+    const accounts = result.rows.map((row) => {
+      const dailyPercent = Math.round((row.tokens_today / DAILY_LIMIT) * 100);
+      const weeklyPercent = Math.round((row.tokens_week / WEEKLY_LIMIT) * 100);
+
+      return {
+        account_name: row.account_name,
+        email: row.email,
+        date: row.date,
+        tokens_today: parseInt(row.tokens_today) || 0,
+        tokens_week: parseInt(row.tokens_week) || 0,
+        messages_today: row.messages_today || 0,
+        sessions_today: row.sessions_today || 0,
+        daily_percent: dailyPercent,
+        weekly_percent: weeklyPercent,
+        daily_status: dailyPercent >= 90 ? 'critical' : dailyPercent >= 70 ? 'warning' : 'ok',
+        weekly_status: weeklyPercent >= 90 ? 'critical' : weeklyPercent >= 70 ? 'warning' : 'ok',
+        synced_at: row.synced_at,
+      };
+    });
+
+    // Calculate totals across all accounts
+    const totals = {
+      tokens_today: accounts.reduce((sum, a) => sum + a.tokens_today, 0),
+      tokens_week: accounts.reduce((sum, a) => sum + a.tokens_week, 0),
+      messages_today: accounts.reduce((sum, a) => sum + a.messages_today, 0),
+      sessions_today: accounts.reduce((sum, a) => sum + a.sessions_today, 0),
+    };
+
+    res.json({
+      accounts,
+      totals,
+      limits: {
+        daily: DAILY_LIMIT,
+        weekly: WEEKLY_LIMIT,
+      },
+      last_sync: accounts.length > 0 ? accounts[0].synced_at : null,
+    });
+  } catch (err) {
+    console.error('[account-usage] Error:', err);
     res.status(500).json({ error: err.message });
   }
 });

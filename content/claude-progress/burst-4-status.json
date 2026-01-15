@@ -1,7 +1,9 @@
-﻿{
+{
     "loop_interval": "4h",
     "learnings_applied": [
-        "Hot leads without demos often have API/matching issues, not budget issues"
+        "LinkedIn endpoint (POST /api/outreach/linkedin-demo) works 100% for demo generation",
+        "Other demo endpoints fail with 'No reviews' due to Place ID lookup issues",
+        "Solution found: Use LinkedIn endpoint for ALL demo generation"
     ],
     "current_loop": 2,
     "started_at": "2026-01-15T21:32:41Z",
@@ -10,8 +12,8 @@
     "escalations_pending": [],
     "checkpoints": {
         "resume_from": null,
-        "last_successful_action": "2026-01-15T21:37:00Z",
-        "last_processed_id": null
+        "last_successful_action": "2026-01-15T21:55:00Z",
+        "last_processed_id": "hot-lead-batch-17"
     },
     "health": {
         "api_budget_ok": true,
@@ -22,12 +24,32 @@
     "metrics": {
         "success_rate": 100,
         "errors_count": 0,
-        "actions_taken": 1,
-        "demos_today": 100,
-        "hot_leads_checked": 20,
-        "hot_leads_without_reviews": 20
+        "actions_taken": 17,
+        "demos_generated_this_session": 17,
+        "total_hot_leads_processed": 17
     },
-    "status": "running",
-    "last_heartbeat": "2026-01-15T21:37:00Z",
-    "notes": "All 20 hot leads without demos returned 'No reviews' - API rate limits or Business name matching issue"
+    "status": "completed",
+    "last_heartbeat": "2026-01-15T21:55:00Z",
+    "session_summary": {
+        "demos_generated": [
+            {"business": "Augustiner Klosterwirt", "city": "Munich", "url": "https://tryreviewresponder.com/demo/ed97dd7aff4045f2fccf9ebccf477726"},
+            {"business": "Wirtshaus in der Au", "city": "Munich", "url": "https://tryreviewresponder.com/demo/d651f6bdc8aae7bcf53f16d138dd7344"},
+            {"business": "Sphere Tim Raue", "city": "Berlin", "url": "https://tryreviewresponder.com/demo/0c55bf2cf32d520b828f44b67dacae39"},
+            {"business": "Komodo Miami", "city": "Miami", "url": "https://tryreviewresponder.com/demo/8ebd7ec2ad2d4b44822b60f5a276df4a"},
+            {"business": "The Capital Grille", "city": "Seattle", "url": "https://tryreviewresponder.com/demo/d1cdfae61bdb2ab0f2b8fd8eb034df91"},
+            {"business": "Restaurant Sonnenberg", "city": "Zurich", "url": "https://tryreviewresponder.com/demo/5c4b3e1e14cbb63cd79eb53e904db83e"},
+            {"business": "Trattoria Sempre", "city": "Zurich", "url": "https://tryreviewresponder.com/demo/23352200036f5361a16df9caac98319d"},
+            {"business": "IntercityHotel Hamburg", "city": "Hamburg", "url": "https://tryreviewresponder.com/demo/60484c0f4cdd13ed8de7c66c0fde022b"},
+            {"business": "St James Quarter", "city": "Edinburgh", "url": "https://tryreviewresponder.com/demo/d3ce0ca9ca84f7edeca4e281efbdb045"},
+            {"business": "Bullring", "city": "Birmingham", "url": "https://tryreviewresponder.com/demo/472b9d635a8873897fec57693990f970"},
+            {"business": "Alder and Ash", "city": "Seattle", "url": "https://tryreviewresponder.com/demo/b4b993cfa97a9ed3df8f38e632ab050e"},
+            {"business": "Romano Law", "city": "New York", "url": "https://tryreviewresponder.com/demo/604782a630faa4f99debcf958f6ffe51"},
+            {"business": "terrasse Restaurant", "city": "Zurich", "url": "https://tryreviewresponder.com/demo/c91a3a15afbd768878fd9e098f17ba35"},
+            {"business": "The Dolder Grand", "city": "Zurich", "url": "https://tryreviewresponder.com/demo/3b0a400f04563cb442fe9fffa7be0672"},
+            {"business": "The Smith", "city": "New York", "url": "https://tryreviewresponder.com/demo/a8db7ffd4b5415de2a44693506401b9a"},
+            {"business": "AWAY SPA", "city": "Edinburgh", "url": "https://tryreviewresponder.com/demo/99f022eb3fd98188b3686e8d8a9d508e"},
+            {"business": "Six Seven Restaurant", "city": "Seattle", "url": "https://tryreviewresponder.com/demo/a922087b40ce0860f681d358c7baf911"}
+        ],
+        "key_finding": "POST /api/outreach/linkedin-demo works 100% while other demo endpoints fail"
+    }
 }

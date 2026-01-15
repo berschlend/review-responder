@@ -404,3 +404,10 @@ User klicken Magic Link → werden registriert → nutzen Produkt NIE → erreic
 ### [2026-01-15 21:44] Burst-5
 - Hot Lead Click-to-Register Conversion ist 90% (9/10). ABER: 100% dieser User haben 0 responses. Problem ist nicht Click-to-Register, sondern Register-to-Activate.
 
+
+### [2026-01-15 21:45] Burst-2
+- Lead Exhaustion bestätigt: 878/886 (99%) Leads mit Email bereits kontaktiert. /api/outreach/find-emails fand 0 neue Emails bei 25 Leads. Problem: Leads ohne Website oder Website ohne sichtbare Email. Night-Blast triggert für neue Leads.
+
+### [2026-01-15 21:53] Burst-4
+- CONFIRMED: POST /api/outreach/linkedin-demo is 100% reliable for demo generation. Generated 17 demos for ALL hot leads in 1 session. Other endpoints (send-hot-lead-demos, followup-clickers) fail with No reviews because of Place ID matching issues. ALWAYS use LinkedIn endpoint for demos!
+

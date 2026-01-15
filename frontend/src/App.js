@@ -30768,6 +30768,8 @@ const AdminPage = () => {
   const [omnichannelLoading, setOmnichannelLoading] = useState(false);
   const [widgetAnalytics, setWidgetAnalytics] = useState(null);
   const [widgetLoading, setWidgetLoading] = useState(false);
+  const [accountUsageData, setAccountUsageData] = useState(null);
+  const [accountUsageLoading, setAccountUsageLoading] = useState(false);
 
   // Use the same API_URL as the rest of the app (already includes /api)
   // Remove /api suffix if present to build admin URLs correctly
@@ -31014,6 +31016,21 @@ const AdminPage = () => {
     }
   };
 
+  const loadAccountUsageData = async key => {
+    const keyToUse = key || adminKey;
+    if (!keyToUse) return;
+    setAccountUsageLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/admin/account-usage?key=${keyToUse}`);
+      setAccountUsageData(res.data);
+    } catch (err) {
+      console.error('Account usage load error:', err);
+      toast.error('Failed to load account usage');
+    } finally {
+      setAccountUsageLoading(false);
+    }
+  };
+
   const addClaudeNote = async () => {
     if (!newNote.trim()) {
       toast.error('Please enter a note');
@@ -31138,6 +31155,9 @@ const AdminPage = () => {
       }
       if (activeAdminTab === 'widget' && !widgetAnalytics) {
         loadWidgetAnalytics();
+      }
+      if (activeAdminTab === 'accounts' && !accountUsageData) {
+        loadAccountUsageData();
       }
     }
   }, [activeAdminTab, isAuthenticated, adminKey]);
@@ -31290,6 +31310,13 @@ const AdminPage = () => {
           style={{ background: activeAdminTab === 'widget' ? 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)' : undefined }}
         >
           Widget Analytics
+        </button>
+        <button
+          className={`btn ${activeAdminTab === 'accounts' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('accounts')}
+          style={{ background: activeAdminTab === 'accounts' ? 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)' : undefined }}
+        >
+          Claude Accounts
         </button>
       </div>
 
@@ -35294,6 +35321,168 @@ const AdminPage = () => {
                 Could not load widget analytics
               </p>
               <button className="btn btn-primary" onClick={() => loadWidgetAnalytics()}>
+                Retry
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Claude Accounts Usage Tab - Track CLI account limits */}
+      {activeAdminTab === 'accounts' && (
+        <div>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '20px',
+            }}
+          >
+            <h2 style={{ margin: 0 }}>Claude Account Usage</h2>
+            <button
+              className="btn btn-secondary"
+              onClick={() => {
+                setAccountUsageData(null);
+                loadAccountUsageData();
+              }}
+              style={{ padding: '6px 12px', fontSize: '13px' }}
+            >
+              Refresh
+            </button>
+          </div>
+
+          {accountUsageLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading account usage...</div>
+          ) : accountUsageData ? (
+            <>
+              {/* Account Cards */}
+              {accountUsageData.accounts?.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {accountUsageData.accounts.map((acc, idx) => (
+                    <div
+                      key={idx}
+                      className="card"
+                      style={{
+                        border:
+                          acc.daily_status === 'critical'
+                            ? '2px solid #EF4444'
+                            : acc.daily_status === 'warning'
+                              ? '2px solid #F59E0B'
+                              : '1px solid var(--gray-200)',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <div>
+                          <div style={{ fontWeight: '600', fontSize: '16px' }}>{acc.account_name}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{acc.email}</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
+                            {acc.messages_today} msgs | {acc.sessions_today} sessions
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Daily Usage Bar */}
+                      <div style={{ marginBottom: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '4px' }}>
+                          <span>Today</span>
+                          <span>
+                            {(acc.tokens_today / 1000).toFixed(0)}K / {(accountUsageData.limits?.daily / 1000000).toFixed(1)}M ({acc.daily_percent}%)
+                          </span>
+                        </div>
+                        <div style={{ background: 'var(--gray-200)', borderRadius: '4px', height: '8px', overflow: 'hidden' }}>
+                          <div
+                            style={{
+                              width: `${Math.min(acc.daily_percent, 100)}%`,
+                              height: '100%',
+                              background:
+                                acc.daily_status === 'critical'
+                                  ? '#EF4444'
+                                  : acc.daily_status === 'warning'
+                                    ? '#F59E0B'
+                                    : '#10B981',
+                              transition: 'width 0.3s ease',
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Weekly Usage Bar */}
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '4px' }}>
+                          <span>This Week</span>
+                          <span>
+                            {(acc.tokens_week / 1000).toFixed(0)}K / {(accountUsageData.limits?.weekly / 1000000).toFixed(0)}M ({acc.weekly_percent}%)
+                          </span>
+                        </div>
+                        <div style={{ background: 'var(--gray-200)', borderRadius: '4px', height: '8px', overflow: 'hidden' }}>
+                          <div
+                            style={{
+                              width: `${Math.min(acc.weekly_percent, 100)}%`,
+                              height: '100%',
+                              background:
+                                acc.weekly_status === 'critical'
+                                  ? '#EF4444'
+                                  : acc.weekly_status === 'warning'
+                                    ? '#F59E0B'
+                                    : '#3B82F6',
+                              transition: 'width 0.3s ease',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Totals Card */}
+                  <div className="card" style={{ background: 'var(--gray-50)' }}>
+                    <div style={{ fontWeight: '600', marginBottom: '8px' }}>Combined Totals</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', textAlign: 'center' }}>
+                      <div>
+                        <div style={{ fontSize: '20px', fontWeight: '600' }}>{(accountUsageData.totals?.tokens_today / 1000).toFixed(0)}K</div>
+                        <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>Tokens Today</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '20px', fontWeight: '600' }}>{(accountUsageData.totals?.tokens_week / 1000).toFixed(0)}K</div>
+                        <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>Tokens Week</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '20px', fontWeight: '600' }}>{accountUsageData.totals?.messages_today || 0}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>Messages</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '20px', fontWeight: '600' }}>{accountUsageData.totals?.sessions_today || 0}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>Sessions</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Last Sync Info */}
+                  <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--gray-500)' }}>
+                    Last sync: {accountUsageData.last_sync ? new Date(accountUsageData.last_sync).toLocaleString() : 'Never'}
+                    <br />
+                    <span style={{ fontSize: '11px' }}>Run <code>.\scripts\Sync-AccountUsage.ps1</code> to update</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="card" style={{ textAlign: 'center', padding: '40px' }}>
+                  <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+                    No account usage data synced yet.
+                  </p>
+                  <p style={{ fontSize: '13px', color: 'var(--gray-400)' }}>
+                    Run <code>.\scripts\Sync-AccountUsage.ps1</code> locally to sync your Claude CLI account usage.
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+                Could not load account usage
+              </p>
+              <button className="btn btn-primary" onClick={() => loadAccountUsageData()}>
                 Retry
               </button>
             </div>

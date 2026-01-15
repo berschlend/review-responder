@@ -25,9 +25,9 @@
 
 ---
 
-## 📧 BURST-2 UPDATE (21:40 UTC)
+## 📧 BURST-2 UPDATE (21:50 UTC)
 
-**Cold Emailer Status:** ✅ ACTIVE
+**Cold Emailer Status:** ⏸️ PAUSED (per current-focus.json)
 
 | Metrik | Wert |
 |--------|------|
@@ -37,16 +37,20 @@
 | CTR | 3.3% |
 | Hot Leads | 41 |
 
-**⚠️ LEAD EXHAUSTION:**
-- 878 Leads kontaktiert
-- 886 Leads mit Email total
-- **Nur 8 Leads mit Email noch offen!**
-- 1,328 "new" Leads OHNE Email
+**✅ MISSION ACCOMPLISHED:**
+- 878/886 Leads mit Email kontaktiert (99%)
+- 3.3% Click-Through-Rate (Ziel: 3%)
+- 41 Hot Leads generiert
 
-**NÄCHSTE SCHRITTE:**
-- Burst-1 muss mehr Emails finden
-- Email-Finding für existierende Leads aktivieren
-- Oder: Neue Lead-Quellen scrapen
+**⏸️ WARUM PAUSED:**
+- System-Priorität: Activation ist Bottleneck (78% Users dormant)
+- Alle verfügbaren Leads kontaktiert
+- Mehr Cold Emails bringt nichts wenn Users das Produkt nicht nutzen
+
+**RESUME WENN:**
+1. Activation Rate > 50%
+2. 10+ Users am Response-Limit
+3. Neue Leads mit Email verfügbar
 
 ---
 
@@ -145,6 +149,28 @@ cd "C:\Users\Berend Mainz\Documents\Start-up\ReviewResponder"
 - Email: info@treudelberg.com
 - 50+ Hotels in der Gruppe
 - Hat Demo geklickt!
+
+### 4. 🟡 Lost Leads Analysis (Burst-5)
+
+**11 Leads haben 2x Follow-Up bekommen aber NICHT registriert:**
+
+Diese Leads haben geklickt, beide E-Mails bekommen, aber nie Account erstellt:
+- info@hilton.com (Hilton Hotel Chain!)
+- pmuszynski@thecapitalgrille.com (Capital Grille)
+- info@wirtshausinderau.de (German Restaurant)
+- bren@ldry.com / lgho@ldry.com (La Griglia)
+- hello@tulio.com (Restaurant)
+- orders@petitpierrebakery.com
+- afif@alicetoronto.com
+- info@alderandashsea.com
+- onlinebestellung@pearle.at
+
+**Optionen:**
+1. **Ignorieren** - sie sind nicht interessiert genug
+2. **LinkedIn Personal Outreach** - besonders Hilton + Capital Grille (große Ketten)
+3. **Phone Call** - falls Nummer bekannt
+
+**Meine Empfehlung:** Hilton (info@hilton.com) ist eine RIESIGE Kette. Personal Outreach lohnt sich.
 
 ---
 
