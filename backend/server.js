@@ -27904,7 +27904,55 @@ cron.schedule('5 1 * * *', () => runNightLoop(2, 'Scheduled-01:05-UTC-Hour2'), {
   timezone: 'UTC',
 });
 
+// ============================================================================
+// ONBOARDING EMAILS - CRITICAL FOR USER ACTIVATION
+// Based on First Principles Analysis: 66% of users never use the product
+// This is THE bottleneck - not lead generation!
+// ============================================================================
+
+// Run onboarding emails 3x daily (morning, afternoon, evening)
+// To catch users at different points after registration
+async function runOnboardingEmails(source) {
+  const baseUrl =
+    process.env.BACKEND_URL || 'https://review-responder.onrender.com';
+  console.log(`📧 [Onboarding] Starting onboarding emails (${source})...`);
+
+  try {
+    const response = await fetch(
+      `${baseUrl}/api/cron/onboarding-emails?secret=${process.env.CRON_SECRET}`,
+      { method: 'GET', timeout: 120000 }
+    );
+    const result = await response.json();
+    console.log(
+      `📧 [Onboarding] Complete: ${result.sent || 0} sent, ${result.skipped || 0} skipped`
+    );
+    return result;
+  } catch (error) {
+    console.error(`📧 [Onboarding] Error:`, error.message);
+    return { error: error.message };
+  }
+}
+
+// 08:00 UTC = 09:00 Berlin - Morning check
+cron.schedule('0 8 * * *', () => runOnboardingEmails('Scheduled-08:00-UTC'), {
+  scheduled: true,
+  timezone: 'UTC',
+});
+
+// 14:00 UTC = 15:00 Berlin - Afternoon check
+cron.schedule('0 14 * * *', () => runOnboardingEmails('Scheduled-14:00-UTC'), {
+  scheduled: true,
+  timezone: 'UTC',
+});
+
+// 20:00 UTC = 21:00 Berlin - Evening check
+cron.schedule('0 20 * * *', () => runOnboardingEmails('Scheduled-20:00-UTC'), {
+  scheduled: true,
+  timezone: 'UTC',
+});
+
 console.log('🌙 Night-Loop Scheduler initialized: Hour 0 at 23:00 UTC, Hour 2 at 01:05 UTC');
+console.log('📧 Onboarding Emails Scheduler initialized: 08:00, 14:00, 20:00 UTC');
 
 // GET /api/cron/upgrade-leads - Upgrade existing leads with emails and demos
 // Phase 1: Find emails for leads without email (website scraping + patterns)
