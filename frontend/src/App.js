@@ -667,6 +667,7 @@ const InstantDemoWidget = ({
           context: {
             platform: detectedContext.platform || undefined,
             businessType: detectedContext.businessType || undefined,
+            industryType: detectedContext.businessType || undefined, // For Claude Sonnet 4 personas
           },
         },
         { headers }
@@ -3956,30 +3957,15 @@ const PricingCards = ({ showFree = true }) => {
       name: 'Free',
       monthlyPrice: 0,
       yearlyPrice: 0,
-      responses: 5,
+      responses: 20,
       features: [
-        '5 AI responses/month',
+        '20 AI responses/month',
         'All 4 tone options',
         'Any language (auto-detect)',
         'Chrome Extension (all platforms)',
       ],
       buttonText: 'Get Started',
       plan: 'free',
-    },
-    {
-      name: 'Basic',
-      monthlyPrice: 9,
-      yearlyPrice: 7.2, // 20% off
-      responses: 50,
-      features: [
-        '50 AI responses/month',
-        'All 4 tone options',
-        'Chrome Extension (all platforms)',
-        'Email support',
-      ],
-      buttonText: 'Subscribe',
-      plan: 'basic',
-      popular: true, // Drive upgrades to low-friction tier
     },
     {
       name: 'Starter',
@@ -4010,6 +3996,7 @@ const PricingCards = ({ showFree = true }) => {
       ],
       buttonText: 'Subscribe',
       plan: 'professional',
+      popular: true,
     },
     {
       name: 'Unlimited',
@@ -4521,7 +4508,7 @@ const RegisterPage = () => {
     setLoading(true);
     try {
       await register(email, password, businessName, refParam);
-      toast.success('Account created! You have 5 free responses.');
+      toast.success('Account created! You have 20 free responses.');
       navigate('/dashboard');
     } catch (error) {
       toast.error(error.response?.data?.error || 'Registration failed');
@@ -4535,7 +4522,7 @@ const RegisterPage = () => {
       setGoogleLoading(true);
       try {
         await loginWithGoogle(credential, refParam);
-        toast.success('Account created! You have 5 free responses.');
+        toast.success('Account created! You have 20 free responses.');
         navigate('/dashboard');
       } catch (error) {
         toast.error(error.response?.data?.error || 'Google sign-up failed');
@@ -4614,7 +4601,7 @@ const RegisterPage = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Sparkles size={12} style={{ color: 'var(--gray-400)' }} />
             <span style={{ fontSize: '12px', color: 'var(--gray-400)' }}>
-              5 free responses/month
+              20 free responses/month
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -9077,7 +9064,7 @@ Food was amazing, will definitely come back!`}
             }}
           >
             <h2 style={{ marginTop: 0, marginBottom: '8px', fontSize: '24px' }}>
-              You have used all 5 free responses!
+              You have used all 20 free responses!
             </h2>
             <p style={{ color: 'var(--gray-500)', marginBottom: '24px' }}>
               Your reviews are waiting for professional responses...
@@ -12997,7 +12984,7 @@ const VideoDemoPage = () => {
       const data = await res.json();
       if (data.error) {
         setShowSignup(true);
-        toast.success('Sign up for 5 free responses per month!');
+        toast.success('Sign up for 20 free responses per month!');
       } else {
         setResponse(data.response);
         // After showing response, prompt for signup
@@ -13256,7 +13243,7 @@ const DemoPage = () => {
         // Rate limit reached - scroll to CTA section
         if (data.error === 'Daily limit reached' || data.message?.includes('free tries')) {
           setLiveResponse('');
-          toast.success('Love the enthusiasm! Sign up for 5 free responses/month 👇');
+          toast.success('Love the enthusiasm! Sign up for 20 free responses/month 👇');
           setTimeout(() => {
             document
               .getElementById('demo-cta-section')
@@ -14605,7 +14592,7 @@ const DemoPage = () => {
               }}
             >
               <span style={{ color: 'white', fontSize: '14px', fontWeight: '600' }}>
-                Limited Time: 5 Free/Month
+                Limited Time: 20 Free/Month
               </span>
             </div>
             <h2
@@ -14627,7 +14614,7 @@ const DemoPage = () => {
                 margin: '0 auto 28px',
               }}
             >
-              5 free responses every month. No credit card required.
+              20 free responses every month. No credit card required.
             </p>
             <a
               href={demo.cta_url}
@@ -14853,7 +14840,7 @@ const DemoPage = () => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
-              5 free responses/month
+              20 free responses/month
             </span>
             <span
               style={{
@@ -14981,7 +14968,7 @@ const DemoPage = () => {
               {/* Value Props */}
               <div style={{ marginBottom: '24px' }}>
                 {[
-                  { icon: <Check size={16} />, text: '5 free responses every month' },
+                  { icon: <Check size={16} />, text: '20 free responses every month' },
                   { icon: <Check size={16} />, text: 'No credit card required' },
                   { icon: <Check size={16} />, text: 'Works with Google, Yelp, TripAdvisor' },
                 ].map((item, i) => (
@@ -15619,7 +15606,7 @@ const GoogleReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -15707,7 +15694,7 @@ const GoogleReviewPage = () => {
             Start Responding to Google Reviews Today
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            5 free responses/month included. No credit card required.
+            20 free responses/month included. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -15845,7 +15832,7 @@ const YelpReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -16155,7 +16142,7 @@ const RestaurantReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -16473,7 +16460,7 @@ const HotelReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -16737,7 +16724,7 @@ const LocalBusinessReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -17078,7 +17065,7 @@ const NegativeReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -17355,7 +17342,7 @@ const TripAdvisorReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -17443,7 +17430,7 @@ const TripAdvisorReviewPage = () => {
             Start Winning on TripAdvisor Today
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            5 free responses/month. No credit card required.
+            20 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -17580,7 +17567,7 @@ const BookingReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -17668,7 +17655,7 @@ const BookingReviewPage = () => {
             Improve Your Booking.com Performance
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            5 free responses/month. No credit card required.
+            20 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -17805,7 +17792,7 @@ const FacebookReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -17892,7 +17879,7 @@ const FacebookReviewPage = () => {
             Grow Your Facebook Business Presence
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            5 free responses/month. No credit card required.
+            20 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -18076,7 +18063,7 @@ const DentistReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -18389,7 +18376,7 @@ const MedicalPracticeReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -18656,7 +18643,7 @@ const SalonSpaReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -18921,7 +18908,7 @@ const AutoShopReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -19187,7 +19174,7 @@ const TrustpilotReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -19272,7 +19259,7 @@ const TrustpilotReviewPage = () => {
             Boost Your Trustpilot Score Today
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            5 free responses/month. No credit card required.
+            20 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -19410,7 +19397,7 @@ const AirbnbReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -19671,7 +19658,7 @@ const RealEstateReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -19756,7 +19743,7 @@ const RealEstateReviewPage = () => {
             Close More Deals with Better Reviews
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '24px' }}>
-            5 free responses/month. No credit card required.
+            20 free responses/month. No credit card required.
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
             <Sparkles size={20} />
@@ -19894,7 +19881,7 @@ const GymReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -20155,7 +20142,7 @@ const VetReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -20418,7 +20405,7 @@ const LawFirmReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -20679,7 +20666,7 @@ const EcommerceReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -20940,7 +20927,7 @@ const CoffeeShopReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -21195,7 +21182,7 @@ const AmazonReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -21380,7 +21367,7 @@ const G2ReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -21565,7 +21552,7 @@ const CapterraReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -21750,7 +21737,7 @@ const GlassdoorReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -21935,7 +21922,7 @@ const BBBReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -22120,7 +22107,7 @@ const PlumberReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -22304,7 +22291,7 @@ const ElectricianReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -22489,7 +22476,7 @@ const HVACReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -22673,7 +22660,7 @@ const RoofingReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -22858,7 +22845,7 @@ const LandscapingReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -23043,7 +23030,7 @@ const CleaningReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -23230,7 +23217,7 @@ const HealthgradesReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -23415,7 +23402,7 @@ const ZocdocReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -23600,7 +23587,7 @@ const PhotographerReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -23785,7 +23772,7 @@ const WeddingReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -23969,7 +23956,7 @@ const PetServiceReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -24153,7 +24140,7 @@ const DaycareReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -24338,7 +24325,7 @@ const AccountantReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -24523,7 +24510,7 @@ const InsuranceReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -24707,7 +24694,7 @@ const SeniorCareReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Globe size={16} /> 50+ Languages
@@ -24893,7 +24880,7 @@ const AppStoreReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Clock size={16} /> Save 5+ Hours/Week
@@ -25000,7 +24987,7 @@ const AppStoreReviewPage = () => {
             Ready to improve your app reviews?
           </h3>
           <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
-            5 free responses/month. No credit card required.
+            20 free responses/month. No credit card required.
           </p>
           <Link
             to="/register"
@@ -25131,7 +25118,7 @@ const IndeedReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Clock size={16} /> Save 5+ Hours/Week
@@ -25238,7 +25225,7 @@ const IndeedReviewPage = () => {
             Ready to improve your employer brand?
           </h3>
           <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
-            5 free responses/month. No credit card required.
+            20 free responses/month. No credit card required.
           </p>
           <Link
             to="/register"
@@ -25369,7 +25356,7 @@ const ZillowReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Clock size={16} /> Save 5+ Hours/Week
@@ -25484,7 +25471,7 @@ const ZillowReviewPage = () => {
             Ready to grow your real estate business?
           </h3>
           <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
-            5 free responses/month. No credit card required.
+            20 free responses/month. No credit card required.
           </p>
           <Link
             to="/register"
@@ -25615,7 +25602,7 @@ const TherapyReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Clock size={16} /> Save 5+ Hours/Week
@@ -25852,7 +25839,7 @@ const ThumbtackReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Clock size={16} /> Save 5+ Hours/Week
@@ -25959,7 +25946,7 @@ const ThumbtackReviewPage = () => {
             Ready to get more Thumbtack leads?
           </h3>
           <p style={{ color: 'var(--gray-600)', marginBottom: '32px', fontSize: '18px' }}>
-            5 free responses/month. No credit card required.
+            20 free responses/month. No credit card required.
           </p>
           <Link
             to="/register"
@@ -26090,7 +26077,7 @@ const LinkedInReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Users size={16} /> Build Your Network
@@ -26327,7 +26314,7 @@ const AngiReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Award size={16} /> Top Pro Status
@@ -26563,7 +26550,7 @@ const ChiropractorReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Heart size={16} /> HIPAA Aware
@@ -26799,7 +26786,7 @@ const BarberReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Scissors size={16} /> Built for Barbers
@@ -27035,7 +27022,7 @@ const DermatologistReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Heart size={16} /> HIPAA Aware
@@ -27273,7 +27260,7 @@ const MassageTherapistReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Heart size={16} /> Warm & Personal
@@ -27511,7 +27498,7 @@ const PersonalTrainerReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Zap size={16} /> Fitness Focused
@@ -27748,7 +27735,7 @@ const AngiListReviewPage = () => {
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Star size={16} /> 5 Free/Month
+              <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Wrench size={16} /> All Trades
@@ -27919,7 +27906,7 @@ const ExtensionPage = () => {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-600)', fontSize: '14px' }}>
               <Check size={16} style={{ color: '#10b981' }} />
-              5 free responses/month
+              20 free responses/month
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-600)', fontSize: '14px' }}>
               <Check size={16} style={{ color: '#10b981' }} />

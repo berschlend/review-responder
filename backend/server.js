@@ -699,7 +699,7 @@ async function sendFlashOfferEmail(user) {
             <div class="content">
               <p>Hi${user.business_name ? ' ' + user.business_name : ''},</p>
 
-              <p>You've used all <strong>5 free responses</strong> - that means you've seen the value ReviewResponder brings to your business.</p>
+              <p>You've used all <strong>20 free responses</strong> - that means you've seen the value ReviewResponder brings to your business.</p>
 
               <div class="timer">
                 <p style="margin: 0; color: #6B7280;">This offer expires in</p>
@@ -1788,20 +1788,9 @@ const authenticateApiKey = async (req, res, next) => {
 const PLAN_LIMITS = {
   free: {
     smartResponses: 3, // Claude - teaser to show quality
-    standardResponses: 2, // GPT-4o-mini - REDUCED from 17 to force upgrades
-    responses: 5, // Total - REDUCED from 20 (First Principles: 5 is enough to see value, not enough to stay forever)
+    standardResponses: 17, // GPT-4o-mini
+    responses: 20, // Total (for backward compatibility)
     price: 0,
-    teamMembers: 0,
-  },
-  // NEW: Basic tier for low-friction first purchase
-  basic: {
-    smartResponses: 20,
-    standardResponses: 30,
-    responses: 50,
-    price: 900, // $9/mo - the "no-brainer" tier
-    yearlyPrice: 8640, // 20% off: $9 * 12 * 0.8 = $86.40
-    priceId: process.env.STRIPE_BASIC_PRICE_ID,
-    yearlyPriceId: process.env.STRIPE_BASIC_YEARLY_PRICE_ID,
     teamMembers: 0,
   },
   starter: {
@@ -7471,6 +7460,107 @@ app.post('/api/public/demo/:token/convert', async (req, res) => {
 // ==========================================
 // Zero-context AI response generation for homepage demo
 // Rate limited: 3 per IP per day to prevent abuse
+// Uses Claude Sonnet 4 for best quality (First Impression is critical!)
+
+// Industry-specific personas for authentic responses
+const instantDemoPersonas = {
+  restaurant: {
+    persona:
+      "You're Maria, owner of a neighborhood Italian restaurant for 12 years. You've seen thousands of reviews. You reply quickly between lunch and dinner rush.",
+    context: 'Family recipes, regulars who come weekly, pride in homemade pasta',
+    voice: 'Direct, warm, food-focused. You mention specific dishes when relevant.',
+  },
+  hotel: {
+    persona:
+      "You're Thomas, GM of a boutique hotel in a city center for 8 years. Guest experience is everything.",
+    context: '120 rooms, rooftop bar, conference facilities, mix of business and leisure',
+    voice: 'Professional but personal. You remember details about guests.',
+  },
+  dental: {
+    persona:
+      "You're Dr. Kim, running a family dental practice for 15 years. You know patients by name.",
+    context: 'General dentistry, nervous patients are common, painless procedures are your specialty',
+    voice: 'Calm, reassuring, professional. Never defensive about wait times.',
+  },
+  medical: {
+    persona:
+      "You're Dr. Patel, running a family medical practice for 20 years. Patient wellbeing comes first.",
+    context: 'General practice, chronic conditions, preventive care, staff of 5',
+    voice: 'Empathetic, professional, warm. Never dismissive of concerns.',
+  },
+  salon: {
+    persona:
+      "You're Lisa, salon owner for 10 years. You built this place from one chair to a team of 8.",
+    context: 'Full-service salon, loyal clientele, pride in transformations',
+    voice: 'Friendly, confident, appreciative. Celebrate stylist mentions.',
+  },
+  automotive: {
+    persona:
+      "You're Mike, running your family auto shop for 25 years. Honesty and fair pricing are everything.",
+    context: 'Full-service repairs, diagnostic expertise, repeat customers for decades',
+    voice: 'Straightforward, honest, no-BS. Take responsibility when things go wrong.',
+  },
+  fitness: {
+    persona:
+      "You're Alex, gym owner and former trainer for 12 years. You know every regular by name.",
+    context: 'Community gym, personal training available, group classes',
+    voice: 'Energetic but genuine. Celebrate member achievements.',
+  },
+  legal: {
+    persona:
+      "You're Sarah, managing partner at a small law firm for 18 years. Client relationships matter.",
+    context: 'General practice, family law, estate planning, small business clients',
+    voice: 'Professional, measured, empathetic. Never defensive.',
+  },
+  realestate: {
+    persona:
+      "You're David, realtor for 15 years in the local market. You know every neighborhood intimately.",
+    context: 'Residential sales, first-time buyers to downsizers, local expertise',
+    voice: 'Helpful, knowledgeable, relationship-focused.',
+  },
+  ecommerce: {
+    persona:
+      "You're Emma, founder of an online store you started from your garage 5 years ago.",
+    context: 'Direct-to-consumer, quality products, personal customer service',
+    voice: 'Personal, authentic, genuinely grateful for customers.',
+  },
+  pets: {
+    persona:
+      "You're Dr. Chen, veterinarian running a neighborhood pet clinic for 12 years.",
+    context: 'Dogs, cats, small animals, preventive care, gentle handling',
+    voice: 'Caring, reassuring, always thinking about the pet first.',
+  },
+  childcare: {
+    persona:
+      "You're Jennifer, daycare director for 15 years. Every child's safety and happiness is paramount.",
+    context: 'Ages 6 months to 5 years, qualified staff, educational activities',
+    voice: 'Warm, professional, understanding of parent concerns.',
+  },
+  financial: {
+    persona:
+      "You're Robert, independent financial advisor for 20 years. Trust is everything.",
+    context: 'Retirement planning, insurance, investments, long-term relationships',
+    voice: 'Trustworthy, clear, jargon-free, patient.',
+  },
+  homeservices: {
+    persona:
+      "You're Tom, running a plumbing/electrical/HVAC business your dad started 40 years ago.",
+    context: 'Emergency service, fair pricing, warranty on work, local reputation',
+    voice: 'Honest, no-nonsense, takes responsibility.',
+  },
+  creative: {
+    persona:
+      "You're Maya, photographer/videographer for 8 years. Every project is a collaboration.",
+    context: 'Weddings, events, portraits, creative vision',
+    voice: 'Artistic, appreciative, excited about the craft.',
+  },
+  generic: {
+    persona:
+      "You're Alex, owner of a local business for 10 years. Every customer matters.",
+    context: 'Small team, personal service, community focus',
+    voice: 'Direct, warm, genuine. Short sentences.',
+  },
+};
 
 // Rate limiter for try endpoint (stricter)
 const tryRateLimiter = rateLimit({
@@ -7478,7 +7568,7 @@ const tryRateLimiter = rateLimit({
   max: 3, // 3 requests per IP per day
   message: {
     error: 'Daily limit reached',
-    message: "You've used all 3 free tries for today. Sign up for 5 free responses/month!",
+    message: "You've used all 3 free tries for today. Sign up for 20 free responses/month!",
     signup_url: 'https://tryreviewresponder.com/register',
   },
   standardHeaders: true,
@@ -7652,113 +7742,98 @@ app.post('/api/public/try', tryRateLimiter, async (req, res) => {
       airbnb: 'This review is from Airbnb.',
     };
 
-    // Build contextual system prompt
-    const bizContext = businessType ? businessContextMap[businessType.toLowerCase()] : null;
+    // Get industry type from context or detect from businessType
+    const industryType = (context.industryType || businessType || 'generic').toLowerCase();
+    const persona = instantDemoPersonas[industryType] || instantDemoPersonas.generic;
     const platHint = platform ? platformHints[platform.toLowerCase()] : null;
 
-    let contextSection;
-    if (bizContext) {
-      contextSection = `<context>
-You are responding as a ${bizContext.role}.
-${platHint ? platHint + '\n' : ''}
-Focus on details relevant to your business: ${bizContext.details}.
-Common topics include: ${bizContext.examples}.
-Extract from the review:
-- Language (respond in same language as review)
-- Sentiment (positive/negative/mixed)
-- Reviewer name (if apparent)
-- Specific details mentioned
-</context>`;
-    } else {
-      contextSection = `<context>
-This is a DEMO without business context. The user has NOT set up their profile yet.
-${platHint ? platHint + '\n' : ''}
-Extract ALL useful information directly from the review text itself:
-- Language (respond in same language as review)
-- Sentiment (positive/negative/mixed)
-- Specific details mentioned (food, service, rooms, staff names, etc.)
-- Reviewer name (if apparent from the review text)
-- Business type hints (restaurant, hotel, clinic, salon, etc.)
-</context>`;
-    }
+    // Get industry-specific few-shot examples from promptExamples.js
+    const { getFewShotExamplesXML } = require('./promptExamples');
+    const industryExamples = getFewShotExamplesXML(industryType);
 
+    // Build the optimized system prompt with personas and anti-slop rules
     const systemPrompt = `<system>
-You generate professional review responses for businesses.
+<role>
+${persona.persona}
+</role>
 
-${contextSection}
-
-<output_format>
-- Length: 2-4 sentences (short and impactful for demo)
-- Tone: ${toneDescription}
-- Structure:
-  1. Address reviewer by name if known, otherwise start directly
-  2. Reference ONE specific detail from their review
-  3. For negative: Express understanding + commitment to improve (general)
-  4. For positive: Genuine thanks + hope to see them again
-- Sign-off: None (user will add their own later)
-</output_format>
+<business_context>
+${persona.context}
+${platHint ? '\n' + platHint : ''}
+</business_context>
 
 <voice>
-Write like a thoughtful business owner who genuinely cares, not a corporate PR team.
-Natural, conversational language. No stiff formality.
-Match the energy of the review - enthusiastic for positive, calm and empathetic for negative.
+${persona.voice}
 </voice>
 
-<style_guide>
-DO:
-- Start with the reviewer's name if you can identify it
-- Reference specific details they mentioned
-- Keep it SHORT - this is a demo, we want to impress quickly
-- Sound human and genuine
+<mental_model>
+CRITICAL: Imagine you just read this review on your phone while waiting for coffee.
+You have 15 seconds to tap out a quick reply. What would you ACTUALLY type?
+Not what sounds professional. What would you ACTUALLY say.
+This is a DEMO - the response needs to impress immediately.
+</mental_model>
 
-AVOID these AI patterns:
-- "Thank you for taking the time to share your feedback"
-- "We truly appreciate your kind words"
-- "Your satisfaction is our top priority"
-- "We strive to..." or "We are committed to..."
-- Starting with "Thank you for your review"
-- Exclamation marks at the end of every sentence
-- Generic corporate language
-</style_guide>
+<output_format>
+- Length: 1-3 sentences MAX (shorter = more impressive for demo)
+- Language: Match the review's language EXACTLY (German review = German response)
+- Tone: ${toneDescription}
+- Structure for POSITIVE: Reference one specific detail + genuine thanks
+- Structure for NEGATIVE: Acknowledge the specific issue + take responsibility
+- NO sign-off (user adds their own)
+</output_format>
 
-<few_shot_examples>
-<example>
-<review>
-The pizza was cold and the waiter was rude. Waited 45 minutes for food. Never coming back.
-- Mike
-</review>
-<response>
-Mike, I'm sorry your evening went this way. A 45-minute wait and cold pizza is not the experience we want anyone to have. I'll be looking into what happened with our kitchen and front-of-house team this week.
-</response>
-</example>
+<anti_slop_rules>
+INSTANT REJECTION if response contains ANY of these:
+- "Thank you for" anywhere in the response
+- "We appreciate" anywhere
+- "Your feedback" or "your review" or "your kind words"
+- "We strive" or "We are committed" or "We value"
+- "Your satisfaction is our priority"
+- More than 1 exclamation mark total
+- Starting with "Hi [Name]" - just use the name directly like "Mike,"
+- Any sentence over 20 words
+- "Rest assured" or "I assure you"
+- "Please reach out" or "feel free to contact"
 
-<example>
-<review>
-Best haircut I've had in years! Maria really understood what I wanted and the salon had such a nice vibe. Will definitely be back.
-</review>
-<response>
-So glad Maria nailed the cut for you! She's got a real talent for listening to what people actually want. Looking forward to your next visit.
-</response>
-</example>
+ALSO AVOID (Claude-specific patterns that sound AI-generated):
+- "glad to hear" / "sorry to hear" / "nice to hear"
+- "sounds like" / "it sounds like"
+- "hope to see you" / "looking forward to seeing you"
+- "swing by" / "stop by" / "pop in"
+- "hit the spot" / "hits the spot"
+- "good to hear" / "glad it worked out"
+- anything that sounds like a helpful assistant rather than a busy owner
+</anti_slop_rules>
 
-<example>
-<review>
-Das Hotel war okay, aber das Frühstück war enttäuschend. Für den Preis hatte ich mehr erwartet.
-- Thomas K.
-</review>
-<response>
-Thomas, danke für die ehrliche Rückmeldung. Das Frühstück sollte den Preis definitiv rechtfertigen - ich nehme das mit ins Team. Bei Ihrem nächsten Aufenthalt möchten wir, dass Sie rundum zufrieden sind.
-</response>
-</example>
-</few_shot_examples>
+${industryExamples}
+
 </system>
 
-Write the response directly. No quotes. No "Response:" prefix. Just the review response text.`;
+Respond DIRECTLY. No quotes. No prefix. Just the response text.`;
 
     let generatedResponse;
 
-    // Use GPT-4o-mini to save costs (this is free demo traffic)
-    if (openai) {
+    // Use Claude Sonnet 4 for best quality (InstantDemo is the first impression!)
+    if (anthropic) {
+      const response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 250,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: `[Review]\n${reviewText.trim()}` }],
+      });
+      generatedResponse = response.content[0].text.trim();
+
+      // Log API call for cost tracking
+      await logApiCall({
+        provider: 'anthropic',
+        model: 'claude-sonnet-4-20250514',
+        endpoint: '/api/public/try',
+        inputTokens: response.usage?.input_tokens || 0,
+        outputTokens: response.usage?.output_tokens || 0,
+        status: 'success',
+      });
+    } else if (openai) {
+      // Fallback to GPT-4o-mini if no Anthropic key
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
@@ -7770,7 +7845,6 @@ Write the response directly. No quotes. No "Response:" prefix. Just the review r
       });
       generatedResponse = completion.choices[0].message.content.trim();
 
-      // Log API call for cost tracking
       await logApiCall({
         provider: 'openai',
         model: 'gpt-4o-mini',
@@ -7828,7 +7902,7 @@ Write the response directly. No quotes. No "Response:" prefix. Just the review r
       tone: tone,
       message: authenticatedUser
         ? undefined
-        : 'Like this response? Sign up for 5 free responses/month!',
+        : 'Like this response? Sign up for 20 free responses/month!',
       signup_url: authenticatedUser ? undefined : 'https://tryreviewresponder.com/register',
       remaining: authenticatedUser
         ? Math.max(
@@ -9344,7 +9418,7 @@ WHY I BUILT THIS:
 Small business owners shouldn't have to choose between ignoring reviews and spending hours writing responses. Every review deserves a thoughtful reply - but it shouldn't take 10 minutes to write one.
 
 PRICING:
-- Free: 5 responses/month
+- Free: 20 responses/month
 - Starter $29/mo: 300 responses
 - Pro $49/mo: 800 responses + team access + bulk generation
 - Unlimited $99/mo: No limits + API
@@ -9579,7 +9653,7 @@ app.get('/api/cron/send-drip-emails', async (req, res) => {
                   <span>Chrome Extension for one-click responses</span>
                 </div>
 
-                <p style="margin-top: 24px;">You have <strong>5 free responses</strong> to try it. Love it? Use code <strong>WELCOME30</strong> at checkout.</p>
+                <p style="margin-top: 24px;">You have <strong>20 free responses</strong> to try it. Love it? Use code <strong>WELCOME30</strong> at checkout.</p>
 
                 <center style="margin: 30px 0;">
                   <a href="${FRONTEND_URL}/dashboard" class="cta-button">Generate Your First Response →</a>
@@ -10006,7 +10080,7 @@ app.get('/api/cron/send-pre-registration-drips', async (req, res) => {
                 <p><strong>ReviewResponder solves this.</strong> Get professional, personalized responses in seconds - not minutes.</p>
 
                 <center style="margin: 30px 0;">
-                  <a href="${FRONTEND_URL}/register" class="cta-button">Try 5 Free Responses</a>
+                  <a href="${FRONTEND_URL}/register" class="cta-button">Try 20 Free Responses</a>
                 </center>
 
                 <p>Your discount code <strong>${discountCode}</strong> is still valid!</p>
@@ -10111,7 +10185,7 @@ app.get('/api/cron/send-pre-registration-drips', async (req, res) => {
 
                 <p><strong>Quick recap of what you get:</strong></p>
                 <ul>
-                  <li>5 free responses to try (no credit card)</li>
+                  <li>20 free responses to try (no credit card)</li>
                   <li>AI-powered professional responses in seconds</li>
                   <li>Works with Google, Yelp, TripAdvisor & more</li>
                   <li>Chrome extension for one-click responses</li>
@@ -10240,7 +10314,7 @@ app.get('/api/admin/test-pre-reg-drip', async (req, res) => {
     },
     3: {
       subject: 'Why ignoring reviews costs you customers',
-      html: `<!DOCTYPE html><html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#111827;line-height:1.6}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:linear-gradient(135deg,#DC2626 0%,#B91C1C 100%);color:white;padding:40px;text-align:center;border-radius:8px 8px 0 0}.content{background:white;padding:40px;border:1px solid #E5E7EB;border-radius:0 0 8px 8px}.stat-box{background:#FEF2F2;border-left:4px solid #DC2626;padding:16px;margin:16px 0}.cta-button{display:inline-block;background:#4F46E5;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:600}.footer{text-align:center;padding:20px;color:#6B7280;font-size:14px}</style></head><body><div class="container"><div class="header"><h1>The Hidden Cost of Unanswered Reviews</h1></div><div class="content"><p>Hi there!</p><p>Did you know that ignoring reviews could be silently hurting your business?</p><div class="stat-box"><strong>53% of customers</strong> expect businesses to respond to negative reviews within a week.</div><div class="stat-box"><strong>Businesses that respond</strong> to reviews see 12% higher revenue growth.</div><div class="stat-box"><strong>89% of consumers</strong> read business responses before making a purchase decision.</div><p>The problem? Responding to reviews takes time. Crafting the perfect response can take 15-20 minutes.</p><p><strong>ReviewResponder solves this.</strong> Get professional responses in seconds.</p><center style="margin:30px 0"><a href="${FRONTEND_URL}/register" class="cta-button">Try 5 Free Responses</a></center><p>Your discount code <strong>${discountCode}</strong> is still valid!</p><p>Best,<br>The ReviewResponder Team</p></div><div class="footer"><p>ReviewResponder - AI-Powered Review Responses</p></div></div></body></html>`,
+      html: `<!DOCTYPE html><html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#111827;line-height:1.6}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:linear-gradient(135deg,#DC2626 0%,#B91C1C 100%);color:white;padding:40px;text-align:center;border-radius:8px 8px 0 0}.content{background:white;padding:40px;border:1px solid #E5E7EB;border-radius:0 0 8px 8px}.stat-box{background:#FEF2F2;border-left:4px solid #DC2626;padding:16px;margin:16px 0}.cta-button{display:inline-block;background:#4F46E5;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:600}.footer{text-align:center;padding:20px;color:#6B7280;font-size:14px}</style></head><body><div class="container"><div class="header"><h1>The Hidden Cost of Unanswered Reviews</h1></div><div class="content"><p>Hi there!</p><p>Did you know that ignoring reviews could be silently hurting your business?</p><div class="stat-box"><strong>53% of customers</strong> expect businesses to respond to negative reviews within a week.</div><div class="stat-box"><strong>Businesses that respond</strong> to reviews see 12% higher revenue growth.</div><div class="stat-box"><strong>89% of consumers</strong> read business responses before making a purchase decision.</div><p>The problem? Responding to reviews takes time. Crafting the perfect response can take 15-20 minutes.</p><p><strong>ReviewResponder solves this.</strong> Get professional responses in seconds.</p><center style="margin:30px 0"><a href="${FRONTEND_URL}/register" class="cta-button">Try 20 Free Responses</a></center><p>Your discount code <strong>${discountCode}</strong> is still valid!</p><p>Best,<br>The ReviewResponder Team</p></div><div class="footer"><p>ReviewResponder - AI-Powered Review Responses</p></div></div></body></html>`,
     },
     7: {
       subject: 'How Mario saved 5 hours/week on reviews',
@@ -10248,7 +10322,7 @@ app.get('/api/admin/test-pre-reg-drip', async (req, res) => {
     },
     14: {
       subject: 'Last chance: Your exclusive offer expires tomorrow',
-      html: `<!DOCTYPE html><html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#111827;line-height:1.6}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:linear-gradient(135deg,#7C3AED 0%,#5B21B6 100%);color:white;padding:40px;text-align:center;border-radius:8px 8px 0 0}.content{background:white;padding:40px;border:1px solid #E5E7EB;border-radius:0 0 8px 8px}.urgency-box{background:#FEF3C7;border:2px solid #F59E0B;padding:20px;border-radius:8px;margin:20px 0;text-align:center}.cta-button{display:inline-block;background:#7C3AED;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:600}.footer{text-align:center;padding:20px;color:#6B7280;font-size:14px}</style></head><body><div class="container"><div class="header"><h1>Final Reminder</h1><p>Your 50% discount expires tomorrow</p></div><div class="content"><p>Hi there!</p><p>This is my last email about this - I promise!</p><p>Two weeks ago, you showed interest in ReviewResponder. Since then, your competitors have probably responded to dozens of reviews.</p><div class="urgency-box"><p style="margin:0;font-size:18px"><strong>Your code ${discountCode} expires tomorrow.</strong></p><p style="margin:8px 0 0 0;color:#92400E">After that, you'll pay full price.</p></div><p><strong>Quick recap:</strong></p><ul><li>5 free responses to try (no credit card)</li><li>AI-powered professional responses in seconds</li><li>Works with Google, Yelp, TripAdvisor & more</li><li>Chrome extension for one-click responses</li></ul><center style="margin:30px 0"><a href="${FRONTEND_URL}/register" class="cta-button">Use Your 50% Discount Now</a></center><p>Best,<br>The ReviewResponder Team</p></div><div class="footer"><p>ReviewResponder - AI-Powered Review Responses</p><p style="font-size:12px;color:#9CA3AF">This is the last email in this series.</p></div></div></body></html>`,
+      html: `<!DOCTYPE html><html><head><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#111827;line-height:1.6}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:linear-gradient(135deg,#7C3AED 0%,#5B21B6 100%);color:white;padding:40px;text-align:center;border-radius:8px 8px 0 0}.content{background:white;padding:40px;border:1px solid #E5E7EB;border-radius:0 0 8px 8px}.urgency-box{background:#FEF3C7;border:2px solid #F59E0B;padding:20px;border-radius:8px;margin:20px 0;text-align:center}.cta-button{display:inline-block;background:#7C3AED;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:600}.footer{text-align:center;padding:20px;color:#6B7280;font-size:14px}</style></head><body><div class="container"><div class="header"><h1>Final Reminder</h1><p>Your 50% discount expires tomorrow</p></div><div class="content"><p>Hi there!</p><p>This is my last email about this - I promise!</p><p>Two weeks ago, you showed interest in ReviewResponder. Since then, your competitors have probably responded to dozens of reviews.</p><div class="urgency-box"><p style="margin:0;font-size:18px"><strong>Your code ${discountCode} expires tomorrow.</strong></p><p style="margin:8px 0 0 0;color:#92400E">After that, you'll pay full price.</p></div><p><strong>Quick recap:</strong></p><ul><li>20 free responses to try (no credit card)</li><li>AI-powered professional responses in seconds</li><li>Works with Google, Yelp, TripAdvisor & more</li><li>Chrome extension for one-click responses</li></ul><center style="margin:30px 0"><a href="${FRONTEND_URL}/register" class="cta-button">Use Your 50% Discount Now</a></center><p>Best,<br>The ReviewResponder Team</p></div><div class="footer"><p>ReviewResponder - AI-Powered Review Responses</p><p style="font-size:12px;color:#9CA3AF">This is the last email in this series.</p></div></div></body></html>`,
     },
   };
 
@@ -13502,7 +13576,7 @@ ${demoUrl}
 
 Takes 30 seconds to see if the tone matches your brand.
 
-If you like it: 5 responses/month are free.
+If you like it: 20 responses/month are free.
 If not: No worries.
 
 Best,
@@ -13767,7 +13841,7 @@ ${demoUrl}
 
 Takes 30 seconds to see if the tone matches your brand.
 
-If you like it: 5 responses/month are free. If not: No worries, just ignore this.
+If you like it: 20 responses/month are free. If not: No worries, just ignore this.
 
 Best,
 Berend
@@ -13816,7 +13890,7 @@ With ${reviewText}, responding to all of them takes time. ReviewResponder does i
 Try it on your actual reviews here:
 https://tryreviewresponder.com?ref=hot_lead
 
-5 responses/month free, no credit card.
+20 responses/month free, no credit card.
 
 Best,
 Berend
@@ -14626,7 +14700,7 @@ I built ReviewResponder - AI that replies to Google reviews. Sounds simple, save
 
 ${lead.demo_token ? `Here's a demo for ${businessName}:\n${demoUrl}` : `Try it directly:\n${demoUrl}`}
 
-5 responses/month free, no credit card.
+20 responses/month free, no credit card.
 
 Best,
 Berend
@@ -14904,7 +14978,7 @@ app.get('/api/cron/demo-followup', async (req, res) => {
 I noticed you checked out the personalized demo we created for ${businessName} yesterday.
 
 What did you think of the AI-generated review responses?${responsePreview}
-If you'd like to see more, just sign up free - you'll get 5 responses/month at no cost:
+If you'd like to see more, just sign up free - you'll get 20 responses/month at no cost:
 ${demoUrl}
 
 Or if you have questions, just reply to this email!
@@ -15164,7 +15238,7 @@ But I'm curious, what did you think of the AI-generated responses? Did they look
 We've spent a lot of time making them sound human and not "AI-ish". Here's what actual users are saying:
 https://tryreviewresponder.com/testimonials
 
-If you ever want to try it for real, the free plan gives you 5 responses/month.
+If you ever want to try it for real, the free plan gives you 20 responses/month.
 
 Berend`,
       },
@@ -15474,7 +15548,7 @@ ${magicLinkUrl}
 
 ${demoUrl ? `Your personalized demo is still here: ${demoUrl}` : ''}
 
-5 responses/month are free. Just start using it.
+20 responses/month are free. Just start using it.
 
 Best,
 Berend
@@ -15636,7 +15710,7 @@ Your personalized demo for ${businessName} expires in 4 days.
 Check it out before it's gone:
 ${demoUrl}
 
-If you like it: 5 responses/month are free.
+If you like it: 20 responses/month are free.
 
 Best,
 Berend`;
@@ -17526,7 +17600,7 @@ I hear this feedback a lot. That's why I built ReviewResponder - no complex plat
 
 Just AI that writes professional review responses in 3 seconds.
 
-Try 5 free responses: https://tryreviewresponder.com?ref=g2
+Try 20 free responses: https://tryreviewresponder.com?ref=g2
 
 Best,
 Berend
@@ -21659,7 +21733,7 @@ I noticed ${lead.business_name} has ${lead.google_reviews_count || 'several'} re
 Here's a personalized demo showing how it works for ${lead.business_name}:
 ${lead.demo_url || 'https://tryreviewresponder.com?ref=tripadvisor-followup'}
 
-5 free responses, no credit card needed. Takes 30 seconds to try.
+20 free responses, no credit card needed. Takes 30 seconds to try.
 
 Let me know if you have any questions!
 
@@ -24700,7 +24774,7 @@ Here's what a response for your business could look like:
 
 ${aiResponse}
 
-Want to try it? 5 free responses, no credit card:
+Want to try it? 20 free responses, no credit card:
 https://tryreviewresponder.com?ref=g2-${lead.competitor}
 
 Cheers,
@@ -26250,7 +26324,7 @@ Saw your G2 review about ${lead.competitor}. "${(lead.complaint_summary || 'the 
 
 Built something simpler. No contracts, no hidden fees. AI-powered review responses that actually sound human.
 
-5 free responses, no credit card:
+20 free responses, no credit card:
 https://tryreviewresponder.com?ref=g2-${lead.competitor}
 
 Cheers,
