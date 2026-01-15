@@ -11087,12 +11087,52 @@ app.all('/api/cron/review-alerts', async (req, res) => {
           continue;
         }
 
-        // Lookup Place ID for business
+        // Lookup Place ID for business - first check our existing data, then Google API
         let placeId = null;
         let businessData = null;
 
-        // Try to find Place ID using Google Places API
-        if (process.env.GOOGLE_API_KEY) {
+        // 1. First try to find Place ID from demo_generations (we already have it!)
+        const demoWithPlaceId = await dbGet(`
+          SELECT google_place_id, business_name FROM demo_generations
+          WHERE business_name ILIKE $1 AND google_place_id IS NOT NULL
+          ORDER BY created_at DESC LIMIT 1
+        `, [`%${user.business_name}%`]);
+
+        if (demoWithPlaceId?.google_place_id) {
+          placeId = demoWithPlaceId.google_place_id;
+          console.log(`🔔 Found Place ID from demo_generations for ${user.business_name}`);
+        }
+
+        // 2. Try linkedin_outreach if not found
+        if (!placeId) {
+          const linkedinWithPlaceId = await dbGet(`
+            SELECT google_place_id, business_name FROM linkedin_outreach
+            WHERE business_name ILIKE $1 AND google_place_id IS NOT NULL
+            ORDER BY created_at DESC LIMIT 1
+          `, [`%${user.business_name}%`]);
+
+          if (linkedinWithPlaceId?.google_place_id) {
+            placeId = linkedinWithPlaceId.google_place_id;
+            console.log(`🔔 Found Place ID from linkedin_outreach for ${user.business_name}`);
+          }
+        }
+
+        // 3. Try outreach_leads if not found
+        if (!placeId) {
+          const leadWithPlaceId = await dbGet(`
+            SELECT google_place_id, business_name FROM outreach_leads
+            WHERE business_name ILIKE $1 AND google_place_id IS NOT NULL
+            ORDER BY created_at DESC LIMIT 1
+          `, [`%${user.business_name}%`]);
+
+          if (leadWithPlaceId?.google_place_id) {
+            placeId = leadWithPlaceId.google_place_id;
+            console.log(`🔔 Found Place ID from outreach_leads for ${user.business_name}`);
+          }
+        }
+
+        // 4. Fallback: Try Google Places API (costs credits)
+        if (!placeId && process.env.GOOGLE_API_KEY) {
           try {
             const searchUrl = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${encodeURIComponent(user.business_name)}&inputtype=textquery&fields=place_id,name,formatted_address&key=${process.env.GOOGLE_API_KEY}`;
             const searchResponse = await fetch(searchUrl);
@@ -11101,6 +11141,7 @@ app.all('/api/cron/review-alerts', async (req, res) => {
             if (searchData.candidates && searchData.candidates.length > 0) {
               placeId = searchData.candidates[0].place_id;
               businessData = searchData.candidates[0];
+              console.log(`🔔 Found Place ID from Google API for ${user.business_name}`);
             }
           } catch (googleError) {
             console.error(`Google Places lookup failed for ${user.business_name}:`, googleError.message);
