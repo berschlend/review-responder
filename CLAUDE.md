@@ -523,6 +523,31 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 - Frontend: Authorization Header mitsenden wenn Token vorhanden (`App.js:656-693`)
 - response_count wird jetzt inkrementiert für eingeloggte User
 
+### Magic Link vs Normal Signup Tracking (15.01.2026)
+
+**WICHTIG: Ab jetzt IMMER unterscheiden zwischen Magic Link und Normal Signup!**
+
+**Wie es funktioniert:**
+- Users Tabelle hat `created_via_magic_link BOOLEAN` Spalte
+- Wird automatisch auf TRUE gesetzt wenn User via Magic Link erstellt wird
+- `GET /api/admin/user-list` zeigt `is_magic_link` und `signup_source` pro User
+- Summary hat separates Breakdown: `magic_link.total/never_used/active` vs `normal_signup.total/never_used/active`
+
+**Warum wichtig:**
+- Magic Link Users: Wurden aus Outreach kontaktiert, haben geklickt → "warmere" Leads
+- Normal Signup Users: Haben sich selbst registriert → "organisch"
+- Unterschiedliche Conversion Rates erwarten!
+
+**Bekanntes Problem (15.01.2026):**
+- Spalte wurde erst später hinzugefügt
+- Existierende User haben `created_via_magic_link = NULL/FALSE` auch wenn sie durch Magic Link kamen
+- Outreach Dashboard zeigt "35 clicked" aber User-List zeigt "0 magic link users"
+- Für NEUE User funktioniert es korrekt
+
+**Endpoints mit Magic Link Tracking:**
+- `GET /api/admin/user-list` - Summary + pro User
+- `GET /api/cron/activate-dormant-users` - Breakdown in Response
+
 ### Email Deliverability
 - "Hey" statt "Hallo" → Primary Inbox
 - Keine Emojis, keine Marketing-Floskeln
