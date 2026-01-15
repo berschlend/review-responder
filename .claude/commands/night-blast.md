@@ -261,9 +261,11 @@ Du SOLLST neue Dinge ausprobieren!
 - Virale Loops einbauen
 - Trust-Signale hinzufuegen
 
-### Phase 5: DOKUMENTATION
+### Phase 5: DOKUMENTATION (KRITISCH!)
 
-Nach JEDER Aktion, fuege zu CLAUDE.md hinzu:
+> **PFLICHT:** Jede Session muss Learnings fuer zukuenftige Claudes hinterlassen!
+
+#### A) Nacht-Log (nach JEDER Aktion)
 
 ```markdown
 ## NACHT-LOG [TIMESTAMP]
@@ -275,6 +277,50 @@ Nach JEDER Aktion, fuege zu CLAUDE.md hinzu:
 **Ergebnis:** [Was ist passiert?]
 **Learning:** [Was hast du gelernt?]
 **Fuer naechsten Claude:** [Tipps/Warnings]
+```
+
+#### B) LEARNINGS-Sektion updaten (bei WICHTIGEN Erkenntnissen)
+
+Wenn du etwas Wichtiges lernst das ALLE zukuenftigen Claudes wissen muessen:
+
+1. Oeffne CLAUDE.md
+2. Finde die `## LEARNINGS` Sektion
+3. Fuege eine neue Subsection hinzu:
+
+```markdown
+### [Thema] ([Datum])
+- **Problem:** [Was ging schief?]
+- **Loesung:** [Was funktioniert?]
+- **Wichtig:** [Was muss man beachten?]
+```
+
+**Beispiele fuer LEARNINGS-wuerdige Erkenntnisse:**
+- API die nicht funktioniert wie erwartet
+- Rate Limits die anders sind als dokumentiert
+- Workarounds fuer Bugs
+- Patterns die gut funktionieren
+- Plattform-spezifische Gotchas (LinkedIn Limits etc.)
+- Email-Strategien die gut/schlecht performen
+- Conversion-Erkenntnisse
+
+#### C) Neue Features → Admin Panel Regel
+
+Wenn du ein NEUES Feature baust:
+→ Siehe "SALES AUTOMATION REGELN" in CLAUDE.md!
+
+Checkliste:
+- [ ] Admin Endpoint erstellt?
+- [ ] Admin Panel Card/Tab hinzugefuegt?
+- [ ] API ENDPOINTS Sektion aktualisiert?
+- [ ] COMPLETED FEATURES aktualisiert?
+
+#### D) Warum das wichtig ist
+
+```
+Du arbeitest NICHT alleine.
+Parallele Claudes laufen GLEICHZEITIG.
+Morgige Claudes haben KEINEN Kontext.
+→ Deine Dokumentation ist deren Gedaechtnis!
 ```
 
 ## SELBST-VERBESSERUNG
