@@ -1,0 +1,146 @@
+{
+  "orchestrator_version": "3.0",
+  "started_at": null,
+  "last_updated": null,
+  "agents": {
+    "burst-1": {
+      "name": "lead-finder",
+      "status": "pending",
+      "pid": null,
+      "chrome": true,
+      "loop_interval": "4h",
+      "started_at": null,
+      "last_seen": null
+    },
+    "burst-2": {
+      "name": "cold-emailer",
+      "status": "pending",
+      "pid": null,
+      "chrome": false,
+      "loop_interval": "6h",
+      "started_at": null,
+      "last_seen": null
+    },
+    "burst-3": {
+      "name": "social-dm",
+      "status": "pending",
+      "pid": null,
+      "chrome": true,
+      "loop_interval": "8h",
+      "started_at": null,
+      "last_seen": null
+    },
+    "burst-4": {
+      "name": "demo-generator",
+      "status": "pending",
+      "pid": null,
+      "chrome": false,
+      "loop_interval": "4h",
+      "started_at": null,
+      "last_seen": null
+    },
+    "burst-5": {
+      "name": "hot-lead-chaser",
+      "status": "pending",
+      "pid": null,
+      "chrome": false,
+      "loop_interval": "2h",
+      "started_at": null,
+      "last_seen": null
+    },
+    "burst-6": {
+      "name": "user-activator",
+      "status": "pending",
+      "pid": null,
+      "chrome": false,
+      "loop_interval": "4h",
+      "started_at": null,
+      "last_seen": null
+    },
+    "burst-7": {
+      "name": "payment-converter",
+      "status": "pending",
+      "pid": null,
+      "chrome": false,
+      "loop_interval": "3h",
+      "started_at": null,
+      "last_seen": null
+    },
+    "burst-8": {
+      "name": "upgrader",
+      "status": "pending",
+      "pid": null,
+      "chrome": false,
+      "loop_interval": "6h",
+      "started_at": null,
+      "last_seen": null
+    },
+    "burst-9": {
+      "name": "doctor",
+      "status": "pending",
+      "pid": null,
+      "chrome": false,
+      "loop_interval": "1h",
+      "started_at": null,
+      "last_seen": null
+    },
+    "burst-10": {
+      "name": "morning-briefer",
+      "status": "pending",
+      "pid": null,
+      "chrome": false,
+      "loop_interval": "24h",
+      "started_at": null,
+      "last_seen": null
+    },
+    "burst-11": {
+      "name": "bottleneck-analyzer",
+      "status": "pending",
+      "pid": null,
+      "chrome": false,
+      "loop_interval": "2h",
+      "started_at": null,
+      "last_seen": null
+    },
+    "burst-12": {
+      "name": "creative-strategist",
+      "status": "pending",
+      "pid": null,
+      "chrome": false,
+      "loop_interval": "4h",
+      "started_at": null,
+      "last_seen": null
+    },
+    "burst-13": {
+      "name": "churn-prevention",
+      "status": "pending",
+      "pid": null,
+      "chrome": false,
+      "loop_interval": "6h",
+      "started_at": null,
+      "last_seen": null
+    },
+    "burst-14": {
+      "name": "lead-scorer",
+      "status": "pending",
+      "pid": null,
+      "chrome": false,
+      "loop_interval": "30m",
+      "started_at": null,
+      "last_seen": null
+    },
+    "burst-15": {
+      "name": "approval-gate",
+      "status": "pending",
+      "pid": null,
+      "chrome": false,
+      "loop_interval": "5m",
+      "started_at": null,
+      "last_seen": null
+    }
+  },
+  "total_agents": 15,
+  "running_agents": 0,
+  "stopped_agents": 0,
+  "stuck_agents": 0
+}

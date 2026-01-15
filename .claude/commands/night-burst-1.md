@@ -74,17 +74,30 @@
 
 ---
 
-## 🔄 DER ENDLOS-LOOP
+## 🔄 DER ENDLOS-LOOP (V3 mit Heartbeat)
 
 ```
 WHILE TRUE:
-  1. Prüfe ob Berend "Stopp" gesagt hat → IF YES: Ende
-  2. Lade learnings.md, conversion-report.md, berend-feedback.md
-  3. Führe EINEN Scraping-Task aus (siehe Phasen)
-  4. Update burst-1-status.json
-  5. Warte 15 Minuten
-  6. GOTO 1
+  ┌─── V3 HEARTBEAT (JEDER LOOP START!) ───┐
+  │ 1. Read burst-1-status.json             │
+  │ 2. Update:                              │
+  │    - last_heartbeat: [JETZT]            │
+  │    - current_loop: [+1]                 │
+  │    - status: "running"                  │
+  │ 3. Write back                           │
+  │ 4. Check resource-budget.json           │
+  │    - Habe ich API Budget?               │
+  └─────────────────────────────────────────┘
+
+  5. Prüfe ob Berend "Stopp" gesagt hat → IF YES: Ende
+  6. Lade learnings.md, conversion-report.md, berend-feedback.md
+  7. Führe EINEN Scraping-Task aus (siehe Phasen)
+  8. Update burst-1-status.json (metrics)
+  9. Warte 15 Minuten
+  10. GOTO 1
 ```
+
+**⚠️ WICHTIG:** Ohne Heartbeat denkt Health-Check ich bin stuck!
 
 ---
 
@@ -161,24 +174,44 @@ curl -X POST "https://review-responder.onrender.com/api/admin/import-lead" \
 
 ---
 
-## 📋 PHASE 5: Status Update
+## 📋 PHASE 5: Status Update (V3 Schema)
 
 ```json
 // content/claude-progress/burst-1-status.json
 {
   "agent": "burst-1-lead-finder",
+  "version": "3.0",
   "status": "running",
-  "last_action": "[TIMESTAMP]",
+  "started_at": "[SESSION_START]",
+  "last_heartbeat": "[JETZT - UPDATE JEDEN LOOP!]",
+  "current_loop": 1,
   "current_city": "[CITY]",
-  "stats": {
+  "checkpoints": {
+    "last_successful_action": "scraped_lead",
+    "last_processed_id": "[LEAD_ID]",
+    "resume_from": null
+  },
+  "metrics": {
+    "actions_taken": 0,
     "leads_scraped": 0,
     "emails_found": 0,
+    "errors_count": 0,
     "cities_covered": []
   },
-  "stuck": false,
-  "needs_berend": []
+  "health": {
+    "stuck_detected": false,
+    "last_error": null,
+    "api_budget_ok": true
+  },
+  "escalations_pending": []
 }
 ```
+
+**V3 Felder:**
+- `last_heartbeat` - MUSS bei JEDEM Loop-Start geupdated werden!
+- `current_loop` - Increment bei jedem Loop
+- `checkpoints` - Für Recovery falls ich crashe
+- `health.api_budget_ok` - Check resource-budget.json
 
 ---
 

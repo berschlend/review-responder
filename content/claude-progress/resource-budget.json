@@ -1,0 +1,76 @@
+{
+  "version": "1.0",
+  "created_at": "2026-01-15T22:00:00Z",
+  "last_updated": null,
+  "daily_limits": {
+    "serpapi_calls": {
+      "limit": 100,
+      "used": 0,
+      "reset_at": null,
+      "description": "Google Places API via SerpAPI"
+    },
+    "outscraper_calls": {
+      "limit": 500,
+      "used": 0,
+      "reset_at": null,
+      "description": "Google Reviews scraping"
+    },
+    "resend_emails": {
+      "limit": 100,
+      "used": 0,
+      "reset_at": null,
+      "description": "Transactional + outreach emails"
+    },
+    "openai_tokens": {
+      "limit": 1000000,
+      "used": 0,
+      "reset_at": null,
+      "description": "GPT-4 for demo generation"
+    },
+    "anthropic_tokens": {
+      "limit": 5000000,
+      "used": 0,
+      "reset_at": null,
+      "description": "Claude for agents"
+    },
+    "hunter_lookups": {
+      "limit": 25,
+      "used": 0,
+      "reset_at": null,
+      "description": "Email verification"
+    }
+  },
+  "reservations": {
+    "burst-1": {
+      "serpapi": 30,
+      "outscraper": 100,
+      "description": "Lead Finder needs review scraping"
+    },
+    "burst-2": {
+      "resend": 50,
+      "description": "Cold Emailer daily batch"
+    },
+    "burst-4": {
+      "openai": 200000,
+      "outscraper": 200,
+      "description": "Demo Generator needs GPT + reviews"
+    },
+    "burst-5": {
+      "resend": 20,
+      "description": "Hot Lead follow-ups"
+    },
+    "burst-6": {
+      "resend": 10,
+      "description": "Onboarding emails"
+    },
+    "burst-13": {
+      "resend": 20,
+      "description": "Win-back campaigns"
+    }
+  },
+  "alerts": {
+    "threshold_warning": 0.8,
+    "threshold_critical": 0.95,
+    "notify_agents": ["burst-9", "burst-15"]
+  }
+}

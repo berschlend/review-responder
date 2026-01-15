@@ -1,6 +1,113 @@
-# Night-Burst Core - JEDER AGENT MUSS DAS INCLUDEN
+# Night-Burst Core V3 - JEDER AGENT MUSS DAS INCLUDEN
 
 > Basierend auf Anthropic's "Building Effective Agents" + MCP Best Practices
+> Updated: V3 mit Heartbeat, Checkpoint, Resource Budget Integration
+
+---
+
+## 💓 HEARTBEAT SYSTEM (V3 - KRITISCH!)
+
+**JEDER AGENT muss bei JEDEM Loop-Start:**
+
+```bash
+# 1. Status-File updaten (Heartbeat)
+# Lese content/claude-progress/burst-X-status.json
+# Update:
+#   - last_heartbeat: [jetzt]
+#   - current_loop: [increment]
+#   - status: "running"
+
+# 2. Resource Budget prüfen
+# Lese content/claude-progress/resource-budget.json
+# Check: Habe ich Budget für geplante Aktionen?
+# Wenn NEIN: Skip action oder warte
+
+# 3. Checkpoint prüfen (bei Neustart)
+# Lese content/claude-progress/checkpoint-store.json
+# Check: Habe ich pending checkpoints?
+# Wenn JA: Resume von dort
+```
+
+### Heartbeat Template (am Anfang jedes Loops):
+
+```
+LOOP START:
+1. Read burst-X-status.json
+2. Update:
+   {
+     "last_heartbeat": "[CURRENT_TIMESTAMP]",
+     "current_loop": [previous + 1],
+     "status": "running",
+     "metrics.actions_taken": [previous + actions_this_loop]
+   }
+3. Write back to file
+```
+
+### Bei Stuck/Error:
+
+```
+IF stuck OR major_error:
+1. Update status:
+   {
+     "health.stuck_detected": true,
+     "health.last_error": "[ERROR_MESSAGE]",
+     "status": "stuck"
+   }
+2. Health Check wird mich restarten
+3. WARTE auf Restart (nicht weiter machen)
+```
+
+---
+
+## 📊 RESOURCE BUDGET CHECK (V3)
+
+**VOR jeder API-intensiven Aktion:**
+
+```
+1. Read resource-budget.json
+2. Find my reservation (e.g., burst-2.resend = 50)
+3. Check: daily_limits[resource].used < daily_limits[resource].limit?
+4. IF NO:
+   - Log: "Budget exhausted for [resource]"
+   - Skip action OR wait until reset
+   - Update status: health.api_budget_ok = false
+5. IF YES:
+   - Proceed with action
+   - After success: Increment used count
+```
+
+---
+
+## 💾 CHECKPOINT SYSTEM (V3)
+
+**VOR jeder kritischen Aktion:**
+
+```
+1. Create checkpoint in checkpoint-store.json:
+   {
+     "id": "[UUID]",
+     "agent": "burst-X",
+     "action": "[action_name]",
+     "data": { ... relevant data ... },
+     "created_at": "[TIMESTAMP]",
+     "status": "pending"
+   }
+
+2. Execute action
+
+3. Update checkpoint:
+   - Success: status = "completed"
+   - Failure: status = "failed"
+```
+
+**Bei Neustart (Recovery):**
+
+```
+1. Read checkpoint-store.json
+2. Find my pending checkpoints
+3. Resume from last pending checkpoint
+4. Don't repeat completed actions
+```
 
 ---
 

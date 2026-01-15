@@ -72,19 +72,33 @@
 
 ---
 
-## 🔄 DER ENDLOS-LOOP
+## 🔄 DER ENDLOS-LOOP (V3 mit Heartbeat)
 
 ```
 WHILE TRUE:
-  1. Prüfe ob Berend "Stopp" gesagt hat → IF YES: Ende
-  2. Prüfe Daily Limit (100 Emails)
+  ┌─── V3 HEARTBEAT (JEDER LOOP START!) ───┐
+  │ 1. Read burst-2-status.json             │
+  │ 2. Update:                              │
+  │    - last_heartbeat: [JETZT]            │
+  │    - current_loop: [+1]                 │
+  │    - status: "running"                  │
+  │ 3. Write back                           │
+  │ 4. Check resource-budget.json           │
+  │    - resend_emails.used < limit?        │
+  └─────────────────────────────────────────┘
+
+  5. Prüfe ob Berend "Stopp" gesagt hat → IF YES: Ende
+  6. Prüfe Daily Limit (100 Emails)
      - IF REACHED: Warte bis 00:00 UTC, dann reset
-  3. Lade learnings.md für beste Subject Lines
-  4. Sende EINE Email (OHNE DISCOUNT!)
-  5. Update burst-2-status.json
-  6. Warte 5 Minuten
-  7. GOTO 1
+  7. Lade learnings.md für beste Subject Lines
+  8. Sende EINE Email (OHNE DISCOUNT!)
+  9. Update burst-2-status.json (metrics)
+  10. Update resource-budget.json: resend_emails.used++
+  11. Warte 5 Minuten
+  12. GOTO 1
 ```
+
+**⚠️ WICHTIG:** Ohne Heartbeat denkt Health-Check ich bin stuck!
 
 ---
 
@@ -180,25 +194,43 @@ curl -X POST ".../api/admin/release-lock" -d '{"lock_name": "email-[LEAD_ID]"}'
 
 ---
 
-## 📋 PHASE 5: Status Update
+## 📋 PHASE 5: Status Update (V3 Schema)
 
 ```json
 // content/claude-progress/burst-2-status.json
 {
   "agent": "burst-2-cold-emailer",
+  "version": "3.0",
   "status": "running",
-  "last_action": "[TIMESTAMP]",
-  "emails_sent_today": 0,
-  "emails_remaining": 100,
-  "stats": {
-    "sent": 0,
-    "bounced": 0,
-    "successful": 0
+  "started_at": "[SESSION_START]",
+  "last_heartbeat": "[JETZT - UPDATE JEDEN LOOP!]",
+  "current_loop": 1,
+  "checkpoints": {
+    "last_successful_action": "sent_email",
+    "last_processed_id": "[LEAD_ID]",
+    "resume_from": null
   },
-  "stuck": false,
-  "needs_berend": []
+  "metrics": {
+    "actions_taken": 0,
+    "emails_sent_today": 0,
+    "emails_sent_total": 0,
+    "bounced": 0,
+    "errors_count": 0
+  },
+  "health": {
+    "stuck_detected": false,
+    "last_error": null,
+    "api_budget_ok": true
+  },
+  "escalations_pending": []
 }
 ```
+
+**V3 Felder:**
+- `last_heartbeat` - MUSS bei JEDEM Loop-Start geupdated werden!
+- `current_loop` - Increment bei jedem Loop
+- `checkpoints` - Für Recovery falls ich crashe
+- `health.api_budget_ok` - Check resource-budget.json (resend_emails)
 
 ---
 
