@@ -24127,6 +24127,251 @@ cron.schedule('5 1 * * *', () => runNightLoop(2, 'Scheduled-01:05-UTC-Hour2'), {
 
 console.log('🌙 Night-Loop Scheduler initialized: Hour 0 at 23:00 UTC, Hour 2 at 01:05 UTC');
 
+// GET /api/cron/upgrade-leads - Upgrade existing leads with emails and demos
+// Phase 1: Find emails for leads without email (website scraping + patterns)
+// Phase 2: Generate demos for leads with email but no demo
+app.get('/api/cron/upgrade-leads', async (req, res) => {
+  const cronSecret = req.query.secret || req.headers['x-cron-secret'];
+  if (!safeCompare(cronSecret || '', process.env.CRON_SECRET || '')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const emailLimit = parseInt(req.query.email_limit) || 20;
+  const demoLimit = parseInt(req.query.demo_limit) || 10;
+  const sendEmails = req.query.send_emails === 'true';
+
+  const results = {
+    phase1_email_finding: { processed: 0, found: 0, failed: 0 },
+    phase2_demo_generation: { processed: 0, success: 0, failed: 0, demos: [] },
+    timestamp: new Date().toISOString()
+  };
+
+  try {
+    // PHASE 1: Find emails for leads without email (but with website)
+    console.log('📧 [Upgrade Leads] Phase 1: Email Finding...');
+    const leadsNeedingEmail = await dbAll(
+      `SELECT * FROM outreach_leads
+       WHERE (email IS NULL OR email = '')
+       AND website IS NOT NULL AND website != ''
+       AND google_reviews_count >= 50
+       ORDER BY google_reviews_count DESC
+       LIMIT $1`,
+      [emailLimit]
+    );
+
+    for (const lead of leadsNeedingEmail) {
+      results.phase1_email_finding.processed++;
+      try {
+        let foundEmail = null;
+
+        // Try 1: Scrape website for email
+        if (lead.website) {
+          try {
+            const websiteUrl = lead.website.startsWith('http') ? lead.website : `https://${lead.website}`;
+            const response = await fetch(websiteUrl, {
+              timeout: 8000,
+              headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ReviewBot/1.0)' }
+            });
+            const html = await response.text();
+
+            // Find emails in HTML
+            const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+            const emails = html.match(emailRegex) || [];
+
+            // Filter out generic/bad emails
+            const goodEmails = emails.filter(e => {
+              const lower = e.toLowerCase();
+              return !lower.includes('example') &&
+                     !lower.includes('test@') &&
+                     !lower.includes('noreply') &&
+                     !lower.includes('no-reply') &&
+                     !lower.includes('.png') &&
+                     !lower.includes('.jpg') &&
+                     !lower.includes('wixpress') &&
+                     !lower.includes('sentry.io');
+            });
+
+            // Prefer info@, contact@, hello@ over others
+            const prioritized = goodEmails.sort((a, b) => {
+              const aScore = a.startsWith('info@') ? 3 : a.startsWith('contact@') ? 2 : a.startsWith('hello@') ? 1 : 0;
+              const bScore = b.startsWith('info@') ? 3 : b.startsWith('contact@') ? 2 : b.startsWith('hello@') ? 1 : 0;
+              return bScore - aScore;
+            });
+
+            if (prioritized.length > 0) {
+              foundEmail = prioritized[0];
+            }
+          } catch (err) {
+            // Website scrape failed, try pattern generation
+          }
+        }
+
+        // Try 2: Generate email from domain pattern
+        if (!foundEmail && lead.website) {
+          try {
+            const url = new URL(lead.website.startsWith('http') ? lead.website : `https://${lead.website}`);
+            const domain = url.hostname.replace('www.', '');
+
+            // Try common patterns
+            const patterns = ['info', 'contact', 'hello', 'mail', 'office'];
+            for (const pattern of patterns) {
+              const testEmail = `${pattern}@${domain}`;
+              // Basic format check
+              if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testEmail)) {
+                foundEmail = testEmail;
+                break;
+              }
+            }
+          } catch (err) {
+            // URL parsing failed
+          }
+        }
+
+        // Update lead with found email
+        if (foundEmail) {
+          await dbQuery(
+            `UPDATE outreach_leads SET email = $1, email_source = 'upgrade_scrape' WHERE id = $2`,
+            [foundEmail, lead.id]
+          );
+          results.phase1_email_finding.found++;
+          console.log(`📧 Found email for ${lead.business_name}: ${foundEmail}`);
+        }
+      } catch (err) {
+        results.phase1_email_finding.failed++;
+        console.error(`Email finding failed for ${lead.business_name}:`, err.message);
+      }
+    }
+
+    // PHASE 2: Generate demos for leads with email but no demo
+    console.log('🎯 [Upgrade Leads] Phase 2: Demo Generation...');
+    const leadsNeedingDemo = await dbAll(
+      `SELECT ol.* FROM outreach_leads ol
+       LEFT JOIN demo_generations dg ON ol.id = dg.lead_id
+       WHERE ol.email IS NOT NULL AND ol.email != ''
+       AND dg.id IS NULL
+       AND ol.google_reviews_count >= 30
+       ORDER BY ol.google_reviews_count DESC
+       LIMIT $1`,
+      [demoLimit]
+    );
+
+    for (const lead of leadsNeedingDemo) {
+      results.phase2_demo_generation.processed++;
+      try {
+        // Lookup place and get reviews
+        const placeInfo = await lookupPlaceId(lead.business_name, lead.city);
+        if (!placeInfo || !placeInfo.placeId) {
+          console.log(`Could not find place for ${lead.business_name}, skipping`);
+          results.phase2_demo_generation.failed++;
+          continue;
+        }
+
+        const allReviews = await scrapeGoogleReviews(placeInfo.placeId, 20);
+
+        // Get worst reviews for demo
+        const targetReviews = allReviews
+          .filter(r => r.rating <= 3)
+          .sort((a, b) => a.rating - b.rating)
+          .slice(0, 3);
+
+        if (targetReviews.length === 0) {
+          console.log(`No negative reviews for ${lead.business_name}, skipping`);
+          continue;
+        }
+
+        // Generate AI responses
+        const demos = [];
+        for (const review of targetReviews) {
+          const aiResponse = await generateDemoResponse(
+            review,
+            lead.business_name,
+            lead.business_type,
+            lead.city,
+            placeInfo.rating,
+            placeInfo.totalReviews
+          );
+          demos.push({
+            review: {
+              text: review.text,
+              rating: review.rating,
+              author: review.author,
+              date: review.date,
+              source: review.source || 'google',
+              review_link: review.review_link || null,
+            },
+            ai_response: aiResponse,
+          });
+        }
+
+        const demoToken = generateDemoToken();
+        const demoUrl = `${process.env.FRONTEND_URL || 'https://tryreviewresponder.com'}/demo/${demoToken}`;
+
+        // Save demo
+        await dbQuery(
+          `INSERT INTO demo_generations
+           (business_name, google_place_id, city, google_rating, total_reviews, scraped_reviews, demo_token, generated_responses, lead_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+          [
+            lead.business_name,
+            placeInfo.placeId,
+            lead.city,
+            placeInfo.rating,
+            placeInfo.totalReviews,
+            JSON.stringify(allReviews),
+            demoToken,
+            JSON.stringify(demos),
+            lead.id,
+          ]
+        );
+
+        // Update lead with demo URL
+        await dbQuery(
+          `UPDATE outreach_leads SET demo_url = $1, demo_token = $2 WHERE id = $3`,
+          [demoUrl, demoToken, lead.id]
+        );
+
+        results.phase2_demo_generation.success++;
+        results.phase2_demo_generation.demos.push({
+          business: lead.business_name,
+          city: lead.city,
+          demo_url: demoUrl,
+          reviews_count: demos.length
+        });
+
+        console.log(`🎯 Generated demo for ${lead.business_name}: ${demoUrl}`);
+
+        // Optional: Send email with demo
+        if (sendEmails && lead.email) {
+          try {
+            await sendDemoEmail(lead.email, lead.business_name, demos, demoToken, placeInfo.totalReviews);
+            await dbQuery('UPDATE demo_generations SET email_sent_at = NOW() WHERE demo_token = $1', [demoToken]);
+            console.log(`📧 Sent demo email to ${lead.email}`);
+          } catch (emailError) {
+            console.error(`Email failed for ${lead.email}:`, emailError.message);
+          }
+        }
+      } catch (err) {
+        results.phase2_demo_generation.failed++;
+        console.error(`Demo generation failed for ${lead.business_name}:`, err.message);
+      }
+    }
+
+    console.log('✅ [Upgrade Leads] Complete:', JSON.stringify(results, null, 2));
+    res.json({
+      success: true,
+      ...results,
+      summary: {
+        emails_found: `${results.phase1_email_finding.found}/${results.phase1_email_finding.processed}`,
+        demos_generated: `${results.phase2_demo_generation.success}/${results.phase2_demo_generation.processed}`,
+      }
+    });
+
+  } catch (error) {
+    console.error('Upgrade leads error:', error);
+    res.status(500).json({ error: 'Failed to upgrade leads', details: error.message });
+  }
+});
+
 // Start server
 initDatabase()
   .then(() => {
