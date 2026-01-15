@@ -3405,6 +3405,7 @@ const PricingCards = ({ showFree = true }) => {
     'DEMOFOLLOWUP',
     'FLASH50',
     'COMEBACK20',
+    'HOTLEAD40',
   ];
   const activeDiscount = validDiscountCodes.includes(discountFromUrl?.toUpperCase())
     ? discountFromUrl.toUpperCase()

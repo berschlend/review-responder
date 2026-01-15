@@ -1503,6 +1503,27 @@ async function initDatabase() {
       )
     `);
 
+    // Hot Demo Visitor tracking (Phase 3a)
+    try {
+      await dbQuery(
+        `ALTER TABLE demo_generations ADD COLUMN IF NOT EXISTS demo_view_count INTEGER DEFAULT 0`
+      );
+      await dbQuery(
+        `ALTER TABLE demo_generations ADD COLUMN IF NOT EXISTS hot_demo_followup_sent_at TIMESTAMP`
+      );
+    } catch (error) {
+      // Columns might already exist
+    }
+
+    // Exit Survey Response tracking (Phase 3b)
+    try {
+      await dbQuery(
+        `ALTER TABLE exit_surveys ADD COLUMN IF NOT EXISTS response_sent_at TIMESTAMP`
+      );
+    } catch (error) {
+      // Column might already exist
+    }
+
     // === SALES AUTOMATION TABLES ===
 
     // Yelp Review Audit Leads
@@ -4665,6 +4686,29 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
         console.log('COMEBACK20 coupon creation error:', err);
         // Continue without discount if coupon fails
       }
+    } else if (upperDiscountCode === 'HOTLEAD40') {
+      // Hot Demo Visitor - 40% off, 48h expiry (sent when demo viewed 3+ times)
+      try {
+        const coupon = await stripe.coupons.create({
+          percent_off: 40,
+          duration: 'once', // Only first payment
+          id: `HOTLEAD40_${Date.now()}_${user.id}`,
+          redeem_by: Math.floor(Date.now() / 1000) + 48 * 60 * 60, // Valid for 48 hours
+          metadata: {
+            campaign: 'hot_demo_visitor',
+            user_id: user.id.toString(),
+          },
+        });
+        discounts = [
+          {
+            coupon: coupon.id,
+          },
+        ];
+        console.log(`[Hot Demo Visitor] Coupon HOTLEAD40 created for user ${user.id}`);
+      } catch (err) {
+        console.log('HOTLEAD40 coupon creation error:', err);
+        // Continue without discount if coupon fails
+      }
     }
 
     const sessionConfig = {
@@ -7225,12 +7269,14 @@ app.get('/api/public/demo/:token', async (req, res) => {
       });
     }
 
-    // Track page view (only first view)
-    if (!demo.demo_page_viewed_at) {
-      await dbQuery('UPDATE demo_generations SET demo_page_viewed_at = NOW() WHERE id = $1', [
-        demo.id,
-      ]);
-    }
+    // Track page view - always increment counter, mark first view time
+    await dbQuery(
+      `UPDATE demo_generations SET
+         demo_view_count = COALESCE(demo_view_count, 0) + 1,
+         demo_page_viewed_at = COALESCE(demo_page_viewed_at, NOW())
+       WHERE id = $1`,
+      [demo.id]
+    );
 
     // Get google_place_id - fallback to linkedin_outreach if not in demo_generations
     let placeId = demo.google_place_id;
@@ -13903,6 +13949,258 @@ P.S. Use code DEMOFOLLOWUP for 30% off if you upgrade within 48h.`;
   } catch (error) {
     console.error('Demo followup error:', error);
     res.status(500).json({ error: 'Failed to send demo followups' });
+  }
+});
+
+// GET /api/cron/hot-demo-visitors - Email people who viewed demo 3+ times (Phase 3a)
+// SAFEGUARDS: Max 1 email per demo ever, only for unconverted demos
+app.get('/api/cron/hot-demo-visitors', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'Email service not configured' });
+  }
+
+  try {
+    // Find hot demos: viewed 3+ times, not converted, no hot followup sent yet
+    const hotDemos = await dbAll(`
+      SELECT
+        d.id, d.demo_token, d.business_name, d.demo_view_count,
+        d.demo_page_viewed_at, d.generated_responses,
+        l.email, l.contact_name
+      FROM demo_generations d
+      JOIN outreach_leads l ON d.lead_id = l.id
+      WHERE d.demo_view_count >= 3
+        AND d.converted_at IS NULL
+        AND d.hot_demo_followup_sent_at IS NULL
+        AND l.email IS NOT NULL
+        ${getTestEmailExcludeClause('l.email')}
+      ORDER BY d.demo_view_count DESC, d.demo_page_viewed_at DESC
+      LIMIT 10
+    `);
+
+    let sent = 0;
+    const results = [];
+
+    for (const demo of hotDemos) {
+      try {
+        const businessName = demo.business_name || 'your business';
+        const firstName = demo.contact_name ? demo.contact_name.split(' ')[0] : '';
+        const greeting = firstName ? `Hey ${firstName},` : 'Hey,';
+        const viewCount = demo.demo_view_count;
+        const demoUrl = `https://tryreviewresponder.com/demo/${demo.demo_token}?discount=HOTLEAD40`;
+
+        const subject = `Still thinking about ${businessName}?`;
+        const body = `${greeting}
+
+I noticed you've been back to check out the AI responses we created for ${businessName} a few times now (${viewCount} visits).
+
+That tells me you're seriously considering this. So let me make it easy:
+
+Use code HOTLEAD40 for 40% off any plan. That's our best discount, only for people who are really interested.
+
+Your personalized demo is here:
+${demoUrl}
+
+Questions? Just hit reply.
+
+Berend
+
+P.S. This code expires in 48 hours.`;
+
+        await resend.emails.send({
+          from: OUTREACH_FROM_EMAIL,
+          to: demo.email,
+          subject: subject,
+          text: body,
+          tags: [{ name: 'campaign', value: 'hot_demo_visitor' }],
+        });
+
+        // Mark as sent
+        await dbQuery(`UPDATE demo_generations SET hot_demo_followup_sent_at = NOW() WHERE id = $1`, [
+          demo.id,
+        ]);
+
+        sent++;
+        results.push({
+          email: demo.email,
+          business: businessName,
+          view_count: viewCount,
+        });
+
+        await new Promise(r => setTimeout(r, 500));
+      } catch (err) {
+        console.error(`Failed to send hot demo email to ${demo.email}:`, err.message);
+      }
+    }
+
+    res.json({
+      ok: true,
+      sent,
+      hot_visitors: results,
+      message: sent > 0 ? `Sent ${sent} hot visitor emails` : 'No hot demo visitors found',
+    });
+  } catch (error) {
+    console.error('Hot demo visitors error:', error);
+    res.status(500).json({ error: 'Failed to send hot demo emails' });
+  }
+});
+
+// GET /api/cron/exit-survey-followup - Send reason-based follow-ups (Phase 3b)
+// SAFEGUARDS: Max 1 response per survey ever
+app.get('/api/cron/exit-survey-followup', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'Email service not configured' });
+  }
+
+  try {
+    // Find surveys without response, join with user email
+    const pendingSurveys = await dbAll(`
+      SELECT
+        es.id, es.user_id, es.reason, es.context, es.created_at,
+        u.email, u.name
+      FROM exit_surveys es
+      JOIN users u ON es.user_id = u.id
+      WHERE es.response_sent_at IS NULL
+        AND u.email IS NOT NULL
+        AND es.created_at > NOW() - INTERVAL '7 days'
+        ${getTestEmailExcludeClause('u.email')}
+      ORDER BY es.created_at DESC
+      LIMIT 10
+    `);
+
+    let sent = 0;
+    const results = [];
+
+    // Email templates based on reason
+    const templates = {
+      too_expensive: {
+        subject: 'What if it was just $5?',
+        body: (name) => `${name ? `Hey ${name.split(' ')[0]},` : 'Hey,'}
+
+You mentioned price was the blocker. Totally get it.
+
+What if you could get 10 AI responses for just $5? No subscription, no commitment. Just pay once, use whenever.
+
+Would that work better for you?
+
+If yes, just reply "yes" and I'll set it up for you personally.
+
+Berend`,
+      },
+      not_right_time: {
+        subject: 'Quick question',
+        body: (name) => `${name ? `Hey ${name.split(' ')[0]},` : 'Hey,'}
+
+You mentioned timing wasn't right. No worries.
+
+When would be a better time to look at this? I can send you a reminder in:
+- 2 weeks
+- 1 month
+- 3 months
+
+Just reply with whichever works and I'll ping you then.
+
+Berend`,
+      },
+      missing_feature: {
+        subject: "What's missing?",
+        body: (name, context) => `${name ? `Hey ${name.split(' ')[0]},` : 'Hey,'}
+
+You mentioned we're missing something you need.${context ? ` You said: "${context}"` : ''}
+
+I'd love to know more. What feature would make this a no-brainer for you?
+
+We're actively building based on user feedback, so your input actually matters.
+
+Just reply with what you'd need.
+
+Berend`,
+      },
+      just_testing: {
+        subject: 'Did the AI responses look good?',
+        body: (name) => `${name ? `Hey ${name.split(' ')[0]},` : 'Hey,'}
+
+You were just testing things out. Fair enough.
+
+But I'm curious, what did you think of the AI-generated responses? Did they look like something you'd actually send?
+
+We've spent a lot of time making them sound human and not "AI-ish". Here's what actual users are saying:
+https://tryreviewresponder.com/testimonials
+
+If you ever want to try it for real, the free plan gives you 20 responses/month.
+
+Berend`,
+      },
+      other: {
+        subject: 'Quick question',
+        body: (name, context) => `${name ? `Hey ${name.split(' ')[0]},` : 'Hey,'}
+
+I saw you checked out ReviewResponder but decided not to upgrade.${context ? ` You mentioned: "${context}"` : ''}
+
+Would love to know what held you back. Understanding real feedback helps us build something people actually want.
+
+No sales pitch, just curious.
+
+Berend`,
+      },
+    };
+
+    for (const survey of pendingSurveys) {
+      try {
+        const reason = survey.reason || 'other';
+        const template = templates[reason] || templates.other;
+        const subject = template.subject;
+        const body = template.body(survey.name, survey.context);
+
+        await resend.emails.send({
+          from: OUTREACH_FROM_EMAIL,
+          to: survey.email,
+          subject: subject,
+          text: body,
+          tags: [{ name: 'campaign', value: 'exit_survey_followup' }, { name: 'reason', value: reason }],
+        });
+
+        // Mark as sent
+        await dbQuery(`UPDATE exit_surveys SET response_sent_at = NOW() WHERE id = $1`, [
+          survey.id,
+        ]);
+
+        sent++;
+        results.push({
+          email: survey.email,
+          reason: reason,
+        });
+
+        await new Promise(r => setTimeout(r, 500));
+      } catch (err) {
+        console.error(`Failed to send exit survey response to ${survey.email}:`, err.message);
+      }
+    }
+
+    res.json({
+      ok: true,
+      sent,
+      responses: results,
+      message: sent > 0 ? `Sent ${sent} exit survey responses` : 'No pending exit surveys',
+    });
+  } catch (error) {
+    console.error('Exit survey followup error:', error);
+    res.status(500).json({ error: 'Failed to send exit survey followups' });
   }
 });
 
