@@ -6524,7 +6524,87 @@ async function scrapeGoogleReviewsOutscraper(placeId, limit = 10) {
   }));
 }
 
-// Helper: Scrape Google reviews - tries cache first, then Outscraper (500 free), SerpAPI (100 free), Google Places (5 free)
+// Serper.dev Review Scraper (2500 free credits/month)
+// Uses place_id to first get CID, then fetches reviews
+async function scrapeGoogleReviewsSerper(placeId, limit = 10) {
+  const apiKey = process.env.SERPER_API_KEY;
+  if (!apiKey) {
+    throw new Error('SERPER_API_KEY not configured');
+  }
+
+  console.log(`[SERPER] Fetching reviews for ${placeId}...`);
+
+  // Step 1: Get CID from place_id by searching for the place
+  // We need to convert Google Place ID to Serper's CID format
+  const placesResponse = await fetch('https://google.serper.dev/places', {
+    method: 'POST',
+    headers: {
+      'X-API-KEY': apiKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      q: placeId, // Search with place_id directly
+      num: 1,
+    }),
+  });
+
+  const placesData = await placesResponse.json();
+
+  if (!placesData.places || placesData.places.length === 0) {
+    throw new Error('Serper: Place not found');
+  }
+
+  const cid = placesData.places[0].cid;
+  if (!cid) {
+    throw new Error('Serper: No CID found for place');
+  }
+
+  console.log(`[SERPER] Found CID: ${cid}, fetching reviews...`);
+
+  // Step 2: Get reviews using CID
+  const reviewsResponse = await fetch('https://google.serper.dev/reviews', {
+    method: 'POST',
+    headers: {
+      'X-API-KEY': apiKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      cid: cid,
+      num: limit,
+      sort: 'lowest', // Get negative reviews first for demo purposes
+    }),
+  });
+
+  const reviewsData = await reviewsResponse.json();
+
+  if (!reviewsData.reviews || reviewsData.reviews.length === 0) {
+    throw new Error('Serper: No reviews found');
+  }
+
+  console.log(`[SERPER] Got ${reviewsData.reviews.length} reviews`);
+
+  // Log API usage
+  try {
+    await dbQuery(
+      `INSERT INTO api_call_logs (provider, endpoint, status, created_at)
+       VALUES ('serper', 'reviews', 'success', NOW())`
+    );
+  } catch (logErr) {
+    console.log(`Failed to log Serper API call: ${logErr.message}`);
+  }
+
+  return reviewsData.reviews.slice(0, limit).map(r => ({
+    text: r.snippet || r.text || '',
+    rating: r.rating || 0,
+    author: r.user?.name || r.name || 'Anonymous',
+    date: r.date || r.isoDate || '',
+    source: 'serper',
+    review_link: r.link || null,
+    review_id: null,
+  }));
+}
+
+// Helper: Scrape Google reviews - tries cache first, then Serper (2500 free), Outscraper (500 free), SerpAPI (100 free), Google Places (5 free)
 async function scrapeGoogleReviews(placeId, limit = 10) {
   // FIRST: Check if we have cached reviews from previous scrapes (saves 50-70% of API calls!)
   // 90 days TTL - reviews don't change often, and negative reviews are rarely edited
@@ -6548,7 +6628,16 @@ async function scrapeGoogleReviews(placeId, limit = 10) {
     console.log(`Cache check failed: ${cacheErr.message}, proceeding with API...`);
   }
 
-  // Try Outscraper first (500 free reviews/month vs SerpAPI's 100 searches/month)
+  // Try Serper.dev first (2500 free credits/month - BEST VALUE!)
+  if (process.env.SERPER_API_KEY) {
+    try {
+      return await scrapeGoogleReviewsSerper(placeId, limit);
+    } catch (serperErr) {
+      console.log(`Serper.dev failed: ${serperErr.message}, trying Outscraper fallback...`);
+    }
+  }
+
+  // Fallback to Outscraper (500 free reviews/month per key)
   if (process.env.OUTSCRAPER_API_KEY) {
     try {
       return await scrapeGoogleReviewsOutscraper(placeId, limit);
@@ -14352,7 +14441,7 @@ app.get('/api/cron/turbo-email', async (req, res) => {
           const subjects = [
             `${businessName} - AI antwortet auf Bewertungen`,
             `Automatische Antworten für ${businessName}?`,
-            `30 Sekunden pro Bewertung statt 5 Minuten`,
+            `3 Sekunden pro Bewertung statt 5 Minuten`,
           ];
           subject = subjects[(wave - 1) % subjects.length];
 
@@ -14373,7 +14462,7 @@ P.S. Code DEMO30 = 30% Rabatt wenn du upgraden willst.`;
           const subjects = [
             `${businessName} - AI replies to reviews`,
             `Automated responses for ${businessName}?`,
-            `30 seconds per review instead of 5 minutes`,
+            `3 seconds per review instead of 5 minutes`,
           ];
           subject = subjects[(wave - 1) % subjects.length];
 

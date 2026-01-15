@@ -580,6 +580,70 @@ const InstantDemoWidget = ({
     return { platform: detectedPlatform, businessType: detectedBusinessType };
   }, [location.pathname, platform, businessType]);
 
+  // Contextual placeholder examples for each business type
+  const placeholderMap = {
+    restaurant: 'e.g., "The pasta was amazing and our server Maria was so attentive. Will definitely come back!"',
+    hotel: 'e.g., "Room was spotless, breakfast had great variety, and check-in was smooth. Great stay!"',
+    dentist: 'e.g., "Dr. Smith made my cleaning completely painless. The staff was friendly and professional."',
+    medical: 'e.g., "Dr. Johnson took time to explain everything. Short wait time, caring staff."',
+    salon: 'e.g., "Sarah did an amazing job on my highlights! Love the new look. Very relaxing atmosphere."',
+    automotive: 'e.g., "Fixed my brakes quickly at a fair price. Mike explained everything clearly. Honest shop!"',
+    legal: 'e.g., "Attorney Davis handled my case professionally. Always responsive and explained every step."',
+    realestate: 'e.g., "Lisa found us our dream home in 2 weeks! She knows the market inside out."',
+    fitness: 'e.g., "Great gym with modern equipment. Trainers are helpful and classes are challenging."',
+    ecommerce: 'e.g., "Product arrived fast and exactly as described. Great packaging and easy returns."',
+    pets: 'e.g., "They treat my dog like family! Grooming was perfect and Max was so happy after."',
+    childcare: 'e.g., "My kids love it here! Teachers are caring and the daily updates are wonderful."',
+    financial: 'e.g., "Helped me save thousands on taxes. Very knowledgeable and patient with questions."',
+    creative: 'e.g., "Our wedding photos are stunning! She captured every special moment perfectly."',
+    events: 'e.g., "Made our wedding stress-free! Every detail was perfect and guests loved it."',
+    homeservices: 'e.g., "Fixed the leak in under an hour. Fair price, clean work, very professional."',
+  };
+
+  // Contextual headlines for each business type
+  const headlineMap = {
+    restaurant: 'See How Your Restaurant Would Respond',
+    hotel: 'Generate a Hotel Response in Seconds',
+    dentist: 'Try a Dental Practice Response',
+    medical: 'See How Your Practice Would Respond',
+    salon: 'Generate a Salon Response Instantly',
+    automotive: 'Try an Auto Shop Response',
+    legal: 'See How Your Firm Would Respond',
+    realestate: 'Generate a Real Estate Response',
+    fitness: 'Try a Gym/Fitness Response',
+    ecommerce: 'See How Your Store Would Respond',
+    pets: 'Generate a Pet Service Response',
+    childcare: 'Try a Childcare Response',
+    financial: 'See How You Would Respond',
+    creative: 'Generate a Creative Pro Response',
+    events: 'Try an Event Planner Response',
+    homeservices: 'See How Your Business Would Respond',
+  };
+
+  // Human-readable labels for display
+  const businessLabelMap = {
+    restaurant: 'Restaurant',
+    hotel: 'Hotel',
+    dentist: 'Dental Practice',
+    medical: 'Medical Practice',
+    salon: 'Salon & Spa',
+    automotive: 'Auto Shop',
+    legal: 'Law Firm',
+    realestate: 'Real Estate',
+    fitness: 'Gym & Fitness',
+    ecommerce: 'E-Commerce',
+    pets: 'Pet Service',
+    childcare: 'Childcare',
+    financial: 'Financial Service',
+    creative: 'Creative Professional',
+    events: 'Event Planning',
+    homeservices: 'Home Service',
+  };
+
+  const currentPlaceholder = placeholderMap[detectedContext.businessType] || 'Paste a customer review here to see AI magic...';
+  const currentHeadline = headlineMap[detectedContext.businessType] || 'Try It Now - Free';
+  const currentLabel = businessLabelMap[detectedContext.businessType];
+
   const handleGenerate = async () => {
     if (!reviewText.trim() || reviewText.trim().length < 10) {
       setError('Please enter a review (at least 10 characters)');
@@ -3549,8 +3613,8 @@ const PrivacyPage = () => (
         <p>We use the following services:</p>
         <ul style={{ marginLeft: '24px', marginTop: '12px' }}>
           <li>
-            <strong>OpenAI & Anthropic (Claude):</strong> To generate review responses (your review
-            text is sent to their APIs)
+            <strong>OpenAI, Anthropic (Claude) & Google (Gemini):</strong> To generate review
+            responses (your review text is sent to their APIs)
           </li>
           <li>
             <strong>Stripe:</strong> For payment processing
@@ -15218,7 +15282,7 @@ const GoogleReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -15266,7 +15330,7 @@ const GoogleReviewPage = () => {
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
               Stop spending 10-15 minutes per review. Generate thoughtful Google review responses in
-              under 30 seconds.
+              just 3 seconds.
             </p>
           </div>
           <div className="card" style={{ padding: '24px' }}>
@@ -15444,7 +15508,7 @@ const YelpReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -15516,7 +15580,7 @@ const YelpReviewPage = () => {
           <div className="card" style={{ padding: '24px' }}>
             <Clock size={32} style={{ color: '#d32323', marginBottom: '16px' }} />
             <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
-              Respond in 30 Seconds
+              Respond in 3 Seconds
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
               Stop agonizing over the perfect response. Our AI crafts professional Yelp replies in
@@ -15754,7 +15818,7 @@ const RestaurantReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -16072,7 +16136,7 @@ const HotelReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -16336,7 +16400,7 @@ const LocalBusinessReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -16455,7 +16519,7 @@ const LocalBusinessReviewPage = () => {
           <div className="card" style={{ padding: '24px' }}>
             <Clock size={32} style={{ color: '#10b981', marginBottom: '16px' }} />
             <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
-              30 Seconds Per Review
+              3 Seconds Per Review
             </h3>
             <p style={{ color: 'var(--gray-600)', lineHeight: '1.6' }}>
               Stop spending minutes crafting the perfect response. Our AI generates professional
@@ -16677,7 +16741,7 @@ const NegativeReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -16954,7 +17018,7 @@ const TripAdvisorReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -17179,7 +17243,7 @@ const BookingReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -17404,7 +17468,7 @@ const FacebookReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -17675,7 +17739,7 @@ const DentistReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -17988,7 +18052,7 @@ const MedicalPracticeReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -18255,7 +18319,7 @@ const SalonSpaReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -18520,7 +18584,7 @@ const AutoShopReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -18786,7 +18850,7 @@ const TrustpilotReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -19009,7 +19073,7 @@ const AirbnbReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -19270,7 +19334,7 @@ const RealEstateReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -19493,7 +19557,7 @@ const GymReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -19754,7 +19818,7 @@ const VetReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -20017,7 +20081,7 @@ const LawFirmReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -20278,7 +20342,7 @@ const EcommerceReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -20539,7 +20603,7 @@ const CoffeeShopReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
 
@@ -20794,7 +20858,7 @@ const AmazonReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
         </div>
@@ -20979,7 +21043,7 @@ const G2ReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
         </div>
@@ -21164,7 +21228,7 @@ const CapterraReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
         </div>
@@ -21349,7 +21413,7 @@ const GlassdoorReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
         </div>
@@ -21534,7 +21598,7 @@ const BBBReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
         </div>
@@ -21719,7 +21783,7 @@ const PlumberReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
         </div>
@@ -21903,7 +21967,7 @@ const ElectricianReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
         </div>
@@ -22088,7 +22152,7 @@ const HVACReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
         </div>
@@ -22272,7 +22336,7 @@ const RoofingReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
         </div>
@@ -22457,7 +22521,7 @@ const LandscapingReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
         </div>
@@ -22642,7 +22706,7 @@ const CleaningReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
         </div>
@@ -23199,7 +23263,7 @@ const PhotographerReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
         </div>
@@ -23384,7 +23448,7 @@ const WeddingReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
         </div>
@@ -23568,7 +23632,7 @@ const PetServiceReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
         </div>
@@ -23752,7 +23816,7 @@ const DaycareReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
         </div>
@@ -23937,7 +24001,7 @@ const AccountantReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
         </div>
@@ -24122,7 +24186,7 @@ const InsuranceReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
         </div>
@@ -24306,7 +24370,7 @@ const SeniorCareReviewPage = () => {
               <Globe size={16} /> 50+ Languages
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Chrome size={16} /> Chrome Extension
+              <Chrome size={16} /> One-Click Chrome
             </span>
           </div>
         </div>
