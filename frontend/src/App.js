@@ -4866,20 +4866,22 @@ const ResetPasswordPage = () => {
 // Onboarding Modal Component
 const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
   const { user, updateUser } = useAuth();
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState('');
 
   // Step 1: Business Name
   const [businessName, setBusinessName] = useState(user?.businessName || '');
 
-  // Step 2: Business Type + Keywords
+  // Step 2: Business Type + Keywords + Preview
   const [businessType, setBusinessType] = useState(user?.businessType || '');
   const [customBusinessType, setCustomBusinessType] = useState('');
   const [keywords, setKeywords] = useState('');
   const [generatedContext, setGeneratedContext] = useState('');
   const [generatingContext, setGeneratingContext] = useState(false);
 
-  // Step 3: Sample Response Test
+  // Preview Response
   const [sampleReview, setSampleReview] = useState('');
   const [sampleResponse, setSampleResponse] = useState('');
   const [generatingSample, setGeneratingSample] = useState(false);
@@ -4972,6 +4974,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
     setGeneratingContext(true);
     try {
       // Step 1: Generate business context
+      setLoadingStep('1/3 Generating profile...');
       const contextResult = await api.post('/personalization/generate-context', {
         keywords: keywords.trim(),
         businessType: finalBusinessType,
@@ -4982,6 +4985,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
       setGeneratedContext(context);
 
       // Step 2: Generate sample review based on context
+      setLoadingStep('2/3 Creating sample review...');
       const reviewResult = await api.post('/personalization/generate-context', {
         keywords: context,
         businessType: finalBusinessType,
@@ -4992,6 +4996,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
       setSampleReview(review);
 
       // Step 3: Generate response to that review (without counting usage)
+      setLoadingStep('3/3 Generating response...');
       const responseResult = await api.post('/generate', {
         reviewText: review,
         tone: 'friendly',
@@ -5008,6 +5013,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
       toast.error(error.response?.data?.error || 'Failed to generate');
     } finally {
       setGeneratingContext(false);
+      setLoadingStep('');
     }
   };
 
@@ -5015,8 +5021,9 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
     setLoading(true);
     try {
       await api.put('/auth/complete-onboarding');
-      toast.success('Welcome to ReviewResponder!');
-      onComplete();
+      updateUser({ onboardingCompleted: true });
+      toast.success('Welcome! Complete your profile to get personalized responses.');
+      navigate('/settings');
     } catch (error) {
       console.error('Failed to complete onboarding:', error);
       toast.error('Something went wrong');
@@ -5079,7 +5086,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
           <h2 style={{ fontSize: '24px', fontWeight: '700', margin: '0 0 8px 0' }}>
             Welcome to ReviewResponder!
           </h2>
-          <p style={{ margin: 0, opacity: 0.9 }}>Let's personalize your AI in 3 quick steps</p>
+          <p style={{ margin: 0, opacity: 0.9 }}>Let's personalize your AI in 2 quick steps</p>
 
           {/* Progress bar */}
           <div
@@ -5090,7 +5097,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
               marginTop: '20px',
             }}
           >
-            {[1, 2, 3].map(step => (
+            {[1, 2].map(step => (
               <div
                 key={step}
                 style={{
@@ -5195,7 +5202,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                     {generatingContext ? (
                       <>
                         <Loader size={16} className="spin" style={{ marginRight: '8px' }} />
-                        Generating preview...
+                        {loadingStep || 'Generating...'}
                       </>
                     ) : (
                       '✨ See AI in Action'
@@ -5283,54 +5290,6 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
             </div>
           )}
 
-          {/* Step 3: Chrome Extension */}
-          {currentStep === 3 && (
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>✅</div>
-              <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
-                You're all set!
-              </h3>
-              <p style={{ color: 'var(--gray-600)', marginBottom: '16px', fontSize: '14px' }}>
-                Go to <strong>Settings</strong> to customize your AI responses with your business
-                details.
-              </p>
-              <p style={{ color: 'var(--gray-600)', marginBottom: '24px', fontSize: '14px' }}>
-                Want to respond even faster? Install our Chrome extension.
-              </p>
-
-              <div
-                style={{
-                  background: 'var(--gray-50)',
-                  border: '1px solid var(--gray-200)',
-                  borderRadius: '12px',
-                  padding: '20px',
-                  marginBottom: '24px',
-                }}
-              >
-                <Chrome size={32} style={{ color: 'var(--primary)', marginBottom: '12px' }} />
-                <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>
-                  Chrome Extension
-                </h4>
-                <p style={{ fontSize: '14px', color: 'var(--gray-600)', marginBottom: '16px' }}>
-                  Generate responses without leaving the review page
-                </p>
-                <a
-                  href="/extension"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-secondary"
-                  style={{ fontSize: '14px', padding: '8px 16px', textDecoration: 'none' }}
-                >
-                  <Download size={16} />
-                  Install Extension
-                </a>
-              </div>
-
-              <p style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
-                Don't worry - you can always install it later from the dashboard
-              </p>
-            </div>
-          )}
         </div>
 
         {/* Footer */}
@@ -5364,20 +5323,21 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
             </button>
           </div>
 
-          {currentStep < 3 ? (
+          {currentStep === 1 ? (
             <button
               className="btn btn-primary"
               onClick={nextStep}
-              disabled={
-                (currentStep === 1 && !businessName.trim()) ||
-                (currentStep === 2 && !sampleResponse)
-              }
+              disabled={!businessName.trim()}
             >
-              {currentStep === 1 ? 'Continue' : 'Save & Continue'}
+              Continue
             </button>
           ) : (
-            <button className="btn btn-primary" onClick={completeOnboarding} disabled={loading}>
-              {loading ? 'Finishing...' : 'Start Using ReviewResponder'}
+            <button
+              className="btn btn-primary"
+              onClick={sampleResponse ? completeOnboarding : undefined}
+              disabled={!sampleResponse || loading}
+            >
+              {loading ? 'Finishing...' : sampleResponse ? 'Finish Setup →' : 'Generate preview first'}
             </button>
           )}
         </div>
@@ -10385,6 +10345,91 @@ const getTextareaPlaceholder = businessType => {
   );
 };
 
+// Placeholder Chip Component - Clickable inline placeholder that turns into input
+const PlaceholderChip = ({ placeholder, onReplace }) => {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState('');
+
+  const handleSubmit = () => {
+    if (value.trim()) {
+      onReplace(value.trim());
+    }
+    setEditing(false);
+    setValue('');
+  };
+
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        value={value}
+        onChange={e => setValue(e.target.value)}
+        onBlur={handleSubmit}
+        onKeyDown={e => {
+          if (e.key === 'Enter') handleSubmit();
+          if (e.key === 'Escape') {
+            setEditing(false);
+            setValue('');
+          }
+        }}
+        placeholder={placeholder.slice(1, -1)}
+        style={{
+          display: 'inline-block',
+          width: 'auto',
+          minWidth: '120px',
+          padding: '2px 8px',
+          border: '2px solid var(--primary)',
+          borderRadius: '4px',
+          fontSize: '14px',
+          background: 'white',
+          outline: 'none',
+        }}
+      />
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setEditing(true)}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '4px',
+        background: 'var(--primary-100)',
+        border: '1px dashed var(--primary-400)',
+        borderRadius: '4px',
+        padding: '2px 8px',
+        fontSize: '14px',
+        color: 'var(--primary-700)',
+        cursor: 'pointer',
+        margin: '0 2px',
+        fontWeight: '500',
+      }}
+    >
+      {placeholder.slice(1, -1)}
+      <Edit2 size={12} />
+    </button>
+  );
+};
+
+// Helper to render text with clickable placeholder chips
+const renderWithPlaceholders = (text, onPlaceholderChange) => {
+  const parts = text.split(/(\[[^\]]+\])/g);
+  return parts.map((part, i) => {
+    if (part.match(/^\[.+\]$/)) {
+      return (
+        <PlaceholderChip
+          key={i}
+          placeholder={part}
+          onReplace={newValue => onPlaceholderChange(part, newValue)}
+        />
+      );
+    }
+    return <span key={i}>{part}</span>;
+  });
+};
+
 // AI Context Generator Component - Always visible, no collapse
 const AIContextGenerator = ({ field, businessType, businessName, currentValue, onGenerated }) => {
   const [keywords, setKeywords] = useState('');
@@ -10531,18 +10576,20 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
               display: 'block',
             }}
           >
-            Generated text:
+            Generated text (click [placeholders] to fill in):
           </label>
-          <p
+          <div
             style={{
               fontSize: '14px',
               color: 'var(--gray-800)',
-              lineHeight: '1.6',
+              lineHeight: '1.8',
               whiteSpace: 'pre-wrap',
             }}
           >
-            {generated}
-          </p>
+            {renderWithPlaceholders(generated, (oldPlaceholder, newValue) => {
+              setGenerated(prev => prev.replace(oldPlaceholder, newValue));
+            })}
+          </div>
           <div
             style={{
               background: 'var(--primary-50)',
@@ -11138,6 +11185,32 @@ const SettingsPage = () => {
           )}
         </div>
       )}
+
+      {/* Chrome Extension Promo */}
+      <div
+        style={{
+          marginTop: '24px',
+          padding: '16px 20px',
+          background: 'linear-gradient(135deg, var(--gray-50), #f0f9ff)',
+          border: '1px solid var(--gray-200)',
+          borderRadius: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '12px',
+        }}
+      >
+        <Chrome size={20} style={{ color: 'var(--primary)' }} />
+        <span style={{ fontSize: '14px', color: 'var(--gray-700)' }}>
+          Want to respond faster?{' '}
+          <a
+            href="/extension"
+            style={{ color: 'var(--primary)', fontWeight: '600', textDecoration: 'none' }}
+          >
+            Install Chrome Extension →
+          </a>
+        </span>
+      </div>
     </div>
   );
 };
