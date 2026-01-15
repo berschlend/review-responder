@@ -10220,6 +10220,80 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
   }
 });
 
+// GET /api/admin/parallel-safe-status - View parallel-safe email system status
+app.get('/api/admin/parallel-safe-status', authenticateAdmin, async (req, res) => {
+  try {
+    // Active locks
+    const activeLocks = await dbAll(`
+      SELECT resource_type, resource_id, session_id, acquired_at, expires_at
+      FROM processing_locks
+      WHERE expires_at > NOW()
+      ORDER BY acquired_at DESC
+      LIMIT 50
+    `) || [];
+
+    // Recent email history (last 24h)
+    const recentEmails = await dbAll(`
+      SELECT email_address, email_type, sequence_number, session_id, sent_at
+      FROM email_send_history
+      WHERE sent_at > NOW() - INTERVAL '24 hours'
+      ORDER BY sent_at DESC
+      LIMIT 100
+    `) || [];
+
+    // Stats by email type
+    const emailStats = await dbAll(`
+      SELECT
+        email_type,
+        COUNT(*) as total_sent,
+        COUNT(DISTINCT email_address) as unique_recipients,
+        COUNT(DISTINCT session_id) as sessions_used
+      FROM email_send_history
+      WHERE sent_at > NOW() - INTERVAL '24 hours'
+      GROUP BY email_type
+      ORDER BY total_sent DESC
+    `) || [];
+
+    // Duplicate prevention stats (how many would have been duplicates)
+    const duplicatesBlocked = await dbGet(`
+      SELECT COUNT(*) as count
+      FROM email_send_history e1
+      WHERE EXISTS (
+        SELECT 1 FROM email_send_history e2
+        WHERE e2.email_address = e1.email_address
+        AND e2.email_type = e1.email_type
+        AND e2.id < e1.id
+        AND e2.sent_at > e1.sent_at - INTERVAL '60 minutes'
+      )
+    `) || { count: 0 };
+
+    // Expired locks cleaned up
+    const expiredLocks = await dbGet(`
+      SELECT COUNT(*) as count
+      FROM processing_locks
+      WHERE expires_at <= NOW()
+    `) || { count: 0 };
+
+    // Clean up expired locks
+    await dbQuery(`DELETE FROM processing_locks WHERE expires_at <= NOW()`);
+
+    res.json({
+      status: 'healthy',
+      active_locks: activeLocks.length,
+      locks: activeLocks,
+      recent_emails_24h: recentEmails.length,
+      email_history: recentEmails.slice(0, 20), // Just show 20 for brevity
+      email_stats_by_type: emailStats,
+      duplicates_blocked: parseInt(duplicatesBlocked.count) || 0,
+      expired_locks_cleaned: parseInt(expiredLocks.count) || 0,
+      current_session: process.env.CLAUDE_SESSION || 'unknown'
+    });
+  } catch (error) {
+    console.error('Parallel-safe status error:', error);
+    res.status(500).json({ error: 'Failed to get parallel-safe status', details: error.message });
+  }
+});
+
 // GET /api/admin/sales-dashboard - Comprehensive sales dashboard data
 app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
   try {
@@ -11890,10 +11964,19 @@ app.all('/api/cron/followup-clickers', async (req, res) => {
 
     let sent = 0;
     let demosGenerated = 0;
+    let skippedParallelSafe = 0;
     const results = [];
 
     for (const clicker of clickers) {
       try {
+        // PARALLEL-SAFE: Check if this email was recently processed
+        const recentlySent = await wasEmailRecentlySent(clicker.email, 'clicker_followup', 60);
+        if (recentlySent) {
+          console.log(`⏭️ Skipping ${clicker.email} - clicker followup recently sent`);
+          skippedParallelSafe++;
+          continue;
+        }
+
         const businessName = clicker.business_name || 'your restaurant';
         const reviewCount = clicker.google_reviews_count || null;
         const city = clicker.city || '';
@@ -12110,6 +12193,9 @@ P.S. Use code CLICKER30 for 30% off if you upgrade.`;
           [clicker.email, demoToken]
         );
 
+        // PARALLEL-SAFE: Record in history
+        await recordEmailSend(clicker.email, 'clicker_followup', 1, `clicker:${clicker.email}:${Date.now()}`);
+
         sent++;
         results.push({
           email: clicker.email,
@@ -12129,6 +12215,7 @@ P.S. Use code CLICKER30 for 30% off if you upgrade.`;
       success: true,
       sent: sent,
       demos_generated: demosGenerated,
+      skipped_parallel_safe: skippedParallelSafe,
       followups_sent: results,
       message:
         sent > 0 ? `Sent ${sent} personalized demos to hot leads!` : 'No new clickers to follow up',
@@ -12206,10 +12293,19 @@ app.all('/api/cron/second-followup', async (req, res) => {
     }
 
     let sent = 0;
+    let skippedParallelSafe = 0;
     const results = [];
 
     for (const clicker of clickers) {
       try {
+        // PARALLEL-SAFE: Check if second followup was recently sent
+        const recentlySent = await wasEmailRecentlySent(clicker.email, 'second_followup', 60);
+        if (recentlySent) {
+          console.log(`⏭️ Skipping ${clicker.email} - second followup recently sent`);
+          skippedParallelSafe++;
+          continue;
+        }
+
         const businessName = clicker.business_name || 'your restaurant';
         const city = clicker.city || '';
         const demoUrl = clicker.demo_token
@@ -12293,6 +12389,9 @@ P.S. No reply = no interest. No problem, I'll stop reaching out.`;
           [clicker.email]
         );
 
+        // PARALLEL-SAFE: Record in history
+        await recordEmailSend(clicker.email, 'second_followup', 2, `second:${clicker.email}:${Date.now()}`);
+
         sent++;
         results.push({ email: clicker.email, business: businessName });
 
@@ -12306,6 +12405,7 @@ P.S. No reply = no interest. No problem, I'll stop reaching out.`;
     res.json({
       success: true,
       sent: sent,
+      skipped_parallel_safe: skippedParallelSafe,
       followups_sent: results,
       message: sent > 0 ? `Sent ${sent} second follow-ups with better offer!` : 'No emails sent',
     });
@@ -14041,10 +14141,19 @@ app.all('/api/cron/revive-dead-leads', async (req, res) => {
     }
 
     let sent = 0;
+    let skippedParallelSafe = 0;
     const results = [];
 
     for (const lead of deadLeads) {
       try {
+        // PARALLEL-SAFE: Check if revival email was recently sent
+        const recentlySent = await wasEmailRecentlySent(lead.email, 'revival', 60);
+        if (recentlySent) {
+          console.log(`⏭️ Skipping ${lead.email} - revival recently sent`);
+          skippedParallelSafe++;
+          continue;
+        }
+
         const businessName = lead.business_name || 'your restaurant';
         const city = lead.city || '';
 
@@ -14127,6 +14236,9 @@ P.S. If not interested, just ignore this - I won't bug you again.`;
           lead.email_id,
         ]);
 
+        // PARALLEL-SAFE: Record in history
+        await recordEmailSend(lead.email, 'revival', 1, `revival:${lead.email}:${Date.now()}`);
+
         sent++;
         results.push({ email: lead.email, business: businessName });
         console.log(`💀➡️✉️ Revival sent to ${lead.email} (${businessName})`);
@@ -14140,6 +14252,7 @@ P.S. If not interested, just ignore this - I won't bug you again.`;
     res.json({
       success: true,
       sent,
+      skipped_parallel_safe: skippedParallelSafe,
       leads_revived: results,
       message:
         sent > 0 ? `Revived ${sent} dead leads with "Problem solved?" email` : 'No emails sent',
@@ -14646,7 +14759,42 @@ async function initOutreachTables() {
       `CREATE INDEX IF NOT EXISTS idx_sal_category ON sales_automation_log(action_category)`
     );
 
-    console.log('✅ Outreach tables initialized');
+    // ============================================
+    // PARALLEL-SAFE SYSTEM FOR CLAUDE SESSIONS
+    // ============================================
+    // Processing locks table - prevents duplicate processing across parallel Claude sessions
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS processing_locks (
+        id SERIAL PRIMARY KEY,
+        resource_type VARCHAR(50) NOT NULL,
+        resource_id VARCHAR(255) NOT NULL,
+        session_id VARCHAR(50),
+        acquired_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        expires_at TIMESTAMP NOT NULL,
+        UNIQUE(resource_type, resource_id)
+      )
+    `);
+    await dbQuery(`CREATE INDEX IF NOT EXISTS idx_locks_expires ON processing_locks(expires_at)`);
+
+    // Email send history - for deduplication across sessions
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS email_send_history (
+        id SERIAL PRIMARY KEY,
+        email_address TEXT NOT NULL,
+        email_type VARCHAR(50) NOT NULL,
+        sequence_number INTEGER DEFAULT 1,
+        idempotency_key VARCHAR(255) UNIQUE,
+        sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        session_id VARCHAR(50)
+      )
+    `);
+    await dbQuery(`CREATE INDEX IF NOT EXISTS idx_email_history_addr ON email_send_history(email_address, email_type)`);
+    await dbQuery(`CREATE INDEX IF NOT EXISTS idx_email_history_time ON email_send_history(sent_at DESC)`);
+
+    // Clean up expired locks automatically
+    await dbQuery(`DELETE FROM processing_locks WHERE expires_at < NOW()`);
+
+    console.log('✅ Outreach tables initialized (with parallel-safe system)');
   } catch (error) {
     console.error('Error initializing outreach tables:', error);
   }
@@ -14654,6 +14802,169 @@ async function initOutreachTables() {
 
 // Call this after main initDatabase
 initOutreachTables();
+
+// ============================================
+// PARALLEL-SAFE HELPER FUNCTIONS
+// ============================================
+
+/**
+ * Acquire a lock on a resource (e.g., lead, email)
+ * Returns true if lock acquired, false if resource is already locked
+ * @param {string} resourceType - 'lead', 'email', 'scraper', etc.
+ * @param {string} resourceId - Unique identifier (lead_id, email address, etc.)
+ * @param {number} ttlSeconds - Lock duration in seconds (default: 60)
+ */
+async function acquireLock(resourceType, resourceId, ttlSeconds = 60) {
+  const sessionId = process.env.CLAUDE_SESSION || 'unknown';
+  const expiresAt = new Date(Date.now() + ttlSeconds * 1000);
+
+  try {
+    // Clean up expired locks first
+    await dbQuery(`DELETE FROM processing_locks WHERE expires_at < NOW()`);
+
+    // Try to insert lock (will fail if already exists)
+    await dbQuery(
+      `INSERT INTO processing_locks (resource_type, resource_id, session_id, expires_at)
+       VALUES ($1, $2, $3, $4)`,
+      [resourceType, resourceId, sessionId, expiresAt]
+    );
+    return true;
+  } catch (error) {
+    if (error.code === '23505') { // Unique violation - lock exists
+      console.log(`🔒 Lock exists for ${resourceType}:${resourceId} (another session processing)`);
+      return false;
+    }
+    console.error('Error acquiring lock:', error);
+    return false;
+  }
+}
+
+/**
+ * Release a lock on a resource
+ */
+async function releaseLock(resourceType, resourceId) {
+  try {
+    await dbQuery(
+      `DELETE FROM processing_locks WHERE resource_type = $1 AND resource_id = $2`,
+      [resourceType, resourceId]
+    );
+  } catch (error) {
+    console.error('Error releasing lock:', error);
+  }
+}
+
+/**
+ * Check if an email was recently sent (deduplication)
+ * @param {string} emailAddress - Recipient email
+ * @param {string} emailType - Type of email ('outreach', 'followup', 'demo', etc.)
+ * @param {number} windowMinutes - Time window to check (default: 60 minutes)
+ */
+async function wasEmailRecentlySent(emailAddress, emailType, windowMinutes = 60) {
+  try {
+    const result = await dbGet(
+      `SELECT COUNT(*) as count FROM email_send_history
+       WHERE email_address = $1 AND email_type = $2
+       AND sent_at > NOW() - INTERVAL '${windowMinutes} minutes'`,
+      [emailAddress.toLowerCase(), emailType]
+    );
+    return parseInt(result?.count || 0) > 0;
+  } catch (error) {
+    console.error('Error checking email history:', error);
+    return false; // Fail open - allow send if check fails
+  }
+}
+
+/**
+ * Record an email send in history (for deduplication)
+ */
+async function recordEmailSend(emailAddress, emailType, sequenceNumber = 1, idempotencyKey = null) {
+  const sessionId = process.env.CLAUDE_SESSION || 'unknown';
+  try {
+    await dbQuery(
+      `INSERT INTO email_send_history (email_address, email_type, sequence_number, idempotency_key, session_id)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (idempotency_key) DO NOTHING`,
+      [emailAddress.toLowerCase(), emailType, sequenceNumber, idempotencyKey, sessionId]
+    );
+  } catch (error) {
+    console.error('Error recording email send:', error);
+  }
+}
+
+/**
+ * Safe outreach email send - handles locking and deduplication
+ * Returns { sent: boolean, reason: string }
+ */
+async function safeOutreachEmail(leadId, emailAddress, emailType, sendFn) {
+  const lockKey = `email:${emailAddress.toLowerCase()}:${emailType}`;
+  const sessionId = process.env.CLAUDE_SESSION || 'unknown';
+
+  // 1. Check if email was recently sent (within last 60 min for same type)
+  const recentlySent = await wasEmailRecentlySent(emailAddress, emailType, 60);
+  if (recentlySent) {
+    console.log(`⏭️ [${sessionId}] Skipping ${emailType} to ${emailAddress} - recently sent`);
+    return { sent: false, reason: 'recently_sent' };
+  }
+
+  // 2. Try to acquire lock
+  const locked = await acquireLock('email', lockKey, 120); // 2 min lock
+  if (!locked) {
+    console.log(`⏭️ [${sessionId}] Skipping ${emailType} to ${emailAddress} - another session processing`);
+    return { sent: false, reason: 'locked_by_other_session' };
+  }
+
+  try {
+    // 3. Double-check not sent while waiting for lock
+    const stillNotSent = !(await wasEmailRecentlySent(emailAddress, emailType, 5));
+    if (!stillNotSent) {
+      return { sent: false, reason: 'sent_during_lock_wait' };
+    }
+
+    // 4. Generate idempotency key
+    const idempotencyKey = `${emailType}:${emailAddress}:${Date.now()}:${leadId}`;
+
+    // 5. Send the email
+    const result = await sendFn();
+
+    // 6. Record in history
+    await recordEmailSend(emailAddress, emailType, 1, idempotencyKey);
+
+    console.log(`✅ [${sessionId}] Sent ${emailType} to ${emailAddress}`);
+    return { sent: true, reason: 'success', result };
+
+  } catch (error) {
+    console.error(`❌ [${sessionId}] Error sending ${emailType} to ${emailAddress}:`, error);
+    return { sent: false, reason: 'error', error: error.message };
+  } finally {
+    // 7. Always release lock
+    await releaseLock('email', lockKey);
+  }
+}
+
+/**
+ * Safe lead processing - prevents duplicate processing across sessions
+ */
+async function safeProcessLead(leadId, processFn) {
+  const lockKey = `lead:${leadId}`;
+  const sessionId = process.env.CLAUDE_SESSION || 'unknown';
+
+  const locked = await acquireLock('lead', lockKey, 300); // 5 min lock for lead processing
+  if (!locked) {
+    console.log(`⏭️ [${sessionId}] Skipping lead ${leadId} - another session processing`);
+    return { processed: false, reason: 'locked_by_other_session' };
+  }
+
+  try {
+    const result = await processFn();
+    console.log(`✅ [${sessionId}] Processed lead ${leadId}`);
+    return { processed: true, result };
+  } catch (error) {
+    console.error(`❌ [${sessionId}] Error processing lead ${leadId}:`, error);
+    return { processed: false, reason: 'error', error: error.message };
+  } finally {
+    await releaseLock('lead', lockKey);
+  }
+}
 
 // ============================================
 // SALES AUTOMATION STATE HELPERS
@@ -19417,9 +19728,27 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
 
       let sent = 0;
       let reviewAlertsSent = 0;
+      let skippedDueToDupe = 0;
 
       for (const lead of newLeads) {
         try {
+          // PARALLEL-SAFE: Check if this lead is already being processed by another session
+          const lockAcquired = await acquireLock('lead', `${lead.id}`, 180); // 3 min lock
+          if (!lockAcquired) {
+            console.log(`⏭️ Skipping lead ${lead.id} (${lead.business_name}) - locked by another session`);
+            skippedDueToDupe++;
+            continue;
+          }
+
+          // PARALLEL-SAFE: Check if email was recently sent to this address
+          const recentlySent = await wasEmailRecentlySent(lead.email, 'outreach', 60);
+          if (recentlySent) {
+            console.log(`⏭️ Skipping ${lead.email} - email recently sent`);
+            await releaseLock('lead', `${lead.id}`);
+            skippedDueToDupe++;
+            continue;
+          }
+
           // Generate personalized demo for ALL new leads (not just those with bad reviews)
           // This creates a custom landing page with 3 of their reviews + AI responses
           if (!lead.demo_url) {
@@ -19540,15 +19869,21 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
             );
           }
 
+          // PARALLEL-SAFE: Record email in history for deduplication
+          await recordEmailSend(lead.email, 'outreach', 1, `outreach:${lead.id}:${Date.now()}`);
+
           sent++;
 
           await new Promise(r => setTimeout(r, 500));
         } catch (e) {
           console.error('Send error:', e.message);
+        } finally {
+          // PARALLEL-SAFE: Always release the lock
+          await releaseLock('lead', `${lead.id}`);
         }
       }
 
-      results.sending = { sent: sent, review_alerts: reviewAlertsSent };
+      results.sending = { sent: sent, review_alerts: reviewAlertsSent, skipped_parallel_safe: skippedDueToDupe };
 
       // Step 4: Send follow-ups
       const needsFollowup = await dbAll(`
@@ -19564,6 +19899,7 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
       `);
 
       let followupsSent = 0;
+      let followupsSkipped = 0;
 
       for (const lead of needsFollowup) {
         const nextSequence = (lead.last_sequence || 1) + 1;
@@ -19573,6 +19909,14 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
 
         if (nextSequence <= maxSequence) {
           try {
+            // PARALLEL-SAFE: Check if follow-up was recently sent
+            const recentlySent = await wasEmailRecentlySent(lead.email, `followup_${nextSequence}`, 60);
+            if (recentlySent) {
+              console.log(`⏭️ Skipping followup ${nextSequence} for ${lead.email} - recently sent`);
+              followupsSkipped++;
+              continue;
+            }
+
             const template = fillEmailTemplate(getTemplateForLead(nextSequence, lead), lead);
 
             // Determine campaign type for follow-up
@@ -19609,13 +19953,16 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
               ]);
             }
 
+            // PARALLEL-SAFE: Record follow-up in history
+            await recordEmailSend(lead.email, `followup_${nextSequence}`, nextSequence, `followup:${lead.id}:${nextSequence}:${Date.now()}`);
+
             followupsSent++;
             await new Promise(r => setTimeout(r, 500));
           } catch (e) {}
         }
       }
 
-      results.followups = { sent: followupsSent };
+      results.followups = { sent: followupsSent, skipped_parallel_safe: followupsSkipped };
     }
 
     console.log('✅ Daily outreach completed:', results);
