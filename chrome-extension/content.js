@@ -3939,6 +3939,40 @@ async function generateResponse(panel) {
     const currentSentiment = panel.dataset.sentiment || 'neutral';
     await recordInsights(detectedIssues, currentSentiment);
 
+    // Contribute review to cache (crowdsourcing - helps everyone get faster demos!)
+    try {
+      const reviewRating = parseInt(panel.dataset.reviewRating) || 0;
+      const reviewerName = panel.dataset.reviewerName || 'Anonymous';
+      const platform = detectCurrentPlatform();
+
+      // Get place ID from URL if on Google Maps
+      let placeId = null;
+      if (platform === 'google' && window.location.href.includes('place/')) {
+        const match = window.location.href.match(/!1s([^!]+)/);
+        if (match) placeId = decodeURIComponent(match[1]);
+      }
+
+      // Don't await - fire and forget to not slow down UX
+      fetch(`${API_URL}/reviews/contribute`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reviews: [{
+            text: reviewText,
+            rating: reviewRating,
+            author: reviewerName,
+            date: new Date().toISOString()
+          }],
+          businessName: businessName,
+          placeId: placeId,
+          city: null,
+          platform: platform
+        })
+      }).catch(() => {}); // Silently ignore errors
+    } catch (e) {
+      // Contribution is optional, don't break main flow
+    }
+
     // Hide undo button (fresh generation)
     panel.querySelector('.rr-undo-btn').classList.add('hidden');
     panel.dataset.previousResponse = '';

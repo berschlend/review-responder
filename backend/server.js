@@ -2881,6 +2881,108 @@ app.post('/api/auth/reset-password', async (req, res) => {
   }
 });
 
+// ============ USER-GENERATED REVIEW CACHE (Crowdsourcing) ============
+// Every Chrome Extension user contributes reviews to our cache
+// This creates a network effect: more users = more cached reviews = less API costs
+
+app.post('/api/reviews/contribute', async (req, res) => {
+  try {
+    const { reviews, businessName, placeId, city, platform } = req.body;
+
+    if (!reviews || !Array.isArray(reviews) || reviews.length === 0) {
+      return res.status(400).json({ error: 'No reviews provided' });
+    }
+
+    if (!placeId && !businessName) {
+      return res.status(400).json({ error: 'placeId or businessName required' });
+    }
+
+    // Normalize reviews to our format
+    const normalizedReviews = reviews.slice(0, 20).map((r) => ({
+      text: r.text || r.reviewText || '',
+      rating: parseInt(r.rating || r.reviewRating) || 0,
+      author: r.author || r.reviewerName || 'Anonymous',
+      date: r.date || new Date().toISOString(),
+      source: platform || 'user_contributed',
+      review_link: r.link || null,
+      review_id: r.id || null,
+    }));
+
+    // Try to get or create place_id
+    let googlePlaceId = placeId;
+    if (!googlePlaceId && businessName && city) {
+      try {
+        const placeInfo = await lookupPlaceId(businessName, city);
+        googlePlaceId = placeInfo.placeId;
+      } catch (e) {
+        // Can't find place, use business name hash as fallback
+        googlePlaceId = `user_${Buffer.from(businessName).toString('base64').slice(0, 20)}`;
+      }
+    }
+
+    // Check if we already have recent reviews for this place
+    const existing = await dbQuery(
+      `SELECT id, scraped_reviews FROM demo_generations
+       WHERE google_place_id = $1
+       AND created_at > NOW() - INTERVAL '90 days'
+       ORDER BY created_at DESC LIMIT 1`,
+      [googlePlaceId]
+    );
+
+    if (existing.rows.length > 0) {
+      // Merge with existing reviews (add new ones, avoid duplicates)
+      const existingReviews = JSON.parse(existing.rows[0].scraped_reviews || '[]');
+      const existingTexts = new Set(existingReviews.map((r) => r.text?.slice(0, 50)));
+
+      const newReviews = normalizedReviews.filter(
+        (r) => !existingTexts.has(r.text?.slice(0, 50))
+      );
+
+      if (newReviews.length > 0) {
+        const mergedReviews = [...existingReviews, ...newReviews].slice(0, 30);
+        await dbQuery(
+          `UPDATE demo_generations SET scraped_reviews = $1 WHERE id = $2`,
+          [JSON.stringify(mergedReviews), existing.rows[0].id]
+        );
+        console.log(`[USER-CACHE] Added ${newReviews.length} new reviews for ${businessName}`);
+      }
+
+      return res.json({
+        success: true,
+        message: `Added ${newReviews.length} new reviews to cache`,
+        cached: true,
+      });
+    }
+
+    // Create new cache entry
+    await dbQuery(
+      `INSERT INTO demo_generations
+       (business_name, google_place_id, city, scraped_reviews, demo_token, generated_responses)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        businessName || 'Unknown Business',
+        googlePlaceId,
+        city || 'Unknown',
+        JSON.stringify(normalizedReviews),
+        `user_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        JSON.stringify([]),
+      ]
+    );
+
+    console.log(`[USER-CACHE] Created new cache with ${normalizedReviews.length} reviews for ${businessName}`);
+
+    res.json({
+      success: true,
+      message: `Cached ${normalizedReviews.length} reviews`,
+      cached: true,
+      bonus: 'Thanks for contributing! This helps everyone get faster demos.',
+    });
+  } catch (error) {
+    console.error('[USER-CACHE] Error:', error);
+    res.status(500).json({ error: 'Failed to cache reviews' });
+  }
+});
+
 // ============ RESPONSE GENERATION ============
 
 // Alias for Chrome extension (shorter path)
@@ -6024,12 +6126,13 @@ async function scrapeGoogleReviewsOutscraper(placeId, limit = 10) {
 // Helper: Scrape Google reviews - tries cache first, then Outscraper (500 free), SerpAPI (100 free), Google Places (5 free)
 async function scrapeGoogleReviews(placeId, limit = 10) {
   // FIRST: Check if we have cached reviews from previous scrapes (saves 50-70% of API calls!)
+  // 90 days TTL - reviews don't change often, and negative reviews are rarely edited
   try {
     const cached = await dbQuery(
       `SELECT scraped_reviews FROM demo_generations
        WHERE google_place_id = $1
        AND scraped_reviews IS NOT NULL
-       AND created_at > NOW() - INTERVAL '30 days'
+       AND created_at > NOW() - INTERVAL '90 days'
        ORDER BY created_at DESC LIMIT 1`,
       [placeId]
     );
@@ -24000,6 +24103,109 @@ app.get('/api/admin/omnichannel-stats', async (req, res) => {
   } catch (error) {
     console.error('Omnichannel stats error:', error);
     res.status(500).json({ error: 'Failed to get stats' });
+  }
+});
+
+// ============== BATCH PRE-SCRAPING ==============
+// Pre-scrape reviews for leads to fill cache BEFORE daily outreach
+// Run weekly via cron to ensure every lead gets a demo
+app.get('/api/cron/batch-prescrape', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const limit = parseInt(req.query.limit) || 50;
+  const results = { scraped: 0, cached: 0, failed: 0, skipped: 0 };
+
+  try {
+    // Find leads with email but no cached reviews (priority: high review count businesses)
+    const leads = await dbAll(
+      `SELECT DISTINCT ol.id, ol.business_name, ol.city, ol.google_place_id
+       FROM outreach_leads ol
+       LEFT JOIN demo_generations dg ON ol.google_place_id = dg.google_place_id
+         AND dg.created_at > NOW() - INTERVAL '90 days'
+       WHERE ol.email IS NOT NULL
+       AND ol.google_place_id IS NOT NULL
+       AND dg.id IS NULL
+       AND ol.google_reviews_count >= 20
+       ORDER BY ol.google_reviews_count DESC
+       LIMIT $1`,
+      [limit]
+    );
+
+    console.log(`[BATCH-PRESCRAPE] Found ${leads.length} leads without cached reviews`);
+
+    for (const lead of leads) {
+      try {
+        // Check if we already have cached reviews (double-check)
+        const existingCache = await dbQuery(
+          `SELECT id FROM demo_generations
+           WHERE google_place_id = $1
+           AND created_at > NOW() - INTERVAL '90 days'`,
+          [lead.google_place_id]
+        );
+
+        if (existingCache.rows.length > 0) {
+          results.skipped++;
+          continue;
+        }
+
+        // Scrape reviews (uses our 5-tier fallback: cache → outscraper → serpapi → apify → google places)
+        const reviews = await scrapeGoogleReviews(lead.google_place_id, 10);
+
+        if (reviews.length > 0) {
+          // Save to demo_generations as cache (without actually generating AI responses yet)
+          await dbQuery(
+            `INSERT INTO demo_generations
+             (business_name, google_place_id, city, scraped_reviews, demo_token, generated_responses)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             ON CONFLICT (google_place_id) DO UPDATE SET
+               scraped_reviews = EXCLUDED.scraped_reviews,
+               created_at = NOW()`,
+            [
+              lead.business_name,
+              lead.google_place_id,
+              lead.city,
+              JSON.stringify(reviews),
+              `prescrape_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+              JSON.stringify([]), // Empty responses - will be generated on-demand
+            ]
+          );
+
+          results.scraped++;
+          console.log(`[BATCH-PRESCRAPE] Cached ${reviews.length} reviews for ${lead.business_name}`);
+        } else {
+          results.failed++;
+        }
+
+        // Rate limit: 1 request per 2 seconds
+        await new Promise((r) => setTimeout(r, 2000));
+      } catch (err) {
+        console.error(`[BATCH-PRESCRAPE] Error for ${lead.business_name}: ${err.message}`);
+        results.failed++;
+      }
+    }
+
+    // Log action
+    await logSalesAction('batch_prescrape', 'cron', {
+      leads_checked: leads.length,
+      reviews_scraped: results.scraped,
+      failed: results.failed,
+    });
+
+    res.json({
+      success: true,
+      message: `Pre-scraped reviews for ${results.scraped} businesses`,
+      results,
+      next_run: 'Weekly recommended - fills cache before daily outreach',
+    });
+  } catch (error) {
+    console.error('[BATCH-PRESCRAPE] Error:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
