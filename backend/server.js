@@ -10015,7 +10015,7 @@ app.all('/api/cron/onboarding-emails', async (req, res) => {
 
   try {
     // Create onboarding_emails table if not exists
-    await dbRun(`
+    await dbQuery(`
       CREATE TABLE IF NOT EXISTS onboarding_emails (
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id),
@@ -10194,7 +10194,7 @@ app.all('/api/cron/onboarding-emails', async (req, res) => {
         }
 
         // Record in onboarding_emails table
-        await dbRun(`
+        await dbQuery(`
           INSERT INTO onboarding_emails (user_id, email_day)
           VALUES ($1, $2)
           ON CONFLICT (user_id, email_day) DO NOTHING
@@ -10258,7 +10258,7 @@ app.all('/api/cron/review-alerts', async (req, res) => {
 
   try {
     // Create user_review_cache table if not exists
-    await dbRun(`
+    await dbQuery(`
       CREATE TABLE IF NOT EXISTS user_review_cache (
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id),
@@ -10389,7 +10389,7 @@ app.all('/api/cron/review-alerts', async (req, res) => {
         });
 
         // Update cache
-        await dbRun(`
+        await dbQuery(`
           INSERT INTO user_review_cache (user_id, google_place_id, last_review_ids, last_checked_at)
           VALUES ($1, $2, $3, NOW())
           ON CONFLICT (user_id, google_place_id)
