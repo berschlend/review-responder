@@ -12314,84 +12314,72 @@ app.all('/api/cron/followup-clickers', async (req, res) => {
         let subject, body;
 
         if (demoUrl) {
-          // Email WITH personalized demo link - much better conversion!
+          // Email WITH personalized demo link
           if (isGerman) {
-            subject = `3 AI-Antworten für ${businessName} – schon fertig`;
-            body = `Hey,
+            subject = `Demo für ${businessName}`;
+            body = `Hallo,
 
-ich hab gesehen, dass ihr auf meine Email geklickt habt.
-
-Statt lange zu reden, hab ich einfach mal gemacht: Hier sind 3 AI-generierte Antworten auf eure echten Google Bewertungen:
+hier sind 3 AI-generierte Antworten auf echte Google Bewertungen von ${businessName}:
 
 ${demoUrl}
 
-Schaut euch an ob der Ton passt. Dauert 30 Sekunden.
+30 Sekunden und ihr seht ob der Ton passt.
 
-Falls es gefällt: 20 Antworten/Monat sind kostenlos. Falls nicht: Kein Problem, einfach ignorieren.
+20 Antworten/Monat kostenlos.
 
 Grüße,
-Berend${CALL_CTA_DE}`;
+Berend
+ReviewResponder${CALL_CTA_DE}`;
           } else {
-            subject = `3 AI responses for ${businessName} – already done`;
-            body = `Hey,
+            subject = `Demo for ${businessName}`;
+            body = `Hi,
 
-I noticed someone from ${businessName} clicked on my email.
-
-Instead of asking for a call, I just went ahead and made this for you: 3 AI-generated responses to your actual Google reviews:
+Here are 3 AI-generated responses to actual Google reviews from ${businessName}:
 
 ${demoUrl}
 
-Takes 30 seconds to see if the tone matches your brand.
+30 seconds to see if the tone works.
 
-If you like it: 20 responses/month are free. If not: No worries, just ignore this.
+20 responses/month free.
 
 Best,
-Berend${CALL_CTA_EN}`;
+Berend
+ReviewResponder${CALL_CTA_EN}`;
           }
         } else {
-          // Fallback email WITHOUT demo (if demo generation failed)
+          // Fallback email WITHOUT demo
           if (isGerman) {
-            const reviewText = reviewCount
-              ? `Mit über ${reviewCount.toLocaleString('de-DE')} Google Bewertungen`
-              : 'Mit so vielen Bewertungen';
-            subject = reviewCount
-              ? `${reviewCount.toLocaleString('de-DE')}+ Bewertungen – wie antwortet ihr?`
-              : `Kurze Frage zu ${businessName}`;
+            subject = `${businessName} - Google Bewertungen`;
 
-            body = `Hey,
+            body = `Hallo,
 
-ich hab gesehen, dass ihr auf meine Email geklickt habt.
+${businessName} hat Google Bewertungen. Antwortet ihr darauf?
 
-${reviewText} habt ihr wahrscheinlich einiges zu tun beim Beantworten. ReviewResponder macht das in Sekunden statt Minuten.
+ReviewResponder generiert professionelle Antworten in 3 Sekunden statt 5 Minuten.
 
-Hier könnt ihr es direkt an euren echten Bewertungen testen:
-https://tryreviewresponder.com?ref=hot_lead
+Hier testen: https://tryreviewresponder.com?ref=hot_lead
 
-20 Antworten/Monat kostenlos, keine Kreditkarte.
+20 Antworten/Monat kostenlos.
 
 Grüße,
-Berend${CALL_CTA_DE}`;
+Berend
+ReviewResponder${CALL_CTA_DE}`;
           } else {
-            const reviewText = reviewCount
-              ? `${reviewCount.toLocaleString()} reviews`
-              : 'hundreds of reviews';
-            subject = reviewCount
-              ? `${reviewCount.toLocaleString()}+ reviews – how do you respond?`
-              : `Quick question about ${businessName}`;
+            subject = `${businessName} - Google Reviews`;
 
-            body = `Hey,
+            body = `Hi,
 
-I noticed someone from ${businessName} clicked on my email.
+${businessName} has Google reviews. Do you respond to them?
 
-With ${reviewText}, responding to all of them takes time. ReviewResponder does it in seconds instead of minutes.
+ReviewResponder generates professional responses in 3 seconds instead of 5 minutes.
 
-Try it on your actual reviews here:
-https://tryreviewresponder.com?ref=hot_lead
+Try it: https://tryreviewresponder.com?ref=hot_lead
 
-20 responses/month free, no credit card.
+20 responses/month free.
 
 Best,
-Berend${CALL_CTA_EN}`;
+Berend
+ReviewResponder${CALL_CTA_EN}`;
           }
         }
 
@@ -12715,68 +12703,68 @@ app.get('/api/cron/hot-lead-attack', async (req, res) => {
         let subject, body;
 
         if (demoUrl) {
-          // They already have a demo - quick nudge
+          // They already have a demo
           if (isGerman) {
-            subject = `Gesehen aber nicht getestet? 🎯`;
-            body = `Hey,
+            subject = `Demo für ${businessName}`;
+            body = `Hallo,
 
-ich hab gesehen, dass du gerade auf meine Email geklickt hast.
-
-Falls du die Demo verpasst hast - hier nochmal der direkte Link:
+hier ist die personalisierte Demo für ${businessName}:
 ${demoUrl}
 
-30 Sekunden und du weißt ob ReviewResponder zu ${businessName} passt.
+3 AI-generierte Antworten auf eure echten Google Bewertungen.
 
-Code CLICKER30 = 30% Rabatt wenn du upgraden willst.
+20 Antworten/Monat kostenlos.
 
 Grüße,
-Berend`;
+Berend
+ReviewResponder`;
           } else {
-            subject = `Saw you checking us out 👀`;
-            body = `Hey,
+            subject = `Demo for ${businessName}`;
+            body = `Hi,
 
-I noticed you just clicked through to ReviewResponder.
-
-In case you missed the demo I made for ${businessName}:
+Here's the personalized demo for ${businessName}:
 ${demoUrl}
 
-Takes 30 seconds to see if the AI responses match your brand voice.
+3 AI-generated responses to your actual Google reviews.
 
-Use code CLICKER30 for 30% off if you decide to upgrade.
+20 responses/month free.
 
 Best,
-Berend`;
+Berend
+ReviewResponder`;
           }
         } else {
-          // No demo yet - offer to make one
+          // No demo yet
           if (isGerman) {
-            subject = `Soll ich was für ${businessName} machen?`;
-            body = `Hey,
+            subject = `${businessName} - Google Bewertungen`;
+            body = `Hallo,
 
-ich hab gesehen, dass du gerade auf meine Email geklickt hast.
+${businessName} hat Google Bewertungen. Antwortet ihr darauf?
 
-Wenn du willst, mache ich dir eine kostenlose Demo mit echten AI-Antworten auf eure Google Bewertungen.
+ReviewResponder generiert professionelle Antworten in 3 Sekunden.
 
-Antworte einfach mit "Ja" und ich schick dir den Link in 5 Minuten.
+Hier testen: https://tryreviewresponder.com?ref=hot_lead
+
+20 Antworten/Monat kostenlos.
 
 Grüße,
 Berend
-
-P.S. Code CLICKER30 = 30% Rabatt wenn du später upgraden willst.`;
+ReviewResponder`;
           } else {
-            subject = `Want me to make something for ${businessName}?`;
-            body = `Hey,
+            subject = `${businessName} - Google Reviews`;
+            body = `Hi,
 
-I noticed you just clicked on my email.
+${businessName} has Google reviews. Do you respond to them?
 
-Want me to create a free demo with real AI responses to your Google reviews?
+ReviewResponder generates professional responses in 3 seconds.
 
-Just reply "Yes" and I'll send you the link in 5 minutes.
+Try it: https://tryreviewresponder.com?ref=hot_lead
+
+20 responses/month free.
 
 Best,
 Berend
-
-P.S. Use code CLICKER30 for 30% off if you upgrade later.`;
+ReviewResponder`;
           }
         }
 
@@ -15339,44 +15327,34 @@ const EMAIL_TEMPLATES_EN = {
     subject: '{business_name} - quick question',
     body: `Hi,
 
-I noticed {business_name} has {review_count}+ Google reviews - impressive!
+{business_name} has {review_count}+ Google reviews. Do you respond to them?
 
-Quick question: How much time does your team spend responding to customer reviews each week?
+ReviewResponder generates professional responses in 3 seconds instead of 5 minutes.
 
-I built a tool that helps with exactly this - 3 seconds per response instead of 5 minutes.
+20 responses/month free: https://tryreviewresponder.com
 
-If you're interested: https://tryreviewresponder.com
-
-Cheers,
+Best,
 Berend
-
-P.S. I'm the founder, feel free to reply if you have any questions.`,
+ReviewResponder`,
   },
   sequence2: {
     subject: 'Re: {business_name}',
-    body: `Hey,
+    body: `Hi again,
 
-just wanted to check if you saw my last email.
+Businesses that respond to reviews get higher ratings on average (Harvard study).
 
-Businesses that respond to reviews get higher ratings and up to 9% more revenue (Harvard study) - but I get that time is tight.
+If review management takes time: https://tryreviewresponder.com
 
-If you have 2 minutes: https://tryreviewresponder.com
-
-Cheers,
+Best,
 Berend`,
   },
   sequence3: {
     subject: '{business_name}',
     body: `Hi,
 
-last email from me - promise!
+Last message - if reviews pile up: https://tryreviewresponder.com
 
-If review management isn't a priority right now, no worries.
-
-But if you ever find reviews piling up: https://tryreviewresponder.com is there.
-
-Wishing you continued success!
-
+Best,
 Berend`,
   },
 };
@@ -15385,46 +15363,36 @@ Berend`,
 const EMAIL_TEMPLATES_DE = {
   sequence1: {
     subject: '{business_name} - kurze Frage',
-    body: `Hi,
+    body: `Hallo,
 
-ich hab gesehen dass {business_name} über {review_count} Google Reviews hat - Respekt!
+{business_name} hat {review_count} Google Bewertungen. Antwortet ihr darauf?
 
-Kurze Frage: Wie viel Zeit verbringt ihr pro Woche damit, auf Kundenrezensionen zu antworten?
+ReviewResponder generiert professionelle Antworten in 3 Sekunden statt 5 Minuten.
 
-Ich hab ein Tool gebaut das genau dabei hilft - 3 Sekunden pro Antwort statt 5 Minuten.
-
-Falls interessant: https://tryreviewresponder.com
+20 Antworten/Monat kostenlos: https://tryreviewresponder.com
 
 Grüße,
 Berend
-
-P.S. Bin der Gründer, bei Fragen einfach antworten.`,
+ReviewResponder`,
   },
   sequence2: {
     subject: 'Re: {business_name}',
-    body: `Hey nochmal,
+    body: `Hallo nochmal,
 
-wollte nur kurz nachfragen ob du meine letzte Mail gesehen hast.
+Businesses die auf Reviews antworten bekommen im Schnitt bessere Bewertungen (Harvard Studie).
 
-Wer auf Reviews antwortet bekommt bessere Bewertungen und bis zu 9% mehr Umsatz (Harvard Studie) - aber ich versteh dass Zeit knapp ist.
-
-Falls du mal 2 Minuten hast: https://tryreviewresponder.com
+Falls Review-Management mal Zeit kostet: https://tryreviewresponder.com
 
 Grüße,
 Berend`,
   },
   sequence3: {
     subject: '{business_name}',
-    body: `Hi,
+    body: `Hallo,
 
-letzte Mail von mir - versprochen!
+letzte Nachricht - falls Reviews mal liegen bleiben: https://tryreviewresponder.com
 
-Falls Review-Management gerade keine Priorität ist, kein Problem.
-
-Aber falls Reviews mal liegen bleiben: https://tryreviewresponder.com ist da.
-
-Viel Erfolg weiterhin!
-
+Viel Erfolg,
 Berend`,
   },
 };
@@ -15433,12 +15401,11 @@ Berend`,
 // These are sent when we find a business with a bad review
 const REVIEW_ALERT_TEMPLATES_EN = {
   // With demo link - used when we have 3+ reviews to show
-  // A/B Test Winner: referencing specific star rating gets 100% open rate
   sequence1: {
-    subject: '{business_name} - noticed your {review_rating}-star review',
+    subject: '{business_name} - response draft',
     body: `Hi,
 
-I noticed {business_name} has a {review_rating}-star review on Google:
+{business_name} has a {review_rating}-star review on Google:
 
 "{review_text_truncated}"
 - {review_author}
