@@ -7597,7 +7597,7 @@ app.post('/api/public/try', tryRateLimiter, async (req, res) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const userResult = await pool.query(
           'SELECT id, email, plan, response_count FROM users WHERE id = $1',
-          [decoded.userId]
+          [decoded.id || decoded.userId]
         );
         if (userResult.rows.length > 0) {
           authenticatedUser = userResult.rows[0];
