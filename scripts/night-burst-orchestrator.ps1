@@ -227,7 +227,8 @@ function Start-Agent {
         Set-Location $projectRoot
 
         # Build command arguments
-        $args = @()
+        # V7 FIX: Use --print so Claude EXITS when done (enables restart detection)
+        $args = @("--print")
         if ($chrome) {
             $args += "--chrome"
         }
@@ -240,7 +241,7 @@ function Start-Agent {
         }
         $args += "/night-burst-$agentNum"
 
-        # Run claude with the night-burst command
+        # Run claude with --print so it exits when done
         claude @args
     } -ArgumentList $sessionName, $config.Chrome, $AgentNum, $ProjectRoot, $selectedConfigDir, $PlanMode
 
