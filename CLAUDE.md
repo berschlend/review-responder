@@ -658,6 +658,37 @@ Oder: `.claude\omnichannel-parallel.ps1` ausführen
 
 ---
 
+## KÜRZLICH ERLEDIGT (15.01 Nacht - Sales Automation Phase 3)
+
+- **Sales Automation komplett** - 4 Event-Trigger laufen 24/7 ohne Claude:
+  - Phase 1: Limit-Hit Flash Offer (50% off, 2h) ✅
+  - Phase 2: Checkout Abandonment (20% off, 7 Tage) ✅
+  - Phase 3a: Hot Demo Visitors (40% off, 48h) ✅
+  - Phase 3b: Exit Survey Follow-Up (5 Templates) ✅
+- **Hot Demo Visitors Cron** - `/api/cron/hot-demo-visitors`
+  - Trackt `demo_view_count` bei jedem Seitenaufruf
+  - Email bei 3+ Views mit HOTLEAD40 Coupon (40% off)
+  - Subject: "Still thinking about [Business]?"
+  - Safeguard: Max 1 Email pro Demo
+- **Exit Survey Follow-Up Cron** - `/api/cron/exit-survey-followup`
+  - 5 Email-Templates basierend auf Grund:
+    - `too_expensive`: "$5 für 10 Responses" Micro-Pricing Angebot
+    - `not_right_time`: Reminder in 2 Wochen/1 Monat/3 Monate
+    - `missing_feature`: "Which feature?" Feedback Request
+    - `just_testing`: Testimonials + Free Tier Hinweis
+    - `other`: Generisches Feedback Request
+  - Safeguard: Max 1 Response pro Survey
+- **Neue DB-Spalten:**
+  - `demo_generations.demo_view_count` (INTEGER)
+  - `demo_generations.hot_demo_followup_sent_at` (TIMESTAMP)
+  - `exit_surveys.response_sent_at` (TIMESTAMP)
+- **Neue Stripe Coupons:** HOTLEAD40 (40% off, 48h expiry)
+- **First Principles Ergebnis:** Kein `/sales-monitor` Skill nötig!
+  - Chrome MCP nur für LinkedIn (existiert: `/linkedin-connect`)
+  - Backend-Automatisierung für alles andere (Crons, Webhooks)
+
+---
+
 ## KÜRZLICH ERLEDIGT (15.01 Morgen - Demo Page Conversion Analyse)
 
 - **Demo Page Deep Dive** - Warum 58 Views aber 0 Conversions?
