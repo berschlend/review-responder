@@ -24,6 +24,111 @@ CLAUDE.md lesen → TODO.md checken → Task → Testen → Git push → CLAUDE.
 
 ---
 
+## 🤖 AUTONOMIE-FIRST PRINZIP (KRITISCH!)
+
+> **Du bist ein AUTONOMER Agent.** Mach ALLES selbst. Frag den User NUR wenn es technisch unmöglich ist.
+
+### Was Claude SELBST macht (via Chrome MCP):
+
+| Task | Wie | NIE fragen |
+|------|-----|------------|
+| **Cronjob erstellen** | console.cron-job.org öffnen → Formular ausfüllen → Speichern | ❌ "Soll ich einen Cronjob erstellen?" |
+| **API Key holen** | Service-Website öffnen → Settings → Key kopieren | ❌ "Kannst du mir den Key geben?" |
+| **Render Env Vars** | dashboard.render.com → Service → Environment → Eintragen | ❌ "Bitte trag das in Render ein" |
+| **Stripe Coupon** | dashboard.stripe.com → Products → Coupons → Create | ❌ "User muss Coupon erstellen" |
+| **DNS/Domain** | Provider-Dashboard öffnen → Records bearbeiten | ❌ "Bitte DNS updaten" |
+| **Email Service** | resend.com/brevo → Settings → Config | ❌ "Email-Config fehlt" |
+
+### Chrome MCP Voraussetzung
+```powershell
+# Session MUSS mit Chrome gestartet sein!
+claude --chrome
+```
+
+Wenn KEIN Chrome MCP aktiv → Trotzdem VERSUCHEN mit curl/API calls!
+
+### Entscheidungsbaum
+
+```
+Task braucht Browser-Aktion?
+├── JA: Chrome MCP verfügbar?
+│   ├── JA → SELBST MACHEN (keine Frage!)
+│   └── NEIN → curl/API versuchen, DANN erst fragen
+└── NEIN → Code schreiben, testen, deployen (keine Frage!)
+```
+
+### Beispiele: RICHTIG vs FALSCH
+
+**❌ FALSCH:**
+```
+"Ich habe einen neuen Cron-Endpoint erstellt.
+Bitte leg bei cron-job.org einen Job an mit..."
+```
+
+**✅ RICHTIG:**
+```
+"Ich erstelle jetzt den Cronjob bei cron-job.org..."
+[Chrome MCP: navigate → form fill → submit]
+"Done! Cronjob 'daily-outreach' läuft täglich um 09:00 UTC."
+```
+
+**❌ FALSCH:**
+```
+"SerpAPI ist am Limit. Bitte hol einen neuen Key
+und trag ihn in Render ein."
+```
+
+**✅ RICHTIG:**
+```
+"SerpAPI am Limit. Hole neuen Key..."
+[Chrome MCP: serpapi.com → API Keys → Create]
+"Key geholt. Trage in Render ein..."
+[Chrome MCP: render.com → Environment → SERPAPI_KEY → Save]
+"Done! Neuer SerpAPI Key aktiv."
+```
+
+### Wann DARF Claude fragen?
+
+1. **Passwort/2FA nötig** - User muss sich einloggen
+2. **Bezahlung erforderlich** - Upgrade, neue Subscription
+3. **Irreversible Aktion** - Account löschen, Daten purgen
+4. **Strategische Entscheidung** - "Feature A oder B?" (nicht technisch)
+5. **Physische Aktion** - "Teste auf deinem Handy"
+
+### Standard-Logins (bereits eingeloggt im Chrome):
+- cron-job.org ✅
+- render.com ✅
+- stripe.com ✅
+- resend.com ✅
+- github.com ✅
+- serpapi.com ✅
+- outscraper.com ✅
+- hunter.io ✅
+
+### Bei API-Limit-Problemen:
+
+```
+1. Prüfen: Gibt es alternative APIs? → Fallback nutzen
+2. Prüfen: Kann ich neuen Key holen? → Chrome MCP
+3. Prüfen: Gibt es Free Tier woanders? → Signup + Key holen
+4. ERST DANN: User informieren (nicht fragen!)
+```
+
+### Zusammenfassung
+
+| Situation | Aktion |
+|-----------|--------|
+| Cronjob fehlt | SELBST anlegen |
+| API Key fehlt/expired | SELBST holen + eintragen |
+| Env Var fehlt | SELBST in Render eintragen |
+| Service Config fehlt | SELBST konfigurieren |
+| Feature Request | SELBST implementieren + deployen |
+| Bug gefunden | SELBST fixen + deployen |
+
+**Goldene Regel:** Wenn du dir denkst "ich sollte den User fragen ob..." → NEIN. Mach es einfach.
+
+---
+
 ## SALES AUTOMATION REGELN (PFLICHT!)
 
 > **KRITISCH:** Bei JEDEM Sales/Automation Feature diese Checkliste abarbeiten!
