@@ -17,6 +17,28 @@
 4. User nur fragen wenn nötig
 5. **Nach Deploy:** "Deployed! Frontend/Backend live in ~2-3 Min"
 
+### PROFESSIONALISM RULES (WICHTIG!)
+
+> **KEINE willkürlichen Änderungen an Pricing, Discounts oder Marketing ohne User-Approval!**
+
+1. **Discount Codes:** NUR existierende Codes verwenden, KEINE neuen erstellen!
+   - `WELCOME30` - 30% off (Welcome Email)
+   - `DEMO30` - 30% off (Demo Pages)
+   - Das reicht! Keine 50%, 40%, oder andere Rabatte erfinden.
+
+2. **Email-Kommunikation:** Professionell halten
+   - Alle Outreach-Emails haben jetzt Unsubscribe-Footer (CAN-SPAM compliant)
+   - Keine aggressiven Marketing-Taktiken
+   - Unsubscribe-Requests SOFORT respektieren
+
+3. **Keine eigenmächtigen Änderungen an:**
+   - Preisen oder Plans
+   - Discount-Prozenten
+   - Email-Frequenzen
+   - Marketing-Messaging
+
+4. **Bei Unsicherheit:** User fragen!
+
 ### Workflow
 
 ```
@@ -149,7 +171,7 @@ Läuft autonom ohne User-Input:
 
 ## CURRENT TASKS
 
-**Stand: 14.01.2026**
+**Stand: 15.01.2026**
 
 ### Chrome Web Store
 
@@ -334,6 +356,7 @@ Läuft autonom ohne User-Input:
 ### Outreach
 
 - `GET /api/cron/daily-outreach|demo-followup|scraper-alerts`
+- `GET /api/outreach/unsubscribe?email=...` - CAN-SPAM Unsubscribe
 
 ---
 
@@ -379,6 +402,22 @@ Läuft autonom ohne User-Input:
 - `/scrape-leads` - TripAdvisor Scraping
 - `/g2-miner` - G2 Competitor Mining
 - `/yelp-audit` - Yelp Lead Auditing
+
+---
+
+## KÜRZLICH ERLEDIGT (15.01 Nachmittag)
+
+- **CAN-SPAM Unsubscribe System** - Professionelles Email-Opt-Out
+  - `GET /api/outreach/unsubscribe?email=...` - One-Click Unsubscribe mit Bestätigungsseite
+  - `unsubscribes` Tabelle trackt alle Opt-Outs
+  - Alle Outreach-Emails checken Unsubscribe-Liste vor Versand
+  - Professioneller Footer in ALLEN Outreach-Emails:
+    ```
+    You're receiving this because we thought ReviewResponder could help your business.
+    Don't want to hear from us? Unsubscribe instantly
+    ReviewResponder | Berlin, Germany
+    ```
+  - Leads werden automatisch als `status = 'unsubscribed'` markiert
 
 ---
 
