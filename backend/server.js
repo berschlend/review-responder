@@ -430,7 +430,19 @@ async function sendEmail({
 // Checks unsubscribe list before sending (CAN-SPAM compliance)
 
 async function sendOutreachEmail({ to, subject, html, campaign = 'main', tags = [] }) {
-  // Check if email is unsubscribed before sending
+  // ANTI-SPAM: Full check before sending (format, suppression, frequency)
+  try {
+    const spamCheck = await canSendOutreachEmail(to);
+    if (!spamCheck.canSend) {
+      console.log(`📧 Skipped (${spamCheck.reason}): ${to}`);
+      return { success: false, skipped: true, reason: spamCheck.reason };
+    }
+  } catch (err) {
+    // Don't block on anti-spam check errors
+    console.log(`[Anti-Spam check] Warning: ${err.message}`);
+  }
+
+  // Check if email is unsubscribed before sending (CAN-SPAM)
   try {
     const unsubscribed = await dbGet('SELECT 1 FROM unsubscribes WHERE LOWER(email) = LOWER($1)', [
       to,
@@ -462,7 +474,7 @@ async function sendOutreachEmail({ to, subject, html, campaign = 'main', tags = 
     finalHtml = html + unsubscribeFooter;
   }
 
-  return sendEmail({
+  const result = await sendEmail({
     to,
     subject,
     html: finalHtml,
@@ -471,6 +483,13 @@ async function sendOutreachEmail({ to, subject, html, campaign = 'main', tags = 
     tags,
     addTrackingPixel: true,
   });
+
+  // ANTI-SPAM: Record successful send for frequency tracking
+  if (result && result.messageId) {
+    await recordEmailSend(to, 'outreach');
+  }
+
+  return result;
 }
 
 // ==========================================
@@ -10968,6 +10987,106 @@ app.get('/api/admin/email-dashboard', authenticateAdmin, async (req, res) => {
   }
 });
 
+// GET /api/admin/anti-spam - Anti-spam dashboard and management
+app.get('/api/admin/anti-spam', authenticateAdmin, async (req, res) => {
+  try {
+    // Suppression list stats
+    let suppressions = [];
+    try {
+      suppressions = await dbAll(`
+        SELECT reason, COUNT(*) as count
+        FROM email_suppressions
+        GROUP BY reason
+        ORDER BY count DESC
+      `);
+    } catch (e) {
+      console.error('Suppressions query error:', e.message);
+    }
+
+    // Recent suppressions
+    let recentSuppressions = [];
+    try {
+      recentSuppressions = await dbAll(`
+        SELECT email_address, reason, details, created_at
+        FROM email_suppressions
+        ORDER BY created_at DESC
+        LIMIT 20
+      `);
+    } catch (e) {
+      console.error('Recent suppressions query error:', e.message);
+    }
+
+    // Frequency cap violations (emails that were blocked)
+    let frequencyBlocked = 0;
+    try {
+      const result = await dbGet(`
+        SELECT COUNT(DISTINCT email_address) as count
+        FROM email_send_history
+        WHERE sent_at > NOW() - INTERVAL '7 days'
+        GROUP BY email_address
+        HAVING COUNT(*) >= ${MAX_EMAILS_PER_WEEK}
+      `);
+      frequencyBlocked = parseInt(result?.count || 0);
+    } catch (e) {
+      // Table might not exist yet
+    }
+
+    // Top recipients this week (to spot potential spam issues)
+    let topRecipients = [];
+    try {
+      topRecipients = await dbAll(`
+        SELECT email_address, COUNT(*) as emails_this_week
+        FROM email_send_history
+        WHERE sent_at > NOW() - INTERVAL '7 days'
+        GROUP BY email_address
+        ORDER BY emails_this_week DESC
+        LIMIT 10
+      `);
+    } catch (e) {
+      console.error('Top recipients query error:', e.message);
+    }
+
+    res.json({
+      config: {
+        maxEmailsPerWeek: MAX_EMAILS_PER_WEEK,
+      },
+      suppressions: {
+        byReason: suppressions,
+        recent: recentSuppressions,
+        total: suppressions.reduce((sum, s) => sum + parseInt(s.count || 0), 0),
+      },
+      frequencyTracking: {
+        atLimit: frequencyBlocked,
+        topRecipients: topRecipients.map(r => ({
+          email: r.email_address,
+          count: parseInt(r.emails_this_week),
+          atLimit: parseInt(r.emails_this_week) >= MAX_EMAILS_PER_WEEK,
+        })),
+      },
+    });
+  } catch (error) {
+    console.error('Anti-spam dashboard error:', error);
+    res.status(500).json({ error: 'Failed to get anti-spam dashboard', details: error.message });
+  }
+});
+
+// POST /api/admin/anti-spam/suppress - Manually suppress an email
+app.post('/api/admin/anti-spam/suppress', authenticateAdmin, async (req, res) => {
+  const { email, reason = 'manual', details } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email required' });
+  }
+
+  try {
+    await suppressEmail(email, reason, details || 'Manually suppressed by admin');
+    res.json({ success: true, message: `${email} suppressed (${reason})` });
+  } catch (error) {
+    console.error('Suppress email error:', error);
+    res.status(500).json({ error: 'Failed to suppress email', details: error.message });
+  }
+});
+
 // Admin: List all users (with fake detection)
 app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
   try {
@@ -14995,10 +15114,23 @@ async function initOutreachTables() {
     await dbQuery(`CREATE INDEX IF NOT EXISTS idx_email_history_addr ON email_send_history(email_address, email_type)`);
     await dbQuery(`CREATE INDEX IF NOT EXISTS idx_email_history_time ON email_send_history(sent_at DESC)`);
 
+    // Email suppressions - for bounces, complaints, and global frequency cap
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS email_suppressions (
+        id SERIAL PRIMARY KEY,
+        email_address TEXT NOT NULL,
+        reason VARCHAR(50) NOT NULL,
+        details TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(email_address, reason)
+      )
+    `);
+    await dbQuery(`CREATE INDEX IF NOT EXISTS idx_suppressions_email ON email_suppressions(LOWER(email_address))`);
+
     // Clean up expired locks automatically
     await dbQuery(`DELETE FROM processing_locks WHERE expires_at < NOW()`);
 
-    console.log('✅ Outreach tables initialized (with parallel-safe system)');
+    console.log('✅ Outreach tables initialized (with parallel-safe system + anti-spam)');
   } catch (error) {
     console.error('Error initializing outreach tables:', error);
   }
@@ -15006,6 +15138,116 @@ async function initOutreachTables() {
 
 // Call this after main initDatabase
 initOutreachTables();
+
+// ============================================
+// ANTI-SPAM HELPER FUNCTIONS
+// ============================================
+
+// Maximum outreach emails per recipient per week (prevents spam complaints)
+const MAX_EMAILS_PER_WEEK = 4;
+
+/**
+ * Validate email format (basic check)
+ */
+function isValidEmailFormat(email) {
+  if (!email || typeof email !== 'string') return false;
+  // Basic regex - not too strict to allow edge cases
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email.trim());
+}
+
+/**
+ * Check if email is suppressed (bounced, complained, etc.)
+ */
+async function isEmailSuppressed(email) {
+  if (!email) return true;
+  try {
+    const suppressed = await dbGet(
+      'SELECT reason FROM email_suppressions WHERE LOWER(email_address) = LOWER($1) LIMIT 1',
+      [email.trim()]
+    );
+    return suppressed !== null;
+  } catch (err) {
+    console.error('[Anti-Spam] Error checking suppression:', err.message);
+    return false; // Don't block on DB errors
+  }
+}
+
+/**
+ * Check if we've sent too many emails to this address this week
+ * Returns true if over limit (should NOT send)
+ */
+async function isOverEmailFrequencyLimit(email) {
+  if (!email) return true;
+  try {
+    const result = await dbGet(`
+      SELECT COUNT(*) as count FROM email_send_history
+      WHERE LOWER(email_address) = LOWER($1)
+      AND sent_at > NOW() - INTERVAL '7 days'
+    `, [email.trim()]);
+    const count = parseInt(result?.count || 0);
+    return count >= MAX_EMAILS_PER_WEEK;
+  } catch (err) {
+    console.error('[Anti-Spam] Error checking frequency:', err.message);
+    return false; // Don't block on DB errors
+  }
+}
+
+/**
+ * Record email send for frequency tracking
+ */
+async function recordEmailSend(email, emailType = 'outreach') {
+  if (!email) return;
+  try {
+    await dbQuery(`
+      INSERT INTO email_send_history (email_address, email_type)
+      VALUES ($1, $2)
+    `, [email.trim().toLowerCase(), emailType]);
+  } catch (err) {
+    // Silently fail - this is just tracking
+    console.error('[Anti-Spam] Error recording send:', err.message);
+  }
+}
+
+/**
+ * Add email to suppression list (e.g., after bounce)
+ */
+async function suppressEmail(email, reason = 'bounce', details = null) {
+  if (!email) return;
+  try {
+    await dbQuery(`
+      INSERT INTO email_suppressions (email_address, reason, details)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (email_address, reason) DO NOTHING
+    `, [email.trim().toLowerCase(), reason, details]);
+    console.log(`[Anti-Spam] Suppressed ${email} (${reason})`);
+  } catch (err) {
+    console.error('[Anti-Spam] Error suppressing email:', err.message);
+  }
+}
+
+/**
+ * Full anti-spam check before sending outreach email
+ * Returns { canSend: boolean, reason?: string }
+ */
+async function canSendOutreachEmail(email) {
+  // 1. Validate format
+  if (!isValidEmailFormat(email)) {
+    return { canSend: false, reason: 'invalid_format' };
+  }
+
+  // 2. Check suppression list (bounces, complaints)
+  if (await isEmailSuppressed(email)) {
+    return { canSend: false, reason: 'suppressed' };
+  }
+
+  // 3. Check frequency limit (max X per week)
+  if (await isOverEmailFrequencyLimit(email)) {
+    return { canSend: false, reason: 'frequency_limit' };
+  }
+
+  return { canSend: true };
+}
 
 // ============================================
 // PARALLEL-SAFE HELPER FUNCTIONS
