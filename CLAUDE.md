@@ -447,6 +447,19 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 2. Für neue: TripAdvisor Scraping (`/scrape-leads`)
 3. Oder warten bis API-Reset (monatlich)
 
+### Admin Endpoint DB-Schema Gotchas (15.01.2026)
+
+**Problem:** Neue Admin-Endpoints mit falschen DB-Spalten-Annahmen.
+
+**Konkrete Fehler (gefixt):**
+- `outreach_leads` hat `status` VARCHAR ('new', 'contacted'), NICHT `contacted` BOOLEAN
+- `api_call_logs` hat `error_message`, NICHT `error`
+- `users` hat KEIN `last_login` - nutze `responses` Tabelle für Activity
+
+**Regel für neue Endpoints:**
+1. IMMER erst Schema checken: `grep -n "CREATE TABLE" backend/server.js | grep tabelle`
+2. Oder live Query im Dashboard testen bevor Endpoint deployed wird
+
 ---
 
 ## TECH STACK
