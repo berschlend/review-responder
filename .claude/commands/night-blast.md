@@ -591,3 +591,29 @@ Tab-Status: [Kann geschlossen werden: JA/NEIN]
 - ❌ Follows machen
 
 **NUR ERLAUBT:** ✅ DMs an Business-Accounts senden
+
+---
+
+## LEARNINGS (Addiere hier, lösche nichts!)
+
+> Jede Claude Session fügt ihre Learnings hier hinzu. Niemals alte löschen!
+
+### 15.01.2026 - Session: User Activation System
+
+1. **DB-Funktionen prüfen VOR dem Schreiben**
+   - Backend hat nur `dbQuery()`, `dbGet()`, `dbAll()` - KEIN `dbRun()`
+   - Immer erst mit Grep checken: `grep "^async function db" server.js`
+
+2. **Render Deployment Timing**
+   - Nach Git Push: 5-10 Minuten bis live
+   - Health Check ≠ neuer Code deployed
+   - Bei Fehler nach Push: Einfach länger warten
+
+3. **Parallele Claude Sessions = Git Konflikte**
+   - Immer `git fetch && git pull` vor Push
+   - Bei Konflikt: `git rebase --abort && git reset --hard origin/main`
+
+4. **First-Principles vor Feature-Bloat**
+   - Problem war nicht "zu wenig Leads" sondern "0 aktive User"
+   - Priorität: Conversion > Lead Generation
+   - Phase 6+7 (User Aktivierung) sind WICHTIGER als Scraping
