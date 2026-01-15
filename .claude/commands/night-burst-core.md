@@ -1,7 +1,114 @@
-# Night-Burst Core V3 - JEDER AGENT MUSS DAS INCLUDEN
+# Night-Burst Core V3.1 - JEDER AGENT MUSS DAS INCLUDEN
 
 > Basierend auf Anthropic's "Building Effective Agents" + MCP Best Practices
-> Updated: V3 mit Heartbeat, Checkpoint, Resource Budget Integration
+> Updated: V3.1 mit Agentic Memory, Verification, Extended Thinking
+
+---
+
+## 🧠 AGENTIC MEMORY SYSTEM (V3.1 - NEU!)
+
+> Basierend auf Anthropic's "Structured Note-Taking" Pattern
+> "Agents regularly write notes persisted to memory outside of the context window"
+
+**BEI JEDEM SESSION-START:**
+
+```
+1. Read agent-memory.json
+2. Find my agent section (z.B. agents.burst-2)
+3. Load my memory:
+   - best_subject_lines → Use these first
+   - bounce_domains → Skip these
+   - notes → Apply learnings
+4. Increment session_count
+```
+
+**BEI JEDEM SESSION-END:**
+
+```
+1. Update agent-memory.json with:
+   - New learnings discovered
+   - Patterns that worked
+   - Patterns that failed
+2. Be SPECIFIC: Not "email worked" but "Subject 'Your 3.5-star review...' got 5.2% CTR"
+3. Include DATA: Numbers, timestamps, sample sizes
+```
+
+**MEMORY FILE:** `content/claude-progress/agent-memory.json`
+
+---
+
+## ✅ VERIFICATION SYSTEM (V3.1 - NEU!)
+
+> Basierend auf Anthropic's "Rules-Based Feedback" Pattern
+> "Providing clearly defined rules for an output, then explaining which rules failed and why"
+
+**VOR JEDER AKTION:**
+
+```
+1. Read verification-log.json
+2. Find verification_rules for my action type
+3. Check: Will this action pass the criteria?
+4. If UNSURE → Don't do it, escalate
+```
+
+**NACH JEDER AKTION:**
+
+```
+1. Log in verification-log.json:
+   {
+     "action": "email_send",
+     "agent": "burst-2",
+     "timestamp": "[NOW]",
+     "input": { ... },
+     "result": "pass" | "fail",
+     "reason": "[why]"
+   }
+2. If FAIL → Update agent-memory.json with anti-pattern
+```
+
+**ANTI-CLAUDIUS REGEL:** NIEMALS eine Aktion ausführen die du nicht verifizieren kannst!
+
+**VERIFICATION FILE:** `content/claude-progress/verification-log.json`
+
+---
+
+## 🤔 EXTENDED THINKING (V3.1 - NEU!)
+
+> Basierend auf Anthropic's "think harder" Pattern
+> Nutze mehr Compute für komplexe Entscheidungen
+
+**WANN EXTENDED THINKING:**
+
+| Situation | Thinking Level | Trigger Phrase |
+|-----------|---------------|----------------|
+| Routine Action | Normal | - |
+| Unusual Pattern | "think" | Unexpected data |
+| Strategic Decision | "think hard" | ROI-impacting |
+| Critical Decision | "think harder" | >$50 impact |
+| Novel Situation | "ultrathink" | No prior pattern |
+
+**WIE EXTENDED THINKING:**
+
+```
+VOR KOMPLEXER ENTSCHEIDUNG:
+
+1. PAUSE - Nicht sofort handeln
+2. CONTEXT LOAD:
+   - Read agent-memory.json (was hat vorher funktioniert?)
+   - Read learnings.md (was wissen wir?)
+   - Read verification-log.json (was ist fehlgeschlagen?)
+3. REASON OUT LOUD:
+   - "Ich sehe [DATEN]"
+   - "Das bedeutet [INTERPRETATION]"
+   - "Meine Optionen sind [A, B, C]"
+   - "Ich wähle [X] weil [GRUND]"
+   - "Ich erwarte [ERGEBNIS]"
+4. VERIFY:
+   - Passt zu memory patterns?
+   - Passt zu verification rules?
+   - Dient dem $1000 MRR Ziel?
+5. EXECUTE oder ESCALATE
+```
 
 ---
 

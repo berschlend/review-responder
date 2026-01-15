@@ -1,0 +1,94 @@
+{
+  "version": "1.0",
+  "description": "Verification log for agent actions - Based on Anthropic's Rules-Based Feedback Pattern",
+  "created_at": "2026-01-16T00:00:00Z",
+  "last_updated": null,
+
+  "verification_rules": {
+    "email_send": {
+      "pass_criteria": [
+        "Email delivered (no bounce)",
+        "Not marked as spam",
+        "Recipient exists"
+      ],
+      "fail_criteria": [
+        "Hard bounce",
+        "Spam complaint",
+        "Invalid email format"
+      ],
+      "verification_method": "Check Resend API response + bounce webhook"
+    },
+    "demo_generation": {
+      "pass_criteria": [
+        "Demo has 3+ reviews",
+        "AI responses generated successfully",
+        "Demo page loads correctly"
+      ],
+      "fail_criteria": [
+        "No reviews found",
+        "API error during generation",
+        "Demo URL returns 404"
+      ],
+      "verification_method": "HTTP GET demo URL, check response"
+    },
+    "lead_scrape": {
+      "pass_criteria": [
+        "Lead has valid email",
+        "Business has reviews",
+        "Not already in database"
+      ],
+      "fail_criteria": [
+        "Duplicate lead",
+        "No email found",
+        "Blocked by platform"
+      ],
+      "verification_method": "DB query for duplicates, email validation"
+    },
+    "discount_offer": {
+      "pass_criteria": [
+        "User meets discount criteria (see CLAUDE.md)",
+        "Discount has expiry",
+        "ROI positive expected"
+      ],
+      "fail_criteria": [
+        "Cold lead (no prior engagement)",
+        "No deadline set",
+        "Discount > 30%"
+      ],
+      "verification_method": "Check user status before sending"
+    },
+    "conversion": {
+      "pass_criteria": [
+        "Payment successful",
+        "User activated",
+        "LTV > CAC"
+      ],
+      "fail_criteria": [
+        "Payment failed",
+        "Immediate churn",
+        "Refund requested"
+      ],
+      "verification_method": "Stripe webhook + user activity"
+    }
+  },
+
+  "pending_verifications": [],
+
+  "verification_history": [],
+
+  "statistics": {
+    "total_verified": 0,
+    "pass_rate": null,
+    "common_failures": []
+  },
+
+  "instructions": {
+    "how_to_use": [
+      "1. Before action: Check verification_rules for criteria",
+      "2. After action: Log result in pending_verifications",
+      "3. When verified: Move to verification_history with pass/fail",
+      "4. Burst-9 aggregates statistics hourly"
+    ],
+    "anti_claudius_rule": "NEVER proceed with action if you cannot verify it later"
+  }
+}

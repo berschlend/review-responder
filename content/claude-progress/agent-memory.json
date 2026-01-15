@@ -1,0 +1,107 @@
+{
+  "version": "1.0",
+  "description": "Persistent memory across sessions - Based on Anthropic's Agentic Memory Pattern",
+  "created_at": "2026-01-16T00:00:00Z",
+  "last_updated": null,
+
+  "agents": {
+    "burst-1": {
+      "name": "lead-finder",
+      "session_count": 0,
+      "total_actions": 0,
+      "memory": {
+        "best_cities": [],
+        "worst_cities": [],
+        "best_platforms": [],
+        "email_patterns_that_work": [],
+        "last_successful_scrape": null,
+        "captcha_blocked_sites": [],
+        "notes": []
+      }
+    },
+    "burst-2": {
+      "name": "cold-emailer",
+      "session_count": 0,
+      "total_actions": 0,
+      "memory": {
+        "best_subject_lines": [],
+        "worst_subject_lines": [],
+        "best_send_times_utc": [],
+        "bounce_domains": [],
+        "last_successful_send": null,
+        "notes": []
+      }
+    },
+    "burst-5": {
+      "name": "hot-lead-chaser",
+      "session_count": 0,
+      "total_actions": 0,
+      "memory": {
+        "effective_followup_delays": [],
+        "discount_conversion_rates": {},
+        "leads_that_converted": [],
+        "leads_that_ignored": [],
+        "notes": []
+      }
+    },
+    "burst-7": {
+      "name": "payment-converter",
+      "session_count": 0,
+      "total_actions": 0,
+      "memory": {
+        "nudges_that_worked": [],
+        "nudges_that_failed": [],
+        "best_upgrade_triggers": [],
+        "timing_patterns": [],
+        "notes": []
+      }
+    },
+    "burst-9": {
+      "name": "doctor",
+      "session_count": 0,
+      "total_actions": 0,
+      "memory": {
+        "patterns_discovered": [],
+        "hypotheses_tested": [],
+        "confirmed_learnings": [],
+        "disproven_hypotheses": [],
+        "metric_baselines": {
+          "email_ctr": null,
+          "demo_conversion": null,
+          "registration_rate": null,
+          "payment_conversion": null
+        },
+        "notes": []
+      }
+    }
+  },
+
+  "global_learnings": {
+    "what_works": [],
+    "what_fails": [],
+    "rules_discovered": []
+  },
+
+  "conversion_log": [],
+
+  "instructions": {
+    "on_session_start": [
+      "1. Read this file to restore memory",
+      "2. Check your agent's memory section",
+      "3. Apply learnings to current session",
+      "4. Increment session_count"
+    ],
+    "on_session_end": [
+      "1. Update your memory section with new learnings",
+      "2. Add any patterns discovered to global_learnings",
+      "3. Log any conversions to conversion_log",
+      "4. Update last_updated timestamp"
+    ],
+    "memory_principles": [
+      "Keep memory LEAN - only high-signal information",
+      "Be SPECIFIC - not 'email worked' but 'Subject X got 5% CTR'",
+      "Include DATA - numbers, timestamps, sample sizes",
+      "Update IMMEDIATELY after learning something new"
+    ]
+  }
+}
