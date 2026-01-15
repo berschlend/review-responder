@@ -20018,6 +20018,9 @@ function fillEmailTemplate(template, lead, campaign = 'main') {
     '{ai_response_draft}': lead.ai_response_draft || '',
     // Demo link for personalized demo pages
     '{demo_url}': lead.demo_url || 'https://tryreviewresponder.com?ref=alert',
+    // Lead ID for context injection (Stufe 3)
+    '{lead_id}': lead.id || '',
+    '{landing_url}': `https://tryreviewresponder.com?lid=${lead.id || ''}&utm_source=email`,
     // G2 competitor specific replacements
     '{competitor_platform}': competitorPlatformFormatted,
     '{contact_name_greeting}': contactNameGreeting,
