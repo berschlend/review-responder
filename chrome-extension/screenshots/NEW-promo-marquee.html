@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Marquee Promo - 1400x560 - SCREENSHOT THIS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #1a1a2e;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+        }
+        .instructions {
+            color: white;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .instructions h2 { color: #ffd700; margin-bottom: 5px; }
+        .instructions p { color: #888; font-size: 14px; }
+        .warning { color: #ff6b6b; font-weight: bold; margin-top: 10px; }
+
+        /* EXACT 1400x560 */
+        .promo-marquee {
+            width: 1400px;
+            height: 560px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            padding: 50px 70px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle pattern overlay */
+        .promo-marquee::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 10% 90%, rgba(255,255,255,0.1) 0%, transparent 40%),
+                        radial-gradient(circle at 90% 10%, rgba(255,255,255,0.08) 0%, transparent 35%);
+            pointer-events: none;
+        }
+
+        .left-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-right: 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .right-content {
+            width: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo {
+            font-size: 52px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+
+        .tagline {
+            font-size: 24px;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 35px;
+        }
+
+        .features {
+            list-style: none;
+        }
+
+        .features li {
+            font-size: 20px;
+            color: white;
+            margin: 14px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .features li::before {
+            content: "✓";
+            color: #4ade80;
+            font-weight: bold;
+            margin-right: 14px;
+            font-size: 22px;
+        }
+
+        .cta {
+            font-size: 26px;
+            color: #ffd700;
+            font-weight: 700;
+            margin-top: 35px;
+        }
+
+        /* Screenshot mockup - showing Review Queue in context */
+        .screenshot-box {
+            width: 520px;
+            height: 380px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.35);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .screenshot-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center center;
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <h2>MARQUEE PROMO (1400 x 560)</h2>
+        <p>Win+Shift+S → Screenshot ONLY the purple box → Save as promo-marquee-1400x560.png</p>
+        <p class="warning">⚠️ CHROME-SAFE: Keine Plattform-Namen, keine "50+ languages"!</p>
+    </div>
+
+    <!-- SCREENSHOT THIS - EXACTLY 1400x560 -->
+    <div class="promo-marquee">
+        <div class="left-content">
+            <div class="logo">ReviewResponder</div>
+            <div class="tagline">AI-Powered Review Responses</div>
+            <ul class="features">
+                <li>Generate personalized responses in 3 seconds</li>
+                <li>Auto-detects language and responds accordingly</li>
+                <li>Add your business name for branded replies</li>
+                <li>4 tones: Professional, Friendly, Formal, Apologetic</li>
+            </ul>
+            <div class="cta">Reply to reviews in seconds, not hours!</div>
+        </div>
+        <div class="right-content">
+            <div class="screenshot-box">
+                <img src="screenshot-1-yelp-respond.png" alt="Extension Screenshot">
+            </div>
+        </div>
+    </div>
+</body>
+</html>

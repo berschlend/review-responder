@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PERFECT Marquee 1400x560</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* EXACTLY 1400x560 - hard boundary */
+        .promo {
+            width: 1400px;
+            height: 560px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            padding: 40px 50px;
+            position: relative;
+            overflow: hidden; /* KRITISCH: Nichts ragt raus! */
+        }
+
+        .left {
+            width: 750px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-right: 30px;
+        }
+
+        .logo {
+            font-size: 50px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 6px;
+            letter-spacing: -1px;
+            font-style: italic;
+        }
+
+        .tagline {
+            font-size: 22px;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 28px;
+        }
+
+        .features {
+            list-style: none;
+        }
+
+        .features li {
+            font-size: 17px;
+            color: white;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .features li::before {
+            content: "✓";
+            color: #4ade80;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .cta {
+            font-size: 22px;
+            color: #ffd700;
+            font-weight: 700;
+            margin-top: 28px;
+        }
+
+        .right {
+            width: 550px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Browser frame - MUSS komplett reinpassen */
+        .browser-frame {
+            width: 480px;
+            height: 460px;
+            background: #1e1e2e;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+
+        .browser-bar {
+            height: 28px;
+            background: #2d2d44;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            gap: 5px;
+        }
+
+        .dot { width: 9px; height: 9px; border-radius: 50%; }
+        .dot.red { background: #ff5f57; }
+        .dot.yellow { background: #ffbd2e; }
+        .dot.green { background: #28c840; }
+
+        .browser-content {
+            height: 432px;
+            overflow: hidden;
+            position: relative;
+            background: #f5f5f5;
+        }
+
+        .browser-content img {
+            width: 165%;
+            height: auto;
+            position: absolute;
+            top: -50px;
+            left: -380px;
+        }
+    </style>
+</head>
+<body>
+    <div class="promo">
+        <div class="left">
+            <div class="logo">ReviewResponder</div>
+            <div class="tagline">AI-Powered Review Responses</div>
+            <ul class="features">
+                <li>Generate personalized responses in 3 seconds</li>
+                <li>Auto-detects language and responds accordingly</li>
+                <li>Add your business name for branded replies</li>
+                <li>4 tones: Professional, Friendly, Formal, Apologetic</li>
+            </ul>
+            <div class="cta">Reply to reviews in seconds, not hours!</div>
+        </div>
+        <div class="right">
+            <div class="browser-frame">
+                <div class="browser-bar">
+                    <div class="dot red"></div>
+                    <div class="dot yellow"></div>
+                    <div class="dot green"></div>
+                </div>
+                <div class="browser-content">
+                    <img src="screenshot-1-yelp-respond.png" alt="ReviewResponder">
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

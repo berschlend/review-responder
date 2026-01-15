@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Small Promo - 440x280 - SCREENSHOT THIS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #1a1a2e;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+        }
+        .instructions {
+            color: white;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .instructions h2 { color: #ffd700; margin-bottom: 5px; }
+        .instructions p { color: #888; font-size: 14px; }
+
+        /* EXACT 440x280 - No border, no extra space */
+        .promo-small {
+            width: 440px;
+            height: 280px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle pattern overlay */
+        .promo-small::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        .promo-small .logo {
+            font-size: 36px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+            position: relative;
+            z-index: 1;
+        }
+        .promo-small .tagline {
+            font-size: 16px;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        .promo-small .benefit {
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+        .promo-small .cta {
+            font-size: 18px;
+            color: #ffd700;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <h2>SMALL PROMO TILE (440 x 280)</h2>
+        <p>Win+Shift+S → Screenshot ONLY the purple box → Save as promo-small-440x280.png</p>
+    </div>
+
+    <!-- SCREENSHOT THIS - EXACTLY 440x280 -->
+    <div class="promo-small">
+        <div class="logo">ReviewResponder</div>
+        <div class="tagline">AI-Powered Review Responses</div>
+        <div class="benefit">Generate personalized replies in 3 seconds</div>
+        <div class="cta">Reply in seconds, not hours</div>
+    </div>
+</body>
+</html>
