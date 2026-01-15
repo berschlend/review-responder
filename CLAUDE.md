@@ -133,13 +133,32 @@ Bei Endpoints die mehrere Sessions triggern könnten:
 
 ---
 
-## MCPs & TOOLS
+## MCPs & TOOLS (Updated 15.01.2026)
 
-| MCP | Beschreibung |
-|-----|--------------|
-| Memory MCP | Persistentes Gedächtnis |
-| Gemini Design MCP | Frontend outsourcen |
-| Chrome MCP | Browser Automation (`claude --chrome`) |
+| MCP | Beschreibung | Status |
+|-----|--------------|--------|
+| Memory MCP | Persistentes Gedächtnis | ✅ ACTIVE |
+| Sequential Thinking MCP | Komplexe Problemlösung | ✅ ACTIVE |
+| Gemini Design MCP | Frontend outsourcen | ✅ ACTIVE |
+| Chrome MCP | Browser Automation (`claude --chrome`) | ✅ ACTIVE |
+
+### Official Plugins (NEU!)
+
+| Plugin | Beschreibung | Wie nutzen |
+|--------|--------------|------------|
+| `code-simplifier` | Offizieller Code Cleanup (Anthropic) | "Nutze code-simplifier agent" |
+| `ralph-loop` | Autonomer Dev Loop | `/ralph-loop` |
+
+### Background Tasks (NEU!)
+
+Für lange Tasks nutze `run_in_background: true`:
+```javascript
+Bash({ command: "curl ...", run_in_background: true })
+```
+
+Oder neuen Command: `/background curl ...`
+
+Status checken: `/tasks`
 
 ### Chrome MCP Regel
 > Im Plan Mode **IMMER** markieren: **🌐 CHROME MCP: JA/NEIN**

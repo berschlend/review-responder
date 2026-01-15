@@ -55,6 +55,8 @@
   "permissions": {
     "allow": [
       "mcp__claude-in-chrome__*",
+      "mcp__memory__*",
+      "mcp__sequential-thinking__*",
       "Bash(npm run *)",
       "Bash(npm install *)",
       "Bash(npm uninstall *)",

@@ -417,6 +417,53 @@ fi
 
 ---
 
+## BACKGROUND TASKS (NEU!)
+
+Für lange API-Calls nutze Background Tasks statt zu warten:
+
+### Parallele Health-Checks (Beispiel)
+
+Statt sequentiell (langsam):
+```bash
+curl endpoint1  # 5s warten
+curl endpoint2  # 5s warten
+curl endpoint3  # 5s warten
+# Total: 15s
+```
+
+Nutze Background Tasks (schnell):
+```javascript
+// Alle parallel starten
+Bash({ command: "curl endpoint1", run_in_background: true })
+Bash({ command: "curl endpoint2", run_in_background: true })
+Bash({ command: "curl endpoint3", run_in_background: true })
+// Sofort weitermachen!
+// Ergebnisse später mit TaskOutput abrufen
+```
+
+### Wann Background Tasks nutzen:
+
+| Situation | Background? |
+|-----------|-------------|
+| API Call >30s | JA |
+| Mehrere unabhängige Calls | JA |
+| Build/Deploy | JA |
+| Schnelle DB Query | NEIN |
+| Sequentielle Tasks | NEIN |
+
+### Task Status checken:
+
+```bash
+/tasks  # Alle Background Tasks sehen
+```
+
+Oder programmatisch:
+```javascript
+TaskOutput({ task_id: "[id]", block: false })
+```
+
+---
+
 ## TAB MANAGEMENT
 
 **Protected Tabs (NIEMALS schließen):**
