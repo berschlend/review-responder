@@ -2,21 +2,26 @@
     "agent": "burst-11-bottleneck-analyzer",
     "version": "3.0",
     "status": "running",
-    "last_heartbeat": "2026-01-15T22:00:00Z",
+    "last_heartbeat": "2026-01-16T01:50:00Z",
     "started_at": "2026-01-15T21:32:42Z",
-    "current_loop": 2,
+    "current_loop": 3,
     "loop_interval": "2h",
     "metrics": {
-        "actions_taken": 1,
+        "actions_taken": 2,
         "success_rate": 100,
         "errors_count": 0
     },
     "current_bottleneck": {
-        "step": "Reg->Active",
-        "conversion": 31.6,
-        "status": "warning",
-        "trend": "improving",
-        "previous": 21.9
+        "step": "Active->Paying",
+        "conversion": 0,
+        "status": "critical",
+        "trend": "unchanged",
+        "previous": 0
+    },
+    "secondary_bottleneck": {
+        "step": "Email->Click",
+        "note": "0 new clicks in 30h - anomaly detected",
+        "status": "warning"
     },
     "funnel_snapshot": {
         "leads": 2236,
@@ -27,12 +32,13 @@
         "registered": 38,
         "active": 12,
         "paying": 0,
-        "timestamp": "2026-01-15T22:00:00Z"
+        "timestamp": "2026-01-16T01:50:00Z"
     },
     "recommendations": [
-        "PRIORITY 1: Burst-6 verstärken - 26 Ghost Users aktivieren",
-        "PRIORITY 2: Monitor Active->Paying (0% aber niemand erreicht Limit)",
-        "PRIORITY 3: Lead Finding PAUSE - genug Leads vorhanden"
+        "PRIORITY 1: Burst-7 - Active Users proaktiv kontaktieren (12 Users)",
+        "PRIORITY 2: Burst-2 - Email Deliverability prüfen (0 Clicks in 30h)",
+        "PRIORITY 3: Burst-6 - Weiter Activation Nudges senden",
+        "ESCALATE: Free Limit (20) senken? Keiner erreicht es"
     ],
     "health": {
         "stuck_detected": false,
@@ -41,13 +47,23 @@
         "memory_ok": true
     },
     "checkpoints": {
-        "last_successful_action": "2026-01-15T22:00:00Z",
+        "last_successful_action": "2026-01-16T01:50:00Z",
         "last_processed_id": null,
         "resume_from": null
     },
-    "escalations_pending": [],
+    "escalations_pending": [
+        {
+            "type": "decision",
+            "issue": "Free Limit von 20 auf 10 senken?",
+            "reason": "Niemand erreicht das Limit - 0% Paying",
+            "priority": "medium",
+            "my_recommendation": "Erst Nudges + Micro-Pricing versuchen, dann Limit senken"
+        }
+    ],
     "learnings_applied": [
         "Activation Rate von 21.9% auf 31.6% verbessert (+9.7pp)",
-        "0% Paying weil Free Limit (20) nicht erreicht wird"
+        "0% Paying weil Free Limit (20) nicht erreicht wird",
+        "Email Clicks stagniert - 0 neue in 30h (Deliverability?)",
+        "Bottleneck shifted: war Reg->Active, jetzt Active->Paying"
     ]
 }

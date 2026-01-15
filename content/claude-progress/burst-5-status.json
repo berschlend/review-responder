@@ -3,18 +3,18 @@
   "version": "3.0",
   "status": "running",
   "started_at": "2026-01-16T12:00:00Z",
-  "last_heartbeat": "2026-01-16T12:05:00Z",
-  "current_loop": 1,
+  "last_heartbeat": "2026-01-16T21:55:00Z",
+  "current_loop": 2,
   "loop_interval": "20min",
   "metrics": {
     "hot_leads_found": 41,
     "followup_1_sent": 41,
-    "followup_2_sent": 26,
-    "followup_2_pending": 14,
+    "followup_2_sent": 27,
+    "followup_2_pending": 13,
     "magic_links_sent": 0,
     "discounts_given": 0,
     "conversions": 0,
-    "actions_taken": 1,
+    "actions_taken": 2,
     "success_rate": 100,
     "errors_count": 0
   },
@@ -31,9 +31,10 @@
   },
   "learnings_applied": [
     "24h timing for FU1",
-    "72h timing for FU2",
-    "No discount on FU1"
+    "48h timing for FU2 (not 72h)",
+    "No discount on FU1",
+    "Cron handles FU2 automatically"
   ],
   "escalations_pending": [],
-  "notes": "All 41 clickers have FU1. 26 have FU2. 14 pending (need 72h since FU1). System fully automated via /api/cron/second-followup."
+  "notes": "All 41 clickers have FU1. 27 have FU2. 13 pending (need 48h since FU1 per code). Next batch in ~27h. System automated via /api/cron/second-followup."
 }

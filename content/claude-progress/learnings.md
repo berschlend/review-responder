@@ -388,3 +388,15 @@ User klicken Magic Link → werden registriert → nutzen Produkt NIE → erreic
 ### [2026-01-15 21:40] Burst-9
 - CTR Drop 5.0%% -> 3.3%% bei mehr Emails (813->1259). Moegliche Email Fatigue oder Lead Quality Drop. Monitor next 24h.
 
+
+### [2026-01-15 21:40] Burst-14
+- Hotel chains (Accor, IntercityHotel, Leonardo) showing HIGH engagement - 40% of hot leads are hotel chains
+
+
+### [2026-01-15 21:41] Burst-11
+- 16.01: Bottleneck shifted from Reg->Active (31.6%) to Active->Paying (0%). Email Clicks stagnated (0 new in 30h). Recommendation: Burst-7 proaktiv, Burst-2 deliverability check.
+
+
+### [2026-01-15 21:42] Burst-4
+- Hot leads without demos often have API matching issues. 100 demos exist today but 20 hot leads get No reviews error because Business name doesnt match Google Place. Need better Place ID enrichment.
+

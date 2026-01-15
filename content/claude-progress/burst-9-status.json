@@ -1,31 +1,96 @@
-﻿{
-    "loop_interval":  "1h",
-    "learnings_applied":  [
+{
+  "agent": "burst-9-doctor",
+  "version": "3.0",
+  "status": "running",
+  "started_at": "2026-01-15T21:32:42Z",
+  "last_heartbeat": "2026-01-15T21:45:00Z",
+  "current_loop": 1,
+  "loop_interval": "1h",
 
-                          ],
-    "current_loop":  1,
-    "started_at":  "2026-01-15T21:32:42Z",
-    "version":  "3.0",
-    "agent":  "burst-9-doctor",
-    "escalations_pending":  [
+  "metrics_snapshot": {
+    "leads": 2236,
+    "leads_with_email": 886,
+    "emails_sent": 1259,
+    "email_ctr": 3.3,
+    "clicks": 41,
+    "hot_leads": 40,
+    "registrations": 38,
+    "active_users": 12,
+    "at_limit": 0,
+    "conversions": 0,
+    "mrr": 0
+  },
 
-                            ],
-    "checkpoints":  {
-                        "resume_from":  null,
-                        "last_successful_action":  null,
-                        "last_processed_id":  null
-                    },
-    "health":  {
-                   "api_budget_ok":  true,
-                   "memory_ok":  true,
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "metrics":  {
-                    "success_rate":  0,
-                    "errors_count":  0,
-                    "actions_taken":  0
-                },
-    "status":  "running",
-    "last_heartbeat":  "2026-01-15T21:37:14Z"
+  "alerts": [
+    {
+      "level": "critical",
+      "type": "activation",
+      "message": "68% users never used product (26/38)",
+      "owner": "burst-6"
+    },
+    {
+      "level": "critical",
+      "type": "limit",
+      "message": "0 users at 20 response limit",
+      "owner": "burst-6"
+    },
+    {
+      "level": "critical",
+      "type": "revenue",
+      "message": "$0 MRR after 6 days",
+      "owner": "burst-7"
+    },
+    {
+      "level": "warning",
+      "type": "ctr_drop",
+      "message": "CTR dropped from 5.0% to 3.3%",
+      "owner": "burst-2"
+    }
+  ],
+
+  "agents_status": {
+    "burst-1": "healthy-paused",
+    "burst-2": "healthy-paused",
+    "burst-3": "healthy-paused",
+    "burst-4": "starting",
+    "burst-5": "starting",
+    "burst-6": "starting-priority1",
+    "burst-7": "starting-paused",
+    "burst-8": "starting-paused",
+    "burst-9": "healthy",
+    "burst-10": "starting",
+    "burst-11": "starting-priority1",
+    "burst-12": "starting",
+    "burst-13": "starting-paused",
+    "burst-14": "starting",
+    "burst-15": "starting"
+  },
+
+  "new_learnings": 1,
+  "learnings_applied": [
+    "CTR drop 5.0% -> 3.3% documented"
+  ],
+
+  "health": {
+    "api_budget_ok": true,
+    "memory_ok": true,
+    "stuck_detected": false,
+    "last_error": null
+  },
+
+  "metrics": {
+    "actions_taken": 3,
+    "success_rate": 100,
+    "errors_count": 0
+  },
+
+  "checkpoints": {
+    "last_processed_id": null,
+    "last_successful_action": "conversion_report_written",
+    "resume_from": null
+  },
+
+  "escalations_pending": [],
+  "stuck": false,
+  "needs_berend": []
 }

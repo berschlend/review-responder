@@ -68,7 +68,7 @@
                                },
                    "burst-5":  {
                                    "Status":  "healthy",
-                                   "Message":  "Running normally (loop 2)",
+                                   "Message":  "Running normally (loop 1)",
                                    "NeedsRestart":  false
                                },
                    "burst-8":  {
@@ -78,11 +78,11 @@
                                },
                    "burst-12":  {
                                     "Status":  "healthy",
-                                    "Message":  "Running normally (loop 1)",
+                                    "Message":  "Running normally (loop 2)",
                                     "NeedsRestart":  false
                                 }
                },
-    "timestamp":  "2026-01-15T21:39:43Z",
+    "timestamp":  "2026-01-15T21:40:41Z",
     "check_interval_min":  5,
     "stuck_threshold_min":  30
 }

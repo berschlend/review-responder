@@ -1,31 +1,33 @@
 ﻿{
-    "loop_interval":  "4h",
-    "learnings_applied":  [
-
-                          ],
-    "current_loop":  2,
-    "started_at":  "2026-01-15T21:32:41Z",
-    "version":  "3.0",
-    "agent":  "burst-4-demo-generator",
-    "escalations_pending":  [
-
-                            ],
-    "checkpoints":  {
-                        "resume_from":  null,
-                        "last_successful_action":  null,
-                        "last_processed_id":  null
-                    },
-    "health":  {
-                   "api_budget_ok":  true,
-                   "memory_ok":  true,
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "metrics":  {
-                    "success_rate":  0,
-                    "errors_count":  0,
-                    "actions_taken":  0
-                },
-    "status":  "running",
-    "last_heartbeat":  "2026-01-15T21:36:56Z"
+    "loop_interval": "4h",
+    "learnings_applied": [
+        "Hot leads without demos often have API/matching issues, not budget issues"
+    ],
+    "current_loop": 2,
+    "started_at": "2026-01-15T21:32:41Z",
+    "version": "3.0",
+    "agent": "burst-4-demo-generator",
+    "escalations_pending": [],
+    "checkpoints": {
+        "resume_from": null,
+        "last_successful_action": "2026-01-15T21:37:00Z",
+        "last_processed_id": null
+    },
+    "health": {
+        "api_budget_ok": true,
+        "memory_ok": true,
+        "stuck_detected": false,
+        "last_error": null
+    },
+    "metrics": {
+        "success_rate": 100,
+        "errors_count": 0,
+        "actions_taken": 1,
+        "demos_today": 100,
+        "hot_leads_checked": 20,
+        "hot_leads_without_reviews": 20
+    },
+    "status": "running",
+    "last_heartbeat": "2026-01-15T21:37:00Z",
+    "notes": "All 20 hot leads without demos returned 'No reviews' - API rate limits or Business name matching issue"
 }

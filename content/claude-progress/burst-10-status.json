@@ -1,31 +1,50 @@
-﻿{
-    "loop_interval":  "24h",
-    "learnings_applied":  [
-
-                          ],
-    "current_loop":  0,
-    "started_at":  "2026-01-15T21:32:42Z",
-    "version":  "3.0",
-    "agent":  "burst-10-morning-briefer",
-    "escalations_pending":  [
-
-                            ],
-    "checkpoints":  {
-                        "resume_from":  null,
-                        "last_successful_action":  null,
-                        "last_processed_id":  null
-                    },
-    "health":  {
-                   "api_budget_ok":  true,
-                   "memory_ok":  true,
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "metrics":  {
-                    "success_rate":  0,
-                    "errors_count":  0,
-                    "actions_taken":  0
-                },
-    "status":  "initializing",
-    "last_heartbeat":  null
+{
+    "loop_interval": "30m",
+    "learnings_applied": [
+        "Backend wecken vor API-Calls",
+        "API Rate Limits beachten"
+    ],
+    "current_loop": 1,
+    "started_at": "2026-01-16T02:30:00Z",
+    "version": "3.0",
+    "agent": "burst-10-morning-briefer",
+    "escalations_pending": [],
+    "checkpoints": {
+        "resume_from": null,
+        "last_successful_action": "morning_briefing_written",
+        "last_processed_id": null
+    },
+    "health": {
+        "api_budget_ok": true,
+        "memory_ok": true,
+        "stuck_detected": false,
+        "last_error": "admin/stats rate limited"
+    },
+    "metrics": {
+        "success_rate": 100,
+        "errors_count": 0,
+        "actions_taken": 1,
+        "briefings_written": 1
+    },
+    "agents_health": {
+        "burst-1": "paused",
+        "burst-2": "stale",
+        "burst-3": "paused",
+        "burst-4": "stale",
+        "burst-5": "stale",
+        "burst-6": "stale",
+        "burst-7": "stale",
+        "burst-8": "stale",
+        "burst-9": "stale"
+    },
+    "hot_items": 1,
+    "decisions_pending": 2,
+    "last_briefing": "2026-01-16T02:35:00Z",
+    "status": "running",
+    "last_heartbeat": "2026-01-16T02:35:00Z",
+    "stuck": false,
+    "needs_berend": [
+        "System restart - alle Agents stale >29h",
+        "Hot Lead IntercityHotel kontaktieren"
+    ]
 }

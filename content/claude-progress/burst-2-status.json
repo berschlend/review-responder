@@ -3,16 +3,17 @@
     "learnings_applied": [
         "Star rating in subject line",
         "No discount in cold emails",
-        "POST /api/outreach/send-emails is correct endpoint"
+        "POST /api/outreach/send-emails is correct endpoint",
+        "Lead exhaustion detection"
     ],
-    "current_loop": 1,
+    "current_loop": 2,
     "started_at": "2026-01-15T21:32:41Z",
     "version": "3.0",
     "agent": "burst-2-cold-emailer",
     "escalations_pending": [],
     "checkpoints": {
         "resume_from": null,
-        "last_successful_action": "status_check",
+        "last_successful_action": "verified_lead_exhaustion",
         "last_processed_id": null
     },
     "health": {
@@ -24,7 +25,7 @@
     "metrics": {
         "success_rate": 100,
         "errors_count": 0,
-        "actions_taken": 30,
+        "actions_taken": 31,
         "emails_sent_session": 29,
         "emails_sent_today": 122,
         "emails_remaining_today": 78,
@@ -32,9 +33,10 @@
         "clicks": 41,
         "ctr": "3.3%",
         "leads_exhausted": true,
-        "leads_with_email_remaining": 8
+        "leads_with_email_remaining": 8,
+        "leads_without_email": 1328
     },
     "status": "waiting_for_leads",
-    "last_heartbeat": "2026-01-15T21:37:30Z",
-    "note": "All leads with email contacted. Waiting for Burst-1 to find more leads with emails."
+    "last_heartbeat": "2026-01-15T21:41:00Z",
+    "note": "Lead exhaustion confirmed: 878/886 leads with email already contacted. 1328 leads need email-finding. Waiting for Burst-1 or triggering email-finding endpoints."
 }
