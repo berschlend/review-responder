@@ -3,6 +3,7 @@
 ## Wie Product Hunt Ranking funktioniert
 
 Product Hunt rankt Produkte nach einem proprietären Algorithmus, der folgende Faktoren berücksichtigt:
+
 - **Anzahl der Upvotes** (wichtig, aber nicht allein entscheidend)
 - **Qualität der Upvotes** (von etablierten PH-Usern wichtiger)
 - **Engagement** (Comments, Discussions)
@@ -16,18 +17,21 @@ Product Hunt rankt Produkte nach einem proprietären Algorithmus, der folgende F
 ### Tier 1: Persönliches Netzwerk (20-50 Upvotes)
 
 **Wer?**
+
 - Familie & Freunde
 - Kollegen (aktuelle & ehemalige)
 - Startup-Founder-Freunde
 - Uni-Kontakte
 
 **Wie aktivieren?**
+
 1. Persönliche Nachricht (WhatsApp, SMS)
 2. Erkläre kurz was Product Hunt ist
 3. Bitte um Upvote UND Comment
 4. Sende direkten Link zum Produkt
 
 **Template:**
+
 ```
 Hey [Name]! 🚀
 
@@ -44,6 +48,7 @@ Danke dir! 🙏
 ### Tier 2: Berufliches Netzwerk (30-100 Upvotes)
 
 **Wer?**
+
 - LinkedIn Connections
 - Twitter Followers
 - Newsletter Subscribers
@@ -51,6 +56,7 @@ Danke dir! 🙏
 - Business Kontakte
 
 **Wie aktivieren?**
+
 - LinkedIn Post am Launch-Tag
 - Twitter Thread
 - Newsletter mit CTA
@@ -60,14 +66,14 @@ Danke dir! 🙏
 
 **Relevante Communities:**
 
-| Community | Plattform | Mitglieder | Regeln |
-|-----------|-----------|------------|--------|
-| r/startups | Reddit | 1.2M | Erlaubt in Monthly Thread |
-| r/SideProject | Reddit | 200k | Show off erlaubt |
-| r/Entrepreneur | Reddit | 2.5M | Strenge Regeln, vorsichtig |
-| Indie Hackers | IH | 100k+ | Product Launches erlaubt |
-| Hacker News | HN | - | Show HN Format |
-| Product Hunt Community | Discord | 10k+ | Natürlich erlaubt |
+| Community              | Plattform | Mitglieder | Regeln                     |
+| ---------------------- | --------- | ---------- | -------------------------- |
+| r/startups             | Reddit    | 1.2M       | Erlaubt in Monthly Thread  |
+| r/SideProject          | Reddit    | 200k       | Show off erlaubt           |
+| r/Entrepreneur         | Reddit    | 2.5M       | Strenge Regeln, vorsichtig |
+| Indie Hackers          | IH        | 100k+      | Product Launches erlaubt   |
+| Hacker News            | HN        | -          | Show HN Format             |
+| Product Hunt Community | Discord   | 10k+       | Natürlich erlaubt          |
 
 **Wichtig:** Jede Community hat eigene Regeln - LIES SIE!
 
@@ -78,6 +84,7 @@ Danke dir! 🙏
 ### Phase 1: Initiale Welle (00:01 - 03:00 Uhr PST / 9-12 MEZ)
 
 **Aktion:**
+
 - Engste Kontakte aktivieren (10-20 Upvotes)
 - Maker Comment posten
 - Social Media Posts absenden
@@ -87,6 +94,7 @@ Danke dir! 🙏
 ### Phase 2: Aufbau-Phase (03:00 - 09:00 Uhr PST / 12-18 MEZ)
 
 **Aktion:**
+
 - Berufliches Netzwerk aktivieren
 - Community Posts (wenn erlaubt)
 - Newsletter versenden
@@ -97,6 +105,7 @@ Danke dir! 🙏
 ### Phase 3: Push-Phase (09:00 - 15:00 Uhr PST / 18-24 MEZ)
 
 **Aktion:**
+
 - Follow-up Nachrichten an Zögerer
 - Zweite Social Media Runde
 - Internationale Kontakte (andere Zeitzonen)
@@ -106,6 +115,7 @@ Danke dir! 🙏
 ### Phase 4: Abschluss (15:00 - 24:00 Uhr PST / 24-9 MEZ)
 
 **Aktion:**
+
 - Letzte Reminder
 - Dankes-Posts
 - Ergebnis feiern!
@@ -115,6 +125,7 @@ Danke dir! 🙏
 ## Message Templates für verschiedene Kanäle
 
 ### WhatsApp/SMS (Persönlich)
+
 ```
 Hey! 🚀 Heute launche ich mein Startup ReviewResponder auf Product Hunt.
 Wärst du so lieb und gibst mir einen Upvote? Dauert 30 Sek:
@@ -123,6 +134,7 @@ Jeder Upvote zählt! Danke! 🙏
 ```
 
 ### LinkedIn Post
+
 ```
 🚀 Es ist soweit - ReviewResponder ist LIVE auf Product Hunt!
 
@@ -146,6 +158,7 @@ Danke für eure Unterstützung!
 ```
 
 ### Twitter Thread
+
 ```
 🧵 Thread: Heute launchen wir @ReviewResponder auf @ProductHunt!
 
@@ -171,6 +184,7 @@ Danke für eure Unterstützung! 🚀
 ```
 
 ### Email an Early Adopters
+
 ```
 Subject: 🚀 Wir sind LIVE auf Product Hunt - Brauchen deine Hilfe!
 
@@ -198,6 +212,7 @@ Berend
 ## Was NICHT tun
 
 ### Verboten und gefährlich ⛔
+
 - Keine Upvote-for-Upvote Gruppen nutzen
 - Keine Fake Accounts erstellen
 - Nicht für Upvotes bezahlen
@@ -205,6 +220,7 @@ Berend
 - Nicht um Upvotes von Leuten bitten, die das Produkt nicht kennen
 
 ### Warum?
+
 - Product Hunt erkennt Manipulation
 - Führt zu Disqualifikation
 - Kann Account-Ban bedeuten
@@ -214,20 +230,21 @@ Berend
 
 ## Tracking
 
-| Quelle | Angefragt | Upvotes | Conversion |
-|--------|-----------|---------|------------|
-| Familie/Freunde | 30 | - | - |
-| LinkedIn | 500 | - | - |
-| Twitter | 200 | - | - |
-| Newsletter | 50 | - | - |
-| Communities | - | - | - |
-| **TOTAL** | - | - | - |
+| Quelle          | Angefragt | Upvotes | Conversion |
+| --------------- | --------- | ------- | ---------- |
+| Familie/Freunde | 30        | -       | -          |
+| LinkedIn        | 500       | -       | -          |
+| Twitter         | 200       | -       | -          |
+| Newsletter      | 50        | -       | -          |
+| Communities     | -         | -       | -          |
+| **TOTAL**       | -         | -       | -          |
 
 ---
 
 ## Post-Launch Analyse
 
 Nach dem Launch:
+
 1. Finale Upvote-Zahl notieren
 2. Beste Quellen identifizieren
 3. Conversion Rate berechnen

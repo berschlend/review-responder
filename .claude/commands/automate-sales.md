@@ -21,13 +21,14 @@ curl -s "https://review-responder.onrender.com/api/admin/automation-health?key=K
 
 **AUTOMATISCHE LEAD-GENERIERUNG wenn noetig:**
 
-| Status | Aktion |
-|--------|--------|
-| `critical` | SOFORT Leads generieren (< 10-15 Leads) |
-| `low` | Heute noch Leads generieren (< 20-30 Leads) |
-| `healthy` | Nichts tun |
+| Status     | Aktion                                      |
+| ---------- | ------------------------------------------- |
+| `critical` | SOFORT Leads generieren (< 10-15 Leads)     |
+| `low`      | Heute noch Leads generieren (< 20-30 Leads) |
+| `healthy`  | Nichts tun                                  |
 
 **Wenn manuelle Quellen kritisch/low sind:**
+
 1. Scraper-Command aus Response nutzen (steht bei jeder Quelle)
 2. Chrome MCP starten wenn Scraper Browser braucht
 3. Nach Scraping: Status erneut pruefen
@@ -75,9 +76,11 @@ curl -s -H "X-Admin-Key: KEY" "https://review-responder.onrender.com/api/admin/s
 ## SCHRITT 4: FIRST-PRINCIPLES (Kompakt!)
 
 **5x Warum → Root Cause:**
+
 > Warum kauft niemand? → [1 Satz Antwort]
 
 **Annahme zerstoeren:**
+
 > [1 Annahme die FALSCH sein koennte]
 
 ---
@@ -85,11 +88,13 @@ curl -s -H "X-Admin-Key: KEY" "https://review-responder.onrender.com/api/admin/s
 ## SCHRITT 5: TOP 3 IDEEN
 
 Nur Ideen die den Kunden-Filter bestehen:
+
 1. **[Idee]** - Weil Kunde X will
 2. **[Idee]** - Weil Kunde Y braucht
 3. **[Idee]** - Weil es Problem Z loest
 
 **ANTI-PATTERNS (nie vorschlagen):**
+
 - Branding auf Kunden-Content
 - Mehr Spam statt bessere Emails
 - Features ohne Kunden-Feedback

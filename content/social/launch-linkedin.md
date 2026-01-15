@@ -141,6 +141,7 @@ I'll share the link here as soon as we're live!
 ## Connection Request Templates
 
 ### For Potential Customers
+
 ```
 Hi [Name],
 
@@ -153,6 +154,7 @@ Berend
 ```
 
 ### For Fellow Founders
+
 ```
 Hi [Name],
 
@@ -165,6 +167,7 @@ Berend
 ```
 
 ### For Industry Influencers
+
 ```
 Hi [Name],
 
@@ -182,6 +185,7 @@ Berend
 ## Comment Responses
 
 ### For Congratulations
+
 ```
 Thank you so much, [Name]! 🙏
 
@@ -189,6 +193,7 @@ Really appreciate the support. Let me know if you ever have questions about the 
 ```
 
 ### For Questions About the Product
+
 ```
 Great question, [Name]!
 
@@ -198,6 +203,7 @@ Happy to hop on a quick call if you'd like to see a demo!
 ```
 
 ### For Feature Requests
+
 ```
 Love this suggestion, [Name]!
 
@@ -211,11 +217,13 @@ Thanks for taking the time!
 ## Hashtag Strategy
 
 **Always include:**
+
 - #ProductHunt
 - #Startup
 - #AI
 
 **Rotate through:**
+
 - #ReviewManagement
 - #CustomerReviews
 - #SmallBusiness
@@ -226,6 +234,7 @@ Thanks for taking the time!
 - #Launch
 
 **Industry-specific:**
+
 - #RestaurantMarketing
 - #HotelManagement
 - #LocalBusiness

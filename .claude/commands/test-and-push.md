@@ -33,6 +33,7 @@ You are executing the `/test-and-push` command for ReviewResponder.
    - Confirm: "✅ Pushed to <branch-name>"
 
 ## Important:
+
 - NEVER skip testing/verification
 - ALWAYS show git status before commit
 - Use descriptive commit messages (German is OK)

@@ -4,17 +4,20 @@ Finde und verbinde dich mit Restaurant/Hotel Owners auf LinkedIn.
 **ZWEI MODI:** Neue Connections ODER Follow-up fuer Accepted
 
 ## Parameter
+
 - $SEARCH_QUERY: Suchbegriff (z.B. "Restaurant Owner", "Hotel Manager")
 - $LOCATION: Optional - Location Filter (z.B. "Germany", "Berlin")
 - ODER: `followup` - Follow-up Modus fuer accepted Connections
 
 ## Beispiele
+
 ```
 /linkedin-connect "Restaurant Owner" Germany    # Neue Connections
 /linkedin-connect followup                      # Follow-up fuer Accepted
 ```
 
 ## Voraussetzung
+
 - User muss bei LinkedIn eingeloggt sein im Browser
 - ADMIN_SECRET aus `.claude/secrets.local` lesen
 
@@ -23,11 +26,14 @@ Finde und verbinde dich mit Restaurant/Hotel Owners auf LinkedIn.
 ## MODUS 1: Neue Connections
 
 ### 1. Browser oeffnen
+
 - Navigiere zu: `https://www.linkedin.com/search/results/people/?keywords=$SEARCH_QUERY`
 - Falls $LOCATION: Fuege Location-Filter hinzu
 
 ### 2. Profile scrapen
+
 Fuer jedes Profil auf der Seite:
+
 - Name
 - Titel/Position
 - Firma
@@ -35,7 +41,9 @@ Fuer jedes Profil auf der Seite:
 - LinkedIn URL
 
 ### 3. Connection Request senden
+
 Fuer jeden qualifizierten Lead (max 20 pro Tag!):
+
 - Klicke "Connect"
 - Wenn "Add a note" Option: Klicke darauf
 - Fuege personalisierte Nachricht ein:
@@ -47,6 +55,7 @@ Fuer jeden qualifizierten Lead (max 20 pro Tag!):
 - Klicke "Send"
 
 ### 4. An Backend senden
+
 ```bash
 curl -X POST "https://review-responder.onrender.com/api/sales/linkedin-leads" \
   -H "Content-Type: application/json" \
@@ -59,52 +68,61 @@ curl -X POST "https://review-responder.onrender.com/api/sales/linkedin-leads" \
 ## MODUS 2: Follow-up (accepted Connections)
 
 ### 1. Pending Connections aus DB holen
+
 ```bash
 curl "https://review-responder.onrender.com/api/outreach/linkedin-pending?key=[ADMIN_SECRET]"
 ```
 
 ### 2. LinkedIn Connections pruefen
+
 - Navigiere zu: `https://www.linkedin.com/mynetwork/invite-connect/connections/`
 - Oder: Suche nach dem Namen in "My Network"
 
 ### 3. Fuer jede accepted Connection:
 
 a) **Pruefen ob wirklich accepted:**
-   - Suche nach dem Namen
-   - Wenn "Message" Button sichtbar → Accepted!
+
+- Suche nach dem Namen
+- Wenn "Message" Button sichtbar → Accepted!
 
 b) **Follow-up Message senden:**
-   - Klicke "Message"
-   - Sende personalisierte Nachricht:
-   ```
-   Hey [NAME]!
 
-   Danke fuers Connecten! Hab gesehen dass du bei [COMPANY] bist.
+- Klicke "Message"
+- Sende personalisierte Nachricht:
 
-   Kurze Frage: Wie handled ihr aktuell eure Google/TripAdvisor Reviews?
+```
+Hey [NAME]!
 
-   Ich hab ein Tool gebaut das AI-Antworten generiert - spart locker
-   5-10 Stunden/Woche. Hier eine Demo speziell fuer euch:
-   [DEMO_URL]
+Danke fuers Connecten! Hab gesehen dass du bei [COMPANY] bist.
 
-   LG
-   ```
+Kurze Frage: Wie handled ihr aktuell eure Google/TripAdvisor Reviews?
+
+Ich hab ein Tool gebaut das AI-Antworten generiert - spart locker
+5-10 Stunden/Woche. Hier eine Demo speziell fuer euch:
+[DEMO_URL]
+
+LG
+```
 
 c) **Demo generieren (optional):**
-   ```bash
-   curl -X POST "https://review-responder.onrender.com/api/outreach/linkedin-demo" \
-     -H "x-api-key: [ADMIN_SECRET]" \
-     -d '{"linkedin_id": 123, "company": "[COMPANY]"}'
-   ```
-   → Gibt demo_url zurueck
+
+```bash
+curl -X POST "https://review-responder.onrender.com/api/outreach/linkedin-demo" \
+  -H "x-api-key: [ADMIN_SECRET]" \
+  -d '{"linkedin_id": 123, "company": "[COMPANY]"}'
+```
+
+→ Gibt demo_url zurueck
 
 d) **Status updaten:**
-   ```bash
-   curl -X PUT "https://review-responder.onrender.com/api/outreach/linkedin-demo/[ID]/accepted" \
-     -H "x-api-key: [ADMIN_SECRET]"
-   ```
+
+```bash
+curl -X PUT "https://review-responder.onrender.com/api/outreach/linkedin-demo/[ID]/accepted" \
+  -H "x-api-key: [ADMIN_SECRET]"
+```
 
 ### 4. Report
+
 - Connections gecheckt: X
 - Accepted gefunden: Y
 - Follow-up Messages gesendet: Z
@@ -112,6 +130,7 @@ d) **Status updaten:**
 ---
 
 ## WICHTIG - LinkedIn Limits
+
 - MAX 20-25 Connections pro Tag
 - MAX 100 Connections pro Woche
 - MAX 50-100 Messages pro Tag

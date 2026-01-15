@@ -7,11 +7,13 @@
 ## Strategie 1: Google Maps Scraping + Cold Email (EMPFOHLEN)
 
 ### So funktioniert es:
+
 1. Finde lokale Businesses mit schlechten/unbeantworteten Reviews
 2. Sende personalisierte E-Mails mit konkretem Beispiel
 3. Biete kostenlose Demo an
 
 ### Tools die du brauchst (alle kostenlos/günstig):
+
 - **Apollo.io** (kostenlos) - E-Mail Finder
 - **Hunter.io** (kostenlos 25/Monat) - E-Mail Verifizierung
 - **Gmail** - Zum Senden (max 500/Tag)
@@ -21,17 +23,20 @@
 ## Strategie 2: Reddit/Facebook Groups
 
 ### Subreddits zum Posten:
+
 - r/smallbusiness
 - r/Entrepreneur
 - r/restaurantowners
 - r/sweatystartup
 
 ### Facebook Groups:
+
 - "Small Business Owners"
 - "Restaurant Owners & Managers"
 - "Local Business Marketing"
 
 ### Post-Template:
+
 ```
 Titel: I built a tool that writes review responses in 10 seconds
 
@@ -52,6 +57,7 @@ Would love feedback!
 ## Strategie 3: Direct Outreach auf Google Maps
 
 ### Schritt-für-Schritt:
+
 1. Gehe zu Google Maps
 2. Suche: "restaurant [Stadt]" oder "hotel [Stadt]"
 3. Filtere nach Businesses mit 3-4 Sterne Bewertungen
@@ -60,6 +66,7 @@ Would love feedback!
 6. Sende personalisierte E-Mail
 
 ### E-Mail Template (Deutsch):
+
 ```
 Betreff: Ihre Google-Bewertungen - kostenlose Hilfe
 
@@ -86,6 +93,7 @@ Mit freundlichen Grüßen,
 ```
 
 ### E-Mail Template (English):
+
 ```
 Subject: Your Google Reviews - free help
 
@@ -113,13 +121,14 @@ Best,
 
 ## Täglicher Zeitplan (30 Min/Tag)
 
-| Zeit | Aktivität |
-|------|-----------|
+| Zeit   | Aktivität                           |
+| ------ | ----------------------------------- |
 | 10 min | Finde 10 Businesses auf Google Maps |
-| 15 min | Sende 10 personalisierte E-Mails |
-| 5 min | Antworte auf Replies |
+| 15 min | Sende 10 personalisierte E-Mails    |
+| 5 min  | Antworte auf Replies                |
 
 ### Erwartete Ergebnisse:
+
 - 10 E-Mails/Tag = 300/Monat
 - 5% Conversion = 15 Free Trials
 - 30% Trial→Paid = 5 zahlende Kunden/Monat
@@ -140,15 +149,16 @@ Best,
 
 Erstelle eine einfache Excel/Google Sheet:
 
-| Datum | Business | Email | Gesendet | Geöffnet | Angemeldet | Bezahlt |
-|-------|----------|-------|----------|----------|------------|---------|
-| 09.01 | Pizza Mario | info@... | ✓ | ✓ | ✓ | - |
+| Datum | Business    | Email    | Gesendet | Geöffnet | Angemeldet | Bezahlt |
+| ----- | ----------- | -------- | -------- | -------- | ---------- | ------- |
+| 09.01 | Pizza Mario | info@... | ✓        | ✓        | ✓          | -       |
 
 ---
 
 ## Preis-Psychologie
 
 Warum diese Preise funktionieren:
+
 - **$29/Monat** = "Kaffee pro Tag" - niedrige Hürde
 - **$49/Monat** = "Best Value" markieren
 - **$99/Monat** = Für Agencies/Multi-Location

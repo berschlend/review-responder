@@ -1,6 +1,7 @@
 # Scraped Leads - 13.01.2026
 
 ## Session Summary
+
 - **Source:** Chrome MCP Lead Scraper
 - **Date:** 13-14.01.2026
 - **Total New Leads:** 8 (2 G2 + 1 Yelp + 5 TripAdvisor)
@@ -10,6 +11,7 @@
 ## G2 Competitor Leads (Unzufriedene Kunden)
 
 ### Lead #1: ACAD - Birdeye Negative Review
+
 - **Source:** G2.com Birdeye Reviews (NPS Score 1)
 - **Name:** ACAD
 - **Title:** Head of Digital
@@ -27,6 +29,7 @@
 - **Outreach Angle:** They're actively looking for alternatives since they returned to their previous provider. Highlight our simplicity and reliability.
 
 ### Lead #1b: Robert R. - Podium Negative Review
+
 - **Source:** G2.com Podium Reviews (NPS Score 1)
 - **Name:** Robert R.
 - **Title:** Owner
@@ -47,6 +50,7 @@
 ## Restaurant Leads (TripAdvisor/Yelp)
 
 ### Lead #2: Augustiner-Keller München
+
 - **Source:** Yelp
 - **Name:** Augustiner-Keller
 - **Address:** Arnulfstr. 52, 80335 Munich, Germany (Maxvorstadt)
@@ -61,6 +65,7 @@
 - **Outreach Angle:** Large restaurant with 780+ reviews needs help managing review responses. Unclaimed listing suggests they may not be actively managing their online presence.
 
 ### Lead #3: Schiller Bräu
+
 - **Source:** TripAdvisor
 - **Name:** Schiller Bräu
 - **Address:** Schillerstraße 23, 80336 München
@@ -74,6 +79,7 @@
 - **Outreach Angle:** Traditional German brewery with 700+ reviews. Good candidate for review response automation.
 
 ### Lead #4: Steinheil 16
+
 - **Source:** TripAdvisor
 - **Name:** Steinheil 16
 - **Address:** Steinheilstraße 16, 80333 München
@@ -87,6 +93,7 @@
 - **Outreach Angle:** High-volume restaurant with 1,200+ reviews. Definitely needs help responding to all reviews.
 
 ### Lead #5: Trattoria Da Fausto
+
 - **Source:** TripAdvisor
 - **Name:** Trattoria Da Fausto
 - **Address:** Helmtrudenstrasse 1, 80805 München
@@ -100,6 +107,7 @@
 - **Outreach Angle:** Top 5 restaurant with 1,800+ reviews! High-value lead for review management.
 
 ### Lead #6: Little London Bar & Grill (MICHELIN)
+
 - **Source:** TripAdvisor
 - **Name:** Little London Bar & Grill
 - **Address:** Tal 31, 80331 München
@@ -114,6 +122,7 @@
 - **Outreach Angle:** #2 restaurant in Munich, MICHELIN! Premium lead - may have budget for quality tools.
 
 ### Lead #7: La Bohème (MICHELIN)
+
 - **Source:** TripAdvisor
 - **Name:** La Bohème
 - **Address:** Leopoldstraße 180 Schwabing, 80804 München
@@ -132,20 +141,25 @@
 ## Previously Collected Leads (from CLAUDE.md)
 
 ### G2 Birdeye Leads (9 total)
+
 - Multiple negative reviews mentioning bugs, slow support, over-promised features
 
 ### G2 Podium Leads (7 total)
+
 - Similar pain points as Birdeye users
 
 ### TripAdvisor Munich (1)
+
 - Previous session restaurant lead
 
 ### Yelp Test (1)
+
 - Previous session test lead
 
 ---
 
 ## Next Steps
+
 1. LinkedIn search for G2 reviewer names to find email addresses
 2. Continue scraping more TripAdvisor/Yelp restaurants with contact info
 3. Focus on restaurants with mixed reviews (3-4 stars) who need review management help
@@ -156,6 +170,7 @@
 ## Outreach Templates
 
 ### For G2 Competitor Leads:
+
 Subject: Saw your Birdeye review - found something simpler
 
 Hi [Name],
@@ -170,6 +185,7 @@ Best,
 Berend
 
 ### For Restaurant Leads:
+
 Subject: Noticed your [X] Yelp reviews - quick help
 
 Hi,

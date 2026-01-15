@@ -21,32 +21,32 @@ const API_URL = 'https://review-responder.onrender.com/api/outreach/add-tripadvi
 const CITIES = {
   nyc: {
     name: 'New York',
-    url: 'https://www.tripadvisor.com/Restaurants-g60763-New_York_City_New_York.html'
+    url: 'https://www.tripadvisor.com/Restaurants-g60763-New_York_City_New_York.html',
   },
   la: {
     name: 'Los Angeles',
-    url: 'https://www.tripadvisor.com/Restaurants-g32655-Los_Angeles_California.html'
+    url: 'https://www.tripadvisor.com/Restaurants-g32655-Los_Angeles_California.html',
   },
   chicago: {
     name: 'Chicago',
-    url: 'https://www.tripadvisor.com/Restaurants-g35805-Chicago_Illinois.html'
+    url: 'https://www.tripadvisor.com/Restaurants-g35805-Chicago_Illinois.html',
   },
   london: {
     name: 'London',
-    url: 'https://www.tripadvisor.com/Restaurants-g186338-London_England.html'
+    url: 'https://www.tripadvisor.com/Restaurants-g186338-London_England.html',
   },
   toronto: {
     name: 'Toronto',
-    url: 'https://www.tripadvisor.com/Restaurants-g155019-Toronto_Ontario.html'
+    url: 'https://www.tripadvisor.com/Restaurants-g155019-Toronto_Ontario.html',
   },
   houston: {
     name: 'Houston',
-    url: 'https://www.tripadvisor.com/Restaurants-g56003-Houston_Texas.html'
+    url: 'https://www.tripadvisor.com/Restaurants-g56003-Houston_Texas.html',
   },
   phoenix: {
     name: 'Phoenix',
-    url: 'https://www.tripadvisor.com/Restaurants-g31310-Phoenix_Arizona.html'
-  }
+    url: 'https://www.tripadvisor.com/Restaurants-g31310-Phoenix_Arizona.html',
+  },
 };
 
 // Get city from command line or use day of week
@@ -64,7 +64,7 @@ function getCityForToday() {
 }
 
 // Sleep helper
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 // Main scraper
 async function scrapeTripAdvisor() {
@@ -76,7 +76,7 @@ async function scrapeTripAdvisor() {
   const browser = await puppeteer.launch({
     headless: false, // Show browser for debugging
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1920,1080'],
-    defaultViewport: { width: 1920, height: 1080 }
+    defaultViewport: { width: 1920, height: 1080 },
   });
 
   const leads = [];
@@ -88,7 +88,9 @@ async function scrapeTripAdvisor() {
     const page = await browser.newPage();
 
     // Set user agent to avoid detection
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+    await page.setUserAgent(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    );
 
     console.log(`\n🌐 Navigating to TripAdvisor ${city.name}...`);
     await page.goto(city.url, { waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -116,7 +118,9 @@ async function scrapeTripAdvisor() {
 
     // Count all links on page
     const allLinks = await page.evaluate(() => {
-      return Array.from(document.querySelectorAll('a')).map(a => a.href).filter(h => h.includes('Restaurant'));
+      return Array.from(document.querySelectorAll('a'))
+        .map(a => a.href)
+        .filter(h => h.includes('Restaurant'));
     });
     console.log(`   DEBUG: Found ${allLinks.length} restaurant-related links`);
     if (allLinks.length > 0) {
@@ -138,7 +142,7 @@ async function scrapeTripAdvisor() {
           'a[href*="/Restaurant_Review-"]',
           '[data-test*="restaurant"] a',
           '.listing a[href*="Restaurant"]',
-          'div[data-test-attribute="list-item"] a'
+          'div[data-test-attribute="list-item"] a',
         ];
 
         selectors.forEach(sel => {
@@ -187,7 +191,9 @@ async function scrapeTripAdvisor() {
             }
 
             // Get rating
-            const ratingEl = document.querySelector('[data-test-target="restaurant-detail-info"] svg title');
+            const ratingEl = document.querySelector(
+              '[data-test-target="restaurant-detail-info"] svg title'
+            );
             if (ratingEl) {
               const match = ratingEl.textContent.match(/(\d+\.?\d*)/);
               if (match) result.rating = parseFloat(match[1]);
@@ -201,7 +207,9 @@ async function scrapeTripAdvisor() {
             }
 
             // Get address
-            const addressEl = document.querySelector('[data-test-target="restaurant-detail-info"] a[href*="maps"]');
+            const addressEl = document.querySelector(
+              '[data-test-target="restaurant-detail-info"] a[href*="maps"]'
+            );
             if (addressEl) result.address = addressEl.textContent.trim();
 
             // Get phone
@@ -222,13 +230,12 @@ async function scrapeTripAdvisor() {
               address: data.address,
               phone: data.phone,
               city: city.name,
-              tripadvisor_url: link
+              tripadvisor_url: link,
             });
             console.log(`   ✅ ${restaurantsChecked}. ${data.name} - ${data.email}`);
           } else {
             console.log(`   ⏭️  ${restaurantsChecked}. ${data.name || 'Unknown'} - no email`);
           }
-
         } catch (err) {
           console.log(`   ❌ Error on restaurant ${restaurantsChecked}: ${err.message}`);
         }
@@ -259,7 +266,6 @@ async function scrapeTripAdvisor() {
         }
       }
     }
-
   } finally {
     await browser.close();
   }
@@ -282,8 +288,8 @@ async function scrapeTripAdvisor() {
         body: JSON.stringify({
           leads: leads,
           send_emails: false,
-          campaign: `tripadvisor-${city.key}`
-        })
+          campaign: `tripadvisor-${city.key}`,
+        }),
       });
 
       const result = await response.json();

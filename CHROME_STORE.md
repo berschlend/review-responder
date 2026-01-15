@@ -7,16 +7,19 @@
 ## STORE LISTING
 
 ### Extension Name
+
 ```
 ReviewResponder - AI Review Responses
 ```
 
 ### Short Description (132 characters max)
+
 ```
 Generate professional AI responses to Google Reviews in seconds. Save hours and never miss a review again.
 ```
 
 ### Detailed Description (For Chrome Web Store)
+
 ```
 ReviewResponder helps business owners respond to Google Reviews quickly and professionally using AI.
 
@@ -74,11 +77,13 @@ Made with care for busy business owners who want to maintain great customer rela
 ```
 
 ### Category
+
 ```
 Productivity
 ```
 
 ### Language
+
 ```
 English (United States)
 ```
@@ -88,11 +93,13 @@ English (United States)
 ## REQUIRED ASSETS
 
 ### Icons (Already Created)
+
 - [x] `icon16.png` - 16x16px (Favicon)
 - [x] `icon48.png` - 48x48px (Extension management page)
 - [x] `icon128.png` - 128x128px (Web Store)
 
 ### Screenshots (1280x800 or 640x400)
+
 Screenshots müssen noch erstellt werden. Empfohlene Screenshots:
 
 1. **screenshot-1-overview.png** (1280x800)
@@ -116,6 +123,7 @@ Screenshots müssen noch erstellt werden. Empfohlene Screenshots:
    - Zeigt zusätzliche Features
 
 ### Promotional Images (Optional aber empfohlen)
+
 - Small Promo Tile: 440x280px
 - Large Promo Tile: 920x680px
 - Marquee Promo Tile: 1400x560px
@@ -180,6 +188,7 @@ We may update this policy. Check reviewresponder.com/privacy for the latest vers
 ## SUBMISSION CHECKLIST
 
 ### Before Submission:
+
 - [x] manifest.json version: 1.0.0
 - [x] manifest_version: 3 (required)
 - [x] All icons present (16, 48, 128px)
@@ -191,10 +200,12 @@ We may update this policy. Check reviewresponder.com/privacy for the latest vers
 - [ ] All features working
 
 ### Chrome Developer Account:
+
 - One-time registration fee: $5
 - Developer Dashboard: https://chrome.google.com/webstore/devconsole
 
 ### Submission Steps:
+
 1. Go to Chrome Developer Dashboard
 2. Click "New Item"
 3. Upload ZIP of chrome-extension folder
@@ -205,6 +216,7 @@ We may update this policy. Check reviewresponder.com/privacy for the latest vers
 8. Submit for review
 
 ### Review Time:
+
 - First submission: 1-3 business days
 - Updates: Usually same day or next day
 
@@ -224,6 +236,7 @@ Compress-Archive -Path * -DestinationPath ../reviewresponder-extension.zip -Forc
 ```
 
 Files to include in ZIP:
+
 - manifest.json
 - popup.html
 - popup.js
@@ -239,26 +252,31 @@ Files to include in ZIP:
 ## SCREENSHOTS ERSTELLEN (ANLEITUNG)
 
 ### Tool-Empfehlung:
+
 - Chrome DevTools (F12) > Device Toolbar > Set to 1280x800
 - Oder: Screenshot-Tool wie Snagit, Greenshot
 
 ### Screenshot 1: Overview
+
 1. Öffne Google Maps
 2. Suche ein Business mit Reviews
 3. Zeige ReviewResponder Button bei einer Review
 4. Screenshot bei 1280x800
 
 ### Screenshot 2: Generate
+
 1. Klicke auf "Generate Response"
 2. Screenshot während Loading-Animation
 3. Oder: Screenshot des geöffneten Popup
 
 ### Screenshot 3: Result
+
 1. Generierte Response im Popup
 2. Copy-Button deutlich sichtbar
 3. Tone-Dropdown sichtbar
 
 ### Screenshot 4: Dashboard
+
 1. Öffne Web-Dashboard
 2. Zeige Response History
 3. Analytics oder Usage Stats
@@ -268,16 +286,19 @@ Files to include in ZIP:
 ## SUPPORT INFORMATION
 
 ### Support Email:
+
 ```
 berend.mainz@web.de
 ```
 
 ### Website:
+
 ```
 https://review-responder-frontend.onrender.com
 ```
 
 ### Support URL (für Store Listing):
+
 ```
 https://review-responder-frontend.onrender.com/help
 ```
@@ -286,9 +307,9 @@ https://review-responder-frontend.onrender.com/help
 
 ## VERSION HISTORY
 
-| Version | Datum | Änderungen |
-|---------|-------|------------|
-| 1.0.0 | Jan 2026 | Initial release |
+| Version | Datum    | Änderungen      |
+| ------- | -------- | --------------- |
+| 1.0.0   | Jan 2026 | Initial release |
 
 ---
 

@@ -103,7 +103,8 @@ const industryExamples = {
   },
   dental: {
     positive: {
-      review: 'Dr. Smith made my root canal completely painless. Staff was friendly and professional.',
+      review:
+        'Dr. Smith made my root canal completely painless. Staff was friendly and professional.',
       response:
         "Root canals have a bad reputation, but they don't have to hurt. Glad we could change that for you.",
     },
@@ -115,9 +116,9 @@ const industryExamples = {
   },
   hotel: {
     positive: {
-      review: 'Beautiful room with an amazing view. Breakfast was excellent and staff very helpful.',
-      response:
-        'The river view from that room is one of our favorites too. See you next time.',
+      review:
+        'Beautiful room with an amazing view. Breakfast was excellent and staff very helpful.',
+      response: 'The river view from that room is one of our favorites too. See you next time.',
     },
     negative: {
       review: 'Room was not clean when we arrived. Had to wait for housekeeping to come back.',
@@ -128,7 +129,8 @@ const industryExamples = {
   salon: {
     positive: {
       review: "Best haircut I've had in years! Lisa really understood what I wanted.",
-      response: "Lisa will love hearing this. She's great at listening first. See you in a few weeks!",
+      response:
+        "Lisa will love hearing this. She's great at listening first. See you in a few weeks!",
     },
     negative: {
       review: 'Color came out completely different from what I asked for. Very disappointed.',
@@ -138,7 +140,7 @@ const industryExamples = {
   medical: {
     positive: {
       review: 'Dr. Johnson took time to explain everything and really listened to my concerns.',
-      response: "Taking time to listen is important to us. Thanks for trusting us with your care.",
+      response: 'Taking time to listen is important to us. Thanks for trusting us with your care.',
     },
     negative: {
       review: 'Felt rushed during my appointment. Doctor barely looked at me.',
@@ -149,7 +151,8 @@ const industryExamples = {
   automotive: {
     positive: {
       review: 'Fixed my car fast and at a fair price. Mike explained everything clearly.',
-      response: "Mike's great at that. We believe in explaining what we're doing. Thanks for trusting us with your car.",
+      response:
+        "Mike's great at that. We believe in explaining what we're doing. Thanks for trusting us with your car.",
     },
     negative: {
       review: 'Charged me for parts they never replaced. Found the old parts still in my car.',
@@ -160,7 +163,8 @@ const industryExamples = {
   fitness: {
     positive: {
       review: 'Best gym in the area. Equipment is always clean and staff is helpful.',
-      response: 'We put a lot of effort into keeping things clean and maintained. See you at your next workout!',
+      response:
+        'We put a lot of effort into keeping things clean and maintained. See you at your next workout!',
     },
     negative: {
       review: 'Impossible to cancel membership. Been trying for 3 months.',
@@ -171,11 +175,10 @@ const industryExamples = {
   legal: {
     positive: {
       review: 'Attorney Smith handled my case professionally and kept me informed throughout.',
-      response:
-        'Keeping clients informed is a priority for us. Glad we could help with your case.',
+      response: 'Keeping clients informed is a priority for us. Glad we could help with your case.',
     },
     negative: {
-      review: "Never returned my calls. Felt completely ignored during my case.",
+      review: 'Never returned my calls. Felt completely ignored during my case.',
       response:
         "Communication is fundamental to good legal service. I'm sorry we fell short. Please contact me directly to discuss.",
     },

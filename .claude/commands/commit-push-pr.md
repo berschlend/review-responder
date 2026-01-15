@@ -8,11 +8,13 @@ Basierend auf diesen Aenderungen erstelle einen Commit und PR:
 **Branch:** $BRANCH
 
 **Status:**
+
 ```
 $GIT_STATUS
 ```
 
 **Diff Stats:**
+
 ```
 $GIT_DIFF
 ```
@@ -31,6 +33,7 @@ $GIT_DIFF
    - `style:` fuer Formatting
 
 3. **Committe alle Aenderungen:**
+
    ```bash
    git add -A
    git commit -m "deine message
@@ -39,12 +42,14 @@ $GIT_DIFF
    ```
 
 4. **Pushe zum Remote:**
+
    ```bash
    git push -u origin $BRANCH
    ```
 
 5. **Auto-PR + Merge (NUR wenn Branch != main):**
    Falls `$BRANCH` NICHT "main" ist:
+
    ```bash
    # PR erstellen
    gh pr create --fill --base main

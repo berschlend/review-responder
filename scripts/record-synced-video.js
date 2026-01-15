@@ -28,7 +28,7 @@ if (!fs.existsSync(OUTPUT_DIR)) {
 }
 
 // Helper: Wait for specified time
-const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 // Helper: Smooth scroll
 async function smoothScroll(page, amount, duration = 1000) {
@@ -63,8 +63,8 @@ async function recordSyncedVideo() {
     viewport: { width: 1280, height: 720 },
     recordVideo: {
       dir: OUTPUT_DIR,
-      size: { width: 1280, height: 720 }
-    }
+      size: { width: 1280, height: 720 },
+    },
   });
 
   const page = await context.newPage();
@@ -135,7 +135,6 @@ async function recordSyncedVideo() {
     await wait(4000);
 
     console.log(`\n[${elapsed()}s] ✅ Recording complete!`);
-
   } catch (error) {
     console.error('❌ Error during recording:', error.message);
   }
