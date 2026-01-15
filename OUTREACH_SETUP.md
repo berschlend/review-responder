@@ -3,6 +3,7 @@
 ## Was das System macht (100% automatisch)
 
 Jeden Tag um 9 AM UTC:
+
 1. **Scrape** 10 neue Business-Leads von Google Maps
 2. **Find** Email-Adressen via Hunter.io
 3. **Send** personalisierte Cold Emails an neue Leads
@@ -28,6 +29,7 @@ Jeden Tag um 9 AM UTC:
 5. Kopiere den Key
 
 **In Render hinzufügen:**
+
 ```
 GOOGLE_PLACES_API_KEY=AIza...
 ```
@@ -40,6 +42,7 @@ GOOGLE_PLACES_API_KEY=AIza...
 4. Kopiere deinen API Key
 
 **In Render hinzufügen:**
+
 ```
 HUNTER_API_KEY=abc123...
 ```
@@ -51,6 +54,7 @@ HUNTER_API_KEY=abc123...
 Generiere einen zufälligen String (z.B. mit: https://randomkeygen.com/)
 
 **In Render hinzufügen:**
+
 ```
 ADMIN_SECRET=dein-geheimer-key-hier
 CRON_SECRET=dein-geheimer-key-hier
@@ -108,6 +112,7 @@ https://review-responder.onrender.com/api/outreach/dashboard?key=DEIN_ADMIN_SECR
 ```
 
 Zeigt:
+
 - Total Leads
 - Emails gesendet
 - Open Rate
@@ -118,6 +123,7 @@ Zeigt:
 ## Manuelle Tests (Optional)
 
 ### Leads scrapen:
+
 ```bash
 curl -X POST "https://review-responder.onrender.com/api/outreach/scrape-leads" \
   -H "Content-Type: application/json" \
@@ -126,12 +132,14 @@ curl -X POST "https://review-responder.onrender.com/api/outreach/scrape-leads" \
 ```
 
 ### Emails finden:
+
 ```bash
 curl -X POST "https://review-responder.onrender.com/api/outreach/find-emails" \
   -H "X-Admin-Key: DEIN_ADMIN_SECRET"
 ```
 
 ### Cold Emails senden:
+
 ```bash
 curl -X POST "https://review-responder.onrender.com/api/outreach/send-emails" \
   -H "Content-Type: application/json" \
@@ -143,15 +151,15 @@ curl -X POST "https://review-responder.onrender.com/api/outreach/send-emails" \
 
 ## Erwartete Ergebnisse
 
-| Metrik | Pro Woche | Pro Monat |
-|--------|-----------|-----------|
-| Neue Leads | 70 | 300 |
-| Emails gefunden | 30-40 | 120-160 |
-| Cold Emails gesendet | 200 | 800 |
-| Opens (20% rate) | 40 | 160 |
-| Replies (5% rate) | 10 | 40 |
-| Demos (25% of replies) | 2-3 | 10 |
-| **Conversions (30%)** | **1** | **3-4** |
+| Metrik                 | Pro Woche | Pro Monat |
+| ---------------------- | --------- | --------- |
+| Neue Leads             | 70        | 300       |
+| Emails gefunden        | 30-40     | 120-160   |
+| Cold Emails gesendet   | 200       | 800       |
+| Opens (20% rate)       | 40        | 160       |
+| Replies (5% rate)      | 10        | 40        |
+| Demos (25% of replies) | 2-3       | 10        |
+| **Conversions (30%)**  | **1**     | **3-4**   |
 
 **Bei $29-99/Monat pro Kunde = $100-$400 MRR nach dem ersten Monat**
 
@@ -159,12 +167,12 @@ curl -X POST "https://review-responder.onrender.com/api/outreach/send-emails" \
 
 ## Kosten
 
-| Service | Kosten | Limit |
-|---------|--------|-------|
-| Google Places API | $0 (ersten $200 frei) | ~10,000 Requests |
-| Hunter.io Free | $0 | 25 Emails/Monat |
-| Hunter.io Starter | $49/mo | 1000 Emails/Monat |
-| Resend | $0 (ersten 100 Emails frei) | Dann $0.001/Email |
+| Service           | Kosten                      | Limit             |
+| ----------------- | --------------------------- | ----------------- |
+| Google Places API | $0 (ersten $200 frei)       | ~10,000 Requests  |
+| Hunter.io Free    | $0                          | 25 Emails/Monat   |
+| Hunter.io Starter | $49/mo                      | 1000 Emails/Monat |
+| Resend            | $0 (ersten 100 Emails frei) | Dann $0.001/Email |
 
 **Für den Start: $0/Monat möglich!**
 
@@ -173,15 +181,19 @@ curl -X POST "https://review-responder.onrender.com/api/outreach/send-emails" \
 ## Troubleshooting
 
 ### "GOOGLE_PLACES_API_KEY not configured"
+
 → Füge den Key in Render Environment Variables hinzu
 
 ### "HUNTER_API_KEY not configured"
+
 → Erstelle kostenlosen Hunter.io Account
 
 ### Emails werden nicht gesendet
+
 → Prüfe RESEND_API_KEY und Domain-Verifizierung
 
 ### Cron Job läuft nicht
+
 → Prüfe den Cron Job in Render Settings
 
 ---
@@ -195,6 +207,7 @@ Die Templates sind in `backend/server.js` unter `EMAIL_TEMPLATES`:
 - `sequence3` - Letzte Email nach 7 Tagen
 
 Variablen:
+
 - `{business_name}` - Name des Unternehmens
 - `{business_type}` - Art (restaurant, hotel, etc.)
 - `{review_count}` - Anzahl Google Reviews
@@ -203,4 +216,4 @@ Variablen:
 
 ---
 
-*Setup abgeschlossen? Das System läuft jetzt vollautomatisch!*
+_Setup abgeschlossen? Das System läuft jetzt vollautomatisch!_

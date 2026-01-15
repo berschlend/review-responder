@@ -11,20 +11,20 @@ const leads = [
     name: 'Steinheil 16',
     email: 'steinheil16@t-online.de',
     reviews: 1263,
-    type: 'German, Austrian'
+    type: 'German, Austrian',
   },
   {
     name: 'Augustiner-Keller',
     email: 'buero@augustinerkeller.de',
     reviews: 781,
-    type: 'Bavarian/Beer Garden'
+    type: 'Bavarian/Beer Garden',
   },
   {
     name: 'Schiller Bräu',
     email: 'info@schiller-braeu.de',
     reviews: 706,
-    type: 'German, Brew Pub'
-  }
+    type: 'German, Brew Pub',
+  },
 ];
 
 function generateEmail(lead) {
@@ -78,7 +78,7 @@ async function sendEmail(lead) {
     to: [lead.email],
     subject: subject,
     html: html,
-    reply_to: 'berend.mainz@web.de'
+    reply_to: 'berend.mainz@web.de',
   });
 
   const options = {
@@ -87,16 +87,16 @@ async function sendEmail(lead) {
     path: '/emails',
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${RESEND_API_KEY}`,
+      Authorization: `Bearer ${RESEND_API_KEY}`,
       'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(data)
-    }
+      'Content-Length': Buffer.byteLength(data),
+    },
   };
 
   return new Promise((resolve, reject) => {
-    const req = https.request(options, (res) => {
+    const req = https.request(options, res => {
       let body = '';
-      res.on('data', chunk => body += chunk);
+      res.on('data', chunk => (body += chunk));
       res.on('end', () => {
         if (res.statusCode === 200 || res.statusCode === 201) {
           console.log(`✓ Email sent to ${lead.name} (${lead.email})`);

@@ -3,6 +3,7 @@
 ## Reddit Posts
 
 ### Post 1: r/smallbusiness
+
 **Titel:** I built a tool that generates review responses in seconds - looking for feedback
 
 **Text:**
@@ -21,6 +22,7 @@ Is this something you'd actually use? What features would make it more useful?
 ---
 
 ### Post 2: r/restaurateurs
+
 **Titel:** How do you handle responding to all your Google/Yelp reviews?
 
 **Text:**
@@ -35,6 +37,7 @@ Anyone else struggle with review management? What's your current process?
 ---
 
 ### Post 3: r/Entrepreneur
+
 **Titel:** Launched my first SaaS - AI review response generator. Roast my landing page?
 
 **Text:**
@@ -45,6 +48,7 @@ Target market: restaurants, hotels, dental practices - anyone who gets lots of o
 Landing page: https://review-responder-frontend.onrender.com
 
 Looking for honest feedback:
+
 - Does the value prop make sense?
 - Would you pay €29/month for this?
 - What's missing?
@@ -119,6 +123,7 @@ Berend
 ## Wo posten
 
 ### Reddit (diese Woche)
+
 1. r/smallbusiness (500k+ members) - Post 1
 2. r/restaurateurs (30k members) - Post 2
 3. r/Entrepreneur (1M+ members) - Post 3
@@ -126,11 +131,13 @@ Berend
 5. r/dentists - für Zahnarztpraxen
 
 ### Andere Plattformen
+
 - LinkedIn (dein Post)
 - Indie Hackers (https://indiehackers.com)
 - Product Hunt (später wenn mehr Feedback)
 
 ### Kaltakquise
+
 1. Google Maps öffnen
 2. Suche "Restaurant [Stadt]"
 3. Filtere nach 3-4 Sternen

@@ -8,40 +8,51 @@
 ## CONNECTION REQUEST MESSAGES (< 300 characters)
 
 ### Message 1: Direct Value Proposition
+
 ```
 Hi {name}, I noticed you manage {company}. We help businesses respond to online reviews 10x faster with AI - saves hours weekly. Would love to connect and share how it works!
 ```
-*Best for: Restaurant/Hotel Managers*
+
+_Best for: Restaurant/Hotel Managers_
 
 ### Message 2: Pain Point Focused
+
 ```
 Hi {name}! Managing {industry} reviews can be overwhelming. I built a tool that generates professional responses in seconds. Happy to connect and show you a quick demo!
 ```
-*Best for: Local Business Owners*
+
+_Best for: Local Business Owners_
 
 ### Message 3: Curiosity Hook
+
 ```
 Hey {name}, quick question - how much time does your team spend on review responses weekly? We've helped businesses cut that by 80%. Let's connect!
 ```
-*Best for: Marketing Agencies*
+
+_Best for: Marketing Agencies_
 
 ### Message 4: Social Proof Light
+
 ```
 Hi {name}! Helping {industry} businesses improve their online reputation with AI. Just launched and early users love it. Would be great to connect!
 ```
-*Best for: Franchise Owners*
+
+_Best for: Franchise Owners_
 
 ### Message 5: Mutual Interest
+
 ```
 Hi {name}, fellow {industry} enthusiast here! Built a tool to help businesses manage reviews better. Always looking to connect with others in the space!
 ```
-*Best for: General Networking*
+
+_Best for: General Networking_
 
 ---
 
 ## FOLLOW-UP MESSAGES (After Connection Accepted)
 
 ### Follow-up 1: Immediate Value (Send within 24h)
+
 ```
 Thanks for connecting, {name}!
 
@@ -60,6 +71,7 @@ No pressure - just thought it might save you time!
 ```
 
 ### Follow-up 2: Case Study Approach
+
 ```
 Hey {name}, hope you're doing well!
 
@@ -73,6 +85,7 @@ Curious if this could help {company}? Happy to show you how it works!
 ```
 
 ### Follow-up 3: Free Trial Offer
+
 ```
 Hi {name}!
 
@@ -89,6 +102,7 @@ Would love your feedback if you give it a spin!
 ```
 
 ### Follow-up 4: Problem Awareness
+
 ```
 {name}, quick thought for you:
 
@@ -104,6 +118,7 @@ Want to see it in action? Takes 60 seconds.
 ```
 
 ### Follow-up 5: FOMO / Limited Offer
+
 ```
 Hey {name}!
 
@@ -122,31 +137,37 @@ Let me know if you have any questions!
 ## PERSONALIZATION TIPS
 
 ### Variables to Research Before Sending:
-| Variable | Where to Find |
-|----------|---------------|
-| `{name}` | Profile name (first name only) |
-| `{company}` | Current position / headline |
-| `{industry}` | Company page or headline |
+
+| Variable     | Where to Find                  |
+| ------------ | ------------------------------ |
+| `{name}`     | Profile name (first name only) |
+| `{company}`  | Current position / headline    |
+| `{industry}` | Company page or headline       |
 
 ### Industry-Specific Hooks:
 
 **Restaurants:**
+
 - "Managing Yelp and Google reviews for a restaurant is brutal..."
 - "Your menu looks amazing! How do you handle the occasional negative review?"
 
 **Hotels:**
+
 - "TripAdvisor responses can make or break bookings..."
 - "Hospitality reviews require such a personal touch..."
 
 **Dentists/Doctors:**
+
 - "Patient reviews are so important for healthcare..."
 - "HIPAA-compliant responses are tricky to get right..."
 
 **Lawyers:**
+
 - "Professional reputation is everything in legal..."
 - "Client reviews can be sensitive to respond to..."
 
 **Marketing Agencies:**
+
 - "Managing reviews for multiple clients must be a challenge..."
 - "This could be a new service offering for your clients..."
 
@@ -155,16 +176,19 @@ Let me know if you have any questions!
 ## RESPONSE TEMPLATES FOR COMMON REPLIES
 
 ### "Not interested"
+
 ```
 Totally understand, {name}! If review management ever becomes a priority, feel free to reach out. Best of luck with {company}!
 ```
 
 ### "We already use something"
+
 ```
 Great to hear you're on top of it! Out of curiosity, what are you using? Always looking to learn what works for businesses like yours.
 ```
 
 ### "Sounds interesting, tell me more"
+
 ```
 Awesome! Here's the quick version:
 
@@ -181,6 +205,7 @@ Or I can do a quick screen share if you prefer!
 ```
 
 ### "What does it cost?"
+
 ```
 Great question! We have 3 plans:
 
@@ -198,6 +223,7 @@ Plus there's a 20-response free trial, no card needed!
 ## DO's and DON'Ts
 
 ### DO:
+
 - Personalize every message (name + company minimum)
 - Keep connection requests under 300 characters
 - Wait 24h after connection before follow-up
@@ -206,6 +232,7 @@ Plus there's a 20-response free trial, no card needed!
 - Track everything in spreadsheet
 
 ### DON'T:
+
 - Send identical messages to everyone
 - Spam multiple messages in one day
 - Be pushy or salesy in connection request
@@ -217,17 +244,17 @@ Plus there's a 20-response free trial, no card needed!
 
 ## WEEKLY OUTREACH SCHEDULE
 
-| Day | Action | Target |
-|-----|--------|--------|
-| Monday | Send 20 connection requests | Restaurants |
-| Tuesday | Send 20 connection requests | Hotels |
-| Wednesday | Follow up accepted connections | All |
-| Thursday | Send 20 connection requests | Local businesses |
-| Friday | Send 20 connection requests | Agencies/Franchises |
-| Weekend | Research & build prospect list | - |
+| Day       | Action                         | Target              |
+| --------- | ------------------------------ | ------------------- |
+| Monday    | Send 20 connection requests    | Restaurants         |
+| Tuesday   | Send 20 connection requests    | Hotels              |
+| Wednesday | Follow up accepted connections | All                 |
+| Thursday  | Send 20 connection requests    | Local businesses    |
+| Friday    | Send 20 connection requests    | Agencies/Franchises |
+| Weekend   | Research & build prospect list | -                   |
 
 **Weekly Total:** 80 new connections + follow-ups to all accepted
 
 ---
 
-*Last Updated: January 10, 2026*
+_Last Updated: January 10, 2026_

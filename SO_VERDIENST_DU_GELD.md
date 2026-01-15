@@ -10,9 +10,11 @@
 ## Was du tun musst (1x pro Woche, ~15 Minuten)
 
 ### Schritt 1: Content generieren
+
 Doppelklick auf: `marketing/AUTO_MARKETING.bat`
 
 Das generiert automatisch:
+
 - 3 Blog Posts (SEO-optimiert)
 - 9 Social Media Posts (Twitter, LinkedIn, Reddit)
 - Email Templates
@@ -20,22 +22,26 @@ Das generiert automatisch:
 ### Schritt 2: Content posten (Copy-Paste)
 
 **Blog Posts** (5 min):
+
 1. Gehe zu https://medium.com (kostenlos anmelden)
 2. Klicke "Write"
 3. Kopiere einen Post aus `marketing/content/blog/`
 4. Poste
 
 **LinkedIn** (3 min):
+
 1. Gehe zu LinkedIn
 2. Kopiere Post aus `marketing/content/social/`
 3. Poste
 
 **Twitter/X** (2 min):
+
 1. Gehe zu Twitter
 2. Kopiere Tweet aus `marketing/content/social/`
 3. Poste
 
 ### Schritt 3 (Optional): Kaltakquise
+
 Nutze die Email Templates aus `marketing/content/email/`
 
 ---
@@ -49,11 +55,11 @@ Einstellungen: https://dashboard.stripe.com/settings/payouts
 
 ## Die Rechnung
 
-| Plan | Preis | Kunden nötig für $1000/Monat |
-|------|-------|------------------------------|
-| Starter | $29 | 35 Kunden |
-| Professional | $49 | 21 Kunden |
-| Unlimited | $99 | 11 Kunden |
+| Plan         | Preis | Kunden nötig für $1000/Monat |
+| ------------ | ----- | ---------------------------- |
+| Starter      | $29   | 35 Kunden                    |
+| Professional | $49   | 21 Kunden                    |
+| Unlimited    | $99   | 11 Kunden                    |
 
 **Realistisch**: Mix aus allen Plans = ~25 Kunden
 

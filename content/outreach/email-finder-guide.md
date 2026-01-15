@@ -21,21 +21,24 @@
 ## Tool 1: Hunter.io (Empfohlen für Anfänger)
 
 ### Was es kann:
+
 - Email-Adressen von Domains finden
 - Email-Pattern erkennen (vorname@domain.com)
 - Email-Verification
 - Chrome Extension
 
 ### Preise:
-| Plan | Preis | Searches | Verifications |
-|------|-------|----------|---------------|
-| Free | $0/mo | 25 | 50 |
-| Starter | $49/mo | 500 | 1000 |
-| Growth | $149/mo | 5000 | 10000 |
+
+| Plan    | Preis   | Searches | Verifications |
+| ------- | ------- | -------- | ------------- |
+| Free    | $0/mo   | 25       | 50            |
+| Starter | $49/mo  | 500      | 1000          |
+| Growth  | $149/mo | 5000     | 10000         |
 
 ### Anleitung:
 
 **1. Domain Search:**
+
 ```
 1. Gehe zu hunter.io
 2. Gib die Business-Website ein (z.B. grandhotel.com)
@@ -44,6 +47,7 @@
 ```
 
 **2. Email Finder (wenn Name bekannt):**
+
 ```
 1. Klicke auf "Email Finder"
 2. Gib Domain + Vor/Nachname ein
@@ -52,6 +56,7 @@
 ```
 
 **3. Chrome Extension:**
+
 ```
 1. Installiere Hunter Chrome Extension
 2. Besuche Business-Website
@@ -60,6 +65,7 @@
 ```
 
 ### Hunter API (für Automatisierung):
+
 ```javascript
 // Hunter.io API Beispiel
 const response = await fetch(
@@ -74,6 +80,7 @@ const data = await response.json();
 ## Tool 2: Apollo.io (Beste Datenbank)
 
 ### Was es kann:
+
 - 275M+ verifizierte Kontakte
 - Firmendaten + Entscheider
 - Email-Sequenz-Automatisierung
@@ -81,15 +88,17 @@ const data = await response.json();
 - Intent Data
 
 ### Preise:
-| Plan | Preis | Credits |
-|------|-------|---------|
-| Free | $0/mo | 50 emails/mo |
-| Basic | $49/mo | 200 emails/mo |
-| Professional | $99/mo | Unlimited |
+
+| Plan         | Preis  | Credits       |
+| ------------ | ------ | ------------- |
+| Free         | $0/mo  | 50 emails/mo  |
+| Basic        | $49/mo | 200 emails/mo |
+| Professional | $99/mo | Unlimited     |
 
 ### Anleitung:
 
 **1. Suche nach Branche + Region:**
+
 ```
 1. Apollo Login → Search
 2. Filter: Industry = "Restaurants" / "Hotels"
@@ -99,6 +108,7 @@ const data = await response.json();
 ```
 
 **2. Fortgeschrittene Filter:**
+
 ```
 - Company Size: 1-10 (kleine Businesses)
 - Revenue: <$1M (lokale Businesses)
@@ -107,6 +117,7 @@ const data = await response.json();
 ```
 
 **3. Sequenz erstellen:**
+
 ```
 1. Kontakte auswählen
 2. "Add to Sequence" klicken
@@ -119,21 +130,24 @@ const data = await response.json();
 ## Tool 3: Snov.io (Bestes Preis-Leistung)
 
 ### Was es kann:
+
 - Email Finder & Verifier
 - Email Drip Campaigns
 - CRM integriert
 - LinkedIn Extension
 
 ### Preise:
-| Plan | Preis | Credits |
-|------|-------|---------|
-| Free | $0/mo | 50 |
-| Starter | $30/mo | 1000 |
-| Pro | $75/mo | 5000 |
+
+| Plan    | Preis  | Credits |
+| ------- | ------ | ------- |
+| Free    | $0/mo  | 50      |
+| Starter | $30/mo | 1000    |
+| Pro     | $75/mo | 5000    |
 
 ### Anleitung:
 
 **1. Domain Search:**
+
 ```
 1. Snov.io → Email Finder → Domain Search
 2. Website eingeben
@@ -142,6 +156,7 @@ const data = await response.json();
 ```
 
 **2. Social URL Search:**
+
 ```
 1. LinkedIn Profil-URL eingeben
 2. Snov.io findet zugehörige Email
@@ -149,6 +164,7 @@ const data = await response.json();
 ```
 
 **3. Email Verifier:**
+
 ```
 1. CSV mit Emails hochladen
 2. Bulk-Verification
@@ -161,6 +177,7 @@ const data = await response.json();
 ## Manuelle Methoden (Kostenlos)
 
 ### 1. Google Suche:
+
 ```
 "restaurant name" email
 "restaurant name" contact
@@ -169,6 +186,7 @@ site:linkedin.com "restaurant name" owner
 ```
 
 ### 2. Website Inspection:
+
 ```
 - /about
 - /contact
@@ -178,6 +196,7 @@ site:linkedin.com "restaurant name" owner
 ```
 
 ### 3. LinkedIn:
+
 ```
 1. Business suchen
 2. "People" Tab
@@ -186,12 +205,14 @@ site:linkedin.com "restaurant name" owner
 ```
 
 ### 4. Yelp / Google Maps:
+
 ```
 - Yelp Business Profile → manchmal Email im "Business Info"
 - Google Maps → Website besuchen → Contact Page
 ```
 
 ### 5. WHOIS Lookup:
+
 ```
 1. who.is oder whois.domaintools.com
 2. Domain eingeben
@@ -199,6 +220,7 @@ site:linkedin.com "restaurant name" owner
 ```
 
 ### 6. Email Pattern Guessing:
+
 ```
 Häufigste Patterns:
 - vorname@domain.com
@@ -214,20 +236,22 @@ Häufigste Patterns:
 ## Email Verification Best Practices
 
 ### Warum verifizieren?
+
 - Bounces beschädigen Sender Reputation
 - Zu viele Bounces = Email-Provider blockt dich
 - Verifikation = höhere Deliverability
 
 ### Tools für Verification:
 
-| Tool | Preis | Genauigkeit |
-|------|-------|-------------|
-| NeverBounce | $0.008/email | 99.9% |
-| ZeroBounce | $0.007/email | 98%+ |
-| EmailListVerify | $0.004/email | 97%+ |
-| Hunter.io | inkludiert | 95%+ |
+| Tool            | Preis        | Genauigkeit |
+| --------------- | ------------ | ----------- |
+| NeverBounce     | $0.008/email | 99.9%       |
+| ZeroBounce      | $0.007/email | 98%+        |
+| EmailListVerify | $0.004/email | 97%+        |
+| Hunter.io       | inkludiert   | 95%+        |
 
 ### Verification Workflow:
+
 ```
 1. Emails sammeln → CSV
 2. Durch Verifier laufen lassen
@@ -237,6 +261,7 @@ Häufigste Patterns:
 ```
 
 ### Verification Status erklärt:
+
 ```
 - Valid: Email existiert, kann empfangen
 - Invalid: Existiert nicht, sofort löschen
@@ -250,10 +275,12 @@ Häufigste Patterns:
 ## Outreach-Qualität > Quantität
 
 ### Ideal Pro Tag:
+
 - 50-100 personalisierte Emails
 - Nicht 1000 generische Emails
 
 ### Personalisierung sammeln:
+
 ```
 Für jede Email speichern:
 - Business Name
@@ -266,9 +293,9 @@ Für jede Email speichern:
 
 ### Spreadsheet Template:
 
-| Email | Name | Business | City | Reviews | Rating | Last Response | Notes |
-|-------|------|----------|------|---------|--------|---------------|-------|
-| mario@trattoria.de | Mario | Mario's Trattoria | Berlin | 127 | 4.3 | 3 Monate | Italienisch |
+| Email              | Name  | Business          | City   | Reviews | Rating | Last Response | Notes       |
+| ------------------ | ----- | ----------------- | ------ | ------- | ------ | ------------- | ----------- |
+| mario@trattoria.de | Mario | Mario's Trattoria | Berlin | 127     | 4.3    | 3 Monate      | Italienisch |
 
 ---
 
@@ -287,18 +314,21 @@ Bevor du eine Email sendest, prüfe:
 ## Compliance & Ethik
 
 ### CAN-SPAM (USA):
+
 - Physische Adresse in jeder Email
 - Klarer Unsubscribe-Link
 - Keine irreführenden Subject Lines
 - Opt-out innerhalb 10 Tage bearbeiten
 
 ### GDPR (EU):
+
 - Nur Business-Emails (keine privaten)
 - Legitimate Interest als Rechtsgrundlage
 - Klare Opt-out Möglichkeit
 - Daten auf Anfrage löschen
 
 ### Best Practices:
+
 - Max 3-4 Follow-ups
 - Bei "Unsubscribe" sofort stoppen
 - Keine gekauften Listen
@@ -310,6 +340,7 @@ Bevor du eine Email sendest, prüfe:
 ## Automatisierung mit Zapier/Make
 
 ### Workflow: Google Maps → CRM
+
 ```
 1. Google Maps Scraper (Apify, Phantombuster)
 2. → Zapier/Make
@@ -320,6 +351,7 @@ Bevor du eine Email sendest, prüfe:
 ```
 
 ### Kosten für Automatisierung:
+
 ```
 Apify (Scraping): $49/mo
 Hunter.io: $49/mo
@@ -335,6 +367,7 @@ Total: ~$200/mo für vollautomatisierte Pipeline
 ## Quick Reference: Email Pattern by Business Type
 
 ### Restaurants:
+
 ```
 info@restaurant.com (häufigste)
 owner@restaurant.com
@@ -343,6 +376,7 @@ chef@restaurant.com (für Chef-Owned)
 ```
 
 ### Hotels:
+
 ```
 gm@hotel.com (General Manager)
 frontdesk@hotel.com
@@ -351,6 +385,7 @@ info@hotel.com
 ```
 
 ### Service Businesses:
+
 ```
 owner@business.com
 office@business.com

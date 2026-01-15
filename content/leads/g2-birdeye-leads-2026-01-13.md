@@ -3,11 +3,12 @@
 **Scraped:** 13.01.2026
 
 ## Summary
-| Product | 1-Star | 2-Star | Total Negative |
-|---------|--------|--------|----------------|
-| Birdeye | 19 | 8 | 27 |
-| Podium | 36 | 11 | 47 |
-| **Total** | **55** | **19** | **74** |
+
+| Product   | 1-Star | 2-Star | Total Negative |
+| --------- | ------ | ------ | -------------- |
+| Birdeye   | 19     | 8      | 27             |
+| Podium    | 36     | 11     | 47             |
+| **Total** | **55** | **19** | **74**         |
 
 **Source Birdeye:** https://www.g2.com/products/birdeye/reviews?filters[nps_score]=1
 **Source Podium:** https://www.g2.com/products/podium/reviews?filters[nps_score]=1
@@ -15,6 +16,7 @@
 ---
 
 ## Lead #1: ADhesive C.
+
 - **Name:** ADhesive C.
 - **Company:** ADHESIVE
 - **Role:** Head of Digital
@@ -33,6 +35,7 @@
 ---
 
 ## Lead #2: Andrew B.
+
 - **Name:** Andrew B.
 - **Role:** Owner
 - **Company Size:** Small-Business (50 or fewer emp.)
@@ -45,6 +48,7 @@
 ---
 
 ## Lead #3: Anonymous Accountant
+
 - **Name:** Verified User in Accounting (anonymous)
 - **Industry:** Accounting / Legal
 - **Company Size:** Small-Business (50 or fewer emp.)
@@ -61,6 +65,7 @@
 ---
 
 ## Lead #4: Colin D. (HIGH VALUE - Mid-Market)
+
 - **Name:** Colin D.
 - **Role:** Director of Marketing Strategy
 - **Company Size:** Mid-Market (51-1000 emp.)
@@ -81,6 +86,7 @@
 ---
 
 ## Lead #5: Russell O.
+
 - **Name:** Russell O. (Birdeye response says "Russel")
 - **Role:** Marketing Director
 - **Company Size:** Small-Business (50 or fewer emp.)
@@ -109,15 +115,19 @@
 ## Cold Email Template Ideas
 
 ### Subject Lines:
+
 - "Saw your Birdeye review on G2..."
 - "Re: {Pain Point} you mentioned"
 - "Quick question about your review management"
 
 ### Opening Hook:
+
 "I noticed your review on G2 about [specific pain point]. That sounds incredibly frustrating, especially after spending [amount] on a platform that should just work."
 
 ### Value Prop:
+
 "We built ReviewResponder specifically for businesses tired of:
+
 - Enterprise pricing for simple tasks
 - Buggy platforms that need constant support
 - Month-long implementations
@@ -125,6 +135,7 @@
 It's $29/month, works in 30 seconds, and you can try it free."
 
 ### CTA:
+
 "Want me to generate a few AI responses for your current reviews? No signup needed - I'll just send them over."
 
 ---
@@ -134,6 +145,7 @@ It's $29/month, works in 30 seconds, and you can try it free."
 # PODIUM Negative Reviews
 
 ## Podium Lead #1: Anonymous (0/5)
+
 - **Rating:** 0/5
 - **Headline:** "Misleading and Unreliable Service with Poor Support"
 - **Pain Points:**
@@ -145,6 +157,7 @@ It's $29/month, works in 30 seconds, and you can try it free."
   - Continuous lies, terrible customer service
 
 ## Podium Lead #2: Jesse V.
+
 - **Name:** Jesse V.
 - **Review Date:** 11/20/2025
 - **Details:** (need to expand for full info)

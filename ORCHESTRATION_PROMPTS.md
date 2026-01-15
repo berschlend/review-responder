@@ -89,7 +89,7 @@ Implementiere ein vollständiges Team-Management-System:
 
 ### Prompt für Claude Code Session:
 
-```
+````
 # Task: SEO Blog Artikel Generator implementieren
 
 ## Kontext
@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS blog_articles (
   word_count INTEGER,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-```
+````
 
 ### Frontend (App.js) - Neue UI:
 
@@ -155,6 +155,7 @@ CREATE TABLE IF NOT EXISTS blog_articles (
    - Delete Button
 
 ### GPT Prompt für Artikel-Generierung:
+
 ```
 Du bist ein SEO-Experte und Content-Writer. Schreibe einen Blog-Artikel zum Thema:
 "{topic}"
@@ -178,6 +179,7 @@ Zusätzlich generiere:
 ```
 
 ### Tests nach Implementation:
+
 1. Pro-User kann Artikel generieren
 2. Artikel wird in History gespeichert
 3. Copy-to-Clipboard funktioniert
@@ -185,10 +187,12 @@ Zusätzlich generiere:
 5. Free/Starter User sehen Upgrade-Prompt
 
 ## Wichtig
+
 - Keine neuen npm packages nötig (Markdown kann mit CSS gestylt werden)
 - Artikel zählen NICHT gegen Response-Limit (separates Feature)
 - Teste lokal vor dem Commit
 - Update MEMORY.md nach Fertigstellung
+
 ```
 
 ---
@@ -198,20 +202,25 @@ Zusätzlich generiere:
 ### Prompt für Claude Code Session:
 
 ```
+
 # Task: API Key Management UI implementieren
 
 ## Kontext
+
 Du arbeitest am ReviewResponder Projekt - einer SaaS-App für KI-generierte Review-Antworten.
 Lies zuerst MEMORY.md für den vollständigen Kontext.
 
 ## Vorarbeit (bereits vorhanden)
+
 Das Backend hat bereits:
+
 - `api_keys` Tabelle mit: key_hash, key_prefix, name, requests_today, requests_total, is_active
 - `authenticateApiKey` Middleware die X-API-Key Header prüft
 - Rate Limit: 100 requests/Tag
 - Nur für Unlimited-Plan verfügbar
 
 ## Deine Aufgabe
+
 Implementiere die fehlenden API-Endpoints und das Frontend für API Key Management.
 
 ### Backend (server.js) - Neue Endpoints:
@@ -263,6 +272,7 @@ Implementiere die fehlenden API-Endpoints und das Frontend für API Key Manageme
 ### Code Examples für Dokumentation:
 
 **cURL:**
+
 ```bash
 curl -X POST https://review-responder.onrender.com/api/v1/generate \
   -H "X-API-Key: rr_live_your_key_here" \
@@ -271,23 +281,25 @@ curl -X POST https://review-responder.onrender.com/api/v1/generate \
 ```
 
 **JavaScript:**
+
 ```javascript
 const response = await fetch('https://review-responder.onrender.com/api/v1/generate', {
   method: 'POST',
   headers: {
     'X-API-Key': 'rr_live_your_key_here',
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
   },
   body: JSON.stringify({
     reviewText: 'Great service!',
-    tone: 'professional'
-  })
+    tone: 'professional',
+  }),
 });
 const data = await response.json();
 console.log(data.response);
 ```
 
 **Python:**
+
 ```python
 import requests
 
@@ -300,6 +312,7 @@ print(response.json()['response'])
 ```
 
 ### Tests nach Implementation:
+
 1. Unlimited-User kann API Key erstellen
 2. Key wird nur einmal angezeigt
 3. API Request mit Key funktioniert
@@ -308,11 +321,13 @@ print(response.json()['response'])
 6. Non-Unlimited User sieht Upgrade-Prompt
 
 ## Wichtig
+
 - Nutze crypto.randomBytes für Key-Generierung
 - Speichere nur SHA-256 Hash in DB (Sicherheit!)
-- Key Format: rr_live_ + 64 hex chars
+- Key Format: rr*live* + 64 hex chars
 - Teste lokal vor dem Commit
 - Update MEMORY.md nach Fertigstellung
+
 ```
 
 ---
@@ -338,3 +353,4 @@ Jede Session sollte:
    - Task als ✅ markieren
    - Neue Endpoints dokumentieren
    - Eventuelle Bugs notieren
+```

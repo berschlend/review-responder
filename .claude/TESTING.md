@@ -7,6 +7,7 @@
 ## QUICK TEST CHECKLIST
 
 ### Vor jedem Push:
+
 - [ ] Hast du die Changes manuell getestet?
 - [ ] Chrome Extension geladen? (falls UI changes)
 - [ ] Keine Console Errors?
@@ -17,6 +18,7 @@
 ## CHROME EXTENSION TESTING
 
 ### Setup:
+
 1. Chrome öffnen → `chrome://extensions/`
 2. "Developer mode" aktivieren (oben rechts)
 3. "Load unpacked" klicken
@@ -24,6 +26,7 @@
 5. Extension erscheint in Chrome
 
 ### Nach jedem Extension-Change:
+
 1. Gehe zu `chrome://extensions/`
 2. Klicke "Reload" Button bei ReviewResponder Extension
 3. Teste die geänderte Funktionalität
@@ -31,6 +34,7 @@
 ### Test-Szenarien (Chrome Extension):
 
 #### 1. Google Maps Integration
+
 - [ ] Google Maps Review-Seite öffnen (z.B. Restaurant)
 - [ ] ReviewResponder Icon erscheint
 - [ ] Review kopieren
@@ -40,6 +44,7 @@
 - [ ] Response ist relevant
 
 #### 2. Templates
+
 - [ ] Template auswählen
 - [ ] Template wird korrekt angewendet
 - [ ] Custom Template erstellen
@@ -47,12 +52,14 @@
 - [ ] Custom Template laden
 
 #### 3. Tone & Quality
+
 - [ ] Alle 4 Tones testen (Professional, Friendly, Formal, Casual)
 - [ ] Quality Score erscheint
 - [ ] "Generate Variations" funktioniert
 - [ ] 3 Varianten werden angezeigt
 
 #### 4. Auto-Save Drafts
+
 - [ ] Response halb schreiben
 - [ ] Tab schließen
 - [ ] Extension neu öffnen
@@ -63,10 +70,12 @@
 ## FRONTEND TESTING (Web App)
 
 ### Test URLs:
+
 - **Local:** http://localhost:3000 (falls lokal laufen)
 - **Production:** https://tryreviewresponder.com
 
 ### Test-Account:
+
 ```
 Email: berend.mainz@web.de
 Plan: Unlimited (kann über Admin Panel wechseln)
@@ -75,12 +84,14 @@ Plan: Unlimited (kann über Admin Panel wechseln)
 ### Test-Szenarien (Frontend):
 
 #### 1. Dashboard
+
 - [ ] Stats werden angezeigt
 - [ ] Response Count korrekt
 - [ ] Plan Badge sichtbar
 - [ ] Mobile responsive
 
 #### 2. Response Generation
+
 - [ ] Single Response generieren
 - [ ] Bulk Responses (5+ Reviews)
 - [ ] Variations generieren
@@ -88,24 +99,28 @@ Plan: Unlimited (kann über Admin Panel wechseln)
 - [ ] Sprache wechseln (Deutsch, Englisch, etc.)
 
 #### 3. History Tab
+
 - [ ] History lädt
 - [ ] Responses werden angezeigt
 - [ ] Export funktioniert (CSV/PDF)
 - [ ] Search/Filter funktioniert
 
 #### 4. Templates
+
 - [ ] Template erstellen
 - [ ] Template bearbeiten
 - [ ] Template löschen
 - [ ] Template in Generation nutzen
 
 #### 5. Settings/Profile
+
 - [ ] Email ändern
 - [ ] Password ändern
 - [ ] Account löschen (VORSICHT!)
 - [ ] Plan upgraden/downgraden
 
 #### 6. Teams (Pro/Unlimited)
+
 - [ ] Team Member einladen
 - [ ] Invite Link funktioniert
 - [ ] Member kann joinen
@@ -118,6 +133,7 @@ Plan: Unlimited (kann über Admin Panel wechseln)
 ### Mit curl oder Postman:
 
 #### 1. Auth Endpoints
+
 ```bash
 # Register
 curl -X POST https://review-responder.onrender.com/api/auth/register \
@@ -131,6 +147,7 @@ curl -X POST https://review-responder.onrender.com/api/auth/login \
 ```
 
 #### 2. Generate Endpoint
+
 ```bash
 # Single Response
 curl -X POST https://review-responder.onrender.com/api/generate \
@@ -144,6 +161,7 @@ curl -X POST https://review-responder.onrender.com/api/generate \
 ## REGRESSION TESTING
 
 ### Nach größeren Changes immer testen:
+
 - [ ] Login/Register flow
 - [ ] Google OAuth
 - [ ] Response Generation (alle Tones)
@@ -156,11 +174,13 @@ curl -X POST https://review-responder.onrender.com/api/generate \
 ## MOBILE TESTING
 
 ### Responsive Breakpoints:
+
 - [ ] Mobile (< 768px)
 - [ ] Tablet (768px - 1024px)
 - [ ] Desktop (> 1024px)
 
 ### Chrome DevTools:
+
 1. F12 öffnen
 2. Device Toolbar (Ctrl+Shift+M)
 3. Verschiedene Devices testen (iPhone, iPad, etc.)
@@ -170,11 +190,13 @@ curl -X POST https://review-responder.onrender.com/api/generate \
 ## ERROR HANDLING
 
 ### Console Check:
+
 - [ ] Keine Errors in Browser Console (F12)
 - [ ] Keine Warnings (ok wenn minor)
 - [ ] Network Tab: Alle Requests erfolgreich (200/201)
 
 ### Backend Logs:
+
 ```bash
 # Render.com Dashboard → ReviewResponder Backend → Logs
 # Suche nach Errors, Stack Traces
@@ -185,11 +207,13 @@ curl -X POST https://review-responder.onrender.com/api/generate \
 ## PERFORMANCE CHECK
 
 ### Lighthouse Score (Chrome DevTools):
+
 1. F12 → Lighthouse Tab
 2. "Analyze page load"
 3. Ziel: Performance > 80, Best Practices > 90
 
 ### Response Times:
+
 - API Calls < 2 Sekunden
 - Page Load < 3 Sekunden
 - No blocking resources
@@ -199,12 +223,14 @@ curl -X POST https://review-responder.onrender.com/api/generate \
 ## AUTOMATION (Future)
 
 ### Unit Tests (TODO):
+
 ```bash
 cd frontend && npm test
 cd backend && npm test
 ```
 
 ### E2E Tests (TODO):
+
 - Playwright/Cypress Setup
 - Critical User Flows automatisiert
 

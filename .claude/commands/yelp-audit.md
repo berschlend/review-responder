@@ -3,6 +3,7 @@
 Scrape Yelp fuer Businesses mit niedrigen Review-Antwortraten.
 
 ## Parameter
+
 - $CITY: Stadt zum Scrapen (z.B. "Berlin", "Munich", "Hamburg")
 - $CATEGORY: Kategorie (z.B. "restaurants", "hotels", "dentists")
 
@@ -24,7 +25,7 @@ Scrape Yelp fuer Businesses mit niedrigen Review-Antwortraten.
    Fuer jeden Business mit >20 Reviews:
    - Oeffne die Business-Seite
    - Zaehle "Business Owner" Antworten in den Reviews
-   - Berechne Response Rate: (Owner Responses / Total Reviews) * 100
+   - Berechne Response Rate: (Owner Responses / Total Reviews) \* 100
 
 4. **Leads filtern**
    Behalte nur Businesses mit:
@@ -41,6 +42,7 @@ Scrape Yelp fuer Businesses mit niedrigen Review-Antwortraten.
    POST zu: `https://review-responder.onrender.com/api/sales/yelp-leads`
    Header: `x-api-key: [ADMIN_SECRET aus .claude/secrets.local]`
    Body:
+
    ```json
    {
      "leads": [
@@ -67,11 +69,13 @@ Scrape Yelp fuer Businesses mit niedrigen Review-Antwortraten.
    - Anzahl an Backend gesendet
 
 ## Beispiel-Aufruf
+
 ```
 /yelp-audit Berlin restaurants
 ```
 
 ## Wichtig
+
 - Max 50 Businesses pro Durchlauf (Yelp Rate Limits)
 - 2-3 Sekunden Pause zwischen Requests
 - Keine Captchas loesen - bei Captcha abbrechen und User informieren
