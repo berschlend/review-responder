@@ -493,6 +493,31 @@ const InstantDemoWidget = ({
     return localStorage.getItem('instant_demo_email') === 'true';
   });
 
+  // Lead context injection - fetch when lid param present
+  const [leadContext, setLeadContext] = useState(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const leadId = params.get('lid');
+    if (leadId) {
+      // Fetch lead context for personalization
+      axios
+        .get(`${API_URL}/public/lead-context/${leadId}`)
+        .then((res) => {
+          if (res.data?.found) {
+            setLeadContext(res.data);
+            // Pre-fill sample review if available
+            if (res.data.sampleReview?.text && !reviewText) {
+              setReviewText(res.data.sampleReview.text);
+            }
+          }
+        })
+        .catch(() => {
+          // Silently ignore - just use default behavior
+        });
+    }
+  }, [location.search]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Auto-detect context from URL path if not provided via props
   const detectedContext = useMemo(() => {
     const path = location.pathname.toLowerCase();
@@ -639,9 +664,15 @@ const InstantDemoWidget = ({
     homeservices: 'Home Service',
   };
 
-  const currentPlaceholder = placeholderMap[detectedContext.businessType] || 'Paste a customer review here to see AI magic...';
-  const currentHeadline = headlineMap[detectedContext.businessType] || 'Get PR-Quality Responses';
-  const currentLabel = businessLabelMap[detectedContext.businessType];
+  // Use lead context for personalization when available
+  const effectiveIndustry = leadContext?.industryType || detectedContext.businessType;
+  const currentPlaceholder = leadContext?.sampleReview?.text
+    ? `Your review: "${leadContext.sampleReview.text.substring(0, 100)}..."`
+    : placeholderMap[effectiveIndustry] || 'Paste a customer review here to see AI magic...';
+  const currentHeadline = leadContext?.businessName
+    ? `See How ${leadContext.businessName} Would Respond`
+    : headlineMap[effectiveIndustry] || 'Get PR-Quality Responses';
+  const currentLabel = leadContext?.businessType || businessLabelMap[effectiveIndustry];
 
   const handleGenerate = async () => {
     if (!reviewText.trim() || reviewText.trim().length < 10) {
@@ -666,8 +697,11 @@ const InstantDemoWidget = ({
           tone,
           context: {
             platform: detectedContext.platform || undefined,
-            businessType: detectedContext.businessType || undefined,
-            industryType: detectedContext.businessType || undefined, // For Claude Sonnet 4 personas
+            businessType: leadContext?.businessType || detectedContext.businessType || undefined,
+            industryType: leadContext?.industryType || detectedContext.businessType || undefined,
+            // Lead-specific context for personalization
+            businessName: leadContext?.businessName || undefined,
+            city: leadContext?.city || undefined,
           },
         },
         { headers }

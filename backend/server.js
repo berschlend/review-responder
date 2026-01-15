@@ -7533,6 +7533,101 @@ app.post('/api/public/demo/:token/convert', async (req, res) => {
   }
 });
 
+// GET /api/public/lead-context/:id - Get lead business context for personalized InstantDemo
+// Used when lead arrives from email with ?lid=ID parameter
+app.get('/api/public/lead-context/:id', async (req, res) => {
+  try {
+    const leadId = parseInt(req.params.id);
+    if (isNaN(leadId)) {
+      return res.status(400).json({ error: 'Invalid lead ID' });
+    }
+
+    // Get lead info (minimal data for personalization, no PII)
+    const lead = await dbGet(
+      `SELECT business_name, business_type, city, google_rating, google_reviews_count
+       FROM outreach_leads WHERE id = $1`,
+      [leadId]
+    );
+
+    if (!lead) {
+      return res.json({ found: false });
+    }
+
+    // Map business_type to industry category for InstantDemo personas
+    const industryMap = {
+      restaurant: 'restaurant',
+      cafe: 'restaurant',
+      bar: 'restaurant',
+      hotel: 'hotel',
+      motel: 'hotel',
+      dental: 'dental',
+      dentist: 'dental',
+      medical: 'medical',
+      clinic: 'medical',
+      salon: 'salon',
+      spa: 'salon',
+      barber: 'salon',
+      automotive: 'automotive',
+      'auto shop': 'automotive',
+      mechanic: 'automotive',
+      gym: 'fitness',
+      fitness: 'fitness',
+      legal: 'legal',
+      'law firm': 'legal',
+      attorney: 'legal',
+      retail: 'ecommerce',
+      store: 'ecommerce',
+    };
+
+    const businessTypeLower = (lead.business_type || '').toLowerCase();
+    let industryType = 'generic';
+    for (const [key, value] of Object.entries(industryMap)) {
+      if (businessTypeLower.includes(key)) {
+        industryType = value;
+        break;
+      }
+    }
+
+    // Check if we have a demo with sample reviews for this lead
+    const demo = await dbGet(
+      `SELECT generated_responses FROM demo_generations
+       WHERE business_name = $1 AND city = $2
+       ORDER BY created_at DESC LIMIT 1`,
+      [lead.business_name, lead.city]
+    );
+
+    // Extract one sample review if available
+    let sampleReview = null;
+    if (demo?.generated_responses) {
+      try {
+        const responses = JSON.parse(demo.generated_responses);
+        if (responses.length > 0 && responses[0].review) {
+          sampleReview = {
+            text: responses[0].review.text || responses[0].review,
+            rating: responses[0].review.rating || responses[0].rating,
+          };
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    }
+
+    res.json({
+      found: true,
+      businessName: lead.business_name,
+      businessType: lead.business_type,
+      industryType,
+      city: lead.city,
+      rating: lead.google_rating ? parseFloat(lead.google_rating) : null,
+      reviewCount: lead.google_reviews_count,
+      sampleReview,
+    });
+  } catch (error) {
+    console.error('Lead context error:', error);
+    res.status(500).json({ error: 'Failed to load context' });
+  }
+});
+
 // ==========================================
 // TRY BEFORE SIGNUP - Public Demo Generator
 // ==========================================
@@ -7663,7 +7758,7 @@ const tryRateLimiter = rateLimit({
 app.post('/api/public/try', tryRateLimiter, async (req, res) => {
   try {
     const { reviewText, tone = 'professional', context = {} } = req.body;
-    const { businessType, platform } = context;
+    const { businessType, platform, businessName, city } = context;
 
     // Check for optional JWT token - if user is logged in, use their plan limits
     let authenticatedUser = null;
@@ -7837,6 +7932,7 @@ ${persona.persona}
 
 <business_context>
 ${persona.context}
+${businessName ? `\nYour business: "${businessName}"${city ? ` in ${city}` : ''}. Sign responses with "- ${businessName}" unless the review is negative.` : ''}
 ${platHint ? '\n' + platHint : ''}
 </business_context>
 
@@ -12008,22 +12104,22 @@ app.get('/api/admin/user-list', authenticateAdmin, async (req, res) => {
       SELECT
         id,
         email,
-        name,
-        plan,
-        response_count,
+        business_name,
+        subscription_plan as plan,
+        responses_used as response_count,
         created_at,
         CASE
-          WHEN response_count = 0 THEN 'never_used'
-          WHEN response_count < 5 THEN 'low_usage'
-          WHEN response_count < 15 THEN 'medium_usage'
-          WHEN response_count >= 15 THEN 'high_usage'
+          WHEN responses_used = 0 THEN 'never_used'
+          WHEN responses_used < 5 THEN 'low_usage'
+          WHEN responses_used < 15 THEN 'medium_usage'
+          WHEN responses_used >= 15 THEN 'high_usage'
         END as usage_tier,
-        EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400 as days_since_signup
+        ROUND(EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400) as days_since_signup
       FROM users
       WHERE email NOT LIKE '%test%'
         AND email NOT LIKE '%example%'
         AND email != 'berend.mainz@web.de'
-      ORDER BY response_count DESC, created_at DESC
+      ORDER BY responses_used DESC, created_at DESC
       LIMIT 100
     `) || [];
 
