@@ -1,103 +1,89 @@
+---
+description: Session wrap-up - Git, CLAUDE.md, Learnings, Handoff fuer parallele Claudes
+allowed-tools: Bash(git:*), Read, Edit
+---
+
 # Wrap-Up Command
 
-Du fuehrst den `/wrap-up` Command aus - schneller Session-Status Check + Learnings Persisting.
+Session: $CLAUDE_SESSION
 
-## Ausfuehren:
+## Auto-Checks (werden automatisch ausgefuehrt):
 
-### 1. Git Status checken
+**Git Status:**
+!`git status --short`
 
-```bash
-git status --short
+**Letzte 5 Commits:**
+!`git log --oneline -5`
+
+**TODO.md in_progress Tasks:**
+!`grep -c "in_progress" TODO.md 2>/dev/null || echo "0"`
+
+**CLAUDE.md Stand-Datum:**
+!`grep "Stand:" CLAUDE.md | head -1`
+
+## Deine Aufgaben:
+
+### 1. CLAUDE.md Datum pruefen
+- Vergleiche "Stand:" mit heute
+- Wenn veraltet: Datum updaten
+
+### 2. Learnings reflektieren
+Frag dich:
+- Was habe ich gelernt das nicht schon in CLAUDE.md steht?
+- Gab es API Limits, Bugs, Workarounds?
+- Wuerde das einem neuen Claude helfen?
+
+**Kategorien:** API Limits | Workarounds | Code Patterns | Chrome MCP | Sales/Outreach | Debugging
+
+### 3. Learnings persistieren (wenn relevant)
+Nutze Edit Tool um neue Learnings in CLAUDE.md einzufuegen:
+```
+### [Kategorie] (Datum)
+- **Problem:** Was war das Issue?
+- **Loesung:** Was funktioniert?
 ```
 
-### 2. Letzte 3 Commits zeigen
-
-```bash
-git log --oneline -3
-```
-
-### 3. CLAUDE.md Datum pruefen
-
-- Lies die "Stand:" Zeile in CURRENT TASKS
-- Vergleiche mit heute
-
-### 4. LEARNINGS REFLEKTIEREN (NEU!)
-
-Frag dich selbst:
-- Habe ich etwas gelernt, das fuer zukuenftige Claude Sessions wichtig ist?
-- Gab es Fehler, die ich oder der User gemacht haben?
-- Gibt es neue Patterns, Workarounds oder Erkenntnisse?
-- Gibt es API-Limits, Bugs oder Gotchas die dokumentiert werden sollten?
-
-**Kriterien fuer ein Learning:**
-- Es ist NICHT offensichtlich (steht nicht schon in CLAUDE.md)
-- Es wuerde einem neuen Claude helfen, Fehler zu vermeiden
-- Es ist spezifisch fuer dieses Projekt (nicht generisches Wissen)
-
-### 5. LEARNINGS AUTOMATISCH PERSISTEN
-
-Wenn du wichtige Learnings identifiziert hast:
-
-1. Lies die aktuelle LEARNINGS Sektion in CLAUDE.md
-2. Fuege neue Learnings hinzu im Format:
-   ```
-   ### [Kategorie] (Datum)
-   - **Problem:** Was war das Issue?
-   - **Loesung:** Was funktioniert?
-   - **Beispiel:** Konkreter Code/Befehl wenn hilfreich
-   ```
-3. Nutze das Edit Tool um CLAUDE.md direkt zu updaten
-4. Zeige dem User was du hinzugefuegt hast
-
-**Kategorien fuer Learnings:**
-- API Limits
-- Workarounds
-- Code Patterns
-- Debugging
-- Performance
-- Deployment
-- Chrome MCP
-- Sales/Outreach
+### 4. Handoff generieren
+Was muss der naechste Claude wissen?
 
 ## Output Format:
 
 ```
-=== SESSION STATUS ===
+=== SESSION WRAP-UP [$CLAUDE_SESSION] ===
 
-GIT: [Status]
-- Clean: Nichts zu committen
-- X Dateien: Liste was uncommitted ist
+GIT: [Clean/X uncommitted]
+COMMITS: [Relevante heute]
+TODO: [X Tasks in_progress]
+CLAUDE.MD: [Datum] - [Aktuell/Veraltet]
+LEARNINGS: [Persistiert/Keine neuen]
 
-LETZTE COMMITS:
-[Die letzten 3 Commits]
+HANDOFF:
+- Aktiv: [Was laeuft noch / muss fortgesetzt werden]
+- Blocked: [Worauf wird gewartet]
+- API: [Limit-Status wenn relevant]
+- Naechste Schritte: [Konkrete Tasks fuer naechste Session]
 
-CLAUDE.MD: [Datum] - [Aktuell/Update empfohlen]
-
-LEARNINGS PERSISTIERT: [Ja/Nein]
-[Falls ja: Kurze Zusammenfassung was hinzugefuegt wurde]
-
----
 FAZIT: [Empfehlung]
+===
 ```
 
-## Fazit-Logik:
+## Entscheidungslogik:
 
-**Schliessen OK** wenn:
-
+**Session OK** wenn:
 - Git clean (keine uncommitted changes)
+- TODO.md keine in_progress Tasks
 - CLAUDE.md heute geupdated
-- Learnings persistiert (oder keine neuen)
+- Learnings persistiert (oder keine relevanten)
 
 **Noch zu tun** wenn:
-
-- Uncommitted changes -> "Commit mit /quick-commit"
-- CLAUDE.md veraltet -> "Update mit /update-claude-md"
-- Wichtige Learnings nicht persistiert -> Jetzt hinzufuegen!
+- Uncommitted changes -> `/commit-push-pr`
+- TODO Tasks offen -> Abschliessen oder als pending dokumentieren
+- CLAUDE.md veraltet -> Datum + NACHT-LOG updaten
+- Wichtige Learnings -> Jetzt in CLAUDE.md schreiben
 
 ## Wichtig:
 
 - Kurz und knapp antworten
-- Nur relevante Infos zeigen
-- Klare Handlungsempfehlung geben
-- Learnings IMMER persistent machen wenn relevant!
-- Keine trivialen Learnings (nur was wirklich hilft)
+- Handoff ist KRITISCH bei 10+ parallelen Claudes
+- Keine trivialen Learnings (nur echte Erkenntnisse)
+- IMMER konkrete naechste Schritte nennen
