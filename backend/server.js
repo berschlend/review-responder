@@ -19,6 +19,7 @@ const SibApiV3Sdk = require('@getbrevo/brevo');
 const sgMail = require('@sendgrid/mail');
 const Mailgun = require('mailgun.js');
 const FormData = require('form-data');
+const { MailerSend, EmailParams, Sender, Recipient } = require('mailersend');
 const cron = require('node-cron');
 const {
   getFewShotExamples,
@@ -101,14 +102,22 @@ if (process.env.MAILGUN_API_KEY && process.env.MAILGUN_DOMAIN) {
   console.log('[Mailgun] Initialized');
 }
 
+// MailerSend (3000/month free = 100/day)
+let mailerSendClient = null;
+if (process.env.MAILERSEND_API_KEY) {
+  mailerSendClient = new MailerSend({ apiKey: process.env.MAILERSEND_API_KEY });
+  console.log('[MailerSend] Initialized');
+}
+
 // ==========================================
 // MULTI-PROVIDER EMAIL SYSTEM
 // ==========================================
 // Round-robin through providers to maximize daily email volume
-// Limits: Brevo 300/day, SendGrid 100/day, Mailgun 166/day (5000/30), Resend 100/day
+// Limits: Brevo 300/day, MailerSend 100/day, SendGrid 100/day, Mailgun 166/day, Resend 100/day
 
 const EMAIL_PROVIDER_LIMITS = {
   brevo: 300,
+  mailersend: 100, // 3000/month ÷ 30 days
   sendgrid: 100,
   mailgun: 166, // 5000/month ÷ 30 days
   resend: 100,
@@ -131,7 +140,7 @@ async function getProviderCountsToday() {
       GROUP BY provider
     `);
 
-    const counts = { brevo: 0, sendgrid: 0, mailgun: 0, resend: 0 };
+    const counts = { brevo: 0, mailersend: 0, sendgrid: 0, mailgun: 0, resend: 0 };
     result.rows.forEach(row => {
       if (counts.hasOwnProperty(row.provider)) {
         counts[row.provider] = parseInt(row.count);
@@ -142,7 +151,7 @@ async function getProviderCountsToday() {
     return counts;
   } catch (err) {
     console.error('[Email] Failed to get provider counts:', err.message);
-    return { brevo: 0, sendgrid: 0, mailgun: 0, resend: 0 };
+    return { brevo: 0, mailersend: 0, sendgrid: 0, mailgun: 0, resend: 0 };
   }
 }
 
@@ -150,9 +159,10 @@ async function getProviderCountsToday() {
 async function selectEmailProvider() {
   const counts = await getProviderCountsToday();
 
-  // Priority order: Brevo (highest limit) → Mailgun → SendGrid → Resend
+  // Priority order: Brevo (highest limit) → MailerSend → Mailgun → SendGrid → Resend
   const providers = [
     { name: 'brevo', available: brevoApi !== null },
+    { name: 'mailersend', available: mailerSendClient !== null },
     { name: 'mailgun', available: mailgunClient !== null },
     { name: 'sendgrid', available: process.env.SENDGRID_API_KEY !== undefined },
     { name: 'resend', available: resend !== null },
@@ -446,6 +456,24 @@ async function sendEmail({
         messageId = result[0]?.headers?.['x-message-id'] || `sg_${Date.now()}`;
         console.log(`[SendGrid] ${type} email sent to ${to} (campaign: ${campaign || 'none'})`);
       }
+      // ========== MAILERSEND ==========
+      else if (provider === 'mailersend' && mailerSendClient) {
+        const sentFrom = new Sender(fromEmail, fromName);
+        const recipients = [new Recipient(to)];
+
+        const emailParams = new EmailParams()
+          .setFrom(sentFrom)
+          .setTo(recipients)
+          .setSubject(subject);
+
+        if (finalHtml) emailParams.setHtml(finalHtml);
+        if (finalText) emailParams.setText(finalText);
+        if (replyTo) emailParams.setReplyTo({ email: replyTo });
+
+        const result = await mailerSendClient.email.send(emailParams);
+        messageId = result?.headers?.['x-message-id'] || `ms_${Date.now()}`;
+        console.log(`[MailerSend] ${type} email sent to ${to} (campaign: ${campaign || 'none'})`);
+      }
       // ========== MAILGUN ==========
       else if (provider === 'mailgun' && mailgunClient) {
         const result = await mailgunClient.messages.create(process.env.MAILGUN_DOMAIN, {
@@ -512,7 +540,7 @@ async function sendEmail({
       console.error(`[${provider}] Failed: ${providerError.message}`);
 
       // Try next available provider
-      const nextProviders = ['brevo', 'mailgun', 'sendgrid', 'resend'].filter(p => !triedProviders.has(p));
+      const nextProviders = ['brevo', 'mailersend', 'mailgun', 'sendgrid', 'resend'].filter(p => !triedProviders.has(p));
       if (nextProviders.length === 0) {
         error = providerError.message;
         break;
@@ -521,6 +549,7 @@ async function sendEmail({
       // Find next provider that's actually available
       for (const next of nextProviders) {
         if (next === 'brevo' && brevoApi) { provider = next; break; }
+        if (next === 'mailersend' && mailerSendClient) { provider = next; break; }
         if (next === 'sendgrid' && process.env.SENDGRID_API_KEY) { provider = next; break; }
         if (next === 'mailgun' && mailgunClient) { provider = next; break; }
         if (next === 'resend' && resend) { provider = next; break; }
@@ -12697,6 +12726,13 @@ app.get('/api/admin/email-providers', authenticateAdmin, async (req, res) => {
         remaining: EMAIL_PROVIDER_LIMITS.brevo - counts.brevo,
       },
       {
+        name: 'mailersend',
+        available: mailerSendClient !== null,
+        limit: EMAIL_PROVIDER_LIMITS.mailersend,
+        used: counts.mailersend,
+        remaining: EMAIL_PROVIDER_LIMITS.mailersend - counts.mailersend,
+      },
+      {
         name: 'sendgrid',
         available: process.env.SENDGRID_API_KEY !== undefined,
         limit: EMAIL_PROVIDER_LIMITS.sendgrid,
@@ -12733,6 +12769,7 @@ app.get('/api/admin/email-providers', authenticateAdmin, async (req, res) => {
         utilization_percent: totalLimit > 0 ? Math.round((totalUsed / totalLimit) * 100) : 0,
       },
       setup_instructions: {
+        mailersend: !process.env.MAILERSEND_API_KEY ? 'Add MAILERSEND_API_KEY to Render env vars' : '✓ Configured',
         sendgrid: !process.env.SENDGRID_API_KEY ? 'Add SENDGRID_API_KEY to Render env vars' : '✓ Configured',
         mailgun: !process.env.MAILGUN_API_KEY ? 'Add MAILGUN_API_KEY and MAILGUN_DOMAIN to Render env vars' : '✓ Configured',
       },
@@ -12752,6 +12789,7 @@ app.get('/api/admin/email-dashboard', authenticateAdmin, async (req, res) => {
       total_failed: 0,
       by_provider: {
         brevo: { sent: 0, today: 0, failed: 0 },
+        mailersend: { sent: 0, today: 0, failed: 0 },
         sendgrid: { sent: 0, today: 0, failed: 0 },
         mailgun: { sent: 0, today: 0, failed: 0 },
         resend: { sent: 0, today: 0, failed: 0 },
@@ -12770,7 +12808,7 @@ app.get('/api/admin/email-dashboard', authenticateAdmin, async (req, res) => {
       `);
 
       for (const s of stats) {
-        if (['brevo', 'sendgrid', 'mailgun', 'resend'].includes(s.provider)) {
+        if (['brevo', 'mailersend', 'sendgrid', 'mailgun', 'resend'].includes(s.provider)) {
           summary.by_provider[s.provider] = {
             sent: parseInt(s.sent) || 0,
             today: parseInt(s.today) || 0,
