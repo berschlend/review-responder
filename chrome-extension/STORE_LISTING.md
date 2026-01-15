@@ -6,7 +6,7 @@
 ---
 
 ## Short Description (132 chars max)
-Google review response generator with AI. Personalized replies for Google Maps, Yelp, TripAdvisor & more. Add business context.
+AI review response generator. Create personalized, professional replies to customer reviews in seconds. Add your business context.
 
 ---
 
@@ -14,13 +14,7 @@ Google review response generator with AI. Personalized replies for Google Maps, 
 
 **The #1 Google review response generator. Reply to reviews in seconds, not hours.**
 
-This AI-powered review response generator helps businesses reply to reviews professionally and quickly on:
-• Google Maps
-• Yelp
-• TripAdvisor
-• Booking.com
-• Facebook
-• Trustpilot
+This AI-powered review response generator helps businesses reply to reviews professionally and quickly across all major review platforms.
 
 Just click the "Respond" button next to any review, or select the review text - a floating button appears!
 
@@ -35,7 +29,7 @@ Just click the "Respond" button next to any review, or select the review text - 
 
 **HOW IT WORKS:**
 
-1. Browse reviews on Google Maps, Yelp, TripAdvisor or any supported platform
+1. Browse reviews on any major review platform
 2. Click "Respond" button OR select any review text
 3. Choose your tone and generate
 4. Copy and paste your personalized response
@@ -61,13 +55,7 @@ Start responding to reviews in seconds, not hours. Try ReviewResponder free toda
 
 **Der #1 Google Review Response Generator. Antworte auf Bewertungen in Sekunden, nicht Stunden.**
 
-Dieser KI-gestützte Review Response Generator hilft Unternehmen, professionell und schnell auf Bewertungen zu antworten auf:
-• Google Maps
-• Yelp
-• TripAdvisor
-• Booking.com
-• Facebook
-• Trustpilot
+Dieser KI-gestützte Review Response Generator hilft Unternehmen, professionell und schnell auf Bewertungen zu antworten - auf allen wichtigen Bewertungsplattformen.
 
 Klicke einfach auf "Respond" neben einer Bewertung, oder markiere den Bewertungstext - ein Button erscheint!
 
@@ -82,7 +70,7 @@ Klicke einfach auf "Respond" neben einer Bewertung, oder markiere den Bewertungs
 
 **SO FUNKTIONIERT'S:**
 
-1. Bewertungen auf Google Maps, Yelp, TripAdvisor oder einer anderen Plattform durchsuchen
+1. Bewertungen auf einer beliebigen Bewertungsplattform durchsuchen
 2. "Respond" Button klicken ODER Bewertungstext markieren
 3. Ton wählen und generieren
 4. Personalisierte Antwort kopieren und einfügen

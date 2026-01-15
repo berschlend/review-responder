@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Google Review Response Generator - AI",
-  "version": "1.6.1",
-  "description": "Google review response generator with AI. Personalized replies for Google Maps, Yelp, TripAdvisor & more. Add business context.",
+  "version": "1.6.2",
+  "description": "AI review response generator. Create personalized, professional replies to customer reviews in seconds. Add your business context.",
   "permissions": [
     "activeTab",
     "storage",
