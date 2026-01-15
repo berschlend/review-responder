@@ -1,6 +1,8 @@
-# Night-Burst V3.1 Orchestrator
+# Night-Burst V4.0 Orchestrator (V7 Agent-Level Restart)
 # One command to start all 15 agents with full autonomy
-# Now with automatic account rotation and plan mode support
+# Now with automatic account rotation, plan mode, AND agent-level restart loop
+#
+# V7 NEW: Agents that stop are automatically restarted within 60 seconds!
 #
 # Usage: .\scripts\night-burst-orchestrator.ps1
 #        .\scripts\night-burst-orchestrator.ps1 -PlanMode  # Start in plan mode (wait for approval)
@@ -11,8 +13,13 @@ param(
     [switch]$Stop,
     [switch]$Status,
     [switch]$PlanMode,
-    [int]$MaxAgents = 15
+    [int]$MaxAgents = 15,
+    [int]$MonitorIntervalSeconds = 60,
+    [int]$MaxRestartsPerHour = 3
 )
+
+# V7: Global restart tracking for cooldown
+$Script:RestartHistory = @{}
 
 $ErrorActionPreference = "Continue"
 $ProjectRoot = Split-Path -Parent (Split-Path -Parent $PSCommandPath)
@@ -288,6 +295,137 @@ function Stop-AllAgents {
     Write-Host "[STOP] All agents stopped" -ForegroundColor Green
 }
 
+# V7: Check if agent can be restarted (cooldown logic)
+function Test-CanRestart {
+    param([int]$AgentNum)
+
+    $key = "burst-$AgentNum"
+    $now = Get-Date
+    $oneHourAgo = $now.AddHours(-1)
+
+    # Initialize if not exists
+    if (-not $Script:RestartHistory.ContainsKey($key)) {
+        $Script:RestartHistory[$key] = @()
+    }
+
+    # Clean old entries (older than 1 hour)
+    $Script:RestartHistory[$key] = $Script:RestartHistory[$key] | Where-Object { $_ -gt $oneHourAgo }
+
+    # Check if under limit
+    $restartCount = $Script:RestartHistory[$key].Count
+    if ($restartCount -ge $MaxRestartsPerHour) {
+        Write-Host "[COOLDOWN] Burst-$AgentNum has been restarted $restartCount times in the last hour. Skipping." -ForegroundColor Red
+        return $false
+    }
+
+    return $true
+}
+
+# V7: Record a restart
+function Add-RestartRecord {
+    param([int]$AgentNum)
+
+    $key = "burst-$AgentNum"
+    if (-not $Script:RestartHistory.ContainsKey($key)) {
+        $Script:RestartHistory[$key] = @()
+    }
+    $Script:RestartHistory[$key] += Get-Date
+}
+
+# V7: Restart a single agent
+function Restart-Agent {
+    param(
+        [int]$AgentNum,
+        [switch]$PlanMode = $false
+    )
+
+    # Check cooldown
+    if (-not (Test-CanRestart -AgentNum $AgentNum)) {
+        return $null
+    }
+
+    $config = $AgentConfig[$AgentNum]
+    Write-Host "[RESTART] Restarting Burst-$AgentNum ($($config.Name))..." -ForegroundColor Yellow
+
+    # Stop existing job if any
+    $existingJob = Get-Job -Name "BURST$AgentNum" -ErrorAction SilentlyContinue
+    if ($existingJob) {
+        Stop-Job -Job $existingJob -ErrorAction SilentlyContinue
+        Remove-Job -Job $existingJob -Force -ErrorAction SilentlyContinue
+    }
+
+    # Start new agent
+    $job = Start-Agent -AgentNum $AgentNum -PlanMode:$PlanMode
+
+    # Record restart
+    Add-RestartRecord -AgentNum $AgentNum
+
+    $restartCount = $Script:RestartHistory["burst-$AgentNum"].Count
+    Write-Host "[RESTART] Burst-$AgentNum restarted (restart $restartCount/$MaxRestartsPerHour this hour)" -ForegroundColor Green
+
+    return $job
+}
+
+# V7: Monitor loop - check all agents and restart dead ones
+function Start-AgentMonitorLoop {
+    param(
+        [switch]$PlanMode = $false
+    )
+
+    Write-Host "`n[MONITOR V7] Starting agent-level monitor loop (check every ${MonitorIntervalSeconds}s)..." -ForegroundColor Cyan
+    Write-Host "[MONITOR V7] Dead agents will be automatically restarted (max $MaxRestartsPerHour/hour per agent)" -ForegroundColor Gray
+
+    $registryFile = Join-Path $ProgressDir "agent-registry.json"
+    $loopCount = 0
+
+    while ($true) {
+        $loopCount++
+        $deadAgents = @()
+        $runningAgents = 0
+
+        # Check each agent
+        for ($i = 1; $i -le $MaxAgents; $i++) {
+            $jobName = "BURST$i"
+            $job = Get-Job -Name $jobName -ErrorAction SilentlyContinue
+
+            if ($job) {
+                if ($job.State -eq "Running") {
+                    $runningAgents++
+                } elseif ($job.State -eq "Completed" -or $job.State -eq "Failed" -or $job.State -eq "Stopped") {
+                    $deadAgents += $i
+                    # Clean up the dead job
+                    Remove-Job -Job $job -Force -ErrorAction SilentlyContinue
+                }
+            } else {
+                # Job doesn't exist at all
+                $deadAgents += $i
+            }
+        }
+
+        # Restart dead agents
+        foreach ($agentNum in $deadAgents) {
+            Restart-Agent -AgentNum $agentNum -PlanMode:$PlanMode
+            Start-Sleep -Milliseconds 500  # Stagger restarts
+        }
+
+        # Update registry
+        if (Test-Path $registryFile) {
+            $registry = Get-Content $registryFile | ConvertFrom-Json
+            $registry.running_agents = $runningAgents
+            $registry.stopped_agents = $MaxAgents - $runningAgents
+            $registry | ConvertTo-Json -Depth 10 | Set-Content -Path $registryFile -Encoding UTF8
+        }
+
+        # Log status every 5 loops (5 minutes if 60s interval)
+        if ($loopCount % 5 -eq 0) {
+            $timestamp = Get-Date -Format "HH:mm:ss"
+            Write-Host "[$timestamp] Running: $runningAgents/$MaxAgents | Dead: $($deadAgents.Count) | Restarted: $($deadAgents.Count)" -ForegroundColor $(if ($deadAgents.Count -gt 0) { "Yellow" } else { "Green" })
+        }
+
+        Start-Sleep -Seconds $MonitorIntervalSeconds
+    }
+}
+
 function Show-Status {
     $registryFile = Join-Path $ProgressDir "agent-registry.json"
 
@@ -346,13 +484,14 @@ if ($Status) {
 
 Write-Host @"
 
-    _   ___       __    __     ____             __     _   _______
-   / | / (_)___ _/ /_  / /_   / __ )__  _______/ /_   | | / /__  /
-  /  |/ / / __ '/ __ \/ __/  / __  / / / / ___/ __/   | |/ /  /_ <
- / /|  / / /_/ / / / / /_   / /_/ / /_/ / /  (__  )   | | / ___/ /
-/_/ |_/_/\__, /_/ /_/\__/  /_____/\__,_/_/  /____/    |_| //____/
+    _   ___       __    __     ____             __     _  __ ____
+   / | / (_)___ _/ /_  / /_   / __ )__  _______/ /_   | | / // __/
+  /  |/ / / __ '/ __ \/ __/  / __  / / / / ___/ __/   | |/ //_  \
+ / /|  / / /_/ / / / / /_   / /_/ / /_/ / /  (__  )   |   / __/ /
+/_/ |_/_/\__, /_/ /_/\__/  /_____/\__,_/_/  /____/    |__/____/
         /____/
 
+         V4.0 - Agent-Level Auto-Restart (V7 Feature)
               Autonomous Marketing Agent Orchestrator
                         by ReviewResponder
 
@@ -408,29 +547,31 @@ for ($i = 1; $i -le $MaxAgents; $i++) {
 }
 
 Write-Host "`n[ORCHESTRATOR] All $MaxAgents agents started!" -ForegroundColor Green
-Write-Host "[ORCHESTRATOR] Health check will run in background..." -ForegroundColor Gray
+Write-Host "[ORCHESTRATOR] V7 Agent-Level Monitor will restart dead agents automatically!" -ForegroundColor Magenta
 Write-Host ""
 Write-Host "Commands:" -ForegroundColor Cyan
 Write-Host "  .\scripts\night-burst-orchestrator.ps1 -Status  # Check agent status"
 Write-Host "  .\scripts\night-burst-orchestrator.ps1 -Stop    # Stop all agents"
 Write-Host ""
 
-# Phase 4: Health monitoring loop (runs indefinitely)
-Write-Host "[MONITOR] Starting health check loop (Ctrl+C to exit monitor)..." -ForegroundColor Yellow
+# Phase 5: V7 Agent-Level Monitor Loop (replaces old health check)
+Write-Host "[PHASE 5] Starting V7 Agent-Level Monitor..." -ForegroundColor Yellow
 
+# Also start external health check if exists (for additional monitoring)
 $healthCheckScript = Join-Path (Split-Path $PSCommandPath) "night-burst-health-check.ps1"
 if (Test-Path $healthCheckScript) {
-    # Run health check in background
     Start-Job -Name "HEALTH_MONITOR" -FilePath $healthCheckScript -ArgumentList $ProjectRoot
-    Write-Host "[MONITOR] Health check started as background job" -ForegroundColor Green
+    Write-Host "[MONITOR] External health check also started as background job" -ForegroundColor Gray
 }
 
-# Keep orchestrator running and show status periodically
+# V7: Main monitor loop - checks agents every 60s and restarts dead ones
 try {
-    while ($true) {
-        Start-Sleep -Seconds 300  # Every 5 minutes
-        Show-Status
+    if ($PlanMode) {
+        Start-AgentMonitorLoop -PlanMode
+    } else {
+        Start-AgentMonitorLoop
     }
 } catch {
-    Write-Host "`n[ORCHESTRATOR] Interrupted. Use -Stop to stop all agents." -ForegroundColor Yellow
+    Write-Host "`n[ORCHESTRATOR] Monitor interrupted. Use -Stop to stop all agents." -ForegroundColor Yellow
+    Write-Host "[ORCHESTRATOR] Error: $_" -ForegroundColor Red
 }
