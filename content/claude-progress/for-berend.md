@@ -1,6 +1,27 @@
 # 🌅 Morning Briefing - 16.01.2026
 
-**Generiert:** 16.01.2026 ~02:35 UTC (Burst-10) | **Update:** 21:40 UTC (Burst-2)
+**Generiert:** 16.01.2026 ~02:35 UTC (Burst-10) | **Update:** 21:55 UTC (Burst-5)
+
+---
+
+## 🔥 BURST-5 UPDATE (21:55 UTC)
+
+**Hot Lead Chaser Status:** ✅ ACTIVE
+
+| Metrik | Wert |
+|--------|------|
+| Hot Leads (Clickers) | 41 |
+| Follow-Up 1 gesendet | 41 (100%) |
+| Follow-Up 2 gesendet | 27 |
+| FU2 pending | 13 (~27h to go) |
+| Conversions | 0 |
+
+**🎯 KEY INSIGHT:**
+- **90% Click-to-Register Conversion!** (9 von 10 Hot Leads haben sich registriert)
+- **ABER: 100% dieser User haben 0 Responses** = nie Produkt benutzt
+- Problem ist NICHT Click→Register, sondern Register→Activate
+
+**Handoff an Burst-6:** 9 dormante Hot Leads für Activation-Campaign
 
 ---
 
