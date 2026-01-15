@@ -14500,7 +14500,7 @@ const DemoPage = () => {
         >
           {[
             { value: '6+', label: 'Review Platforms' },
-            { value: '50+', label: 'Languages' },
+            { value: 'Auto', label: 'Language Detection' },
             { value: '<5s', label: 'Generation Time' },
             { value: '100%', label: 'Free to Start' },
           ].map((stat, i) => (
@@ -14710,7 +14710,7 @@ const DemoPage = () => {
                   <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                 </svg>
               ),
-              title: '50+ Languages',
+              title: 'Auto-Detect Language',
               desc: 'Auto-detect and respond in the same language as the review',
             },
             {
@@ -15117,8 +15117,8 @@ const SupportPage = () => {
 
   const faqs = [
     {
-      q: 'How many languages are supported?',
-      a: 'Our AI supports over 50 languages including German, Spanish, French, Chinese, Japanese, Arabic, and many more. It automatically detects the review language and responds accordingly.',
+      q: 'What languages are supported?',
+      a: 'Our AI automatically detects the review language and responds in the same language. Works with any language - German, Spanish, French, Chinese, Japanese, Arabic, and more.',
     },
     {
       q: 'How does the free trial work?',
@@ -15629,7 +15629,7 @@ const GoogleReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -15855,7 +15855,7 @@ const YelpReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -16165,7 +16165,7 @@ const RestaurantReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -16483,7 +16483,7 @@ const HotelReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -16747,7 +16747,7 @@ const LocalBusinessReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -17088,7 +17088,7 @@ const NegativeReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -17365,7 +17365,7 @@ const TripAdvisorReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -17590,7 +17590,7 @@ const BookingReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -17815,7 +17815,7 @@ const FacebookReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -18086,7 +18086,7 @@ const DentistReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -18399,7 +18399,7 @@ const MedicalPracticeReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -18666,7 +18666,7 @@ const SalonSpaReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -18931,7 +18931,7 @@ const AutoShopReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -19197,7 +19197,7 @@ const TrustpilotReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -19420,7 +19420,7 @@ const AirbnbReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -19681,7 +19681,7 @@ const RealEstateReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -19904,7 +19904,7 @@ const GymReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -20165,7 +20165,7 @@ const VetReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -20428,7 +20428,7 @@ const LawFirmReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -20689,7 +20689,7 @@ const EcommerceReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -20950,7 +20950,7 @@ const CoffeeShopReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -21205,7 +21205,7 @@ const AmazonReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -21390,7 +21390,7 @@ const G2ReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -21575,7 +21575,7 @@ const CapterraReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -21760,7 +21760,7 @@ const GlassdoorReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -21945,7 +21945,7 @@ const BBBReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -22130,7 +22130,7 @@ const PlumberReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -22314,7 +22314,7 @@ const ElectricianReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -22499,7 +22499,7 @@ const HVACReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -22683,7 +22683,7 @@ const RoofingReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -22868,7 +22868,7 @@ const LandscapingReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -23053,7 +23053,7 @@ const CleaningReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -23240,7 +23240,7 @@ const HealthgradesReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Shield size={16} /> HIPAA-Aware
@@ -23425,7 +23425,7 @@ const ZocdocReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Shield size={16} /> HIPAA-Aware
@@ -23610,7 +23610,7 @@ const PhotographerReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -23795,7 +23795,7 @@ const WeddingReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -23979,7 +23979,7 @@ const PetServiceReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -24163,7 +24163,7 @@ const DaycareReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -24348,7 +24348,7 @@ const AccountantReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -24533,7 +24533,7 @@ const InsuranceReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -24717,7 +24717,7 @@ const SeniorCareReviewPage = () => {
               <Star size={16} /> 20 Free/Month
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Globe size={16} /> 50+ Languages
+              <Globe size={16} /> Auto-Detect Language
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Chrome size={16} /> One-Click Chrome
@@ -28211,7 +28211,7 @@ const PricingPage = () => {
     { name: 'AI Responses', free: '20', starter: '300', pro: '800', unlimited: 'Unlimited' },
     { name: 'Chrome Extension', free: true, starter: true, pro: true, unlimited: true },
     { name: 'AI Tone Options', free: true, starter: true, pro: true, unlimited: true },
-    { name: '50+ Languages', free: true, starter: true, pro: true, unlimited: true },
+    { name: 'Auto-Detect Language', free: true, starter: true, pro: true, unlimited: true },
     { name: 'Response History', free: false, starter: true, pro: true, unlimited: true },
     { name: 'CSV/PDF Export', free: false, starter: true, pro: true, unlimited: true },
     { name: 'Bulk Generation (20)', free: false, starter: false, pro: true, unlimited: true },
