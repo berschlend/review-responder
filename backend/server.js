@@ -14666,7 +14666,7 @@ app.get('/api/cron/exit-survey-followup', async (req, res) => {
     const pendingSurveys = await dbAll(`
       SELECT
         es.id, es.user_id, es.reason, es.context, es.created_at,
-        u.email, u.name
+        u.email, u.business_name
       FROM exit_surveys es
       JOIN users u ON es.user_id = u.id
       WHERE es.response_sent_at IS NULL
@@ -14759,7 +14759,8 @@ Berend`,
         const reason = survey.reason || 'other';
         const template = templates[reason] || templates.other;
         const subject = template.subject;
-        const body = template.body(survey.name, survey.context);
+        // Use business_name but it's usually not a person's name, so templates use generic greeting
+        const body = template.body(null, survey.context);
 
         await resend.emails.send({
           from: OUTREACH_FROM_EMAIL,
