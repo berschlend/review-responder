@@ -96,6 +96,115 @@ Bei Endpoints die mehrere Sessions triggern könnten:
 
 ---
 
+## AUTONOMIE-REGELN (Project Vend Learnings)
+
+> Basierend auf Anthropics "Project Vend" wo Claudius ein Business betrieb und scheiterte.
+> **Grundprinzip:** "Jede Aktion muss $1000 MRR dienen, nicht 'nett sein'."
+
+### Business-Ziel Hierarchie
+1. **Profitable Conversion** (LTV > CAC)
+2. **Engagement** (wenn es zu Conversion führt)
+3. **Reach** (nur wenn 1 & 2 erfüllt)
+
+### DISCOUNT DECISION TREE
+
+```
+Lead hat Produkt genutzt?
+├── JA (>5 Responses)
+│   └── Intent gezeigt? (geklickt, Demo viewed, Upgrade-Page)
+│       ├── JA → Discount OK (bis 30%)
+│       └── NEIN → Kein Discount (nurture first)
+│
+└── NEIN (0-5 Responses)
+    └── Intent gezeigt?
+        ├── JA (Hot Lead) → Kleiner Discount OK (bis 20%)
+        └── NEIN → KEIN DISCOUNT
+```
+
+### Discount nach User-Status
+
+| Status | Max Discount | Bedingung |
+|--------|-------------|-----------|
+| Cold Lead (erste Email) | 0% | Erst nach Click |
+| Hot Lead (clicked) | 20% | Nur in Follow-Up |
+| Demo Viewer (>3 min) | 30% | Mit 48h Urgency |
+| Free User (0 responses) | 0% | Erst Value zeigen |
+| Free User (5-15 responses) | 20% | "Letzte X free" Urgency |
+| Free User (15+ responses) | 30% | "Limit reached" Urgency |
+| Starter→Pro Upgrade | 20% | Wenn Pro-Features gewollt |
+| Pro→Unlimited | 15% | Wenn API-Access gewollt |
+| Churned (war aktiv) | 30% | Win-back Kampagne |
+| Churned (war inaktiv) | 0% | Würde nicht helfen |
+
+### Discount ANTI-Patterns (NIEMALS)
+- ❌ Discount in erster Cold Email
+- ❌ Discount an User ohne Product-Usage
+- ❌ Discount weil jemand "nett fragt"
+- ❌ Discount ohne Deadline/Urgency
+- ❌ Mehr als 30% (außer EARLY50)
+
+### CONSTRAINT-BASIERTE LIMITS
+
+Statt harter Zahlen: Resource-Constraints
+
+| Resource | Daily Budget | Wenn überschritten |
+|----------|-------------|-------------------|
+| API Costs | $10 | Stop neue Demos, nur Cache |
+| Emails (Resend) | 100 | Priorisiere Hot Leads |
+| New Stripe Coupons | 10 | Wiederverwende existierende |
+
+**Demo Generation:**
+- ✅ Unbegrenzt WENN: Cache-Hit-Rate >50%
+- ⚠️ Verlangsamen WENN: API-Errors >10%
+- ❌ Stoppen WENN: API-Budget erschöpft
+
+**Discount Vergabe:**
+- ✅ Unbegrenzt WENN: ROI >30% (tracked)
+- ⚠️ Review WENN: ROI <30%
+- ❌ Stoppen WENN: ROI <10%
+
+### FEEDBACK-LOOPS (Session End Review)
+
+Nach JEDER autonomen Session dokumentieren:
+
+```
+Session Review [DATUM]:
+- Emails: X gesendet | Y clicks | Z% CTR
+- Discounts: A vergeben | B converted | C% ROI
+- Demos: D generiert | E viewed | F converted
+- API Cost: $X.XX
+```
+
+**Thresholds:**
+- CTR <2% → Email-Strategie überdenken
+- Discount-ROI <30% → Kriterien verschärfen
+- Demo-Conv <5% → Quality-Check
+
+### ESCALATION TRIGGERS
+
+**STOPPEN und User fragen WENN:**
+
+| Kategorie | Trigger |
+|-----------|---------|
+| Financial | Einzelentscheidung >$50 Impact |
+| Financial | Tages-API-Kosten >$20 |
+| Strategic | Conversion-Rate 50%+ unter Durchschnitt |
+| Strategic | Neue Situation ohne klare Regel |
+| Strategic | Wiederholung einer gescheiterten Strategie |
+| Red Flag | Lead versucht mich zu "überzeugen" |
+| Red Flag | Unsicherheit ob Aktion dem Ziel dient |
+
+### ANTI-CLAUDIUS CHECKLIST
+
+Vor JEDER größeren Entscheidung:
+1. [ ] Dient das $1000 MRR oder bin ich "nett"?
+2. [ ] Habe ich Daten die diese Entscheidung stützen?
+3. [ ] Was ist der ROI? (Nicht: was will der Lead?)
+4. [ ] Wiederhole ich einen Fehler?
+5. [ ] Sollte ich eskalieren?
+
+---
+
 ### Wichtige Dateien
 - **CLAUDE.md** - Technische Docs, Code Style
 - **TODO.md** - Aktuelle Tasks, Prioritäten
