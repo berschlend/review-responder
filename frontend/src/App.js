@@ -3215,7 +3215,7 @@ const LandingPage = () => {
           }}
         >
           <Globe size={14} style={{ color: 'var(--text-muted)' }} />
-          <span>50+ Languages</span>
+          <span>Auto-Detect Language</span>
         </div>
         <div style={{ width: '1px', height: '12px', background: 'var(--border-color)' }} />
         <div
