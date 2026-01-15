@@ -13968,6 +13968,18 @@ app.get('/api/cron/hot-demo-visitors', async (req, res) => {
   }
 
   try {
+    // Ensure columns exist
+    try {
+      await dbQuery(
+        `ALTER TABLE demo_generations ADD COLUMN IF NOT EXISTS demo_view_count INTEGER DEFAULT 0`
+      );
+      await dbQuery(
+        `ALTER TABLE demo_generations ADD COLUMN IF NOT EXISTS hot_demo_followup_sent_at TIMESTAMP`
+      );
+    } catch (e) {
+      /* Columns might already exist */
+    }
+
     // Find hot demos: viewed 3+ times, not converted, no hot followup sent yet
     const hotDemos = await dbAll(`
       SELECT
@@ -14068,6 +14080,15 @@ app.get('/api/cron/exit-survey-followup', async (req, res) => {
   }
 
   try {
+    // Ensure response_sent_at column exists
+    try {
+      await dbQuery(
+        `ALTER TABLE exit_surveys ADD COLUMN IF NOT EXISTS response_sent_at TIMESTAMP`
+      );
+    } catch (e) {
+      /* Column might already exist */
+    }
+
     // Find surveys without response, join with user email
     const pendingSurveys = await dbAll(`
       SELECT
