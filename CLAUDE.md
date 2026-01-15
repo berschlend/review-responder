@@ -594,7 +594,20 @@ Oder: `.claude\omnichannel-parallel.ps1` ausführen
 - 0 Zahlende Kunden
 
 **Erkenntnis:** Magic Link Users registrieren sich aber nutzen Produkt nicht aktiv.
-**TODO:** Onboarding-Nudge Email implementieren
+**DONE:** Onboarding-Nudge Email implementiert! (siehe unten)
+
+---
+
+## KÜRZLICH ERLEDIGT (15.01 Nacht - Magic User Nudge)
+
+- **Magic User Activation Nudge** - Separate Onboarding für Magic Link User
+  - Neuer Endpoint: `/api/cron/nudge-magic-users`
+  - Findet Magic Link User die geklickt aber nie Product genutzt haben
+  - Wartet 24h nach Account-Erstellung
+  - German/English Detection für lokalisierte Emails
+  - In Night Loop integriert (Hour 3 = 03:00 UTC)
+  - Parallel-Safe mit Email History Tracking
+  - DB-Spalte: `users.magic_nudge_sent`
 
 ---
 
