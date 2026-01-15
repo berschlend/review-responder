@@ -17,6 +17,12 @@
 5. **Nach Deploy:** "Deployed! Frontend/Backend live in ~2-3 Min"
 6. **Sales/Automation Features:** → Siehe SALES AUTOMATION REGELN unten!
 
+### Claude Permissions (Autorisiert vom User)
+- **API Keys eintragen:** Claude DARF API Keys in Render Environment Variables eintragen
+- **Accounts erstellen:** Claude DARF Outscraper/API Accounts erstellen wenn nötig
+- **Secrets.local editieren:** Claude DARF `.claude/secrets.local` mit neuen Keys updaten
+- **Render Dashboard:** URL: https://dashboard.render.com/web/srv-d5gh8c6r433s73dm9v6g/env
+
 ### Workflow
 ```
 CLAUDE.md lesen → TODO.md checken → Task → Testen → Git push → CLAUDE.md updaten
