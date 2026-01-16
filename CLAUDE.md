@@ -213,7 +213,7 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 
 ## CURRENT TASKS
 
-**Stand: 17.01.2026 (22:20 UTC)**
+**Stand: 16.01.2026 (23:00 UTC)**
 
 ### Chrome Web Store
 **Status:** Überprüfung läuft (eingereicht 13.01)
@@ -231,6 +231,9 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
   - Endpoint: `/api/cron/review-alerts?secret=ADMIN_SECRET`
   - Auto-captures Google Place ID bei erster Response
   - 32 Users gecheckt, funktioniert!
+
+### Quick Fixes (16.01 23:00)
+- ✅ **Chrome Web Store Badge → "Browser Extension"** - Temporär bis Extension approved
 
 ### USER TODO:
 - [ ] Demo-Videos aufnehmen
