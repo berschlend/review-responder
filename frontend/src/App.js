@@ -15076,8 +15076,14 @@ const DemoPage = () => {
               </div>
 
               {/* CTA Button */}
-              <a
-                href={demo?.cta_url}
+              <button
+                onClick={() => {
+                  if (user) {
+                    window.location.href = '/dashboard';
+                  } else {
+                    setShowEmailModal(true);
+                  }
+                }}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -15088,16 +15094,17 @@ const DemoPage = () => {
                   color: 'white',
                   padding: '16px',
                   borderRadius: '12px',
-                  textDecoration: 'none',
+                  border: 'none',
                   fontWeight: '700',
                   fontSize: '16px',
                   transition: 'transform 0.2s, box-shadow 0.2s',
                   boxShadow: '0 4px 14px rgba(16, 185, 129, 0.4)',
+                  cursor: 'pointer',
                 }}
               >
-                Start Free Now
+                {user ? 'Go to Dashboard' : 'Start Free Now'}
                 <ArrowRight size={18} />
-              </a>
+              </button>
 
               {/* Dismiss Link */}
               <button
