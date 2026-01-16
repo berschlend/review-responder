@@ -3649,7 +3649,7 @@ const LandingPage = () => {
               borderRadius: '50%',
               marginBottom: 16,
               objectFit: 'cover',
-              objectPosition: 'center 20%',
+              objectPosition: 'center 30%',
               border: '3px solid var(--primary-light, #e8f4f8)',
             }}
           />
