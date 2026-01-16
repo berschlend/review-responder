@@ -1,6 +1,6 @@
 # ReviewResponder - Todo Liste
 
-> Letzte Aktualisierung: 16.01.2026
+> Letzte Aktualisierung: 17.01.2026
 
 ---
 
@@ -277,7 +277,15 @@
 
 ---
 
-## 🟢 HEUTE ERLEDIGT (14.01.2026)
+## 🟢 HEUTE ERLEDIGT (17.01.2026)
+
+- [x] **Amazon SES Admin Card** - Im Email Tab sichtbar als Primary Provider
+- [x] **Amazon Seller Email System** - Dediziertes Lead-System (war bereits committed)
+  - `amazon_seller_leads` Tabelle
+  - Admin Tab "Amazon Sellers"
+  - Cron Job `/api/cron/send-amazon-emails`
+
+## 🟢 FRÜHER ERLEDIGT (14.01.2026)
 
 - [x] **Demo Generator implementiert** - Personalisierte Demos für Cold Outreach
   - SerpAPI Integration für Google Review Scraping
