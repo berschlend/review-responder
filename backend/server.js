@@ -7867,12 +7867,24 @@ app.get('/api/public/stats', async (req, res) => {
       return res.json(publicStatsCache.data);
     }
 
-    const responses = await dbGet('SELECT COUNT(*) as count FROM responses');
+    // Count ALL responses from everywhere:
+    // 1. Registered user responses
+    const userResponses = await dbGet('SELECT COUNT(*) as count FROM responses');
+    // 2. Instant try (landing page without account)
+    const instantTry = await dbGet('SELECT COUNT(*) as count FROM public_try_usage');
+    // 3. Demo generations (each demo has ~3 responses, use response_count if available)
+    const demoResponses = await dbGet('SELECT COALESCE(SUM(CAST(response_count AS INTEGER)), COUNT(*) * 3) as count FROM demo_generations');
+
+    const totalResponses =
+      parseInt(userResponses?.count || 0) +
+      parseInt(instantTry?.count || 0) +
+      parseInt(demoResponses?.count || 0);
+
     const demos = await dbGet('SELECT COUNT(*) as count FROM demo_generations');
     const users = await dbGet('SELECT COUNT(*) as count FROM users');
 
     const stats = {
-      totalResponses: parseInt(responses?.count || 0),
+      totalResponses: totalResponses,
       totalDemos: parseInt(demos?.count || 0),
       totalUsers: parseInt(users?.count || 0)
     };
@@ -7881,7 +7893,7 @@ app.get('/api/public/stats', async (req, res) => {
     res.json(stats);
   } catch (error) {
     console.error('Public stats error:', error);
-    res.json({ totalResponses: 300, totalDemos: 100, totalUsers: 40 }); // Fallback
+    res.json({ totalResponses: 500, totalDemos: 100, totalUsers: 40 }); // Fallback
   }
 });
 
