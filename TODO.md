@@ -94,16 +94,17 @@
 
 ### 🎬 PRIORITÄT: Neues Demo Video aufnehmen!
 
-- [ ] **JETZT: Main Demo Video aufnehmen**
-  - Scripts: `content/demo-video-script.md` + `content/video-scripts-final.md`
-  - Salt Bae/Nusr-Et Review als Beispiel (negative Review mit Pain Point)
-  - Sound-Off optimiert (Text Overlays, 85% schauen stumm)
-  - 30s/45s/60s Versionen schneiden
+- [ ] **NACH CALL (17.01): Main Demo Video aufnehmen**
+  - **WARTE AUF:** One-Click Submit Feature testen (nach Call mit Google Business Account)
+  - Scripts: `content/demo-video-script.md` + `content/video-scripts-final.md` + `content/video-15s-ultra.md`
+  - Empfehlung: 15s Version ZUERST (70% Completion Rate vs 30%)
+  - Extension geladen unter: `chrome-extension/` (v1.7.0)
+  - Test-Account: `reviewer@tryreviewresponder.com` / `ChromeReview2026!`
 
-- [ ] **NACH CALL: Paste & Submit Clip (optional)**
+- [ ] **IM CALL: One-Click Submit Feature testen**
   - Mit Google Business User testen (Instant Submit Funktion)
-  - Wenn Test klappt: kurzen Clip aufnehmen
-  - Am Ende vom Main Video reincutten ("instant submit")
+  - Wenn funktioniert: Im Video zeigen "One click. Posted."
+  - Wenn nicht: Copy/Paste Flow zeigen (immer noch gut)
 
 - [ ] **GIF für One-Click Feature erstellen**
   - Nur wenn Paste & Submit Test erfolgreich
