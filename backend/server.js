@@ -8005,7 +8005,7 @@ app.get('/api/public/demo/:token', async (req, res) => {
         business_name: demo.business_name,
         city: demo.city,
         days_since_creation: daysSinceCreation,
-        cta_url: `https://tryreviewresponder.com/register?ref=expired_demo_${demo.demo_token}&discount=DEMO30`,
+        cta_url: `https://tryreviewresponder.com/register?ref=expired_demo_${demo.demo_token}`,
         message:
           'This demo has expired. Sign up free to generate fresh AI responses for your reviews.',
       });
@@ -8054,7 +8054,7 @@ app.get('/api/public/demo/:token', async (req, res) => {
       demos: demo.generated_responses,
       google_reviews_url: googleReviewsUrl,
       days_remaining: daysRemaining,
-      cta_url: `https://tryreviewresponder.com/register?ref=demo_${demo.demo_token}&discount=DEMO30`,
+      cta_url: `https://tryreviewresponder.com/register?ref=demo_${demo.demo_token}`,
     });
   } catch (error) {
     console.error('Public demo error:', error);
