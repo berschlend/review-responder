@@ -3634,6 +3634,7 @@ const LandingPage = () => {
               borderRadius: '50%',
               marginBottom: 16,
               objectFit: 'cover',
+              objectPosition: 'center 20%',
             }}
           />
           <p style={{ fontSize: '1.05rem', lineHeight: 1.7, color: 'var(--text-primary)' }}>
