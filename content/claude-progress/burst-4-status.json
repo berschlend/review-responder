@@ -24,11 +24,12 @@
     "metrics":  {
                     "success_rate":  100,
                     "errors_count":  0,
-                    "actions_taken":  15,
-                    "demos_generated": 15,
-                    "emails_sent": 15
+                    "actions_taken":  22,
+                    "demos_generated": 22,
+                    "emails_sent": 22,
+                    "demo_views": 1
                 },
-    "status":  "running",
-    "last_heartbeat":  "2026-01-16T23:15:00Z",
-    "last_action": "Generated 15 demos for hot leads (Optica Dublin, Leonardo Hotel, Generator Berlin, VASA Fitness, Saks Fifth Avenue, etc.)"
+    "status":  "completed",
+    "last_heartbeat":  "2026-01-16T23:20:00Z",
+    "last_action": "Generated 22 demos for hot leads. Arnotts Dublin demo viewed within 23 seconds of email! Best results: OPTICA Dublin (3 1-star reviews), Godfrey Hotel Hollywood (3.4 stars, real complaints), Hollywood City Inn (blood on walls review)."
 }

@@ -593,3 +593,20 @@ User klicken Magic Link → werden registriert → nutzen Produkt NIE → erreic
 ### [2026-01-16 23:13] Burst-4
 - Demo generation works best with businesses that have 3-4 star ratings - 5-star businesses have no negative reviews to showcase. Hotels/restaurants with 3.4-4.0 ratings generate best demo content.
 
+
+### [2026-01-16 23:15] Burst-5
+- Manual demos + automatic second-followup can overlap - need to check if email was recently sent before manual action
+
+
+### [2026-01-16 23:16] Burst-4
+- Hot leads who clicked on initial email are VERY responsive to personalized demos. Arnotts Dublin viewed demo within 23 seconds of email. Focus demos on businesses with 3.4-4.0 ratings for best negative review content.
+
+
+### [2026-01-16 23:23] Burst-2
+- **100 EMAILS SENT IN 18 MINUTES** - Daily limit reached!
+- All via Brevo provider - 100% success rate, 0 bounces
+- Diverse targets: Car dealerships (premium brands like Bentley, McLaren, Mercedes-Benz), opticians, pharmacies (DE), coffee shops, restaurants, florists
+- Geographic spread: US, UK, Ireland, Germany, Austria, Belgium, Netherlands
+- High-value leads contacted: Cargiant (10k reviews), Denver Central Market (1.2k reviews), Cargem (1.6k reviews)
+- **LEARNING:** Single-email API calls are reliable and fast, batch endpoints timeout
+

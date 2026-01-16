@@ -1,22 +1,23 @@
 {
   "agent": "burst-2-cold-emailer",
   "version": "3.0",
-  "status": "running",
+  "status": "daily_limit_reached",
   "started_at": "2026-01-16T23:05:00Z",
-  "last_heartbeat": "2026-01-16T23:12:00Z",
-  "current_loop": 2,
+  "last_heartbeat": "2026-01-16T23:23:00Z",
+  "current_loop": 3,
   "loop_interval": "5min",
   "checkpoints": {
-    "last_successful_action": "sent_batch_1",
-    "last_processed_id": 4519,
+    "last_successful_action": "sent_100_emails",
+    "last_processed_id": null,
     "resume_from": null
   },
   "metrics": {
-    "emails_sent_today": 30,
-    "emails_sent_session": 30,
+    "emails_sent_today": 100,
+    "emails_sent_session": 100,
     "bounced": 0,
     "errors_count": 0,
-    "actions_taken": 32
+    "actions_taken": 102,
+    "provider": "brevo (100%)"
   },
   "health": {
     "stuck_detected": false,
@@ -29,7 +30,8 @@
     "Star rating in subject line",
     "No discount in cold emails",
     "Backend wake-up before API calls",
-    "Brevo as primary provider (working well)"
+    "Brevo as primary provider (100% success rate)"
   ],
-  "session_notes": "30 emails sent to car dealerships and opticians in Dublin, London, US. High-value targets like Cargiant (10k reviews), Paragon Cars (800 reviews), Cargem (1601 reviews)."
+  "session_notes": "100 emails sent in ~18 minutes. Diverse targets: car dealerships (Cargiant 10k reviews, Mercedes-Benz Boston, McLaren Boston, Bentley Boston), opticians (Dublin, US), pharmacies (Germany, US), coffee shops, restaurants, florists. Geographic spread: US, UK, Ireland, Germany, Austria, Belgium, Netherlands. All via Brevo - 100% success, 0 bounces.",
+  "next_action": "WAIT_FOR_DAILY_RESET at 00:00 UTC (17.01.2026)"
 }
