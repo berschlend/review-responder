@@ -476,9 +476,19 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 - `DELETE /api/admin/amazon-leads/:id` - Lead löschen
 - `GET /api/amazon-demo/:token` - Demo Link mit Click-Tracking
 
+### Review Alerts (NEW 17.01.2026 - ROOT CAUSE Retention Fix)
+- `GET /api/cron/review-alerts?secret=ADMIN_SECRET` - Weekly review digest emails
+  - Params: `limit`, `dry_run=true`
+  - Sends email to users with new reviews in last 7 days
+  - Auto-captures place_id on first generate call
+- `POST /api/admin/setup-review-monitoring` - Manually enable for user
+  - Body: `{ userId, placeId, businessName }`
+- `GET /api/admin/review-alerts-stats` - Dashboard stats
+
 ### Cron
 - `GET /api/cron/daily-outreach|demo-followup|night-blast|night-loop`
 - `GET /api/cron/send-amazon-emails?secret=ADMIN_SECRET` - Amazon Seller Emails (params: limit, dry_run)
+- `GET /api/cron/review-alerts?secret=ADMIN_SECRET` - Weekly review alerts (params: limit, dry_run)
 
 ---
 
@@ -502,6 +512,13 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
   - Admin Tab: "Amazon Sellers" mit Metriken & Lead-Verwaltung
   - Cron: `/api/cron/send-amazon-emails`
   - Click-Tracking: `/api/amazon-demo/:token`
+- **Review Alerts - PUSH Model** (NEW 17.01.2026) ⭐
+  - ROOT CAUSE Fix für Retention-Problem (0% Users am Limit)
+  - Wöchentlicher Email-Digest: "X neue Reviews - jetzt antworten?"
+  - Auto-Capture Place ID bei erster Response-Generierung
+  - Cron: `/api/cron/review-alerts`
+  - Admin: `/api/admin/review-alerts-stats`
+  - DB: `review_alerts` Tabelle + `users.google_place_id`
 
 ### Semi-Manual (Chrome MCP)
 - `/linkedin-connect` - Connection Requests

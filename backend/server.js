@@ -1956,6 +1956,46 @@ async function initDatabase() {
       )
     `);
 
+    // === REVIEW ALERTS FEATURE (Root Cause Fix for Retention) ===
+    // Approved via timeout by Burst-12/15 on 2026-01-16
+
+    // Add google_place_id to users for review monitoring
+    try {
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_place_id TEXT`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS monitored_business_name TEXT`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS review_alerts_enabled BOOLEAN DEFAULT TRUE`);
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_review_alert_at TIMESTAMP`);
+    } catch (error) {
+      // Columns might already exist
+    }
+
+    // Review Alerts tracking table
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS review_alerts (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        google_place_id TEXT NOT NULL,
+        business_name TEXT,
+        new_reviews_count INTEGER DEFAULT 0,
+        reviews_data JSONB,
+        email_sent BOOLEAN DEFAULT FALSE,
+        email_sent_at TIMESTAMP,
+        email_opened BOOLEAN DEFAULT FALSE,
+        clicked_generate BOOLEAN DEFAULT FALSE,
+        week_start DATE NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, week_start)
+      )
+    `);
+
+    // Index for efficient lookups
+    try {
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_review_alerts_user_week ON review_alerts(user_id, week_start)`);
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_users_place_id ON users(google_place_id) WHERE google_place_id IS NOT NULL`);
+    } catch (error) {
+      // Indexes might already exist
+    }
+
     console.log('📊 Database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -4359,6 +4399,31 @@ ${languageInstruction}
       totalUsed =
         (updatedOwner.smart_responses_used || 0) + (updatedOwner.standard_responses_used || 0);
       totalLimit = updatedPlanLimits.responses;
+
+      // === AUTO-CAPTURE PLACE ID FOR REVIEW ALERTS ===
+      // First-time setup: If user has no place_id but provided businessName, try to find it
+      if (!updatedOwner.google_place_id && businessName && businessName.trim().length > 0) {
+        // Run async in background, don't block response
+        (async () => {
+          try {
+            // Try to find the business on Google
+            const placeInfo = await lookupPlaceId(businessName, '');
+            if (placeInfo && placeInfo.placeId) {
+              await dbQuery(`
+                UPDATE users
+                SET google_place_id = $1,
+                    monitored_business_name = $2,
+                    review_alerts_enabled = true
+                WHERE id = $3 AND google_place_id IS NULL
+              `, [placeInfo.placeId, placeInfo.name || businessName, usageOwnerId]);
+              console.log(`[REVIEW-ALERTS] Auto-captured place_id ${placeInfo.placeId} for user ${usageOwnerId}`);
+            }
+          } catch (err) {
+            // Non-critical - user can still use the product without monitoring
+            console.log(`[REVIEW-ALERTS] Could not auto-capture place_id for ${businessName}: ${err.message}`);
+          }
+        })();
+      }
 
       const usagePercent = Math.round((totalUsed / totalLimit) * 100);
       const previousTotal = totalUsed - 1;
@@ -30683,6 +30748,291 @@ app.get('/api/cron/upgrade-leads', async (req, res) => {
   } catch (error) {
     console.error('Upgrade leads error:', error);
     res.status(500).json({ error: 'Failed to upgrade leads', details: error.message });
+  }
+});
+
+// === REVIEW ALERTS CRON - Weekly Digest for Retention ===
+// Push model: Remind users about new reviews instead of waiting for them to come back
+// Approved via timeout by Burst-12/15 on 2026-01-16
+
+app.get('/api/cron/review-alerts', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'Email service not configured' });
+  }
+
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'https://tryreviewresponder.com';
+  const dryRun = req.query.dry_run === 'true';
+  const limit = parseInt(req.query.limit) || 50;
+
+  try {
+    console.log('[REVIEW-ALERTS] Starting weekly review alerts cron...');
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - 7);
+    const weekStartStr = weekStart.toISOString().split('T')[0];
+
+    // Find users with google_place_id who have alerts enabled
+    // and haven't received an alert this week
+    const users = await dbAll(`
+      SELECT u.id, u.email, u.google_place_id, u.monitored_business_name, u.business_name,
+             u.last_review_alert_at
+      FROM users u
+      WHERE u.google_place_id IS NOT NULL
+        AND u.review_alerts_enabled = true
+        AND u.email_verified = true
+        AND (u.last_review_alert_at IS NULL OR u.last_review_alert_at < NOW() - INTERVAL '6 days')
+      ORDER BY u.created_at DESC
+      LIMIT $1
+    `, [limit]);
+
+    console.log(`[REVIEW-ALERTS] Found ${users.length} users with monitored businesses`);
+
+    const results = {
+      processed: 0,
+      emails_sent: 0,
+      new_reviews_found: 0,
+      no_new_reviews: 0,
+      errors: 0,
+      skipped_api_limit: 0
+    };
+
+    for (const user of users) {
+      results.processed++;
+
+      try {
+        // Fetch recent reviews for this business
+        console.log(`[REVIEW-ALERTS] Checking reviews for user ${user.id} (${user.google_place_id})`);
+
+        // Use existing scrapeGoogleReviews function
+        const reviews = await scrapeGoogleReviews(user.google_place_id, 10);
+
+        if (!reviews || reviews.length === 0) {
+          results.no_new_reviews++;
+          console.log(`[REVIEW-ALERTS] No reviews found for ${user.monitored_business_name || user.business_name}`);
+          continue;
+        }
+
+        // Filter reviews from last 7 days
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+        const recentReviews = reviews.filter(review => {
+          if (!review.date) return false;
+          const reviewDate = new Date(review.date);
+          return reviewDate >= oneWeekAgo;
+        });
+
+        if (recentReviews.length === 0) {
+          results.no_new_reviews++;
+          console.log(`[REVIEW-ALERTS] No new reviews in last 7 days for ${user.monitored_business_name || user.business_name}`);
+
+          // Update last check time anyway
+          await dbQuery(`UPDATE users SET last_review_alert_at = NOW() WHERE id = $1`, [user.id]);
+          continue;
+        }
+
+        results.new_reviews_found += recentReviews.length;
+        const businessName = user.monitored_business_name || user.business_name || 'your business';
+
+        // Store alert data
+        await dbQuery(`
+          INSERT INTO review_alerts (user_id, google_place_id, business_name, new_reviews_count, reviews_data, week_start)
+          VALUES ($1, $2, $3, $4, $5, $6)
+          ON CONFLICT (user_id, week_start) DO UPDATE
+          SET new_reviews_count = $4, reviews_data = $5, created_at = NOW()
+        `, [user.id, user.google_place_id, businessName, recentReviews.length, JSON.stringify(recentReviews), weekStartStr]);
+
+        // Prepare email content
+        const reviewPreviews = recentReviews.slice(0, 3).map(r => {
+          const stars = '⭐'.repeat(r.rating || 3);
+          const text = r.text ? (r.text.length > 100 ? r.text.substring(0, 100) + '...' : r.text) : 'No text';
+          const author = r.author || 'Anonymous';
+          return `<div style="background: #F9FAFB; border-left: 3px solid ${r.rating <= 3 ? '#EF4444' : '#10B981'}; padding: 12px; margin: 10px 0; border-radius: 4px;">
+            <div style="font-weight: 600;">${author} ${stars}</div>
+            <div style="color: #6B7280; font-size: 14px; margin-top: 5px;">"${text}"</div>
+          </div>`;
+        }).join('');
+
+        const hasNegativeReviews = recentReviews.some(r => r.rating && r.rating <= 3);
+        const urgencyText = hasNegativeReviews
+          ? '⚠️ Some reviews need your attention!'
+          : '🎉 Great news about your reviews!';
+
+        if (!dryRun && process.env.NODE_ENV === 'production') {
+          await resend.emails.send({
+            from: FROM_EMAIL,
+            to: user.email,
+            subject: `${recentReviews.length} new review${recentReviews.length > 1 ? 's' : ''} for ${businessName} - Respond with AI`,
+            html: `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <style>
+                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.6; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                  .header { background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+                  .content { background: white; padding: 30px; border: 1px solid #E5E7EB; border-radius: 0 0 8px 8px; }
+                  .stat-box { background: #EEF2FF; border: 1px solid #C7D2FE; padding: 20px; border-radius: 8px; margin: 15px 0; text-align: center; }
+                  .stat-number { font-size: 48px; font-weight: bold; color: #4F46E5; }
+                  .stat-label { color: #6B7280; font-size: 14px; }
+                  .cta-button { display: inline-block; background: #4F46E5; color: white; padding: 16px 32px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; }
+                  .footer { text-align: center; padding: 20px; color: #6B7280; font-size: 14px; }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <div class="header">
+                    <h1 style="margin: 0;">New Reviews Alert</h1>
+                    <p style="margin: 10px 0 0 0; opacity: 0.9;">${urgencyText}</p>
+                  </div>
+                  <div class="content">
+                    <p>Hey${user.business_name ? ' ' + user.business_name.split(' ')[0] : ''},</p>
+
+                    <div class="stat-box">
+                      <div class="stat-number">${recentReviews.length}</div>
+                      <div class="stat-label">new review${recentReviews.length > 1 ? 's' : ''} this week for ${businessName}</div>
+                    </div>
+
+                    <p><strong>Recent reviews:</strong></p>
+                    ${reviewPreviews}
+
+                    ${recentReviews.length > 3 ? `<p style="color: #6B7280; font-size: 14px;">+ ${recentReviews.length - 3} more...</p>` : ''}
+
+                    <p style="text-align: center; margin: 30px 0;">
+                      <a href="${FRONTEND_URL}/generator" class="cta-button">Generate AI Responses Now</a>
+                    </p>
+
+                    <p style="color: #6B7280; font-size: 14px;">
+                      💡 <strong>Tip:</strong> Responding to reviews within 24 hours increases customer satisfaction by 33%.
+                    </p>
+                  </div>
+                  <div class="footer">
+                    <p>ReviewResponder - AI-Powered Review Responses</p>
+                    <p><a href="${FRONTEND_URL}/profile" style="color: #6B7280;">Manage notification preferences</a></p>
+                  </div>
+                </div>
+              </body>
+              </html>
+            `
+          });
+
+          // Update tracking
+          await dbQuery(`
+            UPDATE review_alerts
+            SET email_sent = true, email_sent_at = NOW()
+            WHERE user_id = $1 AND week_start = $2
+          `, [user.id, weekStartStr]);
+          await dbQuery(`UPDATE users SET last_review_alert_at = NOW() WHERE id = $1`, [user.id]);
+
+          results.emails_sent++;
+          console.log(`[REVIEW-ALERTS] ✅ Sent alert to ${user.email} (${recentReviews.length} reviews)`);
+        } else {
+          console.log(`[REVIEW-ALERTS] [DRY-RUN] Would send to ${user.email} (${recentReviews.length} reviews)`);
+          if (dryRun) results.emails_sent++; // Count as "would send"
+        }
+
+      } catch (userError) {
+        results.errors++;
+        console.error(`[REVIEW-ALERTS] Error for user ${user.id}:`, userError.message);
+      }
+
+      // Small delay to avoid API rate limits
+      await new Promise(r => setTimeout(r, 500));
+    }
+
+    console.log('[REVIEW-ALERTS] Complete:', JSON.stringify(results));
+    res.json({
+      success: true,
+      dry_run: dryRun,
+      ...results
+    });
+
+  } catch (error) {
+    console.error('[REVIEW-ALERTS] Error:', error);
+    res.status(500).json({ error: 'Failed to process review alerts', details: error.message });
+  }
+});
+
+// Admin endpoint to set up review monitoring for a user
+app.post('/api/admin/setup-review-monitoring', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { userId, placeId, businessName } = req.body;
+
+  if (!userId || !placeId) {
+    return res.status(400).json({ error: 'userId and placeId required' });
+  }
+
+  try {
+    await dbQuery(`
+      UPDATE users
+      SET google_place_id = $1,
+          monitored_business_name = $2,
+          review_alerts_enabled = true
+      WHERE id = $3
+    `, [placeId, businessName, userId]);
+
+    res.json({ success: true, message: `Review monitoring enabled for user ${userId}` });
+  } catch (error) {
+    console.error('Setup review monitoring error:', error);
+    res.status(500).json({ error: 'Failed to setup monitoring' });
+  }
+});
+
+// Admin endpoint to get review alerts stats
+app.get('/api/admin/review-alerts-stats', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const stats = await dbGet(`
+      SELECT
+        COUNT(DISTINCT u.id) as users_with_monitoring,
+        COUNT(DISTINCT CASE WHEN u.last_review_alert_at > NOW() - INTERVAL '7 days' THEN u.id END) as alerts_sent_this_week,
+        (SELECT COUNT(*) FROM review_alerts WHERE email_sent = true AND email_sent_at > NOW() - INTERVAL '7 days') as total_alerts_this_week,
+        (SELECT COUNT(*) FROM review_alerts WHERE clicked_generate = true AND email_sent_at > NOW() - INTERVAL '7 days') as alerts_clicked_this_week,
+        (SELECT SUM(new_reviews_count) FROM review_alerts WHERE email_sent_at > NOW() - INTERVAL '7 days') as total_new_reviews_alerted
+      FROM users u
+      WHERE u.google_place_id IS NOT NULL AND u.review_alerts_enabled = true
+    `);
+
+    const recentAlerts = await dbAll(`
+      SELECT ra.*, u.email, u.business_name
+      FROM review_alerts ra
+      JOIN users u ON ra.user_id = u.id
+      ORDER BY ra.created_at DESC
+      LIMIT 20
+    `);
+
+    res.json({
+      success: true,
+      stats: {
+        users_with_monitoring: parseInt(stats.users_with_monitoring) || 0,
+        alerts_sent_this_week: parseInt(stats.alerts_sent_this_week) || 0,
+        total_alerts_this_week: parseInt(stats.total_alerts_this_week) || 0,
+        alerts_clicked_this_week: parseInt(stats.alerts_clicked_this_week) || 0,
+        total_new_reviews_alerted: parseInt(stats.total_new_reviews_alerted) || 0,
+        click_rate: stats.total_alerts_this_week > 0
+          ? ((stats.alerts_clicked_this_week / stats.total_alerts_this_week) * 100).toFixed(1) + '%'
+          : '0%'
+      },
+      recent_alerts: recentAlerts
+    });
+  } catch (error) {
+    console.error('Review alerts stats error:', error);
+    res.status(500).json({ error: 'Failed to get stats' });
   }
 });
 
