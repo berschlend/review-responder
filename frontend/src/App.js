@@ -13209,11 +13209,17 @@ const DemoPage = () => {
   const [captureEmail, setCaptureEmail] = useState('');
   const [pendingCopyIndex, setPendingCopyIndex] = useState(null);
   const [showAllResponses, setShowAllResponses] = useState(false);
+  const [publicStats, setPublicStats] = useState({ totalResponses: 300 });
 
   // No fake testimonials - removed to maintain honesty
 
   useEffect(() => {
     fetchDemo();
+    // Fetch public stats for dynamic counter
+    fetch(`${API_BASE}/api/public/stats`)
+      .then(res => res.json())
+      .then(data => setPublicStats(data))
+      .catch(() => {}); // Keep fallback
   }, [token]);
 
   // Exit Intent Detection
@@ -13756,7 +13762,7 @@ const DemoPage = () => {
                 <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
               </svg>
               <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>
-                300+ responses generated
+                {publicStats.totalResponses.toLocaleString()}+ responses generated
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>

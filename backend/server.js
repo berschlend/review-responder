@@ -7672,6 +7672,33 @@ app.post('/api/demo/generate', async (req, res) => {
   }
 });
 
+// GET /api/public/stats - Public stats for landing/demo pages (cached 5 min)
+let publicStatsCache = { data: null, timestamp: 0 };
+app.get('/api/public/stats', async (req, res) => {
+  try {
+    // Cache for 5 minutes
+    if (publicStatsCache.data && Date.now() - publicStatsCache.timestamp < 5 * 60 * 1000) {
+      return res.json(publicStatsCache.data);
+    }
+
+    const responses = await dbGet('SELECT COUNT(*) as count FROM responses');
+    const demos = await dbGet('SELECT COUNT(*) as count FROM demo_generations');
+    const users = await dbGet('SELECT COUNT(*) as count FROM users');
+
+    const stats = {
+      totalResponses: parseInt(responses?.count || 0),
+      totalDemos: parseInt(demos?.count || 0),
+      totalUsers: parseInt(users?.count || 0)
+    };
+
+    publicStatsCache = { data: stats, timestamp: Date.now() };
+    res.json(stats);
+  } catch (error) {
+    console.error('Public stats error:', error);
+    res.json({ totalResponses: 300, totalDemos: 100, totalUsers: 40 }); // Fallback
+  }
+});
+
 // GET /api/public/demo/:token - Public demo page data
 app.get('/api/public/demo/:token', async (req, res) => {
   try {
