@@ -4437,8 +4437,8 @@ const MagicLoginPage = () => {
         .get('/auth/me')
         .then(res => {
           setUser(res.data.user);
-          toast.success('Welcome! Your account is ready.');
-          navigate('/dashboard');
+          toast.success('Welcome! Try generating a response now.');
+          navigate('/generator'); // Send to generator for immediate value (was /dashboard)
         })
         .catch(err => {
           console.error('Magic login error:', err);
