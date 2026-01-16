@@ -279,6 +279,14 @@
 
 ## 🟢 HEUTE ERLEDIGT (17.01.2026)
 
+- [x] **About Founder Section** - Trust-Building auf Landing Page
+  - Foto (120px, Border, optimale Position mit 30% für volle Haare)
+  - Persönlicher Quote: "hours every week" (konkret statt vage)
+  - Email-Link blau + underline (sichtbar statt grau)
+  - Position: Nach Video Demo, vor Examples
+  - "EXAMPLE" → "EXAMPLES" (Plural) gefixt
+  - First Principles optimiert für Conversion
+
 - [x] **AI Kritik-Handling Evaluation & Fixes** - First Principles Review
   - 1-Star Länge: 4-5 → 2-3 sentences (kürzer = souveräner)
   - Goal: "Stay sovereign" statt "Damage control"
