@@ -3622,6 +3622,48 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* About Founder Section */}
+      <section style={{ padding: '60px 0', background: 'var(--bg-secondary)' }}>
+        <div className="container" style={{ maxWidth: '700px', textAlign: 'center' }}>
+          <img
+            src="/berend.jpg"
+            alt="Berend"
+            style={{
+              width: 100,
+              height: 100,
+              borderRadius: '50%',
+              marginBottom: 16,
+              objectFit: 'cover',
+            }}
+          />
+          <p style={{ fontSize: '1.05rem', lineHeight: 1.7, color: 'var(--text-primary)' }}>
+            "I'm Berend. I built ReviewResponder because I saw how much time business owners spend on
+            review responses. Now you don't have to."
+          </p>
+          <p
+            style={{
+              color: 'var(--text-secondary)',
+              marginTop: 8,
+              fontSize: '0.85rem',
+            }}
+          >
+            — Berend, Founder
+          </p>
+          <p
+            style={{
+              color: 'var(--text-muted)',
+              marginTop: 12,
+              fontSize: '0.75rem',
+            }}
+          >
+            Questions?{' '}
+            <a href="mailto:berend@tryreviewresponder.com" style={{ color: 'var(--text-muted)' }}>
+              berend@tryreviewresponder.com
+            </a>
+          </p>
+        </div>
+      </section>
+
       {/* Reviews About Us, Answered By Us - Dogfooding Section */}
       {testimonials.filter(t => t.ai_response).length > 0 && (
         <DogfoodingSection testimonials={testimonials.filter(t => t.ai_response)} />
