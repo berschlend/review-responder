@@ -61,22 +61,23 @@ function Wake-Backend {
 }
 
 # Agent Configuration
+# Chrome = true means agent has access to browser automation via Chrome MCP
 $AgentConfig = @{
-    1 = @{ Name = "lead-finder"; Chrome = $true; Loop = "4h" }
-    2 = @{ Name = "cold-emailer"; Chrome = $false; Loop = "6h" }
-    3 = @{ Name = "social-dm"; Chrome = $true; Loop = "8h" }
-    4 = @{ Name = "demo-generator"; Chrome = $false; Loop = "4h" }
-    5 = @{ Name = "hot-lead-chaser"; Chrome = $false; Loop = "2h" }
-    6 = @{ Name = "user-activator"; Chrome = $false; Loop = "4h" }
-    7 = @{ Name = "payment-converter"; Chrome = $false; Loop = "3h" }
-    8 = @{ Name = "upgrader"; Chrome = $false; Loop = "6h" }
-    9 = @{ Name = "doctor"; Chrome = $false; Loop = "1h" }
-    10 = @{ Name = "morning-briefer"; Chrome = $false; Loop = "24h" }
-    11 = @{ Name = "bottleneck-analyzer"; Chrome = $false; Loop = "2h" }
-    12 = @{ Name = "creative-strategist"; Chrome = $false; Loop = "4h" }
-    13 = @{ Name = "churn-prevention"; Chrome = $false; Loop = "6h" }
-    14 = @{ Name = "lead-scorer"; Chrome = $false; Loop = "30m" }
-    15 = @{ Name = "approval-gate"; Chrome = $false; Loop = "5m" }
+    1 = @{ Name = "lead-finder"; Chrome = $true; Loop = "4h" }      # Scraping leads
+    2 = @{ Name = "cold-emailer"; Chrome = $true; Loop = "6h" }     # Email research
+    3 = @{ Name = "social-dm"; Chrome = $true; Loop = "8h" }        # LinkedIn/Twitter
+    4 = @{ Name = "demo-generator"; Chrome = $true; Loop = "4h" }   # Demo creation
+    5 = @{ Name = "hot-lead-chaser"; Chrome = $true; Loop = "2h" }  # Follow-up research
+    6 = @{ Name = "user-activator"; Chrome = $true; Loop = "4h" }   # User research
+    7 = @{ Name = "payment-converter"; Chrome = $true; Loop = "3h" } # Stripe/payments
+    8 = @{ Name = "upgrader"; Chrome = $true; Loop = "6h" }         # User research
+    9 = @{ Name = "doctor"; Chrome = $false; Loop = "1h" }          # Internal metrics only
+    10 = @{ Name = "morning-briefer"; Chrome = $false; Loop = "24h" } # Report generation
+    11 = @{ Name = "bottleneck-analyzer"; Chrome = $false; Loop = "2h" } # Internal analysis
+    12 = @{ Name = "creative-strategist"; Chrome = $true; Loop = "4h" } # Research & ideas
+    13 = @{ Name = "churn-prevention"; Chrome = $true; Loop = "6h" }  # User research
+    14 = @{ Name = "lead-scorer"; Chrome = $false; Loop = "30m" }    # Internal scoring
+    15 = @{ Name = "approval-gate"; Chrome = $false; Loop = "5m" }   # Internal queue
 }
 
 function Get-Timestamp {
@@ -200,55 +201,52 @@ function Start-Agent {
     $config = $AgentConfig[$AgentNum]
     $sessionName = "BURST$AgentNum"
 
-    # NEU: Account mit niedrigstem Usage wählen
+    # Account mit niedrigstem Usage wählen
     $getBestAccountScript = Join-Path $PSScriptRoot "Get-BestAccount.ps1"
     $selectedConfigDir = & $getBestAccountScript
     $selectedAccount = Split-Path $selectedConfigDir -Leaf
-    Write-Host "[ACCOUNT] Agent $AgentNum using account: $selectedAccount" -ForegroundColor Magenta
+    Write-Host "[ACCOUNT] Agent $AgentNum will use account: $selectedAccount" -ForegroundColor Magenta
 
     # Update registry
     $registryFile = Join-Path $ProgressDir "agent-registry.json"
     $registry = Get-Content $registryFile | ConvertFrom-Json
-
-    # Start Claude in background job
-    $job = Start-Job -Name $sessionName -ScriptBlock {
-        param($session, $chrome, $agentNum, $projectRoot, $configDir, $planMode)
-
-        # NEU: Account-Auswahl via CLAUDE_CONFIG_DIR
-        $env:CLAUDE_CONFIG_DIR = $configDir
-        $env:CLAUDE_SESSION = $session
-        Set-Location $projectRoot
-
-        # Build command arguments
-        $args = @()
-        if ($chrome) {
-            $args += "--chrome"
-        }
-        if ($planMode) {
-            # Plan mode: Agents create plans, wait for approval
-            $args += "--permission-mode=plan"
-        } else {
-            # Execution mode: Full autonomy without permission prompts
-            $args += "--dangerously-skip-permissions"
-        }
-        $args += "/night-burst-$agentNum"
-
-        # Run claude with the night-burst command
-        claude @args
-    } -ArgumentList $sessionName, $config.Chrome, $AgentNum, $ProjectRoot, $selectedConfigDir, $PlanMode
-
-    # Update registry with PID and account info
-    $registry.agents."burst-$AgentNum".status = "running"
-    $registry.agents."burst-$AgentNum".pid = $job.Id
-    $registry.agents."burst-$AgentNum".started_at = Get-Timestamp
+    $registry.agents."burst-$AgentNum".status = "pending-start"
     $registry.agents."burst-$AgentNum".account = $selectedAccount
-    $registry.running_agents++
-
     $registry | ConvertTo-Json -Depth 10 | Set-Content -Path $registryFile -Encoding UTF8
 
-    Write-Host "[START] Burst-$AgentNum ($($config.Name)) started as job $($job.Id) on $selectedAccount" -ForegroundColor Cyan
+    # Build PowerShell command for the Windows Terminal tab
+    $chromeFlag = if ($config.Chrome) { "--chrome " } else { "" }
+    $permFlag = if ($PlanMode) { "--permission-mode=plan " } else { "--dangerously-skip-permissions " }
 
-    return $job
+    # Escape paths for embedding in command
+    $escapedConfigDir = $selectedConfigDir -replace "'", "''"
+    $escapedProjectRoot = $ProjectRoot -replace "'", "''"
+
+    $psCommand = @"
+`$env:CLAUDE_CONFIG_DIR = '$escapedConfigDir'
+`$env:CLAUDE_SESSION = '$sessionName'
+Set-Location '$escapedProjectRoot'
+Write-Host '========================================' -ForegroundColor Magenta
+Write-Host ' NIGHT-BURST-$AgentNum : $($config.Name)' -ForegroundColor Magenta
+Write-Host '========================================' -ForegroundColor Magenta
+Write-Host 'Account: $selectedAccount' -ForegroundColor Gray
+Write-Host 'Started: ' -NoNewline; Write-Host (Get-Date) -ForegroundColor Cyan
+Write-Host ''
+claude $chromeFlag$permFlag/night-burst-$AgentNum
+Write-Host ''
+Write-Host '========================================' -ForegroundColor Yellow
+Write-Host ' FINISHED - Press any key to close...' -ForegroundColor Yellow
+Write-Host '========================================' -ForegroundColor Yellow
+`$null = `$Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
+"@
+
+    $bytes = [System.Text.Encoding]::Unicode.GetBytes($psCommand)
+    $encoded = [Convert]::ToBase64String($bytes)
+
+    # Return wt tab command (will be assembled later)
+    # Title format: "B1: lead-finder" (short but descriptive)
+    $shortName = $config.Name
+    return "new-tab --title `"B$AgentNum $shortName`" powershell -NoExit -EncodedCommand $encoded"
 }
 
 function Stop-AllAgents {
@@ -391,46 +389,107 @@ if (-not $backendReady) {
     }
 }
 
-# Phase 4: Start all agents
-Write-Host "`n[PHASE 4] Starting agents..." -ForegroundColor Yellow
+# Phase 4: Start all agents in Windows Terminal with visible tabs
+Write-Host "`n[PHASE 4] Preparing agents for Windows Terminal..." -ForegroundColor Yellow
 if ($PlanMode) {
     Write-Host "[PLAN MODE] Agents will start in plan mode and wait for approval" -ForegroundColor Magenta
 }
-$jobs = @()
+
+# Collect all Windows Terminal tab commands
+$wtTabs = @()
 for ($i = 1; $i -le $MaxAgents; $i++) {
     if ($PlanMode) {
-        $job = Start-Agent -AgentNum $i -PlanMode
+        $tabCmd = Start-Agent -AgentNum $i -PlanMode
     } else {
-        $job = Start-Agent -AgentNum $i
+        $tabCmd = Start-Agent -AgentNum $i
     }
-    $jobs += $job
-    Start-Sleep -Milliseconds 500  # Stagger starts
+    $wtTabs += $tabCmd
+    Write-Host "[PREP] Burst-$i command prepared" -ForegroundColor Gray
 }
 
-Write-Host "`n[ORCHESTRATOR] All $MaxAgents agents started!" -ForegroundColor Green
-Write-Host "[ORCHESTRATOR] Health check will run in background..." -ForegroundColor Gray
-Write-Host ""
-Write-Host "Commands:" -ForegroundColor Cyan
-Write-Host "  .\scripts\night-burst-orchestrator.ps1 -Status  # Check agent status"
-Write-Host "  .\scripts\night-burst-orchestrator.ps1 -Stop    # Stop all agents"
-Write-Host ""
+# Build Windows Terminal command
+# First tab doesn't need "new-tab" prefix
+$firstTab = $wtTabs[0] -replace "^new-tab ", ""
+$allTabs = $firstTab
 
-# Phase 4: Health monitoring loop (runs indefinitely)
-Write-Host "[MONITOR] Starting health check loop (Ctrl+C to exit monitor)..." -ForegroundColor Yellow
-
-$healthCheckScript = Join-Path (Split-Path $PSCommandPath) "night-burst-health-check.ps1"
-if (Test-Path $healthCheckScript) {
-    # Run health check in background
-    Start-Job -Name "HEALTH_MONITOR" -FilePath $healthCheckScript -ArgumentList $ProjectRoot
-    Write-Host "[MONITOR] Health check started as background job" -ForegroundColor Green
+# Add remaining tabs
+if ($wtTabs.Count -gt 1) {
+    for ($i = 1; $i -lt $wtTabs.Count; $i++) {
+        $allTabs += " ; $($wtTabs[$i])"
+    }
 }
 
-# Keep orchestrator running and show status periodically
+Write-Host "`n[START] Opening Windows Terminal with $MaxAgents tabs..." -ForegroundColor Cyan
+Write-Host "[START] Each tab shows live output of one agent" -ForegroundColor Gray
+
+# Update registry to mark all as running
+$registryFile = Join-Path $ProgressDir "agent-registry.json"
+$registry = Get-Content $registryFile | ConvertFrom-Json
+for ($i = 1; $i -le $MaxAgents; $i++) {
+    $registry.agents."burst-$i".status = "running"
+    $registry.agents."burst-$i".started_at = Get-Timestamp
+}
+$registry.running_agents = $MaxAgents
+$registry | ConvertTo-Json -Depth 10 | Set-Content -Path $registryFile -Encoding UTF8
+
+# Execute Windows Terminal with all tabs
+# Strategy: Write command to temp batch file to avoid command line length limits
+$batchFile = Join-Path $env:TEMP "night-burst-start.cmd"
+
 try {
-    while ($true) {
-        Start-Sleep -Seconds 300  # Every 5 minutes
-        Show-Status
+    # Write the full wt command to a batch file (avoids 8191 char limit)
+    $wtCommand = "wt.exe $allTabs"
+    Write-Host "[DEBUG] Command length: $($wtCommand.Length) chars" -ForegroundColor Gray
+
+    if ($wtCommand.Length -gt 8000) {
+        Write-Host "[INFO] Command too long, using batch file method..." -ForegroundColor Yellow
+
+        # Split into multiple wt calls - first opens window, rest add tabs
+        # First tab command (opens new window)
+        $firstCmd = "wt.exe $firstTab"
+        Set-Content -Path $batchFile -Value "@echo off"
+        Add-Content -Path $batchFile -Value "start `"Night-Burst`" $firstCmd"
+        Add-Content -Path $batchFile -Value "timeout /t 2 /nobreak >nul"
+
+        # Remaining tabs (add to existing window with -w 0)
+        for ($i = 1; $i -lt $wtTabs.Count; $i++) {
+            $tabCmd = $wtTabs[$i]
+            Add-Content -Path $batchFile -Value "wt.exe -w 0 $tabCmd"
+            Add-Content -Path $batchFile -Value "timeout /t 1 /nobreak >nul"
+        }
+
+        # Execute batch file
+        cmd /c $batchFile
+        Write-Host "`n[ORCHESTRATOR] All $MaxAgents agents started in visible terminals!" -ForegroundColor Green
+    } else {
+        # Short enough for direct execution
+        cmd /c $wtCommand
+        Write-Host "`n[ORCHESTRATOR] All $MaxAgents agents started in visible terminals!" -ForegroundColor Green
     }
 } catch {
-    Write-Host "`n[ORCHESTRATOR] Interrupted. Use -Stop to stop all agents." -ForegroundColor Yellow
+    Write-Host "[ERROR] Failed to start Windows Terminal: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "[FALLBACK] Starting agents in separate windows..." -ForegroundColor Yellow
+
+    # Fallback: each agent in its own window
+    foreach ($tabCmd in $wtTabs) {
+        $singleCmd = "wt.exe $tabCmd"
+        Start-Process "wt.exe" -ArgumentList $tabCmd
+        Start-Sleep -Milliseconds 1000
+    }
 }
+
+Write-Host ""
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host " NIGHT-BURST V3.1 LAUNCHED" -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "  - Windows Terminal opened with $MaxAgents tabs" -ForegroundColor White
+Write-Host "  - Each tab shows live Claude output" -ForegroundColor White
+Write-Host "  - Tabs stay open after completion" -ForegroundColor White
+Write-Host "  - Press any key in tab to close it" -ForegroundColor White
+Write-Host ""
+Write-Host "Commands:" -ForegroundColor Yellow
+Write-Host "  .\scripts\night-burst-orchestrator.ps1 -Status  # Check agent registry"
+Write-Host "  .\scripts\night-burst-orchestrator.ps1 -Stop    # Stop all (kills terminals)"
+Write-Host ""
+Write-Host "[ORCHESTRATOR] Orchestrator exiting. Agents run independently in terminals." -ForegroundColor Gray

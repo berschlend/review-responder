@@ -122,10 +122,10 @@ function Start-NightBurst {
             $orchArgs += " -PlanMode"
         }
 
-        # Use Start-Process to run detached
+        # Use Start-Process to run detached (Normal = visible for debugging)
         $process = Start-Process -FilePath "powershell.exe" `
             -ArgumentList $orchArgs `
-            -WindowStyle Hidden `
+            -WindowStyle Normal `
             -PassThru
 
         Write-Log "Orchestrator started with PID: $($process.Id)"
@@ -158,7 +158,7 @@ function Start-NightBurst {
                 Write-Log "WARNING: Orchestrator died, restarting..."
                 $process = Start-Process -FilePath "powershell.exe" `
                     -ArgumentList "-ExecutionPolicy Bypass -File `"$orchestratorPath`"" `
-                    -WindowStyle Hidden `
+                    -WindowStyle Normal `
                     -PassThru
                 Write-Log "Orchestrator restarted with PID: $($process.Id)"
             }

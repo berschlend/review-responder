@@ -1,42 +1,36 @@
 ﻿{
-    "agent":  "burst-5-hot-lead-chaser",
-    "version":  "3.0",
-    "status":  "running",
-    "started_at":  "2026-01-16T12:00:00Z",
-    "last_heartbeat":  "2026-01-15T21:44:58Z",
-    "current_loop":  3,
     "loop_interval":  "20min",
-    "metrics":  {
-                    "hot_leads_found":  41,
-                    "followup_1_sent":  41,
-                    "followup_2_sent":  27,
-                    "followup_2_pending":  13,
-                    "magic_links_sent":  0,
-                    "discounts_given":  0,
-                    "conversions":  0,
-                    "actions_taken":  2,
-                    "success_rate":  100,
-                    "errors_count":  0
-                },
+    "learnings_applied":  [
+                              "Magic Links work well for warm leads"
+                          ],
+    "current_loop":  3,
+    "started_at":  "2026-01-16T16:52:17Z",
+    "version":  "3.0",
+    "agent":  "burst-5-hot-lead-chaser",
+    "escalations_pending":  [
+
+                            ],
+    "checkpoints":  {
+                        "resume_from":  null,
+                        "last_successful_action":  "followup_check_complete",
+                        "last_processed_id":  null
+                    },
     "health":  {
                    "api_budget_ok":  true,
                    "memory_ok":  true,
                    "stuck_detected":  false,
                    "last_error":  null
                },
-    "checkpoints":  {
-                        "last_successful_action":  "checked_hot_leads",
-                        "last_processed_id":  null,
-                        "resume_from":  null
-                    },
-    "learnings_applied":  [
-                              "24h timing for FU1",
-                              "48h timing for FU2 (not 72h)",
-                              "No discount on FU1",
-                              "Cron handles FU2 automatically"
-                          ],
-    "escalations_pending":  [
-
-                            ],
-    "notes":  "Loop 3 complete. 41 clickers total. 27 have FU2, 13 pending. 11 LOST leads identified (2x FU but no registration). Hilton recommended for personal outreach."
+    "metrics":  {
+                    "hot_leads_found":  67,
+                    "followup1_all_sent":  true,
+                    "followup2_sent":  64,
+                    "followup2_pending":  3,
+                    "demo_viewers_no_email":  1,
+                    "conversions":  0,
+                    "actions_taken":  1
+                },
+    "status":  "running",
+    "last_heartbeat":  "2026-01-16T18:17:42Z",
+    "notes":  "All hot leads followed up. 3 leads pending FU2 (too fresh - need 2 days). 1 demo viewer without email. Waiting for new clicks."
 }

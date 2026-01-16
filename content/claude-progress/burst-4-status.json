@@ -1,19 +1,18 @@
 {
     "loop_interval": "4h",
     "learnings_applied": [
-        "LinkedIn endpoint (POST /api/outreach/linkedin-demo) works 100% for demo generation",
-        "Other demo endpoints fail with 'No reviews' due to Place ID lookup issues",
-        "Solution found: Use LinkedIn endpoint for ALL demo generation"
+        "Cache-First für existierende Demos",
+        "focus=mixed für Businesses mit nur positiven Reviews"
     ],
-    "current_loop": 2,
-    "started_at": "2026-01-15T21:32:41Z",
+    "current_loop": 1,
+    "started_at": "2026-01-16T16:52:17Z",
     "version": "3.0",
     "agent": "burst-4-demo-generator",
     "escalations_pending": [],
     "checkpoints": {
         "resume_from": null,
-        "last_successful_action": "2026-01-15T21:55:00Z",
-        "last_processed_id": "hot-lead-batch-17"
+        "last_successful_action": "2026-01-16T17:10:00Z",
+        "last_processed_id": "hot-leads-batch-1"
     },
     "health": {
         "api_budget_ok": true,
@@ -24,32 +23,69 @@
     "metrics": {
         "success_rate": 100,
         "errors_count": 0,
-        "actions_taken": 17,
-        "demos_generated_this_session": 17,
-        "total_hot_leads_processed": 17
+        "actions_taken": 11,
+        "demos_generated_this_session": 11,
+        "hot_leads_processed": 11,
+        "cache_hits": 0
     },
-    "status": "completed",
-    "last_heartbeat": "2026-01-15T21:55:00Z",
-    "session_summary": {
-        "demos_generated": [
-            {"business": "Augustiner Klosterwirt", "city": "Munich", "url": "https://tryreviewresponder.com/demo/ed97dd7aff4045f2fccf9ebccf477726"},
-            {"business": "Wirtshaus in der Au", "city": "Munich", "url": "https://tryreviewresponder.com/demo/d651f6bdc8aae7bcf53f16d138dd7344"},
-            {"business": "Sphere Tim Raue", "city": "Berlin", "url": "https://tryreviewresponder.com/demo/0c55bf2cf32d520b828f44b67dacae39"},
-            {"business": "Komodo Miami", "city": "Miami", "url": "https://tryreviewresponder.com/demo/8ebd7ec2ad2d4b44822b60f5a276df4a"},
-            {"business": "The Capital Grille", "city": "Seattle", "url": "https://tryreviewresponder.com/demo/d1cdfae61bdb2ab0f2b8fd8eb034df91"},
-            {"business": "Restaurant Sonnenberg", "city": "Zurich", "url": "https://tryreviewresponder.com/demo/5c4b3e1e14cbb63cd79eb53e904db83e"},
-            {"business": "Trattoria Sempre", "city": "Zurich", "url": "https://tryreviewresponder.com/demo/23352200036f5361a16df9caac98319d"},
-            {"business": "IntercityHotel Hamburg", "city": "Hamburg", "url": "https://tryreviewresponder.com/demo/60484c0f4cdd13ed8de7c66c0fde022b"},
-            {"business": "St James Quarter", "city": "Edinburgh", "url": "https://tryreviewresponder.com/demo/d3ce0ca9ca84f7edeca4e281efbdb045"},
-            {"business": "Bullring", "city": "Birmingham", "url": "https://tryreviewresponder.com/demo/472b9d635a8873897fec57693990f970"},
-            {"business": "Alder and Ash", "city": "Seattle", "url": "https://tryreviewresponder.com/demo/b4b993cfa97a9ed3df8f38e632ab050e"},
-            {"business": "Romano Law", "city": "New York", "url": "https://tryreviewresponder.com/demo/604782a630faa4f99debcf958f6ffe51"},
-            {"business": "terrasse Restaurant", "city": "Zurich", "url": "https://tryreviewresponder.com/demo/c91a3a15afbd768878fd9e098f17ba35"},
-            {"business": "The Dolder Grand", "city": "Zurich", "url": "https://tryreviewresponder.com/demo/3b0a400f04563cb442fe9fffa7be0672"},
-            {"business": "The Smith", "city": "New York", "url": "https://tryreviewresponder.com/demo/a8db7ffd4b5415de2a44693506401b9a"},
-            {"business": "AWAY SPA", "city": "Edinburgh", "url": "https://tryreviewresponder.com/demo/99f022eb3fd98188b3686e8d8a9d508e"},
-            {"business": "Six Seven Restaurant", "city": "Seattle", "url": "https://tryreviewresponder.com/demo/a922087b40ce0860f681d358c7baf911"}
-        ],
-        "key_finding": "POST /api/outreach/linkedin-demo works 100% while other demo endpoints fail"
-    }
+    "generated_demos": [
+        {
+            "business": "ROLLERCOASTERRESTAURANT Vienna",
+            "reviews": 23165,
+            "demo_url": "https://tryreviewresponder.com/demo/8532f43d74c1583cc872b428fa8028c8"
+        },
+        {
+            "business": "Bullring",
+            "reviews": 56388,
+            "demo_url": "https://tryreviewresponder.com/demo/f04abd7a37158c6bfe054ab37b4dc9e4"
+        },
+        {
+            "business": "Augustiner Klosterwirt",
+            "reviews": 13408,
+            "demo_url": "https://tryreviewresponder.com/demo/fa5be9961d9ed9bb3b4ea051f5c5bd1e"
+        },
+        {
+            "business": "Hotel Berlin Berlin Radisson",
+            "reviews": 8992,
+            "demo_url": "https://tryreviewresponder.com/demo/f1d0ea31cc7cce9705db9b892e7ef024"
+        },
+        {
+            "business": "Komodo Miami",
+            "reviews": 7260,
+            "demo_url": "https://tryreviewresponder.com/demo/665ebb67ffbc58e1d83adcb4b3bc17bc"
+        },
+        {
+            "business": "Wirtshaus in der Au",
+            "reviews": 5627,
+            "demo_url": "https://tryreviewresponder.com/demo/f105e7ce3b6bb7f94cf4487ecb82d2f6"
+        },
+        {
+            "business": "Travelodge London Central City Road",
+            "reviews": 4792,
+            "demo_url": "https://tryreviewresponder.com/demo/21fad0a878c94cbfd501af3bd8962388"
+        },
+        {
+            "business": "MEININGER Hotel Berlin East Side Gallery",
+            "reviews": 4402,
+            "demo_url": "https://tryreviewresponder.com/demo/d1da8b5711f91b60d17745f51632b677"
+        },
+        {
+            "business": "The Dolder Grand",
+            "reviews": 3840,
+            "demo_url": "https://tryreviewresponder.com/demo/79201a82b9b4db5083c40cdbed4ff34e"
+        },
+        {
+            "business": "Six Seven Restaurant",
+            "reviews": 2184,
+            "demo_url": "https://tryreviewresponder.com/demo/9b7c8eda758924d53d7196470107f9f6"
+        },
+        {
+            "business": "The Godfrey Hotel Hollywood",
+            "reviews": 1095,
+            "demo_url": "https://tryreviewresponder.com/demo/a08ad60590016c6d68d5dfef7e0aab15"
+        }
+    ],
+    "status": "running",
+    "last_heartbeat": "2026-01-16T17:10:00Z",
+    "next_run": "2026-01-16T21:10:00Z"
 }

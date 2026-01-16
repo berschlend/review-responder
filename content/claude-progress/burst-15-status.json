@@ -1,31 +1,39 @@
-{
-  "agent": "burst-15-approval-gate",
-  "version": "3.0",
-  "status": "running",
-  "last_heartbeat": "2026-01-15T21:40:00Z",
-  "started_at": "2026-01-15T21:32:42Z",
-  "current_loop": 1,
-  "loop_interval": "5m",
-  "metrics": {
-    "pending_approvals": 0,
-    "resolved_last_24h": 1,
-    "timeouts_last_24h": 0,
-    "avg_response_time_min": 0,
-    "actions_taken": 1
-  },
-  "health": {
-    "api_budget_ok": true,
-    "memory_ok": true,
-    "stuck_detected": false,
-    "last_error": null
-  },
-  "checkpoints": {
-    "last_processed_id": "burst-12-strategy-2026-01-16",
-    "last_successful_action": "2026-01-15T21:40:00Z",
-    "resume_from": null
-  },
-  "escalations_pending": [],
-  "learnings_applied": [],
-  "stuck": false,
-  "needs_berend": []
+﻿{
+    "loop_interval":  "5m",
+    "learnings_applied":  [
+
+                          ],
+    "current_loop":  27,
+    "started_at":  "2026-01-16T16:52:17Z",
+    "version":  "3.0",
+    "agent":  "burst-15-approval-gate",
+    "escalations_pending":  [
+
+                            ],
+    "checkpoints":  {
+                        "resume_from":  null,
+                        "last_successful_action":  "approval_queue_check",
+                        "last_processed_id":  null
+                    },
+    "health":  {
+                   "api_budget_ok":  true,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "metrics":  {
+                    "success_rate":  100,
+                    "errors_count":  0,
+                    "actions_taken":  1,
+                    "pending_approvals":  0,
+                    "resolved_last_24h":  2,
+                    "timeouts_last_24h":  1
+                },
+    "status":  "running",
+    "last_heartbeat":  "2026-01-16T18:29:14Z",
+    "last_run":  "2026-01-16T16:58:00Z",
+    "stuck":  false,
+    "needs_berend":  [
+
+                     ]
 }

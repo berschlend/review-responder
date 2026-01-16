@@ -1,8 +1,8 @@
 ﻿{
     "summary":  {
-                    "healthy":  15,
+                    "healthy":  4,
                     "restarted":  0,
-                    "stuck":  0,
+                    "stuck":  8,
                     "unhealthy":  0
                 },
     "agents":  {
@@ -17,38 +17,38 @@
                                    "NeedsRestart":  false
                                },
                    "burst-10":  {
-                                    "Status":  "healthy",
-                                    "Message":  "Running normally (loop 1)",
+                                    "Status":  "starting",
+                                    "Message":  "Agent initializing",
                                     "NeedsRestart":  false
                                 },
                    "burst-11":  {
-                                    "Status":  "healthy",
-                                    "Message":  "Running normally (loop 3)",
-                                    "NeedsRestart":  false
+                                    "Status":  "stuck",
+                                    "Message":  "No heartbeat for 76 minutes",
+                                    "NeedsRestart":  true
                                 },
                    "burst-7":  {
-                                   "Status":  "healthy",
-                                   "Message":  "Running normally (loop 2)",
-                                   "NeedsRestart":  false
+                                   "Status":  "stuck",
+                                   "Message":  "No heartbeat for 80 minutes",
+                                   "NeedsRestart":  true
                                },
                    "burst-2":  {
-                                   "Status":  "healthy",
-                                   "Message":  "Running normally (loop 2)",
-                                   "NeedsRestart":  false
-                               },
-                   "burst-6":  {
                                    "Status":  "healthy",
                                    "Message":  "Running normally (loop 1)",
                                    "NeedsRestart":  false
                                },
+                   "burst-6":  {
+                                   "Status":  "stuck",
+                                   "Message":  "No heartbeat for 138 minutes",
+                                   "NeedsRestart":  true
+                               },
                    "burst-4":  {
-                                   "Status":  "healthy",
-                                   "Message":  "Running normally (loop 2)",
+                                   "Status":  "starting",
+                                   "Message":  "Agent initializing",
                                    "NeedsRestart":  false
                                },
                    "burst-3":  {
-                                   "Status":  "healthy",
-                                   "Message":  "Running normally (loop 2)",
+                                   "Status":  "starting",
+                                   "Message":  "Agent initializing",
                                    "NeedsRestart":  false
                                },
                    "burst-13":  {
@@ -57,32 +57,32 @@
                                     "NeedsRestart":  false
                                 },
                    "burst-15":  {
-                                    "Status":  "healthy",
-                                    "Message":  "Running normally (loop 1)",
-                                    "NeedsRestart":  false
+                                    "Status":  "stuck",
+                                    "Message":  "No heartbeat for 103 minutes",
+                                    "NeedsRestart":  true
                                 },
                    "burst-1":  {
-                                   "Status":  "healthy",
-                                   "Message":  "Running normally (loop 3)",
-                                   "NeedsRestart":  false
+                                   "Status":  "stuck",
+                                   "Message":  "No heartbeat for 123 minutes",
+                                   "NeedsRestart":  true
                                },
                    "burst-5":  {
-                                   "Status":  "healthy",
-                                   "Message":  "Running normally (loop 3)",
-                                   "NeedsRestart":  false
+                                   "Status":  "stuck",
+                                   "Message":  "No heartbeat for 31 minutes",
+                                   "NeedsRestart":  true
                                },
                    "burst-8":  {
-                                   "Status":  "healthy",
-                                   "Message":  "Running normally (loop 1)",
-                                   "NeedsRestart":  false
+                                   "Status":  "stuck",
+                                   "Message":  "No heartbeat for 103 minutes",
+                                   "NeedsRestart":  true
                                },
                    "burst-12":  {
-                                    "Status":  "healthy",
-                                    "Message":  "Running normally (loop 2)",
-                                    "NeedsRestart":  false
+                                    "Status":  "stuck",
+                                    "Message":  "No heartbeat for 38 minutes",
+                                    "NeedsRestart":  true
                                 }
                },
-    "timestamp":  "2026-01-15T21:50:43Z",
+    "timestamp":  "2026-01-16T03:54:45Z",
     "check_interval_min":  5,
     "stuck_threshold_min":  30
 }

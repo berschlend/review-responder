@@ -105,21 +105,18 @@ WHILE TRUE:
 ## 📋 PHASE 1: Status Check
 
 ```bash
-curl -s "https://review-responder.onrender.com/api/admin/daily-email-count?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
+# Check resource budget (emails used today)
+# Lies content/claude-progress/resource-budget.json
+# Check: daily_limits.resend_emails.used < 100
+
+# Alternativ: Sales Dashboard für Gesamtübersicht
+curl -s "https://review-responder.onrender.com/api/admin/sales-dashboard" \
+  -H "x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
 ```
 
 **Entscheidung:**
-- <100 → Weitermachen
+- <100 Emails heute → Weitermachen
 - >=100 → WARTE (nicht stoppen!)
-
-```
-IF emails_today >= 100:
-  WHILE now() < midnight_utc:
-    sleep(30 minutes)
-    log("Waiting for daily reset...")
-  RESET counter
-  CONTINUE
-```
 
 ---
 
@@ -127,8 +124,8 @@ IF emails_today >= 100:
 
 ```
 Lies conversion-report.md für:
-- Beste Subject Lines (CTR)
-- Beste Versandzeit
+- Beste Subject Lines (CTR) → "Your [RATING]-star review from [NAME]..."
+- Hotel Chains = Highest Engagement
 - Welche Domains bouncen → Blacklist
 ```
 
@@ -137,8 +134,14 @@ Lies conversion-report.md für:
 ## 📋 PHASE 3: Nächsten Lead finden
 
 ```bash
-curl -s "https://review-responder.onrender.com/api/admin/next-uncontacted-lead?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
+# KORREKTE API: Leads mit status=new und email vorhanden
+curl -s "https://review-responder.onrender.com/api/admin/scraped-leads?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U&status=new&limit=10"
+
+# Filtere Leads MIT email (email != null)
+# Priorisiere: has_bad_review=true, hohe google_reviews_count
 ```
+
+**WICHTIG:** Viele Leads haben email=null! Nur Leads mit Email kontaktieren.
 
 ---
 
@@ -179,18 +182,32 @@ Free, no signup needed.
 Berend
 ```
 
-### Parallel-Safety:
+### KORREKTE API zum Email senden:
 
 ```bash
-# VOR dem Senden - Lock holen
-curl -X POST ".../api/admin/acquire-lock" -d '{"lock_name": "email-[LEAD_ID]"}'
+# Einzelne Cold Email senden (FUNKTIONIERT!)
+curl -s -X POST "https://review-responder.onrender.com/api/admin/send-cold-email?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U" \
+  -H "Content-Type: application/json" \
+  -d '{"to": "info@business.com", "name": "Business Name", "reviews": "123", "type": "restaurant"}'
 
-# Email senden
-curl -X POST ".../api/cron/send-single-outreach" -d '{...}'
-
-# NACH dem Senden - Lock freigeben
-curl -X POST ".../api/admin/release-lock" -d '{"lock_name": "email-[LEAD_ID]"}'
+# Response: {"success":true,"id":"<messageId>","to":"...","name":"...","provider":"brevo"}
 ```
+
+### Automatische Batch-Optionen (wenn einzeln zu langsam):
+
+```bash
+# Turbo Email (Wave-based, DACH Region)
+curl -s "https://review-responder.onrender.com/api/cron/turbo-email?secret=CRON_SECRET&limit=10"
+
+# Daily Outreach (allgemein)
+curl -s "https://review-responder.onrender.com/api/cron/daily-outreach?secret=CRON_SECRET&limit=5"
+
+# TripAdvisor/Yelp spezifisch
+curl -s "https://review-responder.onrender.com/api/cron/send-tripadvisor-emails?secret=CRON_SECRET&limit=5"
+curl -s "https://review-responder.onrender.com/api/cron/send-yelp-emails?secret=CRON_SECRET&limit=5"
+```
+
+**ACHTUNG:** Batch-Endpoints können langsam sein (Cold Start). Bei Timeout: Einzeln senden!
 
 ---
 
@@ -335,3 +352,32 @@ COLD = VALUE ONLY (Das bin ich)
 ```
 
 **Nur Berend kann mich stoppen. Sonst niemand.**
+
+---
+
+## 📝 LEARNINGS AUS TESTDURCHLÄUFEN
+
+### [17.01.2026] Testdurchlauf Erkenntnisse
+
+**Problem 1: Falsche Endpoints dokumentiert**
+- `/api/admin/daily-email-count` existiert NICHT
+- `/api/admin/next-uncontacted-lead` existiert NICHT
+- **Fix:** Nutze `/api/admin/scraped-leads?status=new` + manuelles Filtern
+
+**Problem 2: Viele Leads ohne Email**
+- ~60% der Leads haben `email: null`
+- **Fix:** Immer prüfen ob `email` vorhanden vor dem Senden
+
+**Problem 3: Batch-Endpoints sind langsam**
+- `/api/cron/night-blast` und `/api/cron/upgrade-leads` haben Timeouts
+- **Fix:** Einzelne Emails via `/api/admin/send-cold-email` senden
+
+**Was funktioniert:**
+- `/api/admin/send-cold-email` - Zuverlässig, ~3s pro Email
+- Brevo als Provider (nicht Resend)
+- Deutsche DACH Leads haben gute Emails
+
+**Metriken aus Test:**
+- 13 Emails in ~15 Minuten gesendet
+- 0 Bounces
+- Provider: Brevo (100% success)

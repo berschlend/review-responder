@@ -3837,11 +3837,7 @@ async function generateResponse(panel) {
 
 
   const stored = await safeStorageGet(['token', 'user']);
-
-  if (!stored.token) {
-    showToast('🔐 Please login in the extension popup first', 'error');
-    return;
-  }
+  const isAnonymous = !stored.token;
 
   // Show loading
   generateBtn.disabled = true;
@@ -3879,12 +3875,16 @@ async function generateResponse(panel) {
     // Get template content if a template was applied (for AI style guide)
     const templateContent = panel.dataset.selectedTemplateContent || undefined;
 
-    const response = await fetch(`${API_URL}/generate`, {
+    // Use public endpoint for anonymous users, authenticated endpoint for logged-in users
+    const endpoint = isAnonymous ? '/api/public/try' : '/api/generate';
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(stored.token && { 'Authorization': `Bearer ${stored.token}` })
+    };
+
+    const response = await fetch(`${API_URL}${endpoint}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${stored.token}`
-      },
+      headers,
       body: JSON.stringify({
         reviewText,
         tone,
@@ -3900,8 +3900,8 @@ async function generateResponse(panel) {
     const data = await response.json();
 
     if (!response.ok) {
-      // Handle token expiration
-      if (response.status === 401) {
+      // Handle token expiration (only for authenticated users)
+      if (response.status === 401 && !isAnonymous) {
         await handleUnauthorized();
         return;
       }
@@ -3912,6 +3912,11 @@ async function generateResponse(panel) {
     panel.querySelector('.rr-response-textarea').value = data.response;
     responseSection.classList.remove('hidden');
     responseSection.classList.add('visible');
+
+    // Show signup prompt for anonymous users
+    if (isAnonymous) {
+      showToast('✨ Like it? Sign up for 20 free responses/month!', 'info', 5000);
+    }
 
     // Compact Mode: Auto-collapse Review and Options sections after generation
     const reviewDetails = panel.querySelector('.rr-review-details');
@@ -4061,11 +4066,7 @@ async function generateResponseWithModifier(panel, modifier) {
   }
 
   const stored = await safeStorageGet(['token', 'user']);
-
-  if (!stored.token) {
-    showToast('🔐 Please login in the extension popup first', 'error');
-    return;
-  }
+  const isAnonymous = !stored.token;
 
   // Show loading
   generateBtn.disabled = true;
@@ -4096,12 +4097,16 @@ async function generateResponseWithModifier(panel, modifier) {
     // Get template content if a template was applied (for AI style guide)
     const templateContent = panel.dataset.selectedTemplateContent || undefined;
 
-    const response = await fetch(`${API_URL}/generate`, {
+    // Use public endpoint for anonymous users, authenticated endpoint for logged-in users
+    const endpoint = isAnonymous ? '/api/public/try' : '/api/generate';
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(stored.token && { 'Authorization': `Bearer ${stored.token}` })
+    };
+
+    const response = await fetch(`${API_URL}${endpoint}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${stored.token}`
-      },
+      headers,
       body: JSON.stringify({
         reviewText,
         tone: 'professional', // Base tone, modifier overrides the style
@@ -4117,8 +4122,8 @@ async function generateResponseWithModifier(panel, modifier) {
     const data = await response.json();
 
     if (!response.ok) {
-      // Handle token expiration
-      if (response.status === 401) {
+      // Handle token expiration (only for authenticated users)
+      if (response.status === 401 && !isAnonymous) {
         await handleUnauthorized();
         return;
       }
@@ -4129,6 +4134,11 @@ async function generateResponseWithModifier(panel, modifier) {
     panel.querySelector('.rr-response-textarea').value = data.response;
     responseSection.classList.remove('hidden');
     responseSection.classList.add('visible');
+
+    // Show signup prompt for anonymous users
+    if (isAnonymous) {
+      showToast('✨ Like it? Sign up for 20 free responses/month!', 'info', 5000);
+    }
 
     // Compact Mode: Auto-collapse Review and Options sections after generation
     const reviewDetails = panel.querySelector('.rr-review-details');

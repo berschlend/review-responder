@@ -62,9 +62,10 @@
 
 | Was | Wartet auf | Seit | Nächste Aktion |
 |-----|------------|------|----------------|
+| **Night-Burst System** | **Manuellen Neustart** | **17.01** | **6 Agents STALE, Burst-6 nie gestartet. Siehe for-berend.md für Commands** |
 | Chrome Extension v1.6.2 | Chrome Review (1-3 Tage) | 15.01 | Bei Approval → Google Ads schalten |
+| **Review Alerts Feature** | **Implementation (~4h Dev)** | **16.01** | **PUSH statt PULL - Wöchentliche Review-Digest Emails. Per Timeout freigegeben!** |
 | AnyDesk Remote (Laptop zu) | HDMI Dummy Plug kaufen | 16.01 | Amazon bestellen (~5€) → Einstecken |
-| Ralph-Loop Hook Fix | Neues Terminal | 16.01 | Ctrl+C + neues Terminal → Fix aktiv |
 
 ---
 

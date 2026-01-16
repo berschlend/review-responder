@@ -64,6 +64,18 @@
 
 ## 🚫 WHAT DOESN'T WORK (Nie wieder!)
 
+### 🆕 Activation Anti-Patterns (17.01.2026)
+| Pattern | Result | Learning |
+|---------|--------|----------|
+| **Generic Drip Emails** | **0% Activation** | 27 Users, 0 generated response |
+| "Hey you signed up..." | Ignored | No reason to act NOW |
+| Magic Link ohne Kontext | 0% Activation | User weiß nicht was tun |
+
+**INSIGHT:** Das Problem ist nicht RETENTION sondern ACTIVATION!
+User registrieren sich, nutzen das Produkt aber NIE.
+
+**HYPOTHESE:** Hyper-personalisierte Emails mit echten Review-Daten aktivieren besser.
+
 ### Email Anti-Patterns
 | Pattern | Why Bad | Alternative |
 |---------|---------|-------------|

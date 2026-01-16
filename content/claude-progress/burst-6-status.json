@@ -1,48 +1,80 @@
-{
-    "agent": "burst-6-user-activator",
-    "version": "3.0",
-    "status": "running",
-    "started_at": "2026-01-15T21:32:41Z",
-    "last_heartbeat": "2026-01-15T21:45:00Z",
-    "current_loop": 1,
-    "loop_interval": "4h",
-    "metrics": {
-        "actions_taken": 1,
-        "success_rate": 100,
-        "errors_count": 0,
-        "activation_emails_sent": 1,
-        "encouragement_sent": 0,
-        "upgrade_nudges_sent": 0
-    },
-    "user_analysis": {
-        "total_users": 38,
-        "never_used": 26,
-        "low_usage": 7,
-        "medium_usage": 5,
-        "high_usage": 0,
-        "activation_rate": "31.6%",
-        "users_at_limit": 0
-    },
-    "this_session": {
-        "dormant_user_activated": "H0796@accor.com (ibis Wien Mariahilf)",
-        "magic_link_users_nudged": 0,
-        "note": "Most medium_usage users are test accounts (rolicupo, berend.jakob) - no real business users to encourage"
-    },
-    "checkpoints": {
-        "last_successful_action": "2026-01-15T21:42:00Z",
-        "last_processed_id": null,
-        "resume_from": null
-    },
-    "health": {
-        "api_budget_ok": true,
-        "memory_ok": true,
-        "stuck_detected": false,
-        "last_error": null
-    },
-    "learnings_applied": [
-        "Magic Links bringen Registrations aber keine Conversions",
-        "78% der User nutzen Produkt nie",
-        "Activation ist der Bottleneck"
-    ],
-    "escalations_pending": []
+﻿{
+    "loop_interval":  "30min",
+    "learnings_applied":  [
+                              "Magic Links bringen Registrations aber keine Activation",
+                              "78% der User nutzen Produkt NIE",
+                              "Test-Accounts (rolicupo, breihosen) sind die einzigen aktiven User",
+                              "Drip-Emails (Day 0/2/5/10/20) sind bereits im System implementiert",
+                              "Re-engage Clickers sendet Magic Links an Hot Leads ohne Account",
+                              "Demo Expiration Emails erst nach 3+ Tagen relevant"
+                          ],
+    "current_loop":  5,
+    "started_at":  "2026-01-16T23:30:00Z",
+    "version":  "3.0",
+    "agent":  "burst-6-user-activator",
+    "escalations_pending":  [
+
+                            ],
+    "checkpoints":  {
+                        "resume_from":  null,
+                        "last_successful_action":  "demo-expiration-emails",
+                        "last_processed_id":  null
+                    },
+    "health":  {
+                   "api_budget_ok":  true,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "metrics":  {
+                    "success_rate":  100,
+                    "errors_count":  0,
+                    "actions_taken":  17,
+                    "activation_emails_sent":  17,
+                    "drip_emails_sent":  11,
+                    "magic_reengagement_sent":  2,
+                    "demo_expiration_sent":  0,
+                    "upgrade_nudges_sent":  0,
+                    "users_activated":  0
+                },
+    "status":  "running",
+    "last_heartbeat":  "2026-01-16T19:04:20Z",
+    "stats":  {
+                  "inactive_users_found":  30,
+                  "users_total":  42,
+                  "users_never_used":  30,
+                  "users_activated":  12,
+                  "activation_rate":  "29%",
+                  "activation_rate_target":  "\u003e30%",
+                  "upgrade_nudges_sent":  0
+              },
+    "last_action_details":  {
+                                "action":  "session-summary",
+                                "timestamp":  "2026-01-17T00:20:00Z",
+                                "result":  "All activation channels exhausted for this cycle"
+                            },
+    "loop_history":  [
+                         {
+                             "loop":  1,
+                             "action":  "activate-dormant-users",
+                             "result":  "4 activation emails sent"
+                         },
+                         {
+                             "loop":  2,
+                             "action":  "send-drip-emails",
+                             "result":  "11 drip emails sent"
+                         },
+                         {
+                             "loop":  3,
+                             "action":  "reengage-clickers",
+                             "result":  "2 magic link re-engagement emails sent"
+                         },
+                         {
+                             "loop":  4,
+                             "action":  "demo-expiration-emails",
+                             "result":  "0 emails (demos too fresh)"
+                         }
+                     ],
+    "next_check":  "2026-01-17T00:50:00Z",
+    "waiting_for":  "New user registrations or user activations"
 }

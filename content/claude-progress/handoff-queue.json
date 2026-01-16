@@ -21,7 +21,10 @@
                       "message":  "URGENT: All 886 leads with email addresses have been contacted. Only 8 uncontacted leads with email remain. Need MORE leads with valid email addresses! Currently 1328 leads without email.",
                       "id":  "b2-lead-request-20260115",
                       "created_at":  "2026-01-15T21:38:00Z",
-                      "status":  "pending"
+                      "status":  "processed",
+                      "processed_at":  "2026-01-16T01:45:00Z",
+                      "processed_by":  "burst-1",
+                      "result":  "Triggered Night-Loop, sent 7 emails to new leads. Night-Blast already running and finding more leads with emails."
                   },
                   {
                       "from":  "burst-4",
@@ -31,7 +34,10 @@
                       "message":  "20 hot leads without demos all have \u0027No reviews\u0027 error. These businesses HAVE reviews (e.g. St James Quarter 9691 reviews, Hilton LA Airport 11849 reviews) but API lookup fails. Need better Google Place ID matching or manual enrichment for: ibis Wien Mariahilf, St James Quarter Edinburgh, Hilton LA Airport, Trattoria Sempre Zürich, terrasse Restaurant Zürich, Novotel London Canary Wharf",
                       "id":  "b4-enrichment-request-20260115",
                       "created_at":  "2026-01-15T21:37:30Z",
-                      "status":  "pending"
+                      "status":  "processed",
+                      "processed_at":  "2026-01-16T18:00:00Z",
+                      "processed_by":  "burst-1",
+                      "result":  "Used LinkedIn endpoint workaround - generated 6 demos: ibis Wien (4.1★), St James Quarter (4.4★), Novotel London (4.5★), Trattoria Sempre (4.6★), terrasse Restaurant (4.3★), Hilton LA Airport (3.9★). All businesses now have working demos."
                   },
                   {
                       "from":  "burst-5",
@@ -55,6 +61,73 @@
                       "priority":  1,
                       "id":  "682471e4",
                       "created_at":  "2026-01-15T21:43:55Z",
+                      "status":  "pending"
+                  },
+                  {
+                      "from":  "burst-14",
+                      "to":  "burst-5",
+                      "type":  "mega_hot_leads",
+                      "data":  {
+                                   "count":  3,
+                                   "leads":  [
+                                                 {
+                                                     "email":  "office@rollercoasterrestaurant.com",
+                                                     "business":  "ROLLERCOASTERRESTAURANT Vienna",
+                                                     "score":  95,
+                                                     "reviews":  23164,
+                                                     "clicked_at":  "2026-01-16T09:43:22Z",
+                                                     "priority":  "IMMEDIATE"
+                                                 },
+                                                 {
+                                                     "email":  "info@treudelberg.com",
+                                                     "business":  "IntercityHotel Hamburg",
+                                                     "score":  92,
+                                                     "reviews":  2752,
+                                                     "clicked_at":  "2026-01-15T09:04:34Z",
+                                                     "priority":  "HIGH"
+                                                 },
+                                                 {
+                                                     "email":  "advantageclub@leonardo-hotels.com",
+                                                     "business":  "Leonardo Royal Berlin",
+                                                     "score":  90,
+                                                     "reviews":  5787,
+                                                     "clicked_at":  "2026-01-15T07:01:37Z",
+                                                     "priority":  "HIGH"
+                                                 }
+                                             ],
+                                   "note":  "Score 90+ leads need IMMEDIATE personal follow-up"
+                               },
+                      "priority":  1,
+                      "id":  "b14-mega-hot-20260116",
+                      "created_at":  "2026-01-16T17:15:00Z",
+                      "status":  "pending"
+                  },
+                  {
+                      "from":  "burst-14",
+                      "to":  "burst-7",
+                      "type":  "conversion_prep",
+                      "data":  {
+                                   "count":  3,
+                                   "leads":  [
+                                                 "office@rollercoasterrestaurant.com",
+                                                 "info@treudelberg.com",
+                                                 "advantageclub@leonardo-hotels.com"
+                                             ],
+                                   "note":  "Prepare discount offers for these mega-hot leads after Burst-5 follow-up"
+                               },
+                      "priority":  2,
+                      "id":  "b14-convert-prep-20260116",
+                      "created_at":  "2026-01-16T17:15:00Z",
+                      "status":  "pending"
+                  },
+                  {
+                      "from":  "burst-1",
+                      "to":  "burst-5",
+                      "type":  "demo_ready",
+                      "priority":  2,
+                      "message":  "6 new demos generated via LinkedIn-Endpoint workaround: ibis Wien, St James Quarter Edinburgh, Novotel London, Trattoria Sempre Zuerich, terrasse Restaurant Zuerich, Hilton LA Airport. These hot leads now have working demo links and need follow-up.",
+                      "id":  "275cfc8e",
+                      "created_at":  "2026-01-16T17:10:02Z",
                       "status":  "pending"
                   }
               ],

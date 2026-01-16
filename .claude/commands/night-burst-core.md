@@ -1,7 +1,7 @@
-# Night-Burst Core V3.3 - JEDER AGENT MUSS DAS INCLUDEN
+# Night-Burst Core V3.4 - JEDER AGENT MUSS DAS INCLUDEN
 
 > Basierend auf Anthropic's "Building Effective Agents" + "Multi-Agent Research System"
-> Updated: V3.3 mit ausführbaren Helper-Commands für echte Automation
+> Updated: V3.4 mit Anti-Spam Notification System
 
 ---
 
@@ -293,6 +293,52 @@ powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent [X] -Data
 
 ---
 
+## 🔔 NOTIFICATION SYSTEM (V3.4 - Anti-Spam!)
+
+> **WICHTIG:** Night-Burst Sessions (BURST*, NB-*) haben SPAM-SCHUTZ!
+> Normale "done"/"input" Notifications werden unterdrückt.
+
+### Warum Spam-Schutz?
+Die Stop/Notification Hooks in `.claude/settings.json` haben keinen Matcher - sie feuern bei JEDEM Tool-Call! Das führte zu Notification-Spam während der Agent noch arbeitet.
+
+### Lösung: Nur "critical" kommt durch!
+
+```bash
+# NORMALES ARBEITEN:
+# "done" und "input" werden automatisch unterdrückt für BURST*/NB-* Sessions
+# → Kein Spam mehr!
+
+# BEI ECHTEM PROBLEM (brauche Hilfe):
+powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\claude-notify.ps1" -Type critical -Session "BURST[X]" -Message "Problem: [Beschreibung]"
+
+# BEI SALE (!):
+powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\claude-notify.ps1" -Type sale -Session "BURST[X]" -Message "SALE: [Details]"
+
+# BEI PLAN FERTIG (Orchestrator):
+powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\claude-notify.ps1" -Type plans_ready -Message "Alle Plaene bereit!"
+```
+
+### Notification Types für Night-Burst:
+
+| Type | Durchgelassen? | Wann nutzen |
+|------|---------------|-------------|
+| `done` | ❌ UNTERDRÜCKT | Nie manuell nutzen |
+| `input` | ❌ UNTERDRÜCKT | Nie manuell nutzen |
+| `critical` | ✅ JA | Bei echten Problemen |
+| `sale` | ✅ JA | Bei Conversion! |
+| `plans_ready` | ✅ JA | Orchestrator: Alle Pläne fertig |
+| `plans_partial` | ✅ JA | Orchestrator: Timeout |
+
+### Session-Name Format:
+```bash
+# Session-Name MUSS mit BURST oder NB- starten für Spam-Schutz:
+$env:CLAUDE_SESSION = "BURST1"   # Agent 1
+$env:CLAUDE_SESSION = "BURST15"  # Agent 15
+$env:CLAUDE_SESSION = "NB-ORCH"  # Orchestrator
+```
+
+---
+
 ## 📊 RESOURCE BUDGET CHECK (V3)
 
 **VOR jeder API-intensiven Aktion:**
@@ -562,6 +608,98 @@ NACH JEDEM ERFOLGREICHEN STEP:
 - Result: [Was passierte tatsächlich?]
 - Match Expected: Yes/No
 - Learning: [Was habe ich gelernt?]
+```
+
+---
+
+## 🔥 ALWAYS COOKING - SUBAGENT SPAWNING (V3.4 - NEU!)
+
+> **WICHTIG:** Du bist NIEMALS fertig. Wenn deine Hauptaufgabe erledigt ist, findest du andere nützliche Arbeit!
+
+### Subagent Spawning mit Task Tool
+
+Du hast Zugriff auf das **Task Tool** um Subagents zu spawnen. Nutze es wenn:
+- Du eine Aufgabe hast die parallel laufen kann
+- Du mit deiner Hauptaufgabe fertig bist und andere helfen willst
+- Du eine komplexe Recherche brauchst
+
+```
+# Subagent spawnen Beispiel:
+Task tool verwenden mit:
+- subagent_type: "Explore" (für Recherche)
+- subagent_type: "general-purpose" (für komplexe Tasks)
+- prompt: Detaillierte Aufgabenbeschreibung
+
+# Beispiel: Parallel Lead-Recherche
+"Recherchiere die Top 10 Restaurants in Miami mit 3-4 Sterne Reviews auf TripAdvisor.
+Finde deren Website und Contact Email. Return als JSON Liste."
+```
+
+### "Always Cooking" Mindset
+
+```
+WENN HAUPTAUFGABE ERLEDIGT:
+
+1. CHECK: Gibt es Handoffs in handoff-queue.json für mich?
+   → JA: Bearbeite diese zuerst
+
+2. CHECK: Kann ich einem anderen Agent helfen?
+   - Burst-1 braucht Leads? → Recherchiere mehr
+   - Burst-2 braucht Emails? → Enriche bestehende Leads
+   - Burst-7 braucht Conversions? → Analysiere warum User nicht zahlen
+
+3. CHECK: Gibt es Bottlenecks die ich lösen kann?
+   - Lies bottleneck-report.md
+   - Kann ich was beitragen?
+
+4. CHECK: Kann ich Learnings aus meiner Arbeit dokumentieren?
+   - Was hat funktioniert?
+   - Was hat nicht funktioniert?
+   - Schreibe in learnings.md
+
+5. CHECK: Gibt es Daten die analysiert werden sollten?
+   - API Responses auswerten
+   - Patterns erkennen
+   - Conversion-Rates berechnen
+
+6. NIEMALS IDLE - Immer produktiv sein!
+```
+
+### Autonome Zusatzarbeit nach Hauptaufgabe
+
+| Wenn ich bin... | Kann ich zusätzlich... |
+|-----------------|------------------------|
+| Lead Finder (1) | Bestehende Leads enrichen, Emails validieren |
+| Cold Emailer (2) | A/B Test Subject Lines analysieren, Templates verbessern |
+| Social DM (3) | LinkedIn Connections recherchieren |
+| Demo Generator (4) | Landing Page Screenshots für Outreach erstellen |
+| Hot Lead Chaser (5) | Conversion Patterns analysieren |
+| User Activator (6) | Onboarding Flow optimieren |
+| Payment Converter (7) | Pricing Page Feedback sammeln |
+| Upgrader (8) | Feature-Usage analysieren |
+| Doctor (9) | Metriken visualisieren, Alerts konfigurieren |
+| Morning Briefer (10) | Historische Trends dokumentieren |
+| Bottleneck Analyzer (11) | A/B Test Ideen generieren |
+| Creative Strategist (12) | Competitor Research |
+| Churn Prevention (13) | Exit-Survey Responses analysieren |
+| Lead Scorer (14) | Scoring Model verbessern |
+| Approval Gate (15) | Queue-Statistiken dokumentieren |
+
+### Anti-Idle Rule
+
+```
+⚠️ NIEMALS das hier tun:
+
+- "Ich bin fertig, warte auf nächsten Loop" ❌
+- "Keine weiteren Aufgaben für mich" ❌
+- "Meine Arbeit ist getan" ❌
+
+✅ STATTDESSEN:
+
+- "Hauptaufgabe erledigt, checke Handoffs..."
+- "Keine Handoffs, schaue ob ich Burst-X helfen kann..."
+- "Analysiere bisherige Ergebnisse für Learnings..."
+- "Spawne Subagent für parallele Recherche..."
 ```
 
 ---
