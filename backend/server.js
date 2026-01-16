@@ -326,7 +326,21 @@ function isTestEmail(email) {
     /^aaa@/i,
   ];
 
-  return patternChecks.some(regex => regex.test(lowerEmail));
+  if (patternChecks.some(regex => regex.test(lowerEmail))) return true;
+
+  // Check ghost email patterns (generic business emails)
+  if (isGhostEmail(lowerEmail)) return true;
+
+  return false;
+}
+
+// Ghost emails - generic business emails that real humans don't check for SaaS
+function isGhostEmail(email) {
+  if (!email) return false;
+  const ghostPatterns = [
+    /^(info|hello|contact|privacy|reservation|reservations|welcome|support|team|noreply|no-reply|booking|bookings|enquiries|enquiry|admin|office|sales|marketing|press|media|careers|jobs|hr|legal|billing|accounts|feedback|help|service|services|general|mail|email|webmaster|postmaster)@/i,
+  ];
+  return ghostPatterns.some(regex => regex.test(email.toLowerCase()));
 }
 
 /**
