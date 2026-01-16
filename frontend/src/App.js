@@ -13209,6 +13209,7 @@ const VideoDemoPage = () => {
 // Demo Landing Page - Personalized demo for cold outreach
 const DemoPage = () => {
   const { token } = useParams();
+  const { user } = useAuth();
   const [demo, setDemo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13562,8 +13563,14 @@ const DemoPage = () => {
           <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', lineHeight: '1.6' }}>
             Sign up free to generate fresh AI responses for your reviews. No credit card required.
           </p>
-          <a
-            href={demo.cta_url || '/register?discount=DEMO30'}
+          <button
+            onClick={() => {
+              if (user) {
+                window.location.href = '/dashboard';
+              } else {
+                setShowEmailModal(true);
+              }
+            }}
             className="btn btn-primary"
             style={{
               padding: '16px 32px',
@@ -13572,12 +13579,11 @@ const DemoPage = () => {
               background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
               border: 'none',
               borderRadius: '12px',
-              display: 'inline-block',
-              textDecoration: 'none',
+              cursor: 'pointer',
             }}
           >
-            Start Free – No Credit Card
-          </a>
+            {user ? 'Go to Dashboard' : 'Start Free – No Credit Card'}
+          </button>
           <p style={{ marginTop: '16px', color: 'var(--text-muted)', fontSize: '14px' }}>
             20 responses/month free forever
           </p>
@@ -13744,13 +13750,19 @@ const DemoPage = () => {
               ReviewResponder
             </span>
           </a>
-          <a
-            href={demo.cta_url}
+          <button
+            onClick={() => {
+              if (user) {
+                window.location.href = '/dashboard';
+              } else {
+                setShowEmailModal(true);
+              }
+            }}
             className="btn btn-primary"
-            style={{ padding: '10px 20px', fontSize: '14px' }}
+            style={{ padding: '10px 20px', fontSize: '14px', cursor: 'pointer' }}
           >
-            Try It Free
-          </a>
+            {user ? 'Go to Dashboard' : 'Try It Free'}
+          </button>
         </div>
       </div>
 
@@ -14658,8 +14670,14 @@ const DemoPage = () => {
             >
               20 free responses every month. No credit card required.
             </p>
-            <a
-              href={demo.cta_url}
+            <button
+              onClick={() => {
+                if (user) {
+                  window.location.href = '/dashboard';
+                } else {
+                  setShowEmailModal(true);
+                }
+              }}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -14668,18 +14686,19 @@ const DemoPage = () => {
                 color: 'var(--primary)',
                 padding: '16px 36px',
                 borderRadius: '10px',
-                textDecoration: 'none',
+                border: 'none',
                 fontWeight: '700',
                 fontSize: '16px',
                 boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
                 transition: 'transform 0.2s',
+                cursor: 'pointer',
               }}
             >
-              Get Started Free
+              {user ? 'Go to Dashboard' : 'Get Started Free'}
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
               </svg>
-            </a>
+            </button>
             {/* Book a Call CTA - Personal Touch */}
             <p style={{ marginTop: '20px', color: 'rgba(255,255,255,0.9)', fontSize: '14px' }}>
               Questions? <a
@@ -14899,14 +14918,20 @@ const DemoPage = () => {
               No credit card
             </span>
           </div>
-          <a
-            href={demo?.cta_url}
+          <button
+            onClick={() => {
+              if (user) {
+                window.location.href = '/dashboard';
+              } else {
+                setShowEmailModal(true);
+              }
+            }}
             style={{
               background: 'linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%)',
               color: 'white',
               padding: '10px 24px',
               borderRadius: '8px',
-              textDecoration: 'none',
+              border: 'none',
               fontWeight: '600',
               fontSize: '14px',
               whiteSpace: 'nowrap',
@@ -14914,11 +14939,12 @@ const DemoPage = () => {
               alignItems: 'center',
               gap: '6px',
               boxShadow: '0 2px 8px rgba(99, 102, 241, 0.3)',
+              cursor: 'pointer',
             }}
           >
-            Start Free Trial
+            {user ? 'Go to Dashboard' : 'Start Free Trial'}
             <ArrowRight size={16} />
-          </a>
+          </button>
         </div>
       </div>
 
