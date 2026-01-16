@@ -213,28 +213,45 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 
 ## CURRENT TASKS
 
-**Stand: 17.01.2026**
+**Stand: 16.01.2026 (21:00 UTC)**
 
 ### Chrome Web Store
 **Status:** Überprüfung läuft (eingereicht 13.01)
 - Extension v1.6.1
 - Test Account: reviewer@tryreviewresponder.com
 
-### Metriken (17.01 01:15 UTC)
-- **2,498 Leads**
-- **1,496 Emails** gesendet
-- **67 Clicks** (4.5% CTR)
-- **42 Users** (0 paying)
+### Metriken (16.01 20:45 UTC)
+- **3,657 Responses** generiert (dynamisch auf Demo-Pages!)
+- **1,064 Demos** erstellt
+- **54 Users** (0 paying)
 - **0 Conversions** ← Hauptfokus!
-- **Burst-6 aktiviert** - 17 Activation Emails gesendet
+
+### Neue Features (16.01)
+- ✅ **Calendly Integration** - "Book a quick call" Button auf Demo-Pages
+  - Link: `calendly.com/berend-jakob-mainz/quick-call`
+- ✅ **Dynamische Response-Zähler** - Zeigt echte Zahlen auf Demo-Pages
+  - Endpoint: `/api/public/stats` (cached 5min)
+  - Zählt: User Responses + Instant Try + Demo Responses
 
 ### USER TODO:
 - [ ] Demo-Videos aufnehmen
 - [ ] Google Indexierung fortsetzen
+- [ ] Optional: WhatsApp Business einrichten
 
 ---
 
 ## LEARNINGS (Wichtige!)
+
+### Public Stats Endpoint Robustheit (16.01)
+**Problem:** `/api/public/stats` crashte weil `public_try_usage` Tabelle evtl. nicht existiert.
+**Fix:** Jede DB-Query in eigenen try/catch wrappen, Fehler loggen aber weitermachen.
+**Lesson:** Bei Multi-Table Queries immer individual error handling - eine fehlende Tabelle sollte nicht alles crashen!
+
+### API_BASE vs API_URL im Frontend (16.01)
+**Problem:** `ReferenceError: API_BASE is not defined` - Demo-Page lädt nicht.
+**Ursache:** `API_BASE` existiert nicht global, nur `API_URL` (Zeile 275).
+**Fix:** `fetch(\`${API_URL}/public/stats\`)` statt `fetch(\`${API_BASE}/api/public/stats\`)`
+**Lesson:** Immer prüfen welche Variablen im Scope sind! `API_URL` enthält schon `/api`.
 
 ### Frontend Build Crash (16.01)
 **Problem:** Weisse Seite, React lädt nicht.
