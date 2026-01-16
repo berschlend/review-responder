@@ -2883,7 +2883,7 @@ SIGN OFF:
                   fontWeight: '500',
                 }}
               >
-                — {testimonial.user_name || 'Verified User'}
+                — {testimonial.display_name || testimonial.user_name || 'Verified User'}
               </div>
             </div>
 
