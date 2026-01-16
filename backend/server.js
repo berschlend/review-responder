@@ -248,6 +248,10 @@ const TEST_EMAILS = [
   'contestmail@gmail.com',
   'testemaiccecel@gmail.com',
   'testemail@gmail.com',
+  'anothertestaccount@gmail.com',
+  // Owner Accounts (alle Berend-Varianten)
+  'berend.mainz@gmail.com',
+  'berend.jakob.mainz@gmail.com',
   // Freunde (aus Metriken ausschließen)
   'breihosen@gmail.com',
   'andrehoellering1732004@gmail.com',
@@ -256,6 +260,9 @@ const TEST_EMAILS = [
   'matiasaseff@hotmail.com',
   'lennart.schega@gmail.com',
   'tiniwi09@gmail.com',
+  // Rolicupo - unklar ob echt, erstmal excluded
+  'rolicupo.twitch@gmail.com',
+  'rolicupo.games@gmail.com',
 ].map(e => e.toLowerCase());
 
 // SQL LIKE Patterns für Test-Emails
