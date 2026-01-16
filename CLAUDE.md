@@ -260,6 +260,16 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 ### Email Deliverability
 - "Hey" statt "Hallo" → Primary Inbox
 - Keine Emojis, keine Marketing-Floskeln
+- HTML Emails mit CTA-Button > Plain Text mit nackter URL
+- FRONTEND_URL MUSS Fallback haben: `process.env.FRONTEND_URL || 'https://tryreviewresponder.com'`
+
+### Discount Code Validation (16.01)
+**Problem:** CLICKER30 wurde in 9 Emails erwähnt aber NIE im Stripe-Handler implementiert.
+**Lesson:** Vor neuem Discount-Code IMMER prüfen:
+1. Ist der Code in `validDiscountCodes` Handler? (create-checkout-session)
+2. Wird ein Stripe Coupon erstellt?
+3. Steht der Code in `discountInfo` Lookup?
+**Fix:** CLICKER30 → DEMO30 ersetzt (DEMO30 war bereits implementiert).
 
 ### AI Response Qualität
 **Blacklisted:** "Thank you for your feedback", "We appreciate...", "thrilled", "delighted"

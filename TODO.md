@@ -1,6 +1,6 @@
 # ReviewResponder - Todo Liste
 
-> Letzte Aktualisierung: 17.01.2026
+> Letzte Aktualisierung: 16.01.2026 (21:30 UTC)
 
 ---
 
@@ -277,8 +277,16 @@
 
 ---
 
-## 🟢 HEUTE ERLEDIGT (17.01.2026)
+## 🟢 HEUTE ERLEDIGT (16.01.2026)
 
+- [x] **Email System Audit & Fixes** - Kritische Bugs behoben
+  - Security: self-set-plan erfordert jetzt ADMIN_SECRET
+  - CLICKER30 → DEMO30 (war broken, nicht implementiert)
+  - FLASH50 Timeout: 2h → 24h (realistischer)
+  - SAVE20 → WELCOME30 als Default
+  - sendEmailWithFallback → sendEmail Bug gefixt
+  - HTML Templates mit CTA-Buttons für Demo-Emails
+  - FRONTEND_URL Fallbacks (8 Stellen) hinzugefügt
 - [x] **Amazon SES Admin Card** - Im Email Tab sichtbar als Primary Provider
 - [x] **Amazon Seller Email System** - Dediziertes Lead-System (war bereits committed)
   - `amazon_seller_leads` Tabelle

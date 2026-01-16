@@ -13235,7 +13235,7 @@ const DemoPage = () => {
   useEffect(() => {
     fetchDemo();
     // Fetch public stats for dynamic counter
-    fetch(`${API_BASE}/api/public/stats`)
+    fetch(`${API_URL}/public/stats`)
       .then(res => res.json())
       .then(data => setPublicStats(data))
       .catch(() => {}); // Keep fallback
