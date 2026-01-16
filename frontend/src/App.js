@@ -2624,7 +2624,7 @@ SIGN OFF:
             display: 'inline-block',
           }}
         >
-          EXAMPLE
+          EXAMPLES
         </span>
         <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
           This Is What Your AI Responses Will Look Like
