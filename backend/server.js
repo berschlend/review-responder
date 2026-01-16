@@ -24087,6 +24087,23 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
       });
     }
 
+    // Step 5: Send Review Alerts to existing users (PUSH model for retention)
+    // This is the ROOT CAUSE fix for $0 MRR - remind users about new reviews
+    let reviewAlertsResults = { alerts_sent: 0 };
+    try {
+      const baseUrl = process.env.BACKEND_URL || 'https://review-responder.onrender.com';
+      const alertsResponse = await fetch(
+        `${baseUrl}/api/cron/review-alerts?secret=${process.env.CRON_SECRET}`
+      );
+      reviewAlertsResults = await alertsResponse.json();
+      console.log(`🔔 Review Alerts: ${reviewAlertsResults.alerts_sent || 0} sent to ${reviewAlertsResults.users_checked || 0} users`);
+    } catch (e) {
+      console.error('Review alerts call failed:', e.message);
+      reviewAlertsResults = { error: e.message };
+    }
+
+    results.review_alerts = reviewAlertsResults;
+
     // Minimal response for cron-job.org (has size limit)
     res.json({
       ok: true,
@@ -24094,6 +24111,7 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
       emails: results.email_finding?.total_found || 0,
       sent: results.sending?.sent || 0,
       followups: results.followups?.sent || 0,
+      review_alerts: reviewAlertsResults.alerts_sent || 0,
     });
   } catch (error) {
     console.error('Daily outreach error:', error);
