@@ -22,7 +22,7 @@ Alternative options:
 
 1. **AI-Powered Responses** - Generate professional, contextual replies to any review in seconds using GPT-4o-mini
 
-2. **4 Response Tones** - Choose between Professional, Friendly, Formal, or Apologetic to match your brand voice
+2. **4 Response Tones** - Choose between Professional, Friendly, Formal, or Apologetic - pick the tone that fits
 
 3. **Any Language** - Automatic language detection and response in the customer's language
 
