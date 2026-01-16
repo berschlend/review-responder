@@ -1733,6 +1733,13 @@ async function initDatabase() {
       // Column might already exist
     }
 
+    // Add business_name column to user_feedback for testimonial display
+    try {
+      await dbQuery(`ALTER TABLE user_feedback ADD COLUMN IF NOT EXISTS business_name TEXT`);
+    } catch (error) {
+      // Column might already exist
+    }
+
     // Add AI context generation rate limiting columns
     try {
       await dbQuery(
