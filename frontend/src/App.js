@@ -494,6 +494,9 @@ const InstantDemoWidget = ({
     return localStorage.getItem('instant_demo_email') === 'true';
   });
 
+  // Editable response state - tracks user edits to AI response
+  const [editedResponse, setEditedResponse] = useState(null);
+
   // Lead context injection - fetch when lid param present
   const [leadContext, setLeadContext] = useState(null);
 
@@ -683,6 +686,7 @@ const InstantDemoWidget = ({
     setLoading(true);
     setError('');
     setResponse('');
+    setEditedResponse(null);
     try {
       // Include auth token if user is logged in (for proper rate limiting)
       const token = localStorage.getItem('token');
@@ -733,7 +737,9 @@ const InstantDemoWidget = ({
       setShowEmailModal(true);
       return;
     }
-    navigator.clipboard.writeText(response);
+    // Use edited response if user has modified it, otherwise use original
+    const textToCopy = editedResponse !== null ? editedResponse : response;
+    navigator.clipboard.writeText(textToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -962,21 +968,45 @@ const InstantDemoWidget = ({
               AI Response
             </span>
           </div>
-          <p
+          {/* Editable Response Textarea */}
+          <textarea
+            value={editedResponse !== null ? editedResponse : response}
+            onChange={(e) => setEditedResponse(e.target.value)}
             style={{
+              width: '100%',
+              minHeight: '80px',
+              padding: '12px',
               fontSize: '14px',
               lineHeight: '1.6',
               color: 'var(--text-primary)',
-              margin: 0,
-              whiteSpace: 'pre-wrap',
+              border: '1px solid var(--border-color)',
+              borderRadius: '8px',
+              background: 'var(--bg-primary)',
+              fontFamily: 'inherit',
+              resize: 'vertical',
+              marginBottom: '8px',
             }}
-          >
-            {response}
-          </p>
+          />
+          {/* Edit Anytime Hint */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '12px',
+            color: 'var(--text-muted)',
+            marginBottom: '12px',
+          }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            {editedResponse !== null
+              ? <span style={{ color: '#059669' }}>Edited - your personal touch added</span>
+              : 'Feel free to edit before copying'}
+          </div>
           <div
             style={{
-              marginTop: '16px',
-              paddingTop: '16px',
+              paddingTop: '12px',
               borderTop: '1px solid var(--border-color)',
               display: 'flex',
               justifyContent: 'space-between',
@@ -7586,6 +7616,22 @@ const DashboardPage = () => {
 
             {response && (
               <>
+                {/* Edit Anytime Hint */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '12px',
+                  color: 'var(--gray-500)',
+                  marginTop: '8px',
+                  marginBottom: '8px',
+                }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                  Pro tip: You can always edit this text after copying
+                </div>
                 <div className="response-actions">
                   <button className="btn btn-success" onClick={copyToClipboard}>
                     {copied ? <Check size={16} /> : <Copy size={16} />}

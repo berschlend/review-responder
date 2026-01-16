@@ -3,7 +3,7 @@
     "learnings_applied":  [
 
                           ],
-    "current_loop":  0,
+    "current_loop":  1,
     "started_at":  "2026-01-16T22:56:53Z",
     "version":  "3.0",
     "agent":  "burst-4-demo-generator",
@@ -22,10 +22,13 @@
                    "last_error":  null
                },
     "metrics":  {
-                    "success_rate":  0,
+                    "success_rate":  100,
                     "errors_count":  0,
-                    "actions_taken":  0
+                    "actions_taken":  15,
+                    "demos_generated": 15,
+                    "emails_sent": 15
                 },
-    "status":  "initializing",
-    "last_heartbeat":  null
+    "status":  "running",
+    "last_heartbeat":  "2026-01-16T23:15:00Z",
+    "last_action": "Generated 15 demos for hot leads (Optica Dublin, Leonardo Hotel, Generator Berlin, VASA Fitness, Saks Fifth Avenue, etc.)"
 }

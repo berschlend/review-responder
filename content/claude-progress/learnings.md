@@ -589,3 +589,7 @@ User klicken Magic Link → werden registriert → nutzen Produkt NIE → erreic
 ### [2026-01-16 22:49] Burst-14
 - DACH region has 43% click-to-registration rate vs UK 33% vs US 25%. Should weight DACH leads higher in scoring model. 27 real users now registered but 0% activation remains the critical blocker.
 
+
+### [2026-01-16 23:13] Burst-4
+- Demo generation works best with businesses that have 3-4 star ratings - 5-star businesses have no negative reviews to showcase. Hotels/restaurants with 3.4-4.0 ratings generate best demo content.
+
