@@ -13167,44 +13167,6 @@ const DemoPage = () => {
   const [pendingCopyIndex, setPendingCopyIndex] = useState(null);
   const [showAllResponses, setShowAllResponses] = useState(false);
 
-  // COUNTDOWN TIMER: 24h urgency timer
-  const [countdown, setCountdown] = useState({ hours: 23, minutes: 59, seconds: 59 });
-
-  useEffect(() => {
-    // Get or set countdown expiry time
-    const storageKey = `demo_countdown_${token}`;
-    let expiryTime = localStorage.getItem(storageKey);
-
-    if (!expiryTime) {
-      // First visit - set 24h from now
-      expiryTime = Date.now() + 24 * 60 * 60 * 1000;
-      localStorage.setItem(storageKey, expiryTime.toString());
-    } else {
-      expiryTime = parseInt(expiryTime);
-    }
-
-    const updateCountdown = () => {
-      const now = Date.now();
-      const diff = Math.max(0, expiryTime - now);
-
-      if (diff <= 0) {
-        setCountdown({ hours: 0, minutes: 0, seconds: 0 });
-        return;
-      }
-
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      setCountdown({ hours, minutes, seconds });
-    };
-
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-
-    return () => clearInterval(interval);
-  }, [token]);
-
   // No fake testimonials - removed to maintain honesty
 
   useEffect(() => {
@@ -13527,7 +13489,7 @@ const DemoPage = () => {
               textDecoration: 'none',
             }}
           >
-            Get Fresh Responses - 30% OFF
+            Start Free – No Credit Card
           </a>
           <p style={{ marginTop: '16px', color: 'var(--text-muted)', fontSize: '14px' }}>
             20 responses/month free forever
@@ -13594,7 +13556,7 @@ const DemoPage = () => {
               Copy This Response
             </h3>
             <p style={{ color: 'var(--text-muted)', marginBottom: '24px', lineHeight: '1.6' }}>
-              Enter your email to unlock copy functionality and get 30% OFF your first month.
+              Enter your email to unlock copy functionality and start your free account.
             </p>
             <form onSubmit={handleEmailCapture}>
               <input
@@ -13628,7 +13590,7 @@ const DemoPage = () => {
                   cursor: 'pointer',
                 }}
               >
-                Unlock Copy + 30% OFF
+                Unlock Copy – It's Free
               </button>
             </form>
             <button
@@ -13734,33 +13696,6 @@ const DemoPage = () => {
               Demo prepared for {demo.business_name}
             </span>
           </div>
-
-          {/* URGENCY COUNTDOWN TIMER */}
-          {countdown.hours > 0 || countdown.minutes > 0 || countdown.seconds > 0 ? (
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                color: 'white',
-                padding: '8px 16px',
-                borderRadius: '8px',
-                marginBottom: '20px',
-                fontWeight: '600',
-                fontSize: '14px',
-                boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
-              </svg>
-              <span>30% OFF expires in </span>
-              <span style={{ fontFamily: 'monospace', fontWeight: '700' }}>
-                {String(countdown.hours).padStart(2, '0')}:{String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}
-              </span>
-            </div>
-          ) : null}
 
           {/* SOCIAL PROOF - Honest stats */}
           <div
@@ -14694,7 +14629,7 @@ const DemoPage = () => {
                 </svg>
               ),
               title: '4 Professional Tones',
-              desc: 'Professional, friendly, formal, or apologetic - match your brand voice',
+              desc: 'Professional, friendly, formal, or apologetic - pick the tone that fits',
             },
             {
               icon: (
@@ -15025,23 +14960,6 @@ const DemoPage = () => {
                 ))}
               </div>
 
-              {/* Discount Badge */}
-              <div
-                style={{
-                  background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-                  border: '1px solid #f59e0b',
-                  borderRadius: '8px',
-                  padding: '12px 16px',
-                  marginBottom: '16px',
-                  textAlign: 'center',
-                }}
-              >
-                <span style={{ fontSize: '14px', fontWeight: '600', color: '#92400e' }}>
-                  🎁 Exit-Deal: <strong>30% OFF</strong> your first month with code{' '}
-                  <strong>DEMO30</strong>
-                </span>
-              </div>
-
               {/* CTA Button */}
               <a
                 href={demo?.cta_url}
@@ -15062,7 +14980,7 @@ const DemoPage = () => {
                   boxShadow: '0 4px 14px rgba(16, 185, 129, 0.4)',
                 }}
               >
-                Claim 30% OFF Now
+                Start Free Now
                 <ArrowRight size={18} />
               </a>
 

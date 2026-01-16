@@ -10112,7 +10112,7 @@ app.get('/api/cron/send-drip-emails', async (req, res) => {
                   <p style="margin-bottom: 0;"><em>Example: "Family-owned Italian restaurant since 1985, known for homemade pasta"</em></p>
                 </div>
 
-                <p>This helps the AI understand your brand voice and mention specific things that make your business special.</p>
+                <p>This helps the AI write responses that sound like you and mention what makes your business special.</p>
 
                 <center style="margin: 30px 0;">
                   <a href="${FRONTEND_URL}/settings" class="cta-button">Add Business Context →</a>
@@ -14220,7 +14220,7 @@ app.post('/api/admin/send-hot-lead-demos', async (req, res) => {
 
 ich hab mir gedacht, statt nochmal nach einem Call zu fragen, zeig ich euch einfach was ReviewResponder kann.
 
-Hier sind 3 AI-generierte Antworten auf eure echten Google Bewertungen:
+${demos.length === 1 ? 'Hier ist 1 AI-generierte Antwort' : `Hier sind ${demos.length} AI-generierte Antworten`} auf eure echten Google Bewertungen:
 ${demoUrl}
 
 Dauert 30 Sekunden zu checken ob der Ton passt.
@@ -14236,7 +14236,7 @@ Berend`;
 
 Instead of asking for another call, I figured I'd just show you what ReviewResponder can do.
 
-Here are 3 AI-generated responses to your actual Google reviews:
+${demos.length === 1 ? 'Here is 1 AI-generated response' : `Here are ${demos.length} AI-generated responses`} to your actual Google reviews:
 ${demoUrl}
 
 Takes 30 seconds to see if the tone matches your brand.
@@ -14391,19 +14391,27 @@ app.all('/api/cron/followup-clickers', async (req, res) => {
         let demoUrl = null;
         let demoToken = null;
         let demoGenerated = false;
+        let demosCount = 3; // Default fallback
 
         if (businessName && businessName !== 'your restaurant' && city) {
           try {
             // Check if demo already exists for this lead
             const existingDemo = await dbGet(
-              'SELECT demo_token FROM demo_generations WHERE lead_id = $1',
+              'SELECT demo_token, generated_responses FROM demo_generations WHERE lead_id = $1',
               [clicker.lead_id]
             );
 
             if (existingDemo?.demo_token) {
               demoToken = existingDemo.demo_token;
               demoUrl = `https://tryreviewresponder.com/demo/${demoToken}`;
-              console.log(`📋 Using existing demo for ${businessName}: ${demoUrl}`);
+              // Get actual demo count from existing data
+              try {
+                const responses = JSON.parse(existingDemo.generated_responses || '[]');
+                demosCount = responses.length || 3;
+              } catch (e) {
+                demosCount = 3;
+              }
+              console.log(`📋 Using existing demo for ${businessName}: ${demoUrl} (${demosCount} responses)`);
             } else {
               // Generate new demo
               console.log(`🎯 Generating demo for hot lead: ${businessName}, ${city}`);
@@ -14461,8 +14469,9 @@ app.all('/api/cron/followup-clickers', async (req, res) => {
 
                     demoUrl = `https://tryreviewresponder.com/demo/${demoToken}`;
                     demoGenerated = true;
+                    demosCount = demos.length;
                     demosGenerated++;
-                    console.log(`✅ Demo generated for ${businessName}: ${demoUrl}`);
+                    console.log(`✅ Demo generated for ${businessName}: ${demoUrl} (${demosCount} responses)`);
                   }
                 }
               }
@@ -14477,12 +14486,12 @@ app.all('/api/cron/followup-clickers', async (req, res) => {
         if (demoUrl) {
           // Email WITH personalized demo link - much better conversion!
           if (isGerman) {
-            subject = `3 AI-Antworten für ${businessName} – schon fertig`;
+            subject = `${demosCount} AI-Antworten für ${businessName} – schon fertig`;
             body = `Hey,
 
 ich hab gesehen, dass ihr auf meine Email geklickt habt.
 
-Statt lange zu reden, hab ich einfach mal gemacht: Hier sind 3 AI-generierte Antworten auf eure echten Google Bewertungen:
+Statt lange zu reden, hab ich einfach mal gemacht: ${demosCount === 1 ? 'Hier ist 1 AI-generierte Antwort' : `Hier sind ${demosCount} AI-generierte Antworten`} auf eure echten Google Bewertungen:
 
 ${demoUrl}
 
@@ -14495,12 +14504,12 @@ Berend
 
 P.S. Code CLICKER30 = 30% Rabatt wenn ihr upgraden wollt.`;
           } else {
-            subject = `3 AI responses for ${businessName} – already done`;
+            subject = `${demosCount} AI responses for ${businessName} – already done`;
             body = `Hey,
 
 I noticed someone from ${businessName} clicked on my email.
 
-Instead of asking for a call, I just went ahead and made this for you: 3 AI-generated responses to your actual Google reviews:
+Instead of asking for a call, I just went ahead and made this for you: ${demosCount === 1 ? '1 AI-generated response' : `${demosCount} AI-generated responses`} to your actual Google reviews:
 
 ${demoUrl}
 
@@ -14909,7 +14918,7 @@ I noticed you just clicked through to ReviewResponder.
 In case you missed the demo I made for ${businessName}:
 ${demoUrl}
 
-Takes 30 seconds to see if the AI responses match your brand voice.
+Takes 30 seconds. See if you like them.
 
 Use code CLICKER30 for 30% off if you decide to upgrade.
 
