@@ -9769,7 +9769,13 @@ app.get('/api/testimonials', async (req, res) => {
        LIMIT 10`
     );
 
-    res.json({ testimonials });
+    // Add display_name for consistent name display on frontend
+    const testimonialsWithDisplayName = testimonials.map(t => ({
+      ...t,
+      display_name: cleanDisplayName(t.user_name) || t.user_name
+    }));
+
+    res.json({ testimonials: testimonialsWithDisplayName });
   } catch (error) {
     console.error('Testimonials fetch error:', error);
     res.status(500).json({ error: 'Failed to get testimonials' });
@@ -25754,6 +25760,438 @@ app.get('/api/admin/twitter-posts', async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to get tweet history' });
+  }
+});
+
+// ============================================
+// AMAZON SELLER EMAIL SYSTEM
+// ============================================
+
+// Initialize amazon_seller_leads table
+async function initAmazonSellerLeadsTable() {
+  try {
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS amazon_seller_leads (
+        id SERIAL PRIMARY KEY,
+        seller_name VARCHAR(255) NOT NULL,
+        seller_id VARCHAR(100),
+        store_url TEXT,
+        email VARCHAR(255),
+        contact_name VARCHAR(255),
+        status VARCHAR(50) DEFAULT 'new',
+        email_sent_at TIMESTAMP,
+        clicked_at TIMESTAMP,
+        demo_token VARCHAR(100),
+        product_category VARCHAR(255),
+        review_count INTEGER,
+        avg_rating DECIMAL(2,1),
+        source VARCHAR(100) DEFAULT 'manual',
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
+    // Add index for faster lookups
+    await dbQuery(`CREATE INDEX IF NOT EXISTS idx_amazon_seller_status ON amazon_seller_leads(status)`);
+    await dbQuery(`CREATE INDEX IF NOT EXISTS idx_amazon_seller_email ON amazon_seller_leads(email)`);
+
+    console.log('✅ Amazon seller leads table initialized');
+  } catch (error) {
+    console.error('Error initializing amazon_seller_leads table:', error.message);
+  }
+}
+initAmazonSellerLeadsTable();
+
+// Amazon Seller Email Template
+const AMAZON_SELLER_EMAIL_TEMPLATE = {
+  subject: 'Quick question about your Amazon reviews, {seller_name}',
+  body: `Hey {contact_name},
+
+I noticed your Amazon store has {review_count} reviews with an average of {avg_rating} stars.
+
+Quick question: How long does it take you to respond to each review?
+
+Most sellers spend 10-15 minutes per review. With ReviewResponder, you can generate professional, personalized responses in seconds.
+
+I put together a quick demo showing how it works with your actual reviews:
+{demo_link}
+
+Takes 30 seconds to see it in action.
+
+Cheers,
+Berend
+
+P.S. If you're not the right person for this, no worries - just hit unsubscribe below.
+
+---
+ReviewResponder | AI-powered review responses
+Unsubscribe: {unsubscribe_link}`
+};
+
+// GET /api/admin/amazon-dashboard - Amazon Seller Stats & Metrics
+app.get('/api/admin/amazon-dashboard', async (req, res) => {
+  const adminKey = req.query.key || req.headers['x-admin-key'];
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Get overall stats
+    const stats = await dbGet(`
+      SELECT
+        COUNT(*) as total_leads,
+        COUNT(*) FILTER (WHERE status = 'new') as new_leads,
+        COUNT(*) FILTER (WHERE status = 'contacted') as contacted,
+        COUNT(*) FILTER (WHERE status = 'clicked') as clicked,
+        COUNT(*) FILTER (WHERE status = 'converted') as converted,
+        COUNT(*) FILTER (WHERE status = 'unsubscribed') as unsubscribed,
+        COUNT(*) FILTER (WHERE email_sent_at IS NOT NULL) as emails_sent,
+        COUNT(*) FILTER (WHERE clicked_at IS NOT NULL) as total_clicks
+      FROM amazon_seller_leads
+    `);
+
+    // Calculate CTR
+    const emailsSent = parseInt(stats?.emails_sent || 0);
+    const clicks = parseInt(stats?.total_clicks || 0);
+    const ctr = emailsSent > 0 ? ((clicks / emailsSent) * 100).toFixed(1) : 0;
+
+    // Get recent activity (last 7 days)
+    const recentActivity = await dbAll(`
+      SELECT
+        DATE(created_at) as date,
+        COUNT(*) FILTER (WHERE email_sent_at::date = DATE(created_at)) as emails_sent,
+        COUNT(*) FILTER (WHERE clicked_at::date = DATE(created_at)) as clicks
+      FROM amazon_seller_leads
+      WHERE created_at >= NOW() - INTERVAL '7 days'
+      GROUP BY DATE(created_at)
+      ORDER BY date DESC
+    `);
+
+    // Get category breakdown
+    const categoryStats = await dbAll(`
+      SELECT
+        COALESCE(product_category, 'Unknown') as category,
+        COUNT(*) as count,
+        COUNT(*) FILTER (WHERE status = 'clicked') as clicks,
+        COUNT(*) FILTER (WHERE status = 'converted') as converted
+      FROM amazon_seller_leads
+      GROUP BY product_category
+      ORDER BY count DESC
+      LIMIT 10
+    `);
+
+    res.json({
+      total_leads: parseInt(stats?.total_leads || 0),
+      new_leads: parseInt(stats?.new_leads || 0),
+      contacted: parseInt(stats?.contacted || 0),
+      clicked: parseInt(stats?.clicked || 0),
+      converted: parseInt(stats?.converted || 0),
+      unsubscribed: parseInt(stats?.unsubscribed || 0),
+      emails_sent: emailsSent,
+      total_clicks: clicks,
+      ctr: `${ctr}%`,
+      recent_activity: recentActivity || [],
+      category_breakdown: categoryStats || []
+    });
+  } catch (error) {
+    console.error('Amazon dashboard error:', error.message);
+    res.status(500).json({ error: 'Failed to get Amazon dashboard data' });
+  }
+});
+
+// GET /api/admin/amazon-leads - List Amazon Seller Leads with pagination
+app.get('/api/admin/amazon-leads', async (req, res) => {
+  const adminKey = req.query.key || req.headers['x-admin-key'];
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const { status, limit = 50, offset = 0, search } = req.query;
+
+    let whereClause = 'WHERE 1=1';
+    const params = [];
+    let paramIndex = 1;
+
+    if (status && status !== 'all') {
+      whereClause += ` AND status = $${paramIndex++}`;
+      params.push(status);
+    }
+
+    if (search) {
+      whereClause += ` AND (seller_name ILIKE $${paramIndex} OR email ILIKE $${paramIndex} OR seller_id ILIKE $${paramIndex})`;
+      params.push(`%${search}%`);
+      paramIndex++;
+    }
+
+    const leads = await dbAll(`
+      SELECT * FROM amazon_seller_leads
+      ${whereClause}
+      ORDER BY created_at DESC
+      LIMIT $${paramIndex++} OFFSET $${paramIndex}
+    `, [...params, parseInt(limit), parseInt(offset)]);
+
+    const countResult = await dbGet(`
+      SELECT COUNT(*) as total FROM amazon_seller_leads ${whereClause}
+    `, params);
+
+    res.json({
+      leads: leads || [],
+      total: parseInt(countResult?.total || 0),
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    });
+  } catch (error) {
+    console.error('Amazon leads list error:', error.message);
+    res.status(500).json({ error: 'Failed to get Amazon leads' });
+  }
+});
+
+// POST /api/admin/amazon-leads - Add Amazon Seller Lead manually
+app.post('/api/admin/amazon-leads', async (req, res) => {
+  const adminKey = req.query.key || req.headers['x-admin-key'];
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const { seller_name, seller_id, store_url, email, contact_name, product_category, review_count, avg_rating, source = 'manual' } = req.body;
+
+    if (!seller_name) {
+      return res.status(400).json({ error: 'seller_name is required' });
+    }
+
+    // Generate demo token for tracking
+    const demoToken = `amz_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+
+    const result = await dbGet(`
+      INSERT INTO amazon_seller_leads (
+        seller_name, seller_id, store_url, email, contact_name,
+        product_category, review_count, avg_rating, source, demo_token
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      RETURNING *
+    `, [seller_name, seller_id, store_url, email, contact_name, product_category, review_count, avg_rating, source, demoToken]);
+
+    res.json({ success: true, lead: result });
+  } catch (error) {
+    console.error('Add Amazon lead error:', error.message);
+    res.status(500).json({ error: 'Failed to add Amazon lead' });
+  }
+});
+
+// POST /api/admin/amazon-leads/bulk - Bulk import Amazon Seller Leads
+app.post('/api/admin/amazon-leads/bulk', async (req, res) => {
+  const adminKey = req.query.key || req.headers['x-admin-key'];
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const { leads } = req.body;
+
+    if (!leads || !Array.isArray(leads) || leads.length === 0) {
+      return res.status(400).json({ error: 'leads array is required' });
+    }
+
+    let added = 0;
+    let skipped = 0;
+
+    for (const lead of leads) {
+      try {
+        // Check if already exists (by email or seller_id)
+        if (lead.email) {
+          const existing = await dbGet(`SELECT id FROM amazon_seller_leads WHERE email = $1`, [lead.email]);
+          if (existing) {
+            skipped++;
+            continue;
+          }
+        }
+
+        const demoToken = `amz_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+
+        await dbQuery(`
+          INSERT INTO amazon_seller_leads (
+            seller_name, seller_id, store_url, email, contact_name,
+            product_category, review_count, avg_rating, source, demo_token
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        `, [
+          lead.seller_name,
+          lead.seller_id,
+          lead.store_url,
+          lead.email,
+          lead.contact_name,
+          lead.product_category,
+          lead.review_count,
+          lead.avg_rating,
+          lead.source || 'import',
+          demoToken
+        ]);
+
+        added++;
+      } catch (e) {
+        skipped++;
+      }
+    }
+
+    res.json({ success: true, added, skipped, total: leads.length });
+  } catch (error) {
+    console.error('Bulk import Amazon leads error:', error.message);
+    res.status(500).json({ error: 'Failed to bulk import Amazon leads' });
+  }
+});
+
+// DELETE /api/admin/amazon-leads/:id - Delete Amazon Seller Lead
+app.delete('/api/admin/amazon-leads/:id', async (req, res) => {
+  const adminKey = req.query.key || req.headers['x-admin-key'];
+  if (!safeCompare(adminKey, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const { id } = req.params;
+
+    await dbQuery('DELETE FROM amazon_seller_leads WHERE id = $1', [id]);
+
+    res.json({ success: true, deleted: id });
+  } catch (error) {
+    console.error('Delete Amazon lead error:', error.message);
+    res.status(500).json({ error: 'Failed to delete Amazon lead' });
+  }
+});
+
+// GET /api/amazon-demo/:token - Demo link with click tracking
+app.get('/api/amazon-demo/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    // Update click tracking
+    await dbQuery(`
+      UPDATE amazon_seller_leads
+      SET status = 'clicked', clicked_at = NOW(), updated_at = NOW()
+      WHERE demo_token = $1 AND status != 'converted'
+    `, [token]);
+
+    console.log(`🖱️ Amazon demo clicked: ${token}`);
+
+    // Redirect to main demo or signup page
+    res.redirect('https://tryreviewresponder.com/demo?source=amazon&token=' + token);
+  } catch (error) {
+    console.error('Amazon demo click error:', error.message);
+    res.redirect('https://tryreviewresponder.com');
+  }
+});
+
+// GET /api/cron/send-amazon-emails - Cron job to send Amazon seller emails
+app.get('/api/cron/send-amazon-emails', async (req, res) => {
+  const cronSecret = req.query.secret;
+  if (!safeCompare(cronSecret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const dryRun = req.query.dry_run === 'true';
+
+    // Get leads with status='new' and email
+    const leads = await dbAll(`
+      SELECT * FROM amazon_seller_leads
+      WHERE status = 'new' AND email IS NOT NULL
+      ORDER BY created_at ASC
+      LIMIT $1
+    `, [limit]);
+
+    if (!leads || leads.length === 0) {
+      return res.json({ success: true, message: 'No new Amazon leads to email', sent: 0 });
+    }
+
+    let sent = 0;
+    let errors = [];
+
+    for (const lead of leads) {
+      try {
+        // Check if email was recently sent (parallel-safe)
+        const recentlySent = await wasEmailRecentlySent(lead.email, 'amazon_outreach', 24);
+        if (recentlySent) {
+          console.log(`⏭️ Skipping ${lead.email} - recently contacted`);
+          continue;
+        }
+
+        // Check unsubscribe list
+        const unsubscribed = await dbGet(`SELECT id FROM unsubscribes WHERE LOWER(email) = LOWER($1)`, [lead.email]);
+        if (unsubscribed) {
+          await dbQuery(`UPDATE amazon_seller_leads SET status = 'unsubscribed' WHERE id = $1`, [lead.id]);
+          continue;
+        }
+
+        // Generate personalized demo link
+        const demoLink = `https://review-responder.onrender.com/api/amazon-demo/${lead.demo_token}`;
+        const unsubscribeLink = `https://review-responder.onrender.com/api/outreach/unsubscribe?email=${encodeURIComponent(lead.email)}`;
+
+        // Build email content
+        const subject = AMAZON_SELLER_EMAIL_TEMPLATE.subject
+          .replace('{seller_name}', lead.seller_name);
+
+        const body = AMAZON_SELLER_EMAIL_TEMPLATE.body
+          .replace('{contact_name}', lead.contact_name || 'there')
+          .replace('{review_count}', lead.review_count || 'several')
+          .replace('{avg_rating}', lead.avg_rating || '4+')
+          .replace('{demo_link}', demoLink)
+          .replace('{unsubscribe_link}', unsubscribeLink);
+
+        if (dryRun) {
+          console.log(`[DRY RUN] Would send to ${lead.email}: ${subject}`);
+          sent++;
+          continue;
+        }
+
+        // Send email via Resend
+        if (resend) {
+          await resend.emails.send({
+            from: 'Berend from ReviewResponder <berend@tryreviewresponder.com>',
+            to: lead.email,
+            subject: subject,
+            text: body,
+            headers: {
+              'List-Unsubscribe': `<${unsubscribeLink}>`,
+              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
+            }
+          });
+
+          // Update lead status
+          await dbQuery(`
+            UPDATE amazon_seller_leads
+            SET status = 'contacted', email_sent_at = NOW(), updated_at = NOW()
+            WHERE id = $1
+          `, [lead.id]);
+
+          // Record in parallel-safe history
+          await recordEmailSend(lead.email, 'amazon_outreach', 1, `amazon:${lead.id}:${Date.now()}`);
+
+          sent++;
+          console.log(`✉️ Amazon email sent to ${lead.email} (${lead.seller_name})`);
+
+          // Small delay between sends
+          await new Promise(r => setTimeout(r, 500));
+        } else {
+          errors.push(`No email provider configured`);
+          break;
+        }
+      } catch (e) {
+        console.error(`Failed to send Amazon email to ${lead.email}:`, e.message);
+        errors.push(`${lead.email}: ${e.message}`);
+      }
+    }
+
+    res.json({
+      success: true,
+      dry_run: dryRun,
+      total_leads: leads.length,
+      sent: sent,
+      errors: errors.length > 0 ? errors : undefined
+    });
+  } catch (error) {
+    console.error('Amazon cron error:', error.message);
+    res.status(500).json({ error: 'Failed to send Amazon emails' });
   }
 });
 

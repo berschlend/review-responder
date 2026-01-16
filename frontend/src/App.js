@@ -30675,6 +30675,13 @@ const AdminPage = () => {
   const [widgetLoading, setWidgetLoading] = useState(false);
   const [accountUsageData, setAccountUsageData] = useState(null);
   const [accountUsageLoading, setAccountUsageLoading] = useState(false);
+  const [amazonData, setAmazonData] = useState(null);
+  const [amazonLoading, setAmazonLoading] = useState(false);
+  const [amazonLeads, setAmazonLeads] = useState([]);
+  const [amazonLeadsLoading, setAmazonLeadsLoading] = useState(false);
+  const [amazonFilter, setAmazonFilter] = useState('all');
+  const [showAddAmazonLead, setShowAddAmazonLead] = useState(false);
+  const [newAmazonLead, setNewAmazonLead] = useState({ seller_name: '', email: '', product_category: '', review_count: '', avg_rating: '' });
 
   // Use the same API_URL as the rest of the app (already includes /api)
   // Remove /api suffix if present to build admin URLs correctly
@@ -31064,8 +31071,70 @@ const AdminPage = () => {
       if (activeAdminTab === 'accounts' && !accountUsageData) {
         loadAccountUsageData();
       }
+      if (activeAdminTab === 'amazon' && !amazonData) {
+        loadAmazonData();
+      }
     }
   }, [activeAdminTab, isAuthenticated, adminKey]);
+
+  // Load Amazon Seller Dashboard Data
+  const loadAmazonData = async () => {
+    setAmazonLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/admin/amazon-dashboard`, { headers: getHeaders() });
+      setAmazonData(res.data);
+    } catch (err) {
+      console.error('Amazon data error:', err);
+      toast.error('Failed to load Amazon data');
+    } finally {
+      setAmazonLoading(false);
+    }
+  };
+
+  // Load Amazon Leads
+  const loadAmazonLeads = async (status = amazonFilter) => {
+    setAmazonLeadsLoading(true);
+    try {
+      const params = status !== 'all' ? `?status=${status}` : '';
+      const res = await axios.get(`${API_BASE}/api/admin/amazon-leads${params}`, { headers: getHeaders() });
+      setAmazonLeads(res.data.leads || []);
+    } catch (err) {
+      console.error('Amazon leads error:', err);
+    } finally {
+      setAmazonLeadsLoading(false);
+    }
+  };
+
+  // Add new Amazon lead
+  const addAmazonLead = async () => {
+    if (!newAmazonLead.seller_name) {
+      toast.error('Seller name is required');
+      return;
+    }
+    try {
+      await axios.post(`${API_BASE}/api/admin/amazon-leads`, newAmazonLead, { headers: getHeaders() });
+      toast.success('Lead added');
+      setShowAddAmazonLead(false);
+      setNewAmazonLead({ seller_name: '', email: '', product_category: '', review_count: '', avg_rating: '' });
+      loadAmazonData();
+      loadAmazonLeads();
+    } catch (err) {
+      toast.error('Failed to add lead');
+    }
+  };
+
+  // Delete Amazon lead
+  const deleteAmazonLead = async (id) => {
+    if (!window.confirm('Delete this lead?')) return;
+    try {
+      await axios.delete(`${API_BASE}/api/admin/amazon-leads/${id}`, { headers: getHeaders() });
+      toast.success('Lead deleted');
+      loadAmazonData();
+      loadAmazonLeads();
+    } catch (err) {
+      toast.error('Failed to delete lead');
+    }
+  };
 
   if (!isAuthenticated) {
     return (
@@ -31222,6 +31291,13 @@ const AdminPage = () => {
           style={{ background: activeAdminTab === 'accounts' ? 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)' : undefined }}
         >
           Claude Accounts
+        </button>
+        <button
+          className={`btn ${activeAdminTab === 'amazon' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('amazon')}
+          style={{ background: activeAdminTab === 'amazon' ? 'linear-gradient(135deg, #FF9900 0%, #FF6600 100%)' : undefined }}
+        >
+          Amazon Sellers
         </button>
       </div>
 
@@ -35390,6 +35466,216 @@ const AdminPage = () => {
               <button className="btn btn-primary" onClick={() => loadAccountUsageData()}>
                 Retry
               </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Amazon Sellers Tab */}
+      {activeAdminTab === 'amazon' && (
+        <div>
+          {amazonLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading Amazon data...</div>
+          ) : amazonData ? (
+            <>
+              {/* Metrics Cards */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                  gap: '16px',
+                  marginBottom: '24px',
+                }}
+              >
+                <div
+                  className="card"
+                  style={{
+                    textAlign: 'center',
+                    background: 'linear-gradient(135deg, #FF9900 0%, #FF6600 100%)',
+                    color: 'white',
+                  }}
+                >
+                  <div style={{ fontSize: '28px', fontWeight: '700' }}>{amazonData.total_leads}</div>
+                  <div style={{ opacity: 0.9 }}>Total Leads</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '28px', fontWeight: '700', color: '#3B82F6' }}>{amazonData.new_leads}</div>
+                  <div style={{ color: 'var(--gray-500)' }}>New</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '28px', fontWeight: '700', color: '#8B5CF6' }}>{amazonData.emails_sent}</div>
+                  <div style={{ color: 'var(--gray-500)' }}>Emails Sent</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '28px', fontWeight: '700', color: '#10B981' }}>{amazonData.clicked}</div>
+                  <div style={{ color: 'var(--gray-500)' }}>Clicks ({amazonData.ctr})</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '28px', fontWeight: '700', color: '#F59E0B' }}>{amazonData.converted}</div>
+                  <div style={{ color: 'var(--gray-500)' }}>Converted</div>
+                </div>
+              </div>
+
+              {/* Add Lead Button & Filter */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h3 style={{ margin: 0 }}>Amazon Seller Leads</h3>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <select
+                      value={amazonFilter}
+                      onChange={(e) => { setAmazonFilter(e.target.value); loadAmazonLeads(e.target.value); }}
+                      style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--gray-300)' }}
+                    >
+                      <option value="all">All Status</option>
+                      <option value="new">New</option>
+                      <option value="contacted">Contacted</option>
+                      <option value="clicked">Clicked</option>
+                      <option value="converted">Converted</option>
+                      <option value="unsubscribed">Unsubscribed</option>
+                    </select>
+                    <button className="btn btn-secondary" onClick={() => loadAmazonLeads()}>Refresh</button>
+                    <button className="btn btn-primary" onClick={() => setShowAddAmazonLead(true)}>+ Add Lead</button>
+                  </div>
+                </div>
+
+                {/* Add Lead Form */}
+                {showAddAmazonLead && (
+                  <div style={{ background: 'var(--gray-50)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                      <input
+                        type="text"
+                        placeholder="Seller Name *"
+                        value={newAmazonLead.seller_name}
+                        onChange={(e) => setNewAmazonLead({...newAmazonLead, seller_name: e.target.value})}
+                        style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--gray-300)' }}
+                      />
+                      <input
+                        type="email"
+                        placeholder="Email"
+                        value={newAmazonLead.email}
+                        onChange={(e) => setNewAmazonLead({...newAmazonLead, email: e.target.value})}
+                        style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--gray-300)' }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Product Category"
+                        value={newAmazonLead.product_category}
+                        onChange={(e) => setNewAmazonLead({...newAmazonLead, product_category: e.target.value})}
+                        style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--gray-300)' }}
+                      />
+                      <input
+                        type="number"
+                        placeholder="Review Count"
+                        value={newAmazonLead.review_count}
+                        onChange={(e) => setNewAmazonLead({...newAmazonLead, review_count: e.target.value})}
+                        style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--gray-300)' }}
+                      />
+                      <input
+                        type="number"
+                        step="0.1"
+                        placeholder="Avg Rating (e.g. 4.5)"
+                        value={newAmazonLead.avg_rating}
+                        onChange={(e) => setNewAmazonLead({...newAmazonLead, avg_rating: e.target.value})}
+                        style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--gray-300)' }}
+                      />
+                    </div>
+                    <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                      <button className="btn btn-primary" onClick={addAmazonLead}>Save Lead</button>
+                      <button className="btn btn-secondary" onClick={() => setShowAddAmazonLead(false)}>Cancel</button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Leads Table */}
+                {amazonLeadsLoading ? (
+                  <div style={{ textAlign: 'center', padding: '20px' }}>Loading leads...</div>
+                ) : amazonLeads.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray-500)' }}>
+                    No leads found. Add your first Amazon seller lead!
+                  </div>
+                ) : (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '2px solid var(--gray-200)', textAlign: 'left' }}>
+                          <th style={{ padding: '12px 8px' }}>Seller</th>
+                          <th style={{ padding: '12px 8px' }}>Email</th>
+                          <th style={{ padding: '12px 8px' }}>Category</th>
+                          <th style={{ padding: '12px 8px' }}>Reviews</th>
+                          <th style={{ padding: '12px 8px' }}>Status</th>
+                          <th style={{ padding: '12px 8px' }}>Sent</th>
+                          <th style={{ padding: '12px 8px' }}>Clicked</th>
+                          <th style={{ padding: '12px 8px' }}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {amazonLeads.map(lead => (
+                          <tr key={lead.id} style={{ borderBottom: '1px solid var(--gray-100)' }}>
+                            <td style={{ padding: '12px 8px', fontWeight: '500' }}>{lead.seller_name}</td>
+                            <td style={{ padding: '12px 8px', fontSize: '13px', color: 'var(--gray-600)' }}>{lead.email || '-'}</td>
+                            <td style={{ padding: '12px 8px', fontSize: '13px' }}>{lead.product_category || '-'}</td>
+                            <td style={{ padding: '12px 8px' }}>{lead.review_count || '-'} ({lead.avg_rating || '-'})</td>
+                            <td style={{ padding: '12px 8px' }}>
+                              <span style={{
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                fontSize: '12px',
+                                fontWeight: '500',
+                                background: lead.status === 'new' ? '#EFF6FF' :
+                                           lead.status === 'contacted' ? '#F3E8FF' :
+                                           lead.status === 'clicked' ? '#ECFDF5' :
+                                           lead.status === 'converted' ? '#FEF3C7' : '#FEE2E2',
+                                color: lead.status === 'new' ? '#3B82F6' :
+                                       lead.status === 'contacted' ? '#8B5CF6' :
+                                       lead.status === 'clicked' ? '#10B981' :
+                                       lead.status === 'converted' ? '#F59E0B' : '#EF4444'
+                              }}>
+                                {lead.status}
+                              </span>
+                            </td>
+                            <td style={{ padding: '12px 8px', fontSize: '12px', color: 'var(--gray-500)' }}>
+                              {lead.email_sent_at ? new Date(lead.email_sent_at).toLocaleDateString() : '-'}
+                            </td>
+                            <td style={{ padding: '12px 8px', fontSize: '12px', color: 'var(--gray-500)' }}>
+                              {lead.clicked_at ? new Date(lead.clicked_at).toLocaleDateString() : '-'}
+                            </td>
+                            <td style={{ padding: '12px 8px' }}>
+                              <button
+                                onClick={() => deleteAmazonLead(lead.id)}
+                                style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', fontSize: '13px' }}
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* Category Breakdown */}
+              {amazonData.category_breakdown && amazonData.category_breakdown.length > 0 && (
+                <div className="card">
+                  <h3 style={{ marginBottom: '16px' }}>Category Performance</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                    {amazonData.category_breakdown.map((cat, i) => (
+                      <div key={i} style={{ padding: '12px', background: 'var(--gray-50)', borderRadius: '8px' }}>
+                        <div style={{ fontWeight: '600', marginBottom: '4px' }}>{cat.category}</div>
+                        <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>
+                          {cat.count} leads, {cat.clicks} clicks, {cat.converted} converted
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>Could not load Amazon data</p>
+              <button className="btn btn-primary" onClick={() => loadAmazonData()}>Retry</button>
             </div>
           )}
         </div>
