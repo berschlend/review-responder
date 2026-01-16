@@ -1,76 +1,47 @@
 {
   "agent": "burst-6-user-activator",
-  "version": "3.1",
-  "status": "paused",
-  "priority": 3,
-  "priority_reason": "PAUSED - Erst relevant wenn ECHTE User da sind",
-  "started_at": null,
-  "last_heartbeat": null,
+  "version": "3.0",
+  "status": "terminated",
+  "status_reason": "PAUSED - Priority 3, keine echten User zum Aktivieren",
+  "started_at": "2026-01-17T02:30:00Z",
+  "terminated_at": "2026-01-17T02:30:30Z",
   "current_loop": 0,
-  "loop_interval": "30min",
-
-  "reboot_context": {
-    "rebooted_at": "2026-01-17T02:00:00Z",
-    "reason": "Night-Burst System Reboot - Activation war FALSCHE Prioritaet",
-    "key_insight": "29% Activation Rate war FAKE - basierte auf Test-Accounts. Echte Rate: 0%"
+  "loop_interval": "4h",
+  "metrics": {
+    "actions_taken": 0,
+    "errors_count": 0,
+    "success_rate": 0,
+    "inactive_users_found": 0,
+    "onboarding_emails_sent": 0,
+    "upgrade_nudges_sent": 0
   },
-
-  "paused_reason": "Das echte Problem ist OUTREACH nicht Activation. 0 echte User haben je das Produkt genutzt. Erst wenn Burst-2/4/5 echte User bringen, bin ich relevant.",
-
+  "health": {
+    "stuck_detected": false,
+    "api_budget_ok": true,
+    "memory_ok": true,
+    "last_error": null
+  },
+  "termination_reason": {
+    "type": "self_termination_per_reboot_protocol",
+    "details": "Burst-6 ist PAUSED (Priority 3). real_activation_rate=0%. Keine echten User zum Aktivieren. Demo-Email System noch kaputt.",
+    "recommendation": "Starte Burst-2, Burst-4, oder Burst-5 (alle Priority 1)"
+  },
   "checkpoints": {
-    "last_successful_action": "demo-expiration-emails",
+    "last_successful_action": null,
     "last_processed_id": null,
     "resume_from": null
   },
-
-  "metrics": {
-    "actions_taken": 0,
-    "activation_emails_sent_total": 17,
-    "drip_emails_sent": 11,
-    "magic_reengagement_sent": 2,
-    "real_activations": 0,
-    "fake_activations_test_accounts": 12,
-    "errors_count": 0
-  },
-
-  "stats_at_pause": {
-    "inactive_users_found": 30,
-    "users_total": 42,
-    "users_never_used": 30,
-    "users_activated": 12,
-    "claimed_activation_rate": "29%",
-    "real_activation_rate": "0%",
-    "note": "12 activated sind Test-Accounts!"
-  },
-
-  "real_metrics_awareness": {
-    "total_users_claimed": 42,
-    "real_users": 20,
-    "real_activation": 0,
-    "test_accounts_excluded": true,
-    "conclusion": "Meine bisherige Arbeit war an Test-Accounts verschwendet"
-  },
-
-  "health": {
-    "stuck_detected": false,
-    "last_error": null,
-    "api_budget_ok": true,
-    "memory_ok": true
-  },
-
-  "never_wait_rule": {
-    "enabled": true,
-    "max_idle_minutes": 30,
-    "on_idle_when_paused": "Help Priority-1 Agents (burst-2, burst-4, burst-5)"
-  },
-
   "escalations_pending": [],
   "learnings_applied": [
-    "Magic Links bringen Registrations aber keine Activation",
-    "78% der User nutzen Produkt NIE",
-    "Test-Accounts verfaelschen Metriken",
-    "Activation ist irrelevant ohne echte User"
+    "Reboot 17.01: 29% Activation war FAKE (Test-Accounts)",
+    "Echte Activation Rate: 0%",
+    "Outreach ist das echte Problem, nicht Activation"
   ],
-
-  "session_summary": "PAUSED per Reboot - Activation war falscher Fokus"
+  "last_heartbeat": "2026-01-17T02:30:30Z",
+  "next_relevant_when": [
+    "real_activation_rate > 0%",
+    "echte User registrieren sich",
+    "Demo-Email System gefixt",
+    "current-focus.json setzt Priority auf 1 oder 2"
+  ]
 }

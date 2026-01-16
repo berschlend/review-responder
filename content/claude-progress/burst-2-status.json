@@ -1,64 +1,31 @@
-{
-  "agent": "burst-2-cold-emailer",
-  "version": "3.1",
-  "status": "ready",
-  "priority": 1,
-  "priority_reason": "KRITISCH: Cold Emails mit Demo-Links senden",
-  "started_at": null,
-  "last_heartbeat": null,
-  "current_loop": 0,
-  "loop_interval": "5min",
+﻿{
+    "loop_interval":  "6h",
+    "learnings_applied":  [
 
-  "reboot_context": {
-    "rebooted_at": "2026-01-17T02:00:00Z",
-    "reason": "Night-Burst System Reboot - Prioritaeten umgekehrt",
-    "new_focus": "OUTREACH_TO_FIRST_USE statt Activation"
-  },
+                          ],
+    "current_loop":  0,
+    "started_at":  "2026-01-16T21:11:38Z",
+    "version":  "3.0",
+    "agent":  "burst-2-cold-emailer",
+    "escalations_pending":  [
 
-  "checkpoints": {
-    "last_successful_action": "sent_batch_emails",
-    "last_processed_id": "4559",
-    "resume_from": null
-  },
-
-  "metrics": {
-    "actions_taken": 0,
-    "emails_sent_session": 0,
-    "emails_sent_total": 1496,
-    "bounced": 0,
-    "errors_count": 0,
-    "success_rate": 100
-  },
-
-  "real_metrics_awareness": {
-    "total_clicks": 67,
-    "real_users": 20,
-    "real_activation": 0,
-    "test_accounts_excluded": true
-  },
-
-  "health": {
-    "stuck_detected": false,
-    "last_error": null,
-    "api_budget_ok": true,
-    "memory_ok": true
-  },
-
-  "never_wait_rule": {
-    "enabled": true,
-    "max_idle_minutes": 30,
-    "alternative_tasks": ["help burst-4 mit demos", "help burst-5 mit follow-ups", "enrich leads mit emails"]
-  },
-
-  "escalations_pending": [],
-  "learnings_applied": [
-    "Star Rating in Subject Line (+100% CTR)",
-    "Hotel Chains = Highest Engagement",
-    "No discount in cold emails",
-    "German DACH region leads",
-    "Brevo funktioniert besser als Resend",
-    "/api/admin/send-cold-email ist zuverlaessig"
-  ],
-
-  "session_summary": null
+                            ],
+    "checkpoints":  {
+                        "resume_from":  null,
+                        "last_successful_action":  null,
+                        "last_processed_id":  null
+                    },
+    "health":  {
+                   "api_budget_ok":  true,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "metrics":  {
+                    "success_rate":  0,
+                    "errors_count":  0,
+                    "actions_taken":  0
+                },
+    "status":  "initializing",
+    "last_heartbeat":  null
 }

@@ -517,3 +517,43 @@ User klicken Magic Link → werden registriert → nutzen Produkt NIE → erreic
 - **Session Result:** 17 Activation Emails gesendet (4 dormant + 11 drip + 2 reengage)
 - **Problem:** 71% der User nie genutzt, 29% Activation Rate (knapp unter 30% Ziel)
 
+
+### [2026-01-16 21:17] Burst-13
+- 17.01 Check: 27 echte User, 0 paying. Churn Prevention bleibt PAUSED. Echtes Problem: 0 echte User nutzen Produkt. Erst wenn erster Kunde zahlt wird Burst-13 relevant.
+
+
+### [2026-01-16 21:17] Burst-3
+- 17.01 02:xx UTC: Burst-3 PAUSED - Priority 3 in current-focus.json. Bottleneck ist OUTREACH (Demo-Emails 97% fail, 0% echte Activation), nicht Lead Generation. Social DMs erst relevant wenn: (1) Demo-Email Bug gefixt, (2) Mind. 5 echte User aktiviert, (3) Enterprise Follow-Up für Hotel Chains (Accor etc.) nötig.
+
+
+### [2026-01-16 21:19] Burst-8
+- Burst-8 Check 17.01 01:30 UTC: 0 paying users, 0 users with ANY responses. All 27 real users at 0/20 (0% of Free limit). Upgrade agent has ZERO work. PAUSED until Burst-7 converts first customer. This is 5th consecutive check with same result.
+
+
+### [2026-01-16 21:20] Burst-9
+- 17.01: Agent-Restart-Problem - Registry zeigt 15 'running' Agents aber nur 1 hat aktiven Heartbeat. Heartbeat NULL = Agent NIE gestartet. MANUAL ACTION: Priority-1 Agents (Burst-2,4,5) muessen manuell gestartet werden.
+
+
+### [2026-01-16 21:20] Burst-9
+- 17.01: Click-to-Conversion BROKEN - 67 Clicker, 0 Conversions. CTR 4% ist gut, aber NIEMAND konvertiert danach. Moegliche Ursachen: (1) Demo-Page CTA unklar, (2) Pricing zu hoch, (3) Value Proposition nicht deutlich, (4) Registration-Flow zu kompliziert. EMPFEHLUNG: Demo-Page UX Review!
+
+
+### [2026-01-16 21:24] Burst-14
+- Hotel chains (Accor, 25hours, Leonardo, Deutsche Hospitality) are the highest-scoring leads due to chain potential. 4 Accor properties clicked = enterprise opportunity. DACH region (Hamburg, Berlin, Wien, Zuerich) dominates hot leads.
+
+
+### [2026-01-16 21:26] Burst-11
+- KRITISCH: Test-Account Filter ist PFLICHT! Ohne exclude_test=true waren Metriken komplett falsch (29% Activation vs 0% real)
+
+
+### [2026-01-16 21:27] Burst-5
+- 67 Clicker alle haben FU1+FU2. Kein Raum fuer weitere Follow-Ups ohne neue Clicker. privacy@vimeo.com ist nicht qualifiziert (falscher Business).
+
+
+### [2026-01-16 21:42] Burst-1
+- 25 cold emails sent (20+5). Email enrichment found 0 new emails from websites. High-review leads ohne Email: Cargiant (10k), Stevens Creek Chevy (2.5k), Savorys Restaurant (1.3k) - need Chrome MCP for manual scraping.
+
+
+### [2026-01-16 21:42] Burst-4
+- Demo-System Status 17.01: Alle Hot Leads haben Follow-Ups, keine pending Demo-Emails. Bottleneck ist Email Enrichment: 1333 Leads ohne Email brauchen Burst-1.
+

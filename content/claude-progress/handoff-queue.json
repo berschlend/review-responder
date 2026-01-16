@@ -129,6 +129,42 @@
                       "id":  "275cfc8e",
                       "created_at":  "2026-01-16T17:10:02Z",
                       "status":  "pending"
+                  },
+                  {
+                      "from":  "burst-14",
+                      "to":  "burst-6",
+                      "type":  "critical_activation",
+                      "data":  {
+                                   "count":  27,
+                                   "insight":  "27 registered clickers have 0% activation rate - closest to conversion!",
+                                   "top_priority":  [
+                                                        "info@treudelberg.com",
+                                                        "H0796@accor.com",
+                                                        "community@bullring.co.uk",
+                                                        "langstrasse@25hours-hotels.com",
+                                                        "h9057@accor.com",
+                                                        "info@thedoldergrand.com"
+                                                    ],
+                                   "note":  "These registered users clicked our email AND registered but NEVER generated a single response. They are the closest to money!"
+                               },
+                      "priority":  1,
+                      "id":  "b14-activation-20260116-2",
+                      "created_at":  "2026-01-16T21:20:00Z",
+                      "status":  "pending"
+                  },
+                  {
+                      "from":  "burst-5",
+                      "to":  "burst-6",
+                      "type":  "registered_users_no_usage",
+                      "data":  {
+                                   "count":  27,
+                                   "users":  "27 real users registered but 0% activation (response_count=0)",
+                                   "action":  "Send activation emails or in-app prompts"
+                               },
+                      "priority":  1,
+                      "id":  "6d8da2dd",
+                      "created_at":  "2026-01-16T21:25:47Z",
+                      "status":  "pending"
                   }
               ],
     "processed":  [

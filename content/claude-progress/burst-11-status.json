@@ -2,72 +2,31 @@
   "agent": "burst-11-bottleneck-analyzer",
   "version": "3.0",
   "status": "running",
-  "started_at": "2026-01-16T17:15:00Z",
-  "last_heartbeat": "2026-01-16T17:20:00Z",
-  "current_loop": 2,
+  "started_at": "2026-01-16T21:11:38Z",
+  "last_heartbeat": "2026-01-16T22:00:00Z",
+  "current_loop": 1,
   "loop_interval": "2h",
   "current_bottleneck": {
-    "step": "Demo Emails NOT SENT",
-    "conversion": 3,
-    "status": "critical",
-    "impact": "97 demos generated but not emailed - entire demo funnel broken"
-  },
-  "secondary_bottleneck": {
-    "step": "Magic Link Activation",
+    "step": "Reg_to_Active",
     "conversion": 0,
     "status": "critical",
-    "impact": "4 of 4 magic link users never used product"
+    "description": "27 echte User, 0 haben Produkt genutzt"
   },
   "funnel_snapshot": {
-    "leads": 2408,
-    "leads_with_email": 1090,
-    "emails_sent": 1480,
+    "leads": 2519,
+    "leads_with_email": 1166,
+    "emails_sent": 1680,
     "clicks": 67,
-    "ctr": "4.5%",
-    "demos_generated": 100,
-    "demos_emailed": 3,
-    "demos_viewed": 1,
-    "registered": 42,
-    "active": 12,
-    "paying": 0
+    "click_rate": "4.0%",
+    "registrations": 27,
+    "active_users": 0,
+    "paying_users": 0,
+    "activation_rate": "0%"
   },
-  "recommendations_count": 3,
-  "recommendations": [
-    {
-      "priority": 1,
-      "target": "Burst-4/Tech",
-      "action": "FIX Demo Email Sending - 97% of demos not emailed!",
-      "impact": "+15 registrations expected"
-    },
-    {
-      "priority": 2,
-      "target": "Burst-6",
-      "action": "FIX Magic Link Onboarding - 0% activation rate",
-      "impact": "+5 active users expected"
-    },
-    {
-      "priority": 3,
-      "target": "Burst-5",
-      "action": "Re-engage 30 ghost users with personalized emails",
-      "impact": "+3 active users expected"
-    }
-  ],
-  "escalations_pending": [
-    {
-      "level": "critical",
-      "issue": "Demo Email System BROKEN - 97 demos not sent",
-      "action_needed": "Check /api/cron/generate-demos and email service"
-    },
-    {
-      "level": "warning",
-      "issue": "Magic Link Activation = 0%",
-      "action_needed": "Redirect magic link users to generator, not dashboard"
-    }
-  ],
   "metrics": {
     "actions_taken": 1,
-    "errors_count": 0,
-    "success_rate": 100
+    "success_rate": 100,
+    "errors_count": 0
   },
   "health": {
     "api_budget_ok": true,
@@ -75,19 +34,19 @@
     "stuck_detected": false,
     "last_error": null
   },
+  "recommendations": [
+    "PRIORITY 1: Fix Login -> Generator Redirect",
+    "PRIORITY 2: Re-engage 27 Ghost Users",
+    "PRIORITY 3: Follow-up 40 Clicker ohne Registration"
+  ],
+  "escalations_pending": [
+    "0% Activation bei ALLEN echten Usern - CRITICAL"
+  ],
+  "learnings_applied": [],
   "checkpoints": {
-    "last_successful_action": "bottleneck_analysis_complete",
+    "last_successful_action": "bottleneck-report-written",
     "last_processed_id": null,
     "resume_from": null
   },
-  "learnings_applied": [
-    "Demo funnel separate from cold email funnel",
-    "Magic link users need different onboarding than normal signup"
-  ],
-  "next_run": "2026-01-16T19:20:00Z",
-  "stuck": false,
-  "needs_berend": [
-    "CRITICAL: Demo email system not working - check cron job",
-    "IMPORTANT: Magic link redirect destination decision"
-  ]
+  "next_run": "2026-01-17T00:00:00Z"
 }

@@ -1,59 +1,31 @@
-{
-  "agent": "burst-1-lead-finder",
-  "version": "3.1",
-  "status": "ready",
-  "priority": 2,
-  "priority_reason": "Lead Gen wenn <2000 Leads oder Email Enrichment noetig",
-  "started_at": null,
-  "last_heartbeat": null,
-  "current_loop": 0,
-  "loop_interval": "4h",
+﻿{
+    "loop_interval":  "4h",
+    "learnings_applied":  [
 
-  "reboot_context": {
-    "rebooted_at": "2026-01-17T02:00:00Z",
-    "reason": "Night-Burst System Reboot",
-    "note": "2498 Leads vorhanden - Lead Gen nicht dringend, aber Email Enrichment hilfreich"
-  },
+                          ],
+    "current_loop":  2,
+    "started_at":  "2026-01-16T21:11:38Z",
+    "version":  "3.0",
+    "agent":  "burst-1-lead-finder",
+    "escalations_pending":  [
 
-  "checkpoints": {
-    "last_successful_action": "handled_burst4_handoff",
-    "last_processed_id": "b4-enrichment-request-20260115",
-    "resume_from": null
-  },
-
-  "metrics": {
-    "actions_taken": 0,
-    "leads_total": 2498,
-    "leads_with_email": 1200,
-    "leads_without_email": 1298,
-    "emails_enriched_session": 0,
-    "errors_count": 0
-  },
-
-  "real_metrics_awareness": {
-    "total_leads": 2498,
-    "leads_with_email": 1200,
-    "email_gap": 1298,
-    "conclusion": "Genug Leads, aber Email Enrichment wuerde helfen"
-  },
-
-  "health": {
-    "stuck_detected": false,
-    "last_error": null,
-    "api_budget_ok": true,
-    "memory_ok": true
-  },
-
-  "never_wait_rule": {
-    "enabled": true,
-    "max_idle_minutes": 30,
-    "alternative_tasks": ["enrich existing leads with emails", "help burst-4 mit demos", "validate lead emails"]
-  },
-
-  "escalations_pending": [],
-  "learnings_applied": [
-    "LinkedIn endpoint ist reliable workaround fuer Place ID issues"
-  ],
-
-  "session_summary": null
+                            ],
+    "checkpoints":  {
+                        "resume_from":  null,
+                        "last_successful_action":  "cold_email_batch_25",
+                        "last_processed_id":  null
+                    },
+    "health":  {
+                   "api_budget_ok":  true,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "metrics":  {
+                    "success_rate":  0,
+                    "errors_count":  0,
+                    "actions_taken":  25
+                },
+    "status":  "running",
+    "last_heartbeat":  "2026-01-16T21:43:44Z"
 }

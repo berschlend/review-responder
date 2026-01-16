@@ -1,76 +1,64 @@
-{
-  "agent": "burst-14-lead-scorer",
-  "version": "3.0",
-  "status": "running",
-  "started_at": "2026-01-16T16:52:17Z",
-  "last_heartbeat": "2026-01-16T17:15:00Z",
-  "current_loop": 1,
-  "loop_interval": "30m",
-  "metrics": {
-    "actions_taken": 1,
-    "leads_scored": 67,
-    "hot_leads": 24,
-    "warm_leads": 33,
-    "cool_leads": 8,
-    "cold_leads": 2,
-    "mega_hot_leads": 3,
-    "new_clicks_today": 2,
-    "success_rate": 100,
-    "errors_count": 0
-  },
-  "checkpoints": {
-    "last_processed_id": null,
-    "last_successful_action": "2026-01-16T17:15:00Z",
-    "resume_from": null
-  },
-  "health": {
-    "stuck_detected": false,
-    "last_error": null,
-    "api_budget_ok": true,
-    "memory_ok": true
-  },
-  "scoring_summary": {
-    "hot_percentage": "36%",
-    "warm_percentage": "49%",
-    "cool_percentage": "12%",
-    "cold_percentage": "3%",
-    "avg_score": 68
-  },
-  "top_5_leads": [
-    {"email": "office@rollercoasterrestaurant.com", "score": 95, "reason": "23K reviews, clicked TODAY"},
-    {"email": "info@treudelberg.com", "score": 92, "reason": "Hotel chain, registered"},
-    {"email": "advantageclub@leonardo-hotels.com", "score": 90, "reason": "220+ hotels chain"},
-    {"email": "ask.berlinap@staygenerator.com", "score": 88, "reason": "14 locations chain"},
-    {"email": "H1163@accor.com", "score": 87, "reason": "Accor 5500+ hotels"}
-  ],
-  "learnings_applied": [
-    "Hotel chains with multiple properties = high enterprise value",
-    "DACH region leads have higher LTV",
-    "Clicks within 24h = immediate follow-up needed",
-    "Reviews 20K+ = massive potential but may have internal tools"
-  ],
-  "escalations_pending": [
-    {
-      "type": "mega_hot_lead",
-      "email": "office@rollercoasterrestaurant.com",
-      "score": 95,
-      "reason": "NEW lead clicked TODAY with 23K reviews - needs immediate attention"
-    }
-  ],
-  "handoffs_created": [
-    {
-      "to": "burst-5",
-      "type": "hot_leads",
-      "count": 5,
-      "priority": 1
-    },
-    {
-      "to": "burst-7",
-      "type": "mega_hot_leads",
-      "count": 3,
-      "priority": 1
-    }
-  ],
-  "stuck": false,
-  "needs_berend": ["New MEGA-HOT lead: ROLLERCOASTERRESTAURANT Vienna (Score 95)"]
+﻿{
+    "agent":  "burst-14-lead-scorer",
+    "version":  "3.0",
+    "status":  "running",
+    "started_at":  "2026-01-16T21:11:38Z",
+    "last_heartbeat":  "2026-01-16T21:26:23Z",
+    "current_loop":  1,
+    "loop_interval":  "30m",
+    "metrics":  {
+                    "actions_taken":  1,
+                    "leads_scored":  66,
+                    "errors_count":  0,
+                    "success_rate":  100
+                },
+    "scoring_results":  {
+                            "total_scored":  66,
+                            "segments":  {
+                                             "hot":  24,
+                                             "warm":  32,
+                                             "cool":  8,
+                                             "cold":  2
+                                         },
+                            "mega_hot_leads":  3
+                        },
+    "health":  {
+                   "stuck_detected":  false,
+                   "last_error":  null,
+                   "api_budget_ok":  true,
+                   "memory_ok":  true
+               },
+    "checkpoints":  {
+                        "last_processed_id":  null,
+                        "last_successful_action":  "2026-01-16T21:20:00Z",
+                        "resume_from":  null
+                    },
+    "learnings_applied":  [
+
+                          ],
+    "escalations_pending":  [
+                                {
+                                    "type":  "mega_hot_lead",
+                                    "lead":  "office@rollercoasterrestaurant.com",
+                                    "score":  95,
+                                    "reason":  "23K reviews, clicked TODAY"
+                                }
+                            ],
+    "handoffs_created":  [
+                             {
+                                 "to":  "burst-5",
+                                 "type":  "hot_leads",
+                                 "count":  3
+                             },
+                             {
+                                 "to":  "burst-6",
+                                 "type":  "inactive_users",
+                                 "count":  27
+                             }
+                         ],
+    "next_run":  "2026-01-16T21:50:00Z",
+    "stuck":  false,
+    "needs_berend":  [
+
+                     ]
 }

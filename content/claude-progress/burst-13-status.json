@@ -1,64 +1,32 @@
-{
-  "agent": "burst-13-churn-prevention",
-  "version": "3.0",
-  "status": "paused",
-  "pause_reason": "0 paying users - churn prevention irrelevant",
-  "last_run": "2026-01-16T23:45:00Z",
-  "last_heartbeat": "2026-01-16T23:45:00Z",
-  "started_at": "2026-01-16T16:52:17Z",
-  "loop_interval": "6h",
-  "current_loop": 1,
-
-  "reality_check": {
-    "total_users": 42,
-    "paying_users": 0,
-    "users_never_used": 30,
-    "users_near_limit": 0,
-    "highest_usage": 8,
-    "conclusion": "Churn Prevention CANNOT help until Burst-7 converts first customer"
-  },
-
-  "at_risk_analysis": {
-    "paying_at_risk": 0,
-    "free_power_users": 0,
-    "recently_cancelled": 0,
-    "reason": "Nobody pays, nobody can churn"
-  },
-
-  "metrics": {
-    "actions_taken": 1,
-    "success_rate": 100,
-    "errors_count": 0
-  },
-
-  "health": {
-    "stuck_detected": false,
-    "last_error": null,
-    "api_budget_ok": true,
-    "memory_ok": true
-  },
-
-  "checkpoints": {
-    "last_processed_id": null,
-    "last_successful_action": "status_check",
-    "resume_from": null
-  },
-
-  "learnings_applied": [
-    "0 paying users = 0 churn risk",
-    "Activation (Burst-6) is real bottleneck",
-    "Will resume when first payment happens"
-  ],
-
-  "escalations_pending": [],
-
-  "resume_conditions": [
-    "First paying customer exists",
-    "OR: User cancels subscription",
-    "OR: Burst-7 reports conversion"
-  ],
-
-  "next_check": "2026-01-17T05:45:00Z",
-  "stuck": false,
-  "needs_berend": []
+﻿{
+    "loop_interval":  "6h",
+    "learnings_applied":  [],
+    "current_loop":  1,
+    "started_at":  "2026-01-16T21:11:38Z",
+    "version":  "3.0",
+    "agent":  "burst-13-churn-prevention",
+    "escalations_pending":  [],
+    "checkpoints":  {
+        "resume_from":  null,
+        "last_successful_action":  "2026-01-16T21:16:00Z",
+        "last_processed_id":  null
+    },
+    "health":  {
+        "api_budget_ok":  true,
+        "memory_ok":  true,
+        "stuck_detected":  false,
+        "last_error":  null
+    },
+    "metrics":  {
+        "paying_users": 0,
+        "real_users": 27,
+        "churn_risk_users": 0,
+        "success_rate":  0,
+        "errors_count":  0,
+        "actions_taken":  1
+    },
+    "status":  "paused_correctly",
+    "status_reason": "0 paying users = 0 churn risk. Waiting for first paying customer.",
+    "last_heartbeat":  "2026-01-16T21:14:56Z",
+    "next_check": "Resume when paying_users > 0"
 }

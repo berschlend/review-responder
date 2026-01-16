@@ -10,7 +10,7 @@
                                     "chrome":  false,
                                     "last_seen":  null,
                                     "status":  "running",
-                                    "started_at":  "2026-01-16T16:52:19Z"
+                                    "started_at":  "2026-01-16T21:11:39Z"
                                 },
                    "burst-9":  {
                                    "account":  ".claude-acc3",
@@ -19,7 +19,7 @@
                                    "chrome":  false,
                                    "last_seen":  null,
                                    "status":  "running",
-                                   "started_at":  "2026-01-16T16:52:19Z"
+                                   "started_at":  "2026-01-16T21:11:39Z"
                                },
                    "burst-10":  {
                                     "account":  ".claude-acc3",
@@ -28,7 +28,7 @@
                                     "chrome":  false,
                                     "last_seen":  null,
                                     "status":  "running",
-                                    "started_at":  "2026-01-16T16:52:19Z"
+                                    "started_at":  "2026-01-16T21:11:39Z"
                                 },
                    "burst-11":  {
                                     "account":  ".claude-acc3",
@@ -37,43 +37,43 @@
                                     "chrome":  false,
                                     "last_seen":  null,
                                     "status":  "running",
-                                    "started_at":  "2026-01-16T16:52:19Z"
+                                    "started_at":  "2026-01-16T21:11:39Z"
                                 },
                    "burst-7":  {
                                    "account":  ".claude-acc3",
                                    "name":  "payment-converter",
                                    "pid":  null,
-                                   "chrome":  false,
+                                   "chrome":  true,
                                    "last_seen":  null,
                                    "status":  "running",
-                                   "started_at":  "2026-01-16T16:52:19Z"
+                                   "started_at":  "2026-01-16T21:11:39Z"
                                },
                    "burst-2":  {
                                    "account":  ".claude-acc3",
                                    "name":  "cold-emailer",
                                    "pid":  null,
-                                   "chrome":  false,
+                                   "chrome":  true,
                                    "last_seen":  null,
                                    "status":  "running",
-                                   "started_at":  "2026-01-16T16:52:19Z"
+                                   "started_at":  "2026-01-16T21:11:39Z"
                                },
                    "burst-6":  {
                                    "account":  ".claude-acc3",
                                    "name":  "user-activator",
                                    "pid":  null,
-                                   "chrome":  false,
+                                   "chrome":  true,
                                    "last_seen":  null,
                                    "status":  "running",
-                                   "started_at":  "2026-01-16T16:52:19Z"
+                                   "started_at":  "2026-01-16T21:11:39Z"
                                },
                    "burst-4":  {
                                    "account":  ".claude-acc3",
                                    "name":  "demo-generator",
                                    "pid":  null,
-                                   "chrome":  false,
+                                   "chrome":  true,
                                    "last_seen":  null,
                                    "status":  "running",
-                                   "started_at":  "2026-01-16T16:52:19Z"
+                                   "started_at":  "2026-01-16T21:11:39Z"
                                },
                    "burst-3":  {
                                    "account":  ".claude-acc3",
@@ -82,16 +82,16 @@
                                    "chrome":  true,
                                    "last_seen":  null,
                                    "status":  "running",
-                                   "started_at":  "2026-01-16T16:52:19Z"
+                                   "started_at":  "2026-01-16T21:11:39Z"
                                },
                    "burst-13":  {
                                     "account":  ".claude-acc3",
                                     "name":  "churn-prevention",
                                     "pid":  null,
-                                    "chrome":  false,
+                                    "chrome":  true,
                                     "last_seen":  null,
                                     "status":  "running",
-                                    "started_at":  "2026-01-16T16:52:19Z"
+                                    "started_at":  "2026-01-16T21:11:39Z"
                                 },
                    "burst-15":  {
                                     "account":  ".claude-acc3",
@@ -100,7 +100,7 @@
                                     "chrome":  false,
                                     "last_seen":  null,
                                     "status":  "running",
-                                    "started_at":  "2026-01-16T16:52:19Z"
+                                    "started_at":  "2026-01-16T21:11:39Z"
                                 },
                    "burst-1":  {
                                    "account":  ".claude-acc3",
@@ -109,37 +109,37 @@
                                    "chrome":  true,
                                    "last_seen":  null,
                                    "status":  "running",
-                                   "started_at":  "2026-01-16T16:52:19Z"
+                                   "started_at":  "2026-01-16T21:11:39Z"
                                },
                    "burst-5":  {
                                    "account":  ".claude-acc3",
                                    "name":  "hot-lead-chaser",
                                    "pid":  null,
-                                   "chrome":  false,
+                                   "chrome":  true,
                                    "last_seen":  null,
                                    "status":  "running",
-                                   "started_at":  "2026-01-16T16:52:19Z"
+                                   "started_at":  "2026-01-16T21:11:39Z"
                                },
                    "burst-8":  {
                                    "account":  ".claude-acc3",
                                    "name":  "upgrader",
                                    "pid":  null,
-                                   "chrome":  false,
+                                   "chrome":  true,
                                    "last_seen":  null,
                                    "status":  "running",
-                                   "started_at":  "2026-01-16T16:52:19Z"
+                                   "started_at":  "2026-01-16T21:11:39Z"
                                },
                    "burst-12":  {
                                     "account":  ".claude-acc3",
                                     "name":  "creative-strategist",
                                     "pid":  null,
-                                    "chrome":  false,
+                                    "chrome":  true,
                                     "last_seen":  null,
                                     "status":  "running",
-                                    "started_at":  "2026-01-16T16:52:19Z"
+                                    "started_at":  "2026-01-16T21:11:39Z"
                                 }
                },
     "stopped_agents":  0,
     "orchestrator_version":  "3.1",
-    "started_at":  "2026-01-16T16:52:17Z"
+    "started_at":  "2026-01-16T21:11:38Z"
 }
