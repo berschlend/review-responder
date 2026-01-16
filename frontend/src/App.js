@@ -32885,6 +32885,53 @@ const AdminPage = () => {
                   marginBottom: '24px',
                 }}
               >
+                {/* Amazon SES - Primary Provider */}
+                <div className="card" style={{ border: '2px solid #FF9900' }}>
+                  <h3
+                    style={{
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      marginBottom: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        background: '#FF9900',
+                      }}
+                    ></span>
+                    Amazon SES (Primary)
+                  </h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <div style={{ fontSize: '24px', fontWeight: '700' }}>
+                        {emailData.summary?.by_provider?.ses?.sent || 0}
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Sent</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#10B981' }}>
+                        {emailData.summary?.by_provider?.ses?.today || 0}
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Today</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '24px', fontWeight: '700', color: '#EF4444' }}>
+                        {emailData.summary?.by_provider?.ses?.failed || 0}
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Failed</div>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--gray-500)' }}>
+                    50,000/day - $0.10/1000 emails
+                  </div>
+                </div>
+
                 <div className="card">
                   <h3
                     style={{
@@ -32904,7 +32951,7 @@ const AdminPage = () => {
                         background: '#8B5CF6',
                       }}
                     ></span>
-                    Brevo (Marketing)
+                    Brevo (Fallback)
                   </h3>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
                     <div>

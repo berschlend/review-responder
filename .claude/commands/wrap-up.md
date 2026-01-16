@@ -15,8 +15,8 @@ Session: $CLAUDE_SESSION
 **Letzte 5 Commits:**
 !`git log --oneline -5`
 
-**TODO.md in_progress Tasks:**
-!`grep -c "in_progress" TODO.md 2>/dev/null || echo "0"`
+**TODO.md offene Tasks (AKTUELL IN ARBEIT):**
+!`grep -A 50 "AKTUELL IN ARBEIT" TODO.md 2>/dev/null | grep -c "\- \[ \]" || echo "0"`
 
 **CLAUDE.MD Stand-Datum:**
 !`grep "Stand:" CLAUDE.md | head -1`
@@ -33,8 +33,8 @@ Session: $CLAUDE_SESSION
 1. Uncommitted changes?
    → JA: Sofort committen & pushen. Dann weiter mit Check 2.
 
-2. TODO.md in_progress Tasks?
-   → JA: Als "pending" markieren ODER abschliessen. Dann weiter.
+2. TODO.md offene Tasks in "AKTUELL IN ARBEIT"?
+   → JA: Entweder abhaken [x] ODER in BLOCKED verschieben. Dann weiter.
 
 3. CLAUDE.md Datum veraltet?
    → JA: Datum updaten. Dann weiter.
@@ -56,14 +56,34 @@ ALLE CHECKS BESTANDEN?
 | Uncommitted changes | `git add -A && git commit -m "chore: wrap-up session" && git push` |
 | CLAUDE.md Datum alt | Datum auf heute setzen |
 | Learnings ausstehend | In CLAUDE.md LEARNINGS Section einfuegen |
-| Blocked Items | In TODO.md BLOCKED Tabelle eintragen |
-| in_progress Tasks | Status auf "pending" oder "completed" setzen |
+| Blocked Items | In TODO.md `## ⏳ BLOCKED / WAITING` Tabelle eintragen |
+| Offene Tasks | Entweder [x] abhaken ODER nach BLOCKED verschieben |
 
 ### Was du NICHT autonom machst:
 
 - Keine Code-Aenderungen mehr (nur Docs/Config)
 - Keine neuen Features starten
 - Keine Tests ausfuehren
+
+---
+
+## TODO.md Pflege (KRITISCH!)
+
+**IMMER diese 3 Dinge pruefen/updaten:**
+
+1. **BLOCKED Section** - Neue blocked Items hinzufuegen:
+   ```markdown
+   | Was | Wartet auf | Seit | Naechste Aktion |
+   |-----|------------|------|-----------------|
+   | [Neuer Task] | [Worauf] | [Heute] | [Was dann] |
+   ```
+
+2. **"AKTUELL IN ARBEIT" Section** - Offene Tasks aufraumen:
+   - Fertig? → `[x]` setzen
+   - Blocked? → Nach BLOCKED verschieben
+   - Veraltet? → Loeschen
+
+3. **Datum updaten** - `> Letzte Aktualisierung: [HEUTE]`
 
 ---
 
@@ -112,8 +132,8 @@ Wenn etwas BLOCKED/WAITING ist, trage es in die Tabelle ein:
 
 GIT: ✅ Clean (pushed)
 CLAUDE.MD: ✅ Updated (heute)
+TODO.MD: ✅ Updated (BLOCKED + offene Tasks gepflegt)
 LEARNINGS: ✅ [X neue / Keine]
-BLOCKED: ✅ [X dokumentiert / Keine]
 
 ✅ SESSION SAFE TO CLOSE
    Alles persistiert. Du kannst dieses Terminal schliessen.
