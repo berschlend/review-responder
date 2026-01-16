@@ -2733,7 +2733,7 @@ SIGN OFF:
             >
               <Lightbulb size={14} style={{ flexShrink: 0 }} />
               <span>
-                <strong>Setup:</strong> name + type + keywords → AI expands → add your details
+                Looks like a lot? <strong>Yours = auto-created</strong> by typing a few keywords!
               </span>
             </div>
 
