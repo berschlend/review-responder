@@ -46,6 +46,22 @@ Jedes neue Feature braucht:
 - [ ] **Admin Panel Tab/Card** - Visuell im Frontend unter `/admin`
 - [ ] **Metriken sichtbar** - Zahlen die User sehen will (sent, clicked, converted, etc.)
 
+### 1b. Proaktives Admin Panel Update (AUTONOM!)
+Claude updated das Admin Panel **automatisch** wenn:
+- [ ] **Neues Feature** - Jede neue Funktionalität bekommt Admin-Sichtbarkeit
+- [ ] **Wichtige Metriken** - Zahlen die Claude oder Berend sehen sollten
+- [ ] **Debug-Info** - Status von Prozessen, Errors, Logs
+- [ ] **Neue Datenquellen** - Wenn neue Daten verfügbar sind (Leads, Conversions, etc.)
+
+**Beispiele wann updaten:**
+- Neuer Cron Job → Admin Card mit Status/Last Run
+- Neue Email-Kampagne → Stats (sent, opened, clicked)
+- Neuer Scraper → Lead-Counts, Erfolgsrate
+- Bug gefunden → Error-Log im Admin sichtbar
+- A/B Test → Beide Varianten + Ergebnisse
+
+**Regel:** Wenn Claude denkt "das wäre nützlich im Admin zu sehen" → MACHEN!
+
 ### 2. Dokumentation (SOFORT!)
 | Was | Wo dokumentieren |
 |-----|------------------|
@@ -196,18 +212,20 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 
 ## CURRENT TASKS
 
-**Stand: 16.01.2026**
+**Stand: 17.01.2026**
 
 ### Chrome Web Store
 **Status:** Überprüfung läuft (eingereicht 13.01)
 - Extension v1.6.1
 - Test Account: reviewer@tryreviewresponder.com
 
-### Metriken
-- **~2000 Leads**
-- **~650 Emails** gesendet
-- **~25 Clicks** (4% CTR)
+### Metriken (17.01 01:15 UTC)
+- **2,498 Leads**
+- **1,496 Emails** gesendet
+- **67 Clicks** (4.5% CTR)
+- **42 Users** (0 paying)
 - **0 Conversions** ← Hauptfokus!
+- **Burst-6 aktiviert** - 17 Activation Emails gesendet
 
 ### USER TODO:
 - [ ] Demo-Videos aufnehmen
@@ -256,6 +274,89 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 2. Hook-Ordner umbenennen: `mv ~/.claude/plugins/cache/claude-plugins-official/ralph-loop/*/hooks ~/.claude/plugins/cache/claude-plugins-official/ralph-loop/*/hooks.disabled`
 3. **Neues Terminal öffnen** - Session hat Hook gecached!
 **Lesson:** Bei Plugin-Problemen IMMER neues Terminal nach Fixes.
+
+### Demo Generation API (16.01)
+**Problem:** `/api/demo/generate` gibt "Could not find business" oder 0 responses.
+**Ursachen:**
+1. Google Places API findet Business nicht → **Exakter Name + City** nötig
+2. Business hat nur 5-Sterne Reviews → keine negativen zum Antworten
+**Lösungen:**
+- `focus: "mixed"` Parameter nutzen bei nur positiven Reviews
+- Business-Namen genau wie auf Google Maps schreiben
+- City ohne Länderkürzel (z.B. "Munich" nicht "Munich, Germany")
+
+### Burst-15 Approval Gate Pattern (16.01)
+**Problem:** Continuous 5-min Loop Monitoring bei leerer Queue verschwendet Ressourcen.
+**Beobachtung:** 2 kritische Approvals ohne Berend-Response → Timeouts angewendet.
+**Learning:** approval-queue.md/berend-feedback.md wird nicht aktiv gelesen.
+**Empfehlung:**
+- Approval Gate nur bei neuen Approvals starten (event-based)
+- Oder: längere Intervalle (30min) wenn Queue leer
+- Alternative: direkter Chat/Email für kritische Approvals
+
+### Night-Burst-10 Morning Briefer Pattern (17.01)
+**Problem:** Continuous 30-min Loop Monitoring verschwendet Ressourcen wenn System offline.
+**Beobachtung:** 6 von 9 Agents waren STALE (>24h), Burst-6 nie gestartet.
+**Learning:** Morning Briefer braucht kein dauerhaftes Monitoring.
+**Empfehlung:**
+- Briefer einmal morgens starten (nicht als Loop)
+- Oder: Event-based triggern wenn Agents wieder laufen
+- Erst Agents neustarten, dann Monitoring sinnvoll
+
+### Magic Link Activation FIX (17.01)
+**Problem:** 0% Activation für Magic Link Users (vs 31.6% normal signup).
+**Ursache:** Magic Link redirected zu `/dashboard` statt `/generator`.
+**Fix:** `navigate('/generator')` in MagicLoginPage (App.js:4441)
+**Lesson:** Erste User-Erfahrung nach Login entscheidend für Activation.
+
+### Demo Email Bug FIX (17.01)
+**Problem:** 97% der generierten Demos wurden nie per Email verschickt.
+**Ursache:** `/api/cron/generate-demos` hatte `send_emails` Default auf `false`.
+**Fix (2 Teile):**
+1. Default auf `true` geändert: `send_emails !== 'false'` (statt `=== 'true'`)
+2. Neuer Endpoint: `GET /api/cron/send-pending-demo-emails?secret=XXX`
+   - Findet alle Demos ohne `email_sent_at`
+   - Sendet Demo-Emails an zugehörige Leads
+   - Parallel-safe mit `wasEmailRecentlySent()`
+**Lesson:** Bei Cron-Parameter-Defaults immer überlegen was "vergessen" bedeutet.
+
+### Night-Burst-2 API Endpoints (17.01)
+**Problem:** Dokumentierte Endpoints existierten nicht.
+**Was NICHT existiert:**
+- `/api/admin/daily-email-count`
+- `/api/admin/next-uncontacted-lead`
+- `/api/cron/send-single-outreach`
+
+**Was FUNKTIONIERT:**
+- `GET /api/admin/scraped-leads?status=new&limit=10` - Leads finden
+- `POST /api/admin/send-cold-email` - Einzelne Email senden (Body: to, name, reviews, type)
+- `GET /api/cron/turbo-email` - Batch senden (kann Timeout haben)
+
+**Lesson:** Bei Agent-Skills immer erst die tatsächlichen API Endpoints testen!
+
+### Burst-12 Creative Strategist Ineffizienz (16.01)
+**Problem:** Burst-12 als reiner Monitor ist ineffizient wenn keine A/B Tests laufen.
+**Beobachtung:**
+- Dauerhaftes Stagnation-Monitoring am Anfang ist Ressourcenverschwendung
+- Review Alerts Feature (ROOT CAUSE Fix) per Timeout zur Implementation freigegeben
+**Empfehlung:**
+- Burst-12 nur bei aktiven A/B Tests oder konkreten Metriken-Regressions starten
+- Am Anfang: Lieber anderen Agents helfen (Lead Gen, Email, Demos) statt passiv monitoren
+- Erst bei >5 zahlenden Kunden wird A/B Testing relevant
+
+### Burst-11 Bottleneck Analysis (17.01)
+**Kritische Erkenntnisse:**
+1. **Demo Email System KAPUTT:** 100 Demos generiert, nur 3 Emails gesendet (3%)
+   - 97% der generierten Demos werden NICHT an Leads gemailt
+   - Vermutlich Cron Job oder Email Service Problem
+2. **Magic Link Activation = 0%:** Alle 4 Magic Link Users haben das Produkt NIE genutzt
+   - Normal Signup: 31.6% Activation
+   - Magic Link: 0% Activation
+   - User landen nach Login im Dashboard statt direkt beim Generator
+**Empfehlung:**
+- SOFORT: `/api/cron/generate-demos` prüfen - sendet der Emails?
+- Magic Link Login → Redirect direkt zu `/generator` statt Dashboard
+- Monitoring-Agents (Burst-11) am Anfang weniger sinnvoll als Action-Agents
 
 ---
 
