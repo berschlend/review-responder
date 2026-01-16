@@ -203,8 +203,10 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 - Extension v1.6.1
 - Test Account: reviewer@tryreviewresponder.com
 
-### Metriken
-- **~2000 Leads**
+### Metriken (BEREINIGT 16.01)
+- **27 echte User** (52 raw - 25 Test/Freunde excluded)
+- **0% Activation Rate** ← ALLE echten Leads = never_used!
+- **~2000 Leads** in DB
 - **~650 Emails** gesendet
 - **~25 Clicks** (4% CTR)
 - **0 Conversions** ← Hauptfokus!
@@ -241,6 +243,12 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 ### AI Response Qualität
 **Blacklisted:** "Thank you for your feedback", "We appreciate...", "thrilled", "delighted"
 **Gut:** Kurz, spezifisch, Reviewer beim Namen nennen.
+
+### Metriken Cleanup (16.01)
+**Problem:** Fake 28.6% Activation Rate (alle Tests/Freunde).
+**Lösung:** `TEST_EMAILS` Array in server.js mit allen Test/Freunde Emails.
+**Endpoints:** `/api/admin/user-list` und `/api/admin/usage-analytics` filtern jetzt automatisch.
+**Realität:** 27 echte User, 0% Activation - ALLE echten Leads = never_used.
 
 ---
 
