@@ -2587,7 +2587,7 @@ WHAT WE SOLVE:
 - Sound like YOU, not a robot - AI learns your voice
 
 WHY I BUILT THIS:
-Small business owners shouldn't have to choose between ignoring reviews and spending hours writing responses. Every review deserves a thoughtful reply - but it shouldn't take 10 minutes to write one.
+Business owners shouldn't have to choose between ignoring reviews and spending hours writing responses. Every review deserves a thoughtful reply - but it shouldn't take 10 minutes to write one.
 
 CONTACT:
 - support@tryreviewresponder.com
