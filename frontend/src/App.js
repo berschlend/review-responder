@@ -2499,13 +2499,26 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
                 <input
                   type="text"
                   className="form-input"
-                  placeholder="e.g., John from ABC Restaurant"
+                  placeholder="e.g., John"
                   value={displayName}
                   onChange={e => setDisplayName(e.target.value)}
                   maxLength={100}
                 />
+              </div>
+
+              {/* Business Name (optional) */}
+              <div className="form-group">
+                <label className="form-label">Business Name (optional)</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g., Pizzeria Napoli, Munich"
+                  value={businessName}
+                  onChange={e => setBusinessName(e.target.value)}
+                  maxLength={100}
+                />
                 <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
-                  If approved, your feedback may appear on our website
+                  Shown publicly - free advertising for your business!
                 </p>
               </div>
 

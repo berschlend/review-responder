@@ -3620,22 +3620,27 @@ function evaluateResponseQuality(response, reviewText, tone, reviewRating) {
     feedback.push('Includes call to action');
   }
 
-  // 5. Appropriate for rating (negative reviews need more empathy)
+  // 5. Appropriate for rating (negative reviews need ownership, not just empathy words)
   if (reviewRating && reviewRating <= 2) {
-    const empathyWords = [
-      'sorry',
-      'apologize',
+    const ownershipWords = [
+      "that's on us",
+      'our mistake',
+      'we dropped the ball',
+      "we'll fix",
+      "we'll make it right",
+      'contact me directly',
+      'reach out directly',
+      'email me',
+      'call me',
       'understand',
-      'concerned',
-      'disappointing',
       'frustrating',
     ];
-    const hasEmpathy = empathyWords.some(w => lowerResponse.includes(w));
-    if (hasEmpathy) {
+    const hasOwnership = ownershipWords.some(w => lowerResponse.includes(w));
+    if (hasOwnership) {
       score += 5;
-      feedback.push('Shows empathy for negative experience');
+      feedback.push('Takes ownership for negative experience');
     } else if (tone === 'apologetic') {
-      suggestions.push('Add more empathetic language');
+      suggestions.push('Add more ownership language (e.g., "That\'s on us", "reach out directly")');
     }
   }
 
@@ -3825,11 +3830,11 @@ async function generateResponseHandler(req, res) {
         avoid: 'Making excuses or being defensive',
       },
       1: {
-        goal: 'Damage control, show professionalism to future readers',
+        goal: 'Stay sovereign, show professionalism to future readers',
         approach:
-          'Acknowledge frustration, take ownership, apologize specifically, offer direct contact to resolve',
-        length: '4-5 sentences',
-        avoid: 'Arguing, making excuses, passive-aggressive tone',
+          'Acknowledge frustration, take ownership briefly, offer direct contact to resolve',
+        length: '2-3 sentences',
+        avoid: 'Arguing, making excuses, passive-aggressive tone, over-apologizing',
       },
     };
 
@@ -4137,6 +4142,15 @@ ${languageInstruction}
 
     // Apply AI slop filter to clean up typical AI phrases
     generatedResponse = cleanAISlop(generatedResponse);
+
+    // Validate response for remaining AI slop patterns
+    const slopCheck = checkAISlop(generatedResponse);
+    if (!slopCheck.passed) {
+      console.warn(
+        `[AI-Slop Warning] Response still contains AI patterns after cleaning: ${slopCheck.issues.join('; ')}`
+      );
+      // Log for monitoring, but don't reject - cleanAISlop should have fixed most issues
+    }
 
     // Check if this is an onboarding demo request (don't count usage or save to history)
     const isOnboardingDemo = req.body.isOnboarding === true && user.onboarding_completed === false;
