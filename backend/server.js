@@ -11067,10 +11067,11 @@ app.all('/api/cron/review-alerts', async (req, res) => {
       )
     `);
 
-    // Ensure google_place_id column exists on linkedin_outreach (migration fix)
+    // Ensure google_place_id column exists on tables (migration fix)
     try {
       await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS google_place_id TEXT`);
-    } catch (e) { /* Column might already exist */ }
+      await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS google_place_id TEXT`);
+    } catch (e) { /* Columns might already exist */ }
 
     // Find users with business_name set (they have a business to monitor)
     const usersWithBusiness = await dbQuery(`
