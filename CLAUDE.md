@@ -213,30 +213,28 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 
 ## CURRENT TASKS
 
-**Stand: 16.01.2026 (21:00 UTC)**
+**Stand: 17.01.2026 (21:10 UTC)**
 
 ### Chrome Web Store
 **Status:** Überprüfung läuft (eingereicht 13.01)
 - Extension v1.6.1
 - Test Account: reviewer@tryreviewresponder.com
 
-### Metriken (16.01 20:45 UTC)
-- **3,657 Responses** generiert (dynamisch auf Demo-Pages!)
-- **1,064 Demos** erstellt
+### Metriken (17.01)
+- **3,657+ Responses** generiert
+- **1,064+ Demos** erstellt
 - **54 Users** (0 paying)
 - **0 Conversions** ← Hauptfokus!
 
-### Neue Features (16.01)
-- ✅ **Calendly Integration** - "Book a quick call" Button auf Demo-Pages
-  - Link: `calendly.com/berend-jakob-mainz/quick-call`
-- ✅ **Dynamische Response-Zähler** - Zeigt echte Zahlen auf Demo-Pages
-  - Endpoint: `/api/public/stats` (cached 5min)
-  - Zählt: User Responses + Instant Try + Demo Responses
+### Neue Features (17.01)
+- ✅ **Review Alerts Cron** - Wöchentliche Digest-Emails
+  - Endpoint: `/api/cron/review-alerts?secret=ADMIN_SECRET`
+  - Auto-captures Google Place ID bei erster Response
+  - 32 Users gecheckt, funktioniert!
 
 ### USER TODO:
 - [ ] Demo-Videos aufnehmen
 - [ ] Google Indexierung fortsetzen
-- [ ] Optional: WhatsApp Business einrichten
 
 ---
 
