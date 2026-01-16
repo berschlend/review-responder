@@ -238,7 +238,7 @@ const API_PRICING = {
 
 // Explizite Test-Email-Adressen (manuell gepflegt)
 const TEST_EMAILS = [
-  'breihosen@gmail.com',
+  // Test Accounts (zu löschen/ignorieren)
   'reviewer@tryreviewresponder.com',
   'weviewvbtetsmail@gmail.com',
   'testemailsjsjdj@gmail.com',
@@ -248,6 +248,14 @@ const TEST_EMAILS = [
   'contestmail@gmail.com',
   'testemaiccecel@gmail.com',
   'testemail@gmail.com',
+  // Freunde (aus Metriken ausschließen)
+  'breihosen@gmail.com',
+  'andrehoellering1732004@gmail.com',
+  'clvalentini24@gmail.com',
+  'penelopefier@gmail.com',
+  'matiasaseff@hotmail.com',
+  'lennart.schega@gmail.com',
+  'tiniwi09@gmail.com',
 ].map(e => e.toLowerCase());
 
 // SQL LIKE Patterns für Test-Emails
@@ -12399,10 +12407,12 @@ app.get('/api/admin/widget-analytics', authenticateAdmin, async (req, res) => {
 });
 
 // GET /api/admin/user-list - List all users with response counts for activation targeting
-// WICHTIG: Unterscheidet Magic Link Users von normalen Signups!
+// WICHTIG: Unterscheidet echte Leads von Test/Freunde Accounts!
 app.get('/api/admin/user-list', authenticateAdmin, async (req, res) => {
   try {
-    const users = await dbAll(`
+    const includeTest = req.query.include_test === 'true';
+
+    const allUsers = await dbAll(`
       SELECT
         id,
         email,
@@ -12420,34 +12430,44 @@ app.get('/api/admin/user-list', authenticateAdmin, async (req, res) => {
         END as usage_tier,
         ROUND(EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400) as days_since_signup
       FROM users
-      WHERE email NOT LIKE '%test%'
-        AND email NOT LIKE '%example%'
-        AND email != 'berend.mainz@web.de'
       ORDER BY responses_used DESC, created_at DESC
-      LIMIT 100
     `) || [];
 
-    // Separate magic link vs normal users
-    const magicLinkUsers = users.filter(u => u.is_magic_link);
-    const normalUsers = users.filter(u => !u.is_magic_link);
+    // Flag each user as test or real using isTestEmail()
+    const usersWithFlag = allUsers.map(u => ({
+      ...u,
+      is_test_account: isTestEmail(u.email),
+    }));
 
-    // Summary stats - GETRENNT nach Signup Source
+    // Separate test vs real users
+    const testUsers = usersWithFlag.filter(u => u.is_test_account);
+    const realUsers = usersWithFlag.filter(u => !u.is_test_account);
+
+    // Return based on include_test parameter
+    const users = includeTest ? usersWithFlag : realUsers;
+
+    // Summary stats - NUR echte User (keine Tests/Freunde)
     const summary = {
-      total: users.length,
-      never_used: users.filter(u => u.usage_tier === 'never_used').length,
-      low_usage: users.filter(u => u.usage_tier === 'low_usage').length,
-      medium_usage: users.filter(u => u.usage_tier === 'medium_usage').length,
-      high_usage: users.filter(u => u.usage_tier === 'high_usage').length,
-      // Magic Link vs Normal Breakdown
-      magic_link: {
-        total: magicLinkUsers.length,
-        never_used: magicLinkUsers.filter(u => u.usage_tier === 'never_used').length,
-        active: magicLinkUsers.filter(u => u.usage_tier !== 'never_used').length,
+      total_raw: allUsers.length,
+      total_test: testUsers.length,
+      total_real: realUsers.length,
+      // Echte Metriken (ohne Tests)
+      real: {
+        total: realUsers.length,
+        never_used: realUsers.filter(u => u.usage_tier === 'never_used').length,
+        low_usage: realUsers.filter(u => u.usage_tier === 'low_usage').length,
+        medium_usage: realUsers.filter(u => u.usage_tier === 'medium_usage').length,
+        high_usage: realUsers.filter(u => u.usage_tier === 'high_usage').length,
+        activated: realUsers.filter(u => u.response_count > 0).length,
+        activation_rate: realUsers.length > 0
+          ? Math.round(100 * realUsers.filter(u => u.response_count > 0).length / realUsers.length) + '%'
+          : '0%',
       },
-      normal_signup: {
-        total: normalUsers.length,
-        never_used: normalUsers.filter(u => u.usage_tier === 'never_used').length,
-        active: normalUsers.filter(u => u.usage_tier !== 'never_used').length,
+      // Test-Accounts Breakdown (für Transparenz)
+      test: {
+        total: testUsers.length,
+        activated: testUsers.filter(u => u.response_count > 0).length,
+        emails: testUsers.map(u => u.email).slice(0, 10),
       },
     };
 
@@ -21954,6 +21974,7 @@ app.get('/api/admin/user-activity', async (req, res) => {
 });
 
 // Usage Analytics - Understand Free User behavior for conversion optimization
+// WICHTIG: Filtert Test-Accounts und Freunde aus für saubere Metriken!
 app.get('/api/admin/usage-analytics', async (req, res) => {
   const adminKey = req.headers['x-admin-key'] || req.query.key;
   if (!process.env.ADMIN_SECRET || !safeCompare(adminKey, process.env.ADMIN_SECRET)) {
@@ -21961,7 +21982,17 @@ app.get('/api/admin/usage-analytics', async (req, res) => {
   }
 
   try {
-    // Usage distribution for Free users (using responses_used column)
+    // Build SQL exclusion list from TEST_EMAILS + patterns
+    const testEmailList = TEST_EMAILS.map(e => `'${e}'`).join(', ');
+    const excludeClause = `
+      LOWER(email) NOT IN (${testEmailList})
+      AND email NOT LIKE '%@web.de'
+      AND email NOT LIKE 'test%'
+      AND email NOT LIKE '%@test.%'
+      AND email NOT LIKE '%@example.%'
+    `;
+
+    // Usage distribution for Free users (OHNE Test-Accounts)
     const distribution = await dbQuery(`
       SELECT
         CASE
@@ -21976,11 +22007,12 @@ app.get('/api/admin/usage-analytics', async (req, res) => {
         ROUND(100.0 * COUNT(*) / NULLIF(SUM(COUNT(*)) OVER (), 0), 1) as percentage
       FROM users
       WHERE subscription_plan = 'free'
+        AND ${excludeClause}
       GROUP BY 1
       ORDER BY MIN(responses_used)
     `);
 
-    // Aggregate stats
+    // Aggregate stats (OHNE Test-Accounts)
     const stats = await dbQuery(`
       SELECT
         COUNT(*) as total_free_users,
@@ -21992,6 +22024,7 @@ app.get('/api/admin/usage-analytics', async (req, res) => {
         ROUND(100.0 * COUNT(*) FILTER (WHERE responses_used > 0) / NULLIF(COUNT(*), 0), 1) as activation_rate
       FROM users
       WHERE subscription_plan = 'free'
+        AND ${excludeClause}
     `);
 
     // Exit survey results with percentage
@@ -22003,16 +22036,19 @@ app.get('/api/admin/usage-analytics', async (req, res) => {
       ORDER BY count DESC
     `);
 
-    // Recent limit-hit users (potential conversion targets)
+    // Recent limit-hit users (OHNE Test-Accounts)
     const limitHitUsers = await dbQuery(`
       SELECT email, business_name, responses_used as total_responses, created_at
       FROM users
-      WHERE subscription_plan = 'free' AND responses_used >= 20
+      WHERE subscription_plan = 'free'
+        AND responses_used >= 20
+        AND ${excludeClause}
       ORDER BY created_at DESC
       LIMIT 10
     `);
 
     res.json({
+      note: 'Filtered: Test-Accounts und Freunde ausgeschlossen',
       distribution: distribution.rows,
       stats: stats.rows[0] || {},
       exitSurveys: exitSurveys.rows,
