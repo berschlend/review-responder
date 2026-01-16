@@ -1213,7 +1213,7 @@ async function initDatabase() {
       CREATE TABLE IF NOT EXISTS email_captures (
         id SERIAL PRIMARY KEY,
         email TEXT NOT NULL,
-        discount_code TEXT DEFAULT 'SAVE20',
+        discount_code TEXT DEFAULT 'WELCOME30',
         source TEXT DEFAULT 'exit_intent',
         converted BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -4979,13 +4979,13 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
         // Continue without discount if coupon fails
       }
     } else if (upperDiscountCode === 'FLASH50') {
-      // Flash Offer - 50% off first month, 2h expiry (sent when user hits limit)
+      // Flash Offer - 50% off first month, 24h expiry (sent when user hits limit)
       try {
         const coupon = await stripe.coupons.create({
           percent_off: 50,
           duration: 'once', // Only first payment
           id: `FLASH50_${Date.now()}_${user.id}`,
-          redeem_by: Math.floor(Date.now() / 1000) + 2 * 60 * 60, // Valid for 2 hours
+          redeem_by: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // Valid for 24 hours
           metadata: {
             campaign: 'flash_offer_limit_hit',
             user_id: user.id.toString(),
@@ -5158,9 +5158,16 @@ app.post('/api/billing/buy-responses', authenticateToken, async (req, res) => {
 });
 
 // Self-service plan change for testing (bypasses Stripe)
-// WARNING: This allows plan changes without payment - use only for testing!
+// WARNING: ADMIN-ONLY! Requires ADMIN_SECRET to prevent abuse
 app.post('/api/admin/self-set-plan', authenticateToken, async (req, res) => {
   try {
+    // SECURITY: Require ADMIN_SECRET
+    const adminSecret = req.query.key || req.body.key || req.headers['x-admin-key'];
+    if (!adminSecret || !safeCompare(adminSecret, process.env.ADMIN_SECRET || '')) {
+      console.log(`⚠️ Unauthorized self-set-plan attempt by user ${req.user.id}`);
+      return res.status(403).json({ error: 'Admin key required' });
+    }
+
     const { plan } = req.body;
     const validPlans = ['free', 'starter', 'professional', 'unlimited'];
 
@@ -5184,7 +5191,7 @@ app.post('/api/admin/self-set-plan', authenticateToken, async (req, res) => {
       [plan, plan === 'free' ? 'inactive' : 'active', limits.responses, req.user.id]
     );
 
-    console.log(`Self-service plan change: User ${req.user.id} changed to ${plan}`);
+    console.log(`[ADMIN] Self-service plan change: User ${req.user.id} changed to ${plan}`);
     res.json({ success: true, plan });
   } catch (error) {
     console.error('Self-set-plan error:', error);
@@ -6205,7 +6212,9 @@ app.get('/api/discount-links/:token', async (req, res) => {
       EARLY50: { percent: 50, label: 'Early Access', duration: '12 months' },
       HUNTLAUNCH: { percent: 60, label: 'Product Hunt Special', duration: '12 months' },
       DEMOFOLLOWUP: { percent: 30, label: 'Demo Special', duration: '3 months' },
-      SAVE20: { percent: 20, label: 'Special Offer', duration: '12 months' },
+      DEMO30: { percent: 30, label: 'Demo Discount', duration: '3 months' },
+      WELCOME30: { percent: 30, label: 'Welcome Offer', duration: '3 months' },
+      COMEBACK20: { percent: 20, label: 'Welcome Back', duration: '3 months' },
     };
 
     const discount = discountInfo[link.discount_code] || {
@@ -8405,20 +8414,34 @@ app.post('/api/public/demo-email-capture', async (req, res) => {
   }
 });
 
-// Helper: Send demo email
+// Helper: Send demo email (HTML with CTA button)
 async function sendDemoEmail(toEmail, businessName, demos, demoToken, totalReviews) {
   if (!resend) {
     throw new Error('RESEND_API_KEY not configured');
   }
 
-  // Build demo content for email
-  let demoContent = '';
+  const demoUrl = `https://tryreviewresponder.com/demo/${demoToken}`;
+
+  // Build demo content for email (HTML)
+  let demoContentHtml = '';
+  let demoContentText = '';
   demos.forEach((demo, i) => {
     const stars = '★'.repeat(demo.review.rating) + '☆'.repeat(5 - demo.review.rating);
-    demoContent += `
+    const reviewText = demo.review.text.slice(0, 200) + (demo.review.text.length > 200 ? '...' : '');
+
+    demoContentHtml += `
+      <div style="background: #f9fafb; border-radius: 8px; padding: 16px; margin: 16px 0;">
+        <div style="color: #f59e0b; font-size: 14px;">${stars}</div>
+        <div style="color: #6b7280; font-size: 13px; margin-bottom: 8px;">from ${demo.review.author}</div>
+        <div style="color: #374151; font-style: italic; margin-bottom: 12px;">"${reviewText}"</div>
+        <div style="color: #059669; font-weight: 600; font-size: 13px;">YOUR AI RESPONSE:</div>
+        <div style="color: #374151; background: white; padding: 12px; border-radius: 4px; margin-top: 4px;">"${demo.ai_response}"</div>
+      </div>`;
+
+    demoContentText += `
 -------------------------------------------
 [${stars} from ${demo.review.author}]
-"${demo.review.text.slice(0, 200)}${demo.review.text.length > 200 ? '...' : ''}"
+"${reviewText}"
 
 YOUR AI RESPONSE:
 "${demo.ai_response}"
@@ -8427,16 +8450,44 @@ YOUR AI RESPONSE:
   });
 
   const subject = `${businessName} - saw your reviews, made you something`;
-  const body = `Hi,
+
+  const htmlBody = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6; color: #374151;">
+      <p>Hey,</p>
+      <p>I saw you have <strong>${totalReviews || 'many'}+ Google reviews</strong> - nice work!</p>
+      <p>I noticed a few that might benefit from a response, so I put together some AI-generated suggestions:</p>
+
+      ${demoContentHtml}
+
+      <p>These took me 10 seconds each to generate.</p>
+
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="${demoUrl}" style="display: inline-block; background: #2563eb; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+          → See AI Responses for ${businessName}
+        </a>
+      </div>
+
+      <p style="color: #6b7280; font-size: 14px;">Takes 30 seconds to see if the tone matches your brand.<br>If you like it: 20 responses/month are free. If not: No worries.</p>
+
+      <p>Cheers,<br><strong>Berend</strong><br>Founder, ReviewResponder</p>
+
+      <p style="color: #6b7280; font-size: 13px;">P.S. Just reply if you have any questions - I read every email.</p>
+
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
+      <p style="color: #9ca3af; font-size: 12px;">
+        <a href="https://tryreviewresponder.com/unsubscribe?email=${encodeURIComponent(toEmail)}" style="color: #9ca3af;">Unsubscribe</a>
+      </p>
+    </div>`;
+
+  const textBody = `Hey,
 
 I saw you have ${totalReviews || 'many'}+ Google reviews - nice work!
 
 I noticed a few that might benefit from a response, so I put together some AI-generated suggestions:
-
-${demoContent}
+${demoContentText}
 
 These took me 10 seconds each to generate. If you want to try it yourself:
-https://tryreviewresponder.com/demo/${demoToken}
+${demoUrl}
 
 Cheers,
 Berend
@@ -8451,7 +8502,8 @@ Unsubscribe: https://tryreviewresponder.com/unsubscribe?email=${encodeURICompone
     from: 'Berend from ReviewResponder <hello@tryreviewresponder.com>',
     to: toEmail,
     subject: subject,
-    text: body,
+    html: htmlBody,
+    text: textBody,
   });
 }
 
@@ -14342,15 +14394,18 @@ app.post('/api/admin/send-hot-lead-demos', async (req, res) => {
           [demoToken, lead.email]
         );
 
-        // Send email with demo
-        let subject, body;
+        // Send email with demo (HTML with CTA button)
+        let subject, textBody, htmlBody;
+        const demosText = demos.length === 1 ? '1 AI-generated response' : `${demos.length} AI-generated responses`;
+        const demosTextDE = demos.length === 1 ? '1 AI-generierte Antwort' : `${demos.length} AI-generierte Antworten`;
+
         if (isGerman) {
           subject = `Hab mal was für ${businessName} gebaut`;
-          body = `Hey,
+          textBody = `Hey,
 
 ich hab mir gedacht, statt nochmal nach einem Call zu fragen, zeig ich euch einfach was ReviewResponder kann.
 
-${demos.length === 1 ? 'Hier ist 1 AI-generierte Antwort' : `Hier sind ${demos.length} AI-generierte Antworten`} auf eure echten Google Bewertungen:
+Hier ${demos.length === 1 ? 'ist' : 'sind'} ${demosTextDE} auf eure echten Google Bewertungen:
 ${demoUrl}
 
 Dauert 30 Sekunden zu checken ob der Ton passt.
@@ -14360,13 +14415,30 @@ Falls nicht: Kein Problem.
 
 Grüße,
 Berend`;
+
+          htmlBody = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6; color: #374151;">
+  <p>Hey,</p>
+  <p>ich hab mir gedacht, statt nochmal nach einem Call zu fragen, zeig ich euch einfach was ReviewResponder kann.</p>
+  <p>Hier ${demos.length === 1 ? 'ist' : 'sind'} <strong>${demosTextDE}</strong> auf eure echten Google Bewertungen:</p>
+
+  <div style="text-align: center; margin: 32px 0;">
+    <a href="${demoUrl}" style="display: inline-block; background: #2563eb; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+      → AI-Antworten für ${businessName} ansehen
+    </a>
+  </div>
+
+  <p style="color: #6b7280; font-size: 14px;">Dauert 30 Sekunden zu checken ob der Ton passt.<br>Falls es gefällt: 20 Antworten/Monat sind kostenlos.<br>Falls nicht: Kein Problem.</p>
+
+  <p>Grüße,<br><strong>Berend</strong></p>
+</div>`;
         } else {
           subject = `Built something for ${businessName}`;
-          body = `Hey,
+          textBody = `Hey,
 
 Instead of asking for another call, I figured I'd just show you what ReviewResponder can do.
 
-${demos.length === 1 ? 'Here is 1 AI-generated response' : `Here are ${demos.length} AI-generated responses`} to your actual Google reviews:
+Here ${demos.length === 1 ? 'is' : 'are'} ${demosText} to your actual Google reviews:
 ${demoUrl}
 
 Takes 30 seconds to see if the tone matches your brand.
@@ -14376,6 +14448,23 @@ If not: No worries.
 
 Best,
 Berend`;
+
+          htmlBody = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6; color: #374151;">
+  <p>Hey,</p>
+  <p>Instead of asking for another call, I figured I'd just show you what ReviewResponder can do.</p>
+  <p>Here ${demos.length === 1 ? 'is' : 'are'} <strong>${demosText}</strong> to your actual Google reviews:</p>
+
+  <div style="text-align: center; margin: 32px 0;">
+    <a href="${demoUrl}" style="display: inline-block; background: #2563eb; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+      → See AI Responses for ${businessName}
+    </a>
+  </div>
+
+  <p style="color: #6b7280; font-size: 14px;">Takes 30 seconds to see if the tone matches your brand.<br>If you like it: 20 responses/month are free.<br>If not: No worries.</p>
+
+  <p>Best,<br><strong>Berend</strong></p>
+</div>`;
         }
 
         // Send via Brevo (to avoid hitting Resend limits)
@@ -14387,7 +14476,8 @@ Berend`;
             },
             to: [{ email: lead.email }],
             subject: subject,
-            textContent: body,
+            htmlContent: htmlBody,
+            textContent: textBody,
             tags: ['hot_lead_demo'],
           });
         } else if (resend) {
@@ -14395,7 +14485,8 @@ Berend`;
             from: OUTREACH_FROM_EMAIL,
             to: lead.email,
             subject: subject,
-            text: body,
+            html: htmlBody,
+            text: textBody,
             tags: [{ name: 'campaign', value: 'hot_lead_demo' }],
           });
         }
@@ -14611,17 +14702,20 @@ app.all('/api/cron/followup-clickers', async (req, res) => {
           }
         }
 
-        let subject, body;
+        let subject, textBody, htmlBody;
 
         if (demoUrl) {
           // Email WITH personalized demo link - much better conversion!
+          const demosTextEN = demosCount === 1 ? '1 AI-generated response' : `${demosCount} AI-generated responses`;
+          const demosTextDE = demosCount === 1 ? '1 AI-generierte Antwort' : `${demosCount} AI-generierte Antworten`;
+
           if (isGerman) {
             subject = `${demosCount} AI-Antworten für ${businessName} – schon fertig`;
-            body = `Hey,
+            textBody = `Hey,
 
 ich hab gesehen, dass ihr auf meine Email geklickt habt.
 
-Statt lange zu reden, hab ich einfach mal gemacht: ${demosCount === 1 ? 'Hier ist 1 AI-generierte Antwort' : `Hier sind ${demosCount} AI-generierte Antworten`} auf eure echten Google Bewertungen:
+Statt lange zu reden, hab ich einfach mal gemacht: Hier ${demosCount === 1 ? 'ist' : 'sind'} ${demosTextDE} auf eure echten Google Bewertungen:
 
 ${demoUrl}
 
@@ -14632,14 +14726,32 @@ Falls es gefällt: 20 Antworten/Monat sind kostenlos. Falls nicht: Kein Problem,
 Grüße,
 Berend
 
-P.S. Code CLICKER30 = 30% Rabatt wenn ihr upgraden wollt.`;
+P.S. Code DEMO30 = 30% Rabatt wenn ihr upgraden wollt.`;
+
+            htmlBody = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6; color: #374151;">
+  <p>Hey,</p>
+  <p>ich hab gesehen, dass ihr auf meine Email geklickt habt.</p>
+  <p>Statt lange zu reden, hab ich einfach mal gemacht: Hier ${demosCount === 1 ? 'ist' : 'sind'} <strong>${demosTextDE}</strong> auf eure echten Google Bewertungen:</p>
+
+  <div style="text-align: center; margin: 32px 0;">
+    <a href="${demoUrl}" style="display: inline-block; background: #2563eb; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+      → AI-Antworten für ${businessName} ansehen
+    </a>
+  </div>
+
+  <p style="color: #6b7280; font-size: 14px;">Schaut euch an ob der Ton passt. Dauert 30 Sekunden.<br>Falls es gefällt: 20 Antworten/Monat sind kostenlos.<br>Falls nicht: Kein Problem, einfach ignorieren.</p>
+
+  <p>Grüße,<br><strong>Berend</strong></p>
+  <p style="color: #6b7280; font-size: 13px;">P.S. Code DEMO30 = 30% Rabatt wenn ihr upgraden wollt.</p>
+</div>`;
           } else {
             subject = `${demosCount} AI responses for ${businessName} – already done`;
-            body = `Hey,
+            textBody = `Hey,
 
 I noticed someone from ${businessName} clicked on my email.
 
-Instead of asking for a call, I just went ahead and made this for you: ${demosCount === 1 ? '1 AI-generated response' : `${demosCount} AI-generated responses`} to your actual Google reviews:
+Instead of asking for a call, I just went ahead and made this for you: ${demosTextEN} to your actual Google reviews:
 
 ${demoUrl}
 
@@ -14650,10 +14762,30 @@ If you like it: 20 responses/month are free. If not: No worries, just ignore thi
 Best,
 Berend
 
-P.S. Use code CLICKER30 for 30% off if you upgrade.`;
+P.S. Use code DEMO30 for 30% off if you upgrade.`;
+
+            htmlBody = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6; color: #374151;">
+  <p>Hey,</p>
+  <p>I noticed someone from ${businessName} clicked on my email.</p>
+  <p>Instead of asking for a call, I just went ahead and made this for you: <strong>${demosTextEN}</strong> to your actual Google reviews:</p>
+
+  <div style="text-align: center; margin: 32px 0;">
+    <a href="${demoUrl}" style="display: inline-block; background: #2563eb; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+      → See AI Responses for ${businessName}
+    </a>
+  </div>
+
+  <p style="color: #6b7280; font-size: 14px;">Takes 30 seconds to see if the tone matches your brand.<br>If you like it: 20 responses/month are free.<br>If not: No worries, just ignore this.</p>
+
+  <p>Best,<br><strong>Berend</strong></p>
+  <p style="color: #6b7280; font-size: 13px;">P.S. Use code DEMO30 for 30% off if you upgrade.</p>
+</div>`;
           }
         } else {
           // Fallback email WITHOUT demo (if demo generation failed)
+          const fallbackUrl = 'https://tryreviewresponder.com?ref=hot_lead';
+
           if (isGerman) {
             const reviewText = reviewCount
               ? `Mit über ${reviewCount.toLocaleString('de-DE')} Google Bewertungen`
@@ -14662,21 +14794,39 @@ P.S. Use code CLICKER30 for 30% off if you upgrade.`;
               ? `${reviewCount.toLocaleString('de-DE')}+ Bewertungen – wie antwortet ihr?`
               : `Kurze Frage zu ${businessName}`;
 
-            body = `Hey,
+            textBody = `Hey,
 
 ich hab gesehen, dass ihr auf meine Email geklickt habt.
 
 ${reviewText} habt ihr wahrscheinlich einiges zu tun beim Beantworten. ReviewResponder macht das in Sekunden statt Minuten.
 
 Hier könnt ihr es direkt an euren echten Bewertungen testen:
-https://tryreviewresponder.com?ref=hot_lead
+${fallbackUrl}
 
 20 Antworten/Monat kostenlos, keine Kreditkarte.
 
 Grüße,
 Berend
 
-P.S. Code CLICKER30 = 30% Rabatt wenn ihr upgraden wollt.`;
+P.S. Code DEMO30 = 30% Rabatt wenn ihr upgraden wollt.`;
+
+            htmlBody = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6; color: #374151;">
+  <p>Hey,</p>
+  <p>ich hab gesehen, dass ihr auf meine Email geklickt habt.</p>
+  <p>${reviewText} habt ihr wahrscheinlich einiges zu tun beim Beantworten. ReviewResponder macht das in Sekunden statt Minuten.</p>
+
+  <div style="text-align: center; margin: 32px 0;">
+    <a href="${fallbackUrl}" style="display: inline-block; background: #2563eb; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+      → Jetzt kostenlos testen
+    </a>
+  </div>
+
+  <p style="color: #6b7280; font-size: 14px;">20 Antworten/Monat kostenlos, keine Kreditkarte.</p>
+
+  <p>Grüße,<br><strong>Berend</strong></p>
+  <p style="color: #6b7280; font-size: 13px;">P.S. Code DEMO30 = 30% Rabatt wenn ihr upgraden wollt.</p>
+</div>`;
           } else {
             const reviewText = reviewCount
               ? `${reviewCount.toLocaleString()} reviews`
@@ -14685,21 +14835,39 @@ P.S. Code CLICKER30 = 30% Rabatt wenn ihr upgraden wollt.`;
               ? `${reviewCount.toLocaleString()}+ reviews – how do you respond?`
               : `Quick question about ${businessName}`;
 
-            body = `Hey,
+            textBody = `Hey,
 
 I noticed someone from ${businessName} clicked on my email.
 
 With ${reviewText}, responding to all of them takes time. ReviewResponder does it in seconds instead of minutes.
 
 Try it on your actual reviews here:
-https://tryreviewresponder.com?ref=hot_lead
+${fallbackUrl}
 
 20 responses/month free, no credit card.
 
 Best,
 Berend
 
-P.S. Use code CLICKER30 for 30% off if you upgrade.`;
+P.S. Use code DEMO30 for 30% off if you upgrade.`;
+
+            htmlBody = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6; color: #374151;">
+  <p>Hey,</p>
+  <p>I noticed someone from ${businessName} clicked on my email.</p>
+  <p>With ${reviewText}, responding to all of them takes time. ReviewResponder does it in seconds instead of minutes.</p>
+
+  <div style="text-align: center; margin: 32px 0;">
+    <a href="${fallbackUrl}" style="display: inline-block; background: #2563eb; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+      → Try It Free Now
+    </a>
+  </div>
+
+  <p style="color: #6b7280; font-size: 14px;">20 responses/month free, no credit card.</p>
+
+  <p>Best,<br><strong>Berend</strong></p>
+  <p style="color: #6b7280; font-size: 13px;">P.S. Use code DEMO30 for 30% off if you upgrade.</p>
+</div>`;
           }
         }
 
@@ -14707,7 +14875,8 @@ P.S. Use code CLICKER30 for 30% off if you upgrade.`;
           from: OUTREACH_FROM_EMAIL,
           to: clicker.email,
           subject: subject,
-          text: body,
+          html: htmlBody,
+          text: textBody,
           tags: [{ name: 'campaign', value: 'clicker_followup' }],
         });
 
@@ -14996,7 +15165,7 @@ app.get('/api/cron/hot-lead-attack', async (req, res) => {
         const city = clicker.city || '';
         const demoToken = clicker.demo_token;
         const demoUrl = demoToken
-          ? `https://tryreviewresponder.com/demo/${demoToken}?discount=CLICKER30`
+          ? `https://tryreviewresponder.com/demo/${demoToken}?discount=DEMO30`
           : null;
 
         // Detect German-speaking cities
@@ -15035,7 +15204,7 @@ ${demoUrl}
 
 30 Sekunden und du weißt ob ReviewResponder zu ${businessName} passt.
 
-Code CLICKER30 = 30% Rabatt wenn du upgraden willst.
+Code DEMO30 = 30% Rabatt wenn du upgraden willst.
 
 Grüße,
 Berend`;
@@ -15050,7 +15219,7 @@ ${demoUrl}
 
 Takes 30 seconds. See if you like them.
 
-Use code CLICKER30 for 30% off if you decide to upgrade.
+Use code DEMO30 for 30% off if you decide to upgrade.
 
 Best,
 Berend`;
@@ -15070,7 +15239,7 @@ Antworte einfach mit "Ja" und ich schick dir den Link in 5 Minuten.
 Grüße,
 Berend
 
-P.S. Code CLICKER30 = 30% Rabatt wenn du später upgraden willst.`;
+P.S. Code DEMO30 = 30% Rabatt wenn du später upgraden willst.`;
           } else {
             subject = `Want me to make something for ${businessName}?`;
             body = `Hey,
@@ -15084,7 +15253,7 @@ Just reply "Yes" and I'll send you the link in 5 minutes.
 Best,
 Berend
 
-P.S. Use code CLICKER30 for 30% off if you upgrade later.`;
+P.S. Use code DEMO30 for 30% off if you upgrade later.`;
           }
         }
 
@@ -17240,7 +17409,7 @@ P.S. Most restaurants save 2-3 hours per week with automated review responses.`;
         }
 
         // Send email
-        const emailResult = await sendEmailWithFallback({
+        const emailResult = await sendEmail({
           to: user.email,
           subject,
           html: `<div style="font-family: Arial, sans-serif; max-width: 600px; line-height: 1.6;">${body.replace(/\n/g, '<br>').replace(/(https:\/\/[^\s<]+)/g, '<a href="$1" style="color: #2563eb;">$1</a>')}</div>`,

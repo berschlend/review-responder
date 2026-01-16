@@ -3629,36 +3629,40 @@ const LandingPage = () => {
             src="/berend.jpg"
             alt="Berend"
             style={{
-              width: 100,
-              height: 100,
+              width: 120,
+              height: 120,
               borderRadius: '50%',
               marginBottom: 16,
               objectFit: 'cover',
               objectPosition: 'center 20%',
+              border: '3px solid var(--primary-light, #e8f4f8)',
             }}
           />
-          <p style={{ fontSize: '1.05rem', lineHeight: 1.7, color: 'var(--text-primary)' }}>
-            "I'm Berend. I built ReviewResponder because I saw how much time business owners spend on
-            review responses. Now you don't have to."
+          <p style={{ fontSize: '1.1rem', lineHeight: 1.7, color: 'var(--text-primary)' }}>
+            "I built ReviewResponder because I spent hours every week writing review responses for my
+            own business. Now I don't — and neither should you."
           </p>
           <p
             style={{
               color: 'var(--text-secondary)',
               marginTop: 8,
-              fontSize: '0.85rem',
+              fontSize: '0.9rem',
             }}
           >
             — Berend, Founder
           </p>
           <p
             style={{
-              color: 'var(--text-muted)',
-              marginTop: 12,
-              fontSize: '0.75rem',
+              color: 'var(--text-secondary)',
+              marginTop: 16,
+              fontSize: '0.85rem',
             }}
           >
             Questions?{' '}
-            <a href="mailto:berend@tryreviewresponder.com" style={{ color: 'var(--text-muted)' }}>
+            <a
+              href="mailto:berend@tryreviewresponder.com"
+              style={{ color: 'var(--primary)', textDecoration: 'underline' }}
+            >
               berend@tryreviewresponder.com
             </a>
           </p>
@@ -13762,7 +13766,7 @@ const DemoPage = () => {
                 <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
               </svg>
               <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>
-                {publicStats.totalResponses.toLocaleString()}+ responses generated
+                {(publicStats?.totalResponses || 300).toLocaleString()}+ responses generated
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
