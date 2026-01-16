@@ -203,10 +203,8 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 - Extension v1.6.1
 - Test Account: reviewer@tryreviewresponder.com
 
-### Metriken (BEREINIGT 16.01)
-- **27 echte User** (52 raw - 25 Test/Freunde excluded)
-- **0% Activation Rate** ← ALLE echten Leads = never_used!
-- **~2000 Leads** in DB
+### Metriken
+- **~2000 Leads**
 - **~650 Emails** gesendet
 - **~25 Clicks** (4% CTR)
 - **0 Conversions** ← Hauptfokus!
@@ -244,11 +242,20 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 **Blacklisted:** "Thank you for your feedback", "We appreciate...", "thrilled", "delighted"
 **Gut:** Kurz, spezifisch, Reviewer beim Namen nennen.
 
-### Metriken Cleanup (16.01)
-**Problem:** Fake 28.6% Activation Rate (alle Tests/Freunde).
-**Lösung:** `TEST_EMAILS` Array in server.js mit allen Test/Freunde Emails.
-**Endpoints:** `/api/admin/user-list` und `/api/admin/usage-analytics` filtern jetzt automatisch.
-**Realität:** 27 echte User, 0% Activation - ALLE echten Leads = never_used.
+### AnyDesk Remote Access (16.01)
+**Problem:** Laptop zugeklappt → AnyDesk zeigt "Waiting for image" → kein Bild.
+**Ursache:** Windows deaktiviert Display bei Zuklappen, auch wenn Standby aus ist.
+**Lösung:** HDMI Dummy Plug (~5€) simuliert Monitor → Bild bleibt aktiv.
+**PowerShell für Zuklappen:** `powercfg -setacvalueindex SCHEME_CURRENT SUB_BUTTONS LIDACTION 0; powercfg -setactive SCHEME_CURRENT`
+
+### Ralph-Loop Hook-Loop Bug (16.01)
+**Problem:** Stop-Hook feuert endlos mit Syntax Error (Windows VC_redist Logs statt JSON als Input).
+**Ursache:** Alte `.claude/ralph-loop.local.md` State-Datei existierte, Plugin war disabled aber Hook feuerte trotzdem.
+**Fix (3 Schritte):**
+1. `rm .claude/ralph-loop.local.md` - State-Datei löschen
+2. Hook-Ordner umbenennen: `mv ~/.claude/plugins/cache/claude-plugins-official/ralph-loop/*/hooks ~/.claude/plugins/cache/claude-plugins-official/ralph-loop/*/hooks.disabled`
+3. **Neues Terminal öffnen** - Session hat Hook gecached!
+**Lesson:** Bei Plugin-Problemen IMMER neues Terminal nach Fixes.
 
 ---
 

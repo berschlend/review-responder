@@ -63,6 +63,8 @@
 | Was | Wartet auf | Seit | Nächste Aktion |
 |-----|------------|------|----------------|
 | Chrome Extension v1.6.2 | Chrome Review (1-3 Tage) | 15.01 | Bei Approval → Google Ads schalten |
+| AnyDesk Remote (Laptop zu) | HDMI Dummy Plug kaufen | 16.01 | Amazon bestellen (~5€) → Einstecken |
+| Ralph-Loop Hook Fix | Neues Terminal | 16.01 | Ctrl+C + neues Terminal → Fix aktiv |
 
 ---
 
@@ -88,6 +90,26 @@
 ---
 
 ## DEMO VIDEOS & UPLOAD CHECKLISTE
+
+### 🎬 PRIORITÄT: Neues Demo Video aufnehmen!
+
+- [ ] **JETZT: Main Demo Video aufnehmen**
+  - Scripts: `content/demo-video-script.md` + `content/video-scripts-final.md`
+  - Salt Bae/Nusr-Et Review als Beispiel (negative Review mit Pain Point)
+  - Sound-Off optimiert (Text Overlays, 85% schauen stumm)
+  - 30s/45s/60s Versionen schneiden
+
+- [ ] **NACH CALL: Paste & Submit Clip (optional)**
+  - Mit Google Business User testen (Instant Submit Funktion)
+  - Wenn Test klappt: kurzen Clip aufnehmen
+  - Am Ende vom Main Video reincutten ("instant submit")
+
+- [ ] **GIF für One-Click Feature erstellen**
+  - Nur wenn Paste & Submit Test erfolgreich
+  - Für Landing Page / Social Media / Chrome Web Store
+  - Zeigt "One-Click Submit" Funktion in Action
+
+---
 
 ### Verfügbare Videos
 

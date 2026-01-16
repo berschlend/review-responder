@@ -1,31 +1,41 @@
 ﻿{
-    "loop_interval":  "8h",
-    "learnings_applied":  [
-
-                          ],
-    "current_loop":  2,
-    "started_at":  "2026-01-15T21:32:41Z",
-    "version":  "3.0",
-    "agent":  "burst-3-social-dm",
-    "escalations_pending":  [
-
-                            ],
-    "checkpoints":  {
-                        "resume_from":  null,
-                        "last_successful_action":  null,
-                        "last_processed_id":  null
-                    },
-    "health":  {
-                   "api_budget_ok":  true,
-                   "memory_ok":  true,
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "metrics":  {
-                    "success_rate":  0,
-                    "errors_count":  0,
-                    "actions_taken":  0
-                },
-    "status":  "paused",
-    "last_heartbeat":  "2026-01-15T21:34:33Z"
+    "loop_interval": "8h",
+    "learnings_applied": [
+        "Activation bottleneck - Social DM paused per current-focus.json"
+    ],
+    "current_loop": 1,
+    "started_at": "2026-01-16T16:52:17Z",
+    "version": "3.0",
+    "agent": "burst-3-social-dm",
+    "escalations_pending": [],
+    "checkpoints": {
+        "resume_from": null,
+        "last_successful_action": "2026-01-16T17:00:00Z",
+        "last_processed_id": null
+    },
+    "health": {
+        "api_budget_ok": true,
+        "memory_ok": true,
+        "stuck_detected": false,
+        "last_error": null
+    },
+    "metrics": {
+        "success_rate": 100,
+        "errors_count": 0,
+        "actions_taken": 1
+    },
+    "status": "paused_activation_bottleneck",
+    "last_heartbeat": "2026-01-16T17:00:00Z",
+    "platform_status": {
+        "linkedin": "paused",
+        "twitter": "paused",
+        "facebook": "paused"
+    },
+    "actions_today": {
+        "linkedin_connections": 0,
+        "linkedin_messages": 0,
+        "twitter_dms": 0
+    },
+    "warnings_received": [],
+    "reason_for_pause": "Current focus is ACTIVATION (78% dormant users). Social DM only needed when activation improves and we need more leads. Will resume when: activation_rate > 50% OR 5+ users at limit."
 }
