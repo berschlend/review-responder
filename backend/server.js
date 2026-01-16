@@ -3544,11 +3544,11 @@ app.post('/api/auth/auto-create-demo-user', async (req, res) => {
       isNewUser = true;
       console.log(`🎯 Demo auto-created user: ${normalizedEmail}`);
 
-      // Create magic link for easy future access (7 days)
+      // Create magic link for easy future access (30 days)
       const magicToken = crypto.randomBytes(32).toString('hex');
       await dbQuery(
-        `INSERT INTO magic_links (email, token)
-         VALUES ($1, $2)
+        `INSERT INTO magic_links (email, token, expires_at)
+         VALUES ($1, $2, NOW() + INTERVAL '30 days')
          ON CONFLICT DO NOTHING`,
         [normalizedEmail, magicToken]
       );
@@ -3574,7 +3574,7 @@ app.post('/api/auth/auto-create-demo-user', async (req, res) => {
                 <div style="text-align: center; margin: 30px 0;">
                   <a href="${magicUrl}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Login to ReviewResponder</a>
                 </div>
-                <p style="font-size: 14px; color: #6b7280;">This link works for 7 days. Bookmark it!</p>
+                <p style="font-size: 14px; color: #6b7280;">This link works for 30 days. Bookmark it!</p>
                 <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
                 <p style="font-size: 14px; color: #6b7280;">Or set a password anytime in your <a href="${frontendUrl}/dashboard" style="color: #667eea;">Dashboard Settings</a>.</p>
               </div>
@@ -16566,7 +16566,7 @@ app.get('/api/auth/magic-login/:token', async (req, res) => {
         email TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         used_at TIMESTAMP,
-        expires_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP + INTERVAL '7 days')
+        expires_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP + INTERVAL '30 days')
       )
     `);
 
@@ -16650,12 +16650,12 @@ async function createMagicLink(email) {
       email TEXT NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       used_at TIMESTAMP,
-      expires_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP + INTERVAL '7 days')
+      expires_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP + INTERVAL '30 days')
     )
   `);
 
   const token = generateMagicLinkToken();
-  await dbQuery(`INSERT INTO magic_links (token, email) VALUES ($1, $2)`, [token, email]);
+  await dbQuery(`INSERT INTO magic_links (token, email, expires_at) VALUES ($1, $2, NOW() + INTERVAL '30 days')`, [token, email]);
 
   return `https://review-responder.onrender.com/api/auth/magic-login/${token}`;
 }
@@ -16799,7 +16799,7 @@ ${demoUrl ? `Your personalized demo is still here: ${demoUrl}` : ''}
 Best,
 Berend
 
-P.S. This link works for 7 days.`;
+P.S. This link works for 30 days.`;
         }
 
         // Send via Brevo (higher deliverability for outreach)
