@@ -248,6 +248,10 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 ### DB-Schema Gotchas
 - `outreach_leads` hat `status` VARCHAR, NICHT `contacted` BOOLEAN
 - `users` hat KEIN `last_login` - nutze `responses` Tabelle
+- `amazon_seller_leads` (NEW):
+  - `status`: 'new' | 'contacted' | 'clicked' | 'converted' | 'unsubscribed'
+  - `demo_token`: Für Click-Tracking (Format: `amz_[timestamp]_[random]`)
+  - Indexes: `idx_amazon_seller_status`, `idx_amazon_seller_email`
 
 ### API Limits + Caching
 - **SerpAPI:** ÜBER LIMIT - Cache nutzen!
@@ -424,8 +428,17 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 - `GET /api/admin/account-usage` - Claude CLI Account Limits (% of daily/weekly)
 - `POST /api/admin/sync-account-usage` - Sync from `.\scripts\Sync-AccountUsage.ps1`
 
+### Amazon Sellers (NEW)
+- `GET /api/admin/amazon-dashboard` - Stats & Metriken
+- `GET /api/admin/amazon-leads` - Lead Liste mit Pagination (params: status, limit, offset, search)
+- `POST /api/admin/amazon-leads` - Manuell Lead hinzufügen
+- `POST /api/admin/amazon-leads/bulk` - Bulk Import
+- `DELETE /api/admin/amazon-leads/:id` - Lead löschen
+- `GET /api/amazon-demo/:token` - Demo Link mit Click-Tracking
+
 ### Cron
 - `GET /api/cron/daily-outreach|demo-followup|night-blast|night-loop`
+- `GET /api/cron/send-amazon-emails?secret=ADMIN_SECRET` - Amazon Seller Emails (params: limit, dry_run)
 
 ---
 
@@ -444,6 +457,11 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 - Demo Generation + Follow-Up
 - Magic Link Re-Engagement
 - Night-Blast (9 Phasen)
+- **Amazon Seller Email System** (NEW 16.01.2026)
+  - Dedizierte Tabelle: `amazon_seller_leads`
+  - Admin Tab: "Amazon Sellers" mit Metriken & Lead-Verwaltung
+  - Cron: `/api/cron/send-amazon-emails`
+  - Click-Tracking: `/api/amazon-demo/:token`
 
 ### Semi-Manual (Chrome MCP)
 - `/linkedin-connect` - Connection Requests
