@@ -1,52 +1,31 @@
-{
-  "agent": "burst-11-bottleneck-analyzer",
-  "version": "3.0",
-  "status": "running",
-  "started_at": "2026-01-16T21:11:38Z",
-  "last_heartbeat": "2026-01-16T22:00:00Z",
-  "current_loop": 1,
-  "loop_interval": "2h",
-  "current_bottleneck": {
-    "step": "Reg_to_Active",
-    "conversion": 0,
-    "status": "critical",
-    "description": "27 echte User, 0 haben Produkt genutzt"
-  },
-  "funnel_snapshot": {
-    "leads": 2519,
-    "leads_with_email": 1166,
-    "emails_sent": 1680,
-    "clicks": 67,
-    "click_rate": "4.0%",
-    "registrations": 27,
-    "active_users": 0,
-    "paying_users": 0,
-    "activation_rate": "0%"
-  },
-  "metrics": {
-    "actions_taken": 1,
-    "success_rate": 100,
-    "errors_count": 0
-  },
-  "health": {
-    "api_budget_ok": true,
-    "memory_ok": true,
-    "stuck_detected": false,
-    "last_error": null
-  },
-  "recommendations": [
-    "PRIORITY 1: Fix Login -> Generator Redirect",
-    "PRIORITY 2: Re-engage 27 Ghost Users",
-    "PRIORITY 3: Follow-up 40 Clicker ohne Registration"
-  ],
-  "escalations_pending": [
-    "0% Activation bei ALLEN echten Usern - CRITICAL"
-  ],
-  "learnings_applied": [],
-  "checkpoints": {
-    "last_successful_action": "bottleneck-report-written",
-    "last_processed_id": null,
-    "resume_from": null
-  },
-  "next_run": "2026-01-17T00:00:00Z"
+﻿{
+    "loop_interval":  "2h",
+    "learnings_applied":  [
+
+                          ],
+    "current_loop":  0,
+    "started_at":  "2026-01-16T22:56:53Z",
+    "version":  "3.0",
+    "agent":  "burst-11-bottleneck-analyzer",
+    "escalations_pending":  [
+
+                            ],
+    "checkpoints":  {
+                        "resume_from":  null,
+                        "last_successful_action":  null,
+                        "last_processed_id":  null
+                    },
+    "health":  {
+                   "api_budget_ok":  true,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "metrics":  {
+                    "success_rate":  0,
+                    "errors_count":  0,
+                    "actions_taken":  0
+                },
+    "status":  "initializing",
+    "last_heartbeat":  null
 }

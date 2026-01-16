@@ -1,112 +1,31 @@
-{
-  "agent": "burst-9-doctor",
-  "version": "3.0",
-  "status": "running",
-  "started_at": "2026-01-17T03:10:00Z",
-  "last_heartbeat": "2026-01-17T03:15:00Z",
-  "current_loop": 1,
-  "loop_interval": "1h",
-  "metrics_snapshot": {
-    "leads": 2519,
-    "leads_with_email": 1166,
-    "emails_sent": 1680,
-    "email_ctr": 4.0,
-    "clicks": 67,
-    "hot_leads": 66,
-    "magic_links_sent": 123,
-    "magic_links_clicked": 40,
-    "demo_generations": 634,
-    "real_users": 27,
-    "registrations": 27,
-    "conversions": 0,
-    "mrr": 0
-  },
-  "alerts": [
-    {
-      "level": "critical",
-      "type": "agent_not_started",
-      "agent": "burst-2",
-      "message": "Cold Emailer (Priority 1) hat NULL heartbeat - NIE gestartet",
-      "action": "MANUAL: /night-burst-2"
-    },
-    {
-      "level": "critical",
-      "type": "zero_conversions",
-      "message": "67 Clicks, 0 Conversions nach 7 Tagen",
-      "action": "Demo-Page UX Review"
-    },
-    {
-      "level": "critical",
-      "type": "zero_mrr",
-      "message": "$0 MRR - Keine Zahlung nach 7 Tagen",
-      "days_since_start": 7
-    },
-    {
-      "level": "warning",
-      "type": "agents_stale",
-      "agents": ["burst-1", "burst-4", "burst-5"],
-      "message": "Priority-1 Agents haben >24h alten Heartbeat",
-      "action": "MANUAL: Agents neu starten"
-    },
-    {
-      "level": "warning",
-      "type": "ctr_decline",
-      "message": "CTR sank von 4.5% auf 4.0% (-0.5pp)",
-      "action": "Monitor next 24h"
-    }
-  ],
-  "agents_status": {
-    "burst-1": "stale",
-    "burst-2": "not_started",
-    "burst-3": "paused",
-    "burst-4": "stale",
-    "burst-5": "stale",
-    "burst-6": "paused",
-    "burst-7": "paused",
-    "burst-8": "paused",
-    "burst-9": "healthy",
-    "burst-10": "paused",
-    "burst-11": "stale",
-    "burst-12": "paused",
-    "burst-13": "paused",
-    "burst-14": "stale",
-    "burst-15": "paused"
-  },
-  "new_learnings": 2,
-  "learnings_this_session": [
-    "Agent-Restart-Problem: Registry vs tatsaechliche Sessions",
-    "Click-to-Conversion BROKEN: 67 clicks, 0 conversions"
-  ],
-  "metrics": {
-    "actions_taken": 1,
-    "errors_count": 0,
-    "success_rate": 100
-  },
-  "health": {
-    "stuck_detected": false,
-    "api_budget_ok": true,
-    "memory_ok": true,
-    "last_error": null
-  },
-  "checkpoints": {
-    "last_successful_action": "conversion_report_written",
-    "last_processed_id": null,
-    "resume_from": null
-  },
-  "escalations_pending": [
-    {
-      "type": "manual_action_required",
-      "priority": "critical",
-      "message": "Berend muss Priority-1 Agents manuell starten",
-      "agents": ["burst-2", "burst-4", "burst-5"],
-      "created_at": "2026-01-17T03:15:00Z"
-    }
-  ],
-  "stuck": false,
-  "needs_berend": [
-    "Start Priority-1 Agents: /night-burst-2, /night-burst-4, /night-burst-5",
-    "Review Demo-Page: 67 Clicks aber 0 Conversions",
-    "Enterprise Outreach: Accor hat 4 Hotels geklickt"
-  ],
-  "next_run": "2026-01-17T04:15:00Z"
+﻿{
+    "loop_interval":  "1h",
+    "learnings_applied":  [
+
+                          ],
+    "current_loop":  0,
+    "started_at":  "2026-01-16T22:56:53Z",
+    "version":  "3.0",
+    "agent":  "burst-9-doctor",
+    "escalations_pending":  [
+
+                            ],
+    "checkpoints":  {
+                        "resume_from":  null,
+                        "last_successful_action":  null,
+                        "last_processed_id":  null
+                    },
+    "health":  {
+                   "api_budget_ok":  true,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "metrics":  {
+                    "success_rate":  0,
+                    "errors_count":  0,
+                    "actions_taken":  0
+                },
+    "status":  "initializing",
+    "last_heartbeat":  null
 }

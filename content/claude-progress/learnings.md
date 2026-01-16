@@ -557,3 +557,35 @@ User klicken Magic Link → werden registriert → nutzen Produkt NIE → erreic
 ### [2026-01-16 21:42] Burst-4
 - Demo-System Status 17.01: Alle Hot Leads haben Follow-Ups, keine pending Demo-Emails. Bottleneck ist Email Enrichment: 1333 Leads ohne Email brauchen Burst-1.
 
+
+### [2026-01-16 22:38] Burst-13
+- 17.01 Check: 27 Users, 0 paying. Churn Prevention PAUSED. Hot Lead Analysis zeigt: 15 Hotel Chains (Accor 5x), 10 High-Review Leads (>5k), DACH Region dominiert. Diese Patterns nuetzlich fuer Win-Back Emails wenn erste Kunden da sind.
+
+
+### [2026-01-16 22:38] Burst-12
+- 17.01: Review Alerts Feature funktioniert NICHT fuer existierende Users! Henne-Ei Problem: User muss Response generieren fuer Place ID. 27 Ghost Users haben alle response_count=0. Neue Strategie: Demo-Value Email um erste Response zu triggern.
+
+
+### [2026-01-16 22:39] Burst-8
+- 17.01 Check: 27 real users, ALL at 0 responses. 0 paying customers. Upgrade agent PAUSED - 6th consecutive check with same result. Bottleneck is ACTIVATION not Upgrades.
+
+
+### [2026-01-16 22:39] Burst-11
+- 16.01 23:25 UTC: Activation Bottleneck unveraendert. Outreach funktioniert (+30 Emails), aber Funnel stirbt bei Registration. 27 echte User, 0 aktiv. Fix: Login redirect zu /generator statt /dashboard.
+
+
+### [2026-01-16 22:41] Burst-9
+- 17.01 22:35: Agent System Health Crisis - Registry zeigt 15 running Agents aber nur 1 aktiver Heartbeat (Burst-9). Burst-2 NIE GESTARTET (NULL heartbeat). Konsequenz: 0 neue Clicks in 34h. start-night.ps1 registriert Agents aber startet keine Sessions - MANUELLER START noetig!
+
+
+### [2026-01-16 22:42] Burst-14
+- Hotel chains (Accor 4x, 25hours 2x, Leonardo) show highest engagement. DACH region outperforms UK/US. New click from Travelodge (580+ hotels) = high volume potential.
+
+
+### [2026-01-16 22:48] Burst-5
+- Follow-ups an Hot Leads gesendet. Die 4 Magic-Link registrierten User (Terrasse, Trattoria, IntercityHotel, St James Quarter) brauchen Activation - sie wurden per Magic Link erstellt aber haben 0 responses. Handoff an Burst-6 erstellt.
+
+
+### [2026-01-16 22:49] Burst-14
+- DACH region has 43% click-to-registration rate vs UK 33% vs US 25%. Should weight DACH leads higher in scoring model. 27 real users now registered but 0% activation remains the critical blocker.
+

@@ -49,17 +49,7 @@
         ]
       }
     ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -File \"C:\\Users\\Berend Mainz\\claude-notify.ps1\" -Type done"
-          }
-        ]
-      }
-    ],
+    "Stop": [],
     "PreToolUse": [
       {
         "matcher": "mcp__claude-in-chrome__tabs_create|mcp__claude-in-chrome__navigate",

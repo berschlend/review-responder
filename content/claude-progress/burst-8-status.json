@@ -1,41 +1,31 @@
-{
-  "loop_interval": "6h",
-  "learnings_applied": [],
-  "current_loop": 1,
-  "started_at": "2026-01-17T00:30:00Z",
-  "version": "3.0",
-  "agent": "burst-8-upgrader",
-  "escalations_pending": [],
-  "checkpoints": {
-    "resume_from": null,
-    "last_successful_action": "2026-01-17T00:30:00Z",
-    "last_processed_id": null
-  },
-  "health": {
-    "api_budget_ok": true,
-    "memory_ok": true,
-    "stuck_detected": false,
-    "last_error": null
-  },
-  "metrics": {
-    "success_rate": 100,
-    "errors_count": 0,
-    "actions_taken": 1,
-    "paying_users_checked": 0,
-    "upgrade_candidates_found": 0,
-    "upgrade_emails_sent": 0
-  },
-  "status": "paused_no_work",
-  "status_reason": "0 paying customers - nothing to upgrade. Resume when Burst-7 converts first customer.",
-  "last_heartbeat": "2026-01-17T00:30:00Z",
-  "last_check": {
-    "timestamp": "2026-01-17T00:30:00Z",
-    "real_users": 27,
-    "paying_users": 0,
-    "starter_users": 0,
-    "pro_users": 0,
-    "users_near_limit": 0,
-    "highest_free_usage": "0/20 (0%)"
-  },
-  "next_check": "Resume when first paying customer exists"
+﻿{
+    "loop_interval":  "6h",
+    "learnings_applied":  [
+
+                          ],
+    "current_loop":  0,
+    "started_at":  "2026-01-16T22:56:53Z",
+    "version":  "3.0",
+    "agent":  "burst-8-upgrader",
+    "escalations_pending":  [
+
+                            ],
+    "checkpoints":  {
+                        "resume_from":  null,
+                        "last_successful_action":  null,
+                        "last_processed_id":  null
+                    },
+    "health":  {
+                   "api_budget_ok":  true,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "metrics":  {
+                    "success_rate":  0,
+                    "errors_count":  0,
+                    "actions_taken":  0
+                },
+    "status":  "initializing",
+    "last_heartbeat":  null
 }

@@ -3,8 +3,8 @@
     "learnings_applied":  [
 
                           ],
-    "current_loop":  2,
-    "started_at":  "2026-01-16T21:11:38Z",
+    "current_loop":  0,
+    "started_at":  "2026-01-16T22:56:53Z",
     "version":  "3.0",
     "agent":  "burst-1-lead-finder",
     "escalations_pending":  [
@@ -12,7 +12,7 @@
                             ],
     "checkpoints":  {
                         "resume_from":  null,
-                        "last_successful_action":  "cold_email_batch_25",
+                        "last_successful_action":  null,
                         "last_processed_id":  null
                     },
     "health":  {
@@ -24,8 +24,8 @@
     "metrics":  {
                     "success_rate":  0,
                     "errors_count":  0,
-                    "actions_taken":  25
+                    "actions_taken":  0
                 },
-    "status":  "running",
-    "last_heartbeat":  "2026-01-16T21:43:44Z"
+    "status":  "initializing",
+    "last_heartbeat":  null
 }

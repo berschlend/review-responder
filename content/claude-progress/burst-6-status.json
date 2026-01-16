@@ -1,47 +1,31 @@
-{
-  "agent": "burst-6-user-activator",
-  "version": "3.0",
-  "status": "terminated",
-  "status_reason": "PAUSED - Priority 3, keine echten User zum Aktivieren",
-  "started_at": "2026-01-17T02:30:00Z",
-  "terminated_at": "2026-01-17T02:30:30Z",
-  "current_loop": 0,
-  "loop_interval": "4h",
-  "metrics": {
-    "actions_taken": 0,
-    "errors_count": 0,
-    "success_rate": 0,
-    "inactive_users_found": 0,
-    "onboarding_emails_sent": 0,
-    "upgrade_nudges_sent": 0
-  },
-  "health": {
-    "stuck_detected": false,
-    "api_budget_ok": true,
-    "memory_ok": true,
-    "last_error": null
-  },
-  "termination_reason": {
-    "type": "self_termination_per_reboot_protocol",
-    "details": "Burst-6 ist PAUSED (Priority 3). real_activation_rate=0%. Keine echten User zum Aktivieren. Demo-Email System noch kaputt.",
-    "recommendation": "Starte Burst-2, Burst-4, oder Burst-5 (alle Priority 1)"
-  },
-  "checkpoints": {
-    "last_successful_action": null,
-    "last_processed_id": null,
-    "resume_from": null
-  },
-  "escalations_pending": [],
-  "learnings_applied": [
-    "Reboot 17.01: 29% Activation war FAKE (Test-Accounts)",
-    "Echte Activation Rate: 0%",
-    "Outreach ist das echte Problem, nicht Activation"
-  ],
-  "last_heartbeat": "2026-01-17T02:30:30Z",
-  "next_relevant_when": [
-    "real_activation_rate > 0%",
-    "echte User registrieren sich",
-    "Demo-Email System gefixt",
-    "current-focus.json setzt Priority auf 1 oder 2"
-  ]
+﻿{
+    "loop_interval":  "4h",
+    "learnings_applied":  [
+
+                          ],
+    "current_loop":  0,
+    "started_at":  "2026-01-16T22:56:53Z",
+    "version":  "3.0",
+    "agent":  "burst-6-user-activator",
+    "escalations_pending":  [
+
+                            ],
+    "checkpoints":  {
+                        "resume_from":  null,
+                        "last_successful_action":  null,
+                        "last_processed_id":  null
+                    },
+    "health":  {
+                   "api_budget_ok":  true,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "metrics":  {
+                    "success_rate":  0,
+                    "errors_count":  0,
+                    "actions_taken":  0
+                },
+    "status":  "initializing",
+    "last_heartbeat":  null
 }

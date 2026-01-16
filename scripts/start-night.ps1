@@ -33,7 +33,7 @@ if ($LASTEXITCODE -ne 0) {
 
 # Check 2: Power settings
 $scheme = powercfg /getactivescheme
-Write-Host "  [!] Power: Make sure PC stays on (check settings)" -ForegroundColor Yellow
+Write-Host "  [!] Power: Make sure PC stays on - check settings" -ForegroundColor Yellow
 
 # Check 3: Files exist
 $orchestrator = Join-Path $ProjectRoot "scripts\night-burst-orchestrator.ps1"

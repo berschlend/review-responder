@@ -1,64 +1,31 @@
 ﻿{
-    "agent":  "burst-14-lead-scorer",
-    "version":  "3.0",
-    "status":  "running",
-    "started_at":  "2026-01-16T21:11:38Z",
-    "last_heartbeat":  "2026-01-16T21:26:23Z",
-    "current_loop":  1,
     "loop_interval":  "30m",
-    "metrics":  {
-                    "actions_taken":  1,
-                    "leads_scored":  66,
-                    "errors_count":  0,
-                    "success_rate":  100
-                },
-    "scoring_results":  {
-                            "total_scored":  66,
-                            "segments":  {
-                                             "hot":  24,
-                                             "warm":  32,
-                                             "cool":  8,
-                                             "cold":  2
-                                         },
-                            "mega_hot_leads":  3
-                        },
-    "health":  {
-                   "stuck_detected":  false,
-                   "last_error":  null,
-                   "api_budget_ok":  true,
-                   "memory_ok":  true
-               },
-    "checkpoints":  {
-                        "last_processed_id":  null,
-                        "last_successful_action":  "2026-01-16T21:20:00Z",
-                        "resume_from":  null
-                    },
     "learnings_applied":  [
 
                           ],
+    "current_loop":  0,
+    "started_at":  "2026-01-16T22:56:53Z",
+    "version":  "3.0",
+    "agent":  "burst-14-lead-scorer",
     "escalations_pending":  [
-                                {
-                                    "type":  "mega_hot_lead",
-                                    "lead":  "office@rollercoasterrestaurant.com",
-                                    "score":  95,
-                                    "reason":  "23K reviews, clicked TODAY"
-                                }
-                            ],
-    "handoffs_created":  [
-                             {
-                                 "to":  "burst-5",
-                                 "type":  "hot_leads",
-                                 "count":  3
-                             },
-                             {
-                                 "to":  "burst-6",
-                                 "type":  "inactive_users",
-                                 "count":  27
-                             }
-                         ],
-    "next_run":  "2026-01-16T21:50:00Z",
-    "stuck":  false,
-    "needs_berend":  [
 
-                     ]
+                            ],
+    "checkpoints":  {
+                        "resume_from":  null,
+                        "last_successful_action":  null,
+                        "last_processed_id":  null
+                    },
+    "health":  {
+                   "api_budget_ok":  true,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "metrics":  {
+                    "success_rate":  0,
+                    "errors_count":  0,
+                    "actions_taken":  0
+                },
+    "status":  "initializing",
+    "last_heartbeat":  null
 }

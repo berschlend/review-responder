@@ -7,7 +7,95 @@
 
 ## 🔴 PENDING APPROVALS
 
-## 💡 NEUE STRATEGIE: Review Alerts Feature [2026-01-16 17:00 UTC]
+## 💡 NEUE STRATEGIE: Ghost User Re-Activation [2026-01-17 22:45 UTC]
+
+**From:** Burst-12 (Creative Strategist)
+**Type:** Re-Activation Strategy
+**Priority:** 🔴 Critical (0% Activation trotz 27 registrierter Users!)
+
+### Problem erkannt
+
+**Review Alerts Feature ist deployed ABER funktioniert nicht für existierende Users!**
+
+| Check | Ergebnis | Problem |
+|-------|----------|---------|
+| users_with_monitoring | 0 | Niemand hat Place ID! |
+| alerts_sent_this_week | 0 | Keine Alerts möglich! |
+
+**Ursache:** Review Alerts braucht Place ID. Place ID wird erst beim ERSTEN Response erfasst.
+**Henne-Ei:** User generiert keine Response → kein Place ID → keine Alerts → User vergisst uns
+
+### Die 27 Ghost Users
+
+```
+ALLE 27 echten Users haben:
+- response_count: 0
+- usage_tier: "never_used"
+- Registriert zwischen 14.01 - 16.01
+
+Das sind HOCHWERTIGE Leads:
+- Bullring (56k Reviews)
+- Augustiner Klosterwirt (13k Reviews)
+- 3x Accor Hotels
+- 2x 25hours Hotels
+- St James Quarter (10k Reviews)
+- Manchester Arndale (43k Reviews)
+```
+
+### Vorgeschlagene Strategien
+
+**OPTION A: Demo-Value Email** ⭐ (EMPFOHLEN - Niedrigste Kosten)
+
+| Aspekt | Details |
+|--------|---------|
+| **Was** | Email an Ghost Users: "We prepared AI responses for YOUR reviews" |
+| **Inhalt** | 2-3 Preview AI Responses + One-Click Link zu Generator |
+| **Warum** | Wir HABEN schon Demos für diese Businesses! Zeige den VALUE. |
+| **Kosten** | ~2h (Email Template + Deeplink mit Business-Prefill) |
+| **Erwarteter Impact** | 5-8 von 27 Users aktivieren sich (20-30%) |
+| **Risiko** | Gering - nutzt bestehende Assets |
+
+**OPTION B: Automatische Place ID Enrichment**
+
+| Aspekt | Details |
+|--------|---------|
+| **Was** | Admin-Endpoint der für alle User automatisch Place IDs findet |
+| **Wie** | Google Places API Suche mit Business Name + City |
+| **Warum** | Dann funktioniert Review Alerts für ALLE Users |
+| **Kosten** | ~4h Backend + ~$0.50 API (27 × $0.017) |
+| **Erwarteter Impact** | 100% der Users können Review Alerts bekommen |
+| **Risiko** | Mittel - Place Matching kann fehlschlagen |
+
+**OPTION C: Founder Personal Outreach (Top-10 Enterprise)**
+
+| Aspekt | Details |
+|--------|---------|
+| **Was** | Berend sendet persönliche Email an Top-10 High-Value Ghost Users |
+| **Target** | Accor (3 Hotels), Bullring, 25hours (2), St James, Manchester Arndale |
+| **Warum** | Enterprise braucht persönlichen Touch |
+| **Kosten** | ~1h Berendes Zeit |
+| **Erwarteter Impact** | 2-3 Enterprise Aktivierungen |
+| **Risiko** | Gering - kleine Testgruppe |
+
+### Meine Empfehlung
+
+**OPTION A + B kombiniert:**
+1. **SOFORT:** Option A - Demo-Value Email an Ghost Users (~2h)
+2. **DANACH:** Option B - Place ID Enrichment für Review Alerts (~4h)
+
+**Reihenfolge wichtig:** Option A bringt SOFORT Aktivierungen. Option B macht Review Alerts nachhaltig.
+
+### Timeout
+
+4 Stunden → Default: OPTION A implementieren
+
+---
+
+**BEREND RESPONSE:** [waiting]
+
+---
+
+## 💡 RESOLVED: NEUE STRATEGIE: Review Alerts Feature [2026-01-16 17:00 UTC]
 
 **From:** Burst-12 (Creative Strategist)
 **Type:** Product Feature - ROOT CAUSE Fix

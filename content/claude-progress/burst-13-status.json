@@ -1,32 +1,31 @@
 ﻿{
     "loop_interval":  "6h",
-    "learnings_applied":  [],
-    "current_loop":  1,
-    "started_at":  "2026-01-16T21:11:38Z",
+    "learnings_applied":  [
+
+                          ],
+    "current_loop":  0,
+    "started_at":  "2026-01-16T22:56:53Z",
     "version":  "3.0",
     "agent":  "burst-13-churn-prevention",
-    "escalations_pending":  [],
+    "escalations_pending":  [
+
+                            ],
     "checkpoints":  {
-        "resume_from":  null,
-        "last_successful_action":  "2026-01-16T21:16:00Z",
-        "last_processed_id":  null
-    },
+                        "resume_from":  null,
+                        "last_successful_action":  null,
+                        "last_processed_id":  null
+                    },
     "health":  {
-        "api_budget_ok":  true,
-        "memory_ok":  true,
-        "stuck_detected":  false,
-        "last_error":  null
-    },
+                   "api_budget_ok":  true,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
     "metrics":  {
-        "paying_users": 0,
-        "real_users": 27,
-        "churn_risk_users": 0,
-        "success_rate":  0,
-        "errors_count":  0,
-        "actions_taken":  1
-    },
-    "status":  "paused_correctly",
-    "status_reason": "0 paying users = 0 churn risk. Waiting for first paying customer.",
-    "last_heartbeat":  "2026-01-16T21:14:56Z",
-    "next_check": "Resume when paying_users > 0"
+                    "success_rate":  0,
+                    "errors_count":  0,
+                    "actions_taken":  0
+                },
+    "status":  "initializing",
+    "last_heartbeat":  null
 }

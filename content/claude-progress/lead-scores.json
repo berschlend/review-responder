@@ -1,10 +1,10 @@
 {
-  "last_updated": "2026-01-16T17:20:00Z",
-  "scoring_run": "burst-14-loop-1",
-  "total_scored": 66,
+  "last_updated": "2026-01-16T22:45:00Z",
+  "scoring_run": "burst-14-loop-2",
+  "total_scored": 67,
   "segments": {
     "hot": 24,
-    "warm": 32,
+    "warm": 33,
     "cool": 8,
     "cold": 2
   },
@@ -21,7 +21,7 @@
         "behavior": 35
       },
       "clicked_at": "2026-01-16T09:43:22Z",
-      "hours_since_click": 8,
+      "hours_since_click": 13,
       "segment": "hot",
       "registered": false,
       "reason": "MEGA-HOT: 23K reviews (MASSIVE volume), clicked TODAY, unique attraction concept = viral case study potential"
@@ -38,7 +38,7 @@
         "behavior": 35
       },
       "clicked_at": "2026-01-15T09:04:34Z",
-      "hours_since_click": 32,
+      "hours_since_click": 37,
       "segment": "hot",
       "registered": true,
       "reason": "MEGA-HOT: Deutsche Hospitality Group (50+ Hotels), REGISTERED USER, DACH region = high LTV potential"
@@ -55,7 +55,7 @@
         "behavior": 35
       },
       "clicked_at": "2026-01-15T07:01:37Z",
-      "hours_since_click": 34,
+      "hours_since_click": 39,
       "segment": "hot",
       "registered": false,
       "reason": "MEGA-HOT: Leonardo Hotels = 220+ hotels in Europe, Berlin premium market, enterprise potential"
@@ -72,7 +72,7 @@
         "behavior": 32
       },
       "clicked_at": "2026-01-16T00:15:10Z",
-      "hours_since_click": 17,
+      "hours_since_click": 22,
       "segment": "hot",
       "registered": false,
       "reason": "Generator Hostels = 14 European locations, clicked yesterday, hostel chain = volume play"
@@ -89,7 +89,7 @@
         "behavior": 32
       },
       "clicked_at": "2026-01-16T00:18:57Z",
-      "hours_since_click": 17,
+      "hours_since_click": 22,
       "segment": "hot",
       "registered": false,
       "reason": "Accor Group = 5,500+ hotels worldwide! Mercure brand, Hamburg market, clicked yesterday"
@@ -106,7 +106,7 @@
         "behavior": 32
       },
       "clicked_at": "2026-01-16T00:15:21Z",
-      "hours_since_click": 17,
+      "hours_since_click": 22,
       "segment": "hot",
       "registered": false,
       "reason": "Sofitel = Accor luxury brand, Muenchen top market, clicked yesterday"
@@ -123,7 +123,7 @@
         "behavior": 32
       },
       "clicked_at": "2026-01-16T00:19:03Z",
-      "hours_since_click": 17,
+      "hours_since_click": 22,
       "segment": "hot",
       "registered": false,
       "reason": "25hours Hotels = 15 boutique hotels, design-focused brand, Vienna, clicked yesterday"
@@ -140,7 +140,7 @@
         "behavior": 34
       },
       "clicked_at": "2026-01-15T03:07:58Z",
-      "hours_since_click": 38,
+      "hours_since_click": 43,
       "segment": "hot",
       "registered": true,
       "reason": "Accor Group ibis brand (biggest budget chain), Vienna, REGISTERED USER"
@@ -157,7 +157,7 @@
         "behavior": 35
       },
       "clicked_at": "2026-01-16T00:15:08Z",
-      "hours_since_click": 17,
+      "hours_since_click": 22,
       "segment": "hot",
       "registered": false,
       "reason": "43K reviews = MASSIVE volume, shopping centre = many tenant businesses, UK major market"
@@ -174,7 +174,7 @@
         "behavior": 35
       },
       "clicked_at": "2026-01-14T22:05:26Z",
-      "hours_since_click": 43,
+      "hours_since_click": 48,
       "segment": "hot",
       "registered": true,
       "reason": "56K reviews = HIGHEST volume in dataset, UK major shopping centre, REGISTERED"
@@ -182,14 +182,14 @@
   ],
   "new_clicks_since_last_update": [
     {
-      "email": "office@apotheke-gruenemitte.at",
-      "business": "Apotheke Gruene Mitte",
-      "city": "Linz",
-      "reviews": 57,
-      "clicked_at": "2026-01-16T12:49:34Z",
-      "score": 68,
-      "segment": "warm",
-      "note": "NEW CLICK TODAY! Local pharmacy in Austria, DACH region, small but engaged"
+      "email": "londoncityroad@travelodge.co.uk",
+      "business": "Travelodge London Central City Road",
+      "city": "London",
+      "reviews": 4790,
+      "clicked_at": "2026-01-16T01:27:45Z",
+      "score": 80,
+      "segment": "hot",
+      "note": "Travelodge = 580+ hotels UK/Ireland, budget hotel chain, high volume potential"
     }
   ],
   "mega_hot_leads": [
@@ -222,7 +222,12 @@
     {"email": "info@treudelberg.com", "business": "IntercityHotel Hamburg", "score": 92, "days_since_signup": 1},
     {"email": "H0796@accor.com", "business": "ibis Wien Mariahilf", "score": 84, "days_since_signup": 2},
     {"email": "community@bullring.co.uk", "business": "Bullring", "score": 82, "days_since_signup": 2},
+    {"email": "langstrasse@25hours-hotels.com", "business": "25hours Zuerich", "score": 80, "days_since_signup": 2},
+    {"email": "h9057@accor.com", "business": "Novotel London Canary Wharf", "score": 79, "days_since_signup": 2},
     {"email": "hello@stjamesquarter.com", "business": "St James Quarter", "score": 77, "days_since_signup": 1},
+    {"email": "info@thedoldergrand.com", "business": "The Dolder Grand", "score": 75, "days_since_signup": 2},
+    {"email": "info@marriott.com", "business": "Munich Marriott Hotel", "score": 76, "days_since_signup": 2},
+    {"email": "awayspa.edinburgh@whotels.com", "business": "AWAY SPA W Hotels", "score": 76, "days_since_signup": 2},
     {"email": "info@terrasse-zuerich.ch", "business": "terrasse Restaurant", "score": 69, "days_since_signup": 1},
     {"email": "zuerich@trattoria-sempre.ch", "business": "Trattoria Sempre", "score": 68, "days_since_signup": 1}
   ],
@@ -291,12 +296,13 @@
     {"email": "dph.press@sfdph.org", "business": "Southeast Family Health Center", "score": 45, "segment": "cool", "reviews": 37, "registered": false},
     {"email": "info@hummelklappen.se", "business": "Hummelklappen Stockholm", "score": 42, "segment": "cool", "reviews": 10, "registered": true},
     {"email": "info@pia.be", "business": "DBM Tax & Accounting", "score": 40, "segment": "cool", "reviews": 8, "registered": true},
+    {"email": "privacy@vimeo.com", "business": "Servus Heidi (SPAM?)", "score": 35, "segment": "cold", "reviews": null, "registered": true},
     {"email": "user@domain.com", "business": "Ivar's Acres of Clams", "score": 35, "segment": "cold", "reviews": 9243, "registered": false},
     {"email": "xxx@xxx.com", "business": "Unknown", "score": 20, "segment": "cold", "reviews": null, "registered": false}
   ],
   "scoring_model": {
-    "version": "1.4",
-    "updated": "2026-01-16T17:20:00Z",
+    "version": "1.5",
+    "updated": "2026-01-16T22:45:00Z",
     "engagement": {
       "email_clicked": 15,
       "clicked_today": 10,
@@ -327,9 +333,9 @@
     "cold": 0
   },
   "insights": {
-    "total_clicks": 66,
-    "click_rate": "4.0%",
-    "new_clicks_today": 1,
+    "total_clicks": 67,
+    "click_rate": "3.9%",
+    "new_clicks_today": 2,
     "registered_clickers": 27,
     "registered_but_inactive": 27,
     "activation_rate": "0%",
@@ -348,7 +354,7 @@
     ],
     "geographic_hotspots": {
       "DACH": ["Hamburg", "Berlin", "Muenchen", "Wien", "Zuerich", "Basel", "Bern", "Linz", "Graz"],
-      "UK": ["London", "Manchester", "Birmingham", "Edinburgh"],
+      "UK": ["London", "Manchester", "Birmingham", "Edinburgh", "Dublin"],
       "US": ["Los Angeles", "Seattle", "Denver", "Miami", "NYC", "Boston", "Phoenix", "Houston"]
     },
     "critical_insight": "27 clickers registered but 0% activated. Priority: Get these users to generate first response!"
@@ -368,7 +374,7 @@
     },
     "burst-2": {
       "action": "Focus cold outreach on HOT segment leads that haven't registered yet",
-      "priority_leads": ["ask.berlinap@staygenerator.com", "H1163@accor.com", "h5413@sofitel.com", "wien@25hours-hotels.com", "info@manchesterarndale.com"]
+      "priority_leads": ["ask.berlinap@staygenerator.com", "H1163@accor.com", "h5413@sofitel.com", "wien@25hours-hotels.com", "info@manchesterarndale.com", "londoncityroad@travelodge.co.uk"]
     }
   }
 }

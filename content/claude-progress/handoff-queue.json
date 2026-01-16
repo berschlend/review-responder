@@ -165,6 +165,22 @@
                       "id":  "6d8da2dd",
                       "created_at":  "2026-01-16T21:25:47Z",
                       "status":  "pending"
+                  },
+                  {
+                      "from":  "burst-5",
+                      "to":  "burst-6",
+                      "type":  "new_registration",
+                      "data":  {
+                                   "user_id":  107,
+                                   "email":  "info@treudelberg.com",
+                                   "business_name":  "IntercityHotel Hamburg",
+                                   "signup_source":  "magic_link",
+                                   "hot_lead_score":  92
+                               },
+                      "priority":  1,
+                      "id":  "75a14159",
+                      "created_at":  "2026-01-16T22:44:31Z",
+                      "status":  "pending"
                   }
               ],
     "processed":  [

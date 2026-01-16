@@ -1,42 +1,31 @@
-{
-    "agent": "burst-7-payment-converter",
-    "version": "3.5",
-    "status": "paused",
-    "reason": "0 conversion-ready users (all 27 real users are never_used)",
-    "last_check": "2026-01-17T02:45:00Z",
-    "next_check_condition": "When real users reach 15+ responses",
-    "current_loop": 0,
-    "loop_interval": "3h",
-    "started_at": "2026-01-17T02:45:00Z",
-    "terminated_at": "2026-01-17T02:45:00Z",
-    "metrics": {
-        "real_users": 27,
-        "conversion_ready": 0,
-        "activation_rate": "0%",
-        "paying_users": 0,
-        "actions_taken": 0,
-        "success_rate": 0,
-        "errors_count": 0
-    },
-    "analysis": {
-        "total_users_checked": 27,
-        "users_with_responses": 0,
-        "users_15_plus_responses": 0,
-        "conclusion": "Cannot convert users who have never used the product"
-    },
-    "recommendation": "Focus on Burst-4 (Demo Emails), Burst-5 (Hot Lead Chaser), Burst-2 (Cold Outreach)",
-    "health": {
-        "api_budget_ok": true,
-        "memory_ok": true,
-        "stuck_detected": false,
-        "last_error": null
-    },
-    "checkpoints": {
-        "resume_from": null,
-        "last_successful_action": null,
-        "last_processed_id": null
-    },
-    "learnings_applied": [],
-    "escalations_pending": [],
-    "last_heartbeat": "2026-01-17T02:45:00Z"
+﻿{
+    "loop_interval":  "3h",
+    "learnings_applied":  [
+
+                          ],
+    "current_loop":  0,
+    "started_at":  "2026-01-16T22:56:53Z",
+    "version":  "3.0",
+    "agent":  "burst-7-payment-converter",
+    "escalations_pending":  [
+
+                            ],
+    "checkpoints":  {
+                        "resume_from":  null,
+                        "last_successful_action":  null,
+                        "last_processed_id":  null
+                    },
+    "health":  {
+                   "api_budget_ok":  true,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "metrics":  {
+                    "success_rate":  0,
+                    "errors_count":  0,
+                    "actions_taken":  0
+                },
+    "status":  "initializing",
+    "last_heartbeat":  null
 }

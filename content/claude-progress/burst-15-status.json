@@ -1,44 +1,31 @@
-{
-  "agent": "burst-15-approval-gate",
-  "version": "3.0",
-  "status": "idle",
-  "started_at": "2026-01-16T21:11:38Z",
-  "last_heartbeat": "2026-01-16T21:17:00Z",
-  "current_loop": 1,
-  "loop_interval": "event-based",
+﻿{
+    "loop_interval":  "5m",
+    "learnings_applied":  [
 
-  "pending_approvals": 0,
-  "resolved_last_24h": 3,
-  "timeouts_last_24h": 2,
-  "avg_response_time_min": 240,
+                          ],
+    "current_loop":  0,
+    "started_at":  "2026-01-16T22:56:53Z",
+    "version":  "3.0",
+    "agent":  "burst-15-approval-gate",
+    "escalations_pending":  [
 
-  "metrics": {
-    "actions_taken": 1,
-    "success_rate": 100,
-    "errors_count": 0
-  },
-
-  "health": {
-    "stuck_detected": false,
-    "last_error": null,
-    "api_budget_ok": true,
-    "memory_ok": true
-  },
-
-  "checkpoints": {
-    "last_processed_id": "review-alerts-feature-16-01",
-    "last_successful_action": "2026-01-16T21:17:00Z",
-    "resume_from": null
-  },
-
-  "escalations_pending": [],
-
-  "learnings_applied": [
-    "Berend reagiert nicht auf approval-queue.md - Timeout-Defaults werden angewendet",
-    "2 von 3 Approvals in letzten 24h waren Timeouts",
-    "Event-based besser als dauerhafter Loop"
-  ],
-
-  "stuck": false,
-  "needs_berend": []
+                            ],
+    "checkpoints":  {
+                        "resume_from":  null,
+                        "last_successful_action":  null,
+                        "last_processed_id":  null
+                    },
+    "health":  {
+                   "api_budget_ok":  true,
+                   "memory_ok":  true,
+                   "stuck_detected":  false,
+                   "last_error":  null
+               },
+    "metrics":  {
+                    "success_rate":  0,
+                    "errors_count":  0,
+                    "actions_taken":  0
+                },
+    "status":  "initializing",
+    "last_heartbeat":  null
 }
