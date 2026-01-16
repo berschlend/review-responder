@@ -7867,27 +7867,44 @@ app.get('/api/public/stats', async (req, res) => {
       return res.json(publicStatsCache.data);
     }
 
-    // Count ALL responses from everywhere:
+    // Count ALL responses from everywhere (each query in try/catch for robustness):
+    let userResponseCount = 0;
+    let instantTryCount = 0;
+    let demoResponseCount = 0;
+    let demoCount = 0;
+    let userCount = 0;
+
     // 1. Registered user responses
-    const userResponses = await dbGet('SELECT COUNT(*) as count FROM responses');
+    try {
+      const r = await dbGet('SELECT COUNT(*) as count FROM responses');
+      userResponseCount = parseInt(r?.count || 0);
+    } catch (e) { console.error('Stats: responses table error:', e.message); }
+
     // 2. Instant try (landing page without account)
-    const instantTry = await dbGet('SELECT COUNT(*) as count FROM public_try_usage');
+    try {
+      const r = await dbGet('SELECT COUNT(*) as count FROM public_try_usage');
+      instantTryCount = parseInt(r?.count || 0);
+    } catch (e) { console.error('Stats: public_try_usage table error:', e.message); }
+
     // 3. Demo generations (each demo has ~3 responses)
-    const demoCount = await dbGet('SELECT COUNT(*) as count FROM demo_generations');
-    const demoResponses = { count: (parseInt(demoCount?.count || 0) * 3) };
+    try {
+      const r = await dbGet('SELECT COUNT(*) as count FROM demo_generations');
+      demoCount = parseInt(r?.count || 0);
+      demoResponseCount = demoCount * 3;
+    } catch (e) { console.error('Stats: demo_generations table error:', e.message); }
 
-    const totalResponses =
-      parseInt(userResponses?.count || 0) +
-      parseInt(instantTry?.count || 0) +
-      parseInt(demoResponses?.count || 0);
+    // 4. Users
+    try {
+      const r = await dbGet('SELECT COUNT(*) as count FROM users');
+      userCount = parseInt(r?.count || 0);
+    } catch (e) { console.error('Stats: users table error:', e.message); }
 
-    const demos = await dbGet('SELECT COUNT(*) as count FROM demo_generations');
-    const users = await dbGet('SELECT COUNT(*) as count FROM users');
+    const totalResponses = userResponseCount + instantTryCount + demoResponseCount;
 
     const stats = {
       totalResponses: totalResponses,
-      totalDemos: parseInt(demos?.count || 0),
-      totalUsers: parseInt(users?.count || 0)
+      totalDemos: demoCount,
+      totalUsers: userCount
     };
 
     publicStatsCache = { data: stats, timestamp: Date.now() };
