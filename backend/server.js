@@ -7872,8 +7872,9 @@ app.get('/api/public/stats', async (req, res) => {
     const userResponses = await dbGet('SELECT COUNT(*) as count FROM responses');
     // 2. Instant try (landing page without account)
     const instantTry = await dbGet('SELECT COUNT(*) as count FROM public_try_usage');
-    // 3. Demo generations (each demo has ~3 responses, use response_count if available)
-    const demoResponses = await dbGet('SELECT COALESCE(SUM(CAST(response_count AS INTEGER)), COUNT(*) * 3) as count FROM demo_generations');
+    // 3. Demo generations (each demo has ~3 responses)
+    const demoCount = await dbGet('SELECT COUNT(*) as count FROM demo_generations');
+    const demoResponses = { count: (parseInt(demoCount?.count || 0) * 3) };
 
     const totalResponses =
       parseInt(userResponses?.count || 0) +
