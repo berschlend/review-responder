@@ -213,7 +213,7 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 
 ## CURRENT TASKS
 
-**Stand: 17.01.2026 (21:10 UTC)**
+**Stand: 17.01.2026 (22:20 UTC)**
 
 ### Chrome Web Store
 **Status:** Überprüfung läuft (eingereicht 13.01)
@@ -296,14 +296,15 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 **Lösung:** HDMI Dummy Plug (~5€) simuliert Monitor → Bild bleibt aktiv.
 **PowerShell für Zuklappen:** `powercfg -setacvalueindex SCHEME_CURRENT SUB_BUTTONS LIDACTION 0; powercfg -setactive SCHEME_CURRENT`
 
-### Ralph-Loop Hook-Loop Bug (16.01)
+### Ralph-Loop Hook-Loop Bug (16.01, Updated 17.01)
 **Problem:** Stop-Hook feuert endlos mit Syntax Error (Windows VC_redist Logs statt JSON als Input).
-**Ursache:** Alte `.claude/ralph-loop.local.md` State-Datei existierte, Plugin war disabled aber Hook feuerte trotzdem.
-**Fix (3 Schritte):**
-1. `rm .claude/ralph-loop.local.md` - State-Datei löschen
-2. Hook-Ordner umbenennen: `mv ~/.claude/plugins/cache/claude-plugins-official/ralph-loop/*/hooks ~/.claude/plugins/cache/claude-plugins-official/ralph-loop/*/hooks.disabled`
-3. **Neues Terminal öffnen** - Session hat Hook gecached!
-**Lesson:** Bei Plugin-Problemen IMMER neues Terminal nach Fixes.
+**Ursache:** Hooks im marketplaces-Ordner werden geladen obwohl Plugin disabled ist.
+**Fix:**
+```powershell
+mv "$HOME/.claude/plugins/marketplaces/claude-plugins-official/plugins/ralph-loop/hooks" "$HOME/.claude/plugins/marketplaces/claude-plugins-official/plugins/ralph-loop/hooks.disabled"
+```
+**Wichtig:** Neues Terminal öffnen nach dem Fix (Hook ist gecached).
+**Lesson:** Ralph-Loop = für Dev-Tasks, Night-Burst = für parallele Marketing-Agents. Verschiedene Tools für verschiedene Zwecke.
 
 ### Demo Generation API (16.01)
 **Problem:** `/api/demo/generate` gibt "Could not find business" oder 0 responses.
