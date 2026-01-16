@@ -8438,7 +8438,8 @@ app.get('/api/cron/generate-demos', async (req, res) => {
 
   try {
     const limit = parseInt(req.query.limit) || 10;
-    const sendEmails = req.query.send_emails === 'true';
+    // Default to sending emails - pass send_emails=false to skip
+    const sendEmails = req.query.send_emails !== 'false';
 
     // Find leads with email but no demo yet
     const leads = await dbAll(
@@ -8572,6 +8573,85 @@ app.get('/api/cron/generate-demos', async (req, res) => {
     });
   } catch (error) {
     console.error('Batch demo generation error:', error);
+    res.status(500).json({ error: error.message.slice(0, 100) });
+  }
+});
+
+// GET /api/cron/send-pending-demo-emails - Send emails for demos that were generated but never emailed
+app.get('/api/cron/send-pending-demo-emails', async (req, res) => {
+  const cronSecret = req.query.secret || req.headers['x-cron-secret'];
+  if (!safeCompare(cronSecret || '', process.env.CRON_SECRET || '') &&
+      !safeCompare(cronSecret || '', process.env.ADMIN_SECRET || '')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const limit = parseInt(req.query.limit) || 20;
+
+    // Find demos without email_sent_at that have a lead with email
+    const pendingDemos = await dbAll(`
+      SELECT dg.*, ol.email, ol.business_name as lead_business_name
+      FROM demo_generations dg
+      JOIN outreach_leads ol ON dg.lead_id = ol.id
+      WHERE dg.email_sent_at IS NULL
+        AND ol.email IS NOT NULL
+        AND ol.email != ''
+      ORDER BY dg.created_at DESC
+      LIMIT $1
+    `, [limit]);
+
+    console.log(`📧 Found ${pendingDemos.length} demos without emails`);
+
+    let sent = 0;
+    let failed = 0;
+    const results = [];
+
+    for (const demo of pendingDemos) {
+      try {
+        // Check if email was recently sent (parallel-safe)
+        if (await wasEmailRecentlySent(demo.email, 'demo_email', 60)) {
+          results.push({ email: demo.email, status: 'skipped', reason: 'recently_sent' });
+          continue;
+        }
+
+        const demos = demo.generated_responses || [];
+        if (demos.length === 0) {
+          results.push({ email: demo.email, status: 'skipped', reason: 'no_responses' });
+          continue;
+        }
+
+        await sendDemoEmail(
+          demo.email,
+          demo.business_name || demo.lead_business_name,
+          demos,
+          demo.demo_token,
+          demo.total_reviews || 0
+        );
+
+        await dbQuery(
+          'UPDATE demo_generations SET email_sent_at = NOW() WHERE id = $1',
+          [demo.id]
+        );
+
+        await recordEmailSend(demo.email, 'demo_email');
+        sent++;
+        results.push({ email: demo.email, status: 'sent', demo_token: demo.demo_token });
+      } catch (err) {
+        failed++;
+        results.push({ email: demo.email, status: 'error', error: err.message.slice(0, 50) });
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Sent ${sent} demo emails (${failed} failed)`,
+      pending_found: pendingDemos.length,
+      sent,
+      failed,
+      results: results.slice(0, 10) // Limit response size
+    });
+  } catch (error) {
+    console.error('Send pending demo emails error:', error);
     res.status(500).json({ error: error.message.slice(0, 100) });
   }
 });
