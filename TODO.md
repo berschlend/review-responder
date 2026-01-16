@@ -1,6 +1,6 @@
 # ReviewResponder - Todo Liste
 
-> Letzte Aktualisierung: 16.01.2026 (21:30 UTC)
+> Letzte Aktualisierung: 17.01.2026 (02:00 UTC)
 
 ---
 
@@ -277,7 +277,15 @@
 
 ---
 
-## 🟢 HEUTE ERLEDIGT (16.01.2026)
+## 🟢 HEUTE ERLEDIGT (17.01.2026)
+
+- [x] **AI Kritik-Handling Evaluation & Fixes** - First Principles Review
+  - 1-Star Länge: 4-5 → 2-3 sentences (kürzer = souveräner)
+  - Goal: "Stay sovereign" statt "Damage control"
+  - Quality Check: Ownership-Words statt Empathy-Words
+  - checkAISlop() nach Generation aktiviert (Monitoring)
+
+## 🟢 ERLEDIGT (16.01.2026)
 
 - [x] **Email System Audit & Fixes** - Kritische Bugs behoben
   - Security: self-set-plan erfordert jetzt ADMIN_SECRET

@@ -373,6 +373,17 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 - Magic Link Login → Redirect direkt zu `/generator` statt Dashboard
 - Monitoring-Agents (Burst-11) am Anfang weniger sinnvoll als Action-Agents
 
+### AI Kritik-Handling First Principles (17.01)
+**Problem:** AI-Antworten auf negative Reviews waren zu lang und zu unterwürfig.
+**Erkenntnisse:**
+- Zielgruppe ist NICHT der Kritiker, sondern zukünftige Leser
+- 4-5 Sätze bei 1-Star wirkt verzweifelt → 2-3 Sätze = souverän
+- "Damage control" impliziert Defensive → "Stay sovereign" besser
+- Empathy-Words (sorry, apologize) ≠ echte Ownership
+- Ownership-Words ("That's on us", "reach out directly") sind besser
+**Fix:** 3 Stellen im Code hatten `ratingStrategies` - ALLE updaten!
+**Lesson:** Bei Strategy-Objekten immer nach Duplikaten suchen (bulk, demo, etc.)
+
 ### Night-Burst System Reboot (17.01.2026)
 **Problem:** Agents diagnostizierten "User Activation" als Bottleneck, aber:
 - Die 29% Activation Rate basierte auf **Test-Accounts und Freunden**
