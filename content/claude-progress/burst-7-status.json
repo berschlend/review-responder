@@ -1,65 +1,92 @@
-﻿{
-    "agent":  "burst-7-payment-converter",
-    "version":  "3.0",
-    "status":  "waiting",
-    "started_at":  "2026-01-16T16:52:17Z",
-    "last_heartbeat":  "2026-01-16T16:59:55Z",
-    "current_loop":  1,
-    "loop_interval":  "30m",
-    "metrics":  {
-                    "actions_taken":  1,
-                    "success_rate":  0,
-                    "errors_count":  0,
-                    "conversion_ready_users":  0,
-                    "nudges_sent":  0,
-                    "discounts_given":  0,
-                    "micro_pricing_offered":  0,
-                    "conversions_today":  0,
-                    "revenue_today":  0
-                },
-    "user_stats":  {
-                       "total_users":  42,
-                       "paying_users":  0,
-                       "never_used":  30,
-                       "low_usage_1_4":  7,
-                       "medium_usage_5_8":  5,
-                       "high_usage_15_plus":  0,
-                       "highest_response_count":  8,
-                       "users_at_limit":  0
-                   },
-    "analysis":  {
-                     "timestamp":  "2026-01-16T17:53:00Z",
-                     "result":  "NO_CONVERSION_READY_USERS",
-                     "reason":  "Highest user has only 8 responses. Need 15+ for conversion emails.",
-                     "decision_tree_check":  {
-                                                 "users_with_10_plus":  0,
-                                                 "users_with_15_plus":  0,
-                                                 "users_with_18_plus":  0,
-                                                 "users_at_limit_20":  0
-                                             },
-                     "action":  "WAIT - Burst-6 must activate more users first"
-                 },
-    "hot_leads":  [
+{
+  "agent": "burst-7-payment-converter",
+  "version": "3.1",
+  "status": "paused",
+  "priority": 3,
+  "priority_reason": "PAUSED - Erst relevant bei aktiven Usern",
+  "started_at": null,
+  "last_heartbeat": null,
+  "current_loop": 0,
+  "loop_interval": "30min",
 
-                  ],
-    "checkpoints":  {
-                        "last_successful_action":  "user_analysis",
-                        "last_processed_id":  null,
-                        "resume_from":  null
-                    },
-    "health":  {
-                   "api_budget_ok":  true,
-                   "memory_ok":  true,
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "escalations_pending":  [
+  "reboot_context": {
+    "rebooted_at": "2026-01-17T02:00:00Z",
+    "reason": "Night-Burst System Reboot - Conversion kommt NACH Activation",
+    "key_insight": "0 echte User aktiv = 0 conversion-ready Users"
+  },
 
-                            ],
-    "learnings_applied":  [
-                              "Focus.json says priority 3 - activation is bottleneck",
-                              "0 users at 15+ responses means no conversion work possible"
-                          ],
-    "next_check":  "2026-01-16T18:23:00Z",
-    "notes":  "Waiting for Burst-6 to activate users. Will check again in 30 minutes."
+  "paused_reason": "Ich kann nur User konvertieren die das Produkt nutzen. Aktuell 0 echte aktive User. Erst wenn Burst-2/4/5 --> Burst-6 echte aktive User liefern, bin ich relevant.",
+
+  "checkpoints": {
+    "last_successful_action": "user_analysis",
+    "last_processed_id": null,
+    "resume_from": null
+  },
+
+  "metrics": {
+    "actions_taken": 0,
+    "conversion_ready_users": 0,
+    "nudges_sent": 0,
+    "discounts_given": 0,
+    "conversions_total": 0,
+    "revenue_total": 0,
+    "errors_count": 0
+  },
+
+  "user_stats_at_pause": {
+    "total_users": 42,
+    "real_users": 20,
+    "paying_users": 0,
+    "never_used": 30,
+    "low_usage_1_4": 7,
+    "medium_usage_5_8": 5,
+    "high_usage_15_plus": 0,
+    "highest_response_count": 8,
+    "users_at_limit": 0,
+    "note": "Die 'aktiven' User sind Test-Accounts"
+  },
+
+  "analysis": {
+    "timestamp": "2026-01-17T02:00:00Z",
+    "result": "NO_CONVERSION_READY_USERS",
+    "reason": "0 echte User haben 15+ Responses. Kann nicht konvertieren was nicht aktiv ist.",
+    "decision_tree_check": {
+      "users_with_10_plus_real": 0,
+      "users_with_15_plus_real": 0,
+      "users_with_18_plus_real": 0,
+      "users_at_limit_20_real": 0
+    },
+    "action": "PAUSED - Burst-2/4/5 muessen erst Outreach fixen"
+  },
+
+  "real_metrics_awareness": {
+    "real_users": 20,
+    "real_activation": 0,
+    "real_conversion_ready": 0,
+    "conclusion": "Keine echten aktiven User = Nichts zu konvertieren"
+  },
+
+  "health": {
+    "stuck_detected": false,
+    "last_error": null,
+    "api_budget_ok": true,
+    "memory_ok": true
+  },
+
+  "never_wait_rule": {
+    "enabled": true,
+    "max_idle_minutes": 30,
+    "on_idle_when_paused": "Help Priority-1 Agents oder analyze warum User nicht aktivieren"
+  },
+
+  "escalations_pending": [],
+  "learnings_applied": [
+    "Focus.json says priority 3 - activation is bottleneck",
+    "0 users at 15+ responses means no conversion work possible",
+    "Discount ist LETZTES Mittel",
+    "Max 30% Discount",
+    "LTV > CAC muss IMMER stimmen"
+  ],
+
+  "session_summary": "PAUSED per Reboot - keine echten conversion-ready Users"
 }

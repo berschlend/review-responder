@@ -1,80 +1,76 @@
-﻿{
-    "loop_interval":  "30min",
-    "learnings_applied":  [
-                              "Magic Links bringen Registrations aber keine Activation",
-                              "78% der User nutzen Produkt NIE",
-                              "Test-Accounts (rolicupo, breihosen) sind die einzigen aktiven User",
-                              "Drip-Emails (Day 0/2/5/10/20) sind bereits im System implementiert",
-                              "Re-engage Clickers sendet Magic Links an Hot Leads ohne Account",
-                              "Demo Expiration Emails erst nach 3+ Tagen relevant"
-                          ],
-    "current_loop":  5,
-    "started_at":  "2026-01-16T23:30:00Z",
-    "version":  "3.0",
-    "agent":  "burst-6-user-activator",
-    "escalations_pending":  [
+{
+  "agent": "burst-6-user-activator",
+  "version": "3.1",
+  "status": "paused",
+  "priority": 3,
+  "priority_reason": "PAUSED - Erst relevant wenn ECHTE User da sind",
+  "started_at": null,
+  "last_heartbeat": null,
+  "current_loop": 0,
+  "loop_interval": "30min",
 
-                            ],
-    "checkpoints":  {
-                        "resume_from":  null,
-                        "last_successful_action":  "demo-expiration-emails",
-                        "last_processed_id":  null
-                    },
-    "health":  {
-                   "api_budget_ok":  true,
-                   "memory_ok":  true,
-                   "stuck_detected":  false,
-                   "last_error":  null
-               },
-    "metrics":  {
-                    "success_rate":  100,
-                    "errors_count":  0,
-                    "actions_taken":  17,
-                    "activation_emails_sent":  17,
-                    "drip_emails_sent":  11,
-                    "magic_reengagement_sent":  2,
-                    "demo_expiration_sent":  0,
-                    "upgrade_nudges_sent":  0,
-                    "users_activated":  0
-                },
-    "status":  "running",
-    "last_heartbeat":  "2026-01-16T19:04:20Z",
-    "stats":  {
-                  "inactive_users_found":  30,
-                  "users_total":  42,
-                  "users_never_used":  30,
-                  "users_activated":  12,
-                  "activation_rate":  "29%",
-                  "activation_rate_target":  "\u003e30%",
-                  "upgrade_nudges_sent":  0
-              },
-    "last_action_details":  {
-                                "action":  "session-summary",
-                                "timestamp":  "2026-01-17T00:20:00Z",
-                                "result":  "All activation channels exhausted for this cycle"
-                            },
-    "loop_history":  [
-                         {
-                             "loop":  1,
-                             "action":  "activate-dormant-users",
-                             "result":  "4 activation emails sent"
-                         },
-                         {
-                             "loop":  2,
-                             "action":  "send-drip-emails",
-                             "result":  "11 drip emails sent"
-                         },
-                         {
-                             "loop":  3,
-                             "action":  "reengage-clickers",
-                             "result":  "2 magic link re-engagement emails sent"
-                         },
-                         {
-                             "loop":  4,
-                             "action":  "demo-expiration-emails",
-                             "result":  "0 emails (demos too fresh)"
-                         }
-                     ],
-    "next_check":  "2026-01-17T00:50:00Z",
-    "waiting_for":  "New user registrations or user activations"
+  "reboot_context": {
+    "rebooted_at": "2026-01-17T02:00:00Z",
+    "reason": "Night-Burst System Reboot - Activation war FALSCHE Prioritaet",
+    "key_insight": "29% Activation Rate war FAKE - basierte auf Test-Accounts. Echte Rate: 0%"
+  },
+
+  "paused_reason": "Das echte Problem ist OUTREACH nicht Activation. 0 echte User haben je das Produkt genutzt. Erst wenn Burst-2/4/5 echte User bringen, bin ich relevant.",
+
+  "checkpoints": {
+    "last_successful_action": "demo-expiration-emails",
+    "last_processed_id": null,
+    "resume_from": null
+  },
+
+  "metrics": {
+    "actions_taken": 0,
+    "activation_emails_sent_total": 17,
+    "drip_emails_sent": 11,
+    "magic_reengagement_sent": 2,
+    "real_activations": 0,
+    "fake_activations_test_accounts": 12,
+    "errors_count": 0
+  },
+
+  "stats_at_pause": {
+    "inactive_users_found": 30,
+    "users_total": 42,
+    "users_never_used": 30,
+    "users_activated": 12,
+    "claimed_activation_rate": "29%",
+    "real_activation_rate": "0%",
+    "note": "12 activated sind Test-Accounts!"
+  },
+
+  "real_metrics_awareness": {
+    "total_users_claimed": 42,
+    "real_users": 20,
+    "real_activation": 0,
+    "test_accounts_excluded": true,
+    "conclusion": "Meine bisherige Arbeit war an Test-Accounts verschwendet"
+  },
+
+  "health": {
+    "stuck_detected": false,
+    "last_error": null,
+    "api_budget_ok": true,
+    "memory_ok": true
+  },
+
+  "never_wait_rule": {
+    "enabled": true,
+    "max_idle_minutes": 30,
+    "on_idle_when_paused": "Help Priority-1 Agents (burst-2, burst-4, burst-5)"
+  },
+
+  "escalations_pending": [],
+  "learnings_applied": [
+    "Magic Links bringen Registrations aber keine Activation",
+    "78% der User nutzen Produkt NIE",
+    "Test-Accounts verfaelschen Metriken",
+    "Activation ist irrelevant ohne echte User"
+  ],
+
+  "session_summary": "PAUSED per Reboot - Activation war falscher Fokus"
 }

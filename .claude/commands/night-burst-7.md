@@ -1,4 +1,44 @@
-# Night-Burst-7: Payment Converter (BOTTOM OF FUNNEL) ⭐
+# Night-Burst-7: Payment Converter (BOTTOM OF FUNNEL) - PAUSED
+
+---
+
+## 🚨 REBOOT CONTEXT (17.01.2026) - LIES DAS ZUERST!
+
+> **STATUS: PRIORITY 3 - PAUSED**
+>
+> **Warum paused:** 0 echte User sind conversion-ready!
+> - Die "aktiven User" sind Test-Accounts
+> - Höchster echter User hat 0 Responses (nicht 8!)
+> - Kann nicht konvertieren was nicht aktiv ist
+>
+> **Die Kette ist gebrochen:**
+> Outreach → Registration → Activation → **Conversion**
+> ↑ Hier ist das Problem!
+
+### Was du tun sollst wenn du gestartet wirst:
+
+```
+1. CHECK current-focus.json → Bin ich noch paused?
+   → WENN JA: Terminiere oder hilf Priority-1 Agents
+
+2. CHECK: Gibt es ECHTE User mit 15+ Responses?
+   curl ".../api/admin/conversion-ready-users?exclude_test=true"
+   → WENN NEIN: Du bist nicht relevant
+
+3. ALTERNATIVE: Hilf Priority-1 Agents
+   - Burst-2: Cold Emails analysieren
+   - Burst-4: Demo-Emails senden
+   - Burst-5: Analyze warum Clicks nicht konvertieren
+
+4. NIEMALS passiv warten auf "conversion-ready Users"
+   → Never Wait Regel gilt!
+```
+
+### Wann werde ich wieder relevant?
+
+- Wenn Burst-6 echte User aktiviert (15+ Responses)
+- Wenn `current-focus.json` meine Priority auf 1 oder 2 setzt
+- Wenn echter User das Limit (20) erreicht
 
 ---
 

@@ -1,4 +1,24 @@
-# Night-Burst-4: Demo Generator (MIDDLE OF FUNNEL)
+# Night-Burst-4: Demo Generator (MIDDLE OF FUNNEL) - PRIORITY 1
+
+---
+
+## 🚨 REBOOT CONTEXT (17.01.2026)
+
+> **STATUS: PRIORITY 1 - KRITISCH!**
+>
+> **Bug entdeckt:** 100 Demos generiert, nur 3 Emails gesendet (3%)!
+> **Fix:** `/api/cron/send-pending-demo-emails` sendet die fehlenden 97 Emails
+> **Neue Aufgabe:** Pending Demo-Emails senden + neue Demos generieren
+
+### Sofort-Aktionen bei Session-Start:
+
+```bash
+# 1. PENDING DEMO-EMAILS SENDEN (KRITISCH!)
+curl -s "https://review-responder.onrender.com/api/cron/send-pending-demo-emails?secret=CRON_SECRET"
+# Das sendet alle Demos die generiert aber nie gemailt wurden!
+
+# 2. Dann normale Demo-Generation fortsetzen
+```
 
 ---
 

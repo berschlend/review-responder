@@ -1,7 +1,98 @@
-# Night-Burst Core V3.4 - JEDER AGENT MUSS DAS INCLUDEN
+# Night-Burst Core V3.5 - JEDER AGENT MUSS DAS INCLUDEN
 
 > Basierend auf Anthropic's "Building Effective Agents" + "Multi-Agent Research System"
-> Updated: V3.4 mit Anti-Spam Notification System
+> Updated: V3.5 mit SYSTEM REBOOT (17.01.2026)
+
+---
+
+## 🚨 KRITISCHE REGELN (17.01.2026 REBOOT) - LIES DAS ZUERST!
+
+> **SYSTEM REBOOT:** Die bisherigen Prioritäten waren FALSCH.
+> 29% Activation Rate war FAKE (Test-Accounts). Echte Rate: 0%
+
+### 1. Test-Account Filter (PFLICHT!)
+
+**IMMER `?exclude_test=true` bei User-Metriken verwenden!**
+
+```bash
+# FALSCH - inkludiert Test-Accounts:
+curl ".../api/admin/stats"
+
+# RICHTIG - nur echte User:
+curl ".../api/admin/stats?exclude_test=true"
+```
+
+Die 42 "Users" sind FAKE - nur ~20 sind echt!
+Die 29% "Activation Rate" war FAKE - echte Rate: 0%
+
+### 2. Never Wait Regel (KRITISCH!)
+
+```
+WENN deine primäre Aufgabe blockiert ist:
+1. NICHT warten → SOFORT alternative Aufgabe suchen
+2. CHECK: Kann ich einem Priority-1 Agent helfen?
+   - Burst-2: Cold Emails senden
+   - Burst-4: Demo-Emails senden
+   - Burst-5: Hot Lead Follow-up
+3. CHECK: Gibt es Bottlenecks die ich lösen kann?
+4. WENN 30 Minuten ohne productive Action → Self-Terminierung
+
+NIEMALS:
+- "Waiting for Burst-X to finish first" ❌
+- "Will check again in 30 minutes" ❌
+- Passive Monitoring ohne Action ❌
+- Endlos-Loops ohne Progress ❌
+```
+
+### 3. Proaktiver Task-Wechsel (NEU!)
+
+**Du DARFST die Aufgabe eines anderen Agents übernehmen wenn:**
+- Deine Aufgabe irrelevant ist (Priority 3)
+- Ein Priority-1 Agent Hilfe braucht
+- Du in paused_agents bist
+
+```
+Beispiel:
+- Burst-7 (Converter) sieht 0 conversion-ready Users
+- Statt zu warten: Hilft Burst-2 mit Cold Emails
+- Oder: Analysiert warum Demo-Emails nicht ankommen
+```
+
+### 4. Echte Bottlenecks (17.01)
+
+| Bottleneck | Status | Fix |
+|------------|--------|-----|
+| Demo-Emails | 97% FAIL | `/api/cron/send-pending-demo-emails` |
+| Magic Link Activation | 0% | Redirect zu `/generator` statt `/dashboard` |
+| Real User Activation | 0% | OUTREACH ist das Problem, nicht Activation |
+
+### 5. Daten-Validierung (vor JEDER Entscheidung)
+
+```bash
+# Hole echte User-Metriken
+curl -s "https://review-responder.onrender.com/api/admin/stats?exclude_test=true" \
+  -H "x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
+
+# Prüfe:
+# - Sind die "Active Users" echte User oder Test-Accounts?
+# - WENN Metriken verdächtig hoch → Warnung loggen
+# - Entscheidungen NUR auf echten Daten basieren
+```
+
+### 6. Priority Map (Nach Reboot)
+
+| Agent | Priority | Reason |
+|-------|----------|--------|
+| **Burst-2** | **1** | Cold Emails mit Demo-Links |
+| **Burst-4** | **1** | Demo-Emails fixen & senden |
+| **Burst-5** | **1** | 67 Clicker follow-up |
+| Burst-1 | 2 | Email Enrichment |
+| Burst-9 | 2 | Monitoring 1x/Tag |
+| Burst-11 | 2 | Bottleneck Analysis 1x/Tag |
+| Burst-14 | 2 | Lead Scoring |
+| Burst-6 | 3 | PAUSED - erst bei echten Usern |
+| Burst-7 | 3 | PAUSED - erst bei aktiven Usern |
+| Burst-3,8,10,12,13,15 | 3 | PAUSED |
 
 ---
 

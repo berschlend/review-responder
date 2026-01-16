@@ -1,4 +1,40 @@
-# Night-Burst-6: User Activator (MIDDLE OF FUNNEL)
+# Night-Burst-6: User Activator (MIDDLE OF FUNNEL) - PAUSED
+
+---
+
+## 🚨 REBOOT CONTEXT (17.01.2026) - LIES DAS ZUERST!
+
+> **STATUS: PRIORITY 3 - PAUSED**
+>
+> **Warum paused:** Die 29% Activation Rate war FAKE!
+> - Basierte auf Test-Accounts (rolicupo, breihosen, etc.)
+> - Echte Activation Rate: **0%**
+> - 0 echte User haben je das Produkt genutzt
+>
+> **Das echte Problem:** OUTREACH, nicht Activation
+> - Demo-Emails wurden nicht gesendet (97% fail)
+> - Magic Link Users landen im Dashboard statt Generator
+
+### Was du tun sollst wenn du gestartet wirst:
+
+```
+1. CHECK: Gibt es echte neue User? (nicht Test-Accounts)
+   → WENN NEIN: Du bist nicht relevant, terminiere
+
+2. ALTERNATIVE: Hilf Priority-1 Agents
+   - Burst-2: Cold Emails senden
+   - Burst-4: Demo-Emails senden
+   - Burst-5: Hot Lead Follow-up
+
+3. NIEMALS passiv warten auf "neue User"
+   → Never Wait Regel gilt!
+```
+
+### Wann werde ich wieder relevant?
+
+- Wenn Burst-2/4/5 echte User bringen
+- Wenn echte Activation Rate > 0%
+- Wenn `current-focus.json` meine Priority auf 1 oder 2 setzt
 
 ---
 

@@ -124,30 +124,31 @@ Claude updated das Admin Panel **automatisch** wenn:
 
 ---
 
-## NIGHT-BURST V3.1
+## NIGHT-BURST V3.5 (REBOOTED 17.01.2026)
 
 > **ZIEL:** 15 autonome Claude Agents die jede Nacht arbeiten.
+> **REBOOT:** Prioritäten umgekehrt! Activation war FALSCH, Outreach ist das echte Problem.
 
 ### Quick Start
 ```powershell
 .\scripts\start-night.ps1  # Interactive Menu
 ```
 
-### Die 15 Agents
+### Die 15 Agents (Nach Reboot!)
 
 | # | Agent | Priority | Mission |
 |---|-------|----------|---------|
-| 1 | Lead Finder | 1 | Neue Leads scrapen |
-| 2 | Cold Emailer | 1 | Cold Outreach senden |
-| 3 | Social DM | 3 | LinkedIn/Twitter DMs |
-| 4 | Demo Generator | 2 | Personalisierte Demos |
-| 5 | Hot Lead Chaser | 1 | Hot Leads follow-up |
-| 6 | User Activator | 2 | Onboarding aktivieren |
-| 7 | Payment Converter | 1 | Free→Paid konvertieren |
-| 8 | Upgrader | 3 | Upsell Starter→Pro |
-| 9 | Doctor | 2 | Metriken tracken |
-| 10 | Morning Briefer | 3 | Daily Report |
-| 11 | Bottleneck Analyzer | 3 | Funnel-Engpass finden |
+| 1 | Lead Finder | 2 | Email Enrichment |
+| **2** | **Cold Emailer** | **1** | **Cold Outreach senden** |
+| 3 | Social DM | 3 | PAUSED |
+| **4** | **Demo Generator** | **1** | **Demo-Emails fixen!** |
+| **5** | **Hot Lead Chaser** | **1** | **67 Clicker follow-up** |
+| 6 | User Activator | 3 | PAUSED - erst bei echten Usern |
+| 7 | Payment Converter | 3 | PAUSED - erst bei aktiven Usern |
+| 8 | Upgrader | 3 | PAUSED |
+| 9 | Doctor | 2 | Monitoring 1x/Tag |
+| 10 | Morning Briefer | 3 | Morning only |
+| 11 | Bottleneck Analyzer | 2 | Analysis 1x/Tag |
 | 12 | Creative Strategist | 3 | Neue Strategien |
 | 13 | Churn Prevention | 2 | User reaktivieren |
 | 14 | Lead Scorer | 2 | Leads priorisieren |
@@ -357,6 +358,26 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 - SOFORT: `/api/cron/generate-demos` prüfen - sendet der Emails?
 - Magic Link Login → Redirect direkt zu `/generator` statt Dashboard
 - Monitoring-Agents (Burst-11) am Anfang weniger sinnvoll als Action-Agents
+
+### Night-Burst System Reboot (17.01.2026)
+**Problem:** Agents diagnostizierten "User Activation" als Bottleneck, aber:
+- Die 29% Activation Rate basierte auf **Test-Accounts und Freunden**
+- Von ~20 echten Usern hat **NIEMAND** je das Produkt genutzt
+- Das echte Problem war **OUTREACH → FIRST USE**, nicht Activation
+
+**Agent-System Fehler:**
+1. **Falsche Daten:** Metriken basierten auf verfälschten Test-Account Zahlen
+2. **Passives Warten:** Agents warteten auf Events statt proaktiv zu handeln
+3. **Mutual Dependency:** Burst-7 wartete auf Burst-6, Burst-6 wartete auf User...
+
+**Fixes implementiert:**
+- `current-focus.json` mit echten Metriken (real_users: 20, real_activation: 0%)
+- Neue Prioritäten: Burst-2/4/5 = Priority 1, Burst-6/7 = Priority 3 (PAUSED)
+- "Never Wait" Regel in `night-burst-core.md`
+- Proaktiver Task-Wechsel erlaubt
+- `?exclude_test=true` Filter für alle User-Metriken
+
+**Lesson:** Metriken IMMER validieren. Test-Accounts können Entscheidungen komplett verfälschen.
 
 ---
 

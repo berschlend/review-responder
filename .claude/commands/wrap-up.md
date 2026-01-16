@@ -1,6 +1,6 @@
 ---
 description: Session wrap-up - Git, CLAUDE.md, Learnings, Handoff fuer parallele Claudes
-allowed-tools: Bash(git:*), Read, Edit
+allowed-tools: Bash(git:*), Read, Edit, Write
 ---
 
 # Wrap-Up Command
@@ -18,16 +18,57 @@ Session: $CLAUDE_SESSION
 **TODO.md in_progress Tasks:**
 !`grep -c "in_progress" TODO.md 2>/dev/null || echo "0"`
 
-**CLAUDE.md Stand-Datum:**
+**CLAUDE.MD Stand-Datum:**
 !`grep "Stand:" CLAUDE.md | head -1`
 
-## Deine Aufgaben:
+---
 
-### 1. CLAUDE.md Datum pruefen
-- Vergleiche "Stand:" mit heute
-- Wenn veraltet: Datum updaten
+## KRITISCH: AUTO-CONTINUE LOGIK
 
-### 2. Learnings reflektieren
+> **Du FIXST alles selbst! Nur wenn WIRKLICH alles done → "Session safe to close"**
+
+### Entscheidungsbaum:
+
+```
+1. Uncommitted changes?
+   → JA: Sofort committen & pushen. Dann weiter mit Check 2.
+
+2. TODO.md in_progress Tasks?
+   → JA: Als "pending" markieren ODER abschliessen. Dann weiter.
+
+3. CLAUDE.md Datum veraltet?
+   → JA: Datum updaten. Dann weiter.
+
+4. Wichtige Learnings nicht persistiert?
+   → JA: Jetzt in CLAUDE.md schreiben. Dann weiter.
+
+5. Blocked Items nicht dokumentiert?
+   → JA: In TODO.md BLOCKED Section eintragen. Dann weiter.
+
+ALLE CHECKS BESTANDEN?
+   → Dann und NUR dann: "✅ SESSION SAFE TO CLOSE"
+```
+
+### Was du AUTONOM machst (ohne zu fragen):
+
+| Problem | Aktion |
+|---------|--------|
+| Uncommitted changes | `git add -A && git commit -m "chore: wrap-up session" && git push` |
+| CLAUDE.md Datum alt | Datum auf heute setzen |
+| Learnings ausstehend | In CLAUDE.md LEARNINGS Section einfuegen |
+| Blocked Items | In TODO.md BLOCKED Tabelle eintragen |
+| in_progress Tasks | Status auf "pending" oder "completed" setzen |
+
+### Was du NICHT autonom machst:
+
+- Keine Code-Aenderungen mehr (nur Docs/Config)
+- Keine neuen Features starten
+- Keine Tests ausfuehren
+
+---
+
+## Learnings reflektieren
+
 Frag dich:
 - Was habe ich gelernt das nicht schon in CLAUDE.md steht?
 - Gab es API Limits, Bugs, Workarounds?
@@ -35,70 +76,65 @@ Frag dich:
 
 **Kategorien:** API Limits | Workarounds | Code Patterns | Chrome MCP | Sales/Outreach | Debugging
 
-### 3. Learnings persistieren (wenn relevant)
-Nutze Edit Tool um neue Learnings in CLAUDE.md einzufuegen:
+Format fuer neue Learnings:
 ```
-### [Kategorie] (Datum)
-- **Problem:** Was war das Issue?
-- **Loesung:** Was funktioniert?
+### [Titel] (Datum)
+**Problem:** Was war das Issue?
+**Loesung/Fix:** Was funktioniert?
+**Lesson:** Was sollte man sich merken?
 ```
 
-### 4. Handoff in TODO.md persistieren
-Wenn etwas BLOCKED/WAITING ist:
+---
 
-1. Oeffne TODO.md
-2. Finde die Tabelle unter `## ⏳ BLOCKED / WAITING`
-3. Fuege neue Zeile hinzu oder update existierende:
+## Handoff in TODO.md
+
+Wenn etwas BLOCKED/WAITING ist, trage es in die Tabelle ein:
 
 ```markdown
 | Was | Wartet auf | Seit | Naechste Aktion |
 |-----|------------|------|-----------------|
-| [Feature/Task] | [Worauf gewartet wird] | [Datum] | [Was dann passieren soll] |
+| [Task] | [Worauf] | [Datum] | [Was dann] |
 ```
 
-**Beispiele:**
-- `Chrome Extension v1.6.2 | Chrome Review | 15.01 | Bei Approval → Google Ads`
-- `LinkedIn Outreach | Connection Accepts | 14.01 | Follow-up Messages senden`
-- `API Integration | API Key von User | 15.01 | Integration fertigstellen`
-
-**Aufräumen:** Entferne Einträge die >7 Tage alt und erledigt sind.
+---
 
 ## Output Format:
 
+### Waehrend Auto-Fix:
+```
+🔧 FIXING: [Was gefunden wurde]
+   → [Was du machst]
+```
+
+### Nach allen Fixes:
 ```
 === SESSION WRAP-UP [$CLAUDE_SESSION] ===
 
-GIT: [Clean/X uncommitted]
-COMMITS: [Relevante heute]
-TODO: [X Tasks in_progress]
-CLAUDE.MD: [Datum] - [Aktuell/Veraltet]
-LEARNINGS: [Persistiert/Keine neuen]
+GIT: ✅ Clean (pushed)
+CLAUDE.MD: ✅ Updated (heute)
+LEARNINGS: ✅ [X neue / Keine]
+BLOCKED: ✅ [X dokumentiert / Keine]
 
-HANDOFF (in TODO.md BLOCKED Section):
-- [X neue Eintraege / Keine neuen]
-- Blocked: [Kurze Zusammenfassung was wartet]
-
-FAZIT: [Empfehlung]
+✅ SESSION SAFE TO CLOSE
+   Alles persistiert. Du kannst dieses Terminal schliessen.
 ===
 ```
 
-## Entscheidungslogik:
+### Wenn noch was fehlt (sollte nicht passieren):
+```
+=== SESSION WRAP-UP [$CLAUDE_SESSION] ===
 
-**Session OK** wenn:
-- Git clean (keine uncommitted changes)
-- TODO.md keine in_progress Tasks
-- CLAUDE.md heute geupdated
-- Learnings persistiert (oder keine relevanten)
+⚠️ NOCH OFFEN:
+- [Was noch fehlt]
 
-**Noch zu tun** wenn:
-- Uncommitted changes -> `/commit-push-pr`
-- TODO Tasks offen -> Abschliessen oder als pending dokumentieren
-- CLAUDE.md veraltet -> Datum + NACHT-LOG updaten
-- Wichtige Learnings -> Jetzt in CLAUDE.md schreiben
+Ich fixe das jetzt...
+```
+
+---
 
 ## Wichtig:
 
-- Kurz und knapp antworten
-- Handoff ist KRITISCH bei 10+ parallelen Claudes
+- **AUTO-FIX FIRST:** Nicht fragen, machen!
+- **NUR "safe to close" wenn ALLES done**
+- Handoff ist KRITISCH bei parallelen Claudes
 - Keine trivialen Learnings (nur echte Erkenntnisse)
-- IMMER konkrete naechste Schritte nennen
