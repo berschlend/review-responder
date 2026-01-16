@@ -14596,7 +14596,9 @@ const DemoPage = () => {
             {/* Book a Call CTA - Personal Touch */}
             <p style={{ marginTop: '20px', color: 'rgba(255,255,255,0.9)', fontSize: '14px' }}>
               Questions? <a
-                href="mailto:berend.mainz@web.de?subject=ReviewResponder%20Demo%20Call&body=Hey%20Berend%2C%0A%0AI%20checked%20out%20the%20demo%20and%20have%20some%20questions.%20Can%20we%20do%20a%20quick%2010-min%20call%3F%0A%0AThanks!"
+                href="https://calendly.com/berend-mainz/10min"
+                target="_blank"
+                rel="noopener noreferrer"
                 style={{ color: 'white', fontWeight: '600', textDecoration: 'underline' }}
               >
                 Book a quick 10-min call
