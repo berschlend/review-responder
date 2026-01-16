@@ -1722,6 +1722,10 @@ async function initDatabase() {
       await dbQuery(
         `ALTER TABLE users ADD COLUMN IF NOT EXISTS created_via_magic_link BOOLEAN DEFAULT FALSE`
       );
+      // Demo page auto-account tracking
+      await dbQuery(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS created_via_demo BOOLEAN DEFAULT FALSE`
+      );
     } catch (error) {
       // Columns might already exist
     }
@@ -3433,6 +3437,158 @@ app.post('/api/auth/reset-password', async (req, res) => {
   } catch (error) {
     console.error('Reset password error:', error);
     res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
+// ============ AUTO-CREATE DEMO USER ============
+// Creates an account automatically when user enters email on demo page
+// This keeps them on the demo page to see all responses, while creating their account in the background
+app.post('/api/auth/auto-create-demo-user', async (req, res) => {
+  try {
+    const { email, demo_token, business_name } = req.body;
+
+    if (!email || !validator.isEmail(email)) {
+      return res.status(400).json({ error: 'Valid email required' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check if user already exists
+    let user = await dbGet('SELECT * FROM users WHERE LOWER(email) = LOWER($1)', [normalizedEmail]);
+    let isNewUser = false;
+
+    if (!user) {
+      // Create new user with random password
+      const randomPassword = crypto.randomBytes(32).toString('hex');
+      const hashedPassword = await bcrypt.hash(randomPassword, 12);
+
+      // Generate unique referral code for new user
+      let newUserReferralCode;
+      let attempts = 0;
+      do {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        newUserReferralCode = 'REF-';
+        for (let i = 0; i < 8; i++) {
+          newUserReferralCode += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        const existing = await dbGet('SELECT id FROM users WHERE referral_code = $1', [
+          newUserReferralCode,
+        ]);
+        if (!existing) break;
+        attempts++;
+      } while (attempts < 10);
+
+      // Create Stripe customer
+      const customer = await stripe.customers.create({
+        email: normalizedEmail,
+        metadata: {
+          business_name: business_name || '',
+          created_via: 'demo_page',
+        },
+      });
+
+      const result = await dbQuery(
+        `INSERT INTO users (email, password, business_name, stripe_customer_id, responses_limit, referral_code, email_verified, created_via_demo)
+         VALUES ($1, $2, $3, $4, $5, $6, true, true) RETURNING *`,
+        [
+          normalizedEmail,
+          hashedPassword,
+          business_name || 'Demo User',
+          customer.id,
+          PLAN_LIMITS.free.responses,
+          newUserReferralCode,
+        ]
+      );
+
+      user = result.rows[0];
+      isNewUser = true;
+      console.log(`🎯 Demo auto-created user: ${normalizedEmail}`);
+
+      // Create magic link for easy future access (7 days)
+      const magicToken = crypto.randomBytes(32).toString('hex');
+      await dbQuery(
+        `INSERT INTO magic_links (email, token)
+         VALUES ($1, $2)
+         ON CONFLICT DO NOTHING`,
+        [normalizedEmail, magicToken]
+      );
+
+      const magicUrl = `https://review-responder.onrender.com/api/auth/magic-login/${magicToken}`;
+      const frontendUrl = process.env.FRONTEND_URL || 'https://tryreviewresponder.com';
+
+      // Send Welcome Email with Magic Link
+      try {
+        await sendEmail({
+          to: normalizedEmail,
+          subject: 'Your ReviewResponder account is ready!',
+          type: 'transactional',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
+                <h1 style="color: white; margin: 0;">Welcome to ReviewResponder!</h1>
+              </div>
+              <div style="padding: 30px; background: #f9fafb;">
+                <p style="font-size: 16px; color: #374151;">Hi there!</p>
+                <p style="font-size: 16px; color: #374151;">Your account is ready with <strong>20 free AI responses</strong>.</p>
+                <p style="font-size: 16px; color: #374151;">You can login anytime with this magic link (no password needed):</p>
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${magicUrl}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Login to ReviewResponder</a>
+                </div>
+                <p style="font-size: 14px; color: #6b7280;">This link works for 7 days. Bookmark it!</p>
+                <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+                <p style="font-size: 14px; color: #6b7280;">Or set a password anytime in your <a href="${frontendUrl}/dashboard" style="color: #667eea;">Dashboard Settings</a>.</p>
+              </div>
+            </div>
+          `,
+        });
+        console.log(`[Email] Welcome email sent to demo user ${normalizedEmail}`);
+      } catch (emailError) {
+        console.error('Failed to send demo welcome email:', emailError);
+        // Don't fail - user account is still created
+      }
+    } else {
+      console.log(`🔄 Demo page: existing user ${normalizedEmail} logged in`);
+    }
+
+    // Track demo conversion
+    if (demo_token) {
+      try {
+        await dbQuery(
+          'UPDATE demo_generations SET converted_at = NOW() WHERE demo_token = $1 AND converted_at IS NULL',
+          [demo_token]
+        );
+        console.log(`🎯 Demo conversion tracked: ${demo_token} -> user ${normalizedEmail}`);
+      } catch (demoErr) {
+        console.error('Failed to track demo conversion:', demoErr.message);
+      }
+    }
+
+    // Generate JWT (login user immediately)
+    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
+      expiresIn: '30d',
+    });
+
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        businessName: user.business_name,
+        plan: user.subscription_plan || 'free',
+        responsesUsed: user.responses_used || 0,
+        responsesLimit: user.responses_limit || PLAN_LIMITS.free.responses,
+        smartResponsesUsed: user.smart_responses_used || 0,
+        standardResponsesUsed: user.standard_responses_used || 0,
+        onboardingCompleted: user.onboarding_completed || false,
+        referralCode: user.referral_code,
+        emailVerified: user.email_verified || true,
+      },
+      isNewUser,
+    });
+  } catch (error) {
+    console.error('Auto-create demo user error:', error);
+    res.status(500).json({ error: 'Failed to create account' });
   }
 });
 

@@ -13336,25 +13336,11 @@ const DemoPage = () => {
       return;
     }
 
-    // Track email capture
-    try {
-      await fetch(`${API_URL}/public/demo-email-capture`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: captureEmail,
-          demo_token: token,
-          business_name: demo?.business_name,
-        }),
-      });
-    } catch (err) {
-      // Silent fail - still allow access
-    }
-
+    // First, show all responses immediately (no waiting for backend)
     localStorage.setItem('demo_email_captured', 'true');
     setEmailCaptured(true);
+    setShowAllResponses(true); // Show all responses NOW
     setShowEmailModal(false);
-    toast.success('Response copied! Redirecting to your free account...');
 
     // If there was a pending copy, execute it
     if (pendingCopyIndex !== null) {
@@ -13365,14 +13351,47 @@ const DemoPage = () => {
       setPendingCopyIndex(null);
     }
 
-    // AUTO-REDIRECT: After email capture, redirect to signup with pre-filled email
-    // This is the key conversion moment - they entered email, got value, now convert!
-    const savedEmail = captureEmail;
-    setTimeout(() => {
-      const signupUrl = demo?.cta_url || '/register';
-      const separator = signupUrl.includes('?') ? '&' : '?';
-      window.location.href = `${signupUrl}${separator}email=${encodeURIComponent(savedEmail)}`;
-    }, 2000);
+    // Auto-create account in background (user stays on demo page)
+    try {
+      const response = await fetch(`${API_URL}/auth/auto-create-demo-user`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: captureEmail,
+          demo_token: token,
+          business_name: demo?.business_name,
+        }),
+      });
+      const data = await response.json();
+
+      if (data.token && data.user) {
+        // Save token and log user in
+        localStorage.setItem('token', data.token);
+        setUser(data.user);
+
+        if (data.isNewUser) {
+          toast.success('Account created! All responses unlocked + 20 free responses ready.');
+        } else {
+          toast.success('Welcome back! All responses unlocked.');
+        }
+      } else {
+        // Fallback: just track email capture (old behavior)
+        await fetch(`${API_URL}/public/demo-email-capture`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: captureEmail,
+            demo_token: token,
+            business_name: demo?.business_name,
+          }),
+        });
+        toast.success('All responses unlocked!');
+      }
+    } catch (err) {
+      console.error('Auto-create account error:', err);
+      // Silent fail - user can still see responses
+      toast.success('All responses unlocked!');
+    }
   };
 
   const actualCopyResponse = (text, index) => {
