@@ -3305,7 +3305,7 @@ const LandingPage = () => {
                     borderRadius: '4px',
                   }}
                 >
-                  Chrome Web Store
+                  Browser Extension
                 </span>
               </div>
               <h2
