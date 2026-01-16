@@ -3,8 +3,12 @@
 
 const https = require('https');
 
-// Resend API Key aus Environment oder hardcoded für lokalen Test
-const RESEND_API_KEY = process.env.RESEND_API_KEY || 're_PjDLaHWF_3gg2L4BQAi48NqKu1yqQp4XU';
+// Resend API Key aus Environment
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+if (!RESEND_API_KEY) {
+  console.error('Error: RESEND_API_KEY environment variable not set');
+  process.exit(1);
+}
 
 const leads = [
   {
