@@ -404,6 +404,24 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 
 **Lesson:** Metriken IMMER validieren. Test-Accounts können Entscheidungen komplett verfälschen.
 
+### Demo Page Unlock + Auto-Account (17.01.2026)
+**Problem:** Nach Email-Eingabe auf Demo-Seite wurde User zu /register redirected, BEVOR er die Responses sah.
+**Ursache:** `handleEmailCapture()` hatte einen `setTimeout` der nach 2 Sekunden zu Signup redirectete.
+
+**Fix (2 Teile):**
+1. **Frontend:** `handleEmailCapture()` zeigt sofort alle Responses (`setShowAllResponses(true)`)
+2. **Backend:** Neuer Endpoint `POST /api/auth/auto-create-demo-user`
+   - Erstellt User mit Random Password (oder loggt bestehenden User ein)
+   - Sendet Welcome-Email mit Magic Link
+   - Trackt Demo-Conversion
+   - Business Name von Demo wird übernommen
+
+**Neue DB-Spalte:** `users.created_via_demo BOOLEAN DEFAULT FALSE`
+
+**Verifikation:** Chrome MCP Test erfolgreich - User bleibt auf Demo, sieht alle Responses, ist danach im Dashboard eingeloggt.
+
+**Lesson:** Conversion-Flow darf NIE unterbrochen werden. User muss den Wert SEHEN bevor er zur nächsten Aktion gezwungen wird.
+
 ---
 
 ## TECH STACK
@@ -439,6 +457,7 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 
 ### Auth
 - `POST /api/auth/register|login|google|magic-login`
+- `POST /api/auth/auto-create-demo-user` - Auto-Account für Demo-Page Email Capture
 
 ### Billing
 - `POST /api/billing/create-checkout|portal`
