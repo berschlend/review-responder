@@ -5067,8 +5067,8 @@ app.post('/api/billing/create-checkout', authenticateToken, async (req, res) => 
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env.FRONTEND_URL}/dashboard?success=true`,
-      cancel_url: `${process.env.FRONTEND_URL}/pricing?canceled=true`,
+      success_url: `${process.env.FRONTEND_URL || 'https://tryreviewresponder.com'}/dashboard?success=true`,
+      cancel_url: `${process.env.FRONTEND_URL || 'https://tryreviewresponder.com'}/pricing?canceled=true`,
       metadata: {
         userId: user.id.toString(),
         plan,
@@ -5104,7 +5104,7 @@ app.post('/api/billing/portal', authenticateToken, async (req, res) => {
 
     const session = await stripe.billingPortal.sessions.create({
       customer: user.stripe_customer_id,
-      return_url: `${process.env.FRONTEND_URL}/dashboard`,
+      return_url: `${process.env.FRONTEND_URL || 'https://tryreviewresponder.com'}/dashboard`,
     });
 
     res.json({ url: session.url });
@@ -5148,8 +5148,8 @@ app.post('/api/billing/buy-responses', authenticateToken, async (req, res) => {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.FRONTEND_URL}/dashboard?pack=success`,
-      cancel_url: `${process.env.FRONTEND_URL}/pricing`,
+      success_url: `${process.env.FRONTEND_URL || 'https://tryreviewresponder.com'}/dashboard?pack=success`,
+      cancel_url: `${process.env.FRONTEND_URL || 'https://tryreviewresponder.com'}/pricing`,
       metadata: {
         userId: req.user.id.toString(),
         type: 'response_pack',
@@ -5806,7 +5806,7 @@ app.post('/api/team/invite', authenticateToken, async (req, res) => {
       success: true,
       message: `Invitation sent to ${email}`,
       inviteToken,
-      inviteUrl: `${process.env.FRONTEND_URL}/join-team?token=${inviteToken}`,
+      inviteUrl: `${process.env.FRONTEND_URL || 'https://tryreviewresponder.com'}/join-team?token=${inviteToken}`,
     });
   } catch (error) {
     console.error('Invite error:', error);
@@ -6038,7 +6038,7 @@ app.post('/api/capture-email', async (req, res) => {
                   <p>ReviewResponder helps businesses respond to customer reviews in seconds using AI. No more staring at a blank screen wondering what to write.</p>
 
                   <div style="text-align: center; margin: 32px 0;">
-                    <a href="${process.env.FRONTEND_URL}/claim/${discountCode}" style="display: inline-block; background: #10b981; color: white; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px;">Claim Your Discount</a>
+                    <a href="${process.env.FRONTEND_URL || 'https://tryreviewresponder.com'}/claim/${discountCode}" style="display: inline-block; background: #10b981; color: white; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px;">Claim Your Discount</a>
                   </div>
 
                   <p style="color: #6B7280; font-size: 14px;">Questions? Just reply to this email.</p>
@@ -6085,7 +6085,7 @@ app.post('/api/capture-email', async (req, res) => {
                   </div>
 
                   <div style="text-align: center; margin: 32px 0;">
-                    <a href="${process.env.FRONTEND_URL}/register" style="display: inline-block; background: #4F46E5; color: white; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px;">Start Free - 5 Responses</a>
+                    <a href="${process.env.FRONTEND_URL || 'https://tryreviewresponder.com'}/register" style="display: inline-block; background: #4F46E5; color: white; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px;">Start Free - 5 Responses</a>
                   </div>
 
                   <p style="color: #6B7280; font-size: 14px;">Questions? Just reply to this email.</p>
@@ -9781,7 +9781,7 @@ Just the review response text, ready to post.
 // Submit feedback (after 10 responses)
 app.post('/api/feedback', authenticateToken, async (req, res) => {
   try {
-    const { rating, comment, displayName } = req.body;
+    const { rating, comment, displayName, businessName } = req.body;
 
     if (!rating || rating < 1 || rating > 5) {
       return res.status(400).json({ error: 'Rating must be between 1 and 5' });
@@ -9800,9 +9800,9 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
 
     // Insert feedback - auto-approved for transparency
     const insertResult = await dbQuery(
-      `INSERT INTO user_feedback (user_id, rating, comment, user_name, approved)
-       VALUES ($1, $2, $3, $4, TRUE) RETURNING id`,
-      [req.user.id, rating, comment || null, userName]
+      `INSERT INTO user_feedback (user_id, rating, comment, user_name, business_name, approved)
+       VALUES ($1, $2, $3, $4, $5, TRUE) RETURNING id`,
+      [req.user.id, rating, comment || null, userName, businessName || null]
     );
 
     // Mark user as having submitted feedback
@@ -9848,7 +9848,7 @@ app.get('/api/feedback/status', authenticateToken, async (req, res) => {
 app.get('/api/testimonials', async (req, res) => {
   try {
     const testimonials = await dbAll(
-      `SELECT rating, comment, user_name, created_at, ai_response
+      `SELECT rating, comment, user_name, business_name, created_at, ai_response
        FROM user_feedback
        WHERE approved = TRUE AND comment IS NOT NULL AND comment != ''
        ORDER BY featured DESC, rating DESC, created_at DESC
@@ -9856,9 +9856,10 @@ app.get('/api/testimonials', async (req, res) => {
     );
 
     // Add display_name for consistent name display on frontend
+    // Priority: business_name > cleaned user_name > user_name
     const testimonialsWithDisplayName = testimonials.map(t => ({
       ...t,
-      display_name: cleanDisplayName(t.user_name) || t.user_name
+      display_name: t.business_name || cleanDisplayName(t.user_name) || t.user_name,
     }));
 
     res.json({ testimonials: testimonialsWithDisplayName });

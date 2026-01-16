@@ -2306,6 +2306,7 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [businessName, setBusinessName] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -2322,6 +2323,7 @@ const FeedbackPopup = ({ isVisible, onClose, onSubmit }) => {
         rating,
         comment: comment.trim() || null,
         displayName: displayName.trim() || null,
+        businessName: businessName.trim() || null,
       });
       setSubmitted(true);
       toast.success('Thank you for your feedback!');
