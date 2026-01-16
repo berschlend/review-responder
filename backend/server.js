@@ -11070,8 +11070,13 @@ app.all('/api/cron/review-alerts', async (req, res) => {
     // Ensure google_place_id column exists on tables (migration fix)
     try {
       await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS google_place_id TEXT`);
+    } catch (e) { console.log('linkedin_outreach migration:', e.message); }
+    try {
       await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS google_place_id TEXT`);
-    } catch (e) { /* Columns might already exist */ }
+    } catch (e) { console.log('outreach_leads migration:', e.message); }
+    try {
+      await dbQuery(`ALTER TABLE demo_generations ADD COLUMN IF NOT EXISTS google_place_id TEXT`);
+    } catch (e) { console.log('demo_generations migration:', e.message); }
 
     // Find users with business_name set (they have a business to monitor)
     const usersWithBusiness = await dbQuery(`
@@ -11113,43 +11118,49 @@ app.all('/api/cron/review-alerts', async (req, res) => {
         let businessData = null;
 
         // 1. First try to find Place ID from demo_generations (we already have it!)
-        const demoWithPlaceId = await dbGet(`
-          SELECT google_place_id, business_name FROM demo_generations
-          WHERE business_name ILIKE $1 AND google_place_id IS NOT NULL
-          ORDER BY created_at DESC LIMIT 1
-        `, [`%${user.business_name}%`]);
-
-        if (demoWithPlaceId?.google_place_id) {
-          placeId = demoWithPlaceId.google_place_id;
-          console.log(`🔔 Found Place ID from demo_generations for ${user.business_name}`);
-        }
-
-        // 2. Try linkedin_outreach if not found
-        if (!placeId) {
-          const linkedinWithPlaceId = await dbGet(`
-            SELECT google_place_id, business_name FROM linkedin_outreach
+        try {
+          const demoWithPlaceId = await dbGet(`
+            SELECT google_place_id, business_name FROM demo_generations
             WHERE business_name ILIKE $1 AND google_place_id IS NOT NULL
             ORDER BY created_at DESC LIMIT 1
           `, [`%${user.business_name}%`]);
 
-          if (linkedinWithPlaceId?.google_place_id) {
-            placeId = linkedinWithPlaceId.google_place_id;
-            console.log(`🔔 Found Place ID from linkedin_outreach for ${user.business_name}`);
+          if (demoWithPlaceId?.google_place_id) {
+            placeId = demoWithPlaceId.google_place_id;
+            console.log(`🔔 Found Place ID from demo_generations for ${user.business_name}`);
           }
+        } catch (e) { /* Column might not exist yet */ }
+
+        // 2. Try linkedin_outreach if not found
+        if (!placeId) {
+          try {
+            const linkedinWithPlaceId = await dbGet(`
+              SELECT google_place_id, business_name FROM linkedin_outreach
+              WHERE business_name ILIKE $1 AND google_place_id IS NOT NULL
+              ORDER BY created_at DESC LIMIT 1
+            `, [`%${user.business_name}%`]);
+
+            if (linkedinWithPlaceId?.google_place_id) {
+              placeId = linkedinWithPlaceId.google_place_id;
+              console.log(`🔔 Found Place ID from linkedin_outreach for ${user.business_name}`);
+            }
+          } catch (e) { /* Column might not exist yet */ }
         }
 
         // 3. Try outreach_leads if not found
         if (!placeId) {
-          const leadWithPlaceId = await dbGet(`
-            SELECT google_place_id, business_name FROM outreach_leads
-            WHERE business_name ILIKE $1 AND google_place_id IS NOT NULL
-            ORDER BY created_at DESC LIMIT 1
-          `, [`%${user.business_name}%`]);
+          try {
+            const leadWithPlaceId = await dbGet(`
+              SELECT google_place_id, business_name FROM outreach_leads
+              WHERE business_name ILIKE $1 AND google_place_id IS NOT NULL
+              ORDER BY created_at DESC LIMIT 1
+            `, [`%${user.business_name}%`]);
 
-          if (leadWithPlaceId?.google_place_id) {
-            placeId = leadWithPlaceId.google_place_id;
-            console.log(`🔔 Found Place ID from outreach_leads for ${user.business_name}`);
-          }
+            if (leadWithPlaceId?.google_place_id) {
+              placeId = leadWithPlaceId.google_place_id;
+              console.log(`🔔 Found Place ID from outreach_leads for ${user.business_name}`);
+            }
+          } catch (e) { /* Column might not exist yet */ }
         }
 
         // 4. Fallback: Try Google Places API (costs credits)
