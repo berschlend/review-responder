@@ -4593,9 +4593,9 @@ app.post('/api/generate-bulk', authenticateToken, async (req, res) => {
         length: '3-4 sentences',
       },
       1: {
-        goal: 'Damage control',
-        approach: 'Acknowledge frustration, offer direct contact',
-        length: '4-5 sentences',
+        goal: 'Stay sovereign, show professionalism',
+        approach: 'Acknowledge frustration briefly, offer direct contact',
+        length: '2-3 sentences',
       },
     };
 
