@@ -1,9 +1,28 @@
-{
-  "tasks": [
-    { "id": 1, "text": "🔥 ANRUFEN: Tí Cafe Denver +1-720-440-2864 (HOT - gestern geklickt!)" },
-    { "id": 2, "text": "🟢 ANRUFEN: Trattoria Sempre Zürich +41-44-262-5462 (Magic Link genutzt!)" },
-    { "id": 3, "text": "🟢 ANRUFEN: Sphere Tim Raue Berlin 030-247575875 (Registriert, Michelin!)" },
-    { "id": 4, "text": "📧 EMAILS an registrierte User senden (Drafts in outreach-materials-18-01.md)" },
-    { "id": 5, "text": "Demo-Video aufnehmen (Guide in content/BEREND-VIDEO-RECORDING-GUIDE.md)" }
-  ]
+﻿{
+    "tasks":  [
+                  {
+                      "id":  1,
+                      "text":  "🔥 ANRUFEN: Tí Cafe Denver +1-720-440-2864 (HOT - Gestern auf Demo geklick...)"
+                  },
+                  {
+                      "id":  2,
+                      "text":  "🔥 ANRUFEN: Trattoria Sempre Zürich +41-44-262-5462 (Magic Link genutzt - interessi...)"
+                  },
+                  {
+                      "id":  3,
+                      "text":  "🔥 ANRUFEN: Sphere Tim Raue Berlin 030-247575875 (Registriert, Michelin Restaura...)"
+                  },
+                  {
+                      "id":  4,
+                      "text":  "🟢 ANRUFEN: Bocconcino - Restaurant Duesseldorf Medienhafen 0211 56681482 (1-Stern Review ueber Silvester...)"
+                  },
+                  {
+                      "id":  5,
+                      "text":  "📧 EMAILS an registrierte User senden (Drafts in outreach-materials-18-01.md)"
+                  },
+                  {
+                      "id":  6,
+                      "text":  "🎬 Demo-Video aufnehmen (Guide in content/BEREND-VIDEO-RECORDING-GUIDE.md)"
+                  }
+              ]
 }

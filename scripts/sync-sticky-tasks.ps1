@@ -1,6 +1,7 @@
 # sync-sticky-tasks.ps1
 # Synchronizes Sticky Tasks from Database (call_preps + hot leads)
 # Called by: Stop-Hook, Night-Agents, manually
+# PowerShell 5.1 compatible
 
 param(
     [switch]$Verbose
@@ -8,10 +9,11 @@ param(
 
 $ADMIN_KEY = "rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
 $API_BASE = "https://review-responder.onrender.com"
-$STICKY_FILE = "$PSScriptRoot\..\/.claude/sticky-tasks.json"
 
-# Resolve path
-$STICKY_FILE = (Resolve-Path "$PSScriptRoot\..\.claude\sticky-tasks.json" -ErrorAction SilentlyContinue) ?? "$PSScriptRoot\..\.claude\sticky-tasks.json"
+# Resolve path (PS 5.1 compatible - no ?? operator)
+$STICKY_FILE = "$PSScriptRoot\..\.claude\sticky-tasks.json"
+$resolved = Resolve-Path $STICKY_FILE -ErrorAction SilentlyContinue
+if ($resolved) { $STICKY_FILE = $resolved.Path }
 
 if ($Verbose) { Write-Host "[Sync] Starting sticky tasks sync..." -ForegroundColor Cyan }
 
@@ -30,33 +32,41 @@ try {
     $tasks = @()
     $id = 1
 
-    # Priority 5 = HOT (fire emoji)
+    # Priority 5 = HOT (fire emoji via unicode)
+    $fireEmoji = [char]::ConvertFromUtf32(0x1F525)
     foreach ($call in ($pendingCalls | Where-Object { $_.priority_score -eq 5 })) {
-        $emoji = "🔥"
-        $text = "$emoji ANRUFEN: $($call.business_name) $($call.phone)"
-        if ($call.problem) { $text += " ($($call.problem.Substring(0, [Math]::Min(30, $call.problem.Length)))...)" }
-        $tasks += @{ id = $id++; text = $text }
+        $text = "$fireEmoji ANRUFEN: $($call.business_name) $($call.phone)"
+        if ($call.problem -and $call.problem.Length -gt 0) {
+            $maxLen = [Math]::Min(30, $call.problem.Length)
+            $text += " ($($call.problem.Substring(0, $maxLen))...)"
+        }
+        $tasks += @{ id = $id; text = $text }
+        $id++
     }
 
-    # Priority 4 = WARM (green circle)
+    # Priority 4 = WARM (green circle via unicode)
+    $greenEmoji = [char]::ConvertFromUtf32(0x1F7E2)
     foreach ($call in ($pendingCalls | Where-Object { $_.priority_score -eq 4 })) {
-        $emoji = "🟢"
-        $text = "$emoji ANRUFEN: $($call.business_name) $($call.phone)"
-        if ($call.problem) { $text += " ($($call.problem.Substring(0, [Math]::Min(30, $call.problem.Length)))...)" }
-        $tasks += @{ id = $id++; text = $text }
+        $text = "$greenEmoji ANRUFEN: $($call.business_name) $($call.phone)"
+        if ($call.problem -and $call.problem.Length -gt 0) {
+            $maxLen = [Math]::Min(30, $call.problem.Length)
+            $text += " ($($call.problem.Substring(0, $maxLen))...)"
+        }
+        $tasks += @{ id = $id; text = $text }
+        $id++
     }
 
     # 3. Add static tasks (Demo Video, etc.)
-    # Check if demo video task should be shown
-    $staticTasks = @(
-        @{ id = $id++; text = "📧 EMAILS an registrierte User senden (Drafts in outreach-materials-18-01.md)" }
-        @{ id = $id++; text = "🎬 Demo-Video aufnehmen (Guide in content/BEREND-VIDEO-RECORDING-GUIDE.md)" }
-    )
-    $tasks += $staticTasks
+    $mailEmoji = [char]::ConvertFromUtf32(0x1F4E7)
+    $movieEmoji = [char]::ConvertFromUtf32(0x1F3AC)
+
+    $tasks += @{ id = $id; text = "$mailEmoji EMAILS an registrierte User senden (Drafts in outreach-materials-18-01.md)" }
+    $id++
+    $tasks += @{ id = $id; text = "$movieEmoji Demo-Video aufnehmen (Guide in content/BEREND-VIDEO-RECORDING-GUIDE.md)" }
 
     # 4. Write to JSON
     $stickyJson = @{ tasks = $tasks } | ConvertTo-Json -Depth 3
-    $stickyJson | Out-File -FilePath $STICKY_FILE -Encoding utf8 -Force
+    [System.IO.File]::WriteAllText($STICKY_FILE, $stickyJson, [System.Text.Encoding]::UTF8)
 
     if ($Verbose) {
         Write-Host "[Sync] Updated sticky-tasks.json with $($tasks.Count) tasks" -ForegroundColor Green
