@@ -1,27 +1,23 @@
-﻿{
+{
     "tasks":  [
                   {
                       "id":  1,
-                      "text":  "🔥 ANRUFEN: Tí Cafe Denver +1-720-440-2864 (HOT - Gestern auf Demo geklick...)"
+                      "text":  "🔥 HOT LEAD #1: Tí Cafe Denver +1-720-440-2864 (geklickt 17.01!) → call-prep/ti-cafe-denver.md | Anrufen 18-19:30 CET"
                   },
                   {
                       "id":  2,
-                      "text":  "🔥 ANRUFEN: Trattoria Sempre Zürich +41-44-262-5462 (Magic Link genutzt - interessi...)"
+                      "text":  "🔥 HOT LEAD #2: Trattoria Sempre Zürich +41-44-262-5462 (Magic Link!) → call-prep/trattoria-sempre-zuerich.md"
                   },
                   {
                       "id":  3,
-                      "text":  "🔥 ANRUFEN: Sphere Tim Raue Berlin 030-247575875 (Registriert, Michelin Restaura...)"
+                      "text":  "🔥 HOT LEAD #3: Sphere Tim Raue Berlin 030-247575875 (12k Reviews!) → call-prep/sphere-tim-raue-berlin.md"
                   },
                   {
                       "id":  4,
-                      "text":  "🟢 ANRUFEN: Bocconcino - Restaurant Duesseldorf Medienhafen 0211 56681482 (1-Stern Review ueber Silvester...)"
+                      "text":  "📖 VALUE CONVICTION: Vor Calls lesen → content/call-prep/VALUE-CONVICTION-PLAN.md"
                   },
                   {
                       "id":  5,
-                      "text":  "📧 EMAILS an registrierte User senden (Drafts in outreach-materials-18-01.md)"
-                  },
-                  {
-                      "id":  6,
                       "text":  "🎬 Demo-Video aufnehmen (Guide in content/BEREND-VIDEO-RECORDING-GUIDE.md)"
                   }
               ]
