@@ -291,9 +291,17 @@ const BOT_EMAIL_PATTERNS = [
   '%40', // URL-encoded @ (malformed)
 ];
 
+// Known test burst periods (owner testing)
+// Format: { date: 'YYYY-MM-DD', hourStart: H, hourEnd: H } (UTC)
+const KNOWN_TEST_BURSTS = [
+  { date: '2026-01-13', hourStart: 16, hourEnd: 17 }, // Owner test burst
+  { date: '2026-01-14', hourStart: 6, hourEnd: 7 },   // Early morning tests
+  { date: '2026-01-14', hourStart: 21, hourEnd: 23 }, // Evening tests
+];
+
 /**
  * Generate SQL WHERE clause to exclude bot clicks
- * Filters: midnight bursts (00:00-00:20 UTC) and known bot patterns
+ * Filters: midnight bursts, known test periods, and bot patterns
  * @param {string} clickedAtColumn - Column name for timestamp (default: 'clicked_at')
  * @param {string} emailColumn - Column name for email (default: 'email')
  * @returns {string} SQL AND clause
@@ -305,6 +313,15 @@ function getBotClickExcludeClause(clickedAtColumn = 'clicked_at', emailColumn = 
     AND EXTRACT(MINUTE FROM ${clickedAtColumn} AT TIME ZONE 'UTC') < 20
   )`;
 
+  // Filter known test burst periods
+  const testBurstFilters = KNOWN_TEST_BURSTS.map(burst => {
+    return `NOT (
+      DATE(${clickedAtColumn} AT TIME ZONE 'UTC') = '${burst.date}'
+      AND EXTRACT(HOUR FROM ${clickedAtColumn} AT TIME ZONE 'UTC') >= ${burst.hourStart}
+      AND EXTRACT(HOUR FROM ${clickedAtColumn} AT TIME ZONE 'UTC') <= ${burst.hourEnd}
+    )`;
+  }).join(' AND ');
+
   // Filter known bot email patterns
   const botPatternClauses = BOT_EMAIL_PATTERNS.map(p => {
     if (p.includes('%')) {
@@ -313,7 +330,59 @@ function getBotClickExcludeClause(clickedAtColumn = 'clicked_at', emailColumn = 
     return `LOWER(${emailColumn}) != '${p.toLowerCase()}'`;
   }).join(' AND ');
 
-  return `AND ${midnightFilter} AND ${botPatternClauses}`;
+  return `AND ${midnightFilter} AND ${testBurstFilters} AND ${botPatternClauses}`;
+}
+
+/**
+ * Post-process clicks to filter sequential/burst patterns (JS-based)
+ * Call this AFTER SQL query to remove clicks that are suspiciously close together
+ * @param {Array} clicks - Array of click objects with clicked_at field
+ * @param {number} minGapSeconds - Minimum seconds between clicks to be considered real (default: 30)
+ * @returns {Array} Filtered clicks
+ */
+function filterSequentialClicks(clicks, minGapSeconds = 30) {
+  if (!clicks || clicks.length === 0) return [];
+
+  // Sort by timestamp
+  const sorted = [...clicks].sort((a, b) =>
+    new Date(a.clicked_at) - new Date(b.clicked_at)
+  );
+
+  // Group clicks by minute - if >3 clicks in same minute, likely a test burst
+  const byMinute = {};
+  sorted.forEach(c => {
+    const minute = c.clicked_at.substring(0, 16); // YYYY-MM-DDTHH:MM
+    byMinute[minute] = (byMinute[minute] || 0) + 1;
+  });
+
+  const burstMinutes = new Set(
+    Object.entries(byMinute)
+      .filter(([_, count]) => count >= 3)
+      .map(([minute]) => minute)
+  );
+
+  // Filter out clicks in burst minutes and sequential clicks
+  const filtered = [];
+  let lastClickTime = null;
+
+  sorted.forEach(click => {
+    const clickMinute = click.clicked_at.substring(0, 16);
+    const clickTime = new Date(click.clicked_at);
+
+    // Skip if in a burst minute
+    if (burstMinutes.has(clickMinute)) return;
+
+    // Skip if too close to previous click
+    if (lastClickTime) {
+      const gap = (clickTime - lastClickTime) / 1000;
+      if (gap < minGapSeconds) return;
+    }
+
+    filtered.push(click);
+    lastClickTime = clickTime;
+  });
+
+  return filtered;
 }
 
 /**
@@ -25870,10 +25939,11 @@ app.get('/api/outreach/dashboard', async (req, res) => {
 
     // HOT LEADS: Get clickers with business details (the REAL interested leads!)
     let hotLeads = [];
+    let hotLeadsRaw = []; // Before sequential filter
     try {
       const CLICKS_EMAIL_FILTER = getTestEmailExcludeClause('c.email');
       const BOT_FILTER = excludeBots ? getBotClickExcludeClause('c.clicked_at', 'c.email') : '';
-      hotLeads =
+      hotLeadsRaw =
         (await dbAll(`
         SELECT DISTINCT ON (c.email)
           c.email,
@@ -25889,6 +25959,13 @@ app.get('/api/outreach/dashboard', async (req, res) => {
           AND c.email NOT LIKE '%vimeo%'
         ORDER BY c.email, c.clicked_at DESC
       `)) || [];
+
+      // Apply sequential/burst filter for stricter bot detection
+      if (excludeBots) {
+        hotLeads = filterSequentialClicks(hotLeadsRaw, 30); // Min 30s gap between clicks
+      } else {
+        hotLeads = hotLeadsRaw;
+      }
     } catch (e) {
       // Hot leads query failed
     }
@@ -25960,32 +26037,47 @@ app.get('/api/outreach/dashboard', async (req, res) => {
       // Columns might not exist yet
     }
 
+    // When exclude_bots=true, use the fully filtered count (after JS burst filter)
+    const finalClickCount = excludeBots ? hotLeads.length : parseInt(emailsClickedRaw?.count || 0);
+    const finalClickRate = emailsSent?.count > 0
+      ? ((finalClickCount / emailsSent.count) * 100).toFixed(2) + '%'
+      : '0%';
+
     res.json({
       stats: {
         total_leads: parseInt(totalLeads?.count || 0),
         leads_with_email: parseInt(leadsWithEmail?.count || 0),
         emails_sent: parseInt(emailsSent?.count || 0),
-        clicks: parseInt(emailsClicked?.count || 0),
-        clicks_raw: parseInt(emailsClickedRaw?.count || 0), // Before bot filter
-        click_rate:
-          emailsSent?.count > 0
-            ? ((emailsClicked?.count / emailsSent?.count) * 100).toFixed(1) + '%'
-            : '0%',
+        clicks: finalClickCount, // After all filters if exclude_bots=true
+        clicks_raw: parseInt(emailsClickedRaw?.count || 0), // Before any bot filter
+        click_rate: finalClickRate,
         click_rate_raw:
           emailsSent?.count > 0
-            ? ((emailsClickedRaw?.count / emailsSent?.count) * 100).toFixed(1) + '%'
+            ? ((emailsClickedRaw?.count / emailsSent?.count) * 100).toFixed(2) + '%'
             : '0%',
         // Note: open_rate removed - unreliable due to bot scans
       },
       data_quality: {
         bot_filter_active: excludeBots,
-        clicks_filtered: parseInt(emailsClickedRaw?.count || 0) - parseInt(emailsClicked?.count || 0),
-        bot_click_percentage: emailsClickedRaw?.count > 0
-          ? (((emailsClickedRaw.count - emailsClicked.count) / emailsClickedRaw.count) * 100).toFixed(1) + '%'
+        // SQL filter stats
+        clicks_after_sql_filter: hotLeadsRaw.length,
+        clicks_after_burst_filter: hotLeads.length,
+        // Total filtered
+        total_raw_clicks: parseInt(emailsClickedRaw?.count || 0),
+        total_filtered_clicks: hotLeads.length,
+        clicks_removed: parseInt(emailsClickedRaw?.count || 0) - hotLeads.length,
+        fake_click_percentage: emailsClickedRaw?.count > 0
+          ? (((emailsClickedRaw.count - hotLeads.length) / emailsClickedRaw.count) * 100).toFixed(1) + '%'
           : '0%',
+        filters_applied: excludeBots ? [
+          'midnight_burst (00:00-00:20 UTC)',
+          'known_test_periods (owner testing)',
+          'sequential_clicks (<30s gap)',
+          'burst_detection (3+ per minute)'
+        ] : [],
         note: excludeBots
-          ? 'Bot clicks (midnight bursts, test emails) filtered out'
-          : 'Use ?exclude_bots=true to filter email security scanner clicks',
+          ? 'Filtered: bots, test periods, sequential clicks, burst patterns'
+          : 'Use ?exclude_bots=true for accurate click data',
       },
       hot_leads: hotLeads,
       hot_leads_count: hotLeads.length,
