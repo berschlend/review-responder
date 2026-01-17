@@ -5101,24 +5101,30 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
   const [sampleResponse, setSampleResponse] = useState('');
   const [generatingSample, setGeneratingSample] = useState(false);
 
-  const businessTypes = [
-    'Restaurant',
-    'Cafe / Coffee Shop',
-    'Hotel / Accommodation',
-    'Bar / Nightclub',
-    'Spa / Wellness',
-    'Hair Salon / Barbershop',
-    'Dental Practice',
-    'Medical Practice',
-    'Auto Repair / Service',
-    'Gym / Fitness Studio',
-    'Retail Store',
-    'E-commerce',
-    'Professional Services',
-    'Real Estate',
-    'Home Services',
-    'Other',
-  ];
+  // Grouped business types for better UX - most common first
+  const businessTypeGroups = {
+    'Most Common': [
+      'Restaurant',
+      'Dental Practice',
+      'Medical Practice',
+      'Hair Salon / Barbershop',
+      'Auto Repair / Service',
+      'Real Estate',
+      'Home Services',
+    ],
+    'Food & Hospitality': ['Cafe / Coffee Shop', 'Bar / Nightclub', 'Hotel / Accommodation'],
+    'Health & Beauty': ['Spa / Wellness', 'Gym / Fitness Studio', 'Veterinary / Pet Services'],
+    Professional: [
+      'Professional Services',
+      'Financial Services',
+      'Retail Store',
+      'E-commerce',
+    ],
+    Lifestyle: ['Photography / Creative', 'Event Planning', 'Childcare / Education'],
+  };
+
+  // Flat list for validation (includes all types plus Other)
+  const businessTypes = Object.values(businessTypeGroups).flat().concat(['Other']);
 
   // Sync user data when modal opens or user changes
   useEffect(() => {
@@ -5379,11 +5385,16 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                       style={{ cursor: 'pointer' }}
                     >
                       <option value="">Select type...</option>
-                      {businessTypes.map(type => (
-                        <option key={type} value={type}>
-                          {type}
-                        </option>
+                      {Object.entries(businessTypeGroups).map(([group, types]) => (
+                        <optgroup key={group} label={group}>
+                          {types.map(type => (
+                            <option key={type} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                        </optgroup>
                       ))}
+                      <option value="Other">Other</option>
                     </select>
                     {businessType === 'Other' && (
                       <input
@@ -10435,6 +10446,16 @@ const getContextPlaceholder = businessType => {
       'e.g. accounting firm, CPA certified, small business focus, responsive',
     'Real Estate': 'e.g. local expert, first-time buyers, 15 years experience, personal touch',
     'Home Services': 'e.g. plumbing, licensed, same-day service, fair pricing, family-owned',
+    // New business types
+    'Veterinary / Pet Services':
+      'e.g. dogs & cats, fear-free certified, 10 years experience, boarding available',
+    'Financial Services':
+      'e.g. CPA, small business focus, 20 years experience, QuickBooks certified',
+    'Photography / Creative':
+      'e.g. weddings & portraits, natural light style, same-day previews',
+    'Event Planning': 'e.g. weddings, corporate events, full-service, 100+ events completed',
+    'Childcare / Education':
+      'e.g. ages 2-5, certified teachers, outdoor learning, healthy meals',
   };
   return examples[businessType] || 'e.g. family-owned, since 1985, quality service, friendly team';
 };
@@ -10547,6 +10568,42 @@ const getTextareaPlaceholder = businessType => {
 • We stand behind our work with a 2-year warranty
 • We're known for arriving on time and cleaning up after
 • Owner Bob personally follows up on every job`,
+    // New business types
+    'Veterinary / Pet Services': `Examples:
+• We're a full-service vet clinic caring for pets since 2005
+• Our vets specialize in dogs, cats, and small animals
+• We offer fear-free certified handling
+• We have boarding and grooming on-site
+• We're known for our gentle approach with anxious pets
+• Dr. Wilson treats every pet like her own`,
+    'Financial Services': `Examples:
+• We're a CPA firm serving small businesses since 2000
+• We specialize in tax planning and bookkeeping
+• We're QuickBooks ProAdvisor certified
+• We offer virtual meetings for convenience
+• We're known for making finances understandable
+• Partner Mike has 25 years in the industry`,
+    'Photography / Creative': `Examples:
+• We're a wedding and portrait studio since 2012
+• We specialize in natural light photography
+• We offer same-day previews and fast turnaround
+• We have a cozy studio and travel anywhere
+• We're known for capturing genuine moments
+• Photographer Amy has an eye for candid shots`,
+    'Event Planning': `Examples:
+• We're a full-service event planning company since 2008
+• We specialize in weddings and corporate events
+• We've planned over 200 successful events
+• We handle everything from venue to catering
+• We're known for stress-free planning
+• Coordinator Lisa makes every detail perfect`,
+    'Childcare / Education': `Examples:
+• We're a licensed daycare center since 2010
+• Our teachers are early childhood certified
+• We accept children ages 2-5
+• We offer outdoor learning and healthy meals
+• We're known for our nurturing environment
+• Director Sarah ensures every child thrives`,
   };
   return (
     examples[businessType] ||
@@ -10862,24 +10919,30 @@ const SettingsPage = () => {
   const autoSaveTimeoutRef = useRef(null);
   const isInitialMount = useRef(true);
 
-  const businessTypes = [
-    'Restaurant',
-    'Cafe / Coffee Shop',
-    'Hotel / Accommodation',
-    'Bar / Nightclub',
-    'Spa / Wellness',
-    'Hair Salon / Barbershop',
-    'Dental Practice',
-    'Medical Practice',
-    'Auto Repair / Service',
-    'Gym / Fitness Studio',
-    'Retail Store',
-    'E-commerce',
-    'Professional Services',
-    'Real Estate',
-    'Home Services',
-    'Other',
-  ];
+  // Grouped business types for better UX - most common first
+  const businessTypeGroups = {
+    'Most Common': [
+      'Restaurant',
+      'Dental Practice',
+      'Medical Practice',
+      'Hair Salon / Barbershop',
+      'Auto Repair / Service',
+      'Real Estate',
+      'Home Services',
+    ],
+    'Food & Hospitality': ['Cafe / Coffee Shop', 'Bar / Nightclub', 'Hotel / Accommodation'],
+    'Health & Beauty': ['Spa / Wellness', 'Gym / Fitness Studio', 'Veterinary / Pet Services'],
+    Professional: [
+      'Professional Services',
+      'Financial Services',
+      'Retail Store',
+      'E-commerce',
+    ],
+    Lifestyle: ['Photography / Creative', 'Event Planning', 'Childcare / Education'],
+  };
+
+  // Flat list for validation (includes all types plus Other)
+  const businessTypes = Object.values(businessTypeGroups).flat().concat(['Other']);
   const [newKeyName, setNewKeyName] = useState('');
   const [generatedKey, setGeneratedKey] = useState(null);
   const [creatingKey, setCreatingKey] = useState(false);
@@ -11143,11 +11206,16 @@ const SettingsPage = () => {
               }}
             >
               <option value="">Select your business type</option>
-              {businessTypes.map(type => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
+              {Object.entries(businessTypeGroups).map(([group, types]) => (
+                <optgroup key={group} label={group}>
+                  {types.map(type => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
+              <option value="Other">Other</option>
             </select>
             {businessType === 'Other' && (
               <input

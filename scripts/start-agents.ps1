@@ -181,21 +181,29 @@ function Start-Agent {
         [int]$AgentNum
     )
 
+    # Select account with lowest usage (Auto Account Rotation)
+    $getBestAccountScript = Join-Path $ProjectRoot "scripts\Get-BestAccount.ps1"
+    $selectedConfigDir = & powershell -ExecutionPolicy Bypass -File $getBestAccountScript
+    $selectedAccount = Split-Path $selectedConfigDir -Leaf
+
     $config = $AgentConfig[$AgentNum]
     $agentName = $config.Name
     # Chrome is ON by default for all agents (unless -NoChrome specified)
     $chromeFlag = if ($NoChrome) { "" } else { " --chrome" }
 
     $escapedProjectRoot = $ProjectRoot -replace "'", "''"
+    $escapedConfigDir = $selectedConfigDir -replace "'", "''"
 
     # Build the command - if Chrome enabled, run chrome-init first then the agent task
     $chromeInit = if (-not $NoChrome) { " /chrome-init &&" } else { "" }
 
     $psCommand = @"
+`$env:CLAUDE_CONFIG_DIR = '$escapedConfigDir'
 `$env:CLAUDE_SESSION = 'BURST$AgentNum'
 Set-Location '$escapedProjectRoot'
 Write-Host '========================================' -ForegroundColor Magenta
 Write-Host ' BURST-$AgentNum : $agentName' -ForegroundColor Magenta
+Write-Host ' Account: $selectedAccount' -ForegroundColor DarkGray
 if ('$chromeFlag' -ne '') { Write-Host ' [CHROME MCP ENABLED]' -ForegroundColor Cyan }
 Write-Host '========================================' -ForegroundColor Magenta
 Write-Host 'Started: ' -NoNewline; Write-Host (Get-Date) -ForegroundColor Cyan
@@ -212,7 +220,7 @@ Write-Host '========================================' -ForegroundColor Yellow
     $encoded = [Convert]::ToBase64String($bytes)
 
     Start-Process wt -ArgumentList "powershell -NoExit -EncodedCommand $encoded"
-    Write-Host "    [START] Burst-$AgentNum ($agentName) started" -ForegroundColor Green
+    Write-Host "    [START] Burst-$AgentNum ($agentName) → $selectedAccount" -ForegroundColor Green
 }
 
 # Function to start multiple agents

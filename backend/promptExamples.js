@@ -194,6 +194,40 @@ const industryExamples = {
         "Wrong orders frustrate everyone. Email us your order number and we'll fix this immediately.",
     },
   },
+  realestate: {
+    positive: {
+      review: 'Lisa helped us find our dream home in just 2 weeks. She knew exactly what we wanted.',
+      response:
+        "Two weeks is a record for us too! Lisa's market knowledge made all the difference. Welcome home.",
+    },
+    negative: {
+      review: 'Agent never returned our calls. Lost a house we loved because of slow response.',
+      response:
+        'Slow response cost you a home. That is unacceptable. Please contact our broker directly.',
+    },
+  },
+  homeservices: {
+    positive: {
+      review: 'Fixed the leak in 30 minutes. Fair price, clean work, explained everything.',
+      response: '30 minutes and no mess left behind. That is the goal. Thanks for the trust.',
+    },
+    negative: {
+      review: 'Quoted $200, charged $500. No explanation for the difference.',
+      response:
+        "Price jumps without explanation are not okay. Call me directly with your invoice and we'll review it.",
+    },
+  },
+  pets: {
+    positive: {
+      review: 'They treat my dog like family. Max always comes out happy after his grooming.',
+      response: 'Max is a regular here! We love seeing that tail wag at pickup.',
+    },
+    negative: {
+      review: 'Picked up my cat with a small cut. Staff said it was already there.',
+      response:
+        'Any injury is concerning. Please contact me directly so we can review what happened.',
+    },
+  },
   generic: {
     positive: {
       review: 'Great service! Staff was helpful and the quality exceeded my expectations.',
@@ -262,6 +296,21 @@ function getIndustryExamples(businessType) {
     return industryExamples.salon;
   }
 
+  // Pet Services (Groomer, Vet, Kennel, etc.) - MUST be before Medical to catch 'veterinary clinic'
+  if (
+    type.includes('pet') ||
+    type.includes('groom') ||
+    type.includes('kennel') ||
+    type.includes('dog') ||
+    type.includes('cat') ||
+    type.includes('animal') ||
+    type.includes('veterinar') ||
+    type.includes('daycare') ||
+    (type.includes('vet') && !type.includes('veteran'))
+  ) {
+    return industryExamples.pets;
+  }
+
   // Medical / Healthcare
   if (
     type.includes('medical') ||
@@ -270,8 +319,7 @@ function getIndustryExamples(businessType) {
     type.includes('health') ||
     type.includes('therapy') ||
     type.includes('physio') ||
-    type.includes('chiro') ||
-    type.includes('veterinar')
+    type.includes('chiro')
   ) {
     return industryExamples.medical;
   }
@@ -320,6 +368,42 @@ function getIndustryExamples(businessType) {
     type.includes('e-commerce')
   ) {
     return industryExamples.retail;
+  }
+
+  // Real Estate
+  if (
+    type.includes('real estate') ||
+    type.includes('realtor') ||
+    type.includes('property') ||
+    type.includes('housing') ||
+    type.includes('mortgage') ||
+    type.includes('broker') ||
+    type.includes('realty') ||
+    type.includes('apartment') ||
+    type.includes('leasing')
+  ) {
+    return industryExamples.realestate;
+  }
+
+  // Home Services (Plumber, Electrician, HVAC, etc.)
+  if (
+    type.includes('plumb') ||
+    type.includes('electric') ||
+    type.includes('hvac') ||
+    type.includes('clean') ||
+    type.includes('handyman') ||
+    type.includes('contractor') ||
+    type.includes('landscap') ||
+    type.includes('roof') ||
+    type.includes('paint') ||
+    type.includes('home service') ||
+    type.includes('pest') ||
+    type.includes('locksmith') ||
+    type.includes('moving') ||
+    type.includes('mover') ||
+    type.includes('appliance repair')
+  ) {
+    return industryExamples.homeservices;
   }
 
   return industryExamples.generic;

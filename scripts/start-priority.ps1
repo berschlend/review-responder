@@ -38,13 +38,21 @@ function Start-PriorityAgent {
         [string]$AgentName
     )
 
+    # Select account with lowest usage (Auto Account Rotation)
+    $getBestAccountScript = Join-Path $ProjectRoot "scripts\Get-BestAccount.ps1"
+    $selectedConfigDir = & powershell -ExecutionPolicy Bypass -File $getBestAccountScript
+    $selectedAccount = Split-Path $selectedConfigDir -Leaf
+
     $escapedProjectRoot = $ProjectRoot -replace "'", "''"
+    $escapedConfigDir = $selectedConfigDir -replace "'", "''"
 
     $psCommand = @"
+`$env:CLAUDE_CONFIG_DIR = '$escapedConfigDir'
 `$env:CLAUDE_SESSION = 'BURST$AgentNum'
 Set-Location '$escapedProjectRoot'
 Write-Host '========================================' -ForegroundColor Magenta
 Write-Host ' BURST-$AgentNum : $AgentName' -ForegroundColor Magenta
+Write-Host ' Account: $selectedAccount' -ForegroundColor DarkGray
 Write-Host '========================================' -ForegroundColor Magenta
 Write-Host 'Started: ' -NoNewline; Write-Host (Get-Date) -ForegroundColor Cyan
 Write-Host ''
@@ -60,7 +68,7 @@ Write-Host '========================================' -ForegroundColor Yellow
     $encoded = [Convert]::ToBase64String($bytes)
 
     Start-Process wt -ArgumentList "powershell -NoExit -EncodedCommand $encoded"
-    Write-Host "[START] Burst-$AgentNum ($AgentName) started in new window" -ForegroundColor Green
+    Write-Host "[START] Burst-$AgentNum ($AgentName) → $selectedAccount" -ForegroundColor Green
 }
 
 # Start the 3 Priority-1 agents

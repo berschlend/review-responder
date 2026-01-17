@@ -1,7 +1,50 @@
-# Night-Burst Core V3.6 - JEDER AGENT MUSS DAS INCLUDEN
+# Night-Burst Core V3.7 - JEDER AGENT MUSS DAS INCLUDEN
 
 > Basierend auf Anthropic's "Building Effective Agents" + "Multi-Agent Research System"
-> Updated: V3.6 mit MAXIMUM AUTONOMY MODE (17.01.2026)
+> Updated: V3.7 mit Auto-Load Rules (18.01.2026)
+
+---
+
+## AUTO-LOAD RULES (NEU V3.7!)
+
+> Agent-spezifische Rules werden automatisch aus `.claude/rules/` geladen.
+> CLAUDE.md hat jetzt nur ~200 Zeilen Core-Content.
+
+| Agent | Rule File | Inhalt |
+|-------|-----------|--------|
+| Burst-1 (Lead Finder) | `.claude/rules/sales.md` | Email, Discount, Lead-DB |
+| Burst-2 (Cold Emailer) | `.claude/rules/sales.md` | Email Deliverability, Parallel-Safe |
+| Burst-3 (Social DM) | `.claude/rules/sales.md` | LinkedIn Limits |
+| Burst-4 (Demo Generator) | `.claude/rules/demo.md` | Demo Gen API, Business-Namen |
+| Burst-5 (Hot Lead Chaser) | `.claude/rules/sales.md` | Discount Decision Tree |
+| Burst-9 (Doctor) | `.claude/rules/monitoring.md` | Health Checks |
+| Burst-10 (Briefer) | `.claude/rules/monitoring.md` | Agent Status |
+| Burst-11 (Bottleneck) | `.claude/rules/monitoring.md` | Metriken |
+| Dev Sessions | `.claude/rules/dev.md` | API Reference, DB Schema |
+
+### Wie Auto-Load funktioniert
+
+```
+BEI SESSION-START:
+
+1. CLAUDE.md laden (Core, ~200 Zeilen)
+2. Basierend auf Agent-Typ: Rule File laden
+   - Burst-1,2,3,5 -> sales.md
+   - Burst-4 -> demo.md
+   - Burst-9,10,11 -> monitoring.md
+3. Erst DANN mit Arbeit starten
+```
+
+### References
+
+| Was | Wo |
+|-----|-----|
+| Core Rules | `CLAUDE.md` |
+| Sales Rules | `.claude/rules/sales.md` |
+| Demo Rules | `.claude/rules/demo.md` |
+| Dev Rules | `.claude/rules/dev.md` |
+| Monitoring | `.claude/rules/monitoring.md` |
+| Historische Learnings | `content/claude-progress/archive/` |
 
 ---
 
