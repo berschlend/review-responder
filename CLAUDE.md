@@ -149,6 +149,7 @@ Falls Auto-Deploy nicht triggert, kann Claude via Chrome MCP manuell deployen:
 ### Neue Features (18.01)
 - react-select Searchable Dropdown fuer Business Types
 - 3 neue Industry Examples (Real Estate, Home Services, Pet Services)
+- **Custom Instructions im Onboarding** (Step 2: Tone/Always/Never mit Industry Presets)
 
 ### USER TODO (Sticky Tasks)
 > Automatisch per Stop-Hook nach jeder Response angezeigt.
