@@ -344,7 +344,7 @@ const Footer = () => (
           </ul>
         </div>
         <div>
-          <div className="footer-title">Solutions</div>
+          <div className="footer-title">Platforms</div>
           <ul className="footer-links">
             <li>
               <Link to="/google-review-response-generator">Google Reviews</Link>
@@ -356,13 +356,39 @@ const Footer = () => (
               <Link to="/tripadvisor-review-responses">TripAdvisor</Link>
             </li>
             <li>
-              <Link to="/booking-review-generator">Booking.com</Link>
-            </li>
-            <li>
               <Link to="/trustpilot-review-responses">Trustpilot</Link>
             </li>
             <li>
               <Link to="/amazon-review-responses">Amazon</Link>
+            </li>
+            <li>
+              <Link to="/g2-review-responses">G2</Link>
+            </li>
+            <li>
+              <Link to="/capterra-review-responses">Capterra</Link>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <div className="footer-title">More Platforms</div>
+          <ul className="footer-links">
+            <li>
+              <Link to="/glassdoor-review-responses">Glassdoor</Link>
+            </li>
+            <li>
+              <Link to="/airbnb-host-review-responses">Airbnb</Link>
+            </li>
+            <li>
+              <Link to="/booking-review-generator">Booking.com</Link>
+            </li>
+            <li>
+              <Link to="/healthgrades-review-responses">Healthgrades</Link>
+            </li>
+            <li>
+              <Link to="/zocdoc-review-responses">Zocdoc</Link>
+            </li>
+            <li>
+              <Link to="/bbb-review-responses">BBB</Link>
             </li>
             <li>
               <Link to="/negative-review-responses">Negative Reviews</Link>
@@ -385,16 +411,65 @@ const Footer = () => (
               <Link to="/medical-practice-reviews">Medical</Link>
             </li>
             <li>
+              <Link to="/salon-spa-review-responses">Salons & Spas</Link>
+            </li>
+            <li>
+              <Link to="/gym-fitness-review-responses">Gyms & Fitness</Link>
+            </li>
+            <li>
+              <Link to="/auto-shop-reviews">Auto Shops</Link>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <div className="footer-title">Home Services</div>
+          <ul className="footer-links">
+            <li>
+              <Link to="/plumber-review-responses">Plumbers</Link>
+            </li>
+            <li>
+              <Link to="/electrician-review-responses">Electricians</Link>
+            </li>
+            <li>
+              <Link to="/hvac-review-responses">HVAC</Link>
+            </li>
+            <li>
+              <Link to="/roofing-review-responses">Roofing</Link>
+            </li>
+            <li>
+              <Link to="/landscaping-review-responses">Landscaping</Link>
+            </li>
+            <li>
+              <Link to="/cleaning-service-review-responses">Cleaning</Link>
+            </li>
+            <li>
+              <Link to="/angie-list-contractor-reviews">Contractors</Link>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <div className="footer-title">Professional</div>
+          <ul className="footer-links">
+            <li>
+              <Link to="/law-firm-review-responses">Law Firms</Link>
+            </li>
+            <li>
               <Link to="/real-estate-agent-reviews">Real Estate</Link>
             </li>
             <li>
-              <Link to="/ecommerce-review-responses">E-Commerce</Link>
+              <Link to="/accountant-review-responses">Accountants</Link>
             </li>
             <li>
-              <Link to="/plumber-review-responses">Home Services</Link>
+              <Link to="/insurance-agent-review-responses">Insurance</Link>
             </li>
             <li>
-              <Link to="/local-business-reviews">Local Business</Link>
+              <Link to="/veterinarian-review-responses">Veterinarians</Link>
+            </li>
+            <li>
+              <Link to="/therapy-counselor-reviews">Therapists</Link>
+            </li>
+            <li>
+              <Link to="/senior-care-review-responses">Senior Care</Link>
             </li>
           </ul>
         </div>
@@ -402,25 +477,25 @@ const Footer = () => (
           <div className="footer-title">More Industries</div>
           <ul className="footer-links">
             <li>
-              <Link to="/salon-spa-review-responses">Salons & Spas</Link>
-            </li>
-            <li>
-              <Link to="/gym-fitness-review-responses">Gyms & Fitness</Link>
-            </li>
-            <li>
-              <Link to="/law-firm-review-responses">Law Firms</Link>
-            </li>
-            <li>
-              <Link to="/veterinarian-review-responses">Veterinarians</Link>
-            </li>
-            <li>
-              <Link to="/auto-shop-reviews">Auto Shops</Link>
-            </li>
-            <li>
-              <Link to="/angie-list-contractor-reviews">Contractors</Link>
-            </li>
-            <li>
               <Link to="/coffee-shop-review-responses">Coffee Shops</Link>
+            </li>
+            <li>
+              <Link to="/ecommerce-review-responses">E-Commerce</Link>
+            </li>
+            <li>
+              <Link to="/photographer-review-responses">Photographers</Link>
+            </li>
+            <li>
+              <Link to="/wedding-vendor-review-responses">Wedding</Link>
+            </li>
+            <li>
+              <Link to="/pet-service-review-responses">Pet Services</Link>
+            </li>
+            <li>
+              <Link to="/daycare-review-responses">Daycare</Link>
+            </li>
+            <li>
+              <Link to="/local-business-reviews">Local Business</Link>
             </li>
           </ul>
         </div>

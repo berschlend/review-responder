@@ -829,32 +829,35 @@ VERBOTEN (Privat):
 - ReviewResponder: Absender ist aus outreach_leads DB
 - PRIVAT: Alles andere → NICHT ANFASSEN!
 
-### Gmail Emails senden (NEU!)
+### Gmail Emails senden (OPTIMIERT!)
+
+> **Performance:** Siehe `.claude/rules/chrome-performance.md` für Details
 
 ```bash
 # 1. Compose Button finden und klicken
 mcp__claude-in-chrome__find({ query: "compose button", tabId: [TAB_ID] })
 mcp__claude-in-chrome__computer({ action: "left_click", ref: "[REF_ID]", tabId: [TAB_ID] })
 
-# 2. Warten bis Compose-Fenster offen
-mcp__claude-in-chrome__computer({ action: "wait", duration: 2, tabId: [TAB_ID] })
-
-# 3. To-Feld ausfüllen
+# 2. Smart Wait: Prüfen ob Compose-Fenster offen (KEIN fixed wait!)
 mcp__claude-in-chrome__find({ query: "to field", tabId: [TAB_ID] })
-mcp__claude-in-chrome__form_input({ ref: "[REF_ID]", value: "recipient@email.com", tabId: [TAB_ID] })
+# → Gefunden? Weiter! Nicht gefunden? → wait(1) + retry
 
-# 4. Subject ausfüllen
+# 3-5. Formular ausfüllen (KEIN wait zwischen Feldern!)
+mcp__claude-in-chrome__form_input({ ref: "[TO_REF]", value: "recipient@email.com", tabId: [TAB_ID] })
 mcp__claude-in-chrome__find({ query: "subject field", tabId: [TAB_ID] })
-mcp__claude-in-chrome__form_input({ ref: "[REF_ID]", value: "Subject here", tabId: [TAB_ID] })
-
-# 5. Body schreiben
+mcp__claude-in-chrome__form_input({ ref: "[SUBJ_REF]", value: "Subject here", tabId: [TAB_ID] })
 mcp__claude-in-chrome__find({ query: "message body", tabId: [TAB_ID] })
-mcp__claude-in-chrome__form_input({ ref: "[REF_ID]", value: "Email content here", tabId: [TAB_ID] })
+mcp__claude-in-chrome__form_input({ ref: "[BODY_REF]", value: "Email content here", tabId: [TAB_ID] })
 
 # 6. Senden (WICHTIG: Braucht Approval für erste Emails!)
 mcp__claude-in-chrome__find({ query: "send button", tabId: [TAB_ID] })
 mcp__claude-in-chrome__computer({ action: "left_click", ref: "[REF_ID]", tabId: [TAB_ID] })
 ```
+
+**PERFORMANCE REGELN:**
+- `find()` statt `wait()` - prüft ob Element bereit
+- Kein `wait()` zwischen `form_input()` Calls
+- `read_page()` statt `screenshot()` für Text-Checks
 
 ### Wann Gmail vs API nutzen?
 

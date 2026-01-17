@@ -181,4 +181,34 @@ Keiner erreichbar:
 
 ---
 
+## ✅ HEUTIGE OUTREACH-AKTIVITÄTEN (18.01.2026)
+
+### LinkedIn Connections gesendet
+| # | Name | Business | Status |
+|---|------|----------|--------|
+| 1 | Husam Alsleman | Mozaik Restaurant Kassel | ✅ Ausstehend |
+| 2 | Kumar's Indian Restaurant | Rheinbach | ✅ Ausstehend |
+| 3 | Tristan Brandt | Schlosspark Restaurant Mannheim | ⏳ Versucht |
+
+*Chrome MCP war instabil, daher nur 2-3 Connections. Morgen weiter.*
+
+### Cold Emails gesendet
+- **114 neue Cold Emails** via API
+- Batch an neue Leads aus der Lead-DB
+
+### Hot Lead Follow-Up
+- **Tí Cafe Denver** → ✅ Follow-Up Email gesendet (ti.cafeofficial@gmail.com)
+  - Subject: "Quick follow-up - saw you checked out ReviewResponder"
+  - HOT LEAD weil: Gestern 17:22 UTC geklickt, persönliche Gmail
+
+### Nächste Schritte für Berend (Morgen)
+1. 🔥 **ANRUFEN:** Tí Cafe Denver +1-720-440-2864
+2. 🔥 **ANRUFEN:** Trattoria Sempre +41-44-262-5462
+3. 🔥 **ANRUFEN:** Sphere Tim Raue 030-247575875
+4. 📧 **Emails senden** an registrierte User (Drafts oben)
+5. 🎬 **Demo-Video aufnehmen** (mit Facecam)
+
+---
+
 *Erstellt: 18.01.2026 von Claude*
+*Updated: 18.01.2026 - Heutige Aktivitäten hinzugefügt*

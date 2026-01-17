@@ -90,6 +90,7 @@ cat content/claude-progress/real-user-metrics.json
 | Burst-4 (Demo) | `.claude/rules/demo.md` | Demo Gen, Business-Namen |
 | Burst-9,10,11 (Monitoring) | `.claude/rules/monitoring.md` | Health Checks, Metriken |
 | Dev Sessions | `.claude/rules/dev.md` | API Reference, DB Schema |
+| **Chrome MCP Agents** | `.claude/rules/chrome-performance.md` | **Performance Patterns** |
 
 ---
 

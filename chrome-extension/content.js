@@ -4879,13 +4879,8 @@ function createFloatingButton() {
     // Update stored selection for consistency
     lastSelectedText = selection;
 
-    // Pre-flight login check - ALWAYS refresh from storage
-    await checkLoginStatus();
-    if (!isLoggedIn) {
-      showToast('🔐 Please login first (click extension icon)', 'error');
-      hideFloatingButton();
-      return;
-    }
+    // Note: Login check removed - anonymous users can now use the panel
+    // generateResponse() handles anonymous users via /api/public/try endpoint
 
     // Hide button immediately to prevent double-clicks
     hideFloatingButton();

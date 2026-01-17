@@ -30,3 +30,10 @@ Thumbs.db
 *.sqlite
 nul
 tmpclaude-*
+
+# Video output files (generated)
+content/video-recordings/*.mp4
+content/video-recordings/*.mkv
+content/video-recordings/*.webm
+content/video-recordings/*.jpg
+content/video-recordings/*.png
