@@ -697,9 +697,32 @@ mcp__claude-in-chrome__read_page({
 | Inbox lesen | ✅ JA | Bounces, Replies checken |
 | Email öffnen | ✅ JA | Details lesen |
 | Suchen | ✅ JA | "from:resend.com" etc. |
-| **Emails senden** | ✅ JA | Für manuelle Replies, Follow-ups |
+| **Emails senden** | ✅ JA | NUR ReviewResponder Business! |
 | **Emails löschen** | ❌ NEIN | Irreversibel |
 | Labels ändern | ⚠️ NUR mit Approval | |
+
+### ⚠️ WICHTIG: Nur ReviewResponder Emails!
+
+```
+ERLAUBT (ReviewResponder Business):
+✅ Antwort auf Lead-Anfrage ("Wie funktioniert das?")
+✅ Follow-up zu Demo ("Haben Sie die Demo gesehen?")
+✅ Support für ReviewResponder User
+✅ Outreach-Replies ("Ja, interessiert!")
+✅ Bounce-Benachrichtigungen checken
+
+VERBOTEN (Privat):
+❌ Persönliche Emails von Berend
+❌ Emails an Familie/Freunde
+❌ Nicht-Business Kommunikation
+❌ Alles was nicht ReviewResponder betrifft
+```
+
+**Wie erkennen?**
+- ReviewResponder: Subject enthält "review", "demo", "tryreviewresponder", "AI response"
+- ReviewResponder: Von/An Resend, Brevo, MailerSend Domains
+- ReviewResponder: Absender ist aus outreach_leads DB
+- PRIVAT: Alles andere → NICHT ANFASSEN!
 
 ### Gmail Emails senden (NEU!)
 
