@@ -240,6 +240,11 @@ Claude entfernt Task aus `.claude/sticky-tasks.json`
 | **Puppeteer MCP** | ACTIVE | ✅ Headless Screenshots |
 | **Fetch MCP** | ACTIVE | ✅ HTTP ohne Browser |
 | **Gmail MCP** | ACTIVE | ✅ Gmail API direkt |
+| **Filesystem MCP** | ACTIVE | ✅ File Ops ohne Cat/Read |
+| **Postgres MCP** | READY | ✅ DB ohne Chrome Dashboard |
+| **Notion MCP** | READY | ✅ Notion ohne Browser |
+| **YouTube MCP** | READY | ✅ YouTube API |
+| **Brave Search** | READY | ✅ Web Search ohne Browser |
 
 ### Chrome-Entlastung: Wann welches MCP?
 
@@ -249,7 +254,15 @@ Claude entfernt Task aus `.claude/sticky-tasks.json`
 | Gmail Bounces | ❌ Login, langsam | `mcp__gmail__*` |
 | Headless Automation | ❌ Sichtbar | `mcp__playwright__*` |
 | Bulk Screenshots | ❌ Langsam | `mcp__puppeteer__*` |
+| File lesen/schreiben | ❌ Unnötig | `mcp__filesystem__*` |
+| DB Queries | ❌ Dashboard | `mcp__postgres__*` |
+| Web Search | ❌ Google Tab | `mcp__brave-search__*` |
 | User sieht was passiert | ✅ Chrome MCP | - |
+
+### MCP Preloader (schnellerer Agent-Start)
+```powershell
+powershell -File "$env:USERPROFILE\mcp-preload.ps1"
+```
 
 ### Browser Screenshots (Autonom)
 `computer(action: "screenshot")` braucht KEINE User-Verifikation.
@@ -386,7 +399,7 @@ ReviewResponder/
 1. Demo-Email Bug (`send_emails=false` Default) → 97% Demos nie versendet
 2. Bot-Filter fehlte → Security Scanner als "Clicks" gezaehlt
 3. Lead-Qualifizierung fehlte → info@/contact@ erreichen nie Entscheider
-4. Email Provider Instabilitaet → Jetzt SES als Primary (50k/Tag)
+4. Email Provider Instabilitaet → **🔴 SES SANDBOX PENDING** (Anfrage 17.01)
 5. Auto-Account Bug → Bot-Clicks erstellten Fake-User
 **Lesson:** Startschwierigkeiten sind normal. Die Metriken waren verfaelscht durch Bugs, nicht weil Cold Email nicht funktioniert. Mit Fixes weitermachen und echte Daten sammeln.
 

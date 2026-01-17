@@ -5845,18 +5845,26 @@ async function generateQueueResponse(panel) {
     const languageName = languageNames[language.code] || 'the same language as the review';
     const context = `CRITICAL: You MUST respond in ${languageName}.`;
 
+    // Check if user is logged in - support anonymous users
+    const stored = await safeStorageGet(['token', 'user']);
+    const isAnonymous = !stored.token;
+
     // Get business name: prefer user's setting, fallback to auto-detected
-    let businessName = cachedUser?.businessName || '';
+    let businessName = stored.user?.businessName || '';
     if (!businessName) {
       businessName = detectBusinessContext() || await getCachedBusinessName();
     }
 
-    const response = await fetch(`${API_URL}/generate`, {
+    // Use public endpoint for anonymous users, authenticated endpoint for logged-in users
+    const endpoint = isAnonymous ? '/public/try' : '/generate';
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(stored.token && { 'Authorization': `Bearer ${stored.token}` })
+    };
+
+    const response = await fetch(`${API_URL}${endpoint}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${cachedToken}`
-      },
+      headers,
       body: JSON.stringify({
         reviewText: currentReview.text,
         tone: sentimentDisplay.tone,
@@ -5883,6 +5891,13 @@ async function generateQueueResponse(panel) {
     currentReview.processed = true;
 
     showToast('✨ Generated! Copy or move to next', 'success');
+
+    // Show signup prompt for anonymous users
+    if (isAnonymous) {
+      setTimeout(() => {
+        showToast('✨ Like it? Sign up for 20 free responses/month!', 'info', 5000);
+      }, 2000);
+    }
 
   } catch (error) {
     showToast(`❌ ${error.message}`, 'error');
