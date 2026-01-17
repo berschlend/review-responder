@@ -8,7 +8,7 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend", "feedback-read", "feedback-alert", "budget-check", "budget-use", "approval-check", "approval-expire", "check-real-users", "data-analyze", "get-login", "set-tier", "chrome-gmail", "chrome-admin", "chrome-monitor-setup")]
+    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend", "feedback-read", "feedback-alert", "budget-check", "budget-use", "approval-check", "approval-expire", "check-real-users", "data-analyze", "get-login", "set-tier", "chrome-gmail", "chrome-admin", "chrome-monitor-setup", "goal-check")]
     [string]$Action,
 
     [int]$Agent = 0,
@@ -1081,6 +1081,93 @@ if ($Action -eq "data-analyze") {
 
     Write-Host ""
     exit 0
+}
+
+# === GOAL CHECK (V5.0 - PFLICHT VOR JEDER AKTION!) ===
+# Usage: powershell -File scripts/agent-helpers.ps1 -Action goal-check -Data "action description"
+# Output: GO or STOP with reason
+if ($Action -eq "goal-check") {
+    $metricsFile = Join-Path $ProgressDir "real-user-metrics.json"
+
+    Write-Host ""
+    Write-Host "==========================================" -ForegroundColor Cyan
+    Write-Host "           GOAL CHECK V5.0               " -ForegroundColor Cyan
+    Write-Host "==========================================" -ForegroundColor Cyan
+    Write-Host ""
+
+    $paying = 0
+    $organic = 0
+    if (Test-Path $metricsFile) {
+        $m = Get-Content $metricsFile | ConvertFrom-Json
+        $paying = $m.realUsers.paying
+        $organic = $m.realUsers.organic
+    }
+
+    $payColor = if ($paying -eq 0) { "Red" } else { "Green" }
+    $orgColor = if ($organic -eq 0) { "Red" } else { "Green" }
+
+    Write-Host "  GOAL:    1 paying customer" -ForegroundColor Yellow
+    Write-Host "  CURRENT: $paying paying customers" -ForegroundColor $payColor
+    Write-Host "  ORGANIC: $organic real users" -ForegroundColor $orgColor
+    Write-Host ""
+
+    $plannedAction = $Data
+    if (-not $plannedAction) {
+        Write-Host "  [!] No action specified - use -Data" -ForegroundColor Yellow
+        Write-Host "  STOP: Define what you want to do first" -ForegroundColor Red
+        exit 1
+    }
+
+    Write-Host "  PLANNED ACTION: $plannedAction" -ForegroundColor White
+    Write-Host ""
+
+    $stopPatterns = @(
+        @{ p = "cold.?email"; r = "Cold Email has 0% real conversion (1902 emails, 0 real reactions)" },
+        @{ p = "scrape.*lead"; r = "More lead scraping is useless when outreach doesnt work" },
+        @{ p = "a/?b.?test"; r = "A/B tests need traffic we dont have" },
+        @{ p = "feature.?build"; r = "Nobody uses features - find customers first" },
+        @{ p = "optimi"; r = "Optimizing without baseline is pointless" },
+        @{ p = "demo.*generat"; r = "Demo generation is useless without real traffic" }
+    )
+
+    $goPatterns = @(
+        @{ p = "anruf|call|phone"; r = "Direct customer contact validates the problem" },
+        @{ p = "manually|manuell"; r = "Manual validation is the fastest way" },
+        @{ p = "talk.*owner|owner.*talk"; r = "Talking to real customers" },
+        @{ p = "fix.*bug|bug.*fix"; r = "Fixes that solve user problems" },
+        @{ p = "support|help.*user"; r = "Supporting existing users" }
+    )
+
+    $act = $plannedAction.ToLower()
+    $dec = "UNCLEAR"
+    $rsn = ""
+
+    foreach ($sp in $stopPatterns) {
+        if ($act -match $sp.p) { $dec = "STOP"; $rsn = $sp.r; break }
+    }
+
+    if ($dec -ne "STOP") {
+        foreach ($gp in $goPatterns) {
+            if ($act -match $gp.p) { $dec = "GO"; $rsn = $gp.r; break }
+        }
+    }
+
+    if ($dec -eq "GO") {
+        Write-Host "  [OK] GO: $rsn" -ForegroundColor Green
+        Write-Host "  This action brings you closer to the goal." -ForegroundColor Green
+        exit 0
+    } elseif ($dec -eq "STOP") {
+        Write-Host "  [X] STOP: $rsn" -ForegroundColor Red
+        Write-Host "  This action does NOT bring a paying customer." -ForegroundColor Red
+        Write-Host "  Ask: What is the SHORTEST path to 1 customer?" -ForegroundColor Yellow
+        exit 1
+    } else {
+        Write-Host "  [?] UNCLEAR: Not sure if this leads to the goal" -ForegroundColor Yellow
+        Write-Host "  Question: Does this action bring a paying customer?" -ForegroundColor Yellow
+        Write-Host "  If NO -> Dont do it" -ForegroundColor Yellow
+        Write-Host "  If YES -> Do it" -ForegroundColor Yellow
+        exit 0
+    }
 }
 
 # === REAL USER METRICS CHECK ===

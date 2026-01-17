@@ -8,43 +8,82 @@ Starte Night-Burst Agents mit intelligenter Auswahl.
 
 ## AUTOMATISCHE AUSFÜHRUNG
 
-### Schritt 1: Preset bestimmen
+### Schritt 1: Agent-Auswahl (AI-basiert)
 
-**Option A: Explizites Preset (erstes Wort)**
+**Option A: Explizites Preset/Nummern (erstes Wort)**
 - `priority` → Agents 2,4,5
 - `monitoring` → Agents 9,11,14
 - `outreach` → Agents 1,2,4,5,14
 - `full` → Alle 15 Agents
+- `2,4,9` → Custom: genau diese Agents
 
-**Option B: Intelligentes Matching (wenn kein explizites Preset)**
+**Option B: AI-Analyse (freier Prompt)**
 
-Scanne den Prompt nach Keywords:
+Analysiere den Prompt und entscheide SELBST welche Agents am besten passen.
 
-| Keywords im Prompt | → Preset |
-|-------------------|----------|
-| `bug`, `debug`, `fehler`, `error`, `fix`, `health`, `test`, `funnel` | `monitoring` |
-| `demo`, `email`, `outreach`, `lead`, `cold`, `follow`, `scrape` | `outreach` |
-| `sale`, `conversion`, `revenue`, `zahlen`, `paying`, `kunde` | `priority` |
-| `alle`, `full`, `komplett`, `gesamt`, `nacht`, `night` | `full` |
-| (keine Keywords) | `full` (Default für night-mode) |
+**Agent-Übersicht für deine Entscheidung:**
+| # | Agent | Aufgabe |
+|---|-------|---------|
+| 1 | Lead Finder | Neue Leads scrapen |
+| 2 | Cold Emailer | Erste Kontakt-Emails |
+| 3 | Social DM | LinkedIn/Social Outreach |
+| 4 | Demo Generator | Personalisierte Demos erstellen |
+| 5 | Hot Lead Chaser | Warme Leads nachfassen |
+| 6 | User Activator | Registrierte User aktivieren |
+| 7 | Payment Converter | Free→Paid Conversion |
+| 8 | Upgrader | Upsells an zahlende Kunden |
+| 9 | Doctor | System Health & Bugs |
+| 10 | Morning Briefer | Täglicher Report |
+| 11 | Bottleneck Analyzer | Engpässe finden |
+| 12 | Creative Strategist | Neue Ideen & A/B Tests |
+| 13 | Churn Prevention | Abwanderung verhindern |
+| 14 | Lead Scorer | Lead-Qualität bewerten |
+| 15 | Approval Gate | Human-in-the-Loop |
 
-### Schritt 2: Beispiele
+**Deine Entscheidung:**
+1. Lies den Prompt
+2. Überlege: Was will der User erreichen?
+3. Welche Agents helfen dabei am besten?
+4. Wähle Preset ODER Custom-Nummern
+
+### Schritt 2: Beispiele (AI-Reasoning)
 
 ```
-""                              → full, kein Fokus
-"priority"                      → priority, kein Fokus
-"Bugs im Funnel finden"         → monitoring (wegen "Bugs", "Funnel")
-"Demo-Emails an alle Leads"     → outreach (wegen "Demo", "Leads")
-"Erster Sale heute Nacht!"      → priority (wegen "Sale")
-"Alle Agents Vollgas"           → full (wegen "Alle")
-"Health Check machen"           → monitoring (wegen "Health")
-"Cold Outreach starten"         → outreach (wegen "Cold", "Outreach")
+"Ich will heute Nacht einen zahlenden Kunden"
+→ Ziel: Conversion. Braucht: Demos (4), Follow-ups (5), evtl. Cold (2)
+→ Entscheidung: priority (2,4,5) oder custom 2,4,5,7
+
+"Checke ob alles läuft und fix Bugs"
+→ Ziel: Health Check. Braucht: Doctor (9), Bottleneck (11)
+→ Entscheidung: monitoring (9,11,14)
+
+"Finde neue Restaurants in München"
+→ Ziel: Lead Gen. Braucht: Lead Finder (1), Lead Scorer (14)
+→ Entscheidung: custom 1,14
+
+"Volle Power, alles was geht"
+→ Ziel: Maximum. Braucht: Alle
+→ Entscheidung: full
+
+"Aktiviere die User die sich registriert haben"
+→ Ziel: Activation. Braucht: User Activator (6), evtl. Demo (4)
+→ Entscheidung: custom 4,6
+
+""  (leer)
+→ Kein spezifisches Ziel
+→ Entscheidung: full (Default für night-mode)
 ```
 
 ### Schritt 3: Ausführen
 
+**Bei Preset:**
 ```bash
 powershell -ExecutionPolicy Bypass -File ".\scripts\start-agents.ps1" -Preset [PRESET] -NoSafetyCheck -Prompt "[PROMPT]"
+```
+
+**Bei Custom Agent-Nummern:**
+```bash
+powershell -ExecutionPolicy Bypass -File ".\scripts\start-agents.ps1" -Agents [NUMMERN] -NoSafetyCheck -Prompt "[PROMPT]"
 ```
 (Wenn Prompt leer, `-Prompt` weglassen)
 
@@ -54,14 +93,14 @@ powershell -ExecutionPolicy Bypass -File ".\scripts\start-agents.ps1" -Preset [P
 
 ---
 
-## Presets
+## Presets (Shortcuts)
 
-| Preset | Agents | Trigger-Keywords |
-|--------|--------|------------------|
-| `full` | 1-15 | alle, full, komplett, gesamt, nacht, night |
-| `priority` | 2,4,5 | sale, conversion, revenue, paying, kunde |
-| `monitoring` | 9,11,14 | bug, debug, fehler, error, fix, health, test, funnel |
-| `outreach` | 1,2,4,5,14 | demo, email, outreach, lead, cold, follow, scrape |
+| Preset | Agents | Typischer Use Case |
+|--------|--------|-------------------|
+| `full` | 1-15 | Alles, Nacht-Run, Maximum |
+| `priority` | 2,4,5 | Sales, Conversions, Revenue |
+| `monitoring` | 9,11,14 | Health Checks, Bugs, Analyse |
+| `outreach` | 1,2,4,5,14 | Lead Gen, Emails, Demos |
 
 ---
 
@@ -69,13 +108,15 @@ powershell -ExecutionPolicy Bypass -File ".\scripts\start-agents.ps1" -Preset [P
 
 ```
 /night-mode                                 → full (alle 15)
-/night-mode priority                        → priority (2,4,5)
-/night-mode Bugs finden                     → monitoring (9,11,14) ← AUTO!
-/night-mode Demo-Emails senden              → outreach (1,2,4,5,14) ← AUTO!
-/night-mode Erster Sale heute!              → priority (2,4,5) ← AUTO!
-/night-mode Funnel Health Check             → monitoring (9,11,14) ← AUTO!
-/night-mode Lead Scraping starten           → outreach (1,2,4,5,14) ← AUTO!
-/night-mode full nur Miami Leads            → full (15), explizit
+/night-mode priority                        → priority (2,4,5) - explizit
+/night-mode 2,4,9                           → Custom: nur Agents 2,4,9
+
+# AI-basierte Auswahl (frei formuliert):
+/night-mode Ich will einen zahlenden Kunden → AI wählt: 2,4,5,7
+/night-mode Finde Zahnarztpraxen in Berlin  → AI wählt: 1,14
+/night-mode Läuft alles? Check mal          → AI wählt: 9,11
+/night-mode Aktiviere registrierte User     → AI wählt: 4,6
+/night-mode Vollgas heute Nacht             → AI wählt: full
 ```
 
 ---
@@ -106,8 +147,9 @@ powershell -ExecutionPolicy Bypass -File ".\scripts\start-agents.ps1" -Preset [P
 - ✅ Bypass Permissions
 - ✅ Chrome MCP ON
 - ✅ Dev-Skills verfügbar
-- ✅ Intelligentes Preset-Matching
-- ✅ Explizites Preset überschreibt Auto-Match
+- ✅ **AI-basierte Agent-Auswahl** (frei formulieren!)
+- ✅ Explizite Presets als Shortcuts
+- ✅ Custom Agent-Nummern (z.B. `2,4,9`)
 
 ---
 

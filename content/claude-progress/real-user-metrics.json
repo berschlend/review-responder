@@ -8,6 +8,56 @@
     "paying": 0
   },
   "definition": "Real User = 1+ Generation ANYWHERE (responses, demo_generations, public_try_usage)",
+  "registeredUsers": {
+    "total": 6,
+    "likelyReal": 2,
+    "maybeReal": 2,
+    "uncertain": 2,
+    "analysis": [
+      {
+        "email": "i.schmidt@tv-turm.de",
+        "business": "Sphere Tim Raue (2 Michelin Stars)",
+        "signupTime": "22:33 UTC",
+        "verdict": "LIKELY_REAL",
+        "reason": "Personal name format, high-end restaurant, evening signup"
+      },
+      {
+        "email": "zuerich@trattoria-sempre.ch",
+        "business": "Trattoria Sempre Zürich",
+        "signupTime": "00:15 UTC",
+        "verdict": "LIKELY_REAL",
+        "reason": "Used Magic Link = active engagement (clicked twice)"
+      },
+      {
+        "email": "H0796@accor.com",
+        "business": "ibis Wien Mariahilf",
+        "signupTime": "08:14 UTC",
+        "verdict": "MAYBE_REAL",
+        "reason": "Business hours signup, corporate email but active decision"
+      },
+      {
+        "email": "h9057@accor.com",
+        "business": "Novotel London Canary Wharf",
+        "signupTime": "02:00 UTC",
+        "verdict": "MAYBE_REAL",
+        "reason": "Late night but could be UK timezone, Accor chain"
+      },
+      {
+        "email": "reservation.web@madamebrasserie.com",
+        "business": "Madame Brasserie (Eiffel Tower)",
+        "signupTime": "22:29 UTC",
+        "verdict": "UNCERTAIN",
+        "reason": "Generic reservation@ email but famous restaurant"
+      },
+      {
+        "email": "awayspa.edinburgh@whotels.com",
+        "business": "AWAY SPA W Hotels",
+        "signupTime": "22:29 UTC",
+        "verdict": "UNCERTAIN",
+        "reason": "Same minute as above (burst), corporate W Hotels"
+      }
+    ]
+  },
   "botPatterns": [
     { "pattern": "midnight-burst", "count": 22 },
     { "pattern": "test-email", "count": 2 }
@@ -18,7 +68,10 @@
     "botClicks": 24,
     "inflation": 171
   },
-  "lastUpdated": "2026-01-18T12:00:00Z",
-  "analyzedAt": "2026-01-18T12:00:00Z",
-  "notes": "Updated definition: Any generation anywhere counts (not just logged-in)"
+  "lastUpdated": "2026-01-17T20:45:00Z",
+  "analyzedAt": "2026-01-17T20:45:00Z",
+  "actionItems": [
+    "Personalized follow-up to i.schmidt@tv-turm.de (Michelin restaurant)",
+    "Personalized follow-up to zuerich@trattoria-sempre.ch (engaged via magic link)"
+  ]
 }

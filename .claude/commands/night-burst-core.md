@@ -632,44 +632,46 @@ powershell -File scripts/agent-helpers.ps1 -Action wake-backend
 
 ---
 
-## 🎯 SESSION-START CHECKLIST (V4.4)
+## 🎯 SESSION-START CHECKLIST (V5.0)
 
 **JEDER AGENT muss bei Session-Start diese Commands ausführen:**
 
 ```bash
 # 0. BACKEND WECKEN - Render schläft nach Inaktivität! (30-60s)
 powershell -File scripts/agent-helpers.ps1 -Action wake-backend
-# ↑ KRITISCH! Ohne diesen Step schlagen alle API-Calls fehl!
-# Alternative (falls PowerShell nicht funktioniert):
-# curl -s --retry 5 --retry-delay 10 --retry-connrefused --connect-timeout 60 "https://review-responder.onrender.com/api/admin/stats"
 
-# 1. TONIGHT'S PROMPT CHECKEN (NEU V4.4!) - Hat Berend einen Fokus gesetzt?
+# 1. GOAL.md LESEN (NEU V5.0!) - Das EINZIGE was zählt!
+cat content/claude-progress/GOAL.md
+# → Ziel: 1 zahlender Kunde
+# → Aktuell: 0 zahlende Kunden, 0 echte User
+# → KÜRZESTER WEG: Manuell Restaurant-Owner anrufen
+
+# 2. TONIGHT'S PROMPT CHECKEN - Hat Berend einen Fokus gesetzt?
 cat content/claude-progress/tonight-prompt.md 2>$null
-# → Wenn File existiert: DIESER FOKUS HAT PRIORITÄT!
-# → Befolge die Anweisungen aus tonight-prompt.md ZUERST
-# → Wenn File nicht existiert: Normaler Loop
 
-# 2. HEARTBEAT - Melde dich beim System an
+# 3. HEARTBEAT - Melde dich beim System an
 powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent [X]
 
-# 3. REAL USER METRICS CHECKEN - Sind die Metriken aktuell?
+# 4. REAL USER METRICS CHECKEN
 powershell -File scripts/agent-helpers.ps1 -Action check-real-users
-# → Wenn STALE (>24h): `data-analyze` ausfuehren zum Update
-# → WICHTIG: DB zeigt 61 User - das ist FALSCH! Echte Zahl ist 0 organic.
-# → Bei Entscheidungen NUR die real-user-metrics.json Zahlen nutzen!
+```
 
-# 4. FOCUS CHECKEN - Was ist gerade Priorität?
-powershell -File scripts/agent-helpers.ps1 -Action focus-read
-# → Wenn agent_priorities.burst-X.priority = 3 und ich nicht high-priority bin: langsamer arbeiten
-# → Wenn paused_agents mich enthält: STOPPEN
+### VOR JEDER AKTION: GOAL-CHECK (V5.0 - PFLICHT!)
 
-# 5. HANDOFFS CHECKEN - Habe ich Arbeit von anderen Agents?
-powershell -File scripts/agent-helpers.ps1 -Action handoff-check -Agent [X]
-# → Wenn pending handoffs: Diese ZUERST bearbeiten!
+```bash
+# BEVOR du IRGENDETWAS tust, frage:
+powershell -File scripts/agent-helpers.ps1 -Action goal-check -Data "beschreibung deiner geplanten aktion"
 
-# 6. MEMORY LADEN - Was weiß ich von letzter Session?
-powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent [X]
-# → Learnings anwenden auf diese Session
+# Beispiele:
+powershell -File scripts/agent-helpers.ps1 -Action goal-check -Data "Cold Email an 50 Leads senden"
+# → [X] STOP: Cold Email has 0% real conversion
+
+powershell -File scripts/agent-helpers.ps1 -Action goal-check -Data "Manuell Restaurant Owner anrufen"
+# → [OK] GO: Direct customer contact validates the problem
+
+# WENN STOP → Mach es NICHT!
+# WENN GO → Mach es!
+# WENN UNCLEAR → Frage dich: Bringt das einen zahlenden Kunden?
 ```
 
 ### Tonight's Prompt (V4.4)

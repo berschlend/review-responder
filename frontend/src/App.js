@@ -85,6 +85,7 @@ import {
   User,
   Bell,
   ChevronDown,
+  Edit2,
   Edit3,
   LayoutDashboard,
   Play,

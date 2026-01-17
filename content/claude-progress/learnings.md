@@ -700,3 +700,20 @@ User klicken Magic Link → werden registriert → nutzen Produkt NIE → erreic
 ### [2026-01-17 01:06] Burst-5
 - FU#2 ohne Discount gesendet wenn keine Demo-View Daten - Claudius Guard konform
 
+### [2026-01-18 02:00] CRITICAL - 100% Bot Clicks Discovery
+**Beobachtung:** ALLE 85 Clicks sind Bots - ZERO echte menschliche Interaktionen
+**Daten:**
+- Server-Side Bot-Filter (`?exclude_bots=true`) entfernt 100% der Clicks
+- 6 "registrierte User" analysiert: 4 Bot-Clicks (00:00-00:20 UTC), 2 Corporate Emails
+- 1.902 Emails gesendet, 0 echte Reaktionen nachweisbar
+**Root Cause:**
+1. Email Security Scanner (Microsoft 365, Proofpoint, Mimecast) klicken automatisch ALLE Links
+2. Diese Clicks triggern Auto-Account-Erstellung
+3. Corporate Emails (H####@accor.com) erreichen nie Entscheider
+**Hypothese:** Entweder (1) Emails landen im Spam, (2) Cold Email funktioniert nicht für B2B SaaS, oder (3) Produkt löst kein echtes Problem
+**Empfehlung:**
+1. **STOPPE alle Night-Burst Sales Agents** (Burst-2,4,5)
+2. **Validiere Product-Market Fit:** 5 Restaurant-Owner ANRUFEN (nicht emailen)
+3. **Kanal wechseln testen:** Google Ads für aktive Suchende
+**Lesson:** Dashboard-Metriken ohne Bot-Filter sind wertlos. IMMER `?exclude_bots=true` oder `real-user-metrics.json` verwenden.
+
