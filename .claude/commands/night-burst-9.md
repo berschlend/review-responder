@@ -79,15 +79,101 @@
 ```
 WHILE TRUE:
   1. Prüfe ob Berend "Stopp" gesagt hat → IF YES: Ende
-  2. Sammle Metriken von allen Quellen
-  3. Analysiere Trends (heute vs gestern vs 7-Tage)
-  4. Schreibe conversion-report.md
-  5. Update learnings.md wenn neue Insights
-  6. Check Agent-Status (stuck? stale?)
-  7. Update burst-9-status.json
-  8. Warte 1 Stunde
-  9. GOTO 1
+  2. ⚠️ FUNNEL HEALTH CHECK (ZUERST!)
+  3. Sammle Metriken von allen Quellen
+  4. Analysiere Trends (heute vs gestern vs 7-Tage)
+  5. Schreibe conversion-report.md
+  6. Update learnings.md wenn neue Insights
+  7. Check Agent-Status (stuck? stale?)
+  8. Update burst-9-status.json
+  9. Warte 1 Stunde
+  10. GOTO 1
 ```
+
+---
+
+## ⚠️ PHASE 0: FUNNEL HEALTH CHECK (VOR ALLEM ANDEREN!)
+
+> **KRITISCH:** Kein Outreach wenn Funnel kaputt!
+
+### Schritt 1: Health Log lesen
+
+```bash
+cat content/claude-progress/funnel-health-log.json
+```
+
+### Schritt 2: Check Freshness
+
+```javascript
+// Pseudo-Code für die Entscheidung:
+const healthLog = JSON.parse(file);
+const lastCheck = new Date(healthLog.last_check);
+const hoursAgo = (Date.now() - lastCheck) / (1000 * 60 * 60);
+
+if (hoursAgo > 6 || healthLog.overall_status === 'UNKNOWN') {
+  // Funnel-Verify muss laufen!
+  // Da DU keine Chrome MCP hast, schreibe Empfehlung:
+  console.log("⚠️ Funnel-Check veraltet! Empfehlung: /funnel-verify demo");
+}
+```
+
+### Schritt 3: Bei FAIL → STOPPE OUTREACH
+
+| Health Status | Aktion |
+|---------------|--------|
+| `PASS` | ✅ Weiter mit normalem Loop |
+| `UNKNOWN` | ⚠️ In for-berend.md: "Funnel-Verify nötig" |
+| `FAIL` (Demo) | 🔴 SOFORT in for-berend.md + Agent-Alert |
+| `FAIL` (Activation) | 🔴 SOFORT in for-berend.md + Agent-Alert |
+| `FAIL` (Conversion) | 🟡 In for-berend.md, Outreach kann weiterlaufen |
+
+### Schritt 4: Bei kritischem FAIL
+
+```markdown
+## 🔴 CRITICAL: FUNNEL DOWN
+
+### Problem
+Der [Demo/Activation/Conversion] Flow ist FAIL!
+
+**Last Error:** [aus funnel-health-log.json]
+**Steps Passed:** [X]/[Y]
+
+### Auswirkung
+- Alle gesendeten Emails sind NUTZLOS
+- Leads können nicht konvertieren
+- STOPPE OUTREACH BIS FIXED!
+
+### Empfehlung
+1. [ ] Berend: `claude --chrome` starten
+2. [ ] Berend: `/funnel-verify [flow]` ausführen
+3. [ ] Bug fixen
+4. [ ] Erst dann Outreach fortsetzen
+
+### Betroffene Agents (ALERT SENDEN!)
+- Burst-1, 2, 3, 5: PAUSIEREN
+- Burst-4: PAUSIEREN
+```
+
+### Agent-Alert senden:
+
+```bash
+# Wenn Funnel FAIL → Alert an alle Sales-Agents
+powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\claude-notify.ps1" \
+  -Type critical -Session "ALL-SALES" -Message "FUNNEL DOWN - STOP OUTREACH"
+```
+
+---
+
+### 🔗 Funnel-Verify Trigger Regeln
+
+| Bedingung | Aktion |
+|-----------|--------|
+| `last_check` > 6h | Empfehlung in conversion-report.md |
+| `last_check` > 12h | ⚠️ Warning in for-berend.md |
+| `last_check` > 24h | 🔴 CRITICAL - Kein Outreach! |
+| `overall_status` = FAIL | 🔴 STOPPE OUTREACH SOFORT |
+
+---
 
 ---
 

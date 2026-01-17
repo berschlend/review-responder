@@ -1,8 +1,72 @@
 {
-  "history": [],
+  "last_check": "2026-01-17T23:30:00.000Z",
+  "overall_status": "PARTIAL",
+  "flows": {
+    "demo": {
+      "status": "UNKNOWN",
+      "last_check": null,
+      "steps_passed": 0,
+      "total_steps": 6,
+      "last_error": null,
+      "api_verified": true
+    },
+    "activation": {
+      "status": "UNKNOWN",
+      "last_check": null,
+      "steps_passed": 0,
+      "total_steps": 5,
+      "last_error": null
+    },
+    "conversion": {
+      "status": "UNKNOWN",
+      "last_check": null,
+      "steps_passed": 0,
+      "total_steps": 6,
+      "last_error": null
+    },
+    "generator": {
+      "status": "UNKNOWN",
+      "last_check": null,
+      "steps_passed": 0,
+      "total_steps": 5,
+      "last_error": null
+    },
+    "extension": {
+      "status": "UNKNOWN",
+      "last_check": null,
+      "steps_passed": 0,
+      "total_steps": 4,
+      "last_error": null
+    },
+    "alerts": {
+      "status": "UNKNOWN",
+      "last_check": null,
+      "steps_passed": 0,
+      "total_steps": 4,
+      "last_error": null
+    }
+  },
+  "api_health": {
+    "backend_reachable": true,
+    "demo_endpoint": true,
+    "admin_stats": true,
+    "last_api_check": "2026-01-17T23:30:00.000Z"
+  },
+  "test_demo": {
+    "token": "1270ea4f4769a5f7514d23fb4388c92d",
+    "business": "BLOCK HOUSE Duesseldorf",
+    "url": "https://tryreviewresponder.com/demo/1270ea4f4769a5f7514d23fb4388c92d"
+  },
   "success_rate_7d": null,
   "last_failure": null,
-  "last_check": null,
   "mtbf_hours": null,
-  "notes": "Created 18.01.2026 - /funnel-verify skill initialization"
+  "history": [
+    {
+      "timestamp": "2026-01-17T23:30:00.000Z",
+      "type": "api_only",
+      "status": "PARTIAL",
+      "notes": "API verified, Chrome test pending"
+    }
+  ],
+  "notes": "Updated 17.01.2026 - API verified, full Chrome test needed"
 }
