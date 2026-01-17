@@ -1661,9 +1661,17 @@ async function initDatabase() {
         clicked_url TEXT,
         clicked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         ip_address TEXT,
-        user_agent TEXT
+        user_agent TEXT,
+        is_bot BOOLEAN DEFAULT FALSE
       )
     `);
+
+    // Add is_bot column if it doesn't exist (migration for existing tables)
+    try {
+      await dbQuery(`ALTER TABLE outreach_clicks ADD COLUMN IF NOT EXISTS is_bot BOOLEAN DEFAULT FALSE`);
+    } catch (e) {
+      // Column might already exist
+    }
 
     // Add indexes for click tracking
     try {
@@ -15325,15 +15333,23 @@ app.get('/api/outreach/track-click', async (req, res) => {
       const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
       const userAgent = req.headers['user-agent'] || '';
 
-      // Store the click event
+      // Bot Detection for click tracking
+      const botPatterns = [
+        /barracuda/i, /proofpoint/i, /mimecast/i, /microsoft.*safelinks/i,
+        /symantec/i, /fortinet/i, /zscaler/i, /websense/i, /bluecoat/i,
+        /bot/i, /crawler/i, /spider/i, /scanner/i, /prefetch/i
+      ];
+      const isBot = botPatterns.some(pattern => pattern.test(userAgent));
+
+      // Store the click event with bot flag
       await dbQuery(
-        `INSERT INTO outreach_clicks (email, campaign, clicked_url, ip_address, user_agent)
-         VALUES ($1, $2, $3, $4, $5)
+        `INSERT INTO outreach_clicks (email, campaign, clicked_url, ip_address, user_agent, is_bot)
+         VALUES ($1, $2, $3, $4, $5, $6)
          ON CONFLICT DO NOTHING`,
-        [email, campaign, targetUrl, ip.split(',')[0], userAgent]
+        [email, campaign, targetUrl, ip.split(',')[0], userAgent, isBot]
       );
 
-      console.log(`🖱️ Link clicked: ${email} → ${targetUrl} (campaign: ${campaign})`);
+      console.log(`🖱️ ${isBot ? '🤖 Bot' : '👤 Human'} clicked: ${email} → ${targetUrl}`);
     }
 
     // Redirect to the actual URL

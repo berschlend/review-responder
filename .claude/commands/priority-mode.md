@@ -74,14 +74,14 @@ Analysiere den Prompt und entscheide SELBST welche Agents am besten passen.
 
 **Bei Preset:**
 ```bash
-powershell -ExecutionPolicy Bypass -File ".\scripts\start-agents.ps1" -Preset [PRESET] -NoSafetyCheck -Prompt "[PROMPT]"
+powershell -ExecutionPolicy Bypass -Command "& '.\scripts\start-agents.ps1' -Preset [PRESET] -NoSafetyCheck -Prompt '[PROMPT]'"
 ```
 
 **Bei Custom Agent-Nummern:**
 ```bash
-powershell -ExecutionPolicy Bypass -File ".\scripts\start-agents.ps1" -Agents [NUMMERN] -NoSafetyCheck -Prompt "[PROMPT]"
+powershell -ExecutionPolicy Bypass -Command "& '.\scripts\start-agents.ps1' -Agents @([NUMMERN]) -NoSafetyCheck -Prompt '[PROMPT]'"
 ```
-(Wenn Prompt leer, `-Prompt` weglassen)
+(Wenn Prompt leer, `-Prompt '[PROMPT]'` weglassen)
 
 ### Schritt 4: Melden
 
