@@ -113,15 +113,19 @@ Falls Auto-Deploy nicht triggert, kann Claude via Chrome MCP manuell deployen:
 
 ## CURRENT TASKS
 
-**Stand: 17.01.2026**
+**Stand: 18.01.2026**
 
 ### Chrome Web Store
 - Status: Ueberprufung laeuft (eingereicht 13.01)
 - Extension v1.6.1
 
-### Metriken (17.01)
-- 3,657+ Responses, 1,064+ Demos
-- 54 Users (0 paying) <- Hauptfokus!
+### Metriken (18.01)
+- 4,287+ Responses, 1,273+ Demos
+- 60 Users (0 paying) <- Hauptfokus!
+
+### Neue Features (18.01)
+- react-select Searchable Dropdown fuer Business Types
+- 3 neue Industry Examples (Real Estate, Home Services, Pet Services)
 
 ### USER TODO (Sticky Tasks)
 > Automatisch per Stop-Hook nach jeder Response angezeigt.
@@ -261,6 +265,15 @@ ReviewResponder/
 ---
 
 ## LEARNINGS (Top 5)
+
+### react-select fuer Searchable Dropdowns (18.01.2026)
+**Problem:** Native `<select>` mit 20+ Business Types ist unuebersichtlich.
+**Loesung:** `react-select` mit gruppierten Optionen + Custom Styling fuer Dark Mode.
+**Details:**
+- `businessTypeOptions` Array mit `{ label: 'Group', options: [...] }` Struktur
+- Custom `styles` Prop fuer Light/Dark Mode Kompatibilitaet
+- `isClearable` + `isSearchable` fuer bessere UX
+**Lesson:** react-select ist Drop-in Replacement, aber Styling braucht CSS Variables.
 
 ### CLAUDE.md Segmentierung (18.01.2026)
 **Problem:** 724 Zeilen CLAUDE.md fuer ALLE Agents - 70% irrelevant pro Session.
