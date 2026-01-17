@@ -87,6 +87,128 @@ const AI_SLOP_STARTS = [
   "It's worth noting",
 ];
 
+// ============ PLATFORM-SPECIFIC EXAMPLES (Phase 3b) ============
+// Different platforms have different cultures and expectations
+const platformExamples = {
+  google: {
+    culture: 'Professional but warm. Google reviewers expect helpful, direct responses.',
+    style: 'Medium formality. Mention specific details from the review.',
+    avoid: 'Overly casual language, excessive emojis, marketing speak.',
+    positive: {
+      review: 'Great coffee shop! The pour-over was excellent and staff was friendly.',
+      response:
+        'Really glad the pour-over worked for you. We take our time with those. See you next time.',
+    },
+    negative: {
+      review: 'Waited 30 minutes for a simple coffee. Baristas seemed distracted.',
+      response:
+        "30 minutes for coffee isn't okay. That's on us. Please reach out and we'll make it right.",
+    },
+  },
+  yelp: {
+    culture:
+      'Community-focused, casual. Yelp reviewers appreciate personality and authentic responses.',
+    style: 'More casual, can be playful. Show personality. Community matters.',
+    avoid: 'Corporate tone, generic responses, ignoring specific complaints.',
+    positive: {
+      review: 'OMG this taco place is FIRE! 🔥 Best carnitas in town, no cap.',
+      response:
+        "The carnitas are our pride and joy. Glad they hit right. Tell your friends, we're not slowing down.",
+    },
+    negative: {
+      review: 'Super disappointed. Food was cold and server forgot our drinks twice.',
+      response:
+        "Cold food and forgotten drinks - that's a bad combo. We dropped the ball here. DM me directly and let's fix this.",
+    },
+  },
+  tripadvisor: {
+    culture:
+      'Travel-focused, detailed. TripAdvisor reviewers often provide comprehensive reviews and expect thoughtful responses.',
+    style:
+      'Professional, acknowledge travel context. Reference specific aspects of their experience.',
+    avoid: 'Ignoring trip details, generic hospitality speak.',
+    positive: {
+      review:
+        'Stayed 3 nights during our anniversary trip. Room had amazing ocean views and breakfast was superb.',
+      response:
+        "An anniversary at our place - that's special. The ocean view rooms are our favorite too. Congratulations and safe travels.",
+    },
+    negative: {
+      review:
+        'Room was not cleaned properly when we arrived. Had to wait 2 hours for housekeeping during our vacation.',
+      response:
+        "Waiting 2 hours on your vacation is frustrating. We failed on arrival day. Email me directly and we'll prioritize you for your next stay.",
+    },
+  },
+  facebook: {
+    culture:
+      'Social, personal. Facebook reviewers are often local community members who value connection.',
+    style: 'Friendly, personal. Reference local community when relevant.',
+    avoid: 'Overly formal language, ignoring the social aspect.',
+    positive: {
+      review: 'Love this place! Been coming here for years with my family.',
+      response:
+        "We love seeing regulars like you! Your family is always welcome. Thanks for the years of support.",
+    },
+    negative: {
+      review: "Used to love this place but quality has gone downhill. Very disappointing.",
+      response:
+        "Hearing this from a long-time customer hurts. We need to do better. Please reach out - I want to hear what changed.",
+    },
+  },
+  trustpilot: {
+    culture:
+      'E-commerce focused, expects detailed responses about products/services and resolution.',
+    style: 'Professional, solution-oriented. Address specific product or service issues.',
+    avoid: 'Deflecting blame, not offering solutions.',
+    positive: {
+      review: 'Fast shipping, great product quality. Exactly as described!',
+      response: 'Glad it arrived fast and matched expectations. That is the goal every time.',
+    },
+    negative: {
+      review: "Item arrived damaged. Packaging was poor. Waited 3 days for customer service response.",
+      response:
+        "Damaged item and slow support - both unacceptable. We're fixing our packaging and response times. DM me your order number for immediate resolution.",
+    },
+  },
+};
+
+/**
+ * Get platform-specific guidance for response generation
+ * @param {string|null} platform - The review platform (google, yelp, tripadvisor, facebook, trustpilot)
+ * @returns {Object} Platform-specific guidance or null if not found
+ */
+function getPlatformGuidance(platform) {
+  if (!platform) return null;
+  return platformExamples[platform.toLowerCase()] || null;
+}
+
+/**
+ * Get platform-specific examples in XML format for the prompt
+ * @param {string|null} platform - The review platform
+ * @returns {string} XML-formatted platform guidance or empty string if not found
+ */
+function getPlatformExamplesXML(platform) {
+  const guidance = getPlatformGuidance(platform);
+  if (!guidance) return '';
+
+  return `<platform_context platform="${platform}">
+<culture>${guidance.culture}</culture>
+<style>${guidance.style}</style>
+<avoid>${guidance.avoid}</avoid>
+
+<platform_example type="positive">
+<review>${guidance.positive.review}</review>
+<response>${guidance.positive.response}</response>
+</platform_example>
+
+<platform_example type="negative">
+<review>${guidance.negative.review}</review>
+<response>${guidance.negative.response}</response>
+</platform_example>
+</platform_context>`;
+}
+
 // ============ INDUSTRY EXAMPLES (XML Format) ============
 const industryExamples = {
   restaurant: {
@@ -495,4 +617,8 @@ module.exports = {
   AI_SLOP_WORDS,
   AI_SLOP_PHRASES,
   AI_SLOP_STARTS,
+  // Platform-specific (Phase 3b)
+  platformExamples,
+  getPlatformGuidance,
+  getPlatformExamplesXML,
 };

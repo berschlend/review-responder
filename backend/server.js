@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const fs = require('fs');
+const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
@@ -28,6 +30,7 @@ const {
   checkAISlop,
   AI_SLOP_WORDS,
   AI_SLOP_PHRASES,
+  getPlatformExamplesXML,
 } = require('./promptExamples');
 
 const app = express();
@@ -4208,6 +4211,9 @@ Just the text you would post as the review response.
     // Now using XML format per Anthropic Best Practices
     const fewShotExamplesXMLContent = getFewShotExamplesXML(contextUser?.business_type);
 
+    // Platform-specific examples (Phase 3b) - different platforms have different cultures
+    const platformExamplesXML = getPlatformExamplesXML(platform);
+
     // ========== ANTHROPIC BEST PRACTICES: Full XML System Message ==========
     // Claude 4 follows instructions literally - be explicit about everything
 
@@ -4246,6 +4252,8 @@ ${writingStyleInstructions}
 
 ${fewShotExamplesXMLContent}
 
+${platformExamplesXML}
+
 <language_instruction>
 ${languageInstruction}
 </language_instruction>`;
@@ -4258,13 +4266,21 @@ ${languageInstruction}
     if (useModel === 'smart' && anthropic) {
       // Use Claude for Smart AI - with auto-fallback to GPT-4o-mini on error
       try {
+        // Prefill Technique: Start with a word that prevents "Thank you for" openings
+        // This is an Anthropic best practice for controlling output format
+        const prefillWord = reviewRating >= 4 ? 'Really' : 'We';
+
         const response = await anthropic.messages.create({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 350,
           system: systemMessage,
-          messages: [{ role: 'user', content: userMessage }],
+          messages: [
+            { role: 'user', content: userMessage },
+            { role: 'assistant', content: prefillWord },
+          ],
         });
-        generatedResponse = response.content[0].text.trim();
+        // Combine prefill with generated response
+        generatedResponse = (prefillWord + response.content[0].text).trim();
 
         // Log API call for cost tracking
         logApiCall({
@@ -4302,13 +4318,19 @@ ${languageInstruction}
       // Use Claude Haiku for Standard AI (better quality than GPT-4o-mini)
       if (anthropic) {
         try {
+          // Prefill Technique for Haiku too
+          const prefillWord = reviewRating >= 4 ? 'Really' : 'We';
+
           const response = await anthropic.messages.create({
             model: 'claude-3-5-haiku-20241022',
             max_tokens: 350,
             system: systemMessage,
-            messages: [{ role: 'user', content: userMessage }],
+            messages: [
+              { role: 'user', content: userMessage },
+              { role: 'assistant', content: prefillWord },
+            ],
           });
-          generatedResponse = response.content[0].text.trim();
+          generatedResponse = (prefillWord + response.content[0].text).trim();
 
           logApiCall({
             provider: 'anthropic',
@@ -7751,11 +7773,17 @@ Write ${ratingStrategy.length}. Be specific. Sound human.`;
 
   // Try Claude first, fallback to GPT-4o-mini on error
   try {
+    // Prefill Technique: Prevent "Thank you for" starts
+    const prefillWord = reviewRating >= 4 ? 'Really' : 'We';
+
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 300,
       system: systemMessage,
-      messages: [{ role: 'user', content: userMessage }],
+      messages: [
+        { role: 'user', content: userMessage },
+        { role: 'assistant', content: prefillWord },
+      ],
     });
 
     logApiCall({
@@ -7766,7 +7794,7 @@ Write ${ratingStrategy.length}. Be specific. Sound human.`;
       outputTokens: response.usage?.output_tokens || 0,
     });
 
-    return response.content[0].text.trim();
+    return (prefillWord + response.content[0].text).trim();
   } catch (claudeError) {
     console.warn(`[Claude Fallback] Demo: ${claudeError.message} - using GPT-4o-mini`);
     const completion = await openai.chat.completions.create({
@@ -8566,13 +8594,20 @@ Respond DIRECTLY. No quotes. No prefix. Just the response text.`;
 
     // Use Claude Sonnet 4 for best quality (InstantDemo is the first impression!)
     if (anthropic) {
+      // Prefill Technique: Prevent "Thank you for" starts
+      // Use tone to determine: apologetic = likely negative review
+      const prefillWord = tone === 'apologetic' ? 'We' : 'Really';
+
       const response = await anthropic.messages.create({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 250,
         system: systemPrompt,
-        messages: [{ role: 'user', content: `[Review]\n${reviewText.trim()}` }],
+        messages: [
+          { role: 'user', content: `[Review]\n${reviewText.trim()}` },
+          { role: 'assistant', content: prefillWord },
+        ],
       });
-      generatedResponse = response.content[0].text.trim();
+      generatedResponse = (prefillWord + response.content[0].text).trim();
 
       // Log API call for cost tracking
       await logApiCall({
@@ -13505,6 +13540,62 @@ ${industryExamples}
 
     const qualityScore = results.length > 0 ? Math.round((passed / results.length) * 100) : 100;
 
+    // Regression Detection (Phase 4)
+    const alerts = [];
+    let regressionDetected = false;
+    let lastKnownScore = null;
+    let historyData = null;
+
+    try {
+      const historyPath = path.join(__dirname, '../content/claude-progress/product-metrics-history.json');
+      if (fs.existsSync(historyPath)) {
+        historyData = JSON.parse(fs.readFileSync(historyPath, 'utf8'));
+
+        if (historyData.history && historyData.history.length > 0) {
+          const lastEntry = historyData.history[historyData.history.length - 1];
+          lastKnownScore = lastEntry.quality_score;
+          const regressionThreshold = historyData.config?.regression_threshold || 3;
+
+          // Check for regression
+          if (lastKnownScore && qualityScore < lastKnownScore - regressionThreshold) {
+            regressionDetected = true;
+            alerts.push({
+              type: 'regression',
+              severity: 'warning',
+              message: `Quality score dropped from ${lastKnownScore}% to ${qualityScore}% (threshold: ${regressionThreshold}%)`,
+              recommendation: 'Review recent prompt changes. Check for new slop patterns.'
+            });
+          }
+
+          // Check for critical quality drop
+          if (qualityScore < 80) {
+            alerts.push({
+              type: 'critical_quality',
+              severity: 'critical',
+              message: `Quality score is critically low: ${qualityScore}%`,
+              recommendation: 'Run /product-refine learn to investigate and fix issues.'
+            });
+          }
+
+          // Check best known state
+          if (historyData.best_known_state && qualityScore < historyData.best_known_state.quality_score - 5) {
+            alerts.push({
+              type: 'below_best',
+              severity: 'info',
+              message: `Current score (${qualityScore}%) is below best known (${historyData.best_known_state.quality_score}% from ${historyData.best_known_state.date})`,
+              recommendation: `Consider reverting to commit ${historyData.best_known_state.commit}`
+            });
+          }
+        }
+      }
+    } catch (historyError) {
+      console.error('Error reading quality history:', historyError.message);
+    }
+
+    // Calculate slop rate from results
+    const slopFailures = results.filter(r => r.slop_issues && r.slop_issues.length > 0).length;
+    const slopRate = results.length > 0 ? ((slopFailures / results.length) * 100).toFixed(1) : '0.0';
+
     res.json({
       success: true,
       dry_run: dry_run === 'true',
@@ -13512,9 +13603,13 @@ ${industryExamples}
       passed,
       failed,
       quality_score: qualityScore,
+      slop_rate: `${slopRate}%`,
+      last_known_score: lastKnownScore,
+      regression_detected: regressionDetected,
       new_learnings: newLearnings.length,
       results,
-      alerts: qualityScore < 80 ? [`Quality score dropped to ${qualityScore}%`] : [],
+      alerts,
+      history_update_needed: results.length >= 3,
       timestamp: new Date().toISOString()
     });
   } catch (error) {

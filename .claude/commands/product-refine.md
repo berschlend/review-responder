@@ -18,14 +18,14 @@ This skill implements **Continuous Learning** for ReviewResponder's AI response 
 ## USAGE
 
 ```bash
-/product-refine              # Full audit + recommendations
-/product-refine check        # Quick consistency check
-/product-refine audit        # Deep response quality audit
+/product-refine              # Full audit + recommendations (default)
+/product-refine quick        # Quick consistency check only
 /product-refine learn        # Review learnings, add new ones
 /product-refine test         # Generate test responses, evaluate
 /product-refine api          # Query API endpoints for live metrics
-/product-refine status       # Quick status from Admin API
 ```
+
+> **Note:** `check` and `audit` modes were merged into `default`. `status` merged into `api`.
 
 ---
 
@@ -85,19 +85,19 @@ curl "https://review-responder.onrender.com/api/cron/quality-test?secret=$ADMIN_
 
 ---
 
-## MODE: check (Default)
+## MODE: quick
 
 **Quick consistency check of all prompt systems.**
 
 ### Checklist:
 1. **Rating Strategies Sync**
-   - [ ] Main generate (server.js ~4013)
-   - [ ] Demo generate (server.js ~7508)
-   - [ ] Instant demo (server.js ~8484)
+   - [ ] Main generate (server.js - search `ratingStrategies =`)
+   - [ ] Demo generate (search `demo.*ratingStrategies`)
+   - [ ] Instant demo (search `instant.*demo`)
    - Are goals/lengths consistent for same ratings?
 
 2. **Tone Definitions Used**
-   - [ ] toneDefinitions defined (server.js ~4052)
+   - [ ] toneDefinitions defined (search `toneDefinitions =`)
    - [ ] toneConfig used in prompt (check for `<tone_instruction>`)
    - [ ] All 4 tones have description + goodExample + avoidExample
 
@@ -128,9 +128,11 @@ grep -n "checkAISlop\|cleanAISlop" backend/server.js
 
 ---
 
-## MODE: audit
+## DEFAULT MODE (Full Audit)
 
 **Deep quality audit with real response generation.**
+
+> Runs when calling `/product-refine` without arguments. Combines quick check + API tests + recommendations.
 
 ### Process:
 1. Generate 10 test responses across ratings (1-5 stars)
@@ -396,6 +398,68 @@ From official Claude 4 docs:
 <avoid_patterns>AI slop blacklist</avoid_patterns>
 <output_format>Direct response only</output_format>
 <language_instruction>Match review language</language_instruction>
+```
+
+---
+
+## NEW FEATURES (17.01.2026)
+
+### Prefill Technique (Phase 3a)
+
+**Problem:** AI responses often start with "Thank you for your feedback" which sounds robotic.
+
+**Solution:** Anthropic's Prefill Technique forces the model to continue from a given word.
+
+```javascript
+messages: [
+  { role: 'user', content: userMessage },
+  { role: 'assistant', content: 'Really' }  // Prefill
+]
+```
+
+**Implementation:**
+- Positive reviews (4-5 stars): Prefill with "Really" → "Really glad the..."
+- Negative reviews (1-3 stars): Prefill with "We" → "We dropped the ball..."
+
+### Platform-Specific Examples (Phase 3b)
+
+Different platforms have different cultures:
+
+| Platform | Culture | Style |
+|----------|---------|-------|
+| Google | Professional, direct | Medium formality |
+| Yelp | Community, casual | More playful, personality |
+| TripAdvisor | Travel-focused, detailed | Professional, travel context |
+| Facebook | Social, personal | Friendly, local community |
+| Trustpilot | E-commerce, resolution | Solution-oriented |
+
+**Usage:**
+- `getPlatformExamplesXML('google')` returns platform-specific guidance
+- Automatically included in system prompt when platform is specified
+
+### Regression Detection (Phase 4)
+
+**Endpoint:** `GET /api/cron/quality-test?secret=XXX`
+
+**Features:**
+- Reads `product-metrics-history.json` for baseline
+- Compares new quality score with last known score
+- Alerts if score drops more than `regression_threshold` (default: 3%)
+- Returns structured alerts with severity and recommendations
+
+**Response Example:**
+```json
+{
+  "quality_score": 88,
+  "last_known_score": 92,
+  "regression_detected": true,
+  "alerts": [{
+    "type": "regression",
+    "severity": "warning",
+    "message": "Quality score dropped from 92% to 88%",
+    "recommendation": "Review recent prompt changes."
+  }]
+}
 ```
 
 ---
