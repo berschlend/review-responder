@@ -308,7 +308,7 @@ ReviewResponder/
 
 ## LEARNINGS (Top 5)
 
-### Data Quality Verification (17.01.2026)
+### Data Quality Verification (17.01.2026, updated 17.01)
 **Problem:** DB zeigte 61 User, 4.4% CTR - alles FAKE!
 **Root Cause:**
 - 55 Test-Accounts, 6 Outreach-Auto-Accounts, 0 organische User
@@ -316,7 +316,9 @@ ReviewResponder/
 **Loesung:** `/data-analyze` Skill + `real-user-metrics.json` Persistenz
 - Bot Detection: Midnight Burst, Corp Email, Zero Activity Flags
 - Cross-Reference: User-DB mit Outreach-Leads vergleichen
-- Helper: `check-real-users` Action in agent-helpers.ps1
+- **Helper (NEU):** `data-analyze` + `check-real-users` Actions in agent-helpers.ps1
+  - Night-Agents koennen jetzt selbst Data Quality Checks ausfuehren
+  - Session-Start Checklist in night-burst-core.md V4.2 inkludiert Real User Check
 **Lesson:** NIEMALS DB-Zahlen trauen! Immer mit Bot-Detection verifizieren.
 
 ### Hook Silent Failures Fix (18.01.2026)

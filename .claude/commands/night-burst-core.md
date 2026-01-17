@@ -593,6 +593,85 @@ powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent [X]
 
 ---
 
+## 🔐 LOGIN CREDENTIALS (ALLE AGENTS)
+
+> **Alle Agents haben Zugriff auf Test-Accounts fuer Dashboard + API.**
+> Diese Credentials sind fuer Testing, Funnel-Verifizierung und Admin-Tasks.
+
+### Dashboard Login (Chrome MCP)
+
+| Tier | Email | Passwort |
+|------|-------|----------|
+| Free | `funnel-test-free@test.local` | `cc9b9275773c11bb6d85a51ad3185762` |
+| Starter | `funnel-test-starter@test.local` | `aae5692e66473e3e50a70c8a09c7e53f` |
+| Pro | `funnel-test-pro@test.local` | `3496b44714ec60d6e74e8958cb82578e` |
+| Unlimited | `funnel-test-unlimited@test.local` | `ad131653129e8362dac3396bf1f0cc51` |
+
+### API Admin Key
+
+```bash
+# Admin Header fuer alle API Calls:
+curl -H "x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U" ...
+
+# Beispiel - User Stats:
+curl -s -H "x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U" \
+  "https://review-responder.onrender.com/api/admin/stats?exclude_test=true"
+```
+
+### Welche Tier nutzen?
+
+| Agent | Empfohlene Tier | Grund |
+|-------|----------------|-------|
+| Burst-4 (Demo) | Free | Testet Free-User Flow |
+| Burst-5 (Hot Lead) | Starter | Testet Paid Features |
+| Burst-6 (Activator) | Free | Testet Onboarding |
+| Burst-7 (Converter) | Free->Starter | Testet Upgrade-Flow |
+| Burst-9 (Doctor) | Unlimited | Braucht vollen Zugriff |
+| Andere | Unlimited | Default fuer Admin-Tasks |
+
+### Helper Commands
+
+```bash
+# Login-Daten fuer bestimmte Tier abrufen:
+powershell -File scripts/agent-helpers.ps1 -Action get-login -Tier free
+# Output: {"email":"funnel-test-free@test.local","pw":"cc9b..."}
+
+# Aktive Tier fuer Session setzen (optional, fuer Tracking):
+powershell -File scripts/agent-helpers.ps1 -Action set-tier -Tier pro
+# Output: "Active tier set to: pro"
+```
+
+### 🔄 SUBAGENT SPAWNING - Credentials weitergeben
+
+**WICHTIG:** Wenn du einen Subagent spawnst, IMMER diese Info im Prompt inkludieren:
+
+```markdown
+CREDENTIALS (fuer diese Session):
+- Dashboard Login: [EMAIL] / [PW]
+- API Admin Key: x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U
+- Aktuelle Tier: [DEINE TIER]
+- Frontend: https://tryreviewresponder.com
+- Backend: https://review-responder.onrender.com
+```
+
+**Beispiel Subagent-Prompt:**
+
+```
+Teste den Upgrade-Flow von Free zu Starter.
+
+CREDENTIALS:
+- Dashboard: funnel-test-free@test.local / cc9b9275773c11bb6d85a51ad3185762
+- API: x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U
+- Frontend: https://tryreviewresponder.com
+
+1. Logge dich mit Free-Account ein
+2. Generiere Responses bis Limit erreicht
+3. Verifiziere Upgrade-Dialog
+4. Dokumentiere Screenshots
+```
+
+---
+
 ## 🔄 HANDOFF SYSTEM (V3.2 - NEU!)
 
 > Basierend auf Anthropic's "Multi-Agent Research System"

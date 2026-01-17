@@ -8,7 +8,7 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend", "feedback-read", "feedback-alert", "budget-check", "budget-use", "approval-check", "approval-expire", "check-real-users", "data-analyze")]
+    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend", "feedback-read", "feedback-alert", "budget-check", "budget-use", "approval-check", "approval-expire", "check-real-users", "data-analyze", "get-login", "set-tier")]
     [string]$Action,
 
     [int]$Agent = 0,
@@ -16,7 +16,9 @@ param(
     [string]$Key = "",          # For budget-check: resource name (resend, openai, serpapi, etc.)
     [string]$Resource = "",     # For check-blocked: resource to check (email_lock, resend, etc.)
     [string]$Value = "",
-    [int]$Amount = 1            # For budget-use: amount to deduct
+    [int]$Amount = 1,           # For budget-use: amount to deduct
+    [ValidateSet("free", "starter", "pro", "unlimited", "")]
+    [string]$Tier = ""          # For get-login/set-tier: plan tier
 )
 
 $ErrorActionPreference = "Stop"
@@ -683,6 +685,87 @@ switch ($Action) {
         } else {
             Write-Output "NO_EXPIRED_ITEMS"
         }
+    }
+
+    "get-login" {
+        # Get login credentials for a specific tier
+        # Usage: powershell -File scripts/agent-helpers.ps1 -Action get-login -Tier free
+        # Output: JSON with email and password
+
+        $creds = @{
+            "free" = @{
+                email = "funnel-test-free@test.local"
+                pw = "cc9b9275773c11bb6d85a51ad3185762"
+                tier = "free"
+            }
+            "starter" = @{
+                email = "funnel-test-starter@test.local"
+                pw = "aae5692e66473e3e50a70c8a09c7e53f"
+                tier = "starter"
+            }
+            "pro" = @{
+                email = "funnel-test-pro@test.local"
+                pw = "3496b44714ec60d6e74e8958cb82578e"
+                tier = "pro"
+            }
+            "unlimited" = @{
+                email = "funnel-test-unlimited@test.local"
+                pw = "ad131653129e8362dac3396bf1f0cc51"
+                tier = "unlimited"
+            }
+        }
+
+        $tierKey = $Tier.ToLower()
+        if ($creds.ContainsKey($tierKey)) {
+            $result = $creds[$tierKey]
+            $result | Add-Member -NotePropertyName "api_key" -NotePropertyValue "rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
+            $result | Add-Member -NotePropertyName "frontend" -NotePropertyValue "https://tryreviewresponder.com"
+            $result | Add-Member -NotePropertyName "backend" -NotePropertyValue "https://review-responder.onrender.com"
+            $result | ConvertTo-Json
+        } else {
+            Write-Output "ERROR: Unknown tier '$Tier'. Use: free|starter|pro|unlimited"
+        }
+    }
+
+    "set-tier" {
+        # Set active tier for current session (stores in agent-session.json)
+        # Usage: powershell -File scripts/agent-helpers.ps1 -Action set-tier -Tier pro
+        # Output: Confirmation message
+
+        $sessionFile = Join-Path $ProgressDir "agent-session.json"
+
+        $tierKey = $Tier.ToLower()
+        $validTiers = @("free", "starter", "pro", "unlimited")
+
+        if ($tierKey -notin $validTiers) {
+            Write-Output "ERROR: Unknown tier '$Tier'. Use: free|starter|pro|unlimited"
+            return
+        }
+
+        # Load existing session or create new
+        $session = @{}
+        if (Test-Path $sessionFile) {
+            try {
+                $session = Get-Content $sessionFile -Raw | ConvertFrom-Json
+                # Convert to hashtable for easier manipulation
+                $sessionHash = @{}
+                $session.PSObject.Properties | ForEach-Object { $sessionHash[$_.Name] = $_.Value }
+                $session = $sessionHash
+            } catch {
+                $session = @{}
+            }
+        }
+
+        # Update tier
+        $session["activeTier"] = $tierKey
+        $session["updatedAt"] = Get-Timestamp
+        if ($Agent -gt 0) {
+            $session["agent"] = "burst-$Agent"
+        }
+
+        # Save
+        $session | ConvertTo-Json -Depth 5 | Set-Content -Path $sessionFile -Encoding UTF8
+        Write-Output "OK: Active tier set to: $tierKey"
     }
 }
 
