@@ -307,6 +307,17 @@ ReviewResponder/
 
 ## LEARNINGS (Top 5)
 
+### Data Quality Verification (17.01.2026)
+**Problem:** DB zeigte 61 User, 4.4% CTR - alles FAKE!
+**Root Cause:**
+- 55 Test-Accounts, 6 Outreach-Auto-Accounts, 0 organische User
+- 67% der Clicks waren Bots (Midnight Burst = Email Security Scanner)
+**Loesung:** `/data-analyze` Skill + `real-user-metrics.json` Persistenz
+- Bot Detection: Midnight Burst, Corp Email, Zero Activity Flags
+- Cross-Reference: User-DB mit Outreach-Leads vergleichen
+- Helper: `check-real-users` Action in agent-helpers.ps1
+**Lesson:** NIEMALS DB-Zahlen trauen! Immer mit Bot-Detection verifizieren.
+
 ### Hook Silent Failures Fix (18.01.2026)
 **Problem:** CLIs brechen ab ohne Output - User sieht nichts.
 **Root Cause:** Aggressive Error-Suppression: `catch {}; exit 0` und `2>$null`
