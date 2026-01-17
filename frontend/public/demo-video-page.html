@@ -22,13 +22,12 @@
        ReviewResponder extension can detect reviews!
        - .jftiEf = Review container (CRITICAL!)
        - .wiI7pd = Review text (CRITICAL!)
-       - .MyEned = Alternative review text
        ============================================ */
     .jftiEf {
-      /* Google Maps review container - Extension looks for this! */
+      /* Google Maps review container */
     }
     .wiI7pd {
-      /* Google Maps review text - Extension extracts text from this! */
+      /* Google Maps review text */
     }
 
     /* Google Maps Header */
@@ -171,7 +170,7 @@
       color: #202124;
     }
 
-    /* Single Review */
+    /* Single Review - .jftiEf for Extension compatibility */
     .review {
       padding: 16px 0;
       border-bottom: 1px solid #f1f3f4;
@@ -228,6 +227,7 @@
       font-size: 12px;
     }
 
+    /* .wiI7pd for Extension compatibility */
     .review-text {
       font-size: 14px;
       line-height: 1.6;
@@ -427,6 +427,8 @@
       display: flex;
       gap: 8px;
       z-index: 1000;
+      flex-wrap: wrap;
+      max-width: 400px;
     }
 
     .demo-controls button {
@@ -466,6 +468,11 @@
     .timer-overlay.active {
       display: block;
     }
+
+    /* Extension Button Styling (injected by extension) */
+    .rr-inline-respond-btn {
+      margin-top: 8px !important;
+    }
   </style>
 </head>
 <body>
@@ -482,7 +489,7 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="#5f6368">
         <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
       </svg>
-      <input type="text" value="hotels near me" readonly>
+      <input type="text" id="search-input" value="hotels near me" readonly>
     </div>
   </header>
 
@@ -491,15 +498,15 @@
     <!-- Business Card -->
     <div class="business-card">
       <div class="business-header">
-        <div class="business-photo">GH</div>
+        <div class="business-photo" id="business-initials">GH</div>
         <div class="business-info">
-          <h1>Grand Haven Hotel</h1>
+          <h1 id="business-name">Grand Haven Hotel</h1>
           <div class="business-rating">
-            <span class="rating-number">3.4</span>
-            <span class="stars">&#9733;&#9733;&#9733;&#9734;&#9734;</span>
-            <span class="review-count">(847 reviews)</span>
+            <span class="rating-number" id="rating-number">3.4</span>
+            <span class="stars" id="stars">&#9733;&#9733;&#9733;&#9734;&#9734;</span>
+            <span class="review-count" id="review-count">(847 reviews)</span>
           </div>
-          <div class="business-type">Hotel in Downtown</div>
+          <div class="business-type" id="business-type">Hotel in Downtown</div>
         </div>
       </div>
     </div>
@@ -510,20 +517,20 @@
         <h2>Reviews</h2>
       </div>
 
-      <!-- The Review (this is what gets selected) -->
-      <!-- CRITICAL: .jftiEf class = Extension detects this as review container! -->
+      <!-- MAIN REVIEW - Extension Compatible -->
+      <!-- .jftiEf = Extension detects this as review container -->
       <div class="review jftiEf" id="main-review">
         <div class="review-author">
-          <div class="author-avatar">J</div>
+          <div class="author-avatar" id="main-avatar">J</div>
           <div class="author-info">
-            <div class="author-name">John Davidson</div>
+            <div class="author-name" id="main-author">John Davidson</div>
             <div class="review-meta">
-              <span class="review-stars">&#9733;&#9734;&#9734;&#9734;&#9734;</span>
+              <span class="review-stars" id="main-stars">&#9733;&#9734;&#9734;&#9734;&#9734;</span>
               <span class="review-date">2 weeks ago</span>
             </div>
           </div>
         </div>
-        <!-- CRITICAL: .wiI7pd class = Extension extracts review text from this! -->
+        <!-- .wiI7pd = Extension extracts review text from this -->
         <div class="review-text wiI7pd" id="review-text">
           NEVER staying here again! Checked in at 3pm but room wasn't ready until 6pm. When I finally got in, there were stains on the sheets and hair in the bathroom. Asked the front desk for help and they just shrugged. $300/night for THIS?! Save your money and stay somewhere else. Absolutely disgusted.
         </div>
@@ -539,7 +546,7 @@
           </div>
         </div>
 
-        <!-- Reply Section (hidden initially) -->
+        <!-- Reply Section -->
         <div class="reply-section" id="reply-section">
           <div class="reply-label">Response as owner</div>
           <textarea
@@ -554,7 +561,7 @@
           </div>
         </div>
 
-        <!-- Success Message (hidden initially) -->
+        <!-- Success Message -->
         <div class="success-message" id="success-message">
           <div class="success-header">
             <span class="success-icon">&#10004;</span>
@@ -570,8 +577,8 @@
         </div>
       </div>
 
-      <!-- Additional Review (for realism) -->
-      <div class="review">
+      <!-- Review 2 - 4 stars, positive -->
+      <div class="review jftiEf">
         <div class="review-author">
           <div class="author-avatar" style="background: #34a853;">S</div>
           <div class="author-info">
@@ -582,7 +589,7 @@
             </div>
           </div>
         </div>
-        <div class="review-text">
+        <div class="review-text wiI7pd">
           Great location, walking distance to Hollywood attractions. Room was clean and modern. Only downside was the noise from the street at night.
         </div>
         <div class="review-actions">
@@ -594,14 +601,92 @@
           </div>
         </div>
       </div>
+
+      <!-- Review 3 - 2 stars, critical -->
+      <div class="review jftiEf">
+        <div class="review-author">
+          <div class="author-avatar" style="background: #ea4335;">M</div>
+          <div class="author-info">
+            <div class="author-name">Mike Thompson</div>
+            <div class="review-meta">
+              <span class="review-stars">&#9733;&#9733;&#9734;&#9734;&#9734;</span>
+              <span class="review-date">3 weeks ago</span>
+            </div>
+          </div>
+        </div>
+        <div class="review-text wiI7pd">
+          The room was outdated and the AC barely worked. Staff was friendly but couldn't fix the issues. For the price, I expected much better. Wouldn't recommend unless they renovate.
+        </div>
+        <div class="review-actions">
+          <div class="review-action">
+            <span>&#128077;</span> Helpful (7)
+          </div>
+          <div class="review-action reply-btn">
+            <span>&#8617;</span> Reply
+          </div>
+        </div>
+      </div>
+
+      <!-- Review 4 - 5 stars, excellent -->
+      <div class="review jftiEf">
+        <div class="review-author">
+          <div class="author-avatar" style="background: #fbbc04;">E</div>
+          <div class="author-info">
+            <div class="author-name">Emma Rodriguez</div>
+            <div class="review-meta">
+              <span class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+              <span class="review-date">2 months ago</span>
+            </div>
+          </div>
+        </div>
+        <div class="review-text wiI7pd">
+          Absolutely wonderful experience! The staff went above and beyond to make our anniversary special. The room was spotless, the view was amazing, and the breakfast buffet was incredible. Will definitely be back!
+        </div>
+        <div class="review-actions">
+          <div class="review-action">
+            <span>&#128077;</span> Helpful (12)
+          </div>
+          <div class="review-action reply-btn">
+            <span>&#8617;</span> Reply
+          </div>
+        </div>
+      </div>
+
+      <!-- Review 5 - German, 3 stars -->
+      <div class="review jftiEf">
+        <div class="review-author">
+          <div class="author-avatar" style="background: #4285f4;">T</div>
+          <div class="author-info">
+            <div class="author-name">Thomas Mueller</div>
+            <div class="review-meta">
+              <span class="review-stars">&#9733;&#9733;&#9733;&#9734;&#9734;</span>
+              <span class="review-date">1 month ago</span>
+            </div>
+          </div>
+        </div>
+        <div class="review-text wiI7pd">
+          Das Hotel ist okay, aber nicht mehr. Das Frühstück war enttäuschend und das WLAN funktionierte nicht richtig. Die Lage ist super, aber für den Preis hätte ich mehr erwartet.
+        </div>
+        <div class="review-actions">
+          <div class="review-action">
+            <span>&#128077;</span> Helpful (2)
+          </div>
+          <div class="review-action reply-btn">
+            <span>&#8617;</span> Reply
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Demo Controls (hide with ?hideControls=true) -->
+  <!-- Demo Controls -->
   <div class="demo-controls" id="demo-controls">
-    <button onclick="resetDemo()">Reset Demo</button>
-    <button onclick="toggleTimer()">Toggle Timer</button>
-    <button onclick="hideControls()">Hide Controls</button>
+    <button onclick="resetDemo()">Reset</button>
+    <button onclick="toggleTimer()">Timer</button>
+    <button onclick="switchBusiness('hotel')">Hotel</button>
+    <button onclick="switchBusiness('restaurant')">Restaurant</button>
+    <button onclick="switchBusiness('dentist')">Dentist</button>
+    <button onclick="hideControls()">Hide All</button>
   </div>
 
   <!-- Timer Overlay -->
@@ -624,12 +709,50 @@
     let timerSeconds = 0;
     let timerActive = false;
 
+    // Business presets
+    const businessPresets = {
+      hotel: {
+        name: 'Grand Haven Hotel',
+        type: 'Hotel in Downtown',
+        initials: 'GH',
+        rating: '3.4',
+        stars: '&#9733;&#9733;&#9733;&#9734;&#9734;',
+        reviews: '847',
+        search: 'hotels near me',
+        mainReview: `NEVER staying here again! Checked in at 3pm but room wasn't ready until 6pm. When I finally got in, there were stains on the sheets and hair in the bathroom. Asked the front desk for help and they just shrugged. $300/night for THIS?! Save your money and stay somewhere else. Absolutely disgusted.`,
+        reviewer: 'John Davidson',
+        reviewerStars: '&#9733;&#9734;&#9734;&#9734;&#9734;'
+      },
+      restaurant: {
+        name: "Mario's Italian Kitchen",
+        type: 'Italian Restaurant',
+        initials: 'MI',
+        rating: '4.2',
+        stars: '&#9733;&#9733;&#9733;&#9733;&#9734;',
+        reviews: '324',
+        search: 'italian restaurants',
+        mainReview: `Food was cold when it arrived and the waiter was incredibly rude. I asked for more bread and he rolled his eyes at me. The pasta was overcooked and the sauce tasted like it came from a jar. For $50 per person, this is unacceptable. The only reason I'm giving 2 stars is because the tiramisu was decent.`,
+        reviewer: 'Lisa Chen',
+        reviewerStars: '&#9733;&#9733;&#9734;&#9734;&#9734;'
+      },
+      dentist: {
+        name: 'Bright Smile Dental',
+        type: 'Dental Clinic',
+        initials: 'BS',
+        rating: '3.8',
+        stars: '&#9733;&#9733;&#9733;&#9733;&#9734;',
+        reviews: '156',
+        search: 'dentist near me',
+        mainReview: `Had to wait 45 minutes past my appointment time. When I finally saw the dentist, he seemed rushed and didn't explain anything. The cleaning was quick but felt incomplete. Staff was nice but the overall experience was disappointing. I expected better from a clinic that charges premium prices.`,
+        reviewer: 'Robert James',
+        reviewerStars: '&#9733;&#9733;&#9734;&#9734;&#9734;'
+      }
+    };
+
     // Open Reply Section
     replyBtn.addEventListener('click', () => {
       replySection.classList.add('active');
       replyTextarea.focus();
-
-      // Start timer when reply opens
       if (!timerActive && timerOverlay.classList.contains('active')) {
         startTimer();
       }
@@ -645,28 +768,19 @@
     submitBtn.addEventListener('click', () => {
       const responseText = replyTextarea.value.trim();
       if (responseText) {
-        // Hide reply section
         replySection.classList.remove('active');
-
-        // Show success message with the response
         ownerResponseText.textContent = responseText;
         successMessage.classList.add('active');
-
-        // Stop timer
-        if (timerActive) {
-          stopTimer();
-        }
+        if (timerActive) stopTimer();
       }
     });
 
-    // Also handle Enter in textarea for quick submit
+    // Ctrl+Enter to submit
     replyTextarea.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && e.ctrlKey) {
-        submitBtn.click();
-      }
+      if (e.key === 'Enter' && e.ctrlKey) submitBtn.click();
     });
 
-    // Listen for text changes (for extension compatibility)
+    // Enable/disable submit button
     replyTextarea.addEventListener('input', () => {
       submitBtn.disabled = !replyTextarea.value.trim();
     });
@@ -716,125 +830,49 @@
       demoControls.classList.add('hidden');
     }
 
-    // Check URL params
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('hideControls') === 'true') {
-      hideControls();
-    }
-    if (urlParams.get('showTimer') === 'true') {
-      timerOverlay.classList.add('active');
-    }
-
-    // Custom business name from URL
-    const businessName = urlParams.get('business');
-    if (businessName) {
-      document.querySelector('.business-info h1').textContent = decodeURIComponent(businessName);
-    }
-
-    // Custom review text from URL
-    const reviewText = urlParams.get('review');
-    if (reviewText) {
-      document.getElementById('review-text').textContent = decodeURIComponent(reviewText);
-    }
-
-    // Business presets for quick switching
-    const businessPresets = {
-      hotel: {
-        name: 'Grand Haven Hotel',
-        type: 'Hotel in Downtown',
-        initials: 'GH',
-        rating: '3.4',
-        stars: '&#9733;&#9733;&#9733;&#9734;&#9734;',
-        reviews: '847',
-        mainReview: `NEVER staying here again! Checked in at 3pm but room wasn't ready until 6pm. When I finally got in, there were stains on the sheets and hair in the bathroom. Asked the front desk for help and they just shrugged. $300/night for THIS?! Save your money and stay somewhere else. Absolutely disgusted.`,
-        reviewer: 'John Davidson'
-      },
-      restaurant: {
-        name: "Mario's Italian Kitchen",
-        type: 'Italian Restaurant',
-        initials: 'MI',
-        rating: '4.2',
-        stars: '&#9733;&#9733;&#9733;&#9733;&#9734;',
-        reviews: '324',
-        mainReview: `Food was cold when it arrived and the waiter was incredibly rude. I asked for more bread and he rolled his eyes at me. The pasta was overcooked and the sauce tasted like it came from a jar. For $50 per person, this is unacceptable. The only reason I'm giving 2 stars is because the tiramisu was decent.`,
-        reviewer: 'Lisa Chen'
-      },
-      dentist: {
-        name: 'Bright Smile Dental',
-        type: 'Dental Clinic',
-        initials: 'BS',
-        rating: '3.8',
-        stars: '&#9733;&#9733;&#9733;&#9733;&#9734;',
-        reviews: '156',
-        mainReview: `Had to wait 45 minutes past my appointment time. When I finally saw the dentist, he seemed rushed and didn't explain anything. The cleaning was quick but felt incomplete. Staff was nice but the overall experience was disappointing. I expected better from a clinic that charges premium prices.`,
-        reviewer: 'Robert James'
-      }
-    };
-
+    // Switch Business Type
     function switchBusiness(type) {
       const preset = businessPresets[type];
       if (!preset) return;
 
-      // Update business card
-      document.querySelector('.business-info h1').textContent = preset.name;
-      document.querySelector('.business-type').textContent = preset.type;
-      document.querySelector('.business-photo').textContent = preset.initials;
-      document.querySelector('.rating-number').textContent = preset.rating;
-      document.querySelector('.stars').innerHTML = preset.stars;
-      document.querySelector('.review-count').textContent = `(${preset.reviews} reviews)`;
-
-      // Update main review
+      document.getElementById('business-name').textContent = preset.name;
+      document.getElementById('business-type').textContent = preset.type;
+      document.getElementById('business-initials').textContent = preset.initials;
+      document.getElementById('rating-number').textContent = preset.rating;
+      document.getElementById('stars').innerHTML = preset.stars;
+      document.getElementById('review-count').textContent = `(${preset.reviews} reviews)`;
+      document.getElementById('search-input').value = preset.search;
       document.getElementById('review-text').textContent = preset.mainReview;
-      document.querySelector('#main-review .author-name').textContent = preset.reviewer;
-      document.querySelector('#main-review .author-avatar').textContent = preset.reviewer.charAt(0);
+      document.getElementById('main-author').textContent = preset.reviewer;
+      document.getElementById('main-avatar').textContent = preset.reviewer.charAt(0);
+      document.getElementById('main-stars').innerHTML = preset.reviewerStars;
 
-      // Reset demo state
       resetDemo();
-
-      console.log(`[Demo] Switched to ${type} business: ${preset.name}`);
+      console.log(`[Demo] Switched to: ${preset.name}`);
     }
 
-    // Make all reply buttons work (not just the first one)
-    document.querySelectorAll('.reply-btn').forEach((btn, index) => {
-      if (index === 0) return; // First one already has handler
+    // URL Parameters
+    const urlParams = new URLSearchParams(window.location.search);
 
-      btn.addEventListener('click', function() {
-        // Find the parent review
-        const review = this.closest('.review');
-        const reviewText = review.querySelector('.wiI7pd')?.textContent || review.querySelector('.review-text')?.textContent;
+    if (urlParams.get('hideControls') === 'true') hideControls();
+    if (urlParams.get('showTimer') === 'true') timerOverlay.classList.add('active');
 
-        // For demo purposes, show a toast
-        const toast = document.createElement('div');
-        toast.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 24px;border-radius:8px;z-index:9999;font-size:14px;';
-        toast.textContent = '💡 Use the ReviewResponder extension to generate a response!';
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
+    const businessName = urlParams.get('business');
+    if (businessName) document.getElementById('business-name').textContent = decodeURIComponent(businessName);
 
-        console.log('[Demo] Reply clicked for review:', reviewText?.substring(0, 50) + '...');
-      });
-    });
+    const reviewText = urlParams.get('review');
+    if (reviewText) document.getElementById('review-text').textContent = decodeURIComponent(reviewText);
 
-    // Extension compatibility logging
-    console.log('%c[ReviewResponder Demo Page]', 'color: #667eea; font-weight: bold; font-size: 14px;');
-    console.log('Extension Compatibility Check:');
-    console.log('✅ Platform Detection: Demo mode (hostname or path includes "demo")');
-    console.log('✅ Review Containers: .jftiEf class present on', document.querySelectorAll('.jftiEf').length, 'reviews');
-    console.log('✅ Review Text: .wiI7pd class present on', document.querySelectorAll('.wiI7pd').length, 'elements');
-    console.log('✅ Reply textarea: aria-label="Write a reply to this review"');
-    console.log('✅ Submit button: aria-label="Post reply"');
-    console.log('');
-    console.log('URL Parameters:');
-    console.log('  ?hideControls=true - Hide demo controls');
-    console.log('  ?showTimer=true - Show recording timer');
-    console.log('  ?business=Name - Custom business name');
-    console.log('  ?review=Text - Custom review text');
-    console.log('  ?type=hotel|restaurant|dentist - Switch business type');
-
-    // Handle type URL parameter
     const businessType = urlParams.get('type');
-    if (businessType && businessPresets[businessType]) {
-      switchBusiness(businessType);
-    }
+    if (businessType && businessPresets[businessType]) switchBusiness(businessType);
+
+    // Extension Compatibility Log
+    console.log('%c[ReviewResponder Demo Page]', 'color: #667eea; font-weight: bold; font-size: 14px;');
+    console.log('Extension Compatibility:');
+    console.log('  ✅ .jftiEf containers:', document.querySelectorAll('.jftiEf').length);
+    console.log('  ✅ .wiI7pd text elements:', document.querySelectorAll('.wiI7pd').length);
+    console.log('  ✅ Reply textarea: aria-label="Write a reply to this review"');
+    console.log('URL Params: ?hideControls=true | ?showTimer=true | ?type=hotel|restaurant|dentist');
   </script>
 </body>
 </html>
