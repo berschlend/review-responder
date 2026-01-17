@@ -330,6 +330,15 @@ const Footer = () => (
               <Link to="/pricing">Pricing</Link>
             </li>
             <li>
+              <Link to="/video-demo">Watch Demo</Link>
+            </li>
+            <li>
+              <Link to="/extension">Chrome Extension</Link>
+            </li>
+            <li>
+              <Link to="/api-docs">API Documentation</Link>
+            </li>
+            <li>
               <Link to="/register">Get Started</Link>
             </li>
           </ul>
@@ -350,7 +359,10 @@ const Footer = () => (
               <Link to="/booking-review-generator">Booking.com</Link>
             </li>
             <li>
-              <Link to="/facebook-review-responses">Facebook</Link>
+              <Link to="/trustpilot-review-responses">Trustpilot</Link>
+            </li>
+            <li>
+              <Link to="/amazon-review-responses">Amazon</Link>
             </li>
             <li>
               <Link to="/negative-review-responses">Negative Reviews</Link>
@@ -373,10 +385,13 @@ const Footer = () => (
               <Link to="/medical-practice-reviews">Medical</Link>
             </li>
             <li>
-              <Link to="/salon-spa-review-responses">Salons & Spas</Link>
+              <Link to="/real-estate-agent-reviews">Real Estate</Link>
             </li>
             <li>
-              <Link to="/auto-shop-reviews">Auto Shops</Link>
+              <Link to="/ecommerce-review-responses">E-Commerce</Link>
+            </li>
+            <li>
+              <Link to="/plumber-review-responses">Home Services</Link>
             </li>
             <li>
               <Link to="/local-business-reviews">Local Business</Link>
@@ -387,25 +402,25 @@ const Footer = () => (
           <div className="footer-title">More Industries</div>
           <ul className="footer-links">
             <li>
-              <Link to="/chiropractor-reviews">Chiropractors</Link>
+              <Link to="/salon-spa-review-responses">Salons & Spas</Link>
             </li>
             <li>
-              <Link to="/barber-barbershop-reviews">Barbers</Link>
+              <Link to="/gym-fitness-review-responses">Gyms & Fitness</Link>
             </li>
             <li>
-              <Link to="/dermatologist-reviews">Dermatologists</Link>
+              <Link to="/law-firm-review-responses">Law Firms</Link>
             </li>
             <li>
-              <Link to="/massage-therapist-reviews">Massage Therapists</Link>
+              <Link to="/veterinarian-review-responses">Veterinarians</Link>
             </li>
             <li>
-              <Link to="/personal-trainer-reviews">Personal Trainers</Link>
+              <Link to="/auto-shop-reviews">Auto Shops</Link>
             </li>
             <li>
               <Link to="/angie-list-contractor-reviews">Contractors</Link>
             </li>
             <li>
-              <Link to="/linkedin-recommendations">LinkedIn</Link>
+              <Link to="/coffee-shop-review-responses">Coffee Shops</Link>
             </li>
           </ul>
         </div>
