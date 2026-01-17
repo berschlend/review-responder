@@ -1267,6 +1267,10 @@ const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
     localStorage.setItem('token', res.data.token);
+    // Mark admin users permanently to skip demo view tracking (even when logged out)
+    if (res.data.user?.email?.toLowerCase() === 'berend.mainz@web.de') {
+      localStorage.setItem('isAdminUser', 'true');
+    }
     setUser(res.data.user);
     return res.data;
   };
@@ -1336,6 +1340,10 @@ const AuthProvider = ({ children }) => {
     });
 
     localStorage.setItem('token', res.data.token);
+    // Mark admin users permanently to skip demo view tracking
+    if (res.data.user?.email?.toLowerCase() === 'berend.mainz@web.de') {
+      localStorage.setItem('isAdminUser', 'true');
+    }
     // Clear codes after successful login/registration
     if (referralCode) localStorage.removeItem('referralCode');
     if (affiliateCode) localStorage.removeItem('affiliateCode');
@@ -1346,6 +1354,7 @@ const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    // Keep isAdminUser flag - we want to skip tracking even when logged out
     setUser(null);
   };
 
@@ -4596,6 +4605,10 @@ const MagicLoginPage = () => {
         .get('/auth/me')
         .then(res => {
           setUser(res.data.user);
+          // Mark admin users permanently to skip demo view tracking
+          if (res.data.user?.email?.toLowerCase() === 'berend.mainz@web.de') {
+            localStorage.setItem('isAdminUser', 'true');
+          }
           toast.success('Welcome! Try generating a response now.');
           navigate('/generator'); // Send to generator for immediate value (was /dashboard)
         })
@@ -13412,10 +13425,9 @@ const DemoPage = () => {
 
   const fetchDemo = async () => {
     try {
-      // If user is logged in, add preview=true to skip view tracking (for admin testing)
-      const savedToken = localStorage.getItem('token');
-      const isLoggedIn = !!savedToken;
-      const previewParam = isLoggedIn ? '?preview=true' : '';
+      // Skip view tracking for admin users (flag set permanently after first admin login)
+      const isAdminUser = localStorage.getItem('isAdminUser') === 'true';
+      const previewParam = isAdminUser ? '?preview=true' : '';
 
       const response = await fetch(`${API_URL.replace('/api', '')}/api/public/demo/${token}${previewParam}`);
       if (!response.ok) {
