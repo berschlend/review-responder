@@ -1,6 +1,6 @@
 # ReviewResponder - Todo Liste
 
-> Letzte Aktualisierung: 18.01.2026 (00:30 UTC)
+> Letzte Aktualisierung: 18.01.2026 (02:00 UTC)
 
 ---
 
@@ -182,39 +182,17 @@
 
 ## 🟠 AKTUELL IN ARBEIT
 
-### ✅ Stripe Zahlungsmethoden - ERLEDIGT (14.01.2026)
+### Chrome Extension v1.6.2 - IM REVIEW
 
-- [x] PayPal, SEPA etc. im Stripe Dashboard aktiviert
+- [x] Extension v1.6.2 submitted (15.01.2026)
+- [ ] Wartet auf Chrome Review (1-3 Tage) → BLOCKED
+- [ ] Nach Approval: YouTube Demo-Video URL updaten
 
-### Chrome Extension Release v1.5.2
+### Demo Videos (BLOCKED - warte auf One-Click Test)
 
-- [x] Extension fertig testen - CLAUDE HAT GETESTET
-- [x] Google Sign-In hinzugefügt - FERTIG
-- [ ] 3 Screenshots machen (1280x800 px, sauberer Browser) - **DU MUSST MACHEN**
-- [x] ZIP erstellen - `chrome-extension-v1.5.2.zip` FERTIG (86KB)
-- [ ] Google Cloud Console Redirect URI konfigurieren - **DU MUSST MACHEN**
-- [ ] Chrome Web Store einreichen - **DU MUSST MACHEN**
-- [x] Chrome Developer Account: Vorhanden
-
-### Videos (nach Extension Release)
-
-- [ ] **Video 1:** Extension Demo (15 Sek ZUERST, dann 45 Sek A/B Test)
-  - 📋 **15s Script:** `content/video-15s-ultra.md`
-  - 📋 **45s Plan:** `~/.claude-acc3/plans/calm-tumbling-iverson.md`
-  - 🎯 **First Principles Erkenntnisse:**
-    - ✅ 15s > 45s (70% vs 30% Completion Rate)
-    - ✅ "YOUR review" > "Salt Bae" (direkt > celebrity)
-    - ✅ Stumm > Voice-Over (85% Sound-Off)
-    - ✅ YouTube SEO > LinkedIn (Intent-basiert)
-  - 🆕 **Landing Page LIVE:** `/video-demo` (tryreviewresponder.com/video-demo)
-  - 🎬 **Tools:** OBS Studio (heruntergeladen) + DaVinci Resolve
-  - 📊 **A/B Test:** 15s vs 45s, "YOUR review" vs "Salt Bae"
-
-- [ ] **Video 2:** Full Walkthrough (2 Min) → Landing Page
-  - 0:00-0:30 Extension installieren & erste Review
-  - 0:30-1:00 Features: Tones, Templates, Variations
-  - 1:00-1:30 Dashboard: History, Analytics, Bulk
-  - 1:30-2:00 Team Features, Pricing CTA
+- [ ] **Video 1:** 15 Sek Extension Demo
+  - BLOCKED: Warte auf One-Click Submit Test mit Google Business Account
+  - Script ready: `content/video-15s-ultra.md`
 
 ---
 

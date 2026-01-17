@@ -159,7 +159,6 @@ FÜR JEDEN NEUEN APPROVAL REQUEST:
    ✅ BRAUCHT BEREND (weiterleiten):
    - Irreversible Daten-Löschung (User löschen, DB purge)
    - Legal/Compliance Änderungen (GDPR, Terms, Impressum)
-   - Production Breaking Changes
    - Budget >$100/Tag (einmalig, nicht kumulativ)
 
    ❌ BRAUCHT BEREND NICHT (Agent entscheidet autonom):

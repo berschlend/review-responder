@@ -73,7 +73,6 @@ BEI SESSION-START:
 |--------|-------|
 | User/Daten löschen | Irreversibel |
 | Terms/Legal ändern | Compliance |
-| Production Breaking | System-Risiko |
 | Budget >$100/Tag | Finanziell signifikant |
 
 ### CLAUDIUS-SAFEGUARDS (IMMER aktiv!):

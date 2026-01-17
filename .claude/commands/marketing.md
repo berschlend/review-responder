@@ -233,13 +233,12 @@ Lead kontaktieren?
 | **Budget ausgeben** | ✅ JA | Wenn ROI positiv |
 | **A/B Tests starten** | ✅ JA | Immer |
 
-### Berend NUR bei (4 Dinge!):
+### Berend NUR bei (3 Dinge!):
 
 | Situation | Warum Human |
 |-----------|-------------|
 | **User/Daten LÖSCHEN** | Irreversibel |
 | **Legal/Terms ändern** | Compliance |
-| **Production Breaking** | System-Risiko |
 | **Budget >$100/Tag** | Finanziell signifikant |
 
 ### Was Claudius uns GELEHRT hat (Learnings, nicht Limits!):

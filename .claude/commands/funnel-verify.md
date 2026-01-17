@@ -93,10 +93,18 @@ claude --chrome
 > **Testet:** Email-Empfaenger → Demo-Page → Auto-Account → Logged-in User
 
 ### Setup
-```
-1. Test-Email generieren: funnel-test-[TIMESTAMP]@test.local
-2. Test-Demo via API erstellen
-3. Chrome Tab oeffnen
+```bash
+# 1. Test-Email generieren (unique!)
+TEST_EMAIL="funnel-test-$(date +%s)@test.local"
+
+# 2. Bestehende Demo holen (NICHT neu generieren!)
+curl -s "https://review-responder.onrender.com/api/admin/demos?limit=1" \
+  -H "x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
+# → Nimm demo_token aus Response
+
+# 3. Chrome Tab oeffnen
+tabs_context_mcp(createIfEmpty: true)
+tabs_create_mcp()
 ```
 
 ### Steps
@@ -259,8 +267,10 @@ CONVERSION FLOW CHECKLIST:
 
 [ ] STEP 1: Simulate Near-Limit
     - API: Set user responses to 19/20
-    - curl -X POST /api/admin/set-user-responses
-      -d '{"email":"test@...", "responses_used": 19}'
+    curl -X POST "https://review-responder.onrender.com/api/admin/set-user-responses" \
+      -H "x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U" \
+      -H "Content-Type: application/json" \
+      -d '{"email":"[TEST_EMAIL]", "responses_used": 19}'
 
 [ ] STEP 2: Generate Final Free Response
     - Generator Page oeffnen
@@ -688,5 +698,58 @@ async function safeClick(query, tabId) {
 
 ---
 
-*Version: 2.0 - Meta-Skill mit Sub-Skills + First-Principles*
+## NACH JEDEM TEST: Report speichern
+
+**WICHTIG:** Am Ende JEDES /funnel-verify Laufs muss der Report in `funnel-health-log.json` geschrieben werden!
+
+```bash
+# PowerShell: funnel-health-log.json updaten
+$report = @{
+  timestamp = (Get-Date -Format "o")
+  status = "PASS"  # oder "FAIL" oder "PARTIAL"
+  flows_tested = @("demo", "activation")
+  broken_phases = @()  # oder @("activation") bei Failure
+  duration_ms = 45000
+}
+
+# Zu History hinzufuegen
+$logPath = "content/claude-progress/funnel-health-log.json"
+$log = Get-Content $logPath | ConvertFrom-Json
+$log.history = @($report) + $log.history[0..9]  # Keep last 10
+$log.last_check = $report.timestamp
+$log.success_rate_7d = ($log.history | Where-Object { $_.status -eq "PASS" }).Count / $log.history.Count * 100
+$log | ConvertTo-Json -Depth 10 | Set-Content $logPath
+```
+
+**Bei FAILURE zusaetzlich:**
+```bash
+# Burst-15 Approval erstellen
+$approval = @{
+  type = "funnel_broken"
+  severity = "critical"
+  broken_phases = @("[PHASE]")
+  created_at = (Get-Date -Format "o")
+  created_by = "funnel-verify"
+  action_required = "Fix before marketing resumes"
+}
+# In for-berend.md oder Burst-15 Queue schreiben
+```
+
+---
+
+## API ENDPOINTS REFERENCE
+
+| Endpoint | Method | Auth | Zweck |
+|----------|--------|------|-------|
+| `/api/admin/demos?limit=1` | GET | x-admin-key | Bestehende Demo holen |
+| `/api/demo/[token]` | GET | - | Demo Page Daten |
+| `/api/admin/set-user-responses` | POST | x-admin-key | Responses-Count setzen |
+| `/api/admin/mark-test-user` | POST | x-admin-key | User als Test markieren |
+| `/api/stats` | GET | Bearer Token | User Stats pruefen |
+
+**Admin Key:** `rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U`
+
+---
+
+*Version: 2.1 - Mit korrekten API Endpoints + Auto-Report*
 *Erstellt: 18.01.2026*

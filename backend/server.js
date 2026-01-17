@@ -12431,6 +12431,78 @@ app.get('/api/admin/set-test-password', async (req, res) => {
   }
 });
 
+// POST /api/admin/set-user-responses - Set responses_used for testing limits
+// Used by /funnel-verify to test conversion flow
+app.post('/api/admin/set-user-responses', authenticateAdmin, async (req, res) => {
+  const { email, responses_used } = req.body;
+
+  if (!email || responses_used === undefined) {
+    return res.status(400).json({ error: 'email and responses_used required' });
+  }
+
+  try {
+    const user = await dbGet(
+      'SELECT id, email, responses_used, responses_limit FROM users WHERE LOWER(email) = LOWER($1)',
+      [email]
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: `User not found: ${email}` });
+    }
+
+    const previousUsed = user.responses_used;
+    await dbQuery('UPDATE users SET responses_used = $1 WHERE id = $2', [responses_used, user.id]);
+
+    console.log(`✅ Admin set responses_used for ${email}: ${previousUsed} → ${responses_used}`);
+
+    res.json({
+      success: true,
+      email: user.email,
+      previous_responses_used: previousUsed,
+      new_responses_used: responses_used,
+      responses_limit: user.responses_limit
+    });
+  } catch (error) {
+    console.error('Admin set-user-responses error:', error);
+    res.status(500).json({ error: 'Failed to update responses_used' });
+  }
+});
+
+// POST /api/admin/mark-test-user - Mark user as test account (excluded from metrics)
+// Used by /funnel-verify for cleanup
+app.post('/api/admin/mark-test-user', authenticateAdmin, async (req, res) => {
+  const { email, is_test = true } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'email required' });
+  }
+
+  try {
+    const user = await dbGet(
+      'SELECT id, email, is_test_account FROM users WHERE LOWER(email) = LOWER($1)',
+      [email]
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: `User not found: ${email}` });
+    }
+
+    await dbQuery('UPDATE users SET is_test_account = $1 WHERE id = $2', [is_test, user.id]);
+
+    console.log(`✅ Admin marked ${email} as test_account=${is_test}`);
+
+    res.json({
+      success: true,
+      email: user.email,
+      is_test_account: is_test,
+      note: is_test ? 'User excluded from metrics' : 'User included in metrics'
+    });
+  } catch (error) {
+    console.error('Admin mark-test-user error:', error);
+    res.status(500).json({ error: 'Failed to mark test user' });
+  }
+});
+
 // GET /api/admin/delete-user - Delete user completely (for testing)
 app.get('/api/admin/delete-user', async (req, res) => {
   const { email, key } = req.query;
