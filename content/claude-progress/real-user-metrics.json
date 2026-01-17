@@ -1,92 +1,116 @@
 {
   "realUsers": {
-    "total": 4,
+    "total": 0,
     "viaGenerator": 0,
-    "viaDemo": 4,
+    "viaDemo": 0,
     "viaInstantTry": 0,
-    "inactive": 3,
+    "inactive": 6,
     "paying": 0
   },
   "definition": "Real User = 1+ Generation ANYWHERE (responses, demo_generations with demo_page_viewed_at, public_try_usage)",
   "registeredUsers": {
-    "total": 7,
+    "total": 6,
     "likelyReal": 2,
-    "maybeReal": 2,
+    "maybeReal": 1,
     "uncertain": 3,
     "analysis": [
-      {
-        "email": "i.schmidt@tv-turm.de",
-        "business": "Sphere Tim Raue (2 Michelin Stars)",
-        "signupTime": "22:33 UTC",
-        "verdict": "LIKELY_REAL",
-        "reason": "Personal name format, high-end restaurant, evening signup"
-      },
       {
         "email": "zuerich@trattoria-sempre.ch",
         "business": "Trattoria Sempre Zürich",
         "signupTime": "00:15 UTC",
+        "signupDate": "2026-01-16",
         "verdict": "LIKELY_REAL",
-        "reason": "Used Magic Link = active engagement (clicked twice)"
+        "reason": "Used Magic Link = active engagement, Swiss restaurant domain",
+        "phone": "+41 44 262 54 62",
+        "priority": 1
+      },
+      {
+        "email": "i.schmidt@tv-turm.de",
+        "business": "Sphere Tim Raue (2 Michelin Stars)",
+        "signupTime": "22:33 UTC",
+        "signupDate": "2026-01-14",
+        "verdict": "LIKELY_REAL",
+        "reason": "Personal name format (I. Schmidt), high-end restaurant, evening signup",
+        "phone": "030 247575875",
+        "priority": 2
       },
       {
         "email": "H0796@accor.com",
         "business": "ibis Wien Mariahilf",
         "signupTime": "08:14 UTC",
+        "signupDate": "2026-01-15",
         "verdict": "MAYBE_REAL",
-        "reason": "Business hours signup, corporate email but active decision"
+        "reason": "Business hours signup, corporate Accor but active decision",
+        "phone": "+43 1 521510",
+        "priority": 3
       },
       {
         "email": "h9057@accor.com",
         "business": "Novotel London Canary Wharf",
         "signupTime": "02:00 UTC",
-        "verdict": "MAYBE_REAL",
-        "reason": "Late night but could be UK timezone, Accor chain"
+        "signupDate": "2026-01-15",
+        "verdict": "UNCERTAIN",
+        "reason": "2am signup (UK = 3am), corporate Accor pattern H####@accor.com",
+        "priority": 5
       },
       {
         "email": "reservation.web@madamebrasserie.com",
         "business": "Madame Brasserie (Eiffel Tower)",
         "signupTime": "22:29 UTC",
+        "signupDate": "2026-01-14",
         "verdict": "UNCERTAIN",
-        "reason": "Generic reservation@ email but famous restaurant"
+        "reason": "Generic reservation@ email, same minute as AWAY SPA",
+        "priority": 4
       },
       {
         "email": "awayspa.edinburgh@whotels.com",
-        "business": "AWAY SPA W Hotels",
+        "business": "AWAY SPA W Hotels Edinburgh",
         "signupTime": "22:29 UTC",
+        "signupDate": "2026-01-14",
         "verdict": "UNCERTAIN",
-        "reason": "Same minute as above (burst), corporate W Hotels"
+        "reason": "Same EXACT minute as Madame Brasserie - burst pattern",
+        "priority": 6
       }
     ]
   },
+  "hotLeads": [
+    {
+      "email": "ti.cafeofficial@gmail.com",
+      "business": "Tí Cafe Denver",
+      "clicked": "2026-01-17T17:22:46Z",
+      "phone": "+1 720 440 2864",
+      "status": "HOT - Clicked yesterday, personal gmail",
+      "priority": 0
+    }
+  ],
   "botPatterns": [
-    { "pattern": "midnight-burst", "count": 22 },
+    { "pattern": "midnight-burst", "count": 38 },
     { "pattern": "test-email", "count": 60 },
-    { "pattern": "corp-system-email", "count": 4 }
+    { "pattern": "corp-system-email", "count": 4 },
+    { "pattern": "same-minute-signup", "count": 2 }
   ],
   "ctr": {
     "reported": 4.76,
-    "real": 1.5,
-    "botClicks": 23,
-    "humanClicks": 12,
-    "testClicks": 3,
-    "note": "~32% real clicks (12/38), 60% bot/scanner, 8% test emails"
+    "real": 0,
+    "botClicks": 38,
+    "humanClicks": 0,
+    "note": "100% bot clicks after full filter - ALL were security scanners"
   },
-  "fixes_deployed": [
-    "Bot detection for auto-account creation (prevents scanner accounts)",
-    "is_bot flag on click tracking",
-    "First Response Guidance Banner for new users",
-    "Registration redirects to /dashboard (was /generator which 404'd)"
-  ],
-  "lastUpdated": "2026-01-18T03:15:00Z",
-  "analyzedAt": "2026-01-18T03:15:00Z",
+  "outreach": {
+    "emailsSent": 799,
+    "unsubscribed": 57,
+    "unsubscribeRate": "7.1%",
+    "magicLinksSent": 142,
+    "magicLinksClicked": 40,
+    "converted": 0
+  },
+  "lastUpdated": "2026-01-18T10:30:00Z",
+  "analyzedAt": "2026-01-18T10:30:00Z",
   "actionItems": [
-    "DONE: Bot detection implemented",
-    "DONE: Onboarding banner added",
-    "TODO: Personalized follow-up to i.schmidt@tv-turm.de (Michelin restaurant)",
-    "TODO: Personalized follow-up to zuerich@trattoria-sempre.ch (engaged via magic link)",
-    "NEW: ti.cafeofficial@gmail.com clicked TODAY 17:22 UTC - Tí Cafe Denver - HOT LEAD!"
-  ],
-  "hotLeadsToday": [
-    {"email": "ti.cafeofficial@gmail.com", "business": "Tí Cafe Denver", "clicked": "2026-01-17T17:22:46Z", "status": "NEW_CLICK"}
+    "PRIORITY 0: Call ti.cafeofficial@gmail.com - HOT LEAD clicked yesterday!",
+    "PRIORITY 1: Call zuerich@trattoria-sempre.ch - Used Magic Link (engaged)",
+    "PRIORITY 2: Call i.schmidt@tv-turm.de - Personal name, Michelin restaurant",
+    "PRIORITY 3: Email H0796@accor.com - Business hours signup",
+    "LOW: Skip uncertain accounts (same-minute burst pattern)"
   ]
 }

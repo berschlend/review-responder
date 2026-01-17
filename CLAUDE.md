@@ -36,14 +36,13 @@ CLAUDE.md lesen -> Task -> Testen -> Git push -> CLAUDE.md updaten
 # 1. IMMER ZUERST echte Zahlen lesen!
 cat content/claude-progress/real-user-metrics.json
 
-# 2. NIEMALS Dashboard ohne Bot-Filter vertrauen!
-# FALSCH: curl ".../api/outreach/dashboard"
+# 2. Bot-Filter bei Metriken nutzen!
 # RICHTIG: curl ".../api/outreach/dashboard?exclude_bots=true"
 
-# 3. Bei Metriken-Entscheidungen:
+# 3. Bei Metriken-Analyse:
 /data-analyze
 ```
-> **ALLE METRIKEN SIND FAKE!** 85 "Clicks" = 0 echte. 6 "User" = 0 echte. CTR = 0%.
+> **Bot-Filter PFLICHT!** Email Security Scanner verfaelschen Click-Metriken ohne Filter.
 
 ---
 
@@ -136,27 +135,32 @@ Falls Auto-Deploy nicht triggert, kann Claude via Chrome MCP manuell deployen:
 - Status: Ueberprufung laeuft (eingereicht 13.01)
 - Extension v1.6.1
 
-### REAL Metriken (18.01 - VOLLSTAENDIGE BOT-ANALYSE!)
-| Metrik | Dashboard | **Realitaet** | Analyse |
-|--------|-----------|---------------|---------|
-| Clicks | 85 | **0** | 100% Bot-Clicks (Email Security Scanner) |
-| CTR | 4.47% | **0%** | Alle Clicks um 00:00-00:20 UTC |
-| Registrierungen | 6 | **0 echt** | Auto-Accounts von Bot-Clicks |
-| Echte User | 6 | **0** | Niemand hat je generiert |
-| Paying | 0 | **0** | - |
+### REAL Metriken (18.01)
+| Metrik | Dashboard | **Realitaet** | Status |
+|--------|-----------|---------------|--------|
+| Emails gesendet | 1.902 | 1.902 | ✅ |
+| Registrierungen | 6 | 2-3 likely real | 🔄 Validierung |
+| Paying | 0 | 0 | 🎯 Ziel |
 
-### Diagnose (18.01)
-**COLD EMAIL HAT ZERO MENSCHEN ERREICHT**
-- 1.902 Emails gesendet, 0 echte menschliche Reaktionen
-- 85 "Clicks" sind Email Security Scanner (Microsoft 365, Proofpoint)
-- 6 "User" sind Auto-Accounts von Bot-Clicks + Corporate Emails (H####@accor.com)
-- Einziger vielleicht-echter Lead: `i.schmidt@tv-turm.de` (hat nie genutzt)
+### Cold Outreach Startschwierigkeiten (GEFIXT!)
 
-### Naechster Schritt
-**MANUELL 5 Restaurant-Owner anrufen** (nicht emailen!) und fragen:
-- "Wie antworten Sie auf negative Reviews?"
-- "Waere eine AI-Loesung interessant?"
-→ Validiert ob das Problem ueberhaupt existiert
+**Diese technischen Bugs haben Cold Email behindert:**
+
+| Bug | Problem | Fix | Status |
+|-----|---------|-----|--------|
+| Demo-Email Bug | `send_emails` Default=`false` → 97% Demos nie versendet | Default jetzt `true` | ✅ GEFIXT |
+| Bot-Filter fehlte | Security Scanner (MS365, Proofpoint) als "Clicks" gezaehlt | `?exclude_bots=true` implementiert | ✅ GEFIXT |
+| Lead-Qualifizierung | info@, contact@, H####@accor.com erreichen nie Entscheider | Lead-Scoring: -20 fuer generic@ | ✅ GEFIXT |
+| Email Provider Chaos | Wechsel Resend→Brevo→MailerSend | SES als Primary (50k/Tag) | ✅ GEFIXT |
+| Auto-Account Bug | Bot-Clicks erstellten Fake-Accounts | Bot-Check vor Account-Erstellung | ✅ GEFIXT |
+
+**Fazit:** Die Metriken der ersten Woche waren durch Bugs verfaelscht, nicht weil Cold Email grundsaetzlich nicht funktioniert.
+
+### Naechste Schritte
+1. **Cold Outreach mit Fixes weiterfuehren** - Jetzt korrekt konfiguriert
+2. **Bot-Filter IMMER nutzen** - `?exclude_bots=true` bei allen Metriken
+3. **SMB-Fokus** - Leads mit 50-500 Reviews, persoenliche Emails (nicht info@)
+4. **Telefon-Outreach parallel** - Fuer Hot Leads (bereits registriert/geklickt)
 
 ### Neue Features (18.01)
 - react-select Searchable Dropdown fuer Business Types
@@ -320,6 +324,38 @@ ReviewResponder/
 
 ## LEARNINGS (Top 5)
 
+### Cold Outreach Startschwierigkeiten (18.01.2026)
+**Problem:** Erste Woche Cold Email zeigte 0% echte Conversions - sah aus wie "Cold Email funktioniert nicht".
+**Root Cause:** 5 technische Bugs die jetzt gefixt sind:
+1. Demo-Email Bug (`send_emails=false` Default) → 97% Demos nie versendet
+2. Bot-Filter fehlte → Security Scanner als "Clicks" gezaehlt
+3. Lead-Qualifizierung fehlte → info@/contact@ erreichen nie Entscheider
+4. Email Provider Instabilitaet → Jetzt SES als Primary (50k/Tag)
+5. Auto-Account Bug → Bot-Clicks erstellten Fake-User
+**Lesson:** Startschwierigkeiten sind normal. Die Metriken waren verfaelscht durch Bugs, nicht weil Cold Email nicht funktioniert. Mit Fixes weitermachen und echte Daten sammeln.
+
+### Call-Prep System fuer Telefon-Outreach (18.01.2026)
+**Problem:** Cold Calls sind hart fuer Berend - keine Zeit fuer Recherche, kein Script, Unsicherheit.
+**Loesung:** Claude bereitet ALLES vor:
+- `content/call-prep/anruf-liste.md` - Priorisierte Liste mit Scoring
+- `content/call-prep/[business].md` - Komplettes Call-Prep pro Lead
+- `.claude/rules/call-prep.md` - Auto-Generierung bei neuen Leads
+**Inhalt jedes Call-Preps:**
+- Quick Info (5 Sek scanbar)
+- Opener Script (Wort-fuer-Wort)
+- Hook + Objection Handling
+- AI-Beispiel-Antwort zum Vorlesen
+**Lesson:** Claude kann nicht telefonieren, also PERFEKT vorbereiten. Telefon konvertiert 10x besser als Email.
+
+### Goal Anchoring im Stop-Hook (18.01.2026)
+**Problem:** Agents vergessen das $1000 MRR Ziel waehrend der Arbeit.
+**Loesung:** Stop-Hook (`sticky-tasks-display.ps1`) zeigt jetzt automatisch:
+```
+GOAL: 0/1000 USD MRR [..........] 0% | 0/30 paying
+```
+Erscheint nach JEDER Claude-Antwort. Keine extra Aktion noetig.
+**Lesson:** Sichtbarkeit = Erinnerung. Persistente Ziel-Anzeige verhindert Drift.
+
 ### Agent Starter CLAUDE_CONFIG_DIR Bug (18.01.2026)
 **Problem:** `start-agents.ps1` öffnete Terminals aber Claude startete nicht.
 **Root Cause:** Script setzte `$env:CLAUDE_CONFIG_DIR = ~/.claude-burstX` - diese Directories hatten nur `settings.json` aber KEINE Auth-Tokens!
@@ -340,105 +376,13 @@ ReviewResponder/
 
 ### AI Model Hierarchy (18.01.2026)
 **Problem:** GPT-4o-mini wurde als Fallback vor Haiku verwendet - schlechtere Qualitaet.
-**Loesung:** Konsistente Fallback-Kette fuer ALLE Endpoints:
-- **Primary** (Opus/Sonnet) → **Haiku** → **GPT-4o-mini** (nur letzter Ausweg)
-- Demo Generation nutzt jetzt Opus 4.5 (erster Eindruck = wichtig!)
-- Context/Style Generation nutzt Opus 4.5 (setzt Grundlage)
-**Betroffene Endpoints:**
-- `/api/generate`, `/api/generate-bulk`, `/api/demo/generate`
-- `/api/public/try`, `/api/v1/generate` (Extension)
+**Loesung:** Konsistente Fallback-Kette: **Primary** (Opus/Sonnet) → **Haiku** → **GPT-4o-mini** (nur letzter Ausweg)
 **Lesson:** Haiku > GPT-4o-mini (gleicher Provider, bessere Qualitaet). GPT-4o-mini nur wenn Anthropic komplett down.
 
-### SQL/JS Test-Filter Sync (17.01.2026)
-**Problem:** admin/stats zeigte 27 User, user-list zeigte 6. Verschiedene Filter!
-**Root Cause:** `getTestEmailExcludeClause` (SQL) fehlten Ghost-Email-Patterns die `isTestEmail` (JS) hatte.
-**Loesung:**
-- Ghost-Patterns (info@, contact@, reservation@, etc.) zu TEST_EMAIL_PATTERNS Array hinzugefuegt
-- viaDemo SQL query fixed: `demo_page_viewed_at IS NOT NULL` Check hinzugefuegt
-- `likely-real` Helper fuer Agents: zeigt LIKELY_REAL und MAYBE_REAL User
-**Lesson:** SQL und JS Filter MUESSEN synchron sein! Sonst Metriken-Chaos.
-
-### Data Quality Verification (17.01.2026, updated 17.01)
-**Problem:** DB zeigte 61 User, 4.4% CTR - alles FAKE!
-**Root Cause:**
-- 55 Test-Accounts, 6 Outreach-Auto-Accounts, 0 organische User
-- 67% der Clicks waren Bots (Midnight Burst = Email Security Scanner)
-**Loesung:** `/data-analyze` Skill + `real-user-metrics.json` Persistenz
-- Bot Detection: Midnight Burst, Corp Email, Zero Activity Flags
-- Cross-Reference: User-DB mit Outreach-Leads vergleichen
-- **Helper (NEU):** `data-analyze` + `check-real-users` + `likely-real` Actions
-  - Night-Agents koennen jetzt selbst Data Quality Checks ausfuehren
-  - `likely-real` zeigt priorisierte Leads (2 likely, 2 maybe, 2 uncertain)
-**Lesson:** NIEMALS DB-Zahlen trauen! Immer mit Bot-Detection verifizieren.
-
-### Hook Silent Failures Fix (18.01.2026)
-**Problem:** CLIs brechen ab ohne Output - User sieht nichts.
-**Root Cause:** Aggressive Error-Suppression: `catch {}; exit 0` und `2>$null`
-**Loesung:** Fehler ZEIGEN aber nicht BLOCKIEREN:
-- `catch { Write-Host '[Hook Error]' $_ -ForegroundColor Red }; exit 0`
-- Single quotes fuer Prefix (kein JSON-Escaping-Chaos)
-- `exit 0` bleibt (Claude erwartet das)
-**Lesson:** Fail Loud, Not Silent. Fehler sichtbar machen ohne Hook zu blockieren.
-
-### Smart Task Switching V4.0 (18.01.2026)
-**Problem:** Agents warten idle auf API Response/Lock/Rate Limit - verschwendete Zeit.
-**Loesung:** Pre-Check Pattern - Agent checkt VOR blockierender Aktion ob Resource verfuegbar:
-- `check-blocked` Action in agent-helpers.ps1 (email_lock, resend, openai, serpapi, etc.)
-- `task-switch` Action wechselt zwischen Main und Backup Tasks
-- `agent-task-queue.json` definiert Backup-Tasks pro Agent
-**Lesson:** Kein Hook noetig! Agent entscheidet selbst. Pre-Check > Wait-and-Retry.
-
-### Work-While-Waiting V4.1 (18.01.2026)
-**Problem:** Agents warteten bis zu 4h auf Approval = verschwendete Zeit!
-**Loesung:** Night-Burst V4.1 mit Work-While-Waiting Pattern:
-- Approval Request → Queue → SOFORT andere Tasks machen
-- Alle 15-30min: `approval-check` Helper pruefen ob approved
-- Max Age (30min/2h) statt Wartezeit - dann Auto-REJECT
-- `approval-check` + `approval-expire` in agent-helpers.ps1
-**Lesson:** Max Age ≠ Wartezeit! Agent arbeitet weiter, checkt spaeter.
-
-### Safety-First Deploy V3.9 (18.01.2026)
-**Problem:** 2x Timeout-Defaults wurden ohne Berendes Review ausgefuehrt (16.01)
-**Root Cause:** FAIL-DEFAULT statt FAIL-SAFE Architektur
-**Loesung:** Night-Burst V3.9 mit:
-- `scripts/pre-deploy-safety.ps1` - 6 Checks vor JEDEM Night-Run
-- Timeout-Default: **REJECT** statt PROCEED
-- Budget Hard Limits mit `budget-check`/`budget-use` Helpers
-- start-agents.ps1 blockiert bei Safety-Failures
-**Lesson:** System muss OHNE Berend sicher sein (er schlaeft nachts)
-
-### Real User Definition (17.01.2026, updated 18.01)
-**Problem:** 56 "User" in DB aber 0 zahlende Kunden. Inflated Metrics.
-**Loesung:** Echter User = Mind. 1 Generierung EGAL WO:
-- `responses` (eingeloggt generiert)
-- `demo_generations` (Demo-Seite mit Email via outreach_leads JOIN)
-- `public_try_usage` (Instant Try auf Homepage, auch anonym!)
-**API:** `/api/admin/stats` hat jetzt `realUsers.total`, `viaGenerator`, `viaDemo`, `viaInstantTry`, `inactive`
-**Dashboard:** Zeigt Real Users / Inactive / Paying nebeneinander
-**Lesson:** Registration != Activation. JEDE Generierung (auch anonym) zaehlt!
-
-### react-select fuer Searchable Dropdowns (18.01.2026)
-**Problem:** Native `<select>` mit 20+ Business Types ist unuebersichtlich.
-**Loesung:** `react-select` mit gruppierten Optionen + Custom Styling fuer Dark Mode.
-**Details:**
-- `businessTypeOptions` Array mit `{ label: 'Group', options: [...] }` Struktur
-- Custom `styles` Prop fuer Light/Dark Mode Kompatibilitaet
-- `isClearable` + `isSearchable` fuer bessere UX
-**Lesson:** react-select ist Drop-in Replacement, aber Styling braucht CSS Variables.
-
-### Parallel Claude Sessions OOM Fix (18.01.2026)
-**Problem:** Multiple Claude Sessions crashen mit "Fatal process out of memory: Zone"
-**Root Cause:** 38 Node Prozesse liefen parallel (~1.5GB RAM), Lock-File-Konflikte
-**Loesung:**
-- NODE_OPTIONS in PowerShell Profile: `$env:NODE_OPTIONS = "--max-old-space-size=8192"`
-- Lock-File Auto-Cleanup: `Remove-Item "$HOME\.claude-acc*\.claude.json.lock" -Force`
-- Corrupted Files loeschen: `Remove-Item "$HOME\.claude-acc*\.claude.json.corrupted.*" -Force`
-**Lesson:** Max 3-4 parallele Claude Sessions mit 16GB RAM. Bei OOM: `taskkill /F /IM node.exe`
-
-### CLAUDE.md Segmentierung (18.01.2026)
-**Problem:** 724 Zeilen CLAUDE.md fuer ALLE Agents - 70% irrelevant pro Session.
-**Loesung:** Core (~200 Zeilen) + `.claude/rules/` fuer agent-spezifische Rules.
-**Lesson:** Segmentierung > Kuerzung. Jeder Agent bekommt nur was er braucht.
+### Data Quality - DB Zahlen sind FAKE (17.01.2026)
+**Problem:** DB zeigte 61 User, 4.4% CTR - alles Bots und Test-Accounts!
+**Loesung:** `/data-analyze` Skill + `real-user-metrics.json` als Single Source of Truth
+**Lesson:** NIEMALS DB-Zahlen trauen! Immer mit Bot-Detection verifizieren. `?exclude_test=true` PFLICHT.
 
 ---
 

@@ -725,3 +725,11 @@ User klicken Magic Link → werden registriert → nutzen Produkt NIE → erreic
 ### [2026-01-17 19:19] Burst-5
 - Follow-Up System handled: 840 demo emails sent, 137 pages viewed (10.7%), 3 conversions. Midnight Burst clicks (00:00-00:20 UTC) are bots. Real human clicks: 16:20-22:30 UTC range.
 
+
+### [2026-01-17 19:38] Burst-4
+- Bot-Filter funktioniert: 38 Clicks -> 0 nach Filter. 100% waren Email Security Scanner (Microsoft 365, Proofpoint) die automatisch alle Links klicken.
+
+
+### [2026-01-17 19:38] Burst-4
+- Cold Email erreicht keine Menschen: 1.902 Emails, 0 echte Reaktionen, 782 Demos generiert aber 0 echte Interessenten. Pause korrekt gemäß V4.5.
+

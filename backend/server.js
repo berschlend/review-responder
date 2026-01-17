@@ -7460,17 +7460,23 @@ async function scrapeGoogleReviewsOutscraper(placeId, limit = 10) {
 }
 
 // Serper.dev Review Scraper (2500 free credits/month)
-// Uses place_id to first get CID, then fetches reviews
-async function scrapeGoogleReviewsSerper(placeId, limit = 10) {
+// Uses business name + city to find the place, then fetches reviews via CID
+// FIXED: Previously used placeId as search query which returned wrong businesses!
+async function scrapeGoogleReviewsSerper(placeId, limit = 10, businessName = null, city = null) {
   const apiKey = process.env.SERPER_API_KEY;
   if (!apiKey) {
     throw new Error('SERPER_API_KEY not configured');
   }
 
-  console.log(`[SERPER] Fetching reviews for ${placeId}...`);
+  // CRITICAL FIX: Use business name + city for search, NOT placeId!
+  // PlaceId (ChIJ...) as search query returns random wrong businesses
+  const searchQuery = businessName && city
+    ? `${businessName} ${city}`
+    : businessName || placeId; // Fallback to placeId only if no name available
 
-  // Step 1: Get CID from place_id by searching for the place
-  // We need to convert Google Place ID to Serper's CID format
+  console.log(`[SERPER] Fetching reviews for "${searchQuery}" (placeId: ${placeId})...`);
+
+  // Step 1: Get CID by searching for the business name + city
   const placesResponse = await fetch('https://google.serper.dev/places', {
     method: 'POST',
     headers: {
@@ -7478,8 +7484,8 @@ async function scrapeGoogleReviewsSerper(placeId, limit = 10) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      q: placeId, // Search with place_id directly
-      num: 1,
+      q: searchQuery, // Use business name + city instead of placeId!
+      num: 3, // Get top 3 to find best match
     }),
   });
 
@@ -7540,7 +7546,8 @@ async function scrapeGoogleReviewsSerper(placeId, limit = 10) {
 }
 
 // Helper: Scrape Google reviews - tries cache first, then Serper (2500 free), Outscraper (500 free), SerpAPI (100 free), Google Places (5 free)
-async function scrapeGoogleReviews(placeId, limit = 10) {
+// UPDATED: Now accepts businessName and city for accurate Serper searches
+async function scrapeGoogleReviews(placeId, limit = 10, businessName = null, city = null) {
   // FIRST: Check if we have cached reviews from previous scrapes (saves 50-70% of API calls!)
   // 90 days TTL - reviews don't change often, and negative reviews are rarely edited
   try {
@@ -7564,9 +7571,10 @@ async function scrapeGoogleReviews(placeId, limit = 10) {
   }
 
   // Try Serper.dev first (2500 free credits/month - BEST VALUE!)
+  // Pass businessName and city for accurate search (placeId alone returns wrong businesses!)
   if (process.env.SERPER_API_KEY) {
     try {
-      return await scrapeGoogleReviewsSerper(placeId, limit);
+      return await scrapeGoogleReviewsSerper(placeId, limit, businessName, city);
     } catch (serperErr) {
       console.log(`Serper.dev failed: ${serperErr.message}, trying Outscraper fallback...`);
     }
