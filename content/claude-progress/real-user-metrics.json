@@ -1,134 +1,24 @@
 {
   "realUsers": {
-    "organic": 0,
-    "viaOutreach": 0,
+    "total": 0,
+    "viaGenerator": 0,
     "viaDemo": 0,
-    "activated": 0,
-    "paying": 0,
-    "note": "ZERO echte User - alle 6 'registrierten' sind Auto-Accounts von Bot-Clicks oder Corporate Emails"
+    "viaInstantTry": 0,
+    "inactive": 6,
+    "paying": 0
   },
-  "registeredUsers": {
-    "total": 6,
-    "likelyReal": 0,
-    "likelyBot": 4,
-    "corporateEmail": 3,
-    "analysis": [
-      {
-        "email": "zuerich@trattoria-sempre.ch",
-        "verdict": "BOT",
-        "reason": "Midnight click (00:13 UTC) = Email Security Scanner",
-        "signup": "magic_link"
-      },
-      {
-        "email": "H0796@accor.com",
-        "verdict": "NOT_REAL",
-        "reason": "Corporate hotel chain email (Accor H#### format) + 03:07 UTC click",
-        "signup": "normal_signup"
-      },
-      {
-        "email": "h9057@accor.com",
-        "verdict": "BOT",
-        "reason": "Midnight click (00:13 UTC) + Corporate Accor email",
-        "signup": "normal_signup"
-      },
-      {
-        "email": "i.schmidt@tv-turm.de",
-        "verdict": "MAYBE_REAL",
-        "reason": "Personal name format, business hours click (16:20 UTC), but never used product",
-        "signup": "normal_signup"
-      },
-      {
-        "email": "reservation.web@madamebrasserie.com",
-        "verdict": "NOT_REAL",
-        "reason": "Generic reservation@ email = no decision maker, but business hours click",
-        "signup": "normal_signup"
-      },
-      {
-        "email": "awayspa.edinburgh@whotels.com",
-        "verdict": "NOT_REAL",
-        "reason": "Corporate W Hotels email + late night click (22:05 UTC)",
-        "signup": "normal_signup"
-      }
-    ],
-    "conclusion": "5/6 sind definitiv keine echten Interessenten. 1 (i.schmidt) KÖNNTE echt sein, hat aber nie das Produkt genutzt.",
-    "responsesGenerated": 0
-  },
-  "clickAnalysis": {
-    "totalRawClicks": 85,
-    "afterBotFilter": 0,
-    "fakePercentage": "100%",
-    "filtersApplied": [
-      "midnight_burst (00:00-00:20 UTC)",
-      "sequential_clicks (<30s gap)",
-      "burst_detection (3+ per minute)"
-    ],
-    "conclusion": "ALLE Clicks sind Bots oder Email Security Scanner - ZERO echte menschliche Clicks nachweisbar"
-  },
-  "dataQuality": {
-    "testAccountsInDB": 60,
-    "totalUsersInDB": 66,
-    "nonTestUsers": 6,
-    "usersWithResponses": 0,
-    "realHumanUsers": 0
-  },
+  "definition": "Real User = 1+ Generation ANYWHERE (responses, demo_generations, public_try_usage)",
   "botPatterns": [
-    {
-      "pattern": "midnight-burst",
-      "count": "51+",
-      "description": "Email security scanners (Microsoft 365, Google, Proofpoint) clicking all links at 00:00-00:20 UTC"
-    },
-    {
-      "pattern": "sequential-clicks",
-      "description": "Multiple clicks within 30 seconds = automated scanning"
-    },
-    {
-      "pattern": "corporate-emails",
-      "count": 3,
-      "description": "H####@accor.com and @whotels.com are hotel chain support addresses, not decision makers"
-    }
+    { "pattern": "midnight-burst", "count": 22 },
+    { "pattern": "test-email", "count": 2 }
   ],
   "ctr": {
-    "reported": "4.47%",
-    "realEstimate": "0%",
-    "explanation": "With full bot filtering, 0 of 85 clicks pass as human"
+    "reported": 4.76,
+    "real": 1.75,
+    "botClicks": 24,
+    "inflation": 171
   },
-  "outreach": {
-    "totalLeads": 2692,
-    "emailsSent": 1902,
-    "rawClicks": 85,
-    "realClicks": 0,
-    "registrations": 6,
-    "realRegistrations": 0,
-    "conversions": 0
-  },
-  "metricsFixV2": {
-    "date": "2026-01-17",
-    "issues": [
-      {
-        "issue": "viaDemo metric inflated (14 -> 4)",
-        "rootCause": "SQL counted email-matches without checking demo_page_viewed_at IS NOT NULL",
-        "fix": "Added demo_page_viewed_at check to SQL query"
-      },
-      {
-        "issue": "admin/stats showed 27 users vs user-list 6",
-        "rootCause": "getTestEmailExcludeClause (SQL) missing ghost email patterns that isTestEmail (JS) uses",
-        "fix": "Added ghost email patterns (info@, contact@, reservation@, etc.) to TEST_EMAIL_PATTERNS array"
-      }
-    ],
-    "afterFix": {
-      "totalUsersExclTest": 7,
-      "viaGenerator": 0,
-      "viaDemo": 4,
-      "inactive": 3,
-      "note": "Now consistent with user-list endpoint (6 + 1 funnel-test account)"
-    }
-  },
-  "lastUpdated": "2026-01-17T20:30:00Z",
-  "analyzedAt": "2026-01-17T20:30:00Z",
-  "analysisMethod": "Cross-referenced click timestamps with bot patterns + email type analysis + SQL consistency fix",
-  "brutaleWahrheit": {
-    "summary": "Nach 1.902 Emails in 7 Tagen: ZERO echte menschliche Interaktionen nachweisbar",
-    "implication": "Entweder (1) alle Emails landen im Spam, (2) Cold Email funktioniert nicht für dieses Produkt, oder (3) das Produkt löst kein echtes Problem",
-    "nextStep": "MANUELL 5 Restaurant-Owner anrufen und fragen ob sie das Problem haben"
-  }
+  "lastUpdated": "2026-01-18T12:00:00Z",
+  "analyzedAt": "2026-01-18T12:00:00Z",
+  "notes": "Updated definition: Any generation anywhere counts (not just logged-in)"
 }

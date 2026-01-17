@@ -79,7 +79,7 @@ cat content/claude-progress/real-user-metrics.json
 | 3 | Test-Accounts: `?exclude_test=true` | Metriken verfaelscht |
 | 4 | Bei weisser Seite: Browser Console | React-Errors dort sichtbar |
 | 5 | Discount vor Nutzung implementieren | Stripe-Handler pruefen |
-| 6 | **ECHTER USER = 1+ Generierung (egal wo!)** | responses ODER demo_generations |
+| 6 | **ECHTER USER = 1+ Generierung (egal wo!)** | responses ODER demo ODER instant_try |
 
 ---
 
@@ -136,21 +136,27 @@ Falls Auto-Deploy nicht triggert, kann Claude via Chrome MCP manuell deployen:
 - Status: Ueberprufung laeuft (eingereicht 13.01)
 - Extension v1.6.1
 
-### REAL Metriken (17.01 - DATA QUALITY VERIFIED!)
-| Metrik | Reported | **Real** | Warum |
-|--------|----------|----------|-------|
-| User in DB | 61 | **0 organic** | 55 Test + 6 Outreach-Auto |
-| Die "6 User" | 6 | **0 echt** | Alle von Cold-Email, nie genutzt |
-| Aktiviert | ? | **0** | Niemand hat je generiert |
+### REAL Metriken (18.01 - VOLLSTAENDIGE BOT-ANALYSE!)
+| Metrik | Dashboard | **Realitaet** | Analyse |
+|--------|-----------|---------------|---------|
+| Clicks | 85 | **0** | 100% Bot-Clicks (Email Security Scanner) |
+| CTR | 4.47% | **0%** | Alle Clicks um 00:00-00:20 UTC |
+| Registrierungen | 6 | **0 echt** | Auto-Accounts von Bot-Clicks |
+| Echte User | 6 | **0** | Niemand hat je generiert |
 | Paying | 0 | **0** | - |
-| CTR | 4.42% | **1.42%** | 67% Bot-Clicks |
 
-### Diagnose
-**CRITICAL: ZERO echte User nach 7 Tagen**
-- Die 6 "User" sind Outreach-Auto-Accounts (Cold Email -> Click -> Auto-Create)
-- 4/6 haben Bot-Flags (Midnight Signup, Corp Email)
-- KEINER hat das Produkt je benutzt
-- Persistenz: `content/claude-progress/real-user-metrics.json`
+### Diagnose (18.01)
+**COLD EMAIL HAT ZERO MENSCHEN ERREICHT**
+- 1.902 Emails gesendet, 0 echte menschliche Reaktionen
+- 85 "Clicks" sind Email Security Scanner (Microsoft 365, Proofpoint)
+- 6 "User" sind Auto-Accounts von Bot-Clicks + Corporate Emails (H####@accor.com)
+- Einziger vielleicht-echter Lead: `i.schmidt@tv-turm.de` (hat nie genutzt)
+
+### Naechster Schritt
+**MANUELL 5 Restaurant-Owner anrufen** (nicht emailen!) und fragen:
+- "Wie antworten Sie auf negative Reviews?"
+- "Waere eine AI-Loesung interessant?"
+→ Validiert ob das Problem ueberhaupt existiert
 
 ### Neue Features (18.01)
 - react-select Searchable Dropdown fuer Business Types
@@ -391,9 +397,10 @@ ReviewResponder/
 **Loesung:** Echter User = Mind. 1 Generierung EGAL WO:
 - `responses` (eingeloggt generiert)
 - `demo_generations` (Demo-Seite mit Email via outreach_leads JOIN)
-**API:** `/api/admin/stats` hat jetzt `realUsers.total`, `realUsers.viaGenerator`, `realUsers.viaDemo`, `realUsers.inactive`
+- `public_try_usage` (Instant Try auf Homepage, auch anonym!)
+**API:** `/api/admin/stats` hat jetzt `realUsers.total`, `viaGenerator`, `viaDemo`, `viaInstantTry`, `inactive`
 **Dashboard:** Zeigt Real Users / Inactive / Paying nebeneinander
-**Lesson:** Registration != Activation. Demo-Generierung zaehlt auch als "aktiv"!
+**Lesson:** Registration != Activation. JEDE Generierung (auch anonym) zaehlt!
 
 ### react-select fuer Searchable Dropdowns (18.01.2026)
 **Problem:** Native `<select>` mit 20+ Business Types ist unuebersichtlich.
