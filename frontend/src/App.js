@@ -5123,6 +5123,11 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
   const [sampleResponse, setSampleResponse] = useState('');
   const [generatingSample, setGeneratingSample] = useState(false);
 
+  // Step 2: Custom Instructions (NEW)
+  const [alwaysMention, setAlwaysMention] = useState('');
+  const [neverSay, setNeverSay] = useState('');
+  const [selectedTone, setSelectedTone] = useState('professional');
+
   // Grouped business types for react-select
   const businessTypeOptions = [
     {
@@ -5179,6 +5184,81 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
   // Flat list for validation
   const businessTypes = businessTypeOptions.flatMap(g => g.options.map(o => o.value));
 
+  // Industry-specific presets for custom instructions
+  const instructionPresets = {
+    Restaurant: {
+      always: 'thank for dining with us, invite to visit again, mention our signature dishes',
+      never: 'sorry for the inconvenience, valued customer, we apologize',
+      tone: 'friendly',
+    },
+    'Dental Practice': {
+      always: 'patient care is our priority, contact us with questions, mention our experienced team',
+      never: 'cheap, discount, sorry for any inconvenience',
+      tone: 'professional',
+    },
+    'Medical Practice': {
+      always: 'patient health is our priority, schedule a follow-up, mention our caring staff',
+      never: 'cheap, sorry, we regret',
+      tone: 'professional',
+    },
+    'Hair Salon / Barbershop': {
+      always: 'book your next appointment, mention our skilled stylists',
+      never: 'cheap haircut, sorry, discount',
+      tone: 'friendly',
+    },
+    'Auto Repair / Service': {
+      always: 'vehicle safety is our priority, free estimates available, certified technicians',
+      never: 'cheap fix, sorry for delays',
+      tone: 'professional',
+    },
+    'Real Estate': {
+      always: 'dedicated to finding your dream home, available for questions, local market expertise',
+      never: 'sorry, cheap, discount commission',
+      tone: 'professional',
+    },
+    'Home Services': {
+      always: 'free estimates, licensed and insured, satisfaction guaranteed',
+      never: 'sorry, cheap work, cut corners',
+      tone: 'professional',
+    },
+    'Hotel / Accommodation': {
+      always: 'hope to welcome you back, mention our amenities, contact concierge',
+      never: 'sorry for inconvenience, we regret, compensation',
+      tone: 'friendly',
+    },
+    default: {
+      always: '',
+      never: '',
+      tone: 'professional',
+    },
+  };
+
+  // Build responseStyle XML from form fields
+  const buildResponseStyle = (always, never, tone) => {
+    let xml = '';
+    if (always?.trim()) {
+      xml += `<always>\n${always
+        .split(',')
+        .map(s => `- ${s.trim()}`)
+        .join('\n')}\n</always>\n\n`;
+    }
+    if (never?.trim()) {
+      xml += `<never>\n${never
+        .split(',')
+        .map(s => `- ${s.trim()}`)
+        .join('\n')}\n</never>\n\n`;
+    }
+    if (tone) {
+      const toneDescriptions = {
+        professional: 'Professional and courteous tone',
+        friendly: 'Warm and friendly tone',
+        casual: 'Casual and conversational tone',
+      };
+      xml += `<style>\n- ${toneDescriptions[tone] || tone}\n</style>`;
+    }
+    return xml.trim();
+  };
+
   // Sync user data when modal opens or user changes
   useEffect(() => {
     if (isVisible && user?.businessName && !businessName) {
@@ -5199,14 +5279,23 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
     }
   }, [isVisible, user?.businessType, businessType]);
 
+  // Apply presets when business type changes
+  const applyPresets = type => {
+    const preset = instructionPresets[type] || instructionPresets.default;
+    setAlwaysMention(preset.always);
+    setNeverSay(preset.never);
+    setSelectedTone(preset.tone);
+  };
+
   const nextStep = async () => {
-    if (currentStep === 1 && businessName.trim()) {
+    if (currentStep === 1 && businessName.trim() && (businessType || customBusinessType.trim())) {
+      // Apply industry presets when moving to step 2
+      const finalType = businessType === 'Other' ? customBusinessType.trim() : businessType;
+      applyPresets(finalType);
       setCurrentStep(2);
-    } else if (currentStep === 2 && sampleResponse) {
-      // Save profile after seeing demo
+    } else if (currentStep === 2) {
+      // Save profile with custom instructions
       await saveBusinessProfile();
-    } else if (currentStep < 3) {
-      setCurrentStep(currentStep + 1);
     }
   };
 
@@ -5214,25 +5303,31 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
     // Use custom type if "Other" is selected, otherwise use dropdown value
     const finalBusinessType = businessType === 'Other' ? customBusinessType.trim() : businessType;
 
+    // Build responseStyle from custom instructions
+    const responseStyle = buildResponseStyle(alwaysMention, neverSay, selectedTone);
+
+    setLoading(true);
     try {
-      // Only save business name and type - NOT the context
-      // User should customize context themselves in Settings for better results
       await api.put('/auth/profile', {
         businessName: businessName.trim(),
         businessType: finalBusinessType,
+        responseStyle: responseStyle || undefined,
       });
       updateUser({
         businessName: businessName.trim(),
         businessType: finalBusinessType,
+        responseStyle: responseStyle || undefined,
       });
-      // Save keywords to localStorage so Settings can pre-fill them
-      if (keywords.trim()) {
-        localStorage.setItem('onboardingKeywords', keywords.trim());
-      }
-      setCurrentStep(3);
+      // Complete onboarding
+      await api.put('/auth/complete-onboarding');
+      updateUser({ onboardingCompleted: true });
+      toast.success('Setup complete! Your AI is personalized.');
+      onComplete?.();
     } catch (error) {
       console.error('Failed to save business profile:', error);
       toast.error('Failed to save profile');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -5388,208 +5483,216 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
 
         {/* Content */}
         <div style={{ padding: '32px', overflowY: 'auto', flex: 1 }}>
-          {/* Step 1: Business Name */}
+          {/* Step 1: Business Name + Type */}
           {currentStep === 1 && (
             <div>
               <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
-                What's your business name?
+                Tell us about your business
               </h3>
               <p style={{ color: 'var(--gray-600)', marginBottom: '20px', fontSize: '14px' }}>
                 This helps us personalize your review responses
               </p>
 
-              <div className="form-group">
+              <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label className="form-label">Business Name</label>
                 <input
                   type="text"
                   className="form-input"
                   placeholder="e.g., Tony's Pizza, Smith & Co Law Firm"
                   value={businessName}
                   onChange={e => setBusinessName(e.target.value)}
-                  onKeyPress={e => e.key === 'Enter' && businessName.trim() && nextStep()}
                   autoFocus
                 />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Business Type</label>
+                <Select
+                  options={businessTypeOptions}
+                  value={
+                    businessType
+                      ? businessTypeOptions.flatMap(g => g.options).find(o => o.value === businessType) ||
+                        null
+                      : null
+                  }
+                  onChange={option => {
+                    const newValue = option?.value || '';
+                    setBusinessType(newValue);
+                    if (newValue !== 'Other') {
+                      setCustomBusinessType('');
+                    }
+                  }}
+                  placeholder="Search or select type..."
+                  isClearable
+                  isSearchable
+                  styles={{
+                    control: (base, state) => ({
+                      ...base,
+                      borderColor: state.isFocused ? 'var(--primary)' : 'var(--gray-200)',
+                      boxShadow: state.isFocused ? '0 0 0 2px rgba(99, 102, 241, 0.2)' : 'none',
+                      '&:hover': { borderColor: 'var(--primary)' },
+                      borderRadius: '8px',
+                      padding: '2px',
+                    }),
+                    option: (base, state) => ({
+                      ...base,
+                      backgroundColor: state.isSelected
+                        ? 'var(--primary)'
+                        : state.isFocused
+                          ? 'var(--gray-100)'
+                          : 'white',
+                      color: state.isSelected ? 'white' : 'var(--gray-900)',
+                      cursor: 'pointer',
+                    }),
+                    groupHeading: base => ({
+                      ...base,
+                      fontWeight: '600',
+                      color: 'var(--gray-700)',
+                      fontSize: '12px',
+                      textTransform: 'uppercase',
+                    }),
+                  }}
+                />
+                {businessType === 'Other' && (
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Enter your business type..."
+                    value={customBusinessType}
+                    onChange={e => setCustomBusinessType(e.target.value)}
+                    style={{ marginTop: '8px' }}
+                  />
+                )}
               </div>
             </div>
           )}
 
-          {/* Step 2: Business Type + Keywords + Live Demo */}
+          {/* Step 2: Custom Instructions */}
           {currentStep === 2 && (
             <div>
-              {!sampleResponse ? (
-                <>
-                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
-                    Tell us about your business
-                  </h3>
-                  <p style={{ color: 'var(--gray-600)', marginBottom: '16px', fontSize: '14px' }}>
-                    Enter keywords and see your personalized AI in action
-                  </p>
+              <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>
+                Customize your AI voice
+              </h3>
+              <p style={{ color: 'var(--gray-600)', marginBottom: '20px', fontSize: '14px' }}>
+                Tell the AI what to emphasize and avoid in responses
+              </p>
 
-                  <div className="form-group" style={{ marginBottom: '12px' }}>
-                    <label className="form-label">Business Type</label>
-                    <Select
-                      options={businessTypeOptions}
-                      value={
-                        businessType
-                          ? businessTypeOptions
-                              .flatMap(g => g.options)
-                              .find(o => o.value === businessType) || null
-                          : null
-                      }
-                      onChange={option => {
-                        const newValue = option?.value || '';
-                        setBusinessType(newValue);
-                        if (newValue !== 'Other') {
-                          setCustomBusinessType('');
-                        }
-                      }}
-                      placeholder="Search or select type..."
-                      isClearable
-                      isSearchable
-                      styles={{
-                        control: (base, state) => ({
-                          ...base,
-                          borderColor: state.isFocused ? 'var(--primary)' : 'var(--gray-200)',
-                          boxShadow: state.isFocused ? '0 0 0 2px rgba(99, 102, 241, 0.2)' : 'none',
-                          '&:hover': { borderColor: 'var(--primary)' },
-                          borderRadius: '8px',
-                          padding: '2px',
-                        }),
-                        option: (base, state) => ({
-                          ...base,
-                          backgroundColor: state.isSelected
-                            ? 'var(--primary)'
-                            : state.isFocused
-                              ? 'var(--gray-100)'
-                              : 'white',
-                          color: state.isSelected ? 'white' : 'var(--gray-900)',
-                          cursor: 'pointer',
-                        }),
-                        groupHeading: base => ({
-                          ...base,
-                          fontWeight: '600',
-                          color: 'var(--gray-700)',
-                          fontSize: '12px',
-                          textTransform: 'uppercase',
-                        }),
-                      }}
-                    />
-                    {businessType === 'Other' && (
-                      <input
-                        type="text"
-                        className="form-input"
-                        placeholder="Enter your business type..."
-                        value={customBusinessType}
-                        onChange={e => setCustomBusinessType(e.target.value)}
-                        style={{ marginTop: '8px' }}
-                      />
-                    )}
-                  </div>
-
-                  <div className="form-group" style={{ marginBottom: '16px' }}>
-                    <label className="form-label">Keywords (comma-separated)</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder={getContextPlaceholder(businessType)}
-                      value={keywords}
-                      onChange={e => setKeywords(e.target.value)}
-                    />
-                  </div>
-
-                  <button
-                    className="btn btn-primary"
-                    onClick={generateBusinessContext}
-                    disabled={generatingContext || !keywords.trim()}
-                    style={{ width: '100%' }}
-                  >
-                    {generatingContext ? (
-                      <>
-                        <Loader size={16} className="spin" style={{ marginRight: '8px' }} />
-                        {loadingStep || 'Generating...'}
-                      </>
-                    ) : (
-                      '✨ See AI in Action'
-                    )}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px' }}>
-                    Your AI is personalized!
-                  </h3>
-
-                  {/* Sample Review */}
-                  <div style={{ marginBottom: '12px' }}>
-                    <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginBottom: '4px' }}>
-                      ⭐⭐⭐⭐⭐ Sample Customer Review:
-                    </p>
-                    <p
+              {/* Tone Selection */}
+              <div className="form-group" style={{ marginBottom: '20px' }}>
+                <label className="form-label">Response Tone</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {[
+                    { value: 'professional', label: 'Professional', icon: '💼' },
+                    { value: 'friendly', label: 'Friendly', icon: '😊' },
+                    { value: 'casual', label: 'Casual', icon: '👋' },
+                  ].map(tone => (
+                    <button
+                      key={tone.value}
+                      type="button"
+                      onClick={() => setSelectedTone(tone.value)}
                       style={{
-                        fontSize: '13px',
-                        margin: 0,
-                        padding: '10px',
-                        background: 'var(--gray-50)',
-                        borderRadius: '6px',
-                        fontStyle: 'italic',
-                        lineHeight: '1.4',
-                      }}
-                    >
-                      "{sampleReview}"
-                    </p>
-                  </div>
-
-                  {/* AI Response */}
-                  <div
-                    style={{
-                      background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-                      border: '1px solid #86efac',
-                      borderRadius: '8px',
-                      padding: '12px',
-                    }}
-                  >
-                    <div
-                      style={{
+                        flex: 1,
+                        padding: '12px 8px',
+                        border:
+                          selectedTone === tone.value
+                            ? '2px solid var(--primary)'
+                            : '1px solid var(--gray-200)',
+                        borderRadius: '8px',
+                        background: selectedTone === tone.value ? 'var(--primary-50)' : 'white',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
                         display: 'flex',
+                        flexDirection: 'column',
                         alignItems: 'center',
-                        gap: '6px',
-                        marginBottom: '6px',
+                        gap: '4px',
                       }}
                     >
-                      <CheckCircle size={14} style={{ color: '#22c55e' }} />
-                      <span style={{ fontSize: '12px', fontWeight: '600', color: '#15803d' }}>
-                        Your AI Response:
+                      <span style={{ fontSize: '20px' }}>{tone.icon}</span>
+                      <span
+                        style={{
+                          fontSize: '13px',
+                          fontWeight: selectedTone === tone.value ? '600' : '400',
+                          color:
+                            selectedTone === tone.value ? 'var(--primary)' : 'var(--gray-700)',
+                        }}
+                      >
+                        {tone.label}
                       </span>
-                    </div>
-                    <p style={{ fontSize: '13px', color: '#166534', margin: 0, lineHeight: '1.4' }}>
-                      {sampleResponse}
-                    </p>
-                  </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-                  {/* Go to Settings hint */}
-                  <div
-                    style={{
-                      background: 'linear-gradient(135deg, var(--primary-50), #eff6ff)',
-                      border: '1px solid var(--primary-200)',
-                      borderRadius: '8px',
-                      padding: '12px',
-                      marginTop: '12px',
-                    }}
-                  >
-                    <p
-                      style={{
-                        fontSize: '13px',
-                        color: 'var(--primary-700)',
-                        margin: 0,
-                        textAlign: 'center',
-                      }}
-                    >
-                      <strong>💡 Pro Tip:</strong> After setup, go to{' '}
-                      <strong>Settings → Generate with AI</strong> to add more details and get even
-                      better responses!
-                    </p>
-                  </div>
-                </>
-              )}
+              {/* Always Mention */}
+              <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label className="form-label">
+                  Always mention{' '}
+                  <span style={{ color: 'var(--gray-400)', fontWeight: '400' }}>(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g., 24/7 support, free consultation, family-owned"
+                  value={alwaysMention}
+                  onChange={e => setAlwaysMention(e.target.value)}
+                />
+                <p
+                  style={{
+                    fontSize: '12px',
+                    color: 'var(--gray-500)',
+                    margin: '4px 0 0 0',
+                  }}
+                >
+                  Comma-separated phrases to include in responses
+                </p>
+              </div>
+
+              {/* Never Say */}
+              <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label className="form-label">
+                  Never say{' '}
+                  <span style={{ color: 'var(--gray-400)', fontWeight: '400' }}>(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g., sorry, discount, compensation"
+                  value={neverSay}
+                  onChange={e => setNeverSay(e.target.value)}
+                />
+                <p
+                  style={{
+                    fontSize: '12px',
+                    color: 'var(--gray-500)',
+                    margin: '4px 0 0 0',
+                  }}
+                >
+                  Words or phrases to avoid in responses
+                </p>
+              </div>
+
+              {/* Preview hint */}
+              <div
+                style={{
+                  background: 'linear-gradient(135deg, var(--primary-50), #eff6ff)',
+                  border: '1px solid var(--primary-200)',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  marginTop: '8px',
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: '13px',
+                    color: 'var(--primary-700)',
+                    margin: 0,
+                    textAlign: 'center',
+                  }}
+                >
+                  💡 These settings are applied to all your responses. You can change them anytime
+                  in Settings.
+                </p>
+              </div>
             </div>
           )}
 
@@ -5630,17 +5733,17 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
             <button
               className="btn btn-primary"
               onClick={nextStep}
-              disabled={!businessName.trim()}
+              disabled={!businessName.trim() || (!businessType && !customBusinessType.trim())}
             >
               Continue
             </button>
           ) : (
             <button
               className="btn btn-primary"
-              onClick={sampleResponse ? completeOnboarding : undefined}
-              disabled={!sampleResponse || loading}
+              onClick={nextStep}
+              disabled={loading}
             >
-              {loading ? 'Finishing...' : sampleResponse ? 'Finish Setup →' : 'Generate preview first'}
+              {loading ? 'Saving...' : 'Finish Setup →'}
             </button>
           )}
         </div>
@@ -7468,8 +7571,8 @@ const DashboardPage = () => {
               )}
             </button>
 
-            {/* Collapsible Options Section */}
-            <details style={{ marginBottom: '8px' }}>
+            {/* Collapsible Options Section - Open by default */}
+            <details open style={{ marginBottom: '8px' }}>
               <summary
                 style={{
                   cursor: 'pointer',
@@ -7485,7 +7588,7 @@ const DashboardPage = () => {
                 }}
               >
                 <ChevronDown size={16} style={{ transition: 'transform 0.2s' }} />
-                Options (Tone, Rating, AI Model...)
+                Customize Response
               </summary>
               <div style={{ paddingTop: '16px' }}>
                 <div className="form-group">
