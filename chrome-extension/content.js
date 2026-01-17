@@ -520,6 +520,27 @@ function detectIssues(text) {
 
 // ========== MULTI-PLATFORM AUTO-PASTE ==========
 const PLATFORM_SELECTORS = {
+  // Demo mode for tryreviewresponder.com demo pages and localhost
+  Demo: {
+    replyField: [
+      'textarea[aria-label*="reply"]',
+      'textarea[aria-label*="Reply"]',
+      '.reply-textarea',
+      '#reply-textarea',
+    ],
+    replyButton: [
+      '.reply-btn',
+      '#reply-btn',
+      'button[aria-label*="Reply"]',
+    ],
+    submitButton: [
+      '.btn-submit',
+      '#submit-btn',
+      'button[aria-label*="Post"]',
+      'button[aria-label*="Submit"]',
+    ],
+    submitText: ['post', 'submit', 'send', 'reply']
+  },
   Google: {
     replyField: [
       'textarea[aria-label*="Reply"]',
@@ -729,7 +750,7 @@ function findGoogleMapsSubmitButton() {
 
 async function autoPasteToReviewField(text, panel, autoSubmit = false) {
   const platform = detectPlatform();
-  const supportedPlatforms = ['Google', 'Yelp', 'TripAdvisor', 'Facebook', 'Booking', 'Trustpilot'];
+  const supportedPlatforms = ['Google', 'Yelp', 'TripAdvisor', 'Facebook', 'Booking', 'Trustpilot', 'Demo'];
 
   if (!supportedPlatforms.includes(platform.name)) {
     showToast(`⚠️ Auto-paste not yet supported on ${platform.name}`, 'warning');
@@ -1529,6 +1550,15 @@ function detectLanguage(text) {
 // ========== PLATFORM DETECTION ==========
 function detectPlatform() {
   const hostname = window.location.hostname;
+  const pathname = window.location.pathname;
+
+  // Demo mode for localhost and tryreviewresponder.com demo pages
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return { name: 'Demo', icon: '🎬', color: '#667eea' };
+  }
+  if (hostname.includes('tryreviewresponder.com') && pathname.includes('demo')) {
+    return { name: 'Demo', icon: '🎬', color: '#667eea' };
+  }
 
   // Google (all domains: google.com, google.de, google.fr, etc.)
   if (hostname.includes('google.')) return { name: 'Google', icon: '📍', color: '#4285f4' };
@@ -2170,7 +2200,7 @@ async function createResponsePanel() {
 
   const platform = detectPlatform();
   const isGoogleMaps = platform.name === 'Google';
-  const supportedPlatforms = ['Google', 'Yelp', 'TripAdvisor', 'Facebook', 'Booking', 'Trustpilot'];
+  const supportedPlatforms = ['Google', 'Yelp', 'TripAdvisor', 'Facebook', 'Booking', 'Trustpilot', 'Demo'];
   const isPasteSupported = supportedPlatforms.includes(platform.name);
 
   panel.innerHTML = `
