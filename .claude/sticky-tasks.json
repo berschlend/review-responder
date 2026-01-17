@@ -1,6 +1,10 @@
 {
     "tasks":  [
                   {
+                      "id":  0,
+                      "text":  "⏳ AWS SES Production Access PENDING - Sandbox aktiv (200/Tag, nur verifizierte Empfänger). Prüfen: AWS Console → SES → Account Dashboard"
+                  },
+                  {
                       "id":  1,
                       "text":  "🔥 HOT LEAD #1: Tí Cafe Denver +1-720-440-2864 (geklickt 17.01!) → call-prep/ti-cafe-denver.md | Anrufen 18-19:30 CET"
                   },

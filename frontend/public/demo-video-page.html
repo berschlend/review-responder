@@ -17,6 +17,20 @@
       min-height: 100vh;
     }
 
+    /* ========== EXTENSION COMPATIBILITY ==========
+       These classes match Google Maps selectors so the
+       ReviewResponder extension can detect reviews!
+       - .jftiEf = Review container (CRITICAL!)
+       - .wiI7pd = Review text (CRITICAL!)
+       - .MyEned = Alternative review text
+       ============================================ */
+    .jftiEf {
+      /* Google Maps review container - Extension looks for this! */
+    }
+    .wiI7pd {
+      /* Google Maps review text - Extension extracts text from this! */
+    }
+
     /* Google Maps Header */
     .gm-header {
       background: #fff;
@@ -497,7 +511,8 @@
       </div>
 
       <!-- The Review (this is what gets selected) -->
-      <div class="review" id="main-review">
+      <!-- CRITICAL: .jftiEf class = Extension detects this as review container! -->
+      <div class="review jftiEf" id="main-review">
         <div class="review-author">
           <div class="author-avatar">J</div>
           <div class="author-info">
@@ -508,7 +523,8 @@
             </div>
           </div>
         </div>
-        <div class="review-text" id="review-text">
+        <!-- CRITICAL: .wiI7pd class = Extension extracts review text from this! -->
+        <div class="review-text wiI7pd" id="review-text">
           NEVER staying here again! Checked in at 3pm but room wasn't ready until 6pm. When I finally got in, there were stains on the sheets and hair in the bathroom. Asked the front desk for help and they just shrugged. $300/night for THIS?! Save your money and stay somewhere else. Absolutely disgusted.
         </div>
         <div class="review-actions">

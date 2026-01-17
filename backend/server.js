@@ -15034,12 +15034,14 @@ app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
               ).toFixed(1)
             : 0,
       },
-      // Echte User = haben mindestens 1x generiert (egal wo!)
+      // Echte User = haben mindestens 1x GENERIERT (nicht nur Demo angesehen!)
+      // inFunnel = Demo/Magic Link geklickt aber noch nicht generiert
       realUsers: {
         total: parseInt(realUserMetrics.real_users) || 0,
         viaGenerator: parseInt(realUserMetrics.via_generator) || 0,
         viaDemo: parseInt(realUserMetrics.via_demo) || 0,
         viaInstantTry: parseInt(realUserMetrics.via_instant_try) || 0,
+        inFunnel: parseInt(realUserMetrics.in_funnel) || 0,
         inactive: parseInt(realUserMetrics.inactive_users) || 0,
       },
       activity: {

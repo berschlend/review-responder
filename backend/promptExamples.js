@@ -435,16 +435,23 @@ function getIndustryExamples(businessType) {
 
   const type = businessType.toLowerCase();
 
+  // ========== SPECIFIC MATCHES FIRST (more specific before general) ==========
+
+  // Coffee Shop (before restaurant to catch "coffee")
+  if (type.includes('coffee') || type.includes('cafe') || type.includes('espresso')) {
+    return industryExamples.coffeeshop;
+  }
+
   // Restaurant / Food Service
   if (
     type.includes('restaurant') ||
-    type.includes('cafe') ||
     type.includes('bar') ||
     type.includes('food') ||
     type.includes('pizza') ||
     type.includes('bakery') ||
-    type.includes('coffee') ||
-    type.includes('catering')
+    type.includes('catering') ||
+    type.includes('bistro') ||
+    type.includes('diner')
   ) {
     return industryExamples.restaurant;
   }
@@ -452,6 +459,89 @@ function getIndustryExamples(businessType) {
   // Dental
   if (type.includes('dental') || type.includes('dentist') || type.includes('orthodont')) {
     return industryExamples.dental;
+  }
+
+  // ========== HOME SERVICES (specific trades first) ==========
+
+  // Plumber
+  if (type.includes('plumb') || type.includes('pipe') || type.includes('drain')) {
+    return industryExamples.plumber;
+  }
+
+  // Electrician
+  if (type.includes('electric') || type.includes('wiring') || type.includes('panel')) {
+    return industryExamples.electrician;
+  }
+
+  // HVAC
+  if (type.includes('hvac') || type.includes('heating') || type.includes('cooling') || type.includes('air condition')) {
+    return industryExamples.hvac;
+  }
+
+  // Roofing
+  if (type.includes('roof') || type.includes('gutter') || type.includes('shingle')) {
+    return industryExamples.roofing;
+  }
+
+  // Landscaping
+  if (type.includes('landscap') || type.includes('lawn') || type.includes('garden') || type.includes('yard')) {
+    return industryExamples.landscaping;
+  }
+
+  // Cleaning Services
+  if (type.includes('clean') || type.includes('maid') || type.includes('janitorial') || type.includes('housekeep')) {
+    return industryExamples.cleaning;
+  }
+
+  // ========== PROFESSIONAL SERVICES ==========
+
+  // Accountant / CPA
+  if (type.includes('account') || type.includes('cpa') || type.includes('bookkeep') || type.includes('tax')) {
+    return industryExamples.accountant;
+  }
+
+  // Insurance Agent
+  if (type.includes('insurance') || type.includes('policy') || type.includes('coverage')) {
+    return industryExamples.insurance;
+  }
+
+  // Therapy / Counseling
+  if (type.includes('therap') || type.includes('counsel') || type.includes('psycholog') || type.includes('mental health')) {
+    return industryExamples.therapy;
+  }
+
+  // Senior Care / Home Care
+  if (type.includes('senior') || type.includes('elder') || type.includes('home care') || type.includes('assisted')) {
+    return industryExamples.seniorcare;
+  }
+
+  // ========== LIFESTYLE / EVENTS ==========
+
+  // Photography
+  if (type.includes('photo') || type.includes('portrait') || type.includes('headshot')) {
+    return industryExamples.photographer;
+  }
+
+  // Wedding
+  if (type.includes('wedding') || type.includes('bridal') || type.includes('event plann')) {
+    return industryExamples.wedding;
+  }
+
+  // Daycare / Childcare
+  if (type.includes('daycare') || type.includes('childcare') || type.includes('preschool') || type.includes('nursery')) {
+    return industryExamples.daycare;
+  }
+
+  // ========== E-COMMERCE / TECH ==========
+
+  // SaaS / Software
+  if (type.includes('saas') || type.includes('software') || type.includes('app') || type.includes('platform')) {
+    return industryExamples.saas;
+  }
+
+  // E-commerce
+  if (type.includes('ecommerce') || type.includes('e-commerce') || type.includes('online store') || type.includes('amazon seller')) {
+    return industryExamples.ecommerce;
   }
 
   // Hotel / Hospitality
