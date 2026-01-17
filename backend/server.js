@@ -18536,19 +18536,66 @@ app.get('/api/auth/magic-login/:token', async (req, res) => {
     let user = await dbGet('SELECT * FROM users WHERE LOWER(email) = LOWER($1)', [magicLink.email]);
 
     if (!user) {
-      // BOT PROTECTION: Don't auto-create accounts for bots
-      // This prevents email security scanners from creating fake accounts
+      // ========== ENHANCED BOT PROTECTION (18.01.2026) ==========
+      // Problem: MS365 SafeLinks uses normal browser User-Agents
+      // Solution: Multi-layer detection (User-Agent + Timing + Email Pattern)
+
+      // Layer 1: User-Agent based detection (existing)
+      let botReason = null;
       if (isBot) {
+        botReason = `user-agent: ${userAgent.substring(0, 50)}`;
+      }
+
+      // Layer 2: TIMING-BASED DETECTION
+      // Security scanners click links within seconds of email delivery
+      // Real humans take at least 30+ seconds to read email and click
+      const linkAgeSeconds = magicLink.created_at
+        ? (Date.now() - new Date(magicLink.created_at).getTime()) / 1000
+        : null;
+
+      if (linkAgeSeconds !== null && linkAgeSeconds < 30) {
+        botReason = `timing: clicked ${Math.round(linkAgeSeconds)}s after creation (< 30s = bot)`;
+      }
+
+      // Layer 3: CORPORATE SYSTEM EMAIL PATTERNS
+      // H####@accor.com, H####@marriott.com = hotel system emails (bots click these)
+      const corporateBotPatterns = [
+        /^[hH]\d{4,}@/,  // H0796@accor.com pattern
+        /^(info|contact|hello|support|admin|noreply|no-reply)@/i,  // Generic emails that are often auto-scanned
+      ];
+      const isCorporateBotEmail = corporateBotPatterns.some(p => p.test(magicLink.email));
+
+      // For corporate emails, require MORE time (bots scan these aggressively)
+      if (isCorporateBotEmail && linkAgeSeconds !== null && linkAgeSeconds < 120) {
+        botReason = `corporate-email-timing: ${magicLink.email} clicked after ${Math.round(linkAgeSeconds)}s (< 120s for corp = bot)`;
+      }
+
+      // Layer 4: NO REFERER CHECK
+      // Email security scanners typically don't send Referer headers
+      // Real users clicking from webmail (Gmail, Outlook) usually have a Referer
+      const referer = req.headers['referer'] || req.headers['referrer'] || '';
+      const hasNoReferer = !referer || referer === '';
+
+      // Combine signals: No referer + fast click = definitely bot
+      if (hasNoReferer && linkAgeSeconds !== null && linkAgeSeconds < 60) {
+        botReason = `no-referer-fast-click: no referer + ${Math.round(linkAgeSeconds)}s`;
+      }
+
+      // If any bot signal triggered, don't create account
+      if (botReason) {
         console.log(
-          `🤖 Bot detected, not creating account for ${magicLink.email} (UA: ${userAgent.substring(0, 100)})`
+          `🤖 Bot detected for ${magicLink.email} - Reason: ${botReason}`
         );
         // Still redirect to login page, but user will need to register manually
         return res.redirect(
           'https://tryreviewresponder.com/register?email=' +
             encodeURIComponent(magicLink.email) +
-            '&from=magic_link'
+            '&from=magic_link&bot_blocked=true'
         );
       }
+
+      // Log successful human detection for monitoring
+      console.log(`✅ Human verified for ${magicLink.email} - Age: ${linkAgeSeconds ? Math.round(linkAgeSeconds) + 's' : 'unknown'}, Referer: ${referer || 'none'}`)
 
       // Auto-create user account (only for real humans)
       const randomPassword = crypto.randomBytes(32).toString('hex');
