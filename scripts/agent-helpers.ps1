@@ -8,7 +8,7 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend", "feedback-read", "feedback-alert", "budget-check", "budget-use", "approval-check", "approval-expire", "check-real-users", "data-analyze", "get-login", "set-tier", "chrome-gmail", "chrome-admin", "chrome-monitor-setup", "goal-check", "likely-real")]
+    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend", "feedback-read", "feedback-alert", "budget-check", "budget-use", "approval-check", "approval-expire", "check-real-users", "data-analyze", "get-login", "set-tier", "chrome-gmail", "chrome-admin", "chrome-monitor-setup", "goal-check", "likely-real", "hot-lead-add", "call-status", "sync-sticky-tasks", "call-alert")]
     [string]$Action,
 
     [int]$Agent = 0,
@@ -18,7 +18,12 @@ param(
     [string]$Value = "",
     [int]$Amount = 1,           # For budget-use: amount to deduct
     [ValidateSet("free", "starter", "pro", "unlimited", "")]
-    [string]$Tier = ""          # For get-login/set-tier: plan tier
+    [string]$Tier = "",         # For get-login/set-tier: plan tier
+    [string]$Name = "",         # For hot-lead-add: business name
+    [string]$Phone = "",        # For hot-lead-add: phone number
+    [string]$Problem = "",      # For hot-lead-add: problem/reason
+    [string]$City = "",         # For hot-lead-add: city (optional)
+    [string]$Email = ""         # For hot-lead-add: email (optional)
 )
 
 $ErrorActionPreference = "Stop"
@@ -1227,14 +1232,14 @@ if ($Action -eq "call-status") {
         Write-Host "Callbacks Due: $($response.stats.callbacks_due)" -ForegroundColor $(if ($response.stats.callbacks_due -gt 0) { "Red" } else { "Gray" })
 
         if ($response.needs_attention) {
-            Write-Host "`n⚠️  BEREND NEEDS TO MAKE CALLS!" -ForegroundColor Red
+            Write-Host "`n[!] BEREND NEEDS TO MAKE CALLS!" -ForegroundColor Red
         }
 
         if ($response.hot_leads.Count -gt 0) {
             Write-Host "`n=== HOT LEADS ===" -ForegroundColor Red
             foreach ($lead in $response.hot_leads) {
-                Write-Host "  🔥 $($lead.business_name) - $($lead.phone)" -ForegroundColor Yellow
-                Write-Host "     $($lead.problem)"
+                Write-Host "  [HOT] $($lead.business_name) - $($lead.phone)" -ForegroundColor Yellow
+                Write-Host "        $($lead.problem)"
             }
         }
 
