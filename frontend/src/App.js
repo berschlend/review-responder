@@ -7724,25 +7724,33 @@ const DashboardPage = () => {
                     className="form-textarea"
                     value={customInstructions}
                     onChange={e => setCustomInstructions(e.target.value)}
-                    placeholder={`<rules>
-- Always mention our 24/7 support
-- Keep responses under 100 words
-</rules>
+                    placeholder={`<always>
+- Mention our 24/7 support
+- Thank them by name if mentioned
+</always>
+
+<never>
+- Say "sorry for the inconvenience"
+- Use generic phrases like "valued customer"
+</never>
+
 <style>
-- Friendly and warm tone
-- Use customer's name if mentioned
+- Friendly, warm tone
+- Keep it under 80 words
 </style>`}
-                    rows={4}
+                    rows={5}
                     style={{
                       resize: 'vertical',
-                      minHeight: '100px',
+                      minHeight: '120px',
                       fontFamily: 'monospace',
                       fontSize: '12px',
                     }}
                   />
                   <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
-                    Use XML tags like {'<rules>'}, {'<style>'}, {'<always>'}, {'<never>'} for better
-                    AI understanding
+                    💡{' '}
+                    <code style={{ background: 'var(--gray-100)', padding: '1px 4px', borderRadius: '3px' }}>&lt;always&gt;</code> = do this every time · {' '}
+                    <code style={{ background: 'var(--gray-100)', padding: '1px 4px', borderRadius: '3px' }}>&lt;never&gt;</code> = avoid this · {' '}
+                    <code style={{ background: 'var(--gray-100)', padding: '1px 4px', borderRadius: '3px' }}>&lt;style&gt;</code> = tone & length
                   </p>
                 </div>
               </div>
