@@ -12583,6 +12583,141 @@ app.post('/api/admin/mark-test-user', authenticateAdmin, async (req, res) => {
   }
 });
 
+// POST /api/admin/setup-test-accounts - Create dedicated test accounts for /funnel-verify
+// Creates 4 test accounts (Free, Starter, Pro, Unlimited) with is_test_account=true
+app.post('/api/admin/setup-test-accounts', authenticateAdmin, async (req, res) => {
+  const testAccounts = [
+    { email: 'funnel-test-free@test.local', plan: 'free', limit: 20 },
+    { email: 'funnel-test-starter@test.local', plan: 'starter', limit: 300 },
+    { email: 'funnel-test-pro@test.local', plan: 'professional', limit: 800 },
+    { email: 'funnel-test-unlimited@test.local', plan: 'unlimited', limit: 999999 },
+  ];
+
+  const results = [];
+  const passwords = {};
+
+  try {
+    for (const account of testAccounts) {
+      // Check if already exists
+      const existing = await dbGet('SELECT id, email FROM users WHERE LOWER(email) = LOWER($1)', [
+        account.email,
+      ]);
+
+      if (existing) {
+        // Update existing account to ensure correct settings
+        await dbQuery(
+          `UPDATE users SET
+            subscription_plan = $1,
+            responses_limit = $2,
+            responses_used = 0,
+            is_test_account = true
+          WHERE id = $3`,
+          [account.plan, account.limit, existing.id]
+        );
+        results.push({
+          email: account.email,
+          plan: account.plan,
+          action: 'updated',
+          note: 'Existing account updated with correct settings',
+        });
+        passwords[account.email] = '[existing - check secrets.local]';
+      } else {
+        // Generate secure password
+        const password = crypto.randomBytes(16).toString('hex');
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create new account
+        await dbQuery(
+          `INSERT INTO users (
+            email, password, business_name, subscription_plan,
+            responses_limit, responses_used, is_test_account, email_verified
+          ) VALUES ($1, $2, $3, $4, $5, 0, true, true)`,
+          [
+            account.email,
+            hashedPassword,
+            `Funnel Test - ${account.plan}`,
+            account.plan,
+            account.limit,
+          ]
+        );
+
+        results.push({
+          email: account.email,
+          plan: account.plan,
+          limit: account.limit,
+          action: 'created',
+        });
+        passwords[account.email] = password;
+      }
+    }
+
+    console.log(`✅ Admin setup-test-accounts: ${results.length} accounts processed`);
+
+    res.json({
+      success: true,
+      message: 'Test accounts ready for /funnel-verify',
+      accounts: results,
+      passwords: passwords,
+      note: 'SAVE PASSWORDS NOW! They are only shown once. Add to .claude/secrets.local',
+    });
+  } catch (error) {
+    console.error('Admin setup-test-accounts error:', error);
+    res.status(500).json({ error: 'Failed to setup test accounts', details: error.message });
+  }
+});
+
+// POST /api/admin/reset-test-account - Reset a test account for repeated testing
+// Resets responses_used to 0 without changing password
+app.post('/api/admin/reset-test-account', authenticateAdmin, async (req, res) => {
+  const { email, reset_all = false } = req.body;
+
+  try {
+    if (reset_all) {
+      // Reset all funnel-test accounts
+      const result = await dbQuery(
+        `UPDATE users SET responses_used = 0
+         WHERE email LIKE 'funnel-test-%@test.local'
+         AND is_test_account = true
+         RETURNING email, subscription_plan, responses_limit`
+      );
+
+      console.log(`✅ Admin reset-test-account: Reset ${result.rowCount} test accounts`);
+
+      res.json({
+        success: true,
+        reset_count: result.rowCount,
+        accounts: result.rows,
+      });
+    } else {
+      if (!email) {
+        return res.status(400).json({ error: 'email required (or set reset_all=true)' });
+      }
+
+      // Reset single account
+      const result = await dbQuery(
+        `UPDATE users SET responses_used = 0
+         WHERE LOWER(email) = LOWER($1) AND is_test_account = true
+         RETURNING email, subscription_plan, responses_limit, responses_used`,
+        [email]
+      );
+
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: `Test account not found: ${email}` });
+      }
+
+      console.log(`✅ Admin reset-test-account: Reset ${email}`);
+
+      res.json({
+        success: true,
+        account: result.rows[0],
+      });
+    }
+  } catch (error) {
+    console.error('Admin reset-test-account error:', error);
+    res.status(500).json({ error: 'Failed to reset test account' });
+  }
+});
+
 // GET /api/admin/delete-user - Delete user completely (for testing)
 app.get('/api/admin/delete-user', async (req, res) => {
   const { email, key } = req.query;

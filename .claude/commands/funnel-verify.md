@@ -772,5 +772,228 @@ $approval = @{
 
 ---
 
-*Version: 2.1 - Mit korrekten API Endpoints + Auto-Report*
+## TEST ACCOUNTS (Pre-Created)
+
+> Dedizierte Test-Accounts für alle Tiers - verfälschen KEINE Metriken!
+
+### Account Übersicht
+
+| Tier | Email | Plan | Limit | Zweck |
+|------|-------|------|-------|-------|
+| Free | `funnel-test-free@test.local` | free | 20 | Limit-Tests, Free-Flows |
+| Starter | `funnel-test-starter@test.local` | starter | 300 | Feature-Tests |
+| Pro | `funnel-test-pro@test.local` | professional | 800 | Bulk-Tests, Pro-Features |
+| Unlimited | `funnel-test-unlimited@test.local` | unlimited | 999999 | Full Access Tests |
+
+### Passwords
+Siehe `.claude/secrets.local` → `FUNNEL_TEST_*` Variablen
+
+### Setup (einmalig via API)
+
+```bash
+# Test-Accounts erstellen (gibt Passwords zurück - EINMALIG!)
+curl -X POST "https://review-responder.onrender.com/api/admin/setup-test-accounts" \
+  -H "x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U" \
+  -H "Content-Type: application/json"
+
+# Response enthält Passwords - SOFORT in secrets.local speichern!
+```
+
+### Reset (vor jedem Test-Run)
+
+```bash
+# Alle Test-Accounts zurücksetzen (responses_used = 0)
+curl -X POST "https://review-responder.onrender.com/api/admin/reset-test-account" \
+  -H "x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U" \
+  -H "Content-Type: application/json" \
+  -d '{"reset_all": true}'
+
+# Einzelnen Account zurücksetzen
+curl -X POST "https://review-responder.onrender.com/api/admin/reset-test-account" \
+  -H "x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "funnel-test-free@test.local"}'
+```
+
+---
+
+## TIER-SPECIFIC TEST FLOWS
+
+### Free Tier Tests (funnel-test-free@test.local)
+
+```
+FREE TIER CHECKLIST:
+
+[ ] STEP 1: Login als Free User
+    - navigate("/login")
+    - form_input(email, "funnel-test-free@test.local")
+    - form_input(password, "[from secrets.local]")
+    - VERIFY: Dashboard zeigt "Free Plan"
+
+[ ] STEP 2: Verify Limit Display
+    - read_page(tabId)
+    - VERIFY: "X/20 responses" sichtbar
+    - VERIFY: Upgrade CTA sichtbar
+
+[ ] STEP 3: Generate Near-Limit (API)
+    - Set responses_used = 19 via API
+    - Generiere Response #20
+    - VERIFY: Response funktioniert
+
+[ ] STEP 4: Limit Reached
+    - Versuche Response #21
+    - VERIFY: Limit Warning erscheint
+    - VERIFY: Upgrade Button funktioniert
+    - VERIFY: Stripe Checkout öffnet
+
+[ ] STEP 5: Reset für nächsten Test
+    - POST /api/admin/reset-test-account
+```
+
+### Starter Tier Tests (funnel-test-starter@test.local)
+
+```
+STARTER TIER CHECKLIST:
+
+[ ] STEP 1: Login als Starter User
+    - VERIFY: Dashboard zeigt "Starter Plan"
+    - VERIFY: 0/300 responses
+
+[ ] STEP 2: Verify Starter Features
+    - VERIFY: Tone Options vorhanden
+    - VERIFY: History Access vorhanden
+    - VERIFY: KEIN Bulk Generator (Pro Feature)
+
+[ ] STEP 3: Generate Response
+    - Standard Generation Test
+    - VERIFY: Counter incrementiert (1/300)
+```
+
+### Pro Tier Tests (funnel-test-pro@test.local)
+
+```
+PRO TIER CHECKLIST:
+
+[ ] STEP 1: Login als Pro User
+    - VERIFY: Dashboard zeigt "Professional Plan"
+    - VERIFY: 0/800 responses
+
+[ ] STEP 2: Verify Pro Features
+    - VERIFY: Bulk Generator vorhanden
+    - VERIFY: Analytics Dashboard vorhanden
+    - VERIFY: Priority Support Badge
+
+[ ] STEP 3: Bulk Generation Test
+    - Navigate zu Bulk Generator
+    - Input: 3 Reviews
+    - VERIFY: Alle 3 Responses generiert
+    - VERIFY: Counter zeigt 3/800
+```
+
+### Unlimited Tier Tests (funnel-test-unlimited@test.local)
+
+```
+UNLIMITED TIER CHECKLIST:
+
+[ ] STEP 1: Login als Unlimited User
+    - VERIFY: Dashboard zeigt "Unlimited Plan"
+    - VERIFY: KEIN Limit Display
+
+[ ] STEP 2: Verify No Limits
+    - Generate 5 Responses schnell hintereinander
+    - VERIFY: Keine Limit Warning
+    - VERIFY: Kein Upgrade CTA
+
+[ ] STEP 3: All Features
+    - VERIFY: Alle Pro Features vorhanden
+    - VERIFY: API Access (wenn implementiert)
+```
+
+---
+
+## ADMIN ACCESS
+
+### Admin Key
+```
+x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U
+```
+
+### Admin Endpoints für Testing
+
+| Endpoint | Method | Zweck |
+|----------|--------|-------|
+| `/api/admin/setup-test-accounts` | POST | Test-Accounts erstellen |
+| `/api/admin/reset-test-account` | POST | Responses zurücksetzen |
+| `/api/admin/set-user-responses` | POST | Responses-Count manuell setzen |
+| `/api/admin/mark-test-user` | POST | User als Test markieren |
+| `/api/admin/stats?exclude_test=true` | GET | Echte Metriken (ohne Test) |
+
+### Admin Stats Check (nach Tests)
+
+```bash
+# Verify Test-Accounts werden excluded
+curl "https://review-responder.onrender.com/api/admin/stats" \
+  -H "x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
+
+curl "https://review-responder.onrender.com/api/admin/stats?exclude_test=true" \
+  -H "x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
+
+# Differenz = Anzahl Test-Accounts (sollte 4 sein)
+```
+
+---
+
+## DATA SAFETY RULES
+
+### NIEMALS:
+- Neue User mit echten Email-Domains erstellen (nur @test.local!)
+- Responses generieren die echte Metriken verfälschen
+- Demo-Flows mit nicht-@test.local Emails testen
+- Test-Accounts ohne `is_test_account=true` nutzen
+
+### IMMER:
+- Bestehende funnel-test-* Accounts nutzen (NICHT neue erstellen!)
+- Test-Emails MÜSSEN `@test.local` oder `@funnel-test.local` Domain haben
+- Nach JEDEM Test-Run: Verify mit `?exclude_test=true`
+- Vor Metriken-Report: Test-Accounts excluded prüfen
+
+### Email Domain Pattern
+
+```
+✅ SAFE:
+- funnel-test-free@test.local
+- funnel-test-[timestamp]@test.local
+- demo-test-123@funnel-test.local
+
+❌ UNSAFE:
+- test@gmail.com
+- funnel.test@web.de
+- anything@real-domain.com
+```
+
+### Automatic Test Detection
+
+Diese Patterns werden automatisch als Test erkannt:
+- `%@test.%` (alle @test.* Domains)
+- `%@test.local`
+- `is_test_account = true` in DB
+
+### Cleanup Protocol (nach Test-Session)
+
+```bash
+# 1. Reset alle Test-Accounts
+curl -X POST "/api/admin/reset-test-account" \
+  -H "x-admin-key: ..." \
+  -d '{"reset_all": true}'
+
+# 2. Verify Metriken clean
+curl "/api/admin/stats?exclude_test=true" -H "x-admin-key: ..."
+
+# 3. Funnel Health Log updaten
+# (automatisch via /funnel-verify Report)
+```
+
+---
+
+*Version: 3.0 - Mit Test-Accounts, Admin Access & Data Safety*
 *Erstellt: 18.01.2026*
