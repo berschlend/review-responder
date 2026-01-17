@@ -4465,28 +4465,48 @@ ${languageInstruction}
           inputTokens: response.usage?.input_tokens || 0,
           outputTokens: response.usage?.output_tokens || 0,
         });
-      } catch (claudeError) {
-        // Auto-fallback to GPT-4o-mini if Claude fails (out of credits, rate limit, etc.)
-        console.warn(`[Claude Fallback] ${claudeError.message} - using GPT-4o-mini`);
-        useModel = 'standard';
-        const completion = await openai.chat.completions.create({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: systemMessage },
-            { role: 'user', content: userMessage },
-          ],
-          max_tokens: 350,
-          temperature: 0.6,
-        });
-        generatedResponse = completion.choices[0].message.content.trim();
-        logApiCall({
-          provider: 'openai',
-          model: 'gpt-4o-mini',
-          endpoint: '/api/generate (claude-fallback)',
-          userId: req.user?.id,
-          inputTokens: completion.usage?.prompt_tokens || 0,
-          outputTokens: completion.usage?.completion_tokens || 0,
-        });
+      } catch (sonnetError) {
+        // Fallback chain: Sonnet → Haiku → GPT-4o-mini
+        console.warn(`[Sonnet Fallback] ${sonnetError.message} - trying Haiku`);
+        try {
+          const haikuResponse = await anthropic.messages.create({
+            model: 'claude-3-5-haiku-20241022',
+            max_tokens: 350,
+            system: systemMessage,
+            messages: [{ role: 'user', content: userMessage }],
+          });
+          generatedResponse = haikuResponse.content[0].text.trim();
+          logApiCall({
+            provider: 'anthropic',
+            model: 'claude-3-5-haiku-20241022',
+            endpoint: '/api/generate (sonnet-fallback)',
+            userId: req.user?.id,
+            inputTokens: haikuResponse.usage?.input_tokens || 0,
+            outputTokens: haikuResponse.usage?.output_tokens || 0,
+          });
+        } catch (haikuError) {
+          // Last resort: GPT-4o-mini
+          console.warn(`[Haiku Fallback] ${haikuError.message} - using GPT-4o-mini`);
+          useModel = 'standard';
+          const completion = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: systemMessage },
+              { role: 'user', content: userMessage },
+            ],
+            max_tokens: 350,
+            temperature: 0.6,
+          });
+          generatedResponse = completion.choices[0].message.content.trim();
+          logApiCall({
+            provider: 'openai',
+            model: 'gpt-4o-mini',
+            endpoint: '/api/generate (haiku-fallback)',
+            userId: req.user?.id,
+            inputTokens: completion.usage?.prompt_tokens || 0,
+            outputTokens: completion.usage?.completion_tokens || 0,
+          });
+        }
       }
     } else {
       // Use Claude Haiku for Standard AI (better quality than GPT-4o-mini)
@@ -4837,6 +4857,40 @@ app.post('/api/generate-variations', authenticateToken, async (req, res) => {
             messages: [{ role: 'user', content: userMessage }],
           });
           rawResponse = response.content[0].text.trim();
+        } catch (sonnetError) {
+          // Fallback chain: Sonnet → Haiku → GPT-4o-mini
+          try {
+            const haikuResponse = await anthropic.messages.create({
+              model: 'claude-3-5-haiku-20241022',
+              max_tokens: 350,
+              system: systemMessage,
+              messages: [{ role: 'user', content: userMessage }],
+            });
+            rawResponse = haikuResponse.content[0].text.trim();
+          } catch {
+            // Last resort: GPT-4o-mini
+            const completion = await openai.chat.completions.create({
+              model: 'gpt-4o-mini',
+              messages: [
+                { role: 'system', content: systemMessage },
+                { role: 'user', content: userMessage },
+              ],
+              max_tokens: 350,
+              temperature: style.temp,
+            });
+            rawResponse = completion.choices[0].message.content.trim();
+          }
+        }
+      } else {
+        // Use Haiku for variations (better than GPT-4o-mini)
+        try {
+          const haikuResponse = await anthropic.messages.create({
+            model: 'claude-3-5-haiku-20241022',
+            max_tokens: 350,
+            system: systemMessage,
+            messages: [{ role: 'user', content: userMessage }],
+          });
+          rawResponse = haikuResponse.content[0].text.trim();
         } catch {
           // Fallback to GPT-4o-mini
           const completion = await openai.chat.completions.create({
@@ -4850,17 +4904,6 @@ app.post('/api/generate-variations', authenticateToken, async (req, res) => {
           });
           rawResponse = completion.choices[0].message.content.trim();
         }
-      } else {
-        const completion = await openai.chat.completions.create({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: systemMessage },
-            { role: 'user', content: userMessage },
-          ],
-          max_tokens: 350,
-          temperature: style.temp,
-        });
-        rawResponse = completion.choices[0].message.content.trim();
       }
 
       const generatedResponse = cleanAISlop(rawResponse);
@@ -5149,9 +5192,70 @@ LANGUAGE: ${bulkLanguageInstruction}`;
               inputTokens: response.usage?.input_tokens || 0,
               outputTokens: response.usage?.output_tokens || 0,
             });
-          } catch (claudeError) {
-            console.warn(`[Claude Fallback] Bulk: ${claudeError.message} - using GPT-4o-mini`);
-            useModel = 'standard';
+          } catch (sonnetError) {
+            // Fallback chain: Sonnet → Haiku → GPT-4o-mini
+            console.warn(`[Sonnet Fallback] Bulk: ${sonnetError.message} - trying Haiku`);
+            try {
+              const haikuResponse = await anthropic.messages.create({
+                model: 'claude-3-5-haiku-20241022',
+                max_tokens: 350,
+                system: bulkSystemMessage,
+                messages: [{ role: 'user', content: bulkUserMessage }],
+              });
+              generatedResponse = haikuResponse.content[0].text.trim();
+              logApiCall({
+                provider: 'anthropic',
+                model: 'claude-3-5-haiku-20241022',
+                endpoint: '/api/generate-bulk (sonnet-fallback)',
+                userId: req.user?.id,
+                inputTokens: haikuResponse.usage?.input_tokens || 0,
+                outputTokens: haikuResponse.usage?.output_tokens || 0,
+              });
+            } catch (haikuError) {
+              // Last resort: GPT-4o-mini
+              console.warn(`[Haiku Fallback] Bulk: ${haikuError.message} - using GPT-4o-mini`);
+              useModel = 'standard';
+              const completion = await openai.chat.completions.create({
+                model: 'gpt-4o-mini',
+                messages: [
+                  { role: 'system', content: bulkSystemMessage },
+                  { role: 'user', content: bulkUserMessage },
+                ],
+                max_tokens: 350,
+                temperature: 0.6,
+              });
+              generatedResponse = completion.choices[0].message.content.trim();
+              logApiCall({
+                provider: 'openai',
+                model: 'gpt-4o-mini',
+                endpoint: '/api/generate-bulk (haiku-fallback)',
+                userId: req.user?.id,
+                inputTokens: completion.usage?.prompt_tokens || 0,
+                outputTokens: completion.usage?.completion_tokens || 0,
+              });
+            }
+          }
+        } else {
+          // Use Claude Haiku for Standard AI (better than GPT-4o-mini)
+          try {
+            const haikuResponse = await anthropic.messages.create({
+              model: 'claude-3-5-haiku-20241022',
+              max_tokens: 350,
+              system: bulkSystemMessage,
+              messages: [{ role: 'user', content: bulkUserMessage }],
+            });
+            generatedResponse = haikuResponse.content[0].text.trim();
+            logApiCall({
+              provider: 'anthropic',
+              model: 'claude-3-5-haiku-20241022',
+              endpoint: '/api/generate-bulk (standard)',
+              userId: req.user?.id,
+              inputTokens: haikuResponse.usage?.input_tokens || 0,
+              outputTokens: haikuResponse.usage?.output_tokens || 0,
+            });
+          } catch (haikuError) {
+            // Fallback to GPT-4o-mini
+            console.warn(`[Haiku Fallback] Bulk Standard: ${haikuError.message} - using GPT-4o-mini`);
             const completion = await openai.chat.completions.create({
               model: 'gpt-4o-mini',
               messages: [
@@ -5165,36 +5269,12 @@ LANGUAGE: ${bulkLanguageInstruction}`;
             logApiCall({
               provider: 'openai',
               model: 'gpt-4o-mini',
-              endpoint: '/api/generate-bulk (claude-fallback)',
+              endpoint: '/api/generate-bulk (haiku-fallback)',
               userId: req.user?.id,
               inputTokens: completion.usage?.prompt_tokens || 0,
               outputTokens: completion.usage?.completion_tokens || 0,
             });
           }
-        } else {
-          // Use GPT-4o-mini for Standard AI
-          const completion = await openai.chat.completions.create({
-            model: 'gpt-4o-mini',
-            messages: [
-              { role: 'system', content: bulkSystemMessage },
-              { role: 'user', content: bulkUserMessage },
-            ],
-            max_tokens: 350,
-            temperature: 0.6,
-            presence_penalty: 0.1,
-            frequency_penalty: 0.1,
-          });
-          generatedResponse = completion.choices[0].message.content.trim();
-
-          // Log API call for cost tracking
-          logApiCall({
-            provider: 'openai',
-            model: 'gpt-4o-mini',
-            endpoint: '/api/generate-bulk',
-            userId: req.user?.id,
-            inputTokens: completion.usage?.prompt_tokens || 0,
-            outputTokens: completion.usage?.completion_tokens || 0,
-          });
         }
 
         // Apply AI slop filter to clean up typical AI phrases
@@ -7958,25 +8038,45 @@ Write ${ratingStrategy.length}. Be specific. Sound human.`;
     });
 
     return response.content[0].text.trim();
-  } catch (claudeError) {
-    console.warn(`[Claude Fallback] Demo: ${claudeError.message} - using GPT-4o-mini`);
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemMessage },
-        { role: 'user', content: userMessage },
-      ],
-      max_tokens: 300,
-      temperature: 0.6,
-    });
-    logApiCall({
-      provider: 'openai',
-      model: 'gpt-4o-mini',
-      endpoint: '/api/demo/generate (claude-fallback)',
-      inputTokens: completion.usage?.prompt_tokens || 0,
-      outputTokens: completion.usage?.output_tokens || 0,
-    });
-    return completion.choices[0].message.content.trim();
+  } catch (opusError) {
+    // Fallback chain: Opus → Haiku → GPT-4o-mini
+    console.warn(`[Opus Fallback] Demo: ${opusError.message} - trying Haiku`);
+    try {
+      const haikuResponse = await anthropic.messages.create({
+        model: 'claude-3-5-haiku-20241022',
+        max_tokens: 300,
+        system: systemMessage,
+        messages: [{ role: 'user', content: userMessage }],
+      });
+      logApiCall({
+        provider: 'anthropic',
+        model: 'claude-3-5-haiku-20241022',
+        endpoint: '/api/demo/generate (opus-fallback)',
+        inputTokens: haikuResponse.usage?.input_tokens || 0,
+        outputTokens: haikuResponse.usage?.output_tokens || 0,
+      });
+      return haikuResponse.content[0].text.trim();
+    } catch (haikuError) {
+      // Last resort: GPT-4o-mini
+      console.warn(`[Haiku Fallback] Demo: ${haikuError.message} - using GPT-4o-mini`);
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemMessage },
+          { role: 'user', content: userMessage },
+        ],
+        max_tokens: 300,
+        temperature: 0.6,
+      });
+      logApiCall({
+        provider: 'openai',
+        model: 'gpt-4o-mini',
+        endpoint: '/api/demo/generate (haiku-fallback)',
+        inputTokens: completion.usage?.prompt_tokens || 0,
+        outputTokens: completion.usage?.output_tokens || 0,
+      });
+      return completion.choices[0].message.content.trim();
+    }
   }
 }
 
@@ -8756,26 +8856,74 @@ Respond DIRECTLY. No quotes. No prefix. Just the response text.`;
     let generatedResponse;
 
     // Use Claude Sonnet 4 for best quality (InstantDemo is the first impression!)
+    // Fallback chain: Sonnet → Haiku → GPT-4o-mini
     if (anthropic) {
-      const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 250,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: `[Review]\n${reviewText.trim()}` }],
-      });
-      generatedResponse = response.content[0].text.trim();
+      try {
+        const response = await anthropic.messages.create({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 250,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: `[Review]\n${reviewText.trim()}` }],
+        });
+        generatedResponse = response.content[0].text.trim();
 
-      // Log API call for cost tracking
-      await logApiCall({
-        provider: 'anthropic',
-        model: 'claude-sonnet-4-20250514',
-        endpoint: '/api/public/try',
-        inputTokens: response.usage?.input_tokens || 0,
-        outputTokens: response.usage?.output_tokens || 0,
-        status: 'success',
-      });
+        await logApiCall({
+          provider: 'anthropic',
+          model: 'claude-sonnet-4-20250514',
+          endpoint: '/api/public/try',
+          inputTokens: response.usage?.input_tokens || 0,
+          outputTokens: response.usage?.output_tokens || 0,
+          status: 'success',
+        });
+      } catch (sonnetError) {
+        // Fallback to Haiku
+        console.warn(`[Sonnet Fallback] public/try: ${sonnetError.message} - trying Haiku`);
+        try {
+          const haikuResponse = await anthropic.messages.create({
+            model: 'claude-3-5-haiku-20241022',
+            max_tokens: 250,
+            system: systemPrompt,
+            messages: [{ role: 'user', content: `[Review]\n${reviewText.trim()}` }],
+          });
+          generatedResponse = haikuResponse.content[0].text.trim();
+
+          await logApiCall({
+            provider: 'anthropic',
+            model: 'claude-3-5-haiku-20241022',
+            endpoint: '/api/public/try (sonnet-fallback)',
+            inputTokens: haikuResponse.usage?.input_tokens || 0,
+            outputTokens: haikuResponse.usage?.output_tokens || 0,
+            status: 'success',
+          });
+        } catch (haikuError) {
+          // Last resort: GPT-4o-mini
+          console.warn(`[Haiku Fallback] public/try: ${haikuError.message} - using GPT-4o-mini`);
+          if (!openai) {
+            return res.status(500).json({ error: 'AI service temporarily unavailable' });
+          }
+          const completion = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: `[Review]\n${reviewText.trim()}` },
+            ],
+            max_tokens: 250,
+            temperature: 0.7,
+          });
+          generatedResponse = completion.choices[0].message.content.trim();
+
+          await logApiCall({
+            provider: 'openai',
+            model: 'gpt-4o-mini',
+            endpoint: '/api/public/try (haiku-fallback)',
+            inputTokens: completion.usage?.prompt_tokens || 0,
+            outputTokens: completion.usage?.completion_tokens || 0,
+            status: 'success',
+          });
+        }
+      }
     } else if (openai) {
-      // Fallback to GPT-4o-mini if no Anthropic key
+      // No Anthropic key - use GPT-4o-mini as last resort
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
@@ -8790,7 +8938,7 @@ Respond DIRECTLY. No quotes. No prefix. Just the response text.`;
       await logApiCall({
         provider: 'openai',
         model: 'gpt-4o-mini',
-        endpoint: '/api/public/try',
+        endpoint: '/api/public/try (no-anthropic)',
         inputTokens: completion.usage?.prompt_tokens || 0,
         outputTokens: completion.usage?.completion_tokens || 0,
         status: 'success',
@@ -10195,19 +10343,28 @@ Just the review response text, ready to post.
       });
       generatedResponse = response.content[0].text.trim();
     } else {
-      // Use GPT-4o-mini for Standard AI
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `[Review] ${review_text}` },
-        ],
-        max_tokens: 300,
-        temperature: 0.6,
-        presence_penalty: 0.1,
-        frequency_penalty: 0.1,
-      });
-      generatedResponse = completion.choices[0].message.content.trim();
+      // Use Claude Haiku for Standard AI (better than GPT-4o-mini)
+      try {
+        const haikuResponse = await anthropic.messages.create({
+          model: 'claude-3-5-haiku-20241022',
+          max_tokens: 300,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: `[Review] ${review_text}` }],
+        });
+        generatedResponse = haikuResponse.content[0].text.trim();
+      } catch {
+        // Fallback to GPT-4o-mini
+        const completion = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `[Review] ${review_text}` },
+          ],
+          max_tokens: 300,
+          temperature: 0.6,
+        });
+        generatedResponse = completion.choices[0].message.content.trim();
+      }
       if (useModel === 'smart' && !anthropic) useModel = 'standard';
     }
 
