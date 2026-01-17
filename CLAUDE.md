@@ -50,6 +50,7 @@ CLAUDE.md lesen -> Task -> Testen -> Git push -> CLAUDE.md updaten
 2. Daten als Basis (keine Bauchgefuehl-Entscheidungen)
 3. Outcome tracken
 4. Bei Unsicherheit: Extended Thinking -> Entscheiden -> Dokumentieren
+5. GOAL-CHECK: Bringt das einen Paying Customer naeher? Wenn nein - warum mache ich es?
 ```
 
 ---
