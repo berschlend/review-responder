@@ -610,3 +610,34 @@ User klicken Magic Link → werden registriert → nutzen Produkt NIE → erreic
 - High-value leads contacted: Cargiant (10k reviews), Denver Central Market (1.2k reviews), Cargem (1.6k reviews)
 - **LEARNING:** Single-email API calls are reliable and fast, batch endpoints timeout
 
+
+### [2026-01-16 23:47] Burst-5
+- 67 leads with 2 follow-ups = 0 conversions. The Follow-Up emails are NOT converting. We need to either: 1) Improve email content/offer, 2) Add different touchpoint (LinkedIn/Phone), 3) Wait for new clickers from Burst-2 outreach
+
+### [2026-01-17 00:50] Burst-2
+- **Amazon SES ist jetzt PRIMARY Email Provider** - 50k/day Kapazität!
+- API Response zeigt evtl. noch "brevo" aber Backend nutzt SES
+- Kein Daily Limit Problem mehr - skaliere aggressiv!
+
+
+### [2026-01-17 00:19] Burst-5
+- Loop 6: 14 first followups + 10 demo followups = 24 emails sent. All 81 clickers now have at least 1 followup. 0 conversions - need to analyze why leads arent converting despite high engagement.
+
+
+### [2026-01-17 00:25] Burst-4
+- Demo System Health 17.01: 1138 total demos, 29.9% view rate, 3.4% conversion rate (of viewed). 1 confirmed conversion (Jax Pharmacy). All hot leads have demos. System is HEALTHY - bottleneck is Registration-to-First-Use, not Demo Generation.
+
+
+### [2026-01-17 01:40] Burst-2
+- **49 EMAILS SENT** in 25 minutes (01:15-01:40 UTC)
+- All via Brevo provider - 100% success rate, 0 bounces
+- Geographic spread: Dublin (opticians), UK (car dealerships), Wien (hotels), Düsseldorf (restaurants)
+- High-value leads contacted:
+  - **Cargiant** (10k reviews) - UK's largest car dealer
+  - **Vienna Marriott** (4828 reviews) - Major hotel chain
+  - **Austria Trend Hotels** - Hotel chain with multiple properties
+  - **Hilton Hotels** - Global chain
+  - **Uerige Brauerei** (500 reviews) - Famous Düsseldorf brewery
+- **Status:** All 49 new leads with email exhausted. Need Burst-1 for email enrichment or Night-Blast for new leads.
+- **Learning:** Hotel chains (Marriott, Hilton, Austria Trend) are high-value targets - multiple properties = enterprise potential
+
