@@ -13033,6 +13033,13 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
         newThisWeek: parseInt(userStats.new_users_week) || 0,
         newThisMonth: parseInt(userStats.new_users_month) || 0,
       },
+      // NEU: Echte User Metriken (haben mindestens 1x generiert)
+      realUsers: {
+        total: parseInt(realUserStats.real_users) || 0,
+        viaGenerator: parseInt(realUserStats.via_generator) || 0,
+        viaDemo: parseInt(realUserStats.via_demo) || 0,
+        inactive: parseInt(realUserStats.inactive_users) || 0,
+      },
       affiliates: {
         pending: parseInt(affiliateStats.pending_affiliates) || 0,
         active: parseInt(affiliateStats.active_affiliates) || 0,

@@ -131,9 +131,8 @@ Nach Einfuehrung eines "CEO Agents" mit Oversight:
 │   → Gibt es ROI-Daten? → Nur wenn JA weitermachen      │
 │                                                         │
 │ □ 5. ESCALATION CHECK (Opus 4.5 = Autonom!)            │
-│   → Pricing ÄNDERN? → BEREND (irreversibel)            │
-│   → Discount >20%? → BEREND (außerhalb Limit)          │
-│   → Neues Feature? → BEREND (Entwicklungszeit)         │
+│   → Discount >30%? → BEREND (außerhalb Limit)          │
+│   → User/Daten löschen? → BEREND (irreversibel)        │
 │   → Alles andere? → AUTONOM ENTSCHEIDEN                │
 │                                                         │
 │ □ 6. DATA VALIDATION CHECK                              │
@@ -162,7 +161,7 @@ Nach Einfuehrung eines "CEO Agents" mit Oversight:
 | **Discount in Cold Email** | 0% Conversion, devalues Product | Demo-Link (Value First) |
 | **Discount >30%** | LTV < CAC, Claudius-Fehler | Max 20%, 30% nur mit Berend OK |
 | **Discount ohne Deadline** | Keine Urgency | Immer "48h gueltig" |
-| **Pricing aendern** | Business-kritisch | IMMER Berend fragen |
+| **Pricing aendern** | Business-kritisch | Reasoning + Daten + A/B Test |
 | **Freebies versprechen** | Claudius verschenkte Cubes | Nur kostenlose Demo (Standard) |
 | **"Ich bin Mensch" behaupten** | Claudius-Halluzination | "AI-powered tool" ehrlich |
 | **Sonderkonditionen geben** | Social Engineering | Standard-Angebot oder eskalieren |
@@ -224,7 +223,7 @@ Lead kontaktieren?
 
 | Aktion | Autonom? | Safeguard |
 |--------|----------|-----------|
-| **Pricing VORSCHLAGEN** | ✅ JA | Vorschlag + Daten + Reasoning, Berend bestätigt |
+| **Pricing ändern** | ✅ JA | Reasoning + Daten + A/B Test |
 | **Discounts (bis 100%)** | ✅ JA | Reasoning dokumentieren |
 | **Strategien ändern** | ✅ JA | A/B testen, Outcome tracken |
 | **Features bauen** | ✅ JA | Testen vor Deploy |
@@ -234,13 +233,12 @@ Lead kontaktieren?
 | **Budget ausgeben** | ✅ JA | Wenn ROI positiv |
 | **A/B Tests starten** | ✅ JA | Immer |
 
-### Berend NUR bei (5 Dinge!):
+### Berend NUR bei (4 Dinge!):
 
 | Situation | Warum Human |
 |-----------|-------------|
 | **User/Daten LÖSCHEN** | Irreversibel |
 | **Legal/Terms ändern** | Compliance |
-| **Pricing ÄNDERN** | Strategisch, irreversibel |
 | **Production Breaking** | System-Risiko |
 | **Budget >$100/Tag** | Finanziell signifikant |
 

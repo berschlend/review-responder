@@ -129,6 +129,27 @@ import {
   Legend,
 } from 'recharts';
 
+// Global error handler for mobile debugging
+window.onerror = function (msg, url, line, col, error) {
+  console.error('[GlobalError]', { msg, url, line, col, error });
+  // Show alert for debugging on mobile (toast might not be available yet)
+  if (typeof window !== 'undefined' && window.localStorage) {
+    const lastError = `${msg} at ${url}:${line}:${col}`;
+    window.localStorage.setItem('lastJsError', lastError);
+    console.error('[GlobalError] Saved to localStorage:', lastError);
+  }
+  return false;
+};
+
+// Unhandled promise rejection handler
+window.onunhandledrejection = function (event) {
+  console.error('[UnhandledRejection]', event.reason);
+  if (typeof window !== 'undefined' && window.localStorage) {
+    const errorMsg = event.reason?.message || String(event.reason);
+    window.localStorage.setItem('lastJsError', `Promise: ${errorMsg}`);
+  }
+};
+
 // Lazy loaded components for code splitting
 const LazyApiDocsPage = lazy(() => import('./pages/ApiDocsPage'));
 import ApiTab from './components/ApiTab';
@@ -10777,24 +10798,35 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
   }, [field, currentValue]);
 
   const handleGenerate = async () => {
-    if (!keywords.trim()) {
-      toast.error('Please enter some keywords');
-      return;
-    }
+    // Debug: Log for mobile debugging
+    console.log('[Generate] Start', { field, keywords: keywords?.substring?.(0, 20), businessType });
 
-    setGenerating(true);
     try {
-      const res = await api.post('/personalization/generate-context', {
+      if (!keywords || !keywords.trim()) {
+        toast.error('Please enter some keywords');
+        return;
+      }
+
+      setGenerating(true);
+
+      const requestData = {
         keywords: keywords.trim(),
-        businessType,
-        businessName,
+        businessType: businessType || '',
+        businessName: businessName || '',
         field,
         structured: field === 'context', // Profile Page gets structured output with placeholders
-      });
+      };
+      console.log('[Generate] Request', requestData);
+
+      const res = await api.post('/personalization/generate-context', requestData);
+      console.log('[Generate] Response', res.data);
+
       setGenerated(res.data.generated);
       setRemaining(res.data.remaining);
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Error generating');
+      console.error('[Generate] Error', error);
+      const errMsg = error.response?.data?.error || error.message || String(error);
+      toast.error(`Error: ${errMsg}`);
     } finally {
       setGenerating(false);
     }
