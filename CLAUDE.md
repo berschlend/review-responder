@@ -134,7 +134,7 @@ Falls Auto-Deploy nicht triggert, kann Claude via Chrome MCP manuell deployen:
 
 ### Chrome Web Store
 - Status: Ueberprufung laeuft (eingereicht 13.01)
-- Extension v1.6.1
+- Extension v1.7.0 (Website aktualisiert 17.01)
 
 ### REAL Metriken (18.01)
 | Metrik | Dashboard | **Realitaet** | Status |
