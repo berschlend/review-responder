@@ -337,8 +337,9 @@ function isTestEmail(email) {
 // Ghost emails - generic business emails that real humans don't check for SaaS
 function isGhostEmail(email) {
   if (!email) return false;
+  // Ghost = generische Business-Emails die kein echter Entscheider liest
   const ghostPatterns = [
-    /^(info|hello|contact|privacy|reservation|reservations|welcome|support|team|noreply|no-reply|booking|bookings|enquiries|enquiry|admin|office|sales|marketing|press|media|careers|jobs|hr|legal|billing|accounts|feedback|help|service|services|general|mail|email|webmaster|postmaster)@/i,
+    /^(info|hello|contact|privacy|reservation|reservations|welcome|support|team|noreply|no-reply|booking|bookings|enquiries|enquiry|admin|office|sales|marketing|press|media|careers|jobs|hr|legal|billing|accounts|feedback|help|service|services|general|mail|email|webmaster|postmaster|dining|guestservices|awayspa|community|willkommen|nye|langstrasse|reception|front\.?desk|guest\.?relations|concierge)@/i,
   ];
   return ghostPatterns.some(regex => regex.test(email.toLowerCase()));
 }
@@ -13160,29 +13161,41 @@ app.get('/api/admin/user-list', authenticateAdmin, async (req, res) => {
       is_test_account: isTestEmail(u.email),
     }));
 
-    // Separate test vs real users
+    // Neue User-Kategorien (17.01.2026):
+    // - testUsers: Test/Ghost Accounts (isTestEmail)
+    // - registeredUsers: Registriert aber 0 Responses (NICHT echt!)
+    // - realUsers: Mind. 1 Response generiert = ECHTER User
     const testUsers = usersWithFlag.filter(u => u.is_test_account);
-    const realUsers = usersWithFlag.filter(u => !u.is_test_account);
+    const nonTestUsers = usersWithFlag.filter(u => !u.is_test_account);
+    const registeredUsers = nonTestUsers.filter(u => u.response_count === 0);
+    const realUsers = nonTestUsers.filter(u => u.response_count > 0);
 
     // Return based on include_test parameter
-    const users = includeTest ? usersWithFlag : realUsers;
+    const users = includeTest ? usersWithFlag : nonTestUsers;
 
-    // Summary stats - NUR echte User (keine Tests/Freunde)
+    // Summary stats - Neue Definition: Echt = Mind. 1 Response!
     const summary = {
       total_raw: allUsers.length,
       total_test: testUsers.length,
-      total_real: realUsers.length,
-      // Echte Metriken (ohne Tests)
+      total_registered: registeredUsers.length,  // Registriert aber 0 Responses
+      total_real: realUsers.length,              // ECHTE User = mind. 1 Response
+      // Echte User Breakdown (nur User mit mind. 1 Response)
       real: {
         total: realUsers.length,
-        never_used: realUsers.filter(u => u.usage_tier === 'never_used').length,
         low_usage: realUsers.filter(u => u.usage_tier === 'low_usage').length,
         medium_usage: realUsers.filter(u => u.usage_tier === 'medium_usage').length,
         high_usage: realUsers.filter(u => u.usage_tier === 'high_usage').length,
-        activated: realUsers.filter(u => u.response_count > 0).length,
-        activation_rate: realUsers.length > 0
-          ? Math.round(100 * realUsers.filter(u => u.response_count > 0).length / realUsers.length) + '%'
-          : '0%',
+        avg_responses: realUsers.length > 0
+          ? Math.round(realUsers.reduce((sum, u) => sum + u.response_count, 0) / realUsers.length)
+          : 0,
+      },
+      // Registrierte aber nie genutzt (Conversion-Problem!)
+      registered_only: {
+        total: registeredUsers.length,
+        emails: registeredUsers.map(u => u.email).slice(0, 10),
+        message: registeredUsers.length > 0
+          ? `${registeredUsers.length} User registriert aber nie genutzt - Onboarding Problem!`
+          : 'Alle registrierten User haben das Produkt genutzt',
       },
       // Test-Accounts Breakdown (für Transparenz)
       test: {
