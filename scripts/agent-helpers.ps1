@@ -1083,59 +1083,77 @@ if ($Action -eq "data-analyze") {
     exit 0
 }
 
-# === GOAL CHECK (V5.0 - PFLICHT VOR JEDER AKTION!) ===
+# === GOAL CHECK (V5.1 - $1000 MRR FOCUS!) ===
 # Usage: powershell -File scripts/agent-helpers.ps1 -Action goal-check -Data "action description"
-# Output: GO or STOP with reason
+# Output: GO or STOP with reason toward $1000 MRR
 if ($Action -eq "goal-check") {
     $metricsFile = Join-Path $ProgressDir "real-user-metrics.json"
 
     Write-Host ""
     Write-Host "==========================================" -ForegroundColor Cyan
-    Write-Host "           GOAL CHECK V5.0               " -ForegroundColor Cyan
+    Write-Host "   GOAL CHECK - 1000 USD MRR TARGET      " -ForegroundColor Cyan
     Write-Host "==========================================" -ForegroundColor Cyan
     Write-Host ""
 
+    # Load metrics
     $paying = 0
     $organic = 0
     if (Test-Path $metricsFile) {
         $m = Get-Content $metricsFile | ConvertFrom-Json
-        $paying = $m.realUsers.paying
-        $organic = $m.realUsers.organic
+        $paying = if ($m.realUsers.paying) { $m.realUsers.paying } else { 0 }
+        $organic = if ($m.realUsers.organic) { $m.realUsers.organic } else { 0 }
     }
 
-    $payColor = if ($paying -eq 0) { "Red" } else { "Green" }
-    $orgColor = if ($organic -eq 0) { "Red" } else { "Green" }
+    # Calculate MRR (avg $39/customer)
+    $mrr = $paying * 39
+    $progress = [math]::Round($mrr / 1000 * 100, 0)
+    $bars = [math]::Floor($progress / 10)
+    $dots = 10 - $bars
+    $progressBar = "[" + ("=" * $bars) + ("." * $dots) + "]"
 
-    Write-Host "  GOAL:    1 paying customer" -ForegroundColor Yellow
-    Write-Host "  CURRENT: $paying paying customers" -ForegroundColor $payColor
-    Write-Host "  ORGANIC: $organic real users" -ForegroundColor $orgColor
+    Write-Host "  NORTH STAR: 1000 USD MRR (~30 paying customers)" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "  MRR:     $mrr / 1000 USD  ($progress%)" -ForegroundColor $(if ($mrr -eq 0) { "Red" } else { "Green" })
+    Write-Host "  PAYING:  $paying / 30 customers" -ForegroundColor $(if ($paying -eq 0) { "Red" } else { "Green" })
+    Write-Host "  ORGANIC: $organic real users" -ForegroundColor $(if ($organic -eq 0) { "Red" } else { "Yellow" })
+    Write-Host "  $progressBar $progress%" -ForegroundColor Cyan
     Write-Host ""
 
     $plannedAction = $Data
     if (-not $plannedAction) {
         Write-Host "  [!] No action specified - use -Data" -ForegroundColor Yellow
-        Write-Host "  STOP: Define what you want to do first" -ForegroundColor Red
         exit 1
     }
 
-    Write-Host "  PLANNED ACTION: $plannedAction" -ForegroundColor White
+    Write-Host "  PLANNED: $plannedAction" -ForegroundColor White
     Write-Host ""
 
+    # Phase-dependent (P1=validate, P2=first customer, P3=scale)
+    $phase = "P1"
+    if ($paying -ge 1) { $phase = "P2" }
+    if ($paying -ge 5) { $phase = "P3" }
+
+    # STOP patterns (proven useless)
     $stopPatterns = @(
-        @{ p = "cold.?email"; r = "Cold Email has 0% real conversion (1902 emails, 0 real reactions)" },
-        @{ p = "scrape.*lead"; r = "More lead scraping is useless when outreach doesnt work" },
-        @{ p = "a/?b.?test"; r = "A/B tests need traffic we dont have" },
-        @{ p = "feature.?build"; r = "Nobody uses features - find customers first" },
-        @{ p = "optimi"; r = "Optimizing without baseline is pointless" },
-        @{ p = "demo.*generat"; r = "Demo generation is useless without real traffic" }
+        @{ p = "cold.?email"; r = "Cold Email: 0% conversion (1902 sent, 0 reactions)" },
+        @{ p = "scrape.*lead"; r = "Lead scraping useless - outreach doesnt work" },
+        @{ p = "a/?b.?test"; r = "A/B tests need traffic (we have 0)" },
+        @{ p = "feature.?build|new.*feature"; r = "Features useless until problem validated" },
+        @{ p = "optimi"; r = "Cant optimize without baseline" },
+        @{ p = "demo.*generat"; r = "Demo generation needs real traffic first" },
+        @{ p = "metric.*dashboard"; r = "All metrics are fake (bots)" }
     )
 
+    # GO patterns (move toward $1000 MRR)
     $goPatterns = @(
-        @{ p = "anruf|call|phone"; r = "Direct customer contact validates the problem" },
-        @{ p = "manually|manuell"; r = "Manual validation is the fastest way" },
-        @{ p = "talk.*owner|owner.*talk"; r = "Talking to real customers" },
-        @{ p = "fix.*bug|bug.*fix"; r = "Fixes that solve user problems" },
-        @{ p = "support|help.*user"; r = "Supporting existing users" }
+        @{ p = "anruf|call|phone|ring"; r = "Direct contact validates problem" },
+        @{ p = "manually|manuell|hand"; r = "Manual validation fastest to 1000 USD" },
+        @{ p = "talk.*owner|owner.*talk|speak"; r = "Talking to customers = validation" },
+        @{ p = "fix.*bug|bug.*fix|repair"; r = "Fixing bugs retains users" },
+        @{ p = "support|help.*user|assist"; r = "Supporting users prevents churn" },
+        @{ p = "interview|frag.*kunde|ask.*customer"; r = "Customer interviews validate problem" },
+        @{ p = "stripe|payment|checkout|convert"; r = "Payment flow = conversion path" },
+        @{ p = "churn|retain|keep.*user"; r = "Retention protects MRR" }
     )
 
     $act = $plannedAction.ToLower()
@@ -1152,20 +1170,26 @@ if ($Action -eq "goal-check") {
         }
     }
 
+    Write-Host "  PHASE: $phase" -ForegroundColor Magenta
+
     if ($dec -eq "GO") {
         Write-Host "  [OK] GO: $rsn" -ForegroundColor Green
-        Write-Host "  This action brings you closer to the goal." -ForegroundColor Green
+        Write-Host "  -> Moves toward 1000 USD MRR" -ForegroundColor Green
         exit 0
     } elseif ($dec -eq "STOP") {
         Write-Host "  [X] STOP: $rsn" -ForegroundColor Red
-        Write-Host "  This action does NOT bring a paying customer." -ForegroundColor Red
-        Write-Host "  Ask: What is the SHORTEST path to 1 customer?" -ForegroundColor Yellow
+        Write-Host "  -> Does NOT move toward 1000 USD MRR" -ForegroundColor Red
+        Write-Host ""
+        $prio = switch ($phase) { "P1" { "Validate problem exists" } "P2" { "Get first paying customer" } default { "Scale to 30 customers" } }
+        Write-Host "  Phase $phase priority: $prio" -ForegroundColor Yellow
         exit 1
     } else {
-        Write-Host "  [?] UNCLEAR: Not sure if this leads to the goal" -ForegroundColor Yellow
-        Write-Host "  Question: Does this action bring a paying customer?" -ForegroundColor Yellow
-        Write-Host "  If NO -> Dont do it" -ForegroundColor Yellow
-        Write-Host "  If YES -> Do it" -ForegroundColor Yellow
+        Write-Host "  [?] UNCLEAR" -ForegroundColor Yellow
+        Write-Host "  Ask: Does this bring 1000 USD MRR closer?" -ForegroundColor White
+        Write-Host "  1. Brings PAYING customer?" -ForegroundColor White
+        Write-Host "  2. ACTIVATES existing user?" -ForegroundColor White
+        Write-Host "  3. VALIDATES problem exists?" -ForegroundColor White
+        Write-Host "  YES to any -> Do it | NO to all -> Dont" -ForegroundColor Yellow
         exit 0
     }
 }

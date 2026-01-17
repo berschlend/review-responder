@@ -656,22 +656,30 @@ powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent [X]
 powershell -File scripts/agent-helpers.ps1 -Action check-real-users
 ```
 
-### VOR JEDER AKTION: GOAL-CHECK (V5.0 - PFLICHT!)
+### VOR JEDER AKTION: GOAL-CHECK (V5.1 - $1000 MRR PFLICHT!)
 
 ```bash
 # BEVOR du IRGENDETWAS tust, frage:
 powershell -File scripts/agent-helpers.ps1 -Action goal-check -Data "beschreibung deiner geplanten aktion"
 
+# Zeigt:
+# - NORTH STAR: $1000 MRR (~30 zahlende Kunden)
+# - Aktueller MRR, Paying, Organic
+# - Progress Bar [====......] 40%
+# - Phase: P1 (validate) / P2 (first customer) / P3 (scale)
+
 # Beispiele:
 powershell -File scripts/agent-helpers.ps1 -Action goal-check -Data "Cold Email an 50 Leads senden"
-# → [X] STOP: Cold Email has 0% real conversion
+# → [X] STOP: Cold Email: 0% conversion (1902 sent, 0 reactions)
+# → Phase P1 priority: Validate problem exists
 
-powershell -File scripts/agent-helpers.ps1 -Action goal-check -Data "Manuell Restaurant Owner anrufen"
-# → [OK] GO: Direct customer contact validates the problem
+powershell -File scripts/agent-helpers.ps1 -Action goal-check -Data "Restaurant Owner anrufen"
+# → [OK] GO: Direct contact validates problem
+# → Moves toward $1000 MRR
 
-# WENN STOP → Mach es NICHT!
+# WENN STOP → Mach es NICHT! Zeigt dir was stattdessen.
 # WENN GO → Mach es!
-# WENN UNCLEAR → Frage dich: Bringt das einen zahlenden Kunden?
+# WENN UNCLEAR → 3 Fragen beantworten
 ```
 
 ### Tonight's Prompt (V4.4)
@@ -1528,20 +1536,40 @@ NACH JEDEM ERFOLGREICHEN STEP:
 ## 🎯 GOAL PERSISTENCE TEMPLATE
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│ 🎯 GOAL: $1000 MRR (30 zahlende Kunden)                │
-│                                                         │
-│ Current Status:                                         │
-│ - MRR: $[X] ([Y]% of goal)                             │
-│ - Paying Customers: [Z]/30                             │
-│ - Days Running: [N]                                     │
-│                                                         │
-│ MY CONTRIBUTION TO GOAL:                               │
-│ - [Agent-specific contribution]                        │
-│                                                         │
-│ IF I STOP → Goal wird nicht erreicht                   │
-│ THEREFORE → Ich stoppe NIEMALS (außer Berend sagt es)  │
-└─────────────────────────────────────────────────────────┘
+==========================================
+       NORTH STAR: $1000 MRR
+==========================================
+
+Current Status:
+- MRR: $[X] / $1000 ([Y]%)
+- Paying: [Z] / 30 customers
+- Phase: P1 (validate) / P2 (first customer) / P3 (scale)
+
+Progress: [====......] [Y]%
+
+==========================================
+       PHASES (Prioritaeten)
+==========================================
+
+P1: VALIDATE (0 paying)
+    -> Existiert das Problem ueberhaupt?
+    -> Manuell Kunden anrufen/sprechen
+
+P2: FIRST CUSTOMER (1-4 paying)
+    -> Problem validiert, jetzt Conversion
+    -> Demo zeigen, Onboarding optimieren
+
+P3: SCALE (5+ paying)
+    -> Funktionierender Funnel, jetzt skalieren
+    -> Outreach, Automation, Marketing
+
+==========================================
+       VOR JEDER AKTION FRAGEN
+==========================================
+
+"Bringt diese Aktion $1000 MRR naeher?"
+
+powershell -File scripts/agent-helpers.ps1 -Action goal-check -Data "[meine aktion]"
 ```
 
 ---

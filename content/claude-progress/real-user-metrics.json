@@ -1,18 +1,18 @@
 {
   "realUsers": {
-    "total": 0,
+    "total": 4,
     "viaGenerator": 0,
-    "viaDemo": 0,
+    "viaDemo": 4,
     "viaInstantTry": 0,
-    "inactive": 6,
+    "inactive": 3,
     "paying": 0
   },
-  "definition": "Real User = 1+ Generation ANYWHERE (responses, demo_generations, public_try_usage)",
+  "definition": "Real User = 1+ Generation ANYWHERE (responses, demo_generations with demo_page_viewed_at, public_try_usage)",
   "registeredUsers": {
-    "total": 6,
+    "total": 7,
     "likelyReal": 2,
     "maybeReal": 2,
-    "uncertain": 2,
+    "uncertain": 3,
     "analysis": [
       {
         "email": "i.schmidt@tv-turm.de",
@@ -60,18 +60,29 @@
   },
   "botPatterns": [
     { "pattern": "midnight-burst", "count": 22 },
-    { "pattern": "test-email", "count": 2 }
+    { "pattern": "test-email", "count": 60 },
+    { "pattern": "corp-system-email", "count": 4 }
   ],
   "ctr": {
     "reported": 4.76,
-    "real": 1.75,
-    "botClicks": 24,
-    "inflation": 171
+    "real": 0,
+    "botClicks": 38,
+    "humanClicks": 0,
+    "note": "100% of clicks were email security scanners (filtered out)"
   },
-  "lastUpdated": "2026-01-17T20:45:00Z",
-  "analyzedAt": "2026-01-17T20:45:00Z",
+  "fixes_deployed": [
+    "Bot detection for auto-account creation (prevents scanner accounts)",
+    "is_bot flag on click tracking",
+    "First Response Guidance Banner for new users",
+    "Registration redirects to /dashboard (was /generator which 404'd)"
+  ],
+  "lastUpdated": "2026-01-17T23:00:00Z",
+  "analyzedAt": "2026-01-17T23:00:00Z",
   "actionItems": [
-    "Personalized follow-up to i.schmidt@tv-turm.de (Michelin restaurant)",
-    "Personalized follow-up to zuerich@trattoria-sempre.ch (engaged via magic link)"
+    "DONE: Bot detection implemented",
+    "DONE: Onboarding banner added",
+    "TODO: Personalized follow-up to i.schmidt@tv-turm.de (Michelin restaurant)",
+    "TODO: Personalized follow-up to zuerich@trattoria-sempre.ch (engaged via magic link)",
+    "TODO: Cold email channel analysis - 1902 sent, 0 human opens"
   ]
 }
