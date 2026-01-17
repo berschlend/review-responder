@@ -1250,3 +1250,14 @@ if ($Action -eq "call-status") {
 if ($Action -eq "sync-sticky-tasks") {
     & "$PSScriptRoot\sync-sticky-tasks.ps1" -Verbose
 }
+
+# Force call alert (bypasses throttle) - use after adding HOT lead
+if ($Action -eq "call-alert") {
+    # Clear throttle to force notification
+    $throttleFile = "$env:TEMP\call-alert-throttle.txt"
+    if (Test-Path $throttleFile) { Remove-Item $throttleFile -Force }
+
+    # Run sync which will trigger the alert
+    & "$PSScriptRoot\sync-sticky-tasks.ps1"
+    Write-Host "[CALL ALERT] Notification triggered!" -ForegroundColor Magenta
+}

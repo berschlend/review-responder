@@ -73,11 +73,49 @@ try {
         Write-Host $stickyJson
     }
 
-    # 5. Return summary for calling scripts
+    # 5. Send notification if HOT calls exist (throttled: max 1x per 30 min)
+    $hotCount = ($pendingCalls | Where-Object { $_.priority_score -eq 5 }).Count
+    if ($hotCount -gt 0) {
+        $throttleFile = "$env:TEMP\call-alert-throttle.txt"
+        $shouldNotify = $true
+
+        # Check throttle
+        if (Test-Path $throttleFile) {
+            $lastAlert = Get-Content $throttleFile -ErrorAction SilentlyContinue
+            if ($lastAlert) {
+                $lastTime = [DateTime]::Parse($lastAlert)
+                $minsSince = ((Get-Date) - $lastTime).TotalMinutes
+                if ($minsSince -lt 30) {
+                    $shouldNotify = $false
+                    if ($Verbose) { Write-Host "[Sync] Call alert throttled ($([int]$minsSince)min since last)" -ForegroundColor DarkGray }
+                }
+            }
+        }
+
+        if ($shouldNotify) {
+            # Update throttle timestamp
+            Get-Date -Format "o" | Out-File $throttleFile -Force
+
+            # Build message with business names
+            $hotNames = ($pendingCalls | Where-Object { $_.priority_score -eq 5 } | Select-Object -First 3 | ForEach-Object { $_.business_name }) -join ", "
+            $callMsg = "$hotCount HOT Lead(s): $hotNames"
+
+            # Trigger call notification (async, don't block)
+            $notifyScript = "$env:USERPROFILE\claude-notify.ps1"
+            if (Test-Path $notifyScript) {
+                Start-Job -ScriptBlock {
+                    param($script, $msg)
+                    & powershell -ExecutionPolicy Bypass -File $script -Type call -Message $msg
+                } -ArgumentList $notifyScript, $callMsg | Out-Null
+            }
+        }
+    }
+
+    # 6. Return summary for calling scripts
     return @{
         success = $true
         total_tasks = $tasks.Count
-        hot_calls = ($pendingCalls | Where-Object { $_.priority_score -eq 5 }).Count
+        hot_calls = $hotCount
         warm_calls = ($pendingCalls | Where-Object { $_.priority_score -eq 4 }).Count
     }
 
