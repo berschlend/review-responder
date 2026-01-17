@@ -73,6 +73,8 @@ export default [
         exports: 'readonly',
         global: 'readonly',
         Buffer: 'readonly',
+        AbortController: 'readonly',
+        AbortSignal: 'readonly',
       },
     },
     settings: {

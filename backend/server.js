@@ -143,7 +143,8 @@ const EMAIL_PROVIDER_LIMITS = {
 let providerCountCache = { counts: {}, lastUpdated: 0 };
 async function getProviderCountsToday() {
   const now = Date.now();
-  if (now - providerCountCache.lastUpdated < 300000) { // 5 min cache
+  if (now - providerCountCache.lastUpdated < 300000) {
+    // 5 min cache
     return providerCountCache.counts;
   }
 
@@ -158,7 +159,7 @@ async function getProviderCountsToday() {
 
     const counts = { ses: 0, brevo: 0, mailersend: 0, sendgrid: 0, mailgun: 0, resend: 0 };
     result.rows.forEach(row => {
-      if (counts.hasOwnProperty(row.provider)) {
+      if (Object.prototype.hasOwnProperty.call(counts, row.provider)) {
         counts[row.provider] = parseInt(row.count);
       }
     });
@@ -188,7 +189,9 @@ async function selectEmailProvider() {
   for (const p of providers) {
     if (p.available && counts[p.name] < EMAIL_PROVIDER_LIMITS[p.name]) {
       const remaining = EMAIL_PROVIDER_LIMITS[p.name] - counts[p.name];
-      console.log(`[Email] Selected ${p.name} (${counts[p.name]}/${EMAIL_PROVIDER_LIMITS[p.name]}, ${remaining} remaining)`);
+      console.log(
+        `[Email] Selected ${p.name} (${counts[p.name]}/${EMAIL_PROVIDER_LIMITS[p.name]}, ${remaining} remaining)`
+      );
       return p.name;
     }
   }
@@ -281,13 +284,48 @@ const TEST_EMAIL_PATTERNS = [
   'aa@%', // Double char aa@
   'aaa@%', // Triple char aaa@
   // Ghost email patterns - generic business emails (17.01 fix: sync with isGhostEmail)
-  'info@%', 'hello@%', 'contact@%', 'privacy@%', 'reservation@%', 'reservations@%',
-  'welcome@%', 'support@%', 'team@%', 'noreply@%', 'no-reply@%', 'booking@%',
-  'bookings@%', 'enquiries@%', 'enquiry@%', 'office@%', 'sales@%', 'marketing@%',
-  'press@%', 'media@%', 'careers@%', 'jobs@%', 'hr@%', 'legal@%', 'billing@%',
-  'accounts@%', 'feedback@%', 'help@%', 'service@%', 'services@%', 'general@%',
-  'mail@%', 'email@%', 'webmaster@%', 'postmaster@%', 'dining@%', 'guestservices@%',
-  'community@%', 'willkommen@%', 'langstrasse@%', 'reception@%', 'concierge@%',
+  'info@%',
+  'hello@%',
+  'contact@%',
+  'privacy@%',
+  'reservation@%',
+  'reservations@%',
+  'welcome@%',
+  'support@%',
+  'team@%',
+  'noreply@%',
+  'no-reply@%',
+  'booking@%',
+  'bookings@%',
+  'enquiries@%',
+  'enquiry@%',
+  'office@%',
+  'sales@%',
+  'marketing@%',
+  'press@%',
+  'media@%',
+  'careers@%',
+  'jobs@%',
+  'hr@%',
+  'legal@%',
+  'billing@%',
+  'accounts@%',
+  'feedback@%',
+  'help@%',
+  'service@%',
+  'services@%',
+  'general@%',
+  'mail@%',
+  'email@%',
+  'webmaster@%',
+  'postmaster@%',
+  'dining@%',
+  'guestservices@%',
+  'community@%',
+  'willkommen@%',
+  'langstrasse@%',
+  'reception@%',
+  'concierge@%',
 ];
 
 // Bot Click Detection Patterns
@@ -303,7 +341,7 @@ const BOT_EMAIL_PATTERNS = [
 // Format: { date: 'YYYY-MM-DD', hourStart: H, hourEnd: H } (UTC)
 const KNOWN_TEST_BURSTS = [
   { date: '2026-01-13', hourStart: 16, hourEnd: 17 }, // Owner test burst
-  { date: '2026-01-14', hourStart: 6, hourEnd: 7 },   // Early morning tests
+  { date: '2026-01-14', hourStart: 6, hourEnd: 7 }, // Early morning tests
   { date: '2026-01-14', hourStart: 21, hourEnd: 23 }, // Evening tests
 ];
 
@@ -352,9 +390,7 @@ function filterSequentialClicks(clicks, minGapSeconds = 30) {
   if (!clicks || clicks.length === 0) return [];
 
   // Sort by timestamp
-  const sorted = [...clicks].sort((a, b) =>
-    new Date(a.clicked_at) - new Date(b.clicked_at)
-  );
+  const sorted = [...clicks].sort((a, b) => new Date(a.clicked_at) - new Date(b.clicked_at));
 
   // Group clicks by minute - if >3 clicks in same minute, likely a test burst
   const byMinute = {};
@@ -580,7 +616,8 @@ async function sendEmail({
   // Track which providers we've tried (for fallback)
   const triedProviders = new Set();
 
-  while (triedProviders.size < 4) { // Max 4 providers
+  while (triedProviders.size < 4) {
+    // Max 4 providers
     triedProviders.add(provider);
 
     try {
@@ -626,7 +663,9 @@ async function sendEmail({
         if (finalText) sendSmtpEmail.textContent = finalText;
         sendSmtpEmail.sender = { name: fromName, email: fromEmail };
         sendSmtpEmail.to = [{ email: to }];
-        sendSmtpEmail.tags = [type, campaign, ...tags.map(t => t.value || t.name || t)].filter(Boolean);
+        sendSmtpEmail.tags = [type, campaign, ...tags.map(t => t.value || t.name || t)].filter(
+          Boolean
+        );
         if (replyTo) sendSmtpEmail.replyTo = { email: replyTo };
 
         const result = await brevoApi.sendTransacEmail(sendSmtpEmail);
@@ -713,11 +752,13 @@ async function sendEmail({
       providerCountCache.lastUpdated = 0;
 
       // Log successful email to DB (non-blocking)
-      pool.query(
-        `INSERT INTO email_logs (to_email, subject, type, campaign, provider, status, message_id, sent_at)
+      pool
+        .query(
+          `INSERT INTO email_logs (to_email, subject, type, campaign, provider, status, message_id, sent_at)
          VALUES ($1, $2, $3, $4, $5, 'sent', $6, NOW())`,
-        [to, subject.substring(0, 255), type, campaign, provider, messageId]
-      ).catch(logErr => console.error('[Email Log] Failed to log:', logErr.message));
+          [to, subject.substring(0, 255), type, campaign, provider, messageId]
+        )
+        .catch(logErr => console.error('[Email Log] Failed to log:', logErr.message));
 
       // Log API call for cost tracking
       logApiCall({
@@ -727,12 +768,13 @@ async function sendEmail({
       });
 
       return { success: true, provider, messageId };
-
     } catch (providerError) {
       console.error(`[${provider}] Failed: ${providerError.message}`);
 
       // Try next available provider
-      const nextProviders = ['brevo', 'mailersend', 'mailgun', 'sendgrid', 'resend'].filter(p => !triedProviders.has(p));
+      const nextProviders = ['brevo', 'mailersend', 'mailgun', 'sendgrid', 'resend'].filter(
+        p => !triedProviders.has(p)
+      );
       if (nextProviders.length === 0) {
         error = providerError.message;
         break;
@@ -740,11 +782,26 @@ async function sendEmail({
 
       // Find next provider that's actually available
       for (const next of nextProviders) {
-        if (next === 'brevo' && brevoApi) { provider = next; break; }
-        if (next === 'mailersend' && mailerSendClient) { provider = next; break; }
-        if (next === 'sendgrid' && process.env.SENDGRID_API_KEY) { provider = next; break; }
-        if (next === 'mailgun' && mailgunClient) { provider = next; break; }
-        if (next === 'resend' && resend) { provider = next; break; }
+        if (next === 'brevo' && brevoApi) {
+          provider = next;
+          break;
+        }
+        if (next === 'mailersend' && mailerSendClient) {
+          provider = next;
+          break;
+        }
+        if (next === 'sendgrid' && process.env.SENDGRID_API_KEY) {
+          provider = next;
+          break;
+        }
+        if (next === 'mailgun' && mailgunClient) {
+          provider = next;
+          break;
+        }
+        if (next === 'resend' && resend) {
+          provider = next;
+          break;
+        }
       }
       console.log(`[Email] Falling back to ${provider}...`);
     }
@@ -754,11 +811,13 @@ async function sendEmail({
   console.error(`[Email] All providers failed for ${to}:`, error);
 
   // Log failed email to DB (non-blocking)
-  pool.query(
-    `INSERT INTO email_logs (to_email, subject, type, campaign, provider, status, error, sent_at)
+  pool
+    .query(
+      `INSERT INTO email_logs (to_email, subject, type, campaign, provider, status, error, sent_at)
      VALUES ($1, $2, $3, $4, $5, 'failed', $6, NOW())`,
-    [to, subject.substring(0, 255), type, campaign, provider, error]
-  ).catch(logErr => console.error('[Email Log] Failed to log error:', logErr.message));
+      [to, subject.substring(0, 255), type, campaign, provider, error]
+    )
+    .catch(logErr => console.error('[Email Log] Failed to log error:', logErr.message));
 
   throw new Error(`All email providers failed: ${error}`);
 }
@@ -1015,7 +1074,7 @@ async function sendFlashOfferEmail(user) {
   try {
     await sendEmail({
       to: user.email,
-      subject: "Your responses are ready - 50% off expires in 2 hours",
+      subject: 'Your responses are ready - 50% off expires in 2 hours',
       type: 'transactional',
       campaign: 'flash_offer',
       html: `
@@ -1086,7 +1145,8 @@ async function sendCheckoutAbandonmentEmail(user, plan) {
 
   // Check if we sent one recently (within 7 days)
   if (user.last_abandonment_email_at) {
-    const daysSince = (Date.now() - new Date(user.last_abandonment_email_at).getTime()) / (1000 * 60 * 60 * 24);
+    const daysSince =
+      (Date.now() - new Date(user.last_abandonment_email_at).getTime()) / (1000 * 60 * 60 * 24);
     if (daysSince < 7) return false;
   }
 
@@ -1444,7 +1504,9 @@ async function initDatabase() {
     // Add columns if table already exists
     await dbQuery(`ALTER TABLE public_try_usage ADD COLUMN IF NOT EXISTS session_id TEXT`);
     await dbQuery(`ALTER TABLE public_try_usage ADD COLUMN IF NOT EXISTS email TEXT`);
-    await dbQuery(`ALTER TABLE public_try_usage ADD COLUMN IF NOT EXISTS converted_to_user_id INTEGER`);
+    await dbQuery(
+      `ALTER TABLE public_try_usage ADD COLUMN IF NOT EXISTS converted_to_user_id INTEGER`
+    );
 
     // Personalized discount links
     await dbQuery(`
@@ -1668,7 +1730,9 @@ async function initDatabase() {
 
     // Add is_bot column if it doesn't exist (migration for existing tables)
     try {
-      await dbQuery(`ALTER TABLE outreach_clicks ADD COLUMN IF NOT EXISTS is_bot BOOLEAN DEFAULT FALSE`);
+      await dbQuery(
+        `ALTER TABLE outreach_clicks ADD COLUMN IF NOT EXISTS is_bot BOOLEAN DEFAULT FALSE`
+      );
     } catch (e) {
       // Column might already exist
     }
@@ -1927,9 +1991,7 @@ async function initDatabase() {
         `ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verification_expires_at TIMESTAMP`
       );
       // Flash offer tracking for limit-hit users
-      await dbQuery(
-        `ALTER TABLE users ADD COLUMN IF NOT EXISTS flash_offer_sent_at TIMESTAMP`
-      );
+      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS flash_offer_sent_at TIMESTAMP`);
       // Checkout abandonment tracking
       await dbQuery(
         `ALTER TABLE users ADD COLUMN IF NOT EXISTS last_abandonment_email_at TIMESTAMP`
@@ -2006,9 +2068,7 @@ async function initDatabase() {
 
     // Exit Survey Response tracking (Phase 3b)
     try {
-      await dbQuery(
-        `ALTER TABLE exit_surveys ADD COLUMN IF NOT EXISTS response_sent_at TIMESTAMP`
-      );
+      await dbQuery(`ALTER TABLE exit_surveys ADD COLUMN IF NOT EXISTS response_sent_at TIMESTAMP`);
     } catch (error) {
       // Column might already exist
     }
@@ -2183,7 +2243,9 @@ async function initDatabase() {
     try {
       await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_place_id TEXT`);
       await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS monitored_business_name TEXT`);
-      await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS review_alerts_enabled BOOLEAN DEFAULT TRUE`);
+      await dbQuery(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS review_alerts_enabled BOOLEAN DEFAULT TRUE`
+      );
       await dbQuery(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_review_alert_at TIMESTAMP`);
     } catch (error) {
       // Columns might already exist
@@ -2210,8 +2272,12 @@ async function initDatabase() {
 
     // Index for efficient lookups
     try {
-      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_review_alerts_user_week ON review_alerts(user_id, week_start)`);
-      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_users_place_id ON users(google_place_id) WHERE google_place_id IS NOT NULL`);
+      await dbQuery(
+        `CREATE INDEX IF NOT EXISTS idx_review_alerts_user_week ON review_alerts(user_id, week_start)`
+      );
+      await dbQuery(
+        `CREATE INDEX IF NOT EXISTS idx_users_place_id ON users(google_place_id) WHERE google_place_id IS NOT NULL`
+      );
     } catch (error) {
       // Indexes might already exist
     }
@@ -2245,7 +2311,9 @@ async function initDatabase() {
     // Index for call_preps
     try {
       await dbQuery(`CREATE INDEX IF NOT EXISTS idx_call_preps_status ON call_preps(status)`);
-      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_call_preps_priority ON call_preps(priority_score DESC)`);
+      await dbQuery(
+        `CREATE INDEX IF NOT EXISTS idx_call_preps_priority ON call_preps(priority_score DESC)`
+      );
     } catch (error) {
       // Indexes might already exist
     }
@@ -3912,7 +3980,7 @@ app.post('/api/reviews/contribute', async (req, res) => {
     }
 
     // Normalize reviews to our format
-    const normalizedReviews = reviews.slice(0, 20).map((r) => ({
+    const normalizedReviews = reviews.slice(0, 20).map(r => ({
       text: r.text || r.reviewText || '',
       rating: parseInt(r.rating || r.reviewRating) || 0,
       author: r.author || r.reviewerName || 'Anonymous',
@@ -3946,18 +4014,16 @@ app.post('/api/reviews/contribute', async (req, res) => {
     if (existing.rows.length > 0) {
       // Merge with existing reviews (add new ones, avoid duplicates)
       const existingReviews = JSON.parse(existing.rows[0].scraped_reviews || '[]');
-      const existingTexts = new Set(existingReviews.map((r) => r.text?.slice(0, 50)));
+      const existingTexts = new Set(existingReviews.map(r => r.text?.slice(0, 50)));
 
-      const newReviews = normalizedReviews.filter(
-        (r) => !existingTexts.has(r.text?.slice(0, 50))
-      );
+      const newReviews = normalizedReviews.filter(r => !existingTexts.has(r.text?.slice(0, 50)));
 
       if (newReviews.length > 0) {
         const mergedReviews = [...existingReviews, ...newReviews].slice(0, 30);
-        await dbQuery(
-          `UPDATE demo_generations SET scraped_reviews = $1 WHERE id = $2`,
-          [JSON.stringify(mergedReviews), existing.rows[0].id]
-        );
+        await dbQuery(`UPDATE demo_generations SET scraped_reviews = $1 WHERE id = $2`, [
+          JSON.stringify(mergedReviews),
+          existing.rows[0].id,
+        ]);
         console.log(`[USER-CACHE] Added ${newReviews.length} new reviews for ${businessName}`);
       }
 
@@ -3983,7 +4049,9 @@ app.post('/api/reviews/contribute', async (req, res) => {
       ]
     );
 
-    console.log(`[USER-CACHE] Created new cache with ${normalizedReviews.length} reviews for ${businessName}`);
+    console.log(
+      `[USER-CACHE] Created new cache with ${normalizedReviews.length} reviews for ${businessName}`
+    );
 
     res.json({
       success: true,
@@ -4474,22 +4542,26 @@ ${contextUser.business_context ? `\n<business_details>\n${contextUser.business_c
 ${contextUser.response_style ? `\n<custom_style>\n${contextUser.response_style}\n</custom_style>` : ''}
 </context>
 
-${ratingStrategy ? `<rating_strategy rating="${reviewRating}">
+${
+  ratingStrategy
+    ? `<rating_strategy rating="${reviewRating}">
 <goal>${ratingStrategy.goal}</goal>
 <approach>${ratingStrategy.approach}</approach>
 <length>${ratingStrategy.length}</length>
 <avoid>${ratingStrategy.avoid}</avoid>
 </rating_strategy>
 
-` : ''}${
-  templateContent
-    ? `<template_reference>
+`
+    : ''
+}${
+      templateContent
+        ? `<template_reference>
 Use this as a style guide. Match its tone and structure:
 "${templateContent}"
 </template_reference>
 `
-    : ''
-}
+        : ''
+    }
 ${writingStyleInstructions}
 
 ${fewShotExamplesXMLContent}
@@ -4709,18 +4781,25 @@ ${languageInstruction}
             // Try to find the business on Google
             const placeInfo = await lookupPlaceId(businessName, '');
             if (placeInfo && placeInfo.placeId) {
-              await dbQuery(`
+              await dbQuery(
+                `
                 UPDATE users
                 SET google_place_id = $1,
                     monitored_business_name = $2,
                     review_alerts_enabled = true
                 WHERE id = $3 AND google_place_id IS NULL
-              `, [placeInfo.placeId, placeInfo.name || businessName, usageOwnerId]);
-              console.log(`[REVIEW-ALERTS] Auto-captured place_id ${placeInfo.placeId} for user ${usageOwnerId}`);
+              `,
+                [placeInfo.placeId, placeInfo.name || businessName, usageOwnerId]
+              );
+              console.log(
+                `[REVIEW-ALERTS] Auto-captured place_id ${placeInfo.placeId} for user ${usageOwnerId}`
+              );
             }
           } catch (err) {
             // Non-critical - user can still use the product without monitoring
-            console.log(`[REVIEW-ALERTS] Could not auto-capture place_id for ${businessName}: ${err.message}`);
+            console.log(
+              `[REVIEW-ALERTS] Could not auto-capture place_id for ${businessName}: ${err.message}`
+            );
           }
         })();
       }
@@ -4762,7 +4841,9 @@ ${languageInstruction}
         sendFlashOfferEmail(updatedOwner).then(sent => {
           if (sent) {
             dbQuery('UPDATE users SET flash_offer_sent_at = NOW() WHERE id = $1', [usageOwnerId]);
-            console.log(`[Flash Offer] Triggered for user ${updatedOwner.email} (hit ${totalUsed}/${totalLimit})`);
+            console.log(
+              `[Flash Offer] Triggered for user ${updatedOwner.email} (hit ${totalUsed}/${totalLimit})`
+            );
           }
         });
       }
@@ -5313,7 +5394,9 @@ LANGUAGE: ${bulkLanguageInstruction}`;
             });
           } catch (haikuError) {
             // Fallback to GPT-4o-mini
-            console.warn(`[Haiku Fallback] Bulk Standard: ${haikuError.message} - using GPT-4o-mini`);
+            console.warn(
+              `[Haiku Fallback] Bulk Standard: ${haikuError.message} - using GPT-4o-mini`
+            );
             const completion = await openai.chat.completions.create({
               model: 'gpt-4o-mini',
               messages: [
@@ -5902,7 +5985,9 @@ async function handleStripeWebhook(req, res) {
           if (user && user.subscription_plan === 'free') {
             sendCheckoutAbandonmentEmail(user, plan).then(sent => {
               if (sent) {
-                dbQuery('UPDATE users SET last_abandonment_email_at = NOW() WHERE id = $1', [userId]);
+                dbQuery('UPDATE users SET last_abandonment_email_at = NOW() WHERE id = $1', [
+                  userId,
+                ]);
               }
             });
             console.log(`[Checkout Abandoned] User ${userId} didn't complete ${plan} checkout`);
@@ -7429,7 +7514,9 @@ async function scrapeGoogleReviewsOutscraper(placeId, limit = 10) {
   }
 
   const keyCount = getOutscraperKeyCount();
-  console.log(`[OUTSCRAPER] Using key ${(outscraperKeyIndex % keyCount) + 1}/${keyCount} for ${placeId}`);
+  console.log(
+    `[OUTSCRAPER] Using key ${(outscraperKeyIndex % keyCount) + 1}/${keyCount} for ${placeId}`
+  );
 
   const url = `https://api.app.outscraper.com/maps/reviews-v3?query=${placeId}&reviewsLimit=${limit}&async=false&sort=lowest_rating`;
 
@@ -7470,9 +7557,7 @@ async function scrapeGoogleReviewsSerper(placeId, limit = 10, businessName = nul
 
   // CRITICAL FIX: Use business name + city for search, NOT placeId!
   // PlaceId (ChIJ...) as search query returns random wrong businesses
-  const searchQuery = businessName && city
-    ? `${businessName} ${city}`
-    : businessName || placeId; // Fallback to placeId only if no name available
+  const searchQuery = businessName && city ? `${businessName} ${city}` : businessName || placeId; // Fallback to placeId only if no name available
 
   console.log(`[SERPER] Fetching reviews for "${searchQuery}" (placeId: ${placeId})...`);
 
@@ -7526,10 +7611,13 @@ async function scrapeGoogleReviewsSerper(placeId, limit = 10, businessName = nul
   // SAFETY CHECK: Warn if the found business name is very different
   if (businessName && bestMatch.title) {
     const foundNameLower = bestMatch.title.toLowerCase();
-    const hasOverlap = foundNameLower.includes(expectedNameLower.slice(0, 10)) ||
-                       expectedNameLower.includes(foundNameLower.slice(0, 10));
+    const hasOverlap =
+      foundNameLower.includes(expectedNameLower.slice(0, 10)) ||
+      expectedNameLower.includes(foundNameLower.slice(0, 10));
     if (!hasOverlap) {
-      console.warn(`[SERPER] ⚠️ WARNING: Found business "${bestMatch.title}" may not match expected "${businessName}"`);
+      console.warn(
+        `[SERPER] ⚠️ WARNING: Found business "${bestMatch.title}" may not match expected "${businessName}"`
+      );
     }
   }
 
@@ -7593,7 +7681,9 @@ async function scrapeGoogleReviews(placeId, limit = 10, businessName = null, cit
     if (cached.rows.length > 0 && cached.rows[0].scraped_reviews) {
       const cachedReviews = JSON.parse(cached.rows[0].scraped_reviews);
       if (cachedReviews.length > 0) {
-        console.log(`Using ${cachedReviews.length} cached reviews for ${placeId} (saving API call!)`);
+        console.log(
+          `Using ${cachedReviews.length} cached reviews for ${placeId} (saving API call!)`
+        );
         return cachedReviews.slice(0, limit);
       }
     }
@@ -7671,7 +7761,7 @@ async function scrapeGoogleReviews(placeId, limit = 10, businessName = null, cit
         const apifyData = await apifyResponse.json();
         if (apifyData.length > 0 && apifyData[0].reviews?.length > 0) {
           console.log(`Apify returned ${apifyData[0].reviews.length} reviews`);
-          return apifyData[0].reviews.slice(0, limit).map((r) => ({
+          return apifyData[0].reviews.slice(0, limit).map(r => ({
             text: r.text || r.snippet || '',
             rating: r.stars || r.rating || 0,
             author: r.name || r.author || 'Anonymous',
@@ -7698,7 +7788,7 @@ async function scrapeGoogleReviews(placeId, limit = 10, businessName = null, cit
 
       if (data.status === 'OK' && data.result?.reviews?.length > 0) {
         console.log(`Google Places returned ${data.result.reviews.length} reviews`);
-        return data.result.reviews.slice(0, limit).map((r) => ({
+        return data.result.reviews.slice(0, limit).map(r => ({
           text: r.text || '',
           rating: r.rating || 0,
           author: r.author_name || 'Anonymous',
@@ -8362,33 +8452,41 @@ app.get('/api/public/stats', async (req, res) => {
     try {
       const r = await dbGet('SELECT COUNT(*) as count FROM responses');
       userResponseCount = parseInt(r?.count || 0);
-    } catch (e) { console.error('Stats: responses table error:', e.message); }
+    } catch (e) {
+      console.error('Stats: responses table error:', e.message);
+    }
 
     // 2. Instant try (landing page without account)
     try {
       const r = await dbGet('SELECT COUNT(*) as count FROM public_try_usage');
       instantTryCount = parseInt(r?.count || 0);
-    } catch (e) { console.error('Stats: public_try_usage table error:', e.message); }
+    } catch (e) {
+      console.error('Stats: public_try_usage table error:', e.message);
+    }
 
     // 3. Demo generations (each demo has ~3 responses)
     try {
       const r = await dbGet('SELECT COUNT(*) as count FROM demo_generations');
       demoCount = parseInt(r?.count || 0);
       demoResponseCount = demoCount * 3;
-    } catch (e) { console.error('Stats: demo_generations table error:', e.message); }
+    } catch (e) {
+      console.error('Stats: demo_generations table error:', e.message);
+    }
 
     // 4. Users
     try {
       const r = await dbGet('SELECT COUNT(*) as count FROM users');
       userCount = parseInt(r?.count || 0);
-    } catch (e) { console.error('Stats: users table error:', e.message); }
+    } catch (e) {
+      console.error('Stats: users table error:', e.message);
+    }
 
     const totalResponses = userResponseCount + instantTryCount + demoResponseCount;
 
     const stats = {
       totalResponses: totalResponses,
       totalDemos: demoCount,
-      totalUsers: userCount
+      totalUsers: userCount,
     };
 
     publicStatsCache = { data: stats, timestamp: Date.now() };
@@ -8617,7 +8715,8 @@ const instantDemoPersonas = {
   dental: {
     persona:
       "You're Dr. Kim, running a family dental practice for 15 years. You know patients by name.",
-    context: 'General dentistry, nervous patients are common, painless procedures are your specialty',
+    context:
+      'General dentistry, nervous patients are common, painless procedures are your specialty',
     voice: 'Calm, reassuring, professional. Never defensive about wait times.',
   },
   medical: {
@@ -8657,14 +8756,12 @@ const instantDemoPersonas = {
     voice: 'Helpful, knowledgeable, relationship-focused.',
   },
   ecommerce: {
-    persona:
-      "You're Emma, founder of an online store you started from your garage 5 years ago.",
+    persona: "You're Emma, founder of an online store you started from your garage 5 years ago.",
     context: 'Direct-to-consumer, quality products, personal customer service',
     voice: 'Personal, authentic, genuinely grateful for customers.',
   },
   pets: {
-    persona:
-      "You're Dr. Chen, veterinarian running a neighborhood pet clinic for 12 years.",
+    persona: "You're Dr. Chen, veterinarian running a neighborhood pet clinic for 12 years.",
     context: 'Dogs, cats, small animals, preventive care, gentle handling',
     voice: 'Caring, reassuring, always thinking about the pet first.',
   },
@@ -8675,8 +8772,7 @@ const instantDemoPersonas = {
     voice: 'Warm, professional, understanding of parent concerns.',
   },
   financial: {
-    persona:
-      "You're Robert, independent financial advisor for 20 years. Trust is everything.",
+    persona: "You're Robert, independent financial advisor for 20 years. Trust is everything.",
     context: 'Retirement planning, insurance, investments, long-term relationships',
     voice: 'Trustworthy, clear, jargon-free, patient.',
   },
@@ -8693,8 +8789,7 @@ const instantDemoPersonas = {
     voice: 'Artistic, appreciative, excited about the craft.',
   },
   generic: {
-    persona:
-      "You're Alex, owner of a local business for 10 years. Every customer matters.",
+    persona: "You're Alex, owner of a local business for 10 years. Every customer matters.",
     context: 'Small team, personal service, community focus',
     voice: 'Direct, warm, genuine. Short sentences.',
   },
@@ -9074,7 +9169,9 @@ Respond DIRECTLY. No quotes. No prefix. Just the response text.`;
           authenticatedUser?.id || null,
         ]
       );
-      console.log(`[public_try_usage] Tracked: id=${result?.rows?.[0]?.id}, session=${sessionId}, email=${userEmail || 'anon'}`);
+      console.log(
+        `[public_try_usage] Tracked: id=${result?.rows?.[0]?.id}, session=${sessionId}, email=${userEmail || 'anon'}`
+      );
     } catch (trackError) {
       console.error('[public_try_usage] Track error:', trackError.message);
     }
@@ -9179,7 +9276,8 @@ async function sendDemoEmail(toEmail, businessName, demos, demoToken, totalRevie
   let demoContentText = '';
   demos.forEach((demo, i) => {
     const stars = '★'.repeat(demo.review.rating) + '☆'.repeat(5 - demo.review.rating);
-    const reviewText = demo.review.text.slice(0, 200) + (demo.review.text.length > 200 ? '...' : '');
+    const reviewText =
+      demo.review.text.slice(0, 200) + (demo.review.text.length > 200 ? '...' : '');
 
     demoContentHtml += `
       <div style="background: #f9fafb; border-radius: 8px; padding: 16px; margin: 16px 0;">
@@ -9411,8 +9509,10 @@ app.get('/api/cron/generate-demos', async (req, res) => {
 // GET /api/cron/send-pending-demo-emails - Send emails for demos that were generated but never emailed
 app.get('/api/cron/send-pending-demo-emails', async (req, res) => {
   const cronSecret = req.query.secret || req.headers['x-cron-secret'];
-  if (!safeCompare(cronSecret || '', process.env.CRON_SECRET || '') &&
-      !safeCompare(cronSecret || '', process.env.ADMIN_SECRET || '')) {
+  if (
+    !safeCompare(cronSecret || '', process.env.CRON_SECRET || '') &&
+    !safeCompare(cronSecret || '', process.env.ADMIN_SECRET || '')
+  ) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -9420,7 +9520,8 @@ app.get('/api/cron/send-pending-demo-emails', async (req, res) => {
     const limit = parseInt(req.query.limit) || 20;
 
     // Find demos without email_sent_at that have a lead with email
-    const pendingDemos = await dbAll(`
+    const pendingDemos = await dbAll(
+      `
       SELECT dg.*, ol.email, ol.business_name as lead_business_name
       FROM demo_generations dg
       JOIN outreach_leads ol ON dg.lead_id = ol.id
@@ -9429,7 +9530,9 @@ app.get('/api/cron/send-pending-demo-emails', async (req, res) => {
         AND ol.email != ''
       ORDER BY dg.created_at DESC
       LIMIT $1
-    `, [limit]);
+    `,
+      [limit]
+    );
 
     console.log(`📧 Found ${pendingDemos.length} demos without emails`);
 
@@ -9459,10 +9562,7 @@ app.get('/api/cron/send-pending-demo-emails', async (req, res) => {
           demo.total_reviews || 0
         );
 
-        await dbQuery(
-          'UPDATE demo_generations SET email_sent_at = NOW() WHERE id = $1',
-          [demo.id]
-        );
+        await dbQuery('UPDATE demo_generations SET email_sent_at = NOW() WHERE id = $1', [demo.id]);
 
         await recordEmailSend(demo.email, 'demo_email');
         sent++;
@@ -9479,7 +9579,7 @@ app.get('/api/cron/send-pending-demo-emails', async (req, res) => {
       pending_found: pendingDemos.length,
       sent,
       failed,
-      results: results.slice(0, 10) // Limit response size
+      results: results.slice(0, 10), // Limit response size
     });
   } catch (error) {
     console.error('Send pending demo emails error:', error);
@@ -10573,7 +10673,9 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
     // 🔔 Notify Berend if this is feedback from a REAL user (not test account)
     if (!isTestEmail(user.email)) {
       const ratingStars = '⭐'.repeat(rating);
-      const feedbackPreview = comment ? comment.substring(0, 100) + (comment.length > 100 ? '...' : '') : '(no comment)';
+      const feedbackPreview = comment
+        ? comment.substring(0, 100) + (comment.length > 100 ? '...' : '')
+        : '(no comment)';
       sendEmail({
         to: 'berend.mainz@web.de',
         subject: `📣 New User Feedback: ${ratingStars} from ${userName}`,
@@ -10586,7 +10688,7 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
           <blockquote style="border-left: 3px solid #ccc; padding-left: 10px; margin: 10px 0;">${comment || '(no comment)'}</blockquote>
           <p style="color: #666; font-size: 12px;">This is feedback from a real user, not a test account.</p>
         `,
-        text: `New Feedback from ${userName} (${user.email})\nRating: ${rating}/5\nComment: ${feedbackPreview}`
+        text: `New Feedback from ${userName} (${user.email})\nRating: ${rating}/5\nComment: ${feedbackPreview}`,
       }).catch(err => console.error('Failed to notify Berend about new feedback:', err.message));
       console.log(`📣 NEW REAL USER FEEDBACK: ${rating}/5 from ${user.email}`);
     }
@@ -10723,17 +10825,19 @@ app.get('/api/admin/feedback-summary', authenticateAdmin, async (req, res) => {
 
     // Calculate summary metrics
     const totalFeedback = allFeedback.length;
-    const avgRating = totalFeedback > 0
-      ? (allFeedback.reduce((sum, f) => sum + f.rating, 0) / totalFeedback).toFixed(2)
-      : 0;
+    const avgRating =
+      totalFeedback > 0
+        ? (allFeedback.reduce((sum, f) => sum + f.rating, 0) / totalFeedback).toFixed(2)
+        : 0;
 
     // 7-day trend calculation
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const recentFeedback = allFeedback.filter(f => new Date(f.created_at) > sevenDaysAgo);
-    const recentAvg = recentFeedback.length > 0
-      ? (recentFeedback.reduce((sum, f) => sum + f.rating, 0) / recentFeedback.length).toFixed(2)
-      : 0;
+    const recentAvg =
+      recentFeedback.length > 0
+        ? (recentFeedback.reduce((sum, f) => sum + f.rating, 0) / recentFeedback.length).toFixed(2)
+        : 0;
 
     // Determine trend
     let trend = 'stable';
@@ -10748,17 +10852,25 @@ app.get('/api/admin/feedback-summary', authenticateAdmin, async (req, res) => {
     const painPoints = painPointFeedback.map(f => ({
       rating: f.rating,
       comment: f.comment,
-      date: f.created_at
+      date: f.created_at,
     }));
 
     // Extract feature requests (look for keywords in any feedback)
-    const featureKeywords = ['would be nice', 'wish', 'feature', 'could you add', 'please add', 'would love', 'it would be great'];
+    const featureKeywords = [
+      'would be nice',
+      'wish',
+      'feature',
+      'could you add',
+      'please add',
+      'would love',
+      'it would be great',
+    ];
     const featureRequests = allFeedback
       .filter(f => f.comment && featureKeywords.some(kw => f.comment.toLowerCase().includes(kw)))
       .map(f => ({
         rating: f.rating,
         comment: f.comment,
-        date: f.created_at
+        date: f.created_at,
       }));
 
     // Generate alerts
@@ -10767,21 +10879,21 @@ app.get('/api/admin/feedback-summary', authenticateAdmin, async (req, res) => {
       alerts.push({
         type: 'low_rating',
         message: `Average rating is ${avgRating}/5 - investigate pain points`,
-        severity: 'warning'
+        severity: 'warning',
       });
     }
     if (trend === 'declining') {
       alerts.push({
         type: 'rating_drop',
         message: `Rating trend is declining (recent: ${recentAvg} vs overall: ${avgRating})`,
-        severity: 'critical'
+        severity: 'critical',
       });
     }
     if (painPoints.length >= 3) {
       alerts.push({
         type: 'multiple_pain_points',
         message: `${painPoints.length} users reported issues (rating <=3)`,
-        severity: 'warning'
+        severity: 'warning',
       });
     }
 
@@ -10791,12 +10903,12 @@ app.get('/api/admin/feedback-summary', authenticateAdmin, async (req, res) => {
         average_rating: parseFloat(avgRating),
         recent_average: parseFloat(recentAvg),
         trend: trend,
-        test_excluded: excludeTest
+        test_excluded: excludeTest,
       },
       pain_points: painPoints.slice(0, 10), // Latest 10
       feature_requests: featureRequests.slice(0, 10),
       alerts: alerts,
-      last_updated: new Date().toISOString()
+      last_updated: new Date().toISOString(),
     });
   } catch (error) {
     console.error('Feedback summary error:', error);
@@ -10824,17 +10936,23 @@ app.get('/api/cron/process-feedback', async (req, res) => {
     `);
 
     const totalFeedback = allFeedback.length;
-    const avgRating = totalFeedback > 0
-      ? parseFloat((allFeedback.reduce((sum, f) => sum + f.rating, 0) / totalFeedback).toFixed(2))
-      : 0;
+    const avgRating =
+      totalFeedback > 0
+        ? parseFloat((allFeedback.reduce((sum, f) => sum + f.rating, 0) / totalFeedback).toFixed(2))
+        : 0;
 
     // 7-day trend
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const recentFeedback = allFeedback.filter(f => new Date(f.created_at) > sevenDaysAgo);
-    const recentAvg = recentFeedback.length > 0
-      ? parseFloat((recentFeedback.reduce((sum, f) => sum + f.rating, 0) / recentFeedback.length).toFixed(2))
-      : 0;
+    const recentAvg =
+      recentFeedback.length > 0
+        ? parseFloat(
+            (recentFeedback.reduce((sum, f) => sum + f.rating, 0) / recentFeedback.length).toFixed(
+              2
+            )
+          )
+        : 0;
 
     let trend = 'stable';
     if (recentFeedback.length >= 3 && totalFeedback >= 5) {
@@ -10850,7 +10968,14 @@ app.get('/api/cron/process-feedback', async (req, res) => {
       .map(f => f.comment);
 
     // Feature requests
-    const featureKeywords = ['would be nice', 'wish', 'feature', 'could you add', 'please add', 'would love'];
+    const featureKeywords = [
+      'would be nice',
+      'wish',
+      'feature',
+      'could you add',
+      'please add',
+      'would love',
+    ];
     const featureRequests = allFeedback
       .filter(f => f.comment && featureKeywords.some(kw => f.comment.toLowerCase().includes(kw)))
       .slice(0, 10)
@@ -10871,11 +10996,11 @@ app.get('/api/cron/process-feedback', async (req, res) => {
         total_real_feedback: totalFeedback,
         average_rating: avgRating,
         recent_average: recentAvg,
-        trend: trend
+        trend: trend,
       },
       pain_points: painPoints,
       feature_requests: featureRequests,
-      alerts: alerts
+      alerts: alerts,
     };
 
     // Note: In production, this would write to a file or store in DB
@@ -10883,7 +11008,7 @@ app.get('/api/cron/process-feedback', async (req, res) => {
     res.json({
       success: true,
       message: 'Feedback insights processed',
-      insights: insights
+      insights: insights,
     });
   } catch (error) {
     console.error('Process feedback error:', error);
@@ -11909,7 +12034,9 @@ app.get('/api/admin/test-conversion-email', async (req, res) => {
   }
 
   if (!email || !type) {
-    return res.status(400).json({ error: 'email and type (flash_offer|checkout_abandonment) required' });
+    return res
+      .status(400)
+      .json({ error: 'email and type (flash_offer|checkout_abandonment) required' });
   }
 
   // Create a mock user for testing
@@ -11995,10 +12122,13 @@ app.all('/api/cron/onboarding-emails', async (req, res) => {
       else emailDay = 0;
 
       // Check if we already sent this day's email
-      const alreadySent = await dbGet(`
+      const alreadySent = await dbGet(
+        `
         SELECT id FROM onboarding_emails
         WHERE user_id = $1 AND email_day = $2
-      `, [user.id, emailDay]);
+      `,
+        [user.id, emailDay]
+      );
 
       if (alreadySent) {
         skippedCount++;
@@ -12043,7 +12173,7 @@ app.all('/api/cron/onboarding-emails', async (req, res) => {
           </html>
         `;
       } else if (emailDay === 1) {
-        subject = "Your Chrome Extension is waiting";
+        subject = 'Your Chrome Extension is waiting';
         html = `
           <!DOCTYPE html>
           <html>
@@ -12071,7 +12201,7 @@ app.all('/api/cron/onboarding-emails', async (req, res) => {
           </html>
         `;
       } else if (emailDay === 3) {
-        subject = "5 reviews are waiting for your response";
+        subject = '5 reviews are waiting for your response';
         html = `
           <!DOCTYPE html>
           <html>
@@ -12096,7 +12226,7 @@ app.all('/api/cron/onboarding-emails', async (req, res) => {
           </html>
         `;
       } else if (emailDay === 7) {
-        subject = "Did you know? Businesses that respond get 9% more revenue";
+        subject = 'Did you know? Businesses that respond get 9% more revenue';
         html = `
           <!DOCTYPE html>
           <html>
@@ -12135,11 +12265,14 @@ app.all('/api/cron/onboarding-emails', async (req, res) => {
         }
 
         // Record in onboarding_emails table
-        await dbQuery(`
+        await dbQuery(
+          `
           INSERT INTO onboarding_emails (user_id, email_day)
           VALUES ($1, $2)
           ON CONFLICT (user_id, email_day) DO NOTHING
-        `, [user.id, emailDay]);
+        `,
+          [user.id, emailDay]
+        );
 
         // Record for parallel-safety
         await recordEmailSend(user.email, 'onboarding');
@@ -12148,7 +12281,7 @@ app.all('/api/cron/onboarding-emails', async (req, res) => {
         results.push({
           email: user.email,
           day: emailDay,
-          status: 'sent'
+          status: 'sent',
         });
 
         console.log(`📧 Onboarding Day ${emailDay} sent to ${user.email}`);
@@ -12158,7 +12291,7 @@ app.all('/api/cron/onboarding-emails', async (req, res) => {
           email: user.email,
           day: emailDay,
           status: 'error',
-          error: emailError.message
+          error: emailError.message,
         });
       }
     }
@@ -12169,9 +12302,8 @@ app.all('/api/cron/onboarding-emails', async (req, res) => {
       total_inactive_users: inactiveUsers.rows.length,
       sent: sentCount,
       skipped: skippedCount,
-      results
+      results,
     });
-
   } catch (error) {
     console.error('Onboarding email error:', error);
     res.status(500).json({ error: error.message });
@@ -12213,13 +12345,19 @@ app.all('/api/cron/review-alerts', async (req, res) => {
     // Ensure google_place_id column exists on tables (migration fix)
     try {
       await dbQuery(`ALTER TABLE linkedin_outreach ADD COLUMN IF NOT EXISTS google_place_id TEXT`);
-    } catch (e) { console.log('linkedin_outreach migration:', e.message); }
+    } catch (e) {
+      console.log('linkedin_outreach migration:', e.message);
+    }
     try {
       await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS google_place_id TEXT`);
-    } catch (e) { console.log('outreach_leads migration:', e.message); }
+    } catch (e) {
+      console.log('outreach_leads migration:', e.message);
+    }
     try {
       await dbQuery(`ALTER TABLE demo_generations ADD COLUMN IF NOT EXISTS google_place_id TEXT`);
-    } catch (e) { console.log('demo_generations migration:', e.message); }
+    } catch (e) {
+      console.log('demo_generations migration:', e.message);
+    }
 
     // Find users with business_name set (they have a business to monitor)
     const usersWithBusiness = await dbQuery(`
@@ -12241,17 +12379,20 @@ app.all('/api/cron/review-alerts', async (req, res) => {
     for (const user of usersWithBusiness.rows) {
       try {
         // Check if we already checked in last 24 hours
-        const cachedEntry = await dbGet(`
+        const cachedEntry = await dbGet(
+          `
           SELECT * FROM user_review_cache
           WHERE user_id = $1
             AND last_checked_at > NOW() - INTERVAL '24 hours'
-        `, [user.id]);
+        `,
+          [user.id]
+        );
 
         if (cachedEntry) {
           results.push({
             user: user.email,
             status: 'skipped',
-            reason: 'checked_recently'
+            reason: 'checked_recently',
           });
           continue;
         }
@@ -12262,48 +12403,63 @@ app.all('/api/cron/review-alerts', async (req, res) => {
 
         // 1. First try to find Place ID from demo_generations (we already have it!)
         try {
-          const demoWithPlaceId = await dbGet(`
+          const demoWithPlaceId = await dbGet(
+            `
             SELECT google_place_id, business_name FROM demo_generations
             WHERE business_name ILIKE $1 AND google_place_id IS NOT NULL
             ORDER BY created_at DESC LIMIT 1
-          `, [`%${user.business_name}%`]);
+          `,
+            [`%${user.business_name}%`]
+          );
 
           if (demoWithPlaceId?.google_place_id) {
             placeId = demoWithPlaceId.google_place_id;
             console.log(`🔔 Found Place ID from demo_generations for ${user.business_name}`);
           }
-        } catch (e) { /* Column might not exist yet */ }
+        } catch (e) {
+          /* Column might not exist yet */
+        }
 
         // 2. Try linkedin_outreach if not found
         if (!placeId) {
           try {
-            const linkedinWithPlaceId = await dbGet(`
+            const linkedinWithPlaceId = await dbGet(
+              `
               SELECT google_place_id, business_name FROM linkedin_outreach
               WHERE business_name ILIKE $1 AND google_place_id IS NOT NULL
               ORDER BY created_at DESC LIMIT 1
-            `, [`%${user.business_name}%`]);
+            `,
+              [`%${user.business_name}%`]
+            );
 
             if (linkedinWithPlaceId?.google_place_id) {
               placeId = linkedinWithPlaceId.google_place_id;
               console.log(`🔔 Found Place ID from linkedin_outreach for ${user.business_name}`);
             }
-          } catch (e) { /* Column might not exist yet */ }
+          } catch (e) {
+            /* Column might not exist yet */
+          }
         }
 
         // 3. Try outreach_leads if not found
         if (!placeId) {
           try {
-            const leadWithPlaceId = await dbGet(`
+            const leadWithPlaceId = await dbGet(
+              `
               SELECT google_place_id, business_name FROM outreach_leads
               WHERE business_name ILIKE $1 AND google_place_id IS NOT NULL
               ORDER BY created_at DESC LIMIT 1
-            `, [`%${user.business_name}%`]);
+            `,
+              [`%${user.business_name}%`]
+            );
 
             if (leadWithPlaceId?.google_place_id) {
               placeId = leadWithPlaceId.google_place_id;
               console.log(`🔔 Found Place ID from outreach_leads for ${user.business_name}`);
             }
-          } catch (e) { /* Column might not exist yet */ }
+          } catch (e) {
+            /* Column might not exist yet */
+          }
         }
 
         // 4. Fallback: Try Google Places API (costs credits)
@@ -12319,7 +12475,10 @@ app.all('/api/cron/review-alerts', async (req, res) => {
               console.log(`🔔 Found Place ID from Google API for ${user.business_name}`);
             }
           } catch (googleError) {
-            console.error(`Google Places lookup failed for ${user.business_name}:`, googleError.message);
+            console.error(
+              `Google Places lookup failed for ${user.business_name}:`,
+              googleError.message
+            );
           }
         }
 
@@ -12328,7 +12487,7 @@ app.all('/api/cron/review-alerts', async (req, res) => {
             user: user.email,
             business: user.business_name,
             status: 'skipped',
-            reason: 'no_place_id'
+            reason: 'no_place_id',
           });
           continue;
         }
@@ -12337,12 +12496,15 @@ app.all('/api/cron/review-alerts', async (req, res) => {
         let reviews = [];
 
         // First check demo_generations for scraped reviews
-        const demoReviews = await dbGet(`
+        const demoReviews = await dbGet(
+          `
           SELECT scraped_reviews FROM demo_generations
           WHERE google_place_id = $1
             AND scraped_reviews IS NOT NULL
           ORDER BY created_at DESC LIMIT 1
-        `, [placeId]);
+        `,
+          [placeId]
+        );
 
         if (demoReviews?.scraped_reviews && Array.isArray(demoReviews.scraped_reviews)) {
           reviews = demoReviews.scraped_reviews.slice(0, 5);
@@ -12367,7 +12529,7 @@ app.all('/api/cron/review-alerts', async (req, res) => {
             user: user.email,
             business: user.business_name,
             status: 'skipped',
-            reason: 'no_reviews_found'
+            reason: 'no_reviews_found',
           });
           continue;
         }
@@ -12375,27 +12537,35 @@ app.all('/api/cron/review-alerts', async (req, res) => {
         reviewsFound += reviews.length;
 
         // Get cached review IDs
-        const userCache = await dbGet(`
+        const userCache = await dbGet(
+          `
           SELECT last_review_ids FROM user_review_cache
           WHERE user_id = $1 AND google_place_id = $2
-        `, [user.id, placeId]);
+        `,
+          [user.id, placeId]
+        );
 
         const cachedReviewIds = userCache?.last_review_ids || [];
 
         // Find new reviews (not in cache)
-        const currentReviewIds = reviews.map(r => r.author_name + '_' + (r.time || r.relative_time_description));
+        const currentReviewIds = reviews.map(
+          r => r.author_name + '_' + (r.time || r.relative_time_description)
+        );
         const newReviews = reviews.filter(r => {
           const reviewId = r.author_name + '_' + (r.time || r.relative_time_description);
           return !cachedReviewIds.includes(reviewId);
         });
 
         // Update cache
-        await dbQuery(`
+        await dbQuery(
+          `
           INSERT INTO user_review_cache (user_id, google_place_id, last_review_ids, last_checked_at)
           VALUES ($1, $2, $3, NOW())
           ON CONFLICT (user_id, google_place_id)
           DO UPDATE SET last_review_ids = $3, last_checked_at = NOW()
-        `, [user.id, placeId, JSON.stringify(currentReviewIds)]);
+        `,
+          [user.id, placeId, JSON.stringify(currentReviewIds)]
+        );
 
         // If we have new reviews, send alert
         if (newReviews.length > 0 && cachedReviewIds.length > 0) {
@@ -12403,7 +12573,8 @@ app.all('/api/cron/review-alerts', async (req, res) => {
           const review = newReviews[0]; // Most recent new review
           const rating = review.rating || 5;
           const ratingStars = '⭐'.repeat(rating);
-          const reviewSnippet = (review.text || '').slice(0, 150) + ((review.text || '').length > 150 ? '...' : '');
+          const reviewSnippet =
+            (review.text || '').slice(0, 150) + ((review.text || '').length > 150 ? '...' : '');
           const reviewerName = review.author_name || 'A customer';
 
           const subject = `New ${rating}-star review on Google - respond now?`;
@@ -12437,7 +12608,7 @@ app.all('/api/cron/review-alerts', async (req, res) => {
               user: user.email,
               business: user.business_name,
               status: 'skipped',
-              reason: 'email_recently_sent'
+              reason: 'email_recently_sent',
             });
             continue;
           }
@@ -12460,27 +12631,28 @@ app.all('/api/cron/review-alerts', async (req, res) => {
             business: user.business_name,
             status: 'alert_sent',
             new_reviews: newReviews.length,
-            rating: rating
+            rating: rating,
           });
 
-          console.log(`🔔 Review Alert sent to ${user.email} for ${user.business_name} (${rating} stars)`);
+          console.log(
+            `🔔 Review Alert sent to ${user.email} for ${user.business_name} (${rating} stars)`
+          );
         } else {
           results.push({
             user: user.email,
             business: user.business_name,
             status: 'no_new_reviews',
             total_reviews: reviews.length,
-            is_first_check: cachedReviewIds.length === 0
+            is_first_check: cachedReviewIds.length === 0,
           });
         }
-
       } catch (userError) {
         console.error(`Review alert error for ${user.email}:`, userError.message);
         results.push({
           user: user.email,
           business: user.business_name,
           status: 'error',
-          error: userError.message
+          error: userError.message,
         });
       }
     }
@@ -12491,9 +12663,8 @@ app.all('/api/cron/review-alerts', async (req, res) => {
       users_checked: usersWithBusiness.rows.length,
       alerts_sent: alertsSent,
       reviews_found: reviewsFound,
-      results
+      results,
     });
-
   } catch (error) {
     console.error('Review alerts error:', error);
     res.status(500).json({ error: error.message });
@@ -12527,7 +12698,7 @@ app.get('/api/admin/inactive-users', async (req, res) => {
     res.json({
       success: true,
       count: users.rows.length,
-      users: users.rows
+      users: users.rows,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -12561,7 +12732,7 @@ app.get('/api/admin/users-for-review-alerts', async (req, res) => {
     res.json({
       success: true,
       count: users.rows.length,
-      users: users.rows
+      users: users.rows,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -12832,10 +13003,7 @@ app.get('/api/admin/set-test-password', async (req, res) => {
   }
 
   try {
-    const user = await dbGet(
-      'SELECT id, email FROM users WHERE LOWER(email) = LOWER($1)',
-      [email]
-    );
+    const user = await dbGet('SELECT id, email FROM users WHERE LOWER(email) = LOWER($1)', [email]);
 
     if (!user) {
       return res.status(404).json({ error: `User not found: ${email}` });
@@ -12849,7 +13017,7 @@ app.get('/api/admin/set-test-password', async (req, res) => {
     res.json({
       success: true,
       message: `Password updated for ${email}`,
-      note: 'Use this account for Chrome Web Store review testing'
+      note: 'Use this account for Chrome Web Store review testing',
     });
   } catch (error) {
     console.error('Admin set-test-password error:', error);
@@ -12886,7 +13054,7 @@ app.post('/api/admin/set-user-responses', authenticateAdmin, async (req, res) =>
       email: user.email,
       previous_responses_used: previousUsed,
       new_responses_used: responses_used,
-      responses_limit: user.responses_limit
+      responses_limit: user.responses_limit,
     });
   } catch (error) {
     console.error('Admin set-user-responses error:', error);
@@ -12921,7 +13089,7 @@ app.post('/api/admin/mark-test-user', authenticateAdmin, async (req, res) => {
       success: true,
       email: user.email,
       is_test_account: is_test,
-      note: is_test ? 'User excluded from metrics' : 'User included in metrics'
+      note: is_test ? 'User excluded from metrics' : 'User included in metrics',
     });
   } catch (error) {
     console.error('Admin mark-test-user error:', error);
@@ -13560,9 +13728,16 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
     // Real users = haben mindestens 1x generiert (EGAL WO!)
     // Definition 18.01.2026: responses OR demo_generations OR public_try_usage
     // Bare minimum: 1 Generierung irgendwo = Real User
-    let realUserStats = { real_users: 0, via_generator: 0, via_demo: 0, via_instant_try: 0, inactive_users: 0 };
+    let realUserStats = {
+      real_users: 0,
+      via_generator: 0,
+      via_demo: 0,
+      via_instant_try: 0,
+      inactive_users: 0,
+    };
     try {
-      realUserStats = (await dbGet(`
+      realUserStats =
+        (await dbGet(`
         SELECT
           -- Echte User: haben IRGENDWO generiert (responses, demo, instant try)
           COUNT(*) FILTER (WHERE
@@ -13705,9 +13880,24 @@ app.get('/api/admin/product-quality', authenticateAdmin, async (req, res) => {
 
     // Test cases for quality audit
     const testCases = [
-      { rating: 5, tone: 'professional', review: 'Amazing pizza! Best in town.', expected_length: '1-2 sentences' },
-      { rating: 3, tone: 'professional', review: 'Average experience. Nothing special.', expected_length: '2-3 sentences' },
-      { rating: 1, tone: 'apologetic', review: 'Terrible. Never coming back.', expected_length: '2-3 sentences' }
+      {
+        rating: 5,
+        tone: 'professional',
+        review: 'Amazing pizza! Best in town.',
+        expected_length: '1-2 sentences',
+      },
+      {
+        rating: 3,
+        tone: 'professional',
+        review: 'Average experience. Nothing special.',
+        expected_length: '2-3 sentences',
+      },
+      {
+        rating: 1,
+        tone: 'apologetic',
+        review: 'Terrible. Never coming back.',
+        expected_length: '2-3 sentences',
+      },
     ];
 
     let testResults = [];
@@ -13734,7 +13924,7 @@ ${industryExamples}
             model: 'claude-sonnet-4-20250514',
             max_tokens: 200,
             system: systemPrompt,
-            messages: [{ role: 'user', content: `[Review]\n${testCase.review}` }]
+            messages: [{ role: 'user', content: `[Review]\n${testCase.review}` }],
           });
 
           const generatedResponse = response.content[0].text.trim();
@@ -13748,16 +13938,17 @@ ${industryExamples}
             rating: testCase.rating,
             tone: testCase.tone,
             passed: slopCheck.passed,
-            response: generatedResponse.substring(0, 100) + (generatedResponse.length > 100 ? '...' : ''),
+            response:
+              generatedResponse.substring(0, 100) + (generatedResponse.length > 100 ? '...' : ''),
             sentences: sentenceCount,
-            issues: slopCheck.issues
+            issues: slopCheck.issues,
           });
         } catch (testError) {
           testResults.push({
             rating: testCase.rating,
             tone: testCase.tone,
             passed: false,
-            error: testError.message
+            error: testError.message,
           });
         }
       }
@@ -13787,13 +13978,13 @@ ${industryExamples}
       console.error('Error checking recent responses:', e.message);
     }
 
-    const slopRate = recentQuality.total > 0
-      ? ((1 - recentQuality.passed / recentQuality.total) * 100).toFixed(1)
-      : '0.0';
+    const slopRate =
+      recentQuality.total > 0
+        ? ((1 - recentQuality.passed / recentQuality.total) * 100).toFixed(1)
+        : '0.0';
 
-    const qualityScore = recentQuality.total > 0
-      ? Math.round((recentQuality.passed / recentQuality.total) * 100)
-      : 90; // Default if no data
+    const qualityScore =
+      recentQuality.total > 0 ? Math.round((recentQuality.passed / recentQuality.total) * 100) : 90; // Default if no data
 
     res.json({
       quality_score: qualityScore,
@@ -13806,7 +13997,7 @@ ${industryExamples}
       test_results: testResults,
       learnings_count: 3, // From product-learnings.json
       pending_investigations: 2,
-      recent_responses_checked: recentQuality.total
+      recent_responses_checked: recentQuality.total,
     });
   } catch (error) {
     console.error('Product quality error:', error);
@@ -13975,16 +14166,66 @@ app.get('/api/cron/quality-test', async (req, res) => {
   try {
     // Full test suite
     const testCases = [
-      { rating: 5, tone: 'professional', review: 'Amazing pizza! Best in town.', category: '5-star-positive' },
-      { rating: 5, tone: 'friendly', review: 'Love this place! Staff is great.', category: '5-star-friendly' },
-      { rating: 4, tone: 'professional', review: 'Good food, bit slow service.', category: '4-star-mixed' },
-      { rating: 3, tone: 'professional', review: 'Average experience. Nothing special.', category: '3-star-neutral' },
-      { rating: 2, tone: 'apologetic', review: 'Food was cold. Waited 45 minutes.', category: '2-star-complaint' },
-      { rating: 1, tone: 'apologetic', review: 'Terrible. Never coming back.', category: '1-star-angry' },
-      { rating: 5, tone: 'formal', review: 'Exquisite dining experience.', category: '5-star-formal' },
-      { rating: 1, tone: 'professional', review: 'Staff was rude. Manager didnt care.', category: '1-star-service' },
-      { rating: 4, tone: 'friendly', review: 'Great vibes! Music was a bit loud.', category: '4-star-casual' },
-      { rating: 3, tone: 'formal', review: 'Decent but overpriced for quality.', category: '3-star-value' }
+      {
+        rating: 5,
+        tone: 'professional',
+        review: 'Amazing pizza! Best in town.',
+        category: '5-star-positive',
+      },
+      {
+        rating: 5,
+        tone: 'friendly',
+        review: 'Love this place! Staff is great.',
+        category: '5-star-friendly',
+      },
+      {
+        rating: 4,
+        tone: 'professional',
+        review: 'Good food, bit slow service.',
+        category: '4-star-mixed',
+      },
+      {
+        rating: 3,
+        tone: 'professional',
+        review: 'Average experience. Nothing special.',
+        category: '3-star-neutral',
+      },
+      {
+        rating: 2,
+        tone: 'apologetic',
+        review: 'Food was cold. Waited 45 minutes.',
+        category: '2-star-complaint',
+      },
+      {
+        rating: 1,
+        tone: 'apologetic',
+        review: 'Terrible. Never coming back.',
+        category: '1-star-angry',
+      },
+      {
+        rating: 5,
+        tone: 'formal',
+        review: 'Exquisite dining experience.',
+        category: '5-star-formal',
+      },
+      {
+        rating: 1,
+        tone: 'professional',
+        review: 'Staff was rude. Manager didnt care.',
+        category: '1-star-service',
+      },
+      {
+        rating: 4,
+        tone: 'friendly',
+        review: 'Great vibes! Music was a bit loud.',
+        category: '4-star-casual',
+      },
+      {
+        rating: 3,
+        tone: 'formal',
+        review: 'Decent but overpriced for quality.',
+        category: '3-star-value',
+      },
     ].slice(0, testLimit);
 
     const results = [];
@@ -14011,7 +14252,7 @@ ${industryExamples}
             model: 'claude-sonnet-4-20250514',
             max_tokens: 200,
             system: systemPrompt,
-            messages: [{ role: 'user', content: `[Review]\n${testCase.review}` }]
+            messages: [{ role: 'user', content: `[Review]\n${testCase.review}` }],
           });
 
           const generatedResponse = response.content[0].text.trim();
@@ -14029,7 +14270,7 @@ ${industryExamples}
             passed: testPassed,
             response_preview: generatedResponse.substring(0, 80),
             sentences: sentenceCount,
-            slop_issues: slopCheck.issues
+            slop_issues: slopCheck.issues,
           });
 
           // Log failures as potential learnings
@@ -14037,7 +14278,7 @@ ${industryExamples}
             newLearnings.push({
               category: testCase.category,
               issues: slopCheck.issues,
-              sentences: sentenceCount
+              sentences: sentenceCount,
             });
           }
 
@@ -14048,7 +14289,7 @@ ${industryExamples}
           results.push({
             category: testCase.category,
             passed: false,
-            error: testError.message
+            error: testError.message,
           });
         }
       }
@@ -14096,19 +14337,28 @@ ${industryExamples}
           if (scoreDrop >= regressionThreshold) {
             regressionDetected = true;
             const severity = scoreDrop >= 10 ? 'CRITICAL' : 'WARNING';
-            alerts.push(`[${severity}] Regression detected: Quality dropped from ${previousScore}% to ${qualityScore}% (-${scoreDrop} points)`);
+            alerts.push(
+              `[${severity}] Regression detected: Quality dropped from ${previousScore}% to ${qualityScore}% (-${scoreDrop} points)`
+            );
 
-            console.warn(`[Quality Regression] Score dropped from ${previousScore}% to ${qualityScore}%`);
+            console.warn(
+              `[Quality Regression] Score dropped from ${previousScore}% to ${qualityScore}%`
+            );
           }
         }
 
         // Save current metrics to history
-        await dbQuery(`
+        await dbQuery(
+          `
           INSERT INTO product_quality_history (quality_score, slop_rate, tests_run, tests_passed)
           VALUES ($1, $2, $3, $4)
-        `, [qualityScore, slopRate, results.length, passed]);
+        `,
+          [qualityScore, slopRate, results.length, passed]
+        );
 
-        console.log(`[Quality Test] Score: ${qualityScore}%, Tests: ${results.length}, Passed: ${passed}, History updated`);
+        console.log(
+          `[Quality Test] Score: ${qualityScore}%, Tests: ${results.length}, Passed: ${passed}, History updated`
+        );
       } catch (historyError) {
         console.error('[Quality Test] History update failed:', historyError.message);
         // Don't fail the whole test, just log the error
@@ -14128,7 +14378,7 @@ ${industryExamples}
       new_learnings: newLearnings.length,
       results,
       alerts,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error('Quality test error:', error);
@@ -14154,63 +14404,69 @@ app.get('/api/admin/widget-analytics', authenticateAdmin, async (req, res) => {
     const captureRate = attempts > 0 ? ((captures / attempts) * 100).toFixed(1) : 0;
 
     // By Platform
-    const byPlatform = await dbAll(`
+    const byPlatform =
+      (await dbAll(`
       SELECT platform, COUNT(*) as captures
       FROM email_captures
       WHERE source = 'instant_demo' AND platform IS NOT NULL AND platform != ''
       GROUP BY platform
       ORDER BY captures DESC
       LIMIT 10
-    `) || [];
+    `)) || [];
 
     // By Business Type
-    const byBusinessType = await dbAll(`
+    const byBusinessType =
+      (await dbAll(`
       SELECT business_type, COUNT(*) as captures
       FROM email_captures
       WHERE source = 'instant_demo' AND business_type IS NOT NULL AND business_type != ''
       GROUP BY business_type
       ORDER BY captures DESC
       LIMIT 10
-    `) || [];
+    `)) || [];
 
     // By Landing Page (top 10)
-    const byLandingPage = await dbAll(`
+    const byLandingPage =
+      (await dbAll(`
       SELECT landing_page, COUNT(*) as captures
       FROM email_captures
       WHERE source = 'instant_demo' AND landing_page IS NOT NULL AND landing_page != ''
       GROUP BY landing_page
       ORDER BY captures DESC
       LIMIT 10
-    `) || [];
+    `)) || [];
 
     // Recent captures (last 7 days trend)
-    const recentTrend = await dbAll(`
+    const recentTrend =
+      (await dbAll(`
       SELECT DATE(created_at) as date, COUNT(*) as captures
       FROM email_captures
       WHERE source = 'instant_demo' AND created_at > NOW() - INTERVAL '7 days'
       GROUP BY DATE(created_at)
       ORDER BY date DESC
-    `) || [];
+    `)) || [];
 
     // Attempts by platform (for conversion rate calculation)
-    const attemptsByPlatform = await dbAll(`
+    const attemptsByPlatform =
+      (await dbAll(`
       SELECT platform, COUNT(*) as attempts
       FROM public_try_usage
       WHERE platform IS NOT NULL AND platform != ''
       GROUP BY platform
       ORDER BY attempts DESC
       LIMIT 10
-    `) || [];
+    `)) || [];
 
     // Attempts by business type (for conversion rate calculation)
-    const attemptsByBusinessType = await dbAll(`
+    const attemptsByBusinessType =
+      (await dbAll(`
       SELECT business_type, COUNT(*) as attempts
       FROM public_try_usage
       WHERE business_type IS NOT NULL AND business_type != ''
       GROUP BY business_type
       ORDER BY attempts DESC
       LIMIT 10
-    `) || [];
+    `)) || [];
 
     res.json({
       summary: {
@@ -14237,7 +14493,8 @@ app.get('/api/admin/user-list', authenticateAdmin, async (req, res) => {
   try {
     const includeTest = req.query.include_test === 'true';
 
-    const allUsers = await dbAll(`
+    const allUsers =
+      (await dbAll(`
       SELECT
         id,
         email,
@@ -14256,12 +14513,13 @@ app.get('/api/admin/user-list', authenticateAdmin, async (req, res) => {
         ROUND(EXTRACT(EPOCH FROM (NOW() - created_at)) / 86400) as days_since_signup
       FROM users
       ORDER BY responses_used DESC, created_at DESC
-    `) || [];
+    `)) || [];
 
     // Flag each user as test or real using isTestEmail()
+    // WICHTIG: Magic Link User sind IMMER echt - sie haben bewiesen dass sie existieren!
     const usersWithFlag = allUsers.map(u => ({
       ...u,
-      is_test_account: isTestEmail(u.email),
+      is_test_account: u.is_magic_link ? false : isTestEmail(u.email),
     }));
 
     // Neue User-Kategorien (17.01.2026):
@@ -14280,25 +14538,27 @@ app.get('/api/admin/user-list', authenticateAdmin, async (req, res) => {
     const summary = {
       total_raw: allUsers.length,
       total_test: testUsers.length,
-      total_registered: registeredUsers.length,  // Registriert aber 0 Responses
-      total_real: realUsers.length,              // ECHTE User = mind. 1 Response
+      total_registered: registeredUsers.length, // Registriert aber 0 Responses
+      total_real: realUsers.length, // ECHTE User = mind. 1 Response
       // Echte User Breakdown (nur User mit mind. 1 Response)
       real: {
         total: realUsers.length,
         low_usage: realUsers.filter(u => u.usage_tier === 'low_usage').length,
         medium_usage: realUsers.filter(u => u.usage_tier === 'medium_usage').length,
         high_usage: realUsers.filter(u => u.usage_tier === 'high_usage').length,
-        avg_responses: realUsers.length > 0
-          ? Math.round(realUsers.reduce((sum, u) => sum + u.response_count, 0) / realUsers.length)
-          : 0,
+        avg_responses:
+          realUsers.length > 0
+            ? Math.round(realUsers.reduce((sum, u) => sum + u.response_count, 0) / realUsers.length)
+            : 0,
       },
       // Registrierte aber nie genutzt (Conversion-Problem!)
       registered_only: {
         total: registeredUsers.length,
         emails: registeredUsers.map(u => u.email).slice(0, 10),
-        message: registeredUsers.length > 0
-          ? `${registeredUsers.length} User registriert aber nie genutzt - Onboarding Problem!`
-          : 'Alle registrierten User haben das Produkt genutzt',
+        message:
+          registeredUsers.length > 0
+            ? `${registeredUsers.length} User registriert aber nie genutzt - Onboarding Problem!`
+            : 'Alle registrierten User haben das Produkt genutzt',
       },
       // Test-Accounts Breakdown (für Transparenz)
       test: {
@@ -14319,25 +14579,28 @@ app.get('/api/admin/user-list', authenticateAdmin, async (req, res) => {
 app.get('/api/admin/parallel-safe-status', authenticateAdmin, async (req, res) => {
   try {
     // Active locks
-    const activeLocks = await dbAll(`
+    const activeLocks =
+      (await dbAll(`
       SELECT resource_type, resource_id, session_id, acquired_at, expires_at
       FROM processing_locks
       WHERE expires_at > NOW()
       ORDER BY acquired_at DESC
       LIMIT 50
-    `) || [];
+    `)) || [];
 
     // Recent email history (last 24h)
-    const recentEmails = await dbAll(`
+    const recentEmails =
+      (await dbAll(`
       SELECT email_address, email_type, sequence_number, session_id, sent_at
       FROM email_send_history
       WHERE sent_at > NOW() - INTERVAL '24 hours'
       ORDER BY sent_at DESC
       LIMIT 100
-    `) || [];
+    `)) || [];
 
     // Stats by email type
-    const emailStats = await dbAll(`
+    const emailStats =
+      (await dbAll(`
       SELECT
         email_type,
         COUNT(*) as total_sent,
@@ -14347,10 +14610,10 @@ app.get('/api/admin/parallel-safe-status', authenticateAdmin, async (req, res) =
       WHERE sent_at > NOW() - INTERVAL '24 hours'
       GROUP BY email_type
       ORDER BY total_sent DESC
-    `) || [];
+    `)) || [];
 
     // Duplicate prevention stats (how many would have been duplicates)
-    const duplicatesBlocked = await dbGet(`
+    const duplicatesBlocked = (await dbGet(`
       SELECT COUNT(*) as count
       FROM email_send_history e1
       WHERE EXISTS (
@@ -14360,14 +14623,14 @@ app.get('/api/admin/parallel-safe-status', authenticateAdmin, async (req, res) =
         AND e2.id < e1.id
         AND e2.sent_at > e1.sent_at - INTERVAL '60 minutes'
       )
-    `) || { count: 0 };
+    `)) || { count: 0 };
 
     // Expired locks cleaned up
-    const expiredLocks = await dbGet(`
+    const expiredLocks = (await dbGet(`
       SELECT COUNT(*) as count
       FROM processing_locks
       WHERE expires_at <= NOW()
-    `) || { count: 0 };
+    `)) || { count: 0 };
 
     // Clean up expired locks
     await dbQuery(`DELETE FROM processing_locks WHERE expires_at <= NOW()`);
@@ -14381,7 +14644,7 @@ app.get('/api/admin/parallel-safe-status', authenticateAdmin, async (req, res) =
       email_stats_by_type: emailStats,
       duplicates_blocked: parseInt(duplicatesBlocked.count) || 0,
       expired_locks_cleaned: parseInt(expiredLocks.count) || 0,
-      current_session: process.env.CLAUDE_SESSION || 'unknown'
+      current_session: process.env.CLAUDE_SESSION || 'unknown',
     });
   } catch (error) {
     console.error('Parallel-safe status error:', error);
@@ -14468,9 +14731,16 @@ app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
 
     // ========== REAL USER METRICS (18.01.2026) ==========
     // Real users = haben mindestens 1x generiert (EGAL WO!)
-    let realUserMetrics = { real_users: 0, via_generator: 0, via_demo: 0, via_instant_try: 0, inactive_users: 0 };
+    let realUserMetrics = {
+      real_users: 0,
+      via_generator: 0,
+      via_demo: 0,
+      via_instant_try: 0,
+      inactive_users: 0,
+    };
     try {
-      realUserMetrics = (await dbGet(`
+      realUserMetrics =
+        (await dbGet(`
         SELECT
           COUNT(*) FILTER (WHERE
             EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
@@ -14807,7 +15077,9 @@ app.get('/api/admin/email-providers', authenticateAdmin, async (req, res) => {
 
     const totalLimit = providers.filter(p => p.available).reduce((sum, p) => sum + p.limit, 0);
     const totalUsed = providers.filter(p => p.available).reduce((sum, p) => sum + p.used, 0);
-    const totalRemaining = providers.filter(p => p.available).reduce((sum, p) => sum + p.remaining, 0);
+    const totalRemaining = providers
+      .filter(p => p.available)
+      .reduce((sum, p) => sum + p.remaining, 0);
 
     res.json({
       providers,
@@ -14819,10 +15091,18 @@ app.get('/api/admin/email-providers', authenticateAdmin, async (req, res) => {
         utilization_percent: totalLimit > 0 ? Math.round((totalUsed / totalLimit) * 100) : 0,
       },
       setup_instructions: {
-        ses: !process.env.AWS_SES_ACCESS_KEY_ID ? 'Add AWS_SES_ACCESS_KEY_ID, AWS_SES_SECRET_ACCESS_KEY, AWS_SES_REGION to Render' : '✓ Configured',
-        mailersend: !process.env.MAILERSEND_API_KEY ? 'Add MAILERSEND_API_KEY to Render env vars' : '✓ Configured',
-        sendgrid: !process.env.SENDGRID_API_KEY ? 'Add SENDGRID_API_KEY to Render env vars' : '✓ Configured',
-        mailgun: !process.env.MAILGUN_API_KEY ? 'Add MAILGUN_API_KEY and MAILGUN_DOMAIN to Render env vars' : '✓ Configured',
+        ses: !process.env.AWS_SES_ACCESS_KEY_ID
+          ? 'Add AWS_SES_ACCESS_KEY_ID, AWS_SES_SECRET_ACCESS_KEY, AWS_SES_REGION to Render'
+          : '✓ Configured',
+        mailersend: !process.env.MAILERSEND_API_KEY
+          ? 'Add MAILERSEND_API_KEY to Render env vars'
+          : '✓ Configured',
+        sendgrid: !process.env.SENDGRID_API_KEY
+          ? 'Add SENDGRID_API_KEY to Render env vars'
+          : '✓ Configured',
+        mailgun: !process.env.MAILGUN_API_KEY
+          ? 'Add MAILGUN_API_KEY and MAILGUN_DOMAIN to Render env vars'
+          : '✓ Configured',
       },
     });
   } catch (err) {
@@ -14871,7 +15151,10 @@ app.get('/api/admin/email-dashboard', authenticateAdmin, async (req, res) => {
 
       summary.total_sent = Object.values(summary.by_provider).reduce((sum, p) => sum + p.sent, 0);
       summary.total_today = Object.values(summary.by_provider).reduce((sum, p) => sum + p.today, 0);
-      summary.total_failed = Object.values(summary.by_provider).reduce((sum, p) => sum + p.failed, 0);
+      summary.total_failed = Object.values(summary.by_provider).reduce(
+        (sum, p) => sum + p.failed,
+        0
+      );
     } catch (e) {
       console.error('Email summary query error:', e.message);
     }
@@ -15024,9 +15307,10 @@ app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
     `);
 
     // Use central isTestEmail function for consistent detection
+    // WICHTIG: Magic Link User sind IMMER echt - sie haben bewiesen dass sie existieren!
     const usersWithFlag = users.map(u => ({
       ...u,
-      is_test_account: isTestEmail(u.email),
+      is_test_account: u.created_via_magic_link ? false : isTestEmail(u.email),
       onboarding_completed: u.response_count > 0,
       is_active:
         u.last_response_at &&
@@ -15408,9 +15692,20 @@ app.get('/api/outreach/track-click', async (req, res) => {
 
       // Bot Detection for click tracking
       const botPatterns = [
-        /barracuda/i, /proofpoint/i, /mimecast/i, /microsoft.*safelinks/i,
-        /symantec/i, /fortinet/i, /zscaler/i, /websense/i, /bluecoat/i,
-        /bot/i, /crawler/i, /spider/i, /scanner/i, /prefetch/i
+        /barracuda/i,
+        /proofpoint/i,
+        /mimecast/i,
+        /microsoft.*safelinks/i,
+        /symantec/i,
+        /fortinet/i,
+        /zscaler/i,
+        /websense/i,
+        /bluecoat/i,
+        /bot/i,
+        /crawler/i,
+        /spider/i,
+        /scanner/i,
+        /prefetch/i,
       ];
       const isBot = botPatterns.some(pattern => pattern.test(userAgent));
 
@@ -16009,8 +16304,8 @@ app.get('/api/admin/click-analysis', async (req, res) => {
       const suspiciousUA = !ua || ua.length < 20;
 
       // Check for corporate email scanner patterns in URL
-      const hasTrackerParams = click.clicked_url?.includes('safelinks') ||
-                               click.clicked_url?.includes('urldefense');
+      const hasTrackerParams =
+        click.clicked_url?.includes('safelinks') || click.clicked_url?.includes('urldefense');
 
       // Classify
       let classification = 'real';
@@ -16246,8 +16541,12 @@ app.post('/api/admin/send-hot-lead-demos', async (req, res) => {
 
         // Send email with demo (HTML with CTA button)
         let subject, textBody, htmlBody;
-        const demosText = demos.length === 1 ? '1 AI-generated response' : `${demos.length} AI-generated responses`;
-        const demosTextDE = demos.length === 1 ? '1 AI-generierte Antwort' : `${demos.length} AI-generierte Antworten`;
+        const demosText =
+          demos.length === 1 ? '1 AI-generated response' : `${demos.length} AI-generated responses`;
+        const demosTextDE =
+          demos.length === 1
+            ? '1 AI-generierte Antwort'
+            : `${demos.length} AI-generierte Antworten`;
 
         if (isGerman) {
           subject = `Hab mal was für ${businessName} gebaut`;
@@ -16482,7 +16781,9 @@ app.all('/api/cron/followup-clickers', async (req, res) => {
               } catch (e) {
                 demosCount = 3;
               }
-              console.log(`📋 Using existing demo for ${businessName}: ${demoUrl} (${demosCount} responses)`);
+              console.log(
+                `📋 Using existing demo for ${businessName}: ${demoUrl} (${demosCount} responses)`
+              );
             } else {
               // Generate new demo
               console.log(`🎯 Generating demo for hot lead: ${businessName}, ${city}`);
@@ -16542,7 +16843,9 @@ app.all('/api/cron/followup-clickers', async (req, res) => {
                     demoGenerated = true;
                     demosCount = demos.length;
                     demosGenerated++;
-                    console.log(`✅ Demo generated for ${businessName}: ${demoUrl} (${demosCount} responses)`);
+                    console.log(
+                      `✅ Demo generated for ${businessName}: ${demoUrl} (${demosCount} responses)`
+                    );
                   }
                 }
               }
@@ -16556,8 +16859,10 @@ app.all('/api/cron/followup-clickers', async (req, res) => {
 
         if (demoUrl) {
           // Email WITH personalized demo link - much better conversion!
-          const demosTextEN = demosCount === 1 ? '1 AI-generated response' : `${demosCount} AI-generated responses`;
-          const demosTextDE = demosCount === 1 ? '1 AI-generierte Antwort' : `${demosCount} AI-generierte Antworten`;
+          const demosTextEN =
+            demosCount === 1 ? '1 AI-generated response' : `${demosCount} AI-generated responses`;
+          const demosTextDE =
+            demosCount === 1 ? '1 AI-generierte Antwort' : `${demosCount} AI-generierte Antworten`;
 
           if (isGerman) {
             subject = `${demosCount} AI-Antworten für ${businessName} – schon fertig`;
@@ -16737,7 +17042,12 @@ P.S. Use code DEMO30 for 30% off if you upgrade.`;
         );
 
         // PARALLEL-SAFE: Record in history
-        await recordEmailSend(clicker.email, 'clicker_followup', 1, `clicker:${clicker.email}:${Date.now()}`);
+        await recordEmailSend(
+          clicker.email,
+          'clicker_followup',
+          1,
+          `clicker:${clicker.email}:${Date.now()}`
+        );
 
         sent++;
         results.push({
@@ -16933,7 +17243,12 @@ P.S. No reply = no interest. No problem, I'll stop reaching out.`;
         );
 
         // PARALLEL-SAFE: Record in history
-        await recordEmailSend(clicker.email, 'second_followup', 2, `second:${clicker.email}:${Date.now()}`);
+        await recordEmailSend(
+          clicker.email,
+          'second_followup',
+          2,
+          `second:${clicker.email}:${Date.now()}`
+        );
 
         sent++;
         results.push({ email: clicker.email, business: businessName });
@@ -17933,9 +18248,10 @@ P.S. This code expires in 48 hours.`;
         });
 
         // Mark as sent
-        await dbQuery(`UPDATE demo_generations SET hot_demo_followup_sent_at = NOW() WHERE id = $1`, [
-          demo.id,
-        ]);
+        await dbQuery(
+          `UPDATE demo_generations SET hot_demo_followup_sent_at = NOW() WHERE id = $1`,
+          [demo.id]
+        );
 
         sent++;
         results.push({
@@ -17980,9 +18296,7 @@ app.get('/api/cron/exit-survey-followup', async (req, res) => {
   try {
     // Ensure response_sent_at column exists
     try {
-      await dbQuery(
-        `ALTER TABLE exit_surveys ADD COLUMN IF NOT EXISTS response_sent_at TIMESTAMP`
-      );
+      await dbQuery(`ALTER TABLE exit_surveys ADD COLUMN IF NOT EXISTS response_sent_at TIMESTAMP`);
     } catch (e) {
       /* Column might already exist */
     }
@@ -18009,7 +18323,7 @@ app.get('/api/cron/exit-survey-followup', async (req, res) => {
     const templates = {
       too_expensive: {
         subject: 'What if it was just $5?',
-        body: (name) => `${name ? `Hey ${name.split(' ')[0]},` : 'Hey,'}
+        body: name => `${name ? `Hey ${name.split(' ')[0]},` : 'Hey,'}
 
 You mentioned price was the blocker. Totally get it.
 
@@ -18023,7 +18337,7 @@ Berend`,
       },
       not_right_time: {
         subject: 'Quick question',
-        body: (name) => `${name ? `Hey ${name.split(' ')[0]},` : 'Hey,'}
+        body: name => `${name ? `Hey ${name.split(' ')[0]},` : 'Hey,'}
 
 You mentioned timing wasn't right. No worries.
 
@@ -18052,7 +18366,7 @@ Berend`,
       },
       just_testing: {
         subject: 'Did the AI responses look good?',
-        body: (name) => `${name ? `Hey ${name.split(' ')[0]},` : 'Hey,'}
+        body: name => `${name ? `Hey ${name.split(' ')[0]},` : 'Hey,'}
 
 You were just testing things out. Fair enough.
 
@@ -18092,7 +18406,10 @@ Berend`,
           to: survey.email,
           subject: subject,
           text: body,
-          tags: [{ name: 'campaign', value: 'exit_survey_followup' }, { name: 'reason', value: reason }],
+          tags: [
+            { name: 'campaign', value: 'exit_survey_followup' },
+            { name: 'reason', value: reason },
+          ],
         });
 
         // Mark as sent
@@ -18138,13 +18455,37 @@ app.get('/api/auth/magic-login/:token', async (req, res) => {
     // Bot Detection: Check User-Agent for common email security scanners
     const userAgent = req.headers['user-agent'] || '';
     const botPatterns = [
-      /barracuda/i, /proofpoint/i, /mimecast/i, /microsoft.*safelinks/i,
-      /symantec/i, /fortinet/i, /zscaler/i, /websense/i, /bluecoat/i,
-      /sonicwall/i, /mcafee/i, /trend\s?micro/i, /cisco/i, /sophos/i,
-      /fireeye/i, /palo\s?alto/i, /spamhaus/i, /messagelabs/i,
-      /cloudmark/i, /postini/i, /returnpath/i, /validity/i,
-      /ironport/i, /messaginglab/i, /mailscanner/i, /spamexperts/i,
-      /bot/i, /crawler/i, /spider/i, /scanner/i, /prefetch/i
+      /barracuda/i,
+      /proofpoint/i,
+      /mimecast/i,
+      /microsoft.*safelinks/i,
+      /symantec/i,
+      /fortinet/i,
+      /zscaler/i,
+      /websense/i,
+      /bluecoat/i,
+      /sonicwall/i,
+      /mcafee/i,
+      /trend\s?micro/i,
+      /cisco/i,
+      /sophos/i,
+      /fireeye/i,
+      /palo\s?alto/i,
+      /spamhaus/i,
+      /messagelabs/i,
+      /cloudmark/i,
+      /postini/i,
+      /returnpath/i,
+      /validity/i,
+      /ironport/i,
+      /messaginglab/i,
+      /mailscanner/i,
+      /spamexperts/i,
+      /bot/i,
+      /crawler/i,
+      /spider/i,
+      /scanner/i,
+      /prefetch/i,
     ];
     const isBot = botPatterns.some(pattern => pattern.test(userAgent));
 
@@ -18191,9 +18532,15 @@ app.get('/api/auth/magic-login/:token', async (req, res) => {
       // BOT PROTECTION: Don't auto-create accounts for bots
       // This prevents email security scanners from creating fake accounts
       if (isBot) {
-        console.log(`🤖 Bot detected, not creating account for ${magicLink.email} (UA: ${userAgent.substring(0, 100)})`);
+        console.log(
+          `🤖 Bot detected, not creating account for ${magicLink.email} (UA: ${userAgent.substring(0, 100)})`
+        );
         // Still redirect to login page, but user will need to register manually
-        return res.redirect('https://tryreviewresponder.com/register?email=' + encodeURIComponent(magicLink.email) + '&from=magic_link');
+        return res.redirect(
+          'https://tryreviewresponder.com/register?email=' +
+            encodeURIComponent(magicLink.email) +
+            '&from=magic_link'
+        );
       }
 
       // Auto-create user account (only for real humans)
@@ -18253,7 +18600,10 @@ async function createMagicLink(email) {
   `);
 
   const token = generateMagicLinkToken();
-  await dbQuery(`INSERT INTO magic_links (token, email, expires_at) VALUES ($1, $2, NOW() + INTERVAL '30 days')`, [token, email]);
+  await dbQuery(
+    `INSERT INTO magic_links (token, email, expires_at) VALUES ($1, $2, NOW() + INTERVAL '30 days')`,
+    [token, email]
+  );
 
   return `https://review-responder.onrender.com/api/auth/magic-login/${token}`;
 }
@@ -18899,13 +19249,14 @@ app.all('/api/cron/night-loop', async (req, res) => {
       actions.push({
         hour: 3,
         action: 'nudge-magic-users',
-        description: 'Nudge magic link users who haven\'t used the product',
+        description: "Nudge magic link users who haven't used the product",
       });
 
       if (!dryRun) {
+        const baseUrl = process.env.BACKEND_URL || 'https://review-responder.onrender.com';
+
         // Call magic nudge endpoint internally
         try {
-          const baseUrl = process.env.BACKEND_URL || 'https://review-responder.onrender.com';
           const nudgeResponse = await fetch(
             `${baseUrl}/api/cron/nudge-magic-users?secret=${process.env.CRON_SECRET}`
           );
@@ -19205,7 +19556,7 @@ app.all('/api/cron/nudge-magic-users', async (req, res) => {
         users: inactiveMagicUsers.map(u => ({
           email: u.email,
           business: u.business_name,
-          created: u.created_at
+          created: u.created_at,
         })),
         message: `Would nudge ${inactiveMagicUsers.length} inactive magic link users`,
       });
@@ -19229,9 +19580,21 @@ app.all('/api/cron/nudge-magic-users', async (req, res) => {
 
         // Detect German-speaking cities
         const germanCities = [
-          'München', 'Berlin', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart',
-          'Düsseldorf', 'Wien', 'Zürich', 'Genf', 'Munich', 'Cologne',
-          'Vienna', 'Zurich', 'Geneva'
+          'München',
+          'Berlin',
+          'Hamburg',
+          'Frankfurt',
+          'Köln',
+          'Stuttgart',
+          'Düsseldorf',
+          'Wien',
+          'Zürich',
+          'Genf',
+          'Munich',
+          'Cologne',
+          'Vienna',
+          'Zurich',
+          'Geneva',
         ];
         const isGerman = germanCities.some(c => city.toLowerCase().includes(c.toLowerCase()));
 
@@ -19297,7 +19660,12 @@ P.S. Most restaurants save 2-3 hours per week with automated review responses.`;
         await dbQuery('UPDATE users SET magic_nudge_sent = NOW() WHERE id = $1', [user.id]);
 
         // Record in email history for parallel-safety
-        await recordEmailSend(user.email, 'magic_nudge', 1, `magic_nudge:${user.email}:${Date.now()}`);
+        await recordEmailSend(
+          user.email,
+          'magic_nudge',
+          1,
+          `magic_nudge:${user.email}:${Date.now()}`
+        );
 
         sent++;
         results.push({ email: user.email, business: businessName });
@@ -19313,9 +19681,8 @@ P.S. Most restaurants save 2-3 hours per week with automated review responses.`;
       success: true,
       sent,
       users_nudged: results,
-      message: sent > 0
-        ? `Sent ${sent} activation nudges to inactive magic link users`
-        : 'No nudges sent',
+      message:
+        sent > 0 ? `Sent ${sent} activation nudges to inactive magic link users` : 'No nudges sent',
     });
   } catch (error) {
     console.error('Magic user nudge error:', error);
@@ -19357,7 +19724,9 @@ app.all('/api/cron/activate-dormant-users', async (req, res) => {
     // 3. Haven't been sent an activation email yet
     // 4. Not test emails
     // WICHTIG: Trackt ob User via Magic Link kam!
-    const dormantUsers = await dbAll(`
+    const dormantUsers =
+      (await dbAll(
+        `
       SELECT id, email, business_name, created_at,
         COALESCE(created_via_magic_link, false) as is_magic_link
       FROM users
@@ -19370,13 +19739,17 @@ app.all('/api/cron/activate-dormant-users', async (req, res) => {
         AND email != 'reviewer@tryreviewresponder.com'
       ORDER BY created_at DESC
       LIMIT $1
-    `, [limit]) || [];
+    `,
+        [limit]
+      )) || [];
 
     // Separate magic link vs normal users
     const magicLinkCount = dormantUsers.filter(u => u.is_magic_link).length;
     const normalCount = dormantUsers.filter(u => !u.is_magic_link).length;
 
-    console.log(`[activate-dormant] Found ${dormantUsers.length} dormant users (${magicLinkCount} magic link, ${normalCount} normal signup)`);
+    console.log(
+      `[activate-dormant] Found ${dormantUsers.length} dormant users (${magicLinkCount} magic link, ${normalCount} normal signup)`
+    );
 
     if (dormantUsers.length === 0) {
       return res.json({
@@ -19400,7 +19773,8 @@ app.all('/api/cron/activate-dormant-users', async (req, res) => {
       }
 
       // Detect language from email domain
-      const isGerman = user.email.includes('.de') ||
+      const isGerman =
+        user.email.includes('.de') ||
         user.email.includes('.at') ||
         user.email.includes('.ch') ||
         (user.business_name && /[äöüß]/i.test(user.business_name));
@@ -19458,7 +19832,7 @@ P.S. If you don't need this, just ignore this email - we won't write again.`;
           email: user.email,
           business: user.business_name,
           signup_source: user.is_magic_link ? 'magic_link' : 'normal_signup',
-          would_send: true
+          would_send: true,
         });
         continue;
       }
@@ -19482,10 +19856,7 @@ P.S. If you don't need this, just ignore this email - we won't write again.`;
         }
 
         // Mark as sent
-        await dbQuery(
-          'UPDATE users SET activation_email_sent = NOW() WHERE id = $1',
-          [user.id]
-        );
+        await dbQuery('UPDATE users SET activation_email_sent = NOW() WHERE id = $1', [user.id]);
 
         // Record in email history if function exists
         if (typeof recordEmailSend === 'function') {
@@ -19497,9 +19868,11 @@ P.S. If you don't need this, just ignore this email - we won't write again.`;
           email: user.email,
           business: user.business_name,
           signup_source: user.is_magic_link ? 'magic_link' : 'normal_signup',
-          sent: true
+          sent: true,
         });
-        console.log(`[activate-dormant] Sent activation to ${user.email} (${user.is_magic_link ? 'magic_link' : 'normal'})`);
+        console.log(
+          `[activate-dormant] Sent activation to ${user.email} (${user.is_magic_link ? 'magic_link' : 'normal'})`
+        );
 
         // Small delay between emails
         await new Promise(r => setTimeout(r, 500));
@@ -19508,7 +19881,7 @@ P.S. If you don't need this, just ignore this email - we won't write again.`;
         results.push({
           email: user.email,
           signup_source: user.is_magic_link ? 'magic_link' : 'normal_signup',
-          error: err.message
+          error: err.message,
         });
       }
     }
@@ -19527,9 +19900,12 @@ P.S. If you don't need this, just ignore this email - we won't write again.`;
         normal_signup: { found: normalCount, sent: sentNormal },
       },
       users_activated: results,
-      message: sent > 0
-        ? `Sent ${sent} activation emails (${sentMagicLink} magic link, ${sentNormal} normal signup)`
-        : dryRun ? `Would send to ${results.length} users (${magicLinkCount} magic link, ${normalCount} normal)` : 'No emails sent',
+      message:
+        sent > 0
+          ? `Sent ${sent} activation emails (${sentMagicLink} magic link, ${sentNormal} normal signup)`
+          : dryRun
+            ? `Would send to ${results.length} users (${magicLinkCount} magic link, ${normalCount} normal)`
+            : 'No emails sent',
     });
   } catch (error) {
     console.error('Dormant user activation error:', error);
@@ -19967,7 +20343,9 @@ async function initOutreachTables() {
     await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS linkedin_company TEXT`);
     await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS google_business_url TEXT`);
     await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS contact_form_url TEXT`);
-    await dbQuery(`ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS channels_contacted JSONB DEFAULT '{}'::jsonb`);
+    await dbQuery(
+      `ALTER TABLE outreach_leads ADD COLUMN IF NOT EXISTS channels_contacted JSONB DEFAULT '{}'::jsonb`
+    );
 
     // A/B Testing table for email subject lines
     await dbQuery(`
@@ -20086,8 +20464,12 @@ async function initOutreachTables() {
         session_id VARCHAR(50)
       )
     `);
-    await dbQuery(`CREATE INDEX IF NOT EXISTS idx_email_history_addr ON email_send_history(email_address, email_type)`);
-    await dbQuery(`CREATE INDEX IF NOT EXISTS idx_email_history_time ON email_send_history(sent_at DESC)`);
+    await dbQuery(
+      `CREATE INDEX IF NOT EXISTS idx_email_history_addr ON email_send_history(email_address, email_type)`
+    );
+    await dbQuery(
+      `CREATE INDEX IF NOT EXISTS idx_email_history_time ON email_send_history(sent_at DESC)`
+    );
 
     // Clean up expired locks automatically
     await dbQuery(`DELETE FROM processing_locks WHERE expires_at < NOW()`);
@@ -20128,7 +20510,8 @@ async function acquireLock(resourceType, resourceId, ttlSeconds = 60) {
     );
     return true;
   } catch (error) {
-    if (error.code === '23505') { // Unique violation - lock exists
+    if (error.code === '23505') {
+      // Unique violation - lock exists
       console.log(`🔒 Lock exists for ${resourceType}:${resourceId} (another session processing)`);
       return false;
     }
@@ -20142,10 +20525,10 @@ async function acquireLock(resourceType, resourceId, ttlSeconds = 60) {
  */
 async function releaseLock(resourceType, resourceId) {
   try {
-    await dbQuery(
-      `DELETE FROM processing_locks WHERE resource_type = $1 AND resource_id = $2`,
-      [resourceType, resourceId]
-    );
+    await dbQuery(`DELETE FROM processing_locks WHERE resource_type = $1 AND resource_id = $2`, [
+      resourceType,
+      resourceId,
+    ]);
   } catch (error) {
     console.error('Error releasing lock:', error);
   }
@@ -20207,7 +20590,9 @@ async function safeOutreachEmail(leadId, emailAddress, emailType, sendFn) {
   // 2. Try to acquire lock
   const locked = await acquireLock('email', lockKey, 120); // 2 min lock
   if (!locked) {
-    console.log(`⏭️ [${sessionId}] Skipping ${emailType} to ${emailAddress} - another session processing`);
+    console.log(
+      `⏭️ [${sessionId}] Skipping ${emailType} to ${emailAddress} - another session processing`
+    );
     return { sent: false, reason: 'locked_by_other_session' };
   }
 
@@ -20229,7 +20614,6 @@ async function safeOutreachEmail(leadId, emailAddress, emailType, sendFn) {
 
     console.log(`✅ [${sessionId}] Sent ${emailType} to ${emailAddress}`);
     return { sent: true, reason: 'success', result };
-
   } catch (error) {
     console.error(`❌ [${sessionId}] Error sending ${emailType} to ${emailAddress}:`, error);
     return { sent: false, reason: 'error', error: error.message };
@@ -20519,9 +20903,15 @@ function extractKeyComplaint(reviewText) {
 
   // Common complaint patterns with keywords
   const complaintPatterns = [
-    { pattern: /wait(ed|ing)?\s*(for\s*)?([\d]+\s*(min|hour|hr)s?|forever|too long|so long)/i, keyword: 'long wait' },
+    {
+      pattern: /wait(ed|ing)?\s*(for\s*)?([\d]+\s*(min|hour|hr)s?|forever|too long|so long)/i,
+      keyword: 'long wait',
+    },
     { pattern: /cold\s*(food|pizza|burger|fries|meal)/i, keyword: 'cold food' },
-    { pattern: /(rude|unfriendly|disrespectful)\s*(staff|waiter|server|service)/i, keyword: 'rude staff' },
+    {
+      pattern: /(rude|unfriendly|disrespectful)\s*(staff|waiter|server|service)/i,
+      keyword: 'rude staff',
+    },
     { pattern: /wrong\s*(order|food|item|dish)/i, keyword: 'wrong order' },
     { pattern: /(over\s*priced|too\s*expensive|not\s*worth)/i, keyword: 'pricing' },
     { pattern: /(dirty|unclean|disgusting|filthy)/i, keyword: 'cleanliness' },
@@ -20540,7 +20930,9 @@ function extractKeyComplaint(reviewText) {
   }
 
   // Fallback: extract first quoted phrase or first 3 words after negative word
-  const negativeMatch = text.match(/(terrible|awful|horrible|worst|bad|disappointing)\s+(\w+\s+\w+\s+\w+)/i);
+  const negativeMatch = text.match(
+    /(terrible|awful|horrible|worst|bad|disappointing)\s+(\w+\s+\w+\s+\w+)/i
+  );
   if (negativeMatch) {
     return negativeMatch[2].trim();
   }
@@ -20554,7 +20946,7 @@ const REVIEW_ALERT_TEMPLATES_EN = {
   // With demo link - used when we have 3+ reviews to show
   // SUPER-PERSONALIZED: Uses reviewer name + specific complaint = max open rate
   sequence1: {
-    subject: 'Re: {review_author_first}\'s review{complaint_suffix} at {business_name}',
+    subject: "Re: {review_author_first}'s review{complaint_suffix} at {business_name}",
     subjectFallback: '{business_name} - noticed your {review_rating}-star review',
     body: `Hi,
 
@@ -20580,7 +20972,7 @@ P.S. I'm the founder. Reply if you have questions.`,
   },
   // Fallback for leads without demo (only 1 bad review or demo generation failed)
   sequence1_no_demo: {
-    subject: 'Re: {review_author_first}\'s review{complaint_suffix} at {business_name}',
+    subject: "Re: {review_author_first}'s review{complaint_suffix} at {business_name}",
     subjectFallback: '{business_name} - saw your {review_rating}-star review',
     body: `Hi,
 
@@ -21306,37 +21698,213 @@ async function scrapeEmailFromWebsite(websiteUrl) {
 
         // === SMART EMAIL PRIORISIERUNG ===
         // Tier 1: Personal Email Providers (Gmail, Outlook, iCloud = often Owner)
-        const personalProviders = ['gmail.com', 'googlemail.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'me.com', 'yahoo.com', 'gmx.de', 'gmx.net', 'web.de', 't-online.de'];
+        const personalProviders = [
+          'gmail.com',
+          'googlemail.com',
+          'outlook.com',
+          'hotmail.com',
+          'icloud.com',
+          'me.com',
+          'yahoo.com',
+          'gmx.de',
+          'gmx.net',
+          'web.de',
+          't-online.de',
+        ];
 
         // Tier 2: Owner/Manager Keywords
-        const ownerKeywords = ['owner', 'chef', 'manager', 'inhaber', 'geschaeftsfuehrer', 'geschäftsführer', 'direktor', 'director', 'founder', 'gruender', 'gründer', 'ceo', 'boss', 'patron'];
+        const ownerKeywords = [
+          'owner',
+          'chef',
+          'manager',
+          'inhaber',
+          'geschaeftsfuehrer',
+          'geschäftsführer',
+          'direktor',
+          'director',
+          'founder',
+          'gruender',
+          'gründer',
+          'ceo',
+          'boss',
+          'patron',
+        ];
 
         // Tier 3: Generic Business Prefixes (lowest priority - goes to receptionist)
         const genericPrefixes = [
-          'contact', 'info', 'hello', 'support', 'team', 'sales', 'mail', 'office',
-          'reservations', 'booking', 'reservierung', 'service', 'anfrage', 'kontakt',
-          'admin', 'help', 'general', 'enquiry', 'enquiries', 'reception', 'front',
-          'post', 'email', 'webmaster', 'web', 'marketing', 'pr', 'press', 'media',
-          'jobs', 'career', 'careers', 'hr', 'recruiting', 'billing', 'invoice', 'accounts',
-          'noreply', 'no-reply', 'donotreply', 'newsletter', 'news', 'updates',
+          'contact',
+          'info',
+          'hello',
+          'support',
+          'team',
+          'sales',
+          'mail',
+          'office',
+          'reservations',
+          'booking',
+          'reservierung',
+          'service',
+          'anfrage',
+          'kontakt',
+          'admin',
+          'help',
+          'general',
+          'enquiry',
+          'enquiries',
+          'reception',
+          'front',
+          'post',
+          'email',
+          'webmaster',
+          'web',
+          'marketing',
+          'pr',
+          'press',
+          'media',
+          'jobs',
+          'career',
+          'careers',
+          'hr',
+          'recruiting',
+          'billing',
+          'invoice',
+          'accounts',
+          'noreply',
+          'no-reply',
+          'donotreply',
+          'newsletter',
+          'news',
+          'updates',
         ];
 
         // Business-type prefixes (NOT personal - often goes to shared inbox)
         const businessTypePrefixes = [
-          'restaurant', 'cafe', 'hotel', 'bar', 'pub', 'bistro', 'kitchen', 'dining',
-          'flowers', 'florist', 'bakery', 'shop', 'store', 'boutique', 'salon', 'spa',
-          'apotheek', 'apotheke', 'pharmacy', 'clinic', 'praxis', 'dental', 'medical',
-          'studio', 'gallery', 'atelier', 'design', 'photo', 'agency', 'consulting',
+          'restaurant',
+          'cafe',
+          'hotel',
+          'bar',
+          'pub',
+          'bistro',
+          'kitchen',
+          'dining',
+          'flowers',
+          'florist',
+          'bakery',
+          'shop',
+          'store',
+          'boutique',
+          'salon',
+          'spa',
+          'apotheek',
+          'apotheke',
+          'pharmacy',
+          'clinic',
+          'praxis',
+          'dental',
+          'medical',
+          'studio',
+          'gallery',
+          'atelier',
+          'design',
+          'photo',
+          'agency',
+          'consulting',
         ];
 
         // Common first names (to detect firstname@ pattern)
         const commonFirstNames = [
-          'max', 'tom', 'tim', 'jan', 'ben', 'paul', 'mark', 'mike', 'john', 'james', 'david', 'daniel', 'michael', 'chris', 'christian', 'peter', 'stefan', 'thomas', 'andreas', 'martin', 'frank', 'matthias', 'alexander', 'sebastian', 'patrick', 'oliver', 'kevin', 'dennis', 'marcel', 'tobias', 'florian', 'dominik', 'pascal', 'felix', 'lukas', 'jonas', 'leon', 'nico', 'simon', 'julian',
-          'anna', 'lisa', 'sarah', 'laura', 'julia', 'marie', 'sophie', 'lena', 'emma', 'mia', 'hannah', 'lea', 'nina', 'jana', 'katharina', 'maria', 'sandra', 'claudia', 'nicole', 'andrea', 'petra', 'sabine', 'monika', 'karin', 'christine', 'susanne', 'birgit', 'stefanie', 'melanie', 'nadine', 'jessica', 'jennifer', 'vanessa', 'christina', 'daniela', 'katrin', 'anja', 'carole', 'caroline', 'isabelle', 'charlotte', 'tyler', 'ashley', 'brittany', 'emily', 'jessica', 'amanda', 'samantha',
+          'max',
+          'tom',
+          'tim',
+          'jan',
+          'ben',
+          'paul',
+          'mark',
+          'mike',
+          'john',
+          'james',
+          'david',
+          'daniel',
+          'michael',
+          'chris',
+          'christian',
+          'peter',
+          'stefan',
+          'thomas',
+          'andreas',
+          'martin',
+          'frank',
+          'matthias',
+          'alexander',
+          'sebastian',
+          'patrick',
+          'oliver',
+          'kevin',
+          'dennis',
+          'marcel',
+          'tobias',
+          'florian',
+          'dominik',
+          'pascal',
+          'felix',
+          'lukas',
+          'jonas',
+          'leon',
+          'nico',
+          'simon',
+          'julian',
+          'anna',
+          'lisa',
+          'sarah',
+          'laura',
+          'julia',
+          'marie',
+          'sophie',
+          'lena',
+          'emma',
+          'mia',
+          'hannah',
+          'lea',
+          'nina',
+          'jana',
+          'katharina',
+          'maria',
+          'sandra',
+          'claudia',
+          'nicole',
+          'andrea',
+          'petra',
+          'sabine',
+          'monika',
+          'karin',
+          'christine',
+          'susanne',
+          'birgit',
+          'stefanie',
+          'melanie',
+          'nadine',
+          'jessica',
+          'jennifer',
+          'vanessa',
+          'christina',
+          'daniela',
+          'katrin',
+          'anja',
+          'carole',
+          'caroline',
+          'isabelle',
+          'charlotte',
+          'tyler',
+          'ashley',
+          'brittany',
+          'emily',
+          'jessica',
+          'amanda',
+          'samantha',
         ];
 
         // Helper: Check if email looks like a real person's email
-        const isPersonalEmail = (email) => {
+        const isPersonalEmail = email => {
           const prefix = email.split('@')[0].toLowerCase();
           const domain = email.split('@')[1]?.toLowerCase() || '';
 
@@ -21347,7 +21915,8 @@ async function scrapeEmailFromWebsite(websiteUrl) {
           if (ownerKeywords.some(k => prefix.includes(k))) return true;
 
           // Starts with common first name (firstname@ or firstname.lastname@)
-          if (commonFirstNames.some(name => prefix === name || prefix.startsWith(name + '.'))) return true;
+          if (commonFirstNames.some(name => prefix === name || prefix.startsWith(name + '.')))
+            return true;
 
           // Contains dot (likely firstname.lastname@)
           if (prefix.includes('.') && !genericPrefixes.some(g => prefix.startsWith(g))) return true;
@@ -21356,10 +21925,12 @@ async function scrapeEmailFromWebsite(websiteUrl) {
         };
 
         // Helper: Check if email is generic business email
-        const isGenericEmail = (email) => {
+        const isGenericEmail = email => {
           const prefix = email.split('@')[0].toLowerCase();
-          return genericPrefixes.some(g => prefix === g || prefix.startsWith(g + '.')) ||
-                 businessTypePrefixes.some(b => prefix === b || prefix.startsWith(b));
+          return (
+            genericPrefixes.some(g => prefix === g || prefix.startsWith(g + '.')) ||
+            businessTypePrefixes.some(b => prefix === b || prefix.startsWith(b))
+          );
         };
 
         // Sort emails by priority
@@ -21407,7 +21978,11 @@ async function scrapeImpressum(websiteUrl) {
     }
 
     // Check if it's a DACH domain (Germany, Austria, Switzerland)
-    const domain = url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].toLowerCase();
+    const domain = url
+      .replace(/^https?:\/\//, '')
+      .replace(/^www\./, '')
+      .split('/')[0]
+      .toLowerCase();
 
     // Impressum pages (German legal requirement)
     const impressumPages = [
@@ -21442,7 +22017,7 @@ async function scrapeImpressum(websiteUrl) {
         const response = await fetch(pageUrl, {
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept': 'text/html,application/xhtml+xml',
+            Accept: 'text/html,application/xhtml+xml',
             'Accept-Language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
           },
           timeout: 8000,
@@ -21470,15 +22045,17 @@ async function scrapeImpressum(websiteUrl) {
 
             // Validate it looks like a real name (2+ words, 2+ chars each word, starts with capital)
             const nameParts = ownerName.split(/\s+/);
-            if (nameParts.length >= 2 &&
-                nameParts.every(part => part.length >= 2 && /^[A-ZÄÖÜ]/.test(part)) &&
-                ownerName.length >= 5 && ownerName.length <= 50) {
-
+            if (
+              nameParts.length >= 2 &&
+              nameParts.every(part => part.length >= 2 && /^[A-ZÄÖÜ]/.test(part)) &&
+              ownerName.length >= 5 &&
+              ownerName.length <= 50
+            ) {
               console.log(`📋 IMPRESSUM: Found owner "${ownerName}" on ${pageUrl}`);
               return {
                 ownerName: ownerName,
                 source: pageUrl,
-                domain: domain
+                domain: domain,
               };
             }
           }
@@ -21519,7 +22096,7 @@ async function generateEmailsFromOwnerName(ownerName, domain) {
   const lastName = nameParts[nameParts.length - 1].toLowerCase();
 
   // Convert German umlauts for email
-  const normalizeForEmail = (str) => {
+  const normalizeForEmail = str => {
     return str
       .replace(/ä/g, 'ae')
       .replace(/ö/g, 'oe')
@@ -21534,14 +22111,14 @@ async function generateEmailsFromOwnerName(ownerName, domain) {
 
   // Common email patterns (ordered by likelihood)
   const patterns = [
-    `${firstNorm}@${cleanDomain}`,                    // max@restaurant.de
-    `${firstNorm}.${lastNorm}@${cleanDomain}`,        // max.mustermann@restaurant.de
-    `${firstNorm}${lastNorm}@${cleanDomain}`,         // maxmustermann@restaurant.de
-    `${firstInitial}.${lastNorm}@${cleanDomain}`,     // m.mustermann@restaurant.de
-    `${firstInitial}${lastNorm}@${cleanDomain}`,      // mmustermann@restaurant.de
-    `${lastNorm}@${cleanDomain}`,                     // mustermann@restaurant.de
-    `${firstNorm}-${lastNorm}@${cleanDomain}`,        // max-mustermann@restaurant.de
-    `${lastNorm}.${firstNorm}@${cleanDomain}`,        // mustermann.max@restaurant.de
+    `${firstNorm}@${cleanDomain}`, // max@restaurant.de
+    `${firstNorm}.${lastNorm}@${cleanDomain}`, // max.mustermann@restaurant.de
+    `${firstNorm}${lastNorm}@${cleanDomain}`, // maxmustermann@restaurant.de
+    `${firstInitial}.${lastNorm}@${cleanDomain}`, // m.mustermann@restaurant.de
+    `${firstInitial}${lastNorm}@${cleanDomain}`, // mmustermann@restaurant.de
+    `${lastNorm}@${cleanDomain}`, // mustermann@restaurant.de
+    `${firstNorm}-${lastNorm}@${cleanDomain}`, // max-mustermann@restaurant.de
+    `${lastNorm}.${firstNorm}@${cleanDomain}`, // mustermann.max@restaurant.de
   ];
 
   // Check if domain has MX records (can receive email)
@@ -21551,13 +22128,15 @@ async function generateEmailsFromOwnerName(ownerName, domain) {
 
     if (mxRecords && mxRecords.length > 0) {
       // Domain can receive email - return best guess patterns
-      console.log(`📧 Generated ${patterns.length} email patterns for ${ownerName} @ ${cleanDomain}`);
+      console.log(
+        `📧 Generated ${patterns.length} email patterns for ${ownerName} @ ${cleanDomain}`
+      );
       return {
         ownerName: ownerName,
         domain: cleanDomain,
         primaryEmail: patterns[0], // firstname@domain is most common
         allPatterns: patterns,
-        mxVerified: true
+        mxVerified: true,
       };
     }
   } catch (e) {
@@ -21568,7 +22147,7 @@ async function generateEmailsFromOwnerName(ownerName, domain) {
       domain: cleanDomain,
       primaryEmail: patterns[0],
       allPatterns: patterns,
-      mxVerified: false
+      mxVerified: false,
     };
   }
 
@@ -21584,7 +22163,16 @@ async function findEnhancedEmail(websiteUrl) {
   // If we found a personal/owner email (not info@/contact@), use it
   if (scrapedEmail) {
     const prefix = scrapedEmail.split('@')[0].toLowerCase();
-    const genericPrefixes = ['info', 'contact', 'hello', 'office', 'mail', 'team', 'support', 'service'];
+    const genericPrefixes = [
+      'info',
+      'contact',
+      'hello',
+      'office',
+      'mail',
+      'team',
+      'support',
+      'service',
+    ];
     if (!genericPrefixes.some(g => prefix === g || prefix.startsWith(g + '.'))) {
       return { email: scrapedEmail, source: 'website_scrape', isPersonal: true };
     }
@@ -21601,7 +22189,7 @@ async function findEnhancedEmail(websiteUrl) {
         allPatterns: emailPatterns.allPatterns,
         source: 'impressum_pattern',
         isPersonal: true,
-        mxVerified: emailPatterns.mxVerified
+        mxVerified: emailPatterns.mxVerified,
       };
     }
   }
@@ -21664,13 +22252,29 @@ async function guessAndVerifyEmail(domain, businessName) {
 // Different businesses have different decision makers for review management
 const ROLE_PRIORITY_BY_BUSINESS_TYPE = {
   // Restaurants/Hospitality: Owner makes decisions, chef has pride in reviews
-  restaurant: ['owner', 'founder', 'inhaber', 'geschäftsführer', 'chef', 'manager', 'marketing', 'operations'],
+  restaurant: [
+    'owner',
+    'founder',
+    'inhaber',
+    'geschäftsführer',
+    'chef',
+    'manager',
+    'marketing',
+    'operations',
+  ],
   cafe: ['owner', 'founder', 'inhaber', 'manager', 'barista', 'marketing'],
   hotel: ['owner', 'general manager', 'manager', 'marketing', 'guest relations', 'operations'],
   bar: ['owner', 'founder', 'inhaber', 'manager', 'marketing'],
 
   // SaaS/Tech: Customer Success owns review responses
-  saas: ['customer success', 'customer experience', 'marketing', 'founder', 'ceo', 'head of growth'],
+  saas: [
+    'customer success',
+    'customer experience',
+    'marketing',
+    'founder',
+    'ceo',
+    'head of growth',
+  ],
   software: ['customer success', 'marketing', 'founder', 'ceo', 'product'],
   tech: ['customer success', 'marketing', 'founder', 'ceo'],
 
@@ -21687,7 +22291,16 @@ const ROLE_PRIORITY_BY_BUSINESS_TYPE = {
   salon: ['owner', 'inhaber', 'manager', 'stylist'],
 
   // Default for unknown business types
-  default: ['owner', 'founder', 'ceo', 'geschäftsführer', 'inhaber', 'manager', 'marketing', 'director'],
+  default: [
+    'owner',
+    'founder',
+    'ceo',
+    'geschäftsführer',
+    'inhaber',
+    'manager',
+    'marketing',
+    'director',
+  ],
 };
 
 // Helper: Get role priority score for a business type
@@ -22566,17 +23179,62 @@ function isLowQualityEmail(email) {
 
   // Generic prefixes = low quality (goes to receptionist, not decision maker)
   const genericPrefixes = [
-    'contact', 'info', 'hello', 'support', 'team', 'sales', 'mail', 'office',
-    'reservations', 'booking', 'reservierung', 'service', 'anfrage', 'kontakt',
-    'admin', 'help', 'general', 'enquiry', 'enquiries', 'reception', 'front',
-    'post', 'email', 'webmaster', 'web', 'marketing', 'pr', 'press', 'media',
+    'contact',
+    'info',
+    'hello',
+    'support',
+    'team',
+    'sales',
+    'mail',
+    'office',
+    'reservations',
+    'booking',
+    'reservierung',
+    'service',
+    'anfrage',
+    'kontakt',
+    'admin',
+    'help',
+    'general',
+    'enquiry',
+    'enquiries',
+    'reception',
+    'front',
+    'post',
+    'email',
+    'webmaster',
+    'web',
+    'marketing',
+    'pr',
+    'press',
+    'media',
   ];
 
   // Business-type prefixes = low quality (shared inbox)
   const businessTypePrefixes = [
-    'restaurant', 'cafe', 'hotel', 'bar', 'pub', 'bistro', 'kitchen', 'dining',
-    'flowers', 'florist', 'bakery', 'shop', 'store', 'boutique', 'salon', 'spa',
-    'apotheek', 'apotheke', 'pharmacy', 'clinic', 'praxis', 'dental', 'medical',
+    'restaurant',
+    'cafe',
+    'hotel',
+    'bar',
+    'pub',
+    'bistro',
+    'kitchen',
+    'dining',
+    'flowers',
+    'florist',
+    'bakery',
+    'shop',
+    'store',
+    'boutique',
+    'salon',
+    'spa',
+    'apotheek',
+    'apotheke',
+    'pharmacy',
+    'clinic',
+    'praxis',
+    'dental',
+    'medical',
   ];
 
   // Check if it's generic
@@ -22631,15 +23289,33 @@ function isSuspiciousEmail(email, websiteDomain = null) {
     'outlok.com': 'outlook.com',
   };
   if (domainTypos[emailDomain]) {
-    return { suspicious: true, reason: 'domain_typo', suggested: email.replace(emailDomain, domainTypos[emailDomain]) };
+    return {
+      suspicious: true,
+      reason: 'domain_typo',
+      suggested: email.replace(emailDomain, domainTypos[emailDomain]),
+    };
   }
 
   // 2. Disposable/temporary email domains
   const disposableDomains = [
-    'tempmail.com', 'temp-mail.org', 'guerrillamail.com', 'mailinator.com',
-    '10minutemail.com', 'throwaway.email', 'fakeinbox.com', 'trashmail.com',
-    'yopmail.com', 'tempail.com', 'getnada.com', 'maildrop.cc', 'mailnesia.com',
-    'sharklasers.com', 'guerrillamail.info', 'grr.la', 'spam4.me', 'dispostable.com',
+    'tempmail.com',
+    'temp-mail.org',
+    'guerrillamail.com',
+    'mailinator.com',
+    '10minutemail.com',
+    'throwaway.email',
+    'fakeinbox.com',
+    'trashmail.com',
+    'yopmail.com',
+    'tempail.com',
+    'getnada.com',
+    'maildrop.cc',
+    'mailnesia.com',
+    'sharklasers.com',
+    'guerrillamail.info',
+    'grr.la',
+    'spam4.me',
+    'dispostable.com',
   ];
   if (disposableDomains.includes(emailDomain)) {
     return { suspicious: true, reason: 'disposable_domain' };
@@ -22653,9 +23329,21 @@ function isSuspiciousEmail(email, websiteDomain = null) {
 
   // 4. Email domain doesn't match website domain (and not a known provider)
   const knownProviders = [
-    'gmail.com', 'googlemail.com', 'outlook.com', 'hotmail.com', 'yahoo.com',
-    'icloud.com', 'me.com', 'gmx.de', 'gmx.net', 'web.de', 't-online.de',
-    'aol.com', 'protonmail.com', 'zoho.com', 'mail.com',
+    'gmail.com',
+    'googlemail.com',
+    'outlook.com',
+    'hotmail.com',
+    'yahoo.com',
+    'icloud.com',
+    'me.com',
+    'gmx.de',
+    'gmx.net',
+    'web.de',
+    't-online.de',
+    'aol.com',
+    'protonmail.com',
+    'zoho.com',
+    'mail.com',
   ];
   if (websiteDomain && emailDomain !== websiteDomain && !knownProviders.includes(emailDomain)) {
     // Different domain but not a known provider - could be suspicious
@@ -22668,8 +23356,18 @@ function isSuspiciousEmail(email, websiteDomain = null) {
 
   // 5. Suspicious prefix patterns
   const suspiciousPrefixes = [
-    'test', 'demo', 'fake', 'spam', 'asdf', 'qwerty', 'xxxxx',
-    'noreply', 'no-reply', 'donotreply', 'bounce', 'mailer-daemon',
+    'test',
+    'demo',
+    'fake',
+    'spam',
+    'asdf',
+    'qwerty',
+    'xxxxx',
+    'noreply',
+    'no-reply',
+    'donotreply',
+    'bounce',
+    'mailer-daemon',
   ];
   if (suspiciousPrefixes.some(p => prefix === p || prefix.startsWith(p + '.'))) {
     return { suspicious: true, reason: 'suspicious_prefix' };
@@ -22816,15 +23514,15 @@ function fillEmailTemplate(template, lead, campaign = 'main') {
         'cold food': 'kaltes Essen',
         'rude staff': 'unfreundliches Personal',
         'slow service': 'langsamer Service',
-        'dirty': 'unsauber',
-        'overpriced': 'zu teuer',
-        'noisy': 'laut',
+        dirty: 'unsauber',
+        overpriced: 'zu teuer',
+        noisy: 'laut',
         'small portions': 'kleine Portionen',
         'bad service': 'schlechter Service',
         'wrong order': 'falsche Bestellung',
         'missing items': 'fehlende Artikel',
-        'parking': 'Parken',
-        'reservation': 'Reservierung'
+        parking: 'Parken',
+        reservation: 'Reservierung',
       };
       const deComplaint = deTranslations[complaint] || complaint;
       complaintSuffixDe = ` wegen '${deComplaint}'`;
@@ -23639,7 +24337,7 @@ app.get('/api/admin/account-usage', async (req, res) => {
       ORDER BY account_name, date DESC
     `);
 
-    const accounts = result.rows.map((row) => {
+    const accounts = result.rows.map(row => {
       const dailyPercent = Math.round((row.tokens_today / DAILY_LIMIT) * 100);
       const weeklyPercent = Math.round((row.tokens_week / WEEKLY_LIMIT) * 100);
 
@@ -24592,14 +25290,16 @@ app.post('/api/admin/reset-campaign-limit', async (req, res) => {
 
     const updated = await dbGet('SELECT * FROM outreach_campaigns WHERE name = $1', [campaign]);
 
-    console.log(`📧 Campaign ${campaign} updated: limit=${updated.daily_limit}, sent_today=${updated.sent_today}`);
+    console.log(
+      `📧 Campaign ${campaign} updated: limit=${updated.daily_limit}, sent_today=${updated.sent_today}`
+    );
 
     res.json({
       success: true,
       campaign: updated.name,
       daily_limit: updated.daily_limit,
       sent_today: updated.sent_today,
-      remaining: updated.daily_limit - updated.sent_today
+      remaining: updated.daily_limit - updated.sent_today,
     });
   } catch (error) {
     console.error('Reset campaign limit error:', error);
@@ -25995,7 +26695,9 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
           // PARALLEL-SAFE: Check if this lead is already being processed by another session
           const lockAcquired = await acquireLock('lead', `${lead.id}`, 180); // 3 min lock
           if (!lockAcquired) {
-            console.log(`⏭️ Skipping lead ${lead.id} (${lead.business_name}) - locked by another session`);
+            console.log(
+              `⏭️ Skipping lead ${lead.id} (${lead.business_name}) - locked by another session`
+            );
             skippedDueToDupe++;
             continue;
           }
@@ -26126,7 +26828,12 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
             `UPDATE outreach_leads
              SET channels_contacted = COALESCE(channels_contacted, '{}'::jsonb) || $1::jsonb
              WHERE id = $2`,
-            [JSON.stringify({ email: { sent_at: new Date().toISOString(), success: true, sequence: 1 } }), lead.id]
+            [
+              JSON.stringify({
+                email: { sent_at: new Date().toISOString(), success: true, sequence: 1 },
+              }),
+              lead.id,
+            ]
           );
 
           // Track email sent for demo conversion metrics
@@ -26151,7 +26858,11 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
         }
       }
 
-      results.sending = { sent: sent, review_alerts: reviewAlertsSent, skipped_parallel_safe: skippedDueToDupe };
+      results.sending = {
+        sent: sent,
+        review_alerts: reviewAlertsSent,
+        skipped_parallel_safe: skippedDueToDupe,
+      };
 
       // Step 4: Send follow-ups
       const needsFollowup = await dbAll(`
@@ -26178,7 +26889,11 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
         if (nextSequence <= maxSequence) {
           try {
             // PARALLEL-SAFE: Check if follow-up was recently sent
-            const recentlySent = await wasEmailRecentlySent(lead.email, `followup_${nextSequence}`, 60);
+            const recentlySent = await wasEmailRecentlySent(
+              lead.email,
+              `followup_${nextSequence}`,
+              60
+            );
             if (recentlySent) {
               console.log(`⏭️ Skipping followup ${nextSequence} for ${lead.email} - recently sent`);
               followupsSkipped++;
@@ -26222,14 +26937,28 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
             }
 
             // PARALLEL-SAFE: Record follow-up in history
-            await recordEmailSend(lead.email, `followup_${nextSequence}`, nextSequence, `followup:${lead.id}:${nextSequence}:${Date.now()}`);
+            await recordEmailSend(
+              lead.email,
+              `followup_${nextSequence}`,
+              nextSequence,
+              `followup:${lead.id}:${nextSequence}:${Date.now()}`
+            );
 
             // Update omnichannel email tracking with sequence info
             await dbQuery(
               `UPDATE outreach_leads
                SET channels_contacted = COALESCE(channels_contacted, '{}'::jsonb) || $1::jsonb
                WHERE id = $2`,
-              [JSON.stringify({ email: { sent_at: new Date().toISOString(), success: true, sequence: nextSequence } }), lead.id]
+              [
+                JSON.stringify({
+                  email: {
+                    sent_at: new Date().toISOString(),
+                    success: true,
+                    sequence: nextSequence,
+                  },
+                }),
+                lead.id,
+              ]
             );
 
             followupsSent++;
@@ -26267,7 +26996,9 @@ app.get('/api/cron/daily-outreach', async (req, res) => {
         `${baseUrl}/api/cron/review-alerts?secret=${process.env.CRON_SECRET}`
       );
       reviewAlertsResults = await alertsResponse.json();
-      console.log(`🔔 Review Alerts: ${reviewAlertsResults.alerts_sent || 0} sent to ${reviewAlertsResults.users_checked || 0} users`);
+      console.log(
+        `🔔 Review Alerts: ${reviewAlertsResults.alerts_sent || 0} sent to ${reviewAlertsResults.users_checked || 0} users`
+      );
     } catch (e) {
       console.error('Review alerts call failed:', e.message);
       reviewAlertsResults = { error: e.message };
@@ -26441,9 +27172,8 @@ app.get('/api/outreach/dashboard', async (req, res) => {
 
     // When exclude_bots=true, use the fully filtered count (after JS burst filter)
     const finalClickCount = excludeBots ? hotLeads.length : parseInt(emailsClickedRaw?.count || 0);
-    const finalClickRate = emailsSent?.count > 0
-      ? ((finalClickCount / emailsSent.count) * 100).toFixed(2) + '%'
-      : '0%';
+    const finalClickRate =
+      emailsSent?.count > 0 ? ((finalClickCount / emailsSent.count) * 100).toFixed(2) + '%' : '0%';
 
     res.json({
       stats: {
@@ -26468,15 +27198,20 @@ app.get('/api/outreach/dashboard', async (req, res) => {
         total_raw_clicks: parseInt(emailsClickedRaw?.count || 0),
         total_filtered_clicks: hotLeads.length,
         clicks_removed: parseInt(emailsClickedRaw?.count || 0) - hotLeads.length,
-        fake_click_percentage: emailsClickedRaw?.count > 0
-          ? (((emailsClickedRaw.count - hotLeads.length) / emailsClickedRaw.count) * 100).toFixed(1) + '%'
-          : '0%',
-        filters_applied: excludeBots ? [
-          'midnight_burst (00:00-00:20 UTC)',
-          'known_test_periods (owner testing)',
-          'sequential_clicks (<30s gap)',
-          'burst_detection (3+ per minute)'
-        ] : [],
+        fake_click_percentage:
+          emailsClickedRaw?.count > 0
+            ? (((emailsClickedRaw.count - hotLeads.length) / emailsClickedRaw.count) * 100).toFixed(
+                1
+              ) + '%'
+            : '0%',
+        filters_applied: excludeBots
+          ? [
+              'midnight_burst (00:00-00:20 UTC)',
+              'known_test_periods (owner testing)',
+              'sequential_clicks (<30s gap)',
+              'burst_detection (3+ per minute)',
+            ]
+          : [],
         note: excludeBots
           ? 'Filtered: bots, test periods, sequential clicks, burst patterns'
           : 'Use ?exclude_bots=true for accurate click data',
@@ -27914,8 +28649,12 @@ async function initAmazonSellerLeadsTable() {
     `);
 
     // Add index for faster lookups
-    await dbQuery(`CREATE INDEX IF NOT EXISTS idx_amazon_seller_status ON amazon_seller_leads(status)`);
-    await dbQuery(`CREATE INDEX IF NOT EXISTS idx_amazon_seller_email ON amazon_seller_leads(email)`);
+    await dbQuery(
+      `CREATE INDEX IF NOT EXISTS idx_amazon_seller_status ON amazon_seller_leads(status)`
+    );
+    await dbQuery(
+      `CREATE INDEX IF NOT EXISTS idx_amazon_seller_email ON amazon_seller_leads(email)`
+    );
 
     console.log('✅ Amazon seller leads table initialized');
   } catch (error) {
@@ -27947,7 +28686,7 @@ P.S. If you're not the right person for this, no worries - just hit unsubscribe 
 
 ---
 ReviewResponder | AI-powered review responses
-Unsubscribe: {unsubscribe_link}`
+Unsubscribe: {unsubscribe_link}`,
 };
 
 // GET /api/admin/amazon-dashboard - Amazon Seller Stats & Metrics
@@ -28013,7 +28752,7 @@ app.get('/api/admin/amazon-dashboard', async (req, res) => {
       total_clicks: clicks,
       ctr: `${ctr}%`,
       recent_activity: recentActivity || [],
-      category_breakdown: categoryStats || []
+      category_breakdown: categoryStats || [],
     });
   } catch (error) {
     console.error('Amazon dashboard error:', error.message);
@@ -28046,22 +28785,28 @@ app.get('/api/admin/amazon-leads', async (req, res) => {
       paramIndex++;
     }
 
-    const leads = await dbAll(`
+    const leads = await dbAll(
+      `
       SELECT * FROM amazon_seller_leads
       ${whereClause}
       ORDER BY created_at DESC
       LIMIT $${paramIndex++} OFFSET $${paramIndex}
-    `, [...params, parseInt(limit), parseInt(offset)]);
+    `,
+      [...params, parseInt(limit), parseInt(offset)]
+    );
 
-    const countResult = await dbGet(`
+    const countResult = await dbGet(
+      `
       SELECT COUNT(*) as total FROM amazon_seller_leads ${whereClause}
-    `, params);
+    `,
+      params
+    );
 
     res.json({
       leads: leads || [],
       total: parseInt(countResult?.total || 0),
       limit: parseInt(limit),
-      offset: parseInt(offset)
+      offset: parseInt(offset),
     });
   } catch (error) {
     console.error('Amazon leads list error:', error.message);
@@ -28077,7 +28822,17 @@ app.post('/api/admin/amazon-leads', async (req, res) => {
   }
 
   try {
-    const { seller_name, seller_id, store_url, email, contact_name, product_category, review_count, avg_rating, source = 'manual' } = req.body;
+    const {
+      seller_name,
+      seller_id,
+      store_url,
+      email,
+      contact_name,
+      product_category,
+      review_count,
+      avg_rating,
+      source = 'manual',
+    } = req.body;
 
     if (!seller_name) {
       return res.status(400).json({ error: 'seller_name is required' });
@@ -28086,13 +28841,27 @@ app.post('/api/admin/amazon-leads', async (req, res) => {
     // Generate demo token for tracking
     const demoToken = `amz_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 
-    const result = await dbGet(`
+    const result = await dbGet(
+      `
       INSERT INTO amazon_seller_leads (
         seller_name, seller_id, store_url, email, contact_name,
         product_category, review_count, avg_rating, source, demo_token
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
-    `, [seller_name, seller_id, store_url, email, contact_name, product_category, review_count, avg_rating, source, demoToken]);
+    `,
+      [
+        seller_name,
+        seller_id,
+        store_url,
+        email,
+        contact_name,
+        product_category,
+        review_count,
+        avg_rating,
+        source,
+        demoToken,
+      ]
+    );
 
     res.json({ success: true, lead: result });
   } catch (error) {
@@ -28122,7 +28891,9 @@ app.post('/api/admin/amazon-leads/bulk', async (req, res) => {
       try {
         // Check if already exists (by email or seller_id)
         if (lead.email) {
-          const existing = await dbGet(`SELECT id FROM amazon_seller_leads WHERE email = $1`, [lead.email]);
+          const existing = await dbGet(`SELECT id FROM amazon_seller_leads WHERE email = $1`, [
+            lead.email,
+          ]);
           if (existing) {
             skipped++;
             continue;
@@ -28131,23 +28902,26 @@ app.post('/api/admin/amazon-leads/bulk', async (req, res) => {
 
         const demoToken = `amz_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 
-        await dbQuery(`
+        await dbQuery(
+          `
           INSERT INTO amazon_seller_leads (
             seller_name, seller_id, store_url, email, contact_name,
             product_category, review_count, avg_rating, source, demo_token
           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-        `, [
-          lead.seller_name,
-          lead.seller_id,
-          lead.store_url,
-          lead.email,
-          lead.contact_name,
-          lead.product_category,
-          lead.review_count,
-          lead.avg_rating,
-          lead.source || 'import',
-          demoToken
-        ]);
+        `,
+          [
+            lead.seller_name,
+            lead.seller_id,
+            lead.store_url,
+            lead.email,
+            lead.contact_name,
+            lead.product_category,
+            lead.review_count,
+            lead.avg_rating,
+            lead.source || 'import',
+            demoToken,
+          ]
+        );
 
         added++;
       } catch (e) {
@@ -28187,11 +28961,14 @@ app.get('/api/amazon-demo/:token', async (req, res) => {
     const { token } = req.params;
 
     // Update click tracking
-    await dbQuery(`
+    await dbQuery(
+      `
       UPDATE amazon_seller_leads
       SET status = 'clicked', clicked_at = NOW(), updated_at = NOW()
       WHERE demo_token = $1 AND status != 'converted'
-    `, [token]);
+    `,
+      [token]
+    );
 
     console.log(`🖱️ Amazon demo clicked: ${token}`);
 
@@ -28215,12 +28992,15 @@ app.get('/api/cron/send-amazon-emails', async (req, res) => {
     const dryRun = req.query.dry_run === 'true';
 
     // Get leads with status='new' and email
-    const leads = await dbAll(`
+    const leads = await dbAll(
+      `
       SELECT * FROM amazon_seller_leads
       WHERE status = 'new' AND email IS NOT NULL
       ORDER BY created_at ASC
       LIMIT $1
-    `, [limit]);
+    `,
+      [limit]
+    );
 
     if (!leads || leads.length === 0) {
       return res.json({ success: true, message: 'No new Amazon leads to email', sent: 0 });
@@ -28239,9 +29019,14 @@ app.get('/api/cron/send-amazon-emails', async (req, res) => {
         }
 
         // Check unsubscribe list
-        const unsubscribed = await dbGet(`SELECT id FROM unsubscribes WHERE LOWER(email) = LOWER($1)`, [lead.email]);
+        const unsubscribed = await dbGet(
+          `SELECT id FROM unsubscribes WHERE LOWER(email) = LOWER($1)`,
+          [lead.email]
+        );
         if (unsubscribed) {
-          await dbQuery(`UPDATE amazon_seller_leads SET status = 'unsubscribed' WHERE id = $1`, [lead.id]);
+          await dbQuery(`UPDATE amazon_seller_leads SET status = 'unsubscribed' WHERE id = $1`, [
+            lead.id,
+          ]);
           continue;
         }
 
@@ -28250,8 +29035,10 @@ app.get('/api/cron/send-amazon-emails', async (req, res) => {
         const unsubscribeLink = `https://review-responder.onrender.com/api/outreach/unsubscribe?email=${encodeURIComponent(lead.email)}`;
 
         // Build email content
-        const subject = AMAZON_SELLER_EMAIL_TEMPLATE.subject
-          .replace('{seller_name}', lead.seller_name);
+        const subject = AMAZON_SELLER_EMAIL_TEMPLATE.subject.replace(
+          '{seller_name}',
+          lead.seller_name
+        );
 
         const body = AMAZON_SELLER_EMAIL_TEMPLATE.body
           .replace('{contact_name}', lead.contact_name || 'there')
@@ -28275,19 +29062,27 @@ app.get('/api/cron/send-amazon-emails', async (req, res) => {
             text: body,
             headers: {
               'List-Unsubscribe': `<${unsubscribeLink}>`,
-              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
-            }
+              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+            },
           });
 
           // Update lead status
-          await dbQuery(`
+          await dbQuery(
+            `
             UPDATE amazon_seller_leads
             SET status = 'contacted', email_sent_at = NOW(), updated_at = NOW()
             WHERE id = $1
-          `, [lead.id]);
+          `,
+            [lead.id]
+          );
 
           // Record in parallel-safe history
-          await recordEmailSend(lead.email, 'amazon_outreach', 1, `amazon:${lead.id}:${Date.now()}`);
+          await recordEmailSend(
+            lead.email,
+            'amazon_outreach',
+            1,
+            `amazon:${lead.id}:${Date.now()}`
+          );
 
           sent++;
           console.log(`✉️ Amazon email sent to ${lead.email} (${lead.seller_name})`);
@@ -28309,7 +29104,7 @@ app.get('/api/cron/send-amazon-emails', async (req, res) => {
       dry_run: dryRun,
       total_leads: leads.length,
       sent: sent,
-      errors: errors.length > 0 ? errors : undefined
+      errors: errors.length > 0 ? errors : undefined,
     });
   } catch (error) {
     console.error('Amazon cron error:', error.message);
@@ -29799,7 +30594,8 @@ app.get('/api/admin/automation-health', async (req, res) => {
     if (serpApiKeyCount === 0 && !process.env.OUTSCRAPER_API_KEY && !process.env.SERPER_API_KEY) {
       alerts.push({
         type: 'error',
-        message: 'No review scraping API configured (need SERPER_API_KEY, SERPAPI_KEY, or OUTSCRAPER_API_KEY)',
+        message:
+          'No review scraping API configured (need SERPER_API_KEY, SERPAPI_KEY, or OUTSCRAPER_API_KEY)',
       });
     }
 
@@ -29865,9 +30661,10 @@ app.get('/api/admin/automation-health', async (req, res) => {
           key_count: getOutscraperKeyCount(),
           limit_per_key: 500,
           total_limit: getOutscraperKeyCount() * 500,
-          note: getOutscraperKeyCount() > 1
-            ? `${getOutscraperKeyCount()} keys rotating (${getOutscraperKeyCount() * 500} reviews/mo total)`
-            : 'PRIMARY for reviews (500 free/mo)',
+          note:
+            getOutscraperKeyCount() > 1
+              ? `${getOutscraperKeyCount()} keys rotating (${getOutscraperKeyCount() * 500} reviews/mo total)`
+              : 'PRIMARY for reviews (500 free/mo)',
         },
         google_places: {
           estimated_monthly_cost_usd: Math.round(googlePlacesCostEstimate * 100) / 100,
@@ -30348,7 +31145,15 @@ app.put('/api/admin/lead-social-links', async (req, res) => {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const { lead_id, twitter_handle, facebook_page, instagram_handle, linkedin_company, google_business_url, contact_form_url } = req.body;
+  const {
+    lead_id,
+    twitter_handle,
+    facebook_page,
+    instagram_handle,
+    linkedin_company,
+    google_business_url,
+    contact_form_url,
+  } = req.body;
 
   if (!lead_id) {
     return res.status(400).json({ error: 'lead_id required' });
@@ -30414,7 +31219,15 @@ app.put('/api/admin/mark-channel-contacted', async (req, res) => {
     return res.status(400).json({ error: 'lead_id and channel required' });
   }
 
-  const validChannels = ['email', 'twitter', 'facebook', 'instagram', 'linkedin', 'google_business', 'contact_form'];
+  const validChannels = [
+    'email',
+    'twitter',
+    'facebook',
+    'instagram',
+    'linkedin',
+    'google_business',
+    'contact_form',
+  ];
   if (!validChannels.includes(channel)) {
     return res.status(400).json({ error: `Invalid channel. Valid: ${validChannels.join(', ')}` });
   }
@@ -30425,7 +31238,16 @@ app.put('/api/admin/mark-channel-contacted', async (req, res) => {
       `UPDATE outreach_leads
        SET channels_contacted = COALESCE(channels_contacted, '{}'::jsonb) || $1::jsonb
        WHERE id = $2`,
-      [JSON.stringify({ [channel]: { sent_at: new Date().toISOString(), success: !sendError, error: sendError || null } }), lead_id]
+      [
+        JSON.stringify({
+          [channel]: {
+            sent_at: new Date().toISOString(),
+            success: !sendError,
+            error: sendError || null,
+          },
+        }),
+        lead_id,
+      ]
     );
 
     res.json({ success: true, channel, lead_id });
@@ -30444,13 +31266,23 @@ app.get('/api/admin/omnichannel-stats', async (req, res) => {
 
   try {
     // Count leads with demos
-    const leadsWithDemos = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE demo_url IS NOT NULL');
+    const leadsWithDemos = await dbGet(
+      'SELECT COUNT(*) as count FROM outreach_leads WHERE demo_url IS NOT NULL'
+    );
 
     // Count leads with social links found
-    const withTwitter = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE twitter_handle IS NOT NULL');
-    const withFacebook = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE facebook_page IS NOT NULL');
-    const withInstagram = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE instagram_handle IS NOT NULL');
-    const withLinkedIn = await dbGet('SELECT COUNT(*) as count FROM outreach_leads WHERE linkedin_company IS NOT NULL');
+    const withTwitter = await dbGet(
+      'SELECT COUNT(*) as count FROM outreach_leads WHERE twitter_handle IS NOT NULL'
+    );
+    const withFacebook = await dbGet(
+      'SELECT COUNT(*) as count FROM outreach_leads WHERE facebook_page IS NOT NULL'
+    );
+    const withInstagram = await dbGet(
+      'SELECT COUNT(*) as count FROM outreach_leads WHERE instagram_handle IS NOT NULL'
+    );
+    const withLinkedIn = await dbGet(
+      'SELECT COUNT(*) as count FROM outreach_leads WHERE linkedin_company IS NOT NULL'
+    );
 
     // Count contacted by channel (from JSONB)
     const contactedByChannel = {};
@@ -30559,7 +31391,8 @@ app.get('/api/admin/leads-needing-enrichment', async (req, res) => {
 
   try {
     // Get leads needing email (have website but generic/no email)
-    const needsEmail = await dbAll(`
+    const needsEmail = await dbAll(
+      `
       SELECT id, business_name, city, website, email, google_reviews_count
       FROM outreach_leads
       WHERE website IS NOT NULL AND website != ''
@@ -30573,10 +31406,13 @@ app.get('/api/admin/leads-needing-enrichment', async (req, res) => {
         AND status = 'new'
       ORDER BY google_reviews_count DESC NULLS LAST
       LIMIT $1
-    `, [Math.ceil(limit / 2)]);
+    `,
+      [Math.ceil(limit / 2)]
+    );
 
     // Get leads needing demo (have email but no demo)
-    const needsDemo = await dbAll(`
+    const needsDemo = await dbAll(
+      `
       SELECT id, business_name, city, email, google_place_id, google_reviews_count
       FROM outreach_leads
       WHERE email IS NOT NULL AND email != ''
@@ -30584,7 +31420,9 @@ app.get('/api/admin/leads-needing-enrichment', async (req, res) => {
         AND status = 'new'
       ORDER BY google_reviews_count DESC NULLS LAST
       LIMIT $1
-    `, [Math.ceil(limit / 2)]);
+    `,
+      [Math.ceil(limit / 2)]
+    );
 
     // Get totals for progress tracking
     const totalNeedsEmail = await dbGet(`
@@ -30606,8 +31444,8 @@ app.get('/api/admin/leads-needing-enrichment', async (req, res) => {
       needs_demo: needsDemo || [],
       totals: {
         needs_email: parseInt(totalNeedsEmail?.count || 0),
-        needs_demo: parseInt(totalNeedsDemo?.count || 0)
-      }
+        needs_demo: parseInt(totalNeedsDemo?.count || 0),
+      },
     });
   } catch (error) {
     console.error('Leads needing enrichment error:', error);
@@ -30630,7 +31468,8 @@ app.post('/api/admin/save-found-email', async (req, res) => {
 
   try {
     // Update the lead with the found email
-    await dbQuery(`
+    await dbQuery(
+      `
       UPDATE outreach_leads
       SET
         email = $1,
@@ -30638,15 +31477,19 @@ app.post('/api/admin/save-found-email', async (req, res) => {
         owner_name = COALESCE($3, owner_name),
         updated_at = NOW()
       WHERE id = $4
-    `, [email, source || 'chrome_mcp', owner_name, lead_id]);
+    `,
+      [email, source || 'chrome_mcp', owner_name, lead_id]
+    );
 
-    console.log(`[Chrome MCP] Saved email for lead ${lead_id}: ${email} (source: ${source}, confidence: ${confidence})`);
+    console.log(
+      `[Chrome MCP] Saved email for lead ${lead_id}: ${email} (source: ${source}, confidence: ${confidence})`
+    );
 
     res.json({
       success: true,
       lead_id,
       email,
-      source
+      source,
     });
   } catch (error) {
     console.error('Save found email error:', error);
@@ -30678,7 +31521,8 @@ app.post('/api/admin/save-demo-from-chrome', async (req, res) => {
     const demoToken = 'rr-demo-' + require('crypto').randomBytes(6).toString('hex');
 
     // Store in demo_generations
-    await dbQuery(`
+    await dbQuery(
+      `
       INSERT INTO demo_generations (
         business_name, google_place_id, reviews_data, responses_data,
         demo_token, source, created_at
@@ -30689,31 +31533,38 @@ app.post('/api/admin/save-demo-from-chrome', async (req, res) => {
         responses_data = $4,
         demo_token = $5,
         updated_at = NOW()
-    `, [
-      lead.business_name,
-      lead.google_place_id,
-      JSON.stringify(reviews),
-      JSON.stringify(responses),
-      demoToken,
-      source || 'chrome_maps_scrape'
-    ]);
+    `,
+      [
+        lead.business_name,
+        lead.google_place_id,
+        JSON.stringify(reviews),
+        JSON.stringify(responses),
+        demoToken,
+        source || 'chrome_maps_scrape',
+      ]
+    );
 
     // Update lead with demo URL
     const demoUrl = `https://tryreviewresponder.com/demo/${demoToken}`;
-    await dbQuery(`
+    await dbQuery(
+      `
       UPDATE outreach_leads
       SET demo_url = $1, demo_token = $2, updated_at = NOW()
       WHERE id = $3
-    `, [demoUrl, demoToken, lead_id]);
+    `,
+      [demoUrl, demoToken, lead_id]
+    );
 
-    console.log(`[Chrome MCP] Saved demo for lead ${lead_id}: ${demoUrl} (${reviews.length} reviews)`);
+    console.log(
+      `[Chrome MCP] Saved demo for lead ${lead_id}: ${demoUrl} (${reviews.length} reviews)`
+    );
 
     res.json({
       success: true,
       lead_id,
       demo_url: demoUrl,
       demo_token: demoToken,
-      reviews_count: reviews.length
+      reviews_count: reviews.length,
     });
   } catch (error) {
     console.error('Save demo from chrome error:', error);
@@ -30768,9 +31619,10 @@ app.get('/api/admin/premium-ready-count', async (req, res) => {
       with_demo: parseInt(totalWithDemo?.count || 0),
       with_email: parseInt(totalWithEmail?.count || 0),
       with_personal_email: parseInt(totalWithPersonalEmail?.count || 0),
-      conversion_rate: totalWithEmail?.count > 0
-        ? ((premiumReady?.count || 0) / (totalWithEmail?.count) * 100).toFixed(1) + '%'
-        : '0%'
+      conversion_rate:
+        totalWithEmail?.count > 0
+          ? (((premiumReady?.count || 0) / totalWithEmail?.count) * 100).toFixed(1) + '%'
+          : '0%',
     });
   } catch (error) {
     console.error('Premium ready count error:', error);
@@ -30849,13 +31701,15 @@ app.get('/api/cron/batch-prescrape', async (req, res) => {
           );
 
           results.scraped++;
-          console.log(`[BATCH-PRESCRAPE] Cached ${reviews.length} reviews for ${lead.business_name}`);
+          console.log(
+            `[BATCH-PRESCRAPE] Cached ${reviews.length} reviews for ${lead.business_name}`
+          );
         } else {
           results.failed++;
         }
 
         // Rate limit: 1 request per 2 seconds
-        await new Promise((r) => setTimeout(r, 2000));
+        await new Promise(r => setTimeout(r, 2000));
       } catch (err) {
         console.error(`[BATCH-PRESCRAPE] Error for ${lead.business_name}: ${err.message}`);
         results.failed++;
@@ -31317,7 +32171,14 @@ app.get('/api/cron/night-blast', async (req, res) => {
     console.log('🔗 Phase 9: Social Link Scraping...');
 
     try {
-      const socialScrapeResults = { checked: 0, found: 0, twitter: 0, facebook: 0, instagram: 0, linkedin: 0 };
+      const socialScrapeResults = {
+        checked: 0,
+        found: 0,
+        twitter: 0,
+        facebook: 0,
+        instagram: 0,
+        linkedin: 0,
+      };
 
       // Get leads with websites but no social links (limit 50 per run)
       const leadsNeedingSocial = await dbAll(`
@@ -31350,7 +32211,8 @@ app.get('/api/cron/night-blast', async (req, res) => {
           const response = await fetch(url, {
             signal: controller.signal,
             headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              'User-Agent':
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             },
           });
           clearTimeout(timeout);
@@ -31362,7 +32224,9 @@ app.get('/api/cron/night-blast', async (req, res) => {
             const socialLinks = {};
 
             // Twitter/X
-            const twitterMatch = html.match(/href=["'](https?:\/\/(www\.)?(twitter\.com|x\.com)\/[^"'\s>]+)["']/i);
+            const twitterMatch = html.match(
+              /href=["'](https?:\/\/(www\.)?(twitter\.com|x\.com)\/[^"'\s>]+)["']/i
+            );
             if (twitterMatch) {
               const handle = twitterMatch[1].split('/').pop().split('?')[0];
               if (handle && handle.length > 0 && handle !== 'share' && handle !== 'intent') {
@@ -31372,7 +32236,9 @@ app.get('/api/cron/night-blast', async (req, res) => {
             }
 
             // Facebook
-            const facebookMatch = html.match(/href=["'](https?:\/\/(www\.)?facebook\.com\/[^"'\s>]+)["']/i);
+            const facebookMatch = html.match(
+              /href=["'](https?:\/\/(www\.)?facebook\.com\/[^"'\s>]+)["']/i
+            );
             if (facebookMatch) {
               const page = facebookMatch[1].split('facebook.com/')[1]?.split('?')[0];
               if (page && page.length > 0 && page !== 'sharer' && page !== 'share') {
@@ -31382,9 +32248,14 @@ app.get('/api/cron/night-blast', async (req, res) => {
             }
 
             // Instagram
-            const instagramMatch = html.match(/href=["'](https?:\/\/(www\.)?instagram\.com\/[^"'\s>]+)["']/i);
+            const instagramMatch = html.match(
+              /href=["'](https?:\/\/(www\.)?instagram\.com\/[^"'\s>]+)["']/i
+            );
             if (instagramMatch) {
-              const handle = instagramMatch[1].split('instagram.com/')[1]?.split('?')[0].split('/')[0];
+              const handle = instagramMatch[1]
+                .split('instagram.com/')[1]
+                ?.split('?')[0]
+                .split('/')[0];
               if (handle && handle.length > 0 && handle !== 'p' && handle !== 'reel') {
                 socialLinks.instagram_handle = '@' + handle.replace('@', '');
                 socialScrapeResults.instagram++;
@@ -31392,7 +32263,9 @@ app.get('/api/cron/night-blast', async (req, res) => {
             }
 
             // LinkedIn
-            const linkedinMatch = html.match(/href=["'](https?:\/\/(www\.)?linkedin\.com\/company\/[^"'\s>]+)["']/i);
+            const linkedinMatch = html.match(
+              /href=["'](https?:\/\/(www\.)?linkedin\.com\/company\/[^"'\s>]+)["']/i
+            );
             if (linkedinMatch) {
               const company = linkedinMatch[1].split('company/')[1]?.split('?')[0].split('/')[0];
               if (company && company.length > 0) {
@@ -31419,7 +32292,9 @@ app.get('/api/cron/night-blast', async (req, res) => {
               );
 
               socialScrapeResults.found++;
-              console.log(`✅ Found social links for ${lead.business_name}: ${JSON.stringify(socialLinks)}`);
+              console.log(
+                `✅ Found social links for ${lead.business_name}: ${JSON.stringify(socialLinks)}`
+              );
             }
           }
 
@@ -31434,7 +32309,9 @@ app.get('/api/cron/night-blast', async (req, res) => {
       }
 
       results.phase9_social_scraping = socialScrapeResults;
-      console.log(`🔗 Phase 9 complete: ${socialScrapeResults.found}/${socialScrapeResults.checked} leads got social links`);
+      console.log(
+        `🔗 Phase 9 complete: ${socialScrapeResults.found}/${socialScrapeResults.checked} leads got social links`
+      );
     } catch (e) {
       results.phase9_social_scraping = { error: e.message };
       console.error('Phase 9 error:', e.message);
@@ -31699,17 +32576,17 @@ app.get('/api/admin/anti-spam', async (req, res) => {
       success: true,
       config: {
         max_emails_per_week: MAX_EMAILS_PER_WEEK,
-        note: 'Anti-spam nur für Outreach Emails. Transaktionale Emails (Passwort, etc.) sind NICHT betroffen.'
+        note: 'Anti-spam nur für Outreach Emails. Transaktionale Emails (Passwort, etc.) sind NICHT betroffen.',
       },
       stats: {
         total_suppressed: suppressions.rows.reduce((sum, r) => sum + parseInt(r.count), 0),
         by_reason: suppressions.rows,
         emails_approaching_limit: frequencyWarnings.rows.length,
-        today: todaySkips.rows[0] || { skipped_today: 0, sent_today: 0 }
+        today: todaySkips.rows[0] || { skipped_today: 0, sent_today: 0 },
       },
       recent_suppressions: recentSuppressions.rows,
       frequency_warnings: frequencyWarnings.rows.slice(0, 10),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -31759,7 +32636,7 @@ app.delete('/api/admin/anti-spam/unsuppress', async (req, res) => {
     res.json({
       success: true,
       removed: result.rowCount > 0,
-      email
+      email,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -32147,8 +33024,7 @@ cron.schedule('5 1 * * *', () => runNightLoop(2, 'Scheduled-01:05-UTC-Hour2'), {
 // Run onboarding emails 3x daily (morning, afternoon, evening)
 // To catch users at different points after registration
 async function runOnboardingEmails(source) {
-  const baseUrl =
-    process.env.BACKEND_URL || 'https://review-responder.onrender.com';
+  const baseUrl = process.env.BACKEND_URL || 'https://review-responder.onrender.com';
   console.log(`📧 [Onboarding] Starting onboarding emails (${source})...`);
 
   try {
@@ -32204,7 +33080,7 @@ app.get('/api/cron/upgrade-leads', async (req, res) => {
   const results = {
     phase1_email_finding: { processed: 0, found: 0, failed: 0 },
     phase2_demo_generation: { processed: 0, success: 0, failed: 0, demos: [] },
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 
   try {
@@ -32257,13 +33133,20 @@ app.get('/api/cron/upgrade-leads', async (req, res) => {
                    email_source = $2,
                    contact_name = COALESCE($3, contact_name)
                WHERE id = $4`,
-              [newEmail, emailResult.source || 'upgrade_v2', emailResult.contactName || null, lead.id]
+              [
+                newEmail,
+                emailResult.source || 'upgrade_v2',
+                emailResult.contactName || null,
+                lead.id,
+              ]
             );
             results.phase1_email_finding.found++;
 
             const upgradeType = existingEmail ? 'UPGRADED' : 'FOUND';
             const quality = isLowQualityEmail(newEmail) ? 'generic' : 'PERSONAL';
-            console.log(`📧 ${upgradeType} (${quality}): ${lead.business_name} | ${existingEmail || 'none'} → ${newEmail}`);
+            console.log(
+              `📧 ${upgradeType} (${quality}): ${lead.business_name} | ${existingEmail || 'none'} → ${newEmail}`
+            );
           } else {
             console.log(`⏭️ Skip: ${lead.business_name} | ${existingEmail} already good quality`);
           }
@@ -32357,17 +33240,18 @@ app.get('/api/cron/upgrade-leads', async (req, res) => {
         );
 
         // Update lead with demo URL
-        await dbQuery(
-          `UPDATE outreach_leads SET demo_url = $1, demo_token = $2 WHERE id = $3`,
-          [demoUrl, demoToken, lead.id]
-        );
+        await dbQuery(`UPDATE outreach_leads SET demo_url = $1, demo_token = $2 WHERE id = $3`, [
+          demoUrl,
+          demoToken,
+          lead.id,
+        ]);
 
         results.phase2_demo_generation.success++;
         results.phase2_demo_generation.demos.push({
           business: lead.business_name,
           city: lead.city,
           demo_url: demoUrl,
-          reviews_count: demos.length
+          reviews_count: demos.length,
         });
 
         console.log(`🎯 Generated demo for ${lead.business_name}: ${demoUrl}`);
@@ -32375,8 +33259,17 @@ app.get('/api/cron/upgrade-leads', async (req, res) => {
         // Optional: Send email with demo
         if (sendEmails && lead.email) {
           try {
-            await sendDemoEmail(lead.email, lead.business_name, demos, demoToken, placeInfo.totalReviews);
-            await dbQuery('UPDATE demo_generations SET email_sent_at = NOW() WHERE demo_token = $1', [demoToken]);
+            await sendDemoEmail(
+              lead.email,
+              lead.business_name,
+              demos,
+              demoToken,
+              placeInfo.totalReviews
+            );
+            await dbQuery(
+              'UPDATE demo_generations SET email_sent_at = NOW() WHERE demo_token = $1',
+              [demoToken]
+            );
             console.log(`📧 Sent demo email to ${lead.email}`);
           } catch (emailError) {
             console.error(`Email failed for ${lead.email}:`, emailError.message);
@@ -32395,9 +33288,8 @@ app.get('/api/cron/upgrade-leads', async (req, res) => {
       summary: {
         emails_found: `${results.phase1_email_finding.found}/${results.phase1_email_finding.processed}`,
         demos_generated: `${results.phase2_demo_generation.success}/${results.phase2_demo_generation.processed}`,
-      }
+      },
     });
-
   } catch (error) {
     console.error('Upgrade leads error:', error);
     res.status(500).json({ error: 'Failed to upgrade leads', details: error.message });
@@ -32433,7 +33325,8 @@ app.get('/api/cron/review-alerts', async (req, res) => {
 
     // Find users with google_place_id who have alerts enabled
     // and haven't received an alert this week
-    const users = await dbAll(`
+    const users = await dbAll(
+      `
       SELECT u.id, u.email, u.google_place_id, u.monitored_business_name, u.business_name,
              u.last_review_alert_at
       FROM users u
@@ -32443,7 +33336,9 @@ app.get('/api/cron/review-alerts', async (req, res) => {
         AND (u.last_review_alert_at IS NULL OR u.last_review_alert_at < NOW() - INTERVAL '6 days')
       ORDER BY u.created_at DESC
       LIMIT $1
-    `, [limit]);
+    `,
+      [limit]
+    );
 
     console.log(`[REVIEW-ALERTS] Found ${users.length} users with monitored businesses`);
 
@@ -32453,7 +33348,7 @@ app.get('/api/cron/review-alerts', async (req, res) => {
       new_reviews_found: 0,
       no_new_reviews: 0,
       errors: 0,
-      skipped_api_limit: 0
+      skipped_api_limit: 0,
     };
 
     for (const user of users) {
@@ -32461,14 +33356,18 @@ app.get('/api/cron/review-alerts', async (req, res) => {
 
       try {
         // Fetch recent reviews for this business
-        console.log(`[REVIEW-ALERTS] Checking reviews for user ${user.id} (${user.google_place_id})`);
+        console.log(
+          `[REVIEW-ALERTS] Checking reviews for user ${user.id} (${user.google_place_id})`
+        );
 
         // Use existing scrapeGoogleReviews function
         const reviews = await scrapeGoogleReviews(user.google_place_id, 10);
 
         if (!reviews || reviews.length === 0) {
           results.no_new_reviews++;
-          console.log(`[REVIEW-ALERTS] No reviews found for ${user.monitored_business_name || user.business_name}`);
+          console.log(
+            `[REVIEW-ALERTS] No reviews found for ${user.monitored_business_name || user.business_name}`
+          );
           continue;
         }
 
@@ -32484,7 +33383,9 @@ app.get('/api/cron/review-alerts', async (req, res) => {
 
         if (recentReviews.length === 0) {
           results.no_new_reviews++;
-          console.log(`[REVIEW-ALERTS] No new reviews in last 7 days for ${user.monitored_business_name || user.business_name}`);
+          console.log(
+            `[REVIEW-ALERTS] No new reviews in last 7 days for ${user.monitored_business_name || user.business_name}`
+          );
 
           // Update last check time anyway
           await dbQuery(`UPDATE users SET last_review_alert_at = NOW() WHERE id = $1`, [user.id]);
@@ -32495,23 +33396,40 @@ app.get('/api/cron/review-alerts', async (req, res) => {
         const businessName = user.monitored_business_name || user.business_name || 'your business';
 
         // Store alert data
-        await dbQuery(`
+        await dbQuery(
+          `
           INSERT INTO review_alerts (user_id, google_place_id, business_name, new_reviews_count, reviews_data, week_start)
           VALUES ($1, $2, $3, $4, $5, $6)
           ON CONFLICT (user_id, week_start) DO UPDATE
           SET new_reviews_count = $4, reviews_data = $5, created_at = NOW()
-        `, [user.id, user.google_place_id, businessName, recentReviews.length, JSON.stringify(recentReviews), weekStartStr]);
+        `,
+          [
+            user.id,
+            user.google_place_id,
+            businessName,
+            recentReviews.length,
+            JSON.stringify(recentReviews),
+            weekStartStr,
+          ]
+        );
 
         // Prepare email content
-        const reviewPreviews = recentReviews.slice(0, 3).map(r => {
-          const stars = '⭐'.repeat(r.rating || 3);
-          const text = r.text ? (r.text.length > 100 ? r.text.substring(0, 100) + '...' : r.text) : 'No text';
-          const author = r.author || 'Anonymous';
-          return `<div style="background: #F9FAFB; border-left: 3px solid ${r.rating <= 3 ? '#EF4444' : '#10B981'}; padding: 12px; margin: 10px 0; border-radius: 4px;">
+        const reviewPreviews = recentReviews
+          .slice(0, 3)
+          .map(r => {
+            const stars = '⭐'.repeat(r.rating || 3);
+            const text = r.text
+              ? r.text.length > 100
+                ? r.text.substring(0, 100) + '...'
+                : r.text
+              : 'No text';
+            const author = r.author || 'Anonymous';
+            return `<div style="background: #F9FAFB; border-left: 3px solid ${r.rating <= 3 ? '#EF4444' : '#10B981'}; padding: 12px; margin: 10px 0; border-radius: 4px;">
             <div style="font-weight: 600;">${author} ${stars}</div>
             <div style="color: #6B7280; font-size: 14px; margin-top: 5px;">"${text}"</div>
           </div>`;
-        }).join('');
+          })
+          .join('');
 
         const hasNegativeReviews = recentReviews.some(r => r.rating && r.rating <= 3);
         const urgencyText = hasNegativeReviews
@@ -32573,24 +33491,30 @@ app.get('/api/cron/review-alerts', async (req, res) => {
                 </div>
               </body>
               </html>
-            `
+            `,
           });
 
           // Update tracking
-          await dbQuery(`
+          await dbQuery(
+            `
             UPDATE review_alerts
             SET email_sent = true, email_sent_at = NOW()
             WHERE user_id = $1 AND week_start = $2
-          `, [user.id, weekStartStr]);
+          `,
+            [user.id, weekStartStr]
+          );
           await dbQuery(`UPDATE users SET last_review_alert_at = NOW() WHERE id = $1`, [user.id]);
 
           results.emails_sent++;
-          console.log(`[REVIEW-ALERTS] ✅ Sent alert to ${user.email} (${recentReviews.length} reviews)`);
+          console.log(
+            `[REVIEW-ALERTS] ✅ Sent alert to ${user.email} (${recentReviews.length} reviews)`
+          );
         } else {
-          console.log(`[REVIEW-ALERTS] [DRY-RUN] Would send to ${user.email} (${recentReviews.length} reviews)`);
+          console.log(
+            `[REVIEW-ALERTS] [DRY-RUN] Would send to ${user.email} (${recentReviews.length} reviews)`
+          );
           if (dryRun) results.emails_sent++; // Count as "would send"
         }
-
       } catch (userError) {
         results.errors++;
         console.error(`[REVIEW-ALERTS] Error for user ${user.id}:`, userError.message);
@@ -32604,9 +33528,8 @@ app.get('/api/cron/review-alerts', async (req, res) => {
     res.json({
       success: true,
       dry_run: dryRun,
-      ...results
+      ...results,
     });
-
   } catch (error) {
     console.error('[REVIEW-ALERTS] Error:', error);
     res.status(500).json({ error: 'Failed to process review alerts', details: error.message });
@@ -32627,13 +33550,16 @@ app.post('/api/admin/setup-review-monitoring', async (req, res) => {
   }
 
   try {
-    await dbQuery(`
+    await dbQuery(
+      `
       UPDATE users
       SET google_place_id = $1,
           monitored_business_name = $2,
           review_alerts_enabled = true
       WHERE id = $3
-    `, [placeId, businessName, userId]);
+    `,
+      [placeId, businessName, userId]
+    );
 
     res.json({ success: true, message: `Review monitoring enabled for user ${userId}` });
   } catch (error) {
@@ -32677,11 +33603,13 @@ app.get('/api/admin/review-alerts-stats', async (req, res) => {
         total_alerts_this_week: parseInt(stats.total_alerts_this_week) || 0,
         alerts_clicked_this_week: parseInt(stats.alerts_clicked_this_week) || 0,
         total_new_reviews_alerted: parseInt(stats.total_new_reviews_alerted) || 0,
-        click_rate: stats.total_alerts_this_week > 0
-          ? ((stats.alerts_clicked_this_week / stats.total_alerts_this_week) * 100).toFixed(1) + '%'
-          : '0%'
+        click_rate:
+          stats.total_alerts_this_week > 0
+            ? ((stats.alerts_clicked_this_week / stats.total_alerts_this_week) * 100).toFixed(1) +
+              '%'
+            : '0%',
       },
-      recent_alerts: recentAlerts
+      recent_alerts: recentAlerts,
     });
   } catch (error) {
     console.error('Review alerts stats error:', error);
@@ -32729,8 +33657,8 @@ app.get('/api/admin/call-preps', authenticateAdmin, async (req, res) => {
         not_interested: parseInt(stats.not_interested) || 0,
         callback: parseInt(stats.callback) || 0,
         not_reached: parseInt(stats.not_reached) || 0,
-        demos_sent: parseInt(stats.demos_sent) || 0
-      }
+        demos_sent: parseInt(stats.demos_sent) || 0,
+      },
     });
   } catch (error) {
     console.error('Get call preps error:', error);
@@ -32742,25 +33670,42 @@ app.get('/api/admin/call-preps', authenticateAdmin, async (req, res) => {
 app.post('/api/admin/call-preps', authenticateAdmin, async (req, res) => {
   try {
     const {
-      business_name, phone, city, country, reviews_count, rating,
-      problem, email, prep_content, priority_score
+      business_name,
+      phone,
+      city,
+      country,
+      reviews_count,
+      rating,
+      problem,
+      email,
+      prep_content,
+      priority_score,
     } = req.body;
 
     if (!business_name || !phone) {
       return res.status(400).json({ error: 'business_name and phone are required' });
     }
 
-    const result = await dbGet(`
+    const result = await dbGet(
+      `
       INSERT INTO call_preps
         (business_name, phone, city, country, reviews_count, rating, problem, email, prep_content, priority_score)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
-    `, [
-      business_name, phone, city || null, country || 'Germany',
-      reviews_count || null, rating || null, problem || null,
-      email || null, prep_content ? JSON.stringify(prep_content) : null,
-      priority_score || 0
-    ]);
+    `,
+      [
+        business_name,
+        phone,
+        city || null,
+        country || 'Germany',
+        reviews_count || null,
+        rating || null,
+        problem || null,
+        email || null,
+        prep_content ? JSON.stringify(prep_content) : null,
+        priority_score || 0,
+      ]
+    );
 
     res.json({ success: true, call: result });
   } catch (error) {
@@ -32799,19 +33744,27 @@ app.put('/api/admin/call-preps/:id', authenticateAdmin, async (req, res) => {
 
     // Always update timestamps
     updates.push(`updated_at = NOW()`);
-    if (status === 'interested' || status === 'not_interested' || status === 'callback' || status === 'not_reached') {
+    if (
+      status === 'interested' ||
+      status === 'not_interested' ||
+      status === 'callback' ||
+      status === 'not_reached'
+    ) {
       updates.push(`last_call_at = NOW()`);
       updates.push(`call_attempts = call_attempts + 1`);
     }
 
     values.push(id);
 
-    const result = await dbGet(`
+    const result = await dbGet(
+      `
       UPDATE call_preps
       SET ${updates.join(', ')}
       WHERE id = $${paramIndex}
       RETURNING *
-    `, values);
+    `,
+      values
+    );
 
     if (!result) {
       return res.status(404).json({ error: 'Call prep not found' });
@@ -32853,10 +33806,13 @@ app.post('/api/admin/call-preps/:id/send-demo', authenticateAdmin, async (req, r
       const demoUrl = `${process.env.FRONTEND_URL || 'https://tryreviewresponder.com'}/demo/${demoToken}`;
 
       // Create demo_generations entry
-      await dbQuery(`
+      await dbQuery(
+        `
         INSERT INTO demo_generations (token, business_name, city, status, created_at)
         VALUES ($1, $2, $3, 'pending', NOW())
-      `, [demoToken, callPrep.business_name, callPrep.city]);
+      `,
+        [demoToken, callPrep.business_name, callPrep.city]
+      );
 
       // Send email with demo link
       if (resend) {
@@ -32877,7 +33833,7 @@ app.post('/api/admin/call-preps/:id/send-demo', authenticateAdmin, async (req, r
               <p>Questions? Just reply to this email.</p>
               <p>Best,<br>Berend<br>ReviewResponder</p>
             </div>
-          `
+          `,
         });
         demoGenerated = true;
       } else {
@@ -32889,18 +33845,21 @@ app.post('/api/admin/call-preps/:id/send-demo', authenticateAdmin, async (req, r
     }
 
     // Update call prep with demo info
-    await dbQuery(`
+    await dbQuery(
+      `
       UPDATE call_preps
       SET demo_token = $1, demo_sent_at = NOW(), email = $2, updated_at = NOW()
       WHERE id = $3
-    `, [demoToken, targetEmail, id]);
+    `,
+      [demoToken, targetEmail, id]
+    );
 
     res.json({
       success: demoGenerated,
       demo_token: demoToken,
       demo_url: `${process.env.FRONTEND_URL || 'https://tryreviewresponder.com'}/demo/${demoToken}`,
       email_sent_to: targetEmail,
-      error: demoError
+      error: demoError,
     });
   } catch (error) {
     console.error('Send demo error:', error);
@@ -32937,18 +33896,27 @@ app.post('/api/admin/call-preps/bulk-import', authenticateAdmin, async (req, res
     const imported = [];
     for (const call of calls) {
       try {
-        const result = await dbGet(`
+        const result = await dbGet(
+          `
           INSERT INTO call_preps
             (business_name, phone, city, country, reviews_count, rating, problem, email, prep_content, priority_score)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
           ON CONFLICT DO NOTHING
           RETURNING *
-        `, [
-          call.business_name, call.phone, call.city || null, call.country || 'Germany',
-          call.reviews_count || null, call.rating || null, call.problem || null,
-          call.email || null, call.prep_content ? JSON.stringify(call.prep_content) : null,
-          call.priority_score || 0
-        ]);
+        `,
+          [
+            call.business_name,
+            call.phone,
+            call.city || null,
+            call.country || 'Germany',
+            call.reviews_count || null,
+            call.rating || null,
+            call.problem || null,
+            call.email || null,
+            call.prep_content ? JSON.stringify(call.prep_content) : null,
+            call.priority_score || 0,
+          ]
+        );
         if (result) imported.push(result);
       } catch (e) {
         console.log('Skipping duplicate:', call.business_name);
@@ -32959,6 +33927,86 @@ app.post('/api/admin/call-preps/bulk-import', authenticateAdmin, async (req, res
   } catch (error) {
     console.error('Bulk import error:', error);
     res.status(500).json({ error: 'Failed to bulk import' });
+  }
+});
+
+// Add hot lead (for Night-Agents) - auto sets priority to 5
+app.post('/api/admin/call-preps/hot-lead', authenticateAdmin, async (req, res) => {
+  try {
+    const { business_name, phone, city, email, reason } = req.body;
+
+    if (!business_name || !phone) {
+      return res.status(400).json({ error: 'business_name and phone are required' });
+    }
+
+    // Check if already exists
+    const existing = await dbGet(
+      'SELECT id FROM call_preps WHERE phone = $1 OR business_name = $1',
+      [phone]
+    );
+    if (existing) {
+      // Update priority to 5 (hot)
+      await dbQuery(
+        'UPDATE call_preps SET priority_score = 5, problem = $1, updated_at = NOW() WHERE id = $2',
+        [reason || 'HOT LEAD - Agent flagged', existing.id]
+      );
+      return res.json({ success: true, action: 'upgraded', id: existing.id });
+    }
+
+    // Create new hot lead
+    const result = await dbGet(
+      `
+      INSERT INTO call_preps
+        (business_name, phone, city, email, problem, priority_score)
+      VALUES ($1, $2, $3, $4, $5, 5)
+      RETURNING *
+    `,
+      [business_name, phone, city || null, email || null, reason || 'HOT LEAD - Agent flagged']
+    );
+
+    console.log(`[HOT LEAD] Added: ${business_name} - ${phone}`);
+    res.json({ success: true, action: 'created', call: result });
+  } catch (error) {
+    console.error('Hot lead error:', error);
+    res.status(500).json({ error: 'Failed to add hot lead' });
+  }
+});
+
+// Get pending calls summary (for Night-Agents to check)
+app.get('/api/admin/call-preps/summary', authenticateAdmin, async (req, res) => {
+  try {
+    const stats = await dbGet(`
+      SELECT
+        COUNT(*) FILTER (WHERE status = 'pending' AND priority_score >= 5) as hot_pending,
+        COUNT(*) FILTER (WHERE status = 'pending' AND priority_score = 4) as warm_pending,
+        COUNT(*) FILTER (WHERE status = 'pending') as total_pending,
+        COUNT(*) FILTER (WHERE status = 'callback' AND callback_date <= NOW()) as callbacks_due
+      FROM call_preps
+    `);
+
+    const hotLeads = await dbAll(`
+      SELECT business_name, phone, city, problem, created_at
+      FROM call_preps
+      WHERE status = 'pending' AND priority_score >= 5
+      ORDER BY priority_score DESC, created_at DESC
+      LIMIT 5
+    `);
+
+    res.json({
+      success: true,
+      needs_attention:
+        (parseInt(stats.hot_pending) || 0) > 0 || (parseInt(stats.callbacks_due) || 0) > 0,
+      stats: {
+        hot_pending: parseInt(stats.hot_pending) || 0,
+        warm_pending: parseInt(stats.warm_pending) || 0,
+        total_pending: parseInt(stats.total_pending) || 0,
+        callbacks_due: parseInt(stats.callbacks_due) || 0,
+      },
+      hot_leads: hotLeads,
+    });
+  } catch (error) {
+    console.error('Call preps summary error:', error);
+    res.status(500).json({ error: 'Failed to get summary' });
   }
 });
 

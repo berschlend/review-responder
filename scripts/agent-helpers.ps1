@@ -1178,3 +1178,75 @@ if ($Action -eq "likely-real") {
         }
     }
 }
+
+# === HOT LEAD MANAGEMENT ===
+# For Night-Agents to add hot leads and check call status
+
+# Add a hot lead (sets priority to 5)
+if ($Action -eq "hot-lead-add") {
+    $ADMIN_KEY = "rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
+    $API_BASE = "https://review-responder.onrender.com"
+
+    if (-not $Data) {
+        Write-Host "ERROR: -Data required. JSON with: business_name, phone, city (optional), reason" -ForegroundColor Red
+        Write-Host 'Example: -Data ''{"business_name":"Test Cafe","phone":"+49123456","reason":"Demo clicked"}'''
+        exit 1
+    }
+
+    try {
+        $leadData = $Data | ConvertFrom-Json
+        $headers = @{
+            "X-Admin-Key" = $ADMIN_KEY
+            "Content-Type" = "application/json"
+        }
+        $response = Invoke-RestMethod -Uri "$API_BASE/api/admin/call-preps/hot-lead" `
+            -Method POST -Headers $headers -Body $Data
+        Write-Host "[HOT LEAD] $($response.action): $($leadData.business_name)" -ForegroundColor Green
+        Write-Host "  Action: $($response.action)"
+        if ($response.call) {
+            Write-Host "  ID: $($response.call.id)"
+        }
+    } catch {
+        Write-Host "[HOT LEAD ERROR] $_" -ForegroundColor Red
+    }
+}
+
+# Get call preps summary (for agents to check status)
+if ($Action -eq "call-status") {
+    $ADMIN_KEY = "rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
+    $API_BASE = "https://review-responder.onrender.com"
+
+    try {
+        $headers = @{ "X-Admin-Key" = $ADMIN_KEY }
+        $response = Invoke-RestMethod -Uri "$API_BASE/api/admin/call-preps/summary" -Headers $headers
+
+        Write-Host "`n=== CALL PREPS STATUS ===" -ForegroundColor Cyan
+        Write-Host "Hot Pending:  $($response.stats.hot_pending)" -ForegroundColor $(if ($response.stats.hot_pending -gt 0) { "Red" } else { "Green" })
+        Write-Host "Warm Pending: $($response.stats.warm_pending)" -ForegroundColor Yellow
+        Write-Host "Total Pending: $($response.stats.total_pending)"
+        Write-Host "Callbacks Due: $($response.stats.callbacks_due)" -ForegroundColor $(if ($response.stats.callbacks_due -gt 0) { "Red" } else { "Gray" })
+
+        if ($response.needs_attention) {
+            Write-Host "`n⚠️  BEREND NEEDS TO MAKE CALLS!" -ForegroundColor Red
+        }
+
+        if ($response.hot_leads.Count -gt 0) {
+            Write-Host "`n=== HOT LEADS ===" -ForegroundColor Red
+            foreach ($lead in $response.hot_leads) {
+                Write-Host "  🔥 $($lead.business_name) - $($lead.phone)" -ForegroundColor Yellow
+                Write-Host "     $($lead.problem)"
+            }
+        }
+
+        # Output JSON for programmatic use
+        Write-Host "`nCALL_STATUS_JSON:" -ForegroundColor Gray
+        $response | ConvertTo-Json -Compress
+    } catch {
+        Write-Host "[CALL STATUS ERROR] $_" -ForegroundColor Red
+    }
+}
+
+# Sync sticky tasks from database
+if ($Action -eq "sync-sticky-tasks") {
+    & "$PSScriptRoot\sync-sticky-tasks.ps1" -Verbose
+}

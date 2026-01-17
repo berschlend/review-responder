@@ -196,7 +196,8 @@ const industryExamples = {
   },
   realestate: {
     positive: {
-      review: 'Lisa helped us find our dream home in just 2 weeks. She knew exactly what we wanted.',
+      review:
+        'Lisa helped us find our dream home in just 2 weeks. She knew exactly what we wanted.',
       response:
         "Two weeks is a record for us too! Lisa's market knowledge made all the difference. Welcome home.",
     },

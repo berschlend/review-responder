@@ -319,7 +319,8 @@ const Footer = () => (
         <div>
           <div className="footer-brand">ReviewResponder</div>
           <p className="footer-description">
-            Professional review responses that sound like you hired a professional writer. For busy business owners.
+            Professional review responses that sound like you hired a professional writer. For busy
+            business owners.
           </p>
         </div>
         <div>
@@ -562,7 +563,7 @@ const InstantDemoWidget = ({
       // Fetch lead context for personalization
       axios
         .get(`${API_URL}/public/lead-context/${leadId}`)
-        .then((res) => {
+        .then(res => {
           if (res.data?.found) {
             setLeadContext(res.data);
             // Pre-fill sample review if available
@@ -665,22 +666,34 @@ const InstantDemoWidget = ({
 
   // Contextual placeholder examples for each business type
   const placeholderMap = {
-    restaurant: 'e.g., "The pasta was amazing and our server Maria was so attentive. Will definitely come back!"',
-    hotel: 'e.g., "Room was spotless, breakfast had great variety, and check-in was smooth. Great stay!"',
-    dentist: 'e.g., "Dr. Smith made my cleaning completely painless. The staff was friendly and professional."',
+    restaurant:
+      'e.g., "The pasta was amazing and our server Maria was so attentive. Will definitely come back!"',
+    hotel:
+      'e.g., "Room was spotless, breakfast had great variety, and check-in was smooth. Great stay!"',
+    dentist:
+      'e.g., "Dr. Smith made my cleaning completely painless. The staff was friendly and professional."',
     medical: 'e.g., "Dr. Johnson took time to explain everything. Short wait time, caring staff."',
-    salon: 'e.g., "Sarah did an amazing job on my highlights! Love the new look. Very relaxing atmosphere."',
-    automotive: 'e.g., "Fixed my brakes quickly at a fair price. Mike explained everything clearly. Honest shop!"',
-    legal: 'e.g., "Attorney Davis handled my case professionally. Always responsive and explained every step."',
+    salon:
+      'e.g., "Sarah did an amazing job on my highlights! Love the new look. Very relaxing atmosphere."',
+    automotive:
+      'e.g., "Fixed my brakes quickly at a fair price. Mike explained everything clearly. Honest shop!"',
+    legal:
+      'e.g., "Attorney Davis handled my case professionally. Always responsive and explained every step."',
     realestate: 'e.g., "Lisa found us our dream home in 2 weeks! She knows the market inside out."',
-    fitness: 'e.g., "Great gym with modern equipment. Trainers are helpful and classes are challenging."',
-    ecommerce: 'e.g., "Product arrived fast and exactly as described. Great packaging and easy returns."',
+    fitness:
+      'e.g., "Great gym with modern equipment. Trainers are helpful and classes are challenging."',
+    ecommerce:
+      'e.g., "Product arrived fast and exactly as described. Great packaging and easy returns."',
     pets: 'e.g., "They treat my dog like family! Grooming was perfect and Max was so happy after."',
-    childcare: 'e.g., "My kids love it here! Teachers are caring and the daily updates are wonderful."',
-    financial: 'e.g., "Helped me save thousands on taxes. Very knowledgeable and patient with questions."',
-    creative: 'e.g., "Our wedding photos are stunning! She captured every special moment perfectly."',
+    childcare:
+      'e.g., "My kids love it here! Teachers are caring and the daily updates are wonderful."',
+    financial:
+      'e.g., "Helped me save thousands on taxes. Very knowledgeable and patient with questions."',
+    creative:
+      'e.g., "Our wedding photos are stunning! She captured every special moment perfectly."',
     events: 'e.g., "Made our wedding stress-free! Every detail was perfect and guests loved it."',
-    homeservices: 'e.g., "Fixed the leak in under an hour. Fair price, clean work, very professional."',
+    homeservices:
+      'e.g., "Fixed the leak in under an hour. Fair price, clean work, very professional."',
   };
 
   // Contextual headlines for each business type
@@ -949,26 +962,26 @@ const InstantDemoWidget = ({
             opacity: loading || !reviewText.trim() ? 0.7 : 1,
           }}
         >
-            {loading ? (
-              <>
-                <div
-                  style={{
-                    width: '14px',
-                    height: '14px',
-                    border: '2px solid rgba(255,255,255,0.3)',
-                    borderTopColor: 'white',
-                    borderRadius: '50%',
-                    animation: 'spin 1s linear infinite',
-                  }}
-                />
-                Generating...
-              </>
-            ) : (
-              <>
-                <Sparkles size={16} />
-                Generate Response
-              </>
-            )}
+          {loading ? (
+            <>
+              <div
+                style={{
+                  width: '14px',
+                  height: '14px',
+                  border: '2px solid rgba(255,255,255,0.3)',
+                  borderTopColor: 'white',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite',
+                }}
+              />
+              Generating...
+            </>
+          ) : (
+            <>
+              <Sparkles size={16} />
+              Generate Response
+            </>
+          )}
         </button>
       </div>
 
@@ -1026,7 +1039,7 @@ const InstantDemoWidget = ({
           {/* Editable Response Textarea */}
           <textarea
             value={editedResponse !== null ? editedResponse : response}
-            onChange={(e) => setEditedResponse(e.target.value)}
+            onChange={e => setEditedResponse(e.target.value)}
             style={{
               width: '100%',
               minHeight: '80px',
@@ -1813,11 +1826,7 @@ const Navbar = () => {
       {/* Mobile Menu Overlay */}
       <div className={`mobile-menu-overlay ${mobileMenuOpen ? 'open' : ''}`}>
         {/* Close Button */}
-        <button
-          className="mobile-menu-close"
-          onClick={closeMobileMenu}
-          aria-label="Close menu"
-        >
+        <button className="mobile-menu-close" onClick={closeMobileMenu} aria-label="Close menu">
           <X size={24} />
         </button>
 
@@ -3274,7 +3283,8 @@ const LandingPage = () => {
               color: 'var(--text-secondary)',
             }}
           >
-            Sound like you hired a professional writer. Quality responses for Google, Yelp & 10+ platforms in seconds.
+            Sound like you hired a professional writer. Quality responses for Google, Yelp & 10+
+            platforms in seconds.
           </p>
 
           {/* Instant Demo Widget */}
@@ -3438,20 +3448,24 @@ const LandingPage = () => {
               </div>
 
               {/* Trust Badge - No Signup */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                marginBottom: '16px',
-                fontSize: '12px',
-                color: '#059669',
-                background: 'rgba(5, 150, 105, 0.08)',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                width: 'fit-content'
-              }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  marginBottom: '16px',
+                  fontSize: '12px',
+                  color: '#059669',
+                  background: 'rgba(5, 150, 105, 0.08)',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  width: 'fit-content',
+                }}
+              >
                 <Check size={14} />
-                <span><strong>No signup required</strong> - download and try instantly</span>
+                <span>
+                  <strong>No signup required</strong> - download and try instantly
+                </span>
               </div>
 
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -3731,8 +3745,8 @@ const LandingPage = () => {
             }}
           />
           <p style={{ fontSize: '1.1rem', lineHeight: 1.7, color: 'var(--text-primary)' }}>
-            "I built ReviewResponder because I spent hours every week writing review responses for my
-            own business. Now I don't — and neither should you."
+            "I built ReviewResponder because I spent hours every week writing review responses for
+            my own business. Now I don't — and neither should you."
           </p>
           <p
             style={{
@@ -3790,53 +3804,291 @@ const LandingPage = () => {
       </section>
 
       {/* Industries We Serve - SEO Internal Links Section */}
-      <section style={{ padding: '48px 0', background: 'var(--bg-secondary)', borderTop: '1px solid var(--border-color)' }}>
+      <section
+        style={{
+          padding: '48px 0',
+          background: 'var(--bg-secondary)',
+          borderTop: '1px solid var(--border-color)',
+        }}
+      >
         <div className="container">
-          <h2 style={{
-            fontSize: '20px',
-            fontWeight: '600',
-            color: 'var(--text-primary)',
-            textAlign: 'center',
-            marginBottom: '32px',
-            letterSpacing: '-0.02em'
-          }}>
+          <h2
+            style={{
+              fontSize: '20px',
+              fontWeight: '600',
+              color: 'var(--text-primary)',
+              textAlign: 'center',
+              marginBottom: '32px',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Industries We Serve
           </h2>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '12px',
-            maxWidth: '900px',
-            margin: '0 auto'
-          }}>
-            <Link to="/restaurant-review-responses" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Restaurants</Link>
-            <Link to="/hotel-review-management" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Hotels</Link>
-            <Link to="/dentist-review-responses" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Dentists</Link>
-            <Link to="/medical-practice-reviews" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Medical Practices</Link>
-            <Link to="/salon-spa-review-responses" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Salons & Spas</Link>
-            <Link to="/auto-shop-reviews" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Auto Shops</Link>
-            <Link to="/chiropractor-reviews" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Chiropractors</Link>
-            <Link to="/barber-barbershop-reviews" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Barbers</Link>
-            <Link to="/dermatologist-reviews" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Dermatologists</Link>
-            <Link to="/massage-therapist-reviews" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Massage Therapists</Link>
-            <Link to="/personal-trainer-reviews" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Personal Trainers</Link>
-            <Link to="/angie-list-contractor-reviews" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Contractors</Link>
-            <Link to="/local-business-reviews" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Local Businesses</Link>
-            <Link to="/linkedin-recommendations" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>LinkedIn</Link>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '12px',
+              maxWidth: '900px',
+              margin: '0 auto',
+            }}
+          >
+            <Link
+              to="/restaurant-review-responses"
+              style={{
+                padding: '12px 16px',
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+              }}
+            >
+              Restaurants
+            </Link>
+            <Link
+              to="/hotel-review-management"
+              style={{
+                padding: '12px 16px',
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+              }}
+            >
+              Hotels
+            </Link>
+            <Link
+              to="/dentist-review-responses"
+              style={{
+                padding: '12px 16px',
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+              }}
+            >
+              Dentists
+            </Link>
+            <Link
+              to="/medical-practice-reviews"
+              style={{
+                padding: '12px 16px',
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+              }}
+            >
+              Medical Practices
+            </Link>
+            <Link
+              to="/salon-spa-review-responses"
+              style={{
+                padding: '12px 16px',
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+              }}
+            >
+              Salons & Spas
+            </Link>
+            <Link
+              to="/auto-shop-reviews"
+              style={{
+                padding: '12px 16px',
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+              }}
+            >
+              Auto Shops
+            </Link>
+            <Link
+              to="/chiropractor-reviews"
+              style={{
+                padding: '12px 16px',
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+              }}
+            >
+              Chiropractors
+            </Link>
+            <Link
+              to="/barber-barbershop-reviews"
+              style={{
+                padding: '12px 16px',
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+              }}
+            >
+              Barbers
+            </Link>
+            <Link
+              to="/dermatologist-reviews"
+              style={{
+                padding: '12px 16px',
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+              }}
+            >
+              Dermatologists
+            </Link>
+            <Link
+              to="/massage-therapist-reviews"
+              style={{
+                padding: '12px 16px',
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+              }}
+            >
+              Massage Therapists
+            </Link>
+            <Link
+              to="/personal-trainer-reviews"
+              style={{
+                padding: '12px 16px',
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+              }}
+            >
+              Personal Trainers
+            </Link>
+            <Link
+              to="/angie-list-contractor-reviews"
+              style={{
+                padding: '12px 16px',
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+              }}
+            >
+              Contractors
+            </Link>
+            <Link
+              to="/local-business-reviews"
+              style={{
+                padding: '12px 16px',
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+              }}
+            >
+              Local Businesses
+            </Link>
+            <Link
+              to="/linkedin-recommendations"
+              style={{
+                padding: '12px 16px',
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                fontSize: '14px',
+                transition: 'all 0.15s',
+              }}
+            >
+              LinkedIn
+            </Link>
           </div>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '16px',
-            marginTop: '24px',
-            flexWrap: 'wrap'
-          }}>
-            <Link to="/google-review-response-generator" style={{ color: 'var(--primary)', fontSize: '13px', textDecoration: 'none' }}>Google Reviews</Link>
-            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--primary)', fontSize: '13px', textDecoration: 'none' }}>Yelp Reviews</Link>
-            <Link to="/tripadvisor-review-responses" style={{ color: 'var(--primary)', fontSize: '13px', textDecoration: 'none' }}>TripAdvisor</Link>
-            <Link to="/booking-review-generator" style={{ color: 'var(--primary)', fontSize: '13px', textDecoration: 'none' }}>Booking.com</Link>
-            <Link to="/facebook-review-responses" style={{ color: 'var(--primary)', fontSize: '13px', textDecoration: 'none' }}>Facebook</Link>
-            <Link to="/negative-review-responses" style={{ color: 'var(--primary)', fontSize: '13px', textDecoration: 'none' }}>Negative Reviews</Link>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '16px',
+              marginTop: '24px',
+              flexWrap: 'wrap',
+            }}
+          >
+            <Link
+              to="/google-review-response-generator"
+              style={{ color: 'var(--primary)', fontSize: '13px', textDecoration: 'none' }}
+            >
+              Google Reviews
+            </Link>
+            <Link
+              to="/yelp-review-reply-tool"
+              style={{ color: 'var(--primary)', fontSize: '13px', textDecoration: 'none' }}
+            >
+              Yelp Reviews
+            </Link>
+            <Link
+              to="/tripadvisor-review-responses"
+              style={{ color: 'var(--primary)', fontSize: '13px', textDecoration: 'none' }}
+            >
+              TripAdvisor
+            </Link>
+            <Link
+              to="/booking-review-generator"
+              style={{ color: 'var(--primary)', fontSize: '13px', textDecoration: 'none' }}
+            >
+              Booking.com
+            </Link>
+            <Link
+              to="/facebook-review-responses"
+              style={{ color: 'var(--primary)', fontSize: '13px', textDecoration: 'none' }}
+            >
+              Facebook
+            </Link>
+            <Link
+              to="/negative-review-responses"
+              style={{ color: 'var(--primary)', fontSize: '13px', textDecoration: 'none' }}
+            >
+              Negative Reviews
+            </Link>
           </div>
         </div>
       </section>
@@ -5195,7 +5447,8 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
       tone: 'friendly',
     },
     'Dental Practice': {
-      always: 'patient care is our priority, contact us with questions, mention our experienced team',
+      always:
+        'patient care is our priority, contact us with questions, mention our experienced team',
       never: 'cheap, discount, sorry for any inconvenience',
       tone: 'professional',
     },
@@ -5215,7 +5468,8 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
       tone: 'professional',
     },
     'Real Estate': {
-      always: 'dedicated to finding your dream home, available for questions, local market expertise',
+      always:
+        'dedicated to finding your dream home, available for questions, local market expertise',
       never: 'sorry, cheap, discount commission',
       tone: 'professional',
     },
@@ -5514,8 +5768,9 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                   options={businessTypeOptions}
                   value={
                     businessType
-                      ? businessTypeOptions.flatMap(g => g.options).find(o => o.value === businessType) ||
-                        null
+                      ? businessTypeOptions
+                          .flatMap(g => g.options)
+                          .find(o => o.value === businessType) || null
                       : null
                   }
                   onChange={option => {
@@ -5615,8 +5870,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
                         style={{
                           fontSize: '13px',
                           fontWeight: selectedTone === tone.value ? '600' : '400',
-                          color:
-                            selectedTone === tone.value ? 'var(--primary)' : 'var(--gray-700)',
+                          color: selectedTone === tone.value ? 'var(--primary)' : 'var(--gray-700)',
                         }}
                       >
                         {tone.label}
@@ -5698,7 +5952,6 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
               </div>
             </div>
           )}
-
         </div>
 
         {/* Footer */}
@@ -5741,11 +5994,7 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
               Continue
             </button>
           ) : (
-            <button
-              className="btn btn-primary"
-              onClick={nextStep}
-              disabled={loading}
-            >
+            <button className="btn btn-primary" onClick={nextStep} disabled={loading}>
               {loading ? 'Saving...' : 'Finish Setup →'}
             </button>
           )}
@@ -5857,32 +6106,179 @@ const DashboardPage = () => {
   // Quick Templates for one-click instruction snippets
   const quickTemplates = [
     // Priority templates (always visible)
-    { id: 'contact', emoji: '📞', label: 'Contact Info', snippet: '<always>\n- Mention our phone/email for questions\n</always>', category: 'always', priority: true },
-    { id: 'no-fluff', emoji: '🚫', label: 'No Fluff', snippet: '<never>\n- Use generic phrases like "valued customer"\n</never>', category: 'never', priority: true },
-    { id: 'short', emoji: '✂️', label: 'Short & Sweet', snippet: '<style>\n- Keep under 50 words\n</style>', category: 'style', priority: true },
-    { id: 'use-name', emoji: '👋', label: 'Use Name', snippet: '<always>\n- Use reviewer\'s name if mentioned\n</always>', category: 'always', priority: true },
-    { id: 'offer', emoji: '🎁', label: 'Make Offer', snippet: '<always>\n- Offer something (discount, free item, upgrade)\n</always>', category: 'always', priority: true },
-    { id: 'no-sorry', emoji: '🚫', label: 'No "Sorry"', snippet: '<never>\n- Say "sorry for the inconvenience"\n</never>', category: 'never', priority: true },
-    { id: 'sign-name', emoji: '✍️', label: 'Sign Name', snippet: '<signoff>\n- [Your Name], Owner\n</signoff>', category: 'signoff', priority: true },
-    { id: 'invite-back', emoji: '📅', label: 'Invite Back', snippet: '<always>\n- Invite them to return\n</always>', category: 'always', priority: true },
+    {
+      id: 'contact',
+      emoji: '📞',
+      label: 'Contact Info',
+      snippet: '<always>\n- Mention our phone/email for questions\n</always>',
+      category: 'always',
+      priority: true,
+    },
+    {
+      id: 'no-fluff',
+      emoji: '🚫',
+      label: 'No Fluff',
+      snippet: '<never>\n- Use generic phrases like "valued customer"\n</never>',
+      category: 'never',
+      priority: true,
+    },
+    {
+      id: 'short',
+      emoji: '✂️',
+      label: 'Short & Sweet',
+      snippet: '<style>\n- Keep under 50 words\n</style>',
+      category: 'style',
+      priority: true,
+    },
+    {
+      id: 'use-name',
+      emoji: '👋',
+      label: 'Use Name',
+      snippet: "<always>\n- Use reviewer's name if mentioned\n</always>",
+      category: 'always',
+      priority: true,
+    },
+    {
+      id: 'offer',
+      emoji: '🎁',
+      label: 'Make Offer',
+      snippet: '<always>\n- Offer something (discount, free item, upgrade)\n</always>',
+      category: 'always',
+      priority: true,
+    },
+    {
+      id: 'no-sorry',
+      emoji: '🚫',
+      label: 'No "Sorry"',
+      snippet: '<never>\n- Say "sorry for the inconvenience"\n</never>',
+      category: 'never',
+      priority: true,
+    },
+    {
+      id: 'sign-name',
+      emoji: '✍️',
+      label: 'Sign Name',
+      snippet: '<signoff>\n- [Your Name], Owner\n</signoff>',
+      category: 'signoff',
+      priority: true,
+    },
+    {
+      id: 'invite-back',
+      emoji: '📅',
+      label: 'Invite Back',
+      snippet: '<always>\n- Invite them to return\n</always>',
+      category: 'always',
+      priority: true,
+    },
     // Additional templates (shown when expanded)
-    { id: 'website', emoji: '🌐', label: 'Website', snippet: '<always>\n- Include our website for more info\n</always>', category: 'always', priority: false },
-    { id: 'no-excuses', emoji: '🚫', label: 'No Excuses', snippet: '<never>\n- Make excuses or blame others\n</never>', category: 'never', priority: false },
-    { id: 'no-pricing', emoji: '🚫', label: 'No Pricing', snippet: '<never>\n- Mention pricing or discounts\n</never>', category: 'never', priority: false },
-    { id: 'detailed', emoji: '📝', label: 'Detailed', snippet: '<style>\n- Write 3-4 sentences with details\n</style>', category: 'style', priority: false },
-    { id: 'casual', emoji: '😊', label: 'Casual', snippet: '<style>\n- Casual, conversational tone\n</style>', category: 'style', priority: false },
-    { id: 'formal', emoji: '🎩', label: 'Very Formal', snippet: '<style>\n- Highly formal, corporate language\n</style>', category: 'style', priority: false },
-    { id: 'no-emojis', emoji: '🚫', label: 'No Emojis', snippet: '<style>\n- No emojis\n</style>', category: 'style', priority: false },
-    { id: 'with-emojis', emoji: '✨', label: 'With Emojis', snippet: '<style>\n- Include 1-2 relevant emojis\n</style>', category: 'style', priority: false },
-    { id: 'team-sign', emoji: '👥', label: 'Team Sign', snippet: '<signoff>\n- The [Business] Team\n</signoff>', category: 'signoff', priority: false },
-    { id: 'no-sign', emoji: '🚫', label: 'No Signature', snippet: '<signoff>\n- No signature or sign-off\n</signoff>', category: 'signoff', priority: false },
-    { id: 'negative-fix', emoji: '🔴', label: 'Negative Fix', snippet: '<context>\n- Offer to make it right: contact us directly\n</context>', category: 'context', priority: false },
-    { id: 'ask-referral', emoji: '🟢', label: 'Ask Referral', snippet: '<context>\n- Ask for referrals/recommendations\n</context>', category: 'context', priority: false },
-    { id: 'share-others', emoji: '⭐', label: 'Share Others', snippet: '<context>\n- Encourage to share on other platforms\n</context>', category: 'context', priority: false },
+    {
+      id: 'website',
+      emoji: '🌐',
+      label: 'Website',
+      snippet: '<always>\n- Include our website for more info\n</always>',
+      category: 'always',
+      priority: false,
+    },
+    {
+      id: 'no-excuses',
+      emoji: '🚫',
+      label: 'No Excuses',
+      snippet: '<never>\n- Make excuses or blame others\n</never>',
+      category: 'never',
+      priority: false,
+    },
+    {
+      id: 'no-pricing',
+      emoji: '🚫',
+      label: 'No Pricing',
+      snippet: '<never>\n- Mention pricing or discounts\n</never>',
+      category: 'never',
+      priority: false,
+    },
+    {
+      id: 'detailed',
+      emoji: '📝',
+      label: 'Detailed',
+      snippet: '<style>\n- Write 3-4 sentences with details\n</style>',
+      category: 'style',
+      priority: false,
+    },
+    {
+      id: 'casual',
+      emoji: '😊',
+      label: 'Casual',
+      snippet: '<style>\n- Casual, conversational tone\n</style>',
+      category: 'style',
+      priority: false,
+    },
+    {
+      id: 'formal',
+      emoji: '🎩',
+      label: 'Very Formal',
+      snippet: '<style>\n- Highly formal, corporate language\n</style>',
+      category: 'style',
+      priority: false,
+    },
+    {
+      id: 'no-emojis',
+      emoji: '🚫',
+      label: 'No Emojis',
+      snippet: '<style>\n- No emojis\n</style>',
+      category: 'style',
+      priority: false,
+    },
+    {
+      id: 'with-emojis',
+      emoji: '✨',
+      label: 'With Emojis',
+      snippet: '<style>\n- Include 1-2 relevant emojis\n</style>',
+      category: 'style',
+      priority: false,
+    },
+    {
+      id: 'team-sign',
+      emoji: '👥',
+      label: 'Team Sign',
+      snippet: '<signoff>\n- The [Business] Team\n</signoff>',
+      category: 'signoff',
+      priority: false,
+    },
+    {
+      id: 'no-sign',
+      emoji: '🚫',
+      label: 'No Signature',
+      snippet: '<signoff>\n- No signature or sign-off\n</signoff>',
+      category: 'signoff',
+      priority: false,
+    },
+    {
+      id: 'negative-fix',
+      emoji: '🔴',
+      label: 'Negative Fix',
+      snippet: '<context>\n- Offer to make it right: contact us directly\n</context>',
+      category: 'context',
+      priority: false,
+    },
+    {
+      id: 'ask-referral',
+      emoji: '🟢',
+      label: 'Ask Referral',
+      snippet: '<context>\n- Ask for referrals/recommendations\n</context>',
+      category: 'context',
+      priority: false,
+    },
+    {
+      id: 'share-others',
+      emoji: '⭐',
+      label: 'Share Others',
+      snippet: '<context>\n- Encourage to share on other platforms\n</context>',
+      category: 'context',
+      priority: false,
+    },
   ];
 
   // Check which templates are already in customInstructions
-  const isTemplateActive = (template) => {
+  const isTemplateActive = template => {
     // Check if the core instruction text is present (without the tags)
     const coreText = template.snippet
       .replace(/<\/?[a-z]+>/g, '')
@@ -5891,7 +6287,7 @@ const DashboardPage = () => {
     return customInstructions.includes(coreText) || customInstructions.includes(template.snippet);
   };
 
-  const addQuickTemplate = (template) => {
+  const addQuickTemplate = template => {
     if (isTemplateActive(template)) return;
     setCustomInstructions(prev =>
       prev.trim() ? `${prev.trim()}\n\n${template.snippet}` : template.snippet
@@ -7066,8 +7462,8 @@ const DashboardPage = () => {
                 Welcome! Generate your first response
               </p>
               <p style={{ margin: '6px 0 0 0', fontSize: '14px', color: '#4F46E5' }}>
-                Paste any negative review below and see how AI crafts the perfect response.
-                You have 20 free responses to try!
+                Paste any negative review below and see how AI crafts the perfect response. You have
+                20 free responses to try!
               </p>
             </div>
           </div>
@@ -7916,21 +8312,28 @@ const DashboardPage = () => {
 
                   {/* Quick Templates */}
                   <div style={{ marginBottom: '8px' }}>
-                    <div style={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: '6px',
-                      alignItems: 'center',
-                    }}>
-                      <span style={{
-                        fontSize: '11px',
-                        color: 'var(--gray-500)',
-                        fontWeight: '500',
-                        marginRight: '4px',
-                      }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '6px',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          color: 'var(--gray-500)',
+                          fontWeight: '500',
+                          marginRight: '4px',
+                        }}
+                      >
                         Quick add:
                       </span>
-                      {(showAllTemplates ? quickTemplates : quickTemplates.filter(t => t.priority)).map(template => {
+                      {(showAllTemplates
+                        ? quickTemplates
+                        : quickTemplates.filter(t => t.priority)
+                      ).map(template => {
                         const active = isTemplateActive(template);
                         return (
                           <button
@@ -7952,14 +8355,14 @@ const DashboardPage = () => {
                               opacity: active ? 0.6 : 1,
                               transition: 'all 0.15s ease',
                             }}
-                            onMouseEnter={(e) => {
+                            onMouseEnter={e => {
                               if (!active) {
                                 e.target.style.background = 'var(--primary-50)';
                                 e.target.style.borderColor = 'var(--primary-200)';
                                 e.target.style.color = 'var(--primary-700)';
                               }
                             }}
-                            onMouseLeave={(e) => {
+                            onMouseLeave={e => {
                               if (!active) {
                                 e.target.style.background = 'var(--white)';
                                 e.target.style.borderColor = 'var(--gray-200)';
@@ -8044,9 +8447,36 @@ const DashboardPage = () => {
                   />
                   <p style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
                     💡{' '}
-                    <code style={{ background: 'var(--gray-100)', padding: '1px 4px', borderRadius: '3px' }}>&lt;always&gt;</code> = do this every time · {' '}
-                    <code style={{ background: 'var(--gray-100)', padding: '1px 4px', borderRadius: '3px' }}>&lt;never&gt;</code> = avoid this · {' '}
-                    <code style={{ background: 'var(--gray-100)', padding: '1px 4px', borderRadius: '3px' }}>&lt;style&gt;</code> = tone & length
+                    <code
+                      style={{
+                        background: 'var(--gray-100)',
+                        padding: '1px 4px',
+                        borderRadius: '3px',
+                      }}
+                    >
+                      &lt;always&gt;
+                    </code>{' '}
+                    = do this every time ·{' '}
+                    <code
+                      style={{
+                        background: 'var(--gray-100)',
+                        padding: '1px 4px',
+                        borderRadius: '3px',
+                      }}
+                    >
+                      &lt;never&gt;
+                    </code>{' '}
+                    = avoid this ·{' '}
+                    <code
+                      style={{
+                        background: 'var(--gray-100)',
+                        padding: '1px 4px',
+                        borderRadius: '3px',
+                      }}
+                    >
+                      &lt;style&gt;
+                    </code>{' '}
+                    = tone & length
                   </p>
                 </div>
               </div>
@@ -10832,11 +11262,9 @@ const getContextPlaceholder = businessType => {
       'e.g. dogs & cats, fear-free certified, 10 years experience, boarding available',
     'Financial Services':
       'e.g. CPA, small business focus, 20 years experience, QuickBooks certified',
-    'Photography / Creative':
-      'e.g. weddings & portraits, natural light style, same-day previews',
+    'Photography / Creative': 'e.g. weddings & portraits, natural light style, same-day previews',
     'Event Planning': 'e.g. weddings, corporate events, full-service, 100+ events completed',
-    'Childcare / Education':
-      'e.g. ages 2-5, certified teachers, outdoor learning, healthy meals',
+    'Childcare / Education': 'e.g. ages 2-5, certified teachers, outdoor learning, healthy meals',
   };
   return examples[businessType] || 'e.g. family-owned, since 1985, quality service, friendly team';
 };
@@ -11103,7 +11531,11 @@ const AIContextGenerator = ({ field, businessType, businessName, currentValue, o
 
   const handleGenerate = async () => {
     // Debug: Log for mobile debugging
-    console.log('[Generate] Start', { field, keywords: keywords?.substring?.(0, 20), businessType });
+    console.log('[Generate] Start', {
+      field,
+      keywords: keywords?.substring?.(0, 20),
+      businessType,
+    });
 
     try {
       if (!keywords || !keywords.trim()) {
@@ -11615,8 +12047,9 @@ const SettingsPage = () => {
               options={businessTypeOptions}
               value={
                 businessType
-                  ? businessTypeOptions.flatMap(g => g.options).find(o => o.value === businessType) ||
-                    null
+                  ? businessTypeOptions
+                      .flatMap(g => g.options)
+                      .find(o => o.value === businessType) || null
                   : null
               }
               onChange={option => {
@@ -13717,7 +14150,7 @@ const VideoDemoPage = () => {
     }
   };
 
-  const handleSignup = (e) => {
+  const handleSignup = e => {
     e.preventDefault();
     if (!email.includes('@')) {
       toast.error('Please enter a valid email');
@@ -13738,12 +14171,8 @@ const VideoDemoPage = () => {
       <div className="max-w-3xl mx-auto px-4 py-12">
         {/* Hero - Ultra Simple */}
         <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Respond to YOUR Review
-          </h1>
-          <p className="text-xl text-gray-300">
-            Paste it below. Get a response in 15 seconds.
-          </p>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Respond to YOUR Review</h1>
+          <p className="text-xl text-gray-300">Paste it below. Get a response in 15 seconds.</p>
         </div>
 
         {/* Step 1: Paste Review */}
@@ -13753,7 +14182,7 @@ const VideoDemoPage = () => {
           </label>
           <textarea
             value={reviewText}
-            onChange={(e) => setReviewText(e.target.value)}
+            onChange={e => setReviewText(e.target.value)}
             placeholder="Paste the negative review here... (e.g., 'The service was terrible, we waited 45 minutes...')"
             className="w-full h-32 bg-gray-700 border border-gray-600 rounded-lg p-4 text-white placeholder-gray-500 focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
           />
@@ -13765,8 +14194,20 @@ const VideoDemoPage = () => {
             {loading ? (
               <>
                 <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  />
                 </svg>
                 Generating...
               </>
@@ -13788,7 +14229,12 @@ const VideoDemoPage = () => {
                 className="text-green-400 hover:text-green-300 text-sm flex items-center gap-1"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
                 </svg>
                 Copy
               </button>
@@ -13803,17 +14249,13 @@ const VideoDemoPage = () => {
         {/* Step 3: Signup (appears after response) */}
         {showSignup && (
           <div className="bg-orange-500/20 border border-orange-500/50 rounded-xl p-6 animate-fade-in">
-            <h3 className="text-xl font-bold text-white mb-2">
-              Get 20 Free Responses Every Month
-            </h3>
-            <p className="text-gray-300 mb-4">
-              No credit card required. Cancel anytime.
-            </p>
+            <h3 className="text-xl font-bold text-white mb-2">Get 20 Free Responses Every Month</h3>
+            <p className="text-gray-300 mb-4">No credit card required. Cancel anytime.</p>
             <form onSubmit={handleSignup} className="flex gap-3">
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={e => setEmail(e.target.value)}
                 placeholder="your@email.com"
                 className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:ring-2 focus:ring-orange-500"
               />
@@ -13829,9 +14271,7 @@ const VideoDemoPage = () => {
 
         {/* Social Proof */}
         <div className="mt-10 text-center text-gray-400">
-          <p className="text-sm">
-            Join 500+ businesses responding to reviews faster
-          </p>
+          <p className="text-sm">Join 500+ businesses responding to reviews faster</p>
           <div className="flex justify-center gap-6 mt-4 opacity-60">
             <span>Google</span>
             <span>Yelp</span>
@@ -13847,7 +14287,7 @@ const VideoDemoPage = () => {
 // Demo Landing Page - Personalized demo for cold outreach
 const DemoPage = () => {
   const { token } = useParams();
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const [demo, setDemo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13957,7 +14397,9 @@ const DemoPage = () => {
       const isAdminUser = localStorage.getItem('isAdminUser') === 'true';
       const previewParam = isAdminUser ? '?preview=true' : '';
 
-      const response = await fetch(`${API_URL.replace('/api', '')}/api/public/demo/${token}${previewParam}`);
+      const response = await fetch(
+        `${API_URL.replace('/api', '')}/api/public/demo/${token}${previewParam}`
+      );
       if (!response.ok) {
         throw new Error('Demo not found');
       }
@@ -15343,7 +15785,8 @@ const DemoPage = () => {
             </button>
             {/* Book a Call CTA - Personal Touch */}
             <p style={{ marginTop: '20px', color: 'rgba(255,255,255,0.9)', fontSize: '14px' }}>
-              Questions? <a
+              Questions?{' '}
+              <a
                 href="https://calendly.com/berend-jakob-mainz/quick-call"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -28587,7 +29030,7 @@ const ExtensionPage = () => {
               gap: '8px',
               fontSize: '18px',
               padding: '14px 28px',
-              marginBottom: '16px'
+              marginBottom: '16px',
             }}
           >
             <Download size={20} />
@@ -28595,27 +29038,52 @@ const ExtensionPage = () => {
           </a>
 
           {/* Trust Badges */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '20px',
-            flexWrap: 'wrap',
-            marginTop: '16px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-600)', fontSize: '14px' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '20px',
+              flexWrap: 'wrap',
+              marginTop: '16px',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                color: 'var(--gray-600)',
+                fontSize: '14px',
+              }}
+            >
               <Check size={16} style={{ color: '#10b981' }} />
               No signup required
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-600)', fontSize: '14px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                color: 'var(--gray-600)',
+                fontSize: '14px',
+              }}
+            >
               <Check size={16} style={{ color: '#10b981' }} />
               20 free responses/month
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--gray-600)', fontSize: '14px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                color: 'var(--gray-600)',
+                fontSize: '14px',
+              }}
+            >
               <Check size={16} style={{ color: '#10b981' }} />
               All major platforms
             </div>
           </div>
-
         </div>
 
         {/* Settings Sync Feature Highlight */}
@@ -28624,33 +29092,66 @@ const ExtensionPage = () => {
           style={{
             marginBottom: '24px',
             background: 'linear-gradient(135deg, #f0fdf4, #ecfdf5)',
-            border: '1px solid #bbf7d0'
+            border: '1px solid #bbf7d0',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
-            <div style={{
-              background: '#10b981',
-              borderRadius: '12px',
-              padding: '12px',
-              flexShrink: 0
-            }}>
+            <div
+              style={{
+                background: '#10b981',
+                borderRadius: '12px',
+                padding: '12px',
+                flexShrink: 0,
+              }}
+            >
               <RefreshCw size={24} style={{ color: 'white' }} />
             </div>
             <div>
-              <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '8px', color: '#065f46' }}>
+              <h3
+                style={{
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  marginBottom: '8px',
+                  color: '#065f46',
+                }}
+              >
                 Synced with Your Dashboard
               </h3>
               <p style={{ color: '#047857', marginBottom: '12px', fontSize: '14px' }}>
                 Set up once, use everywhere. Your business settings sync automatically.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#065f46' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '13px',
+                    color: '#065f46',
+                  }}
+                >
                   <Check size={14} /> Business name & context
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#065f46' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '13px',
+                    color: '#065f46',
+                  }}
+                >
                   <Check size={14} /> Same tone across platforms
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#065f46' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '13px',
+                    color: '#065f46',
+                  }}
+                >
                   <Check size={14} /> Response history in one place
                 </div>
               </div>
@@ -28659,7 +29160,14 @@ const ExtensionPage = () => {
         </div>
 
         {/* Installation Steps Header */}
-        <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px', color: 'var(--gray-700)' }}>
+        <h2
+          style={{
+            fontSize: '20px',
+            fontWeight: '600',
+            marginBottom: '16px',
+            color: 'var(--gray-700)',
+          }}
+        >
           Quick Installation (1 minute)
         </h2>
 
@@ -28695,7 +29203,14 @@ const ExtensionPage = () => {
             Extract the downloaded ZIP file to any folder (e.g. Desktop).
           </p>
           <p style={{ color: 'var(--gray-500)', fontSize: '13px' }}>
-            Didn't download yet? <a href="/extension-download.zip" download="ReviewResponder-Extension-v1.7.0.zip" style={{ color: 'var(--primary-600)' }}>Click here</a>
+            Didn't download yet?{' '}
+            <a
+              href="/extension-download.zip"
+              download="ReviewResponder-Extension-v1.7.0.zip"
+              style={{ color: 'var(--primary-600)' }}
+            >
+              Click here
+            </a>
           </p>
         </div>
 
@@ -28807,19 +29322,27 @@ const ExtensionPage = () => {
             Start Generating Responses
           </h2>
           <p style={{ color: 'var(--gray-600)', marginBottom: '12px' }}>
-            Go to any review on Google Maps, Yelp, or TripAdvisor. Click the ReviewResponder icon and generate your first response.
+            Go to any review on Google Maps, Yelp, or TripAdvisor. Click the ReviewResponder icon
+            and generate your first response.
           </p>
-          <div style={{
-            background: 'rgba(16, 185, 129, 0.1)',
-            padding: '12px 16px',
-            borderRadius: '8px',
-            marginBottom: '16px'
-          }}>
+          <div
+            style={{
+              background: 'rgba(16, 185, 129, 0.1)',
+              padding: '12px 16px',
+              borderRadius: '8px',
+              marginBottom: '16px',
+            }}
+          >
             <p style={{ margin: 0, fontSize: '14px', color: '#065f46' }}>
-              <strong>No account needed to try!</strong> Create an account later to save your settings and get more responses.
+              <strong>No account needed to try!</strong> Create an account later to save your
+              settings and get more responses.
             </p>
           </div>
-          <Link to="/register" className="btn" style={{ background: 'var(--gray-100)', color: 'var(--gray-700)' }}>
+          <Link
+            to="/register"
+            className="btn"
+            style={{ background: 'var(--gray-100)', color: 'var(--gray-700)' }}
+          >
             Create Free Account (Optional)
           </Link>
         </div>
@@ -31340,9 +31863,7 @@ Best,
               <li style={{ marginBottom: '8px' }}>
                 AI-powered responses save hours of manual work
               </li>
-              <li style={{ marginBottom: '8px' }}>
-                Any language with auto-detect
-              </li>
+              <li style={{ marginBottom: '8px' }}>Any language with auto-detect</li>
               <li style={{ marginBottom: '8px' }}>
                 4 tone options: Professional, Friendly, Formal, Apologetic
               </li>
@@ -31443,7 +31964,13 @@ const AdminPage = () => {
   const [amazonLeadsLoading, setAmazonLeadsLoading] = useState(false);
   const [amazonFilter, setAmazonFilter] = useState('all');
   const [showAddAmazonLead, setShowAddAmazonLead] = useState(false);
-  const [newAmazonLead, setNewAmazonLead] = useState({ seller_name: '', email: '', product_category: '', review_count: '', avg_rating: '' });
+  const [newAmazonLead, setNewAmazonLead] = useState({
+    seller_name: '',
+    email: '',
+    product_category: '',
+    review_count: '',
+    avg_rating: '',
+  });
   const [productQualityData, setProductQualityData] = useState(null);
   const [productQualityLoading, setProductQualityLoading] = useState(false);
   const [productQualityTesting, setProductQualityTesting] = useState(false);
@@ -31859,7 +32386,9 @@ const AdminPage = () => {
   const loadAmazonData = async () => {
     setAmazonLoading(true);
     try {
-      const res = await axios.get(`${API_BASE}/api/admin/amazon-dashboard`, { headers: getHeaders() });
+      const res = await axios.get(`${API_BASE}/api/admin/amazon-dashboard`, {
+        headers: getHeaders(),
+      });
       setAmazonData(res.data);
     } catch (err) {
       console.error('Amazon data error:', err);
@@ -31874,7 +32403,9 @@ const AdminPage = () => {
     setAmazonLeadsLoading(true);
     try {
       const params = status !== 'all' ? `?status=${status}` : '';
-      const res = await axios.get(`${API_BASE}/api/admin/amazon-leads${params}`, { headers: getHeaders() });
+      const res = await axios.get(`${API_BASE}/api/admin/amazon-leads${params}`, {
+        headers: getHeaders(),
+      });
       setAmazonLeads(res.data.leads || []);
     } catch (err) {
       console.error('Amazon leads error:', err);
@@ -31890,10 +32421,18 @@ const AdminPage = () => {
       return;
     }
     try {
-      await axios.post(`${API_BASE}/api/admin/amazon-leads`, newAmazonLead, { headers: getHeaders() });
+      await axios.post(`${API_BASE}/api/admin/amazon-leads`, newAmazonLead, {
+        headers: getHeaders(),
+      });
       toast.success('Lead added');
       setShowAddAmazonLead(false);
-      setNewAmazonLead({ seller_name: '', email: '', product_category: '', review_count: '', avg_rating: '' });
+      setNewAmazonLead({
+        seller_name: '',
+        email: '',
+        product_category: '',
+        review_count: '',
+        avg_rating: '',
+      });
       loadAmazonData();
       loadAmazonLeads();
     } catch (err) {
@@ -31902,7 +32441,7 @@ const AdminPage = () => {
   };
 
   // Delete Amazon lead
-  const deleteAmazonLead = async (id) => {
+  const deleteAmazonLead = async id => {
     if (!window.confirm('Delete this lead?')) return;
     try {
       await axios.delete(`${API_BASE}/api/admin/amazon-leads/${id}`, { headers: getHeaders() });
@@ -31919,7 +32458,9 @@ const AdminPage = () => {
     setProductQualityLoading(true);
     try {
       const params = runTests ? '?run_tests=true' : '';
-      const res = await axios.get(`${API_BASE}/api/admin/product-quality${params}`, { headers: getHeaders() });
+      const res = await axios.get(`${API_BASE}/api/admin/product-quality${params}`, {
+        headers: getHeaders(),
+      });
       setProductQualityData(res.data);
     } catch (err) {
       console.error('Product quality error:', err);
@@ -31933,7 +32474,9 @@ const AdminPage = () => {
   const runProductQualityTests = async () => {
     setProductQualityTesting(true);
     try {
-      const res = await axios.get(`${API_BASE}/api/admin/product-quality?run_tests=true`, { headers: getHeaders() });
+      const res = await axios.get(`${API_BASE}/api/admin/product-quality?run_tests=true`, {
+        headers: getHeaders(),
+      });
       setProductQualityData(res.data);
       toast.success(`Tests complete: ${res.data.tests_passed}/${res.data.tests_run} passed`);
     } catch (err) {
@@ -31979,7 +32522,11 @@ const AdminPage = () => {
 
   const sendCallPrepDemo = async (id, email) => {
     try {
-      const res = await axios.post(`${API_BASE}/api/admin/call-preps/${id}/send-demo`, { email }, { headers: getHeaders() });
+      const res = await axios.post(
+        `${API_BASE}/api/admin/call-preps/${id}/send-demo`,
+        { email },
+        { headers: getHeaders() }
+      );
       if (res.data.success) {
         toast.success(`Demo sent to ${email}!`);
         loadCallPreps();
@@ -31995,24 +32542,24 @@ const AdminPage = () => {
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = status => {
     const colors = {
       pending: '#6B7280',
       interested: '#10B981',
       not_interested: '#EF4444',
       callback: '#F59E0B',
-      not_reached: '#8B5CF6'
+      not_reached: '#8B5CF6',
     };
     return colors[status] || '#6B7280';
   };
 
-  const getStatusLabel = (status) => {
+  const getStatusLabel = status => {
     const labels = {
       pending: 'Pending',
       interested: 'Interested!',
       not_interested: 'Not Interested',
       callback: 'Callback',
-      not_reached: 'Not Reached'
+      not_reached: 'Not Reached',
     };
     return labels[status] || status;
   };
@@ -32155,42 +32702,72 @@ const AdminPage = () => {
         <button
           className={`btn ${activeAdminTab === 'omnichannel' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => setActiveAdminTab('omnichannel')}
-          style={{ background: activeAdminTab === 'omnichannel' ? 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)' : undefined }}
+          style={{
+            background:
+              activeAdminTab === 'omnichannel'
+                ? 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)'
+                : undefined,
+          }}
         >
           Omnichannel
         </button>
         <button
           className={`btn ${activeAdminTab === 'widget' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => setActiveAdminTab('widget')}
-          style={{ background: activeAdminTab === 'widget' ? 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)' : undefined }}
+          style={{
+            background:
+              activeAdminTab === 'widget'
+                ? 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)'
+                : undefined,
+          }}
         >
           Widget Analytics
         </button>
         <button
           className={`btn ${activeAdminTab === 'accounts' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => setActiveAdminTab('accounts')}
-          style={{ background: activeAdminTab === 'accounts' ? 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)' : undefined }}
+          style={{
+            background:
+              activeAdminTab === 'accounts'
+                ? 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)'
+                : undefined,
+          }}
         >
           Claude Accounts
         </button>
         <button
           className={`btn ${activeAdminTab === 'amazon' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => setActiveAdminTab('amazon')}
-          style={{ background: activeAdminTab === 'amazon' ? 'linear-gradient(135deg, #FF9900 0%, #FF6600 100%)' : undefined }}
+          style={{
+            background:
+              activeAdminTab === 'amazon'
+                ? 'linear-gradient(135deg, #FF9900 0%, #FF6600 100%)'
+                : undefined,
+          }}
         >
           Amazon Sellers
         </button>
         <button
           className={`btn ${activeAdminTab === 'quality' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => setActiveAdminTab('quality')}
-          style={{ background: activeAdminTab === 'quality' ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' : undefined }}
+          style={{
+            background:
+              activeAdminTab === 'quality'
+                ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)'
+                : undefined,
+          }}
         >
           Product Quality
         </button>
         <button
           className={`btn ${activeAdminTab === 'calls' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => setActiveAdminTab('calls')}
-          style={{ background: activeAdminTab === 'calls' ? 'linear-gradient(135deg, #EC4899 0%, #DB2777 100%)' : undefined }}
+          style={{
+            background:
+              activeAdminTab === 'calls'
+                ? 'linear-gradient(135deg, #EC4899 0%, #DB2777 100%)'
+                : undefined,
+          }}
         >
           Call Prep
         </button>
@@ -32250,7 +32827,8 @@ const AdminPage = () => {
                   </div>
                   <div style={{ color: 'var(--gray-600)' }}>Real Users ✓</div>
                   <div style={{ fontSize: '10px', color: 'var(--gray-500)', marginTop: '4px' }}>
-                    {salesData.realUsers?.viaGenerator || 0} Generator / {salesData.realUsers?.viaDemo || 0} Demo
+                    {salesData.realUsers?.viaGenerator || 0} Generator /{' '}
+                    {salesData.realUsers?.viaDemo || 0} Demo
                   </div>
                 </div>
                 <div className="card" style={{ textAlign: 'center' }}>
@@ -33029,7 +33607,14 @@ const AdminPage = () => {
                           }}
                         >
                           <td style={{ padding: '12px 8px' }}>
-                            <div style={{ fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div
+                              style={{
+                                fontWeight: '500',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                              }}
+                            >
                               {user.email}
                               {user.created_via_magic_link && (
                                 <span
@@ -35973,7 +36558,9 @@ const AdminPage = () => {
 
               {/* Potential Reach */}
               <div className="card" style={{ marginBottom: '24px' }}>
-                <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Potential Reach (Not Yet Contacted)</h3>
+                <h3 style={{ marginTop: 0, marginBottom: '16px' }}>
+                  Potential Reach (Not Yet Contacted)
+                </h3>
                 <p style={{ color: 'var(--gray-500)', fontSize: '14px', marginBottom: '16px' }}>
                   Leads with social links found but not yet messaged on that channel
                 </p>
@@ -36046,12 +36633,24 @@ const AdminPage = () => {
               {/* How to Use Section */}
               <div className="card">
                 <h3 style={{ marginTop: 0, marginBottom: '16px' }}>How to Run Omnichannel Blast</h3>
-                <div style={{ background: 'var(--gray-50)', padding: '16px', borderRadius: '8px', fontFamily: 'monospace', fontSize: '14px' }}>
-                  <p style={{ margin: '0 0 12px 0', color: 'var(--gray-600)' }}>1. Start 3 parallel Claude sessions:</p>
+                <div
+                  style={{
+                    background: 'var(--gray-50)',
+                    padding: '16px',
+                    borderRadius: '8px',
+                    fontFamily: 'monospace',
+                    fontSize: '14px',
+                  }}
+                >
+                  <p style={{ margin: '0 0 12px 0', color: 'var(--gray-600)' }}>
+                    1. Start 3 parallel Claude sessions:
+                  </p>
                   <code style={{ display: 'block', marginBottom: '16px', color: '#8B5CF6' }}>
                     powershell .\.claude\omnichannel-parallel.ps1
                   </code>
-                  <p style={{ margin: '0 0 12px 0', color: 'var(--gray-600)' }}>2. In each terminal run:</p>
+                  <p style={{ margin: '0 0 12px 0', color: 'var(--gray-600)' }}>
+                    2. In each terminal run:
+                  </p>
                   <code style={{ display: 'block', marginBottom: '8px', color: '#1DA1F2' }}>
                     Terminal 1: claude --chrome then /omnichannel-blast --channel=twitter
                   </code>
@@ -36150,10 +36749,18 @@ const AdminPage = () => {
                           textAlign: 'center',
                         }}
                       >
-                        <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--primary)' }}>
+                        <div
+                          style={{ fontSize: '20px', fontWeight: '700', color: 'var(--primary)' }}
+                        >
                           {item.captures}
                         </div>
-                        <div style={{ fontSize: '12px', color: 'var(--gray-500)', textTransform: 'capitalize' }}>
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            color: 'var(--gray-500)',
+                            textTransform: 'capitalize',
+                          }}
+                        >
                           {item.platform}
                         </div>
                       </div>
@@ -36181,7 +36788,13 @@ const AdminPage = () => {
                         <div style={{ fontSize: '20px', fontWeight: '700', color: '#10B981' }}>
                           {item.captures}
                         </div>
-                        <div style={{ fontSize: '12px', color: 'var(--gray-500)', textTransform: 'capitalize' }}>
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            color: 'var(--gray-500)',
+                            textTransform: 'capitalize',
+                          }}
+                        >
                           {item.business_type}
                         </div>
                       </div>
@@ -36197,18 +36810,37 @@ const AdminPage = () => {
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ borderBottom: '1px solid var(--gray-200)' }}>
-                        <th style={{ textAlign: 'left', padding: '8px 0', color: 'var(--gray-500)', fontSize: '12px' }}>
+                        <th
+                          style={{
+                            textAlign: 'left',
+                            padding: '8px 0',
+                            color: 'var(--gray-500)',
+                            fontSize: '12px',
+                          }}
+                        >
                           Landing Page
                         </th>
-                        <th style={{ textAlign: 'right', padding: '8px 0', color: 'var(--gray-500)', fontSize: '12px' }}>
+                        <th
+                          style={{
+                            textAlign: 'right',
+                            padding: '8px 0',
+                            color: 'var(--gray-500)',
+                            fontSize: '12px',
+                          }}
+                        >
                           Captures
                         </th>
                       </tr>
                     </thead>
                     <tbody>
                       {widgetAnalytics.byLandingPage.map(item => (
-                        <tr key={item.landing_page} style={{ borderBottom: '1px solid var(--gray-100)' }}>
-                          <td style={{ padding: '12px 0', fontSize: '14px' }}>{item.landing_page}</td>
+                        <tr
+                          key={item.landing_page}
+                          style={{ borderBottom: '1px solid var(--gray-100)' }}
+                        >
+                          <td style={{ padding: '12px 0', fontSize: '14px' }}>
+                            {item.landing_page}
+                          </td>
                           <td style={{ padding: '12px 0', textAlign: 'right', fontWeight: '600' }}>
                             {item.captures}
                           </td>
@@ -36237,7 +36869,10 @@ const AdminPage = () => {
                       >
                         <div style={{ fontSize: '16px', fontWeight: '600' }}>{item.captures}</div>
                         <div style={{ fontSize: '10px', color: 'var(--gray-500)' }}>
-                          {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          {new Date(item.date).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                          })}
                         </div>
                       </div>
                     ))}
@@ -36251,7 +36886,8 @@ const AdminPage = () => {
                 !widgetAnalytics.byLandingPage?.length && (
                   <div className="card" style={{ textAlign: 'center', padding: '40px' }}>
                     <p style={{ color: 'var(--gray-500)' }}>
-                      No widget attribution data yet. Data will appear once users submit emails via the InstantDemoWidget.
+                      No widget attribution data yet. Data will appear once users submit emails via
+                      the InstantDemoWidget.
                     </p>
                   </div>
                 )}
@@ -36318,10 +36954,21 @@ const AdminPage = () => {
                               : '1px solid var(--gray-200)',
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: '12px',
+                        }}
+                      >
                         <div>
-                          <div style={{ fontWeight: '600', fontSize: '16px' }}>{acc.account_name}</div>
-                          <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{acc.email}</div>
+                          <div style={{ fontWeight: '600', fontSize: '16px' }}>
+                            {acc.account_name}
+                          </div>
+                          <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
+                            {acc.email}
+                          </div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
                           <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
@@ -36332,13 +36979,29 @@ const AdminPage = () => {
 
                       {/* Daily Usage Bar */}
                       <div style={{ marginBottom: '12px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '4px' }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            fontSize: '13px',
+                            marginBottom: '4px',
+                          }}
+                        >
                           <span>Today</span>
                           <span>
-                            {(acc.tokens_today / 1000).toFixed(0)}K / {(accountUsageData.limits?.daily / 1000000).toFixed(1)}M ({acc.daily_percent}%)
+                            {(acc.tokens_today / 1000).toFixed(0)}K /{' '}
+                            {(accountUsageData.limits?.daily / 1000000).toFixed(1)}M (
+                            {acc.daily_percent}%)
                           </span>
                         </div>
-                        <div style={{ background: 'var(--gray-200)', borderRadius: '4px', height: '8px', overflow: 'hidden' }}>
+                        <div
+                          style={{
+                            background: 'var(--gray-200)',
+                            borderRadius: '4px',
+                            height: '8px',
+                            overflow: 'hidden',
+                          }}
+                        >
                           <div
                             style={{
                               width: `${Math.min(acc.daily_percent, 100)}%`,
@@ -36357,13 +37020,29 @@ const AdminPage = () => {
 
                       {/* Weekly Usage Bar */}
                       <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '4px' }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            fontSize: '13px',
+                            marginBottom: '4px',
+                          }}
+                        >
                           <span>This Week</span>
                           <span>
-                            {(acc.tokens_week / 1000).toFixed(0)}K / {(accountUsageData.limits?.weekly / 1000000).toFixed(0)}M ({acc.weekly_percent}%)
+                            {(acc.tokens_week / 1000).toFixed(0)}K /{' '}
+                            {(accountUsageData.limits?.weekly / 1000000).toFixed(0)}M (
+                            {acc.weekly_percent}%)
                           </span>
                         </div>
-                        <div style={{ background: 'var(--gray-200)', borderRadius: '4px', height: '8px', overflow: 'hidden' }}>
+                        <div
+                          style={{
+                            background: 'var(--gray-200)',
+                            borderRadius: '4px',
+                            height: '8px',
+                            overflow: 'hidden',
+                          }}
+                        >
                           <div
                             style={{
                               width: `${Math.min(acc.weekly_percent, 100)}%`,
@@ -36385,21 +37064,40 @@ const AdminPage = () => {
                   {/* Totals Card */}
                   <div className="card" style={{ background: 'var(--gray-50)' }}>
                     <div style={{ fontWeight: '600', marginBottom: '8px' }}>Combined Totals</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', textAlign: 'center' }}>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(4, 1fr)',
+                        gap: '12px',
+                        textAlign: 'center',
+                      }}
+                    >
                       <div>
-                        <div style={{ fontSize: '20px', fontWeight: '600' }}>{(accountUsageData.totals?.tokens_today / 1000).toFixed(0)}K</div>
-                        <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>Tokens Today</div>
+                        <div style={{ fontSize: '20px', fontWeight: '600' }}>
+                          {(accountUsageData.totals?.tokens_today / 1000).toFixed(0)}K
+                        </div>
+                        <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
+                          Tokens Today
+                        </div>
                       </div>
                       <div>
-                        <div style={{ fontSize: '20px', fontWeight: '600' }}>{(accountUsageData.totals?.tokens_week / 1000).toFixed(0)}K</div>
-                        <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>Tokens Week</div>
+                        <div style={{ fontSize: '20px', fontWeight: '600' }}>
+                          {(accountUsageData.totals?.tokens_week / 1000).toFixed(0)}K
+                        </div>
+                        <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>
+                          Tokens Week
+                        </div>
                       </div>
                       <div>
-                        <div style={{ fontSize: '20px', fontWeight: '600' }}>{accountUsageData.totals?.messages_today || 0}</div>
+                        <div style={{ fontSize: '20px', fontWeight: '600' }}>
+                          {accountUsageData.totals?.messages_today || 0}
+                        </div>
                         <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>Messages</div>
                       </div>
                       <div>
-                        <div style={{ fontSize: '20px', fontWeight: '600' }}>{accountUsageData.totals?.sessions_today || 0}</div>
+                        <div style={{ fontSize: '20px', fontWeight: '600' }}>
+                          {accountUsageData.totals?.sessions_today || 0}
+                        </div>
                         <div style={{ fontSize: '11px', color: 'var(--gray-500)' }}>Sessions</div>
                       </div>
                     </div>
@@ -36407,9 +37105,14 @@ const AdminPage = () => {
 
                   {/* Last Sync Info */}
                   <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--gray-500)' }}>
-                    Last sync: {accountUsageData.last_sync ? new Date(accountUsageData.last_sync).toLocaleString() : 'Never'}
+                    Last sync:{' '}
+                    {accountUsageData.last_sync
+                      ? new Date(accountUsageData.last_sync).toLocaleString()
+                      : 'Never'}
                     <br />
-                    <span style={{ fontSize: '11px' }}>Run <code>.\scripts\Sync-AccountUsage.ps1</code> to update</span>
+                    <span style={{ fontSize: '11px' }}>
+                      Run <code>.\scripts\Sync-AccountUsage.ps1</code> to update
+                    </span>
                   </div>
                 </div>
               ) : (
@@ -36418,7 +37121,8 @@ const AdminPage = () => {
                     No account usage data synced yet.
                   </p>
                   <p style={{ fontSize: '13px', color: 'var(--gray-400)' }}>
-                    Run <code>.\scripts\Sync-AccountUsage.ps1</code> locally to sync your Claude CLI account usage.
+                    Run <code>.\scripts\Sync-AccountUsage.ps1</code> locally to sync your Claude CLI
+                    account usage.
                   </p>
                 </div>
               )}
@@ -36460,36 +37164,60 @@ const AdminPage = () => {
                     color: 'white',
                   }}
                 >
-                  <div style={{ fontSize: '28px', fontWeight: '700' }}>{amazonData.total_leads}</div>
+                  <div style={{ fontSize: '28px', fontWeight: '700' }}>
+                    {amazonData.total_leads}
+                  </div>
                   <div style={{ opacity: 0.9 }}>Total Leads</div>
                 </div>
                 <div className="card" style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '28px', fontWeight: '700', color: '#3B82F6' }}>{amazonData.new_leads}</div>
+                  <div style={{ fontSize: '28px', fontWeight: '700', color: '#3B82F6' }}>
+                    {amazonData.new_leads}
+                  </div>
                   <div style={{ color: 'var(--gray-500)' }}>New</div>
                 </div>
                 <div className="card" style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '28px', fontWeight: '700', color: '#8B5CF6' }}>{amazonData.emails_sent}</div>
+                  <div style={{ fontSize: '28px', fontWeight: '700', color: '#8B5CF6' }}>
+                    {amazonData.emails_sent}
+                  </div>
                   <div style={{ color: 'var(--gray-500)' }}>Emails Sent</div>
                 </div>
                 <div className="card" style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '28px', fontWeight: '700', color: '#10B981' }}>{amazonData.clicked}</div>
+                  <div style={{ fontSize: '28px', fontWeight: '700', color: '#10B981' }}>
+                    {amazonData.clicked}
+                  </div>
                   <div style={{ color: 'var(--gray-500)' }}>Clicks ({amazonData.ctr})</div>
                 </div>
                 <div className="card" style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '28px', fontWeight: '700', color: '#F59E0B' }}>{amazonData.converted}</div>
+                  <div style={{ fontSize: '28px', fontWeight: '700', color: '#F59E0B' }}>
+                    {amazonData.converted}
+                  </div>
                   <div style={{ color: 'var(--gray-500)' }}>Converted</div>
                 </div>
               </div>
 
               {/* Add Lead Button & Filter */}
               <div className="card" style={{ marginBottom: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '16px',
+                  }}
+                >
                   <h3 style={{ margin: 0 }}>Amazon Seller Leads</h3>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <select
                       value={amazonFilter}
-                      onChange={(e) => { setAmazonFilter(e.target.value); loadAmazonLeads(e.target.value); }}
-                      style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--gray-300)' }}
+                      onChange={e => {
+                        setAmazonFilter(e.target.value);
+                        loadAmazonLeads(e.target.value);
+                      }}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid var(--gray-300)',
+                      }}
                     >
                       <option value="all">All Status</option>
                       <option value="new">New</option>
@@ -36498,55 +37226,109 @@ const AdminPage = () => {
                       <option value="converted">Converted</option>
                       <option value="unsubscribed">Unsubscribed</option>
                     </select>
-                    <button className="btn btn-secondary" onClick={() => loadAmazonLeads()}>Refresh</button>
-                    <button className="btn btn-primary" onClick={() => setShowAddAmazonLead(true)}>+ Add Lead</button>
+                    <button className="btn btn-secondary" onClick={() => loadAmazonLeads()}>
+                      Refresh
+                    </button>
+                    <button className="btn btn-primary" onClick={() => setShowAddAmazonLead(true)}>
+                      + Add Lead
+                    </button>
                   </div>
                 </div>
 
                 {/* Add Lead Form */}
                 {showAddAmazonLead && (
-                  <div style={{ background: 'var(--gray-50)', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                  <div
+                    style={{
+                      background: 'var(--gray-50)',
+                      padding: '16px',
+                      borderRadius: '8px',
+                      marginBottom: '16px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                        gap: '12px',
+                      }}
+                    >
                       <input
                         type="text"
                         placeholder="Seller Name *"
                         value={newAmazonLead.seller_name}
-                        onChange={(e) => setNewAmazonLead({...newAmazonLead, seller_name: e.target.value})}
-                        style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--gray-300)' }}
+                        onChange={e =>
+                          setNewAmazonLead({ ...newAmazonLead, seller_name: e.target.value })
+                        }
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '6px',
+                          border: '1px solid var(--gray-300)',
+                        }}
                       />
                       <input
                         type="email"
                         placeholder="Email"
                         value={newAmazonLead.email}
-                        onChange={(e) => setNewAmazonLead({...newAmazonLead, email: e.target.value})}
-                        style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--gray-300)' }}
+                        onChange={e =>
+                          setNewAmazonLead({ ...newAmazonLead, email: e.target.value })
+                        }
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '6px',
+                          border: '1px solid var(--gray-300)',
+                        }}
                       />
                       <input
                         type="text"
                         placeholder="Product Category"
                         value={newAmazonLead.product_category}
-                        onChange={(e) => setNewAmazonLead({...newAmazonLead, product_category: e.target.value})}
-                        style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--gray-300)' }}
+                        onChange={e =>
+                          setNewAmazonLead({ ...newAmazonLead, product_category: e.target.value })
+                        }
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '6px',
+                          border: '1px solid var(--gray-300)',
+                        }}
                       />
                       <input
                         type="number"
                         placeholder="Review Count"
                         value={newAmazonLead.review_count}
-                        onChange={(e) => setNewAmazonLead({...newAmazonLead, review_count: e.target.value})}
-                        style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--gray-300)' }}
+                        onChange={e =>
+                          setNewAmazonLead({ ...newAmazonLead, review_count: e.target.value })
+                        }
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '6px',
+                          border: '1px solid var(--gray-300)',
+                        }}
                       />
                       <input
                         type="number"
                         step="0.1"
                         placeholder="Avg Rating (e.g. 4.5)"
                         value={newAmazonLead.avg_rating}
-                        onChange={(e) => setNewAmazonLead({...newAmazonLead, avg_rating: e.target.value})}
-                        style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--gray-300)' }}
+                        onChange={e =>
+                          setNewAmazonLead({ ...newAmazonLead, avg_rating: e.target.value })
+                        }
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '6px',
+                          border: '1px solid var(--gray-300)',
+                        }}
                       />
                     </div>
                     <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-                      <button className="btn btn-primary" onClick={addAmazonLead}>Save Lead</button>
-                      <button className="btn btn-secondary" onClick={() => setShowAddAmazonLead(false)}>Cancel</button>
+                      <button className="btn btn-primary" onClick={addAmazonLead}>
+                        Save Lead
+                      </button>
+                      <button
+                        className="btn btn-secondary"
+                        onClick={() => setShowAddAmazonLead(false)}
+                      >
+                        Cancel
+                      </button>
                     </div>
                   </div>
                 )}
@@ -36562,7 +37344,9 @@ const AdminPage = () => {
                   <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
-                        <tr style={{ borderBottom: '2px solid var(--gray-200)', textAlign: 'left' }}>
+                        <tr
+                          style={{ borderBottom: '2px solid var(--gray-200)', textAlign: 'left' }}
+                        >
                           <th style={{ padding: '12px 8px' }}>Seller</th>
                           <th style={{ padding: '12px 8px' }}>Email</th>
                           <th style={{ padding: '12px 8px' }}>Category</th>
@@ -36576,38 +37360,88 @@ const AdminPage = () => {
                       <tbody>
                         {amazonLeads.map(lead => (
                           <tr key={lead.id} style={{ borderBottom: '1px solid var(--gray-100)' }}>
-                            <td style={{ padding: '12px 8px', fontWeight: '500' }}>{lead.seller_name}</td>
-                            <td style={{ padding: '12px 8px', fontSize: '13px', color: 'var(--gray-600)' }}>{lead.email || '-'}</td>
-                            <td style={{ padding: '12px 8px', fontSize: '13px' }}>{lead.product_category || '-'}</td>
-                            <td style={{ padding: '12px 8px' }}>{lead.review_count || '-'} ({lead.avg_rating || '-'})</td>
+                            <td style={{ padding: '12px 8px', fontWeight: '500' }}>
+                              {lead.seller_name}
+                            </td>
+                            <td
+                              style={{
+                                padding: '12px 8px',
+                                fontSize: '13px',
+                                color: 'var(--gray-600)',
+                              }}
+                            >
+                              {lead.email || '-'}
+                            </td>
+                            <td style={{ padding: '12px 8px', fontSize: '13px' }}>
+                              {lead.product_category || '-'}
+                            </td>
                             <td style={{ padding: '12px 8px' }}>
-                              <span style={{
-                                padding: '4px 8px',
-                                borderRadius: '4px',
-                                fontSize: '12px',
-                                fontWeight: '500',
-                                background: lead.status === 'new' ? '#EFF6FF' :
-                                           lead.status === 'contacted' ? '#F3E8FF' :
-                                           lead.status === 'clicked' ? '#ECFDF5' :
-                                           lead.status === 'converted' ? '#FEF3C7' : '#FEE2E2',
-                                color: lead.status === 'new' ? '#3B82F6' :
-                                       lead.status === 'contacted' ? '#8B5CF6' :
-                                       lead.status === 'clicked' ? '#10B981' :
-                                       lead.status === 'converted' ? '#F59E0B' : '#EF4444'
-                              }}>
+                              {lead.review_count || '-'} ({lead.avg_rating || '-'})
+                            </td>
+                            <td style={{ padding: '12px 8px' }}>
+                              <span
+                                style={{
+                                  padding: '4px 8px',
+                                  borderRadius: '4px',
+                                  fontSize: '12px',
+                                  fontWeight: '500',
+                                  background:
+                                    lead.status === 'new'
+                                      ? '#EFF6FF'
+                                      : lead.status === 'contacted'
+                                        ? '#F3E8FF'
+                                        : lead.status === 'clicked'
+                                          ? '#ECFDF5'
+                                          : lead.status === 'converted'
+                                            ? '#FEF3C7'
+                                            : '#FEE2E2',
+                                  color:
+                                    lead.status === 'new'
+                                      ? '#3B82F6'
+                                      : lead.status === 'contacted'
+                                        ? '#8B5CF6'
+                                        : lead.status === 'clicked'
+                                          ? '#10B981'
+                                          : lead.status === 'converted'
+                                            ? '#F59E0B'
+                                            : '#EF4444',
+                                }}
+                              >
                                 {lead.status}
                               </span>
                             </td>
-                            <td style={{ padding: '12px 8px', fontSize: '12px', color: 'var(--gray-500)' }}>
-                              {lead.email_sent_at ? new Date(lead.email_sent_at).toLocaleDateString() : '-'}
+                            <td
+                              style={{
+                                padding: '12px 8px',
+                                fontSize: '12px',
+                                color: 'var(--gray-500)',
+                              }}
+                            >
+                              {lead.email_sent_at
+                                ? new Date(lead.email_sent_at).toLocaleDateString()
+                                : '-'}
                             </td>
-                            <td style={{ padding: '12px 8px', fontSize: '12px', color: 'var(--gray-500)' }}>
-                              {lead.clicked_at ? new Date(lead.clicked_at).toLocaleDateString() : '-'}
+                            <td
+                              style={{
+                                padding: '12px 8px',
+                                fontSize: '12px',
+                                color: 'var(--gray-500)',
+                              }}
+                            >
+                              {lead.clicked_at
+                                ? new Date(lead.clicked_at).toLocaleDateString()
+                                : '-'}
                             </td>
                             <td style={{ padding: '12px 8px' }}>
                               <button
                                 onClick={() => deleteAmazonLead(lead.id)}
-                                style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', fontSize: '13px' }}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  color: '#EF4444',
+                                  cursor: 'pointer',
+                                  fontSize: '13px',
+                                }}
                               >
                                 Delete
                               </button>
@@ -36624,9 +37458,22 @@ const AdminPage = () => {
               {amazonData.category_breakdown && amazonData.category_breakdown.length > 0 && (
                 <div className="card">
                   <h3 style={{ marginBottom: '16px' }}>Category Performance</h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                      gap: '12px',
+                    }}
+                  >
                     {amazonData.category_breakdown.map((cat, i) => (
-                      <div key={i} style={{ padding: '12px', background: 'var(--gray-50)', borderRadius: '8px' }}>
+                      <div
+                        key={i}
+                        style={{
+                          padding: '12px',
+                          background: 'var(--gray-50)',
+                          borderRadius: '8px',
+                        }}
+                      >
                         <div style={{ fontWeight: '600', marginBottom: '4px' }}>{cat.category}</div>
                         <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>
                           {cat.count} leads, {cat.clicks} clicks, {cat.converted} converted
@@ -36639,8 +37486,12 @@ const AdminPage = () => {
             </>
           ) : (
             <div style={{ textAlign: 'center', padding: '40px' }}>
-              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>Could not load Amazon data</p>
-              <button className="btn btn-primary" onClick={() => loadAmazonData()}>Retry</button>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+                Could not load Amazon data
+              </p>
+              <button className="btn btn-primary" onClick={() => loadAmazonData()}>
+                Retry
+              </button>
             </div>
           )}
         </div>
@@ -36650,34 +37501,78 @@ const AdminPage = () => {
       {activeAdminTab === 'quality' && (
         <div>
           {productQualityLoading ? (
-            <div style={{ textAlign: 'center', padding: '40px' }}>Loading product quality data...</div>
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              Loading product quality data...
+            </div>
           ) : productQualityData ? (
             <>
               {/* Quality Score Cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-                <div className="card" style={{ textAlign: 'center', background: productQualityData.quality_score >= 90 ? '#ECFDF5' : productQualityData.quality_score >= 70 ? '#FEF3C7' : '#FEE2E2' }}>
-                  <div style={{ fontSize: '42px', fontWeight: '700', color: productQualityData.quality_score >= 90 ? '#10B981' : productQualityData.quality_score >= 70 ? '#F59E0B' : '#EF4444' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                  gap: '16px',
+                  marginBottom: '24px',
+                }}
+              >
+                <div
+                  className="card"
+                  style={{
+                    textAlign: 'center',
+                    background:
+                      productQualityData.quality_score >= 90
+                        ? '#ECFDF5'
+                        : productQualityData.quality_score >= 70
+                          ? '#FEF3C7'
+                          : '#FEE2E2',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '42px',
+                      fontWeight: '700',
+                      color:
+                        productQualityData.quality_score >= 90
+                          ? '#10B981'
+                          : productQualityData.quality_score >= 70
+                            ? '#F59E0B'
+                            : '#EF4444',
+                    }}
+                  >
                     {productQualityData.quality_score}%
                   </div>
                   <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Quality Score</div>
                 </div>
                 <div className="card" style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '28px', fontWeight: '600' }}>{productQualityData.slop_rate}</div>
+                  <div style={{ fontSize: '28px', fontWeight: '600' }}>
+                    {productQualityData.slop_rate}
+                  </div>
                   <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Slop Rate</div>
                 </div>
                 <div className="card" style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '28px', fontWeight: '600' }}>{productQualityData.avg_length}</div>
+                  <div style={{ fontSize: '28px', fontWeight: '600' }}>
+                    {productQualityData.avg_length}
+                  </div>
                   <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Avg Length</div>
                 </div>
                 <div className="card" style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '28px', fontWeight: '600' }}>{productQualityData.tone_accuracy}</div>
+                  <div style={{ fontSize: '28px', fontWeight: '600' }}>
+                    {productQualityData.tone_accuracy}
+                  </div>
                   <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Tone Accuracy</div>
                 </div>
               </div>
 
               {/* Quick Actions */}
               <div className="card" style={{ marginBottom: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '16px',
+                  }}
+                >
                   <h3>Quality Tests</h3>
                   <button
                     className="btn btn-primary"
@@ -36693,33 +37588,56 @@ const AdminPage = () => {
                   <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
-                        <tr style={{ borderBottom: '1px solid var(--gray-200)', textAlign: 'left' }}>
-                          <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: '600' }}>Rating</th>
-                          <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: '600' }}>Tone</th>
-                          <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: '600' }}>Status</th>
-                          <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: '600' }}>Response</th>
-                          <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: '600' }}>Issues</th>
+                        <tr
+                          style={{ borderBottom: '1px solid var(--gray-200)', textAlign: 'left' }}
+                        >
+                          <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: '600' }}>
+                            Rating
+                          </th>
+                          <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: '600' }}>
+                            Tone
+                          </th>
+                          <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: '600' }}>
+                            Status
+                          </th>
+                          <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: '600' }}>
+                            Response
+                          </th>
+                          <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: '600' }}>
+                            Issues
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         {productQualityData.test_results.map((test, i) => (
                           <tr key={i} style={{ borderBottom: '1px solid var(--gray-100)' }}>
-                            <td style={{ padding: '12px 8px', fontSize: '13px' }}>{test.rating} star</td>
+                            <td style={{ padding: '12px 8px', fontSize: '13px' }}>
+                              {test.rating} star
+                            </td>
                             <td style={{ padding: '12px 8px', fontSize: '13px' }}>{test.tone}</td>
                             <td style={{ padding: '12px 8px' }}>
-                              <span style={{
-                                display: 'inline-block',
-                                padding: '4px 8px',
-                                borderRadius: '4px',
-                                fontSize: '11px',
-                                fontWeight: '500',
-                                background: test.passed ? '#ECFDF5' : '#FEE2E2',
-                                color: test.passed ? '#10B981' : '#EF4444'
-                              }}>
+                              <span
+                                style={{
+                                  display: 'inline-block',
+                                  padding: '4px 8px',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: '500',
+                                  background: test.passed ? '#ECFDF5' : '#FEE2E2',
+                                  color: test.passed ? '#10B981' : '#EF4444',
+                                }}
+                              >
                                 {test.passed ? 'PASSED' : 'FAILED'}
                               </span>
                             </td>
-                            <td style={{ padding: '12px 8px', fontSize: '12px', color: 'var(--gray-600)', maxWidth: '300px' }}>
+                            <td
+                              style={{
+                                padding: '12px 8px',
+                                fontSize: '12px',
+                                color: 'var(--gray-600)',
+                                maxWidth: '300px',
+                              }}
+                            >
                               {test.response || test.error || '-'}
                             </td>
                             <td style={{ padding: '12px 8px', fontSize: '12px', color: '#EF4444' }}>
@@ -36738,22 +37656,44 @@ const AdminPage = () => {
               </div>
 
               {/* Metrics & Info */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                  gap: '16px',
+                }}
+              >
                 <div className="card">
                   <h4 style={{ marginBottom: '12px' }}>Recent Quality Check</h4>
                   <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>
-                    <p><strong>Last Audit:</strong> {productQualityData.last_audit}</p>
-                    <p><strong>Responses Checked:</strong> {productQualityData.recent_responses_checked || 0}</p>
-                    <p><strong>Learnings Recorded:</strong> {productQualityData.learnings_count || 0}</p>
-                    <p><strong>Pending Investigations:</strong> {productQualityData.pending_investigations || 0}</p>
+                    <p>
+                      <strong>Last Audit:</strong> {productQualityData.last_audit}
+                    </p>
+                    <p>
+                      <strong>Responses Checked:</strong>{' '}
+                      {productQualityData.recent_responses_checked || 0}
+                    </p>
+                    <p>
+                      <strong>Learnings Recorded:</strong> {productQualityData.learnings_count || 0}
+                    </p>
+                    <p>
+                      <strong>Pending Investigations:</strong>{' '}
+                      {productQualityData.pending_investigations || 0}
+                    </p>
                   </div>
                 </div>
                 <div className="card">
                   <h4 style={{ marginBottom: '12px' }}>Quality Targets</h4>
                   <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>
-                    <p><strong>Slop Rate Target:</strong> &lt; 5%</p>
-                    <p><strong>Quality Score Target:</strong> &gt; 90%</p>
-                    <p><strong>Tone Accuracy Target:</strong> &gt; 90%</p>
+                    <p>
+                      <strong>Slop Rate Target:</strong> &lt; 5%
+                    </p>
+                    <p>
+                      <strong>Quality Score Target:</strong> &gt; 90%
+                    </p>
+                    <p>
+                      <strong>Tone Accuracy Target:</strong> &gt; 90%
+                    </p>
                     <p style={{ marginTop: '12px', fontSize: '12px', color: 'var(--gray-500)' }}>
                       Use <code>/product-refine</code> skill for detailed audits
                     </p>
@@ -36763,8 +37703,12 @@ const AdminPage = () => {
             </>
           ) : (
             <div style={{ textAlign: 'center', padding: '40px' }}>
-              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>Could not load product quality data</p>
-              <button className="btn btn-primary" onClick={() => loadProductQuality()}>Retry</button>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+                Could not load product quality data
+              </p>
+              <button className="btn btn-primary" onClick={() => loadProductQuality()}>
+                Retry
+              </button>
             </div>
           )}
         </div>
@@ -36778,38 +37722,68 @@ const AdminPage = () => {
           ) : callPrepsData ? (
             <>
               {/* Stats Cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px', marginBottom: '24px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                  gap: '12px',
+                  marginBottom: '24px',
+                }}
+              >
                 <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
-                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#6B7280' }}>{callPrepsData.stats?.pending || 0}</div>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#6B7280' }}>
+                    {callPrepsData.stats?.pending || 0}
+                  </div>
                   <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Pending</div>
                 </div>
                 <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
-                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#10B981' }}>{callPrepsData.stats?.interested || 0}</div>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#10B981' }}>
+                    {callPrepsData.stats?.interested || 0}
+                  </div>
                   <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Interested</div>
                 </div>
                 <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
-                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#F59E0B' }}>{callPrepsData.stats?.callback || 0}</div>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#F59E0B' }}>
+                    {callPrepsData.stats?.callback || 0}
+                  </div>
                   <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Callback</div>
                 </div>
                 <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
-                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#8B5CF6' }}>{callPrepsData.stats?.not_reached || 0}</div>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#8B5CF6' }}>
+                    {callPrepsData.stats?.not_reached || 0}
+                  </div>
                   <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Not Reached</div>
                 </div>
                 <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
-                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#EF4444' }}>{callPrepsData.stats?.not_interested || 0}</div>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#EF4444' }}>
+                    {callPrepsData.stats?.not_interested || 0}
+                  </div>
                   <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Not Interested</div>
                 </div>
                 <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
-                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#3B82F6' }}>{callPrepsData.stats?.demos_sent || 0}</div>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#3B82F6' }}>
+                    {callPrepsData.stats?.demos_sent || 0}
+                  </div>
                   <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Demos Sent</div>
                 </div>
               </div>
 
               {/* Call List */}
               <div className="card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '16px',
+                  }}
+                >
                   <h3 style={{ margin: 0 }}>Calls to Make</h3>
-                  <button className="btn btn-secondary" onClick={loadCallPreps} style={{ fontSize: '13px' }}>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={loadCallPreps}
+                    style={{ fontSize: '13px' }}
+                  >
                     Refresh
                   </button>
                 </div>
@@ -36823,53 +37797,112 @@ const AdminPage = () => {
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
                       <thead>
                         <tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
-                          <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>Business</th>
-                          <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>Phone</th>
-                          <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>City</th>
-                          <th style={{ textAlign: 'center', padding: '12px 8px', fontWeight: '600' }}>Reviews</th>
-                          <th style={{ textAlign: 'center', padding: '12px 8px', fontWeight: '600' }}>Status</th>
-                          <th style={{ textAlign: 'center', padding: '12px 8px', fontWeight: '600' }}>Actions</th>
+                          <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>
+                            Business
+                          </th>
+                          <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>
+                            Phone
+                          </th>
+                          <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>
+                            City
+                          </th>
+                          <th
+                            style={{ textAlign: 'center', padding: '12px 8px', fontWeight: '600' }}
+                          >
+                            Reviews
+                          </th>
+                          <th
+                            style={{ textAlign: 'center', padding: '12px 8px', fontWeight: '600' }}
+                          >
+                            Status
+                          </th>
+                          <th
+                            style={{ textAlign: 'center', padding: '12px 8px', fontWeight: '600' }}
+                          >
+                            Actions
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         {callPrepsData.calls?.map((call, index) => (
-                          <tr key={call.id} style={{ borderBottom: '1px solid var(--gray-100)', background: index % 2 === 0 ? 'var(--gray-50)' : 'white' }}>
+                          <tr
+                            key={call.id}
+                            style={{
+                              borderBottom: '1px solid var(--gray-100)',
+                              background: index % 2 === 0 ? 'var(--gray-50)' : 'white',
+                            }}
+                          >
                             <td style={{ padding: '12px 8px' }}>
                               <div style={{ fontWeight: '600' }}>{call.business_name}</div>
-                              {call.problem && <div style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '2px' }}>{call.problem}</div>}
+                              {call.problem && (
+                                <div
+                                  style={{
+                                    fontSize: '12px',
+                                    color: 'var(--gray-500)',
+                                    marginTop: '2px',
+                                  }}
+                                >
+                                  {call.problem}
+                                </div>
+                              )}
                             </td>
                             <td style={{ padding: '12px 8px' }}>
-                              <a href={`tel:${call.phone}`} style={{ color: '#3B82F6', textDecoration: 'none', fontWeight: '500' }}>
+                              <a
+                                href={`tel:${call.phone}`}
+                                style={{
+                                  color: '#3B82F6',
+                                  textDecoration: 'none',
+                                  fontWeight: '500',
+                                }}
+                              >
                                 {call.phone}
                               </a>
                             </td>
-                            <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>{call.city || '-'}</td>
-                            <td style={{ padding: '12px 8px', textAlign: 'center' }}>
-                              {call.reviews_count ? (
-                                <span>{call.reviews_count} ({call.rating}★)</span>
-                              ) : '-'}
+                            <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>
+                              {call.city || '-'}
                             </td>
                             <td style={{ padding: '12px 8px', textAlign: 'center' }}>
-                              <span style={{
-                                display: 'inline-block',
-                                padding: '4px 12px',
-                                borderRadius: '9999px',
-                                fontSize: '12px',
-                                fontWeight: '500',
-                                background: getStatusColor(call.status) + '20',
-                                color: getStatusColor(call.status)
-                              }}>
+                              {call.reviews_count ? (
+                                <span>
+                                  {call.reviews_count} ({call.rating}★)
+                                </span>
+                              ) : (
+                                '-'
+                              )}
+                            </td>
+                            <td style={{ padding: '12px 8px', textAlign: 'center' }}>
+                              <span
+                                style={{
+                                  display: 'inline-block',
+                                  padding: '4px 12px',
+                                  borderRadius: '9999px',
+                                  fontSize: '12px',
+                                  fontWeight: '500',
+                                  background: getStatusColor(call.status) + '20',
+                                  color: getStatusColor(call.status),
+                                }}
+                              >
                                 {getStatusLabel(call.status)}
                               </span>
                             </td>
                             <td style={{ padding: '12px 8px', textAlign: 'center' }}>
-                              <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  gap: '6px',
+                                  justifyContent: 'center',
+                                  flexWrap: 'wrap',
+                                }}
+                              >
                                 {call.status === 'pending' && (
                                   <>
                                     <button
                                       className="btn btn-primary"
                                       style={{ fontSize: '11px', padding: '6px 10px' }}
-                                      onClick={() => { setSelectedCallPrep(call); setCallPrepAction('result'); }}
+                                      onClick={() => {
+                                        setSelectedCallPrep(call);
+                                        setCallPrepAction('result');
+                                      }}
                                     >
                                       Log Result
                                     </button>
@@ -36878,20 +37911,34 @@ const AdminPage = () => {
                                 {call.status === 'interested' && !call.demo_sent_at && (
                                   <button
                                     className="btn"
-                                    style={{ fontSize: '11px', padding: '6px 10px', background: '#10B981', color: 'white' }}
-                                    onClick={() => { setSelectedCallPrep(call); setCallPrepAction('demo'); setCallPrepEmail(call.email || ''); }}
+                                    style={{
+                                      fontSize: '11px',
+                                      padding: '6px 10px',
+                                      background: '#10B981',
+                                      color: 'white',
+                                    }}
+                                    onClick={() => {
+                                      setSelectedCallPrep(call);
+                                      setCallPrepAction('demo');
+                                      setCallPrepEmail(call.email || '');
+                                    }}
                                   >
                                     Send Demo
                                   </button>
                                 )}
                                 {call.demo_sent_at && (
-                                  <span style={{ fontSize: '11px', color: '#10B981' }}>Demo Sent</span>
+                                  <span style={{ fontSize: '11px', color: '#10B981' }}>
+                                    Demo Sent
+                                  </span>
                                 )}
                                 {call.status === 'callback' && (
                                   <button
                                     className="btn btn-secondary"
                                     style={{ fontSize: '11px', padding: '6px 10px' }}
-                                    onClick={() => { setSelectedCallPrep(call); setCallPrepAction('result'); }}
+                                    onClick={() => {
+                                      setSelectedCallPrep(call);
+                                      setCallPrepAction('result');
+                                    }}
                                   >
                                     Update
                                   </button>
@@ -36900,7 +37947,10 @@ const AdminPage = () => {
                                   <button
                                     className="btn btn-secondary"
                                     style={{ fontSize: '11px', padding: '6px 10px' }}
-                                    onClick={() => { setSelectedCallPrep(call); setCallPrepAction('result'); }}
+                                    onClick={() => {
+                                      setSelectedCallPrep(call);
+                                      setCallPrepAction('result');
+                                    }}
                                   >
                                     Retry #{call.call_attempts + 1}
                                   </button>
@@ -36917,43 +37967,83 @@ const AdminPage = () => {
 
               {/* Action Modal */}
               {selectedCallPrep && callPrepAction && (
-                <div style={{
-                  position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                  background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-                }}>
-                  <div className="card" style={{ maxWidth: '450px', width: '90%', maxHeight: '80vh', overflow: 'auto' }}>
+                <div
+                  style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000,
+                  }}
+                >
+                  <div
+                    className="card"
+                    style={{ maxWidth: '450px', width: '90%', maxHeight: '80vh', overflow: 'auto' }}
+                  >
                     <h3 style={{ marginBottom: '16px' }}>{selectedCallPrep.business_name}</h3>
-                    <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>Phone: {selectedCallPrep.phone}</p>
+                    <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+                      Phone: {selectedCallPrep.phone}
+                    </p>
 
                     {callPrepAction === 'result' && (
                       <>
-                        <p style={{ fontWeight: '500', marginBottom: '12px' }}>How did the call go?</p>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+                        <p style={{ fontWeight: '500', marginBottom: '12px' }}>
+                          How did the call go?
+                        </p>
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '8px',
+                            marginBottom: '16px',
+                          }}
+                        >
                           <button
                             className="btn"
                             style={{ background: '#10B981', color: 'white' }}
-                            onClick={() => updateCallPrepStatus(selectedCallPrep.id, 'interested', callPrepNotes)}
+                            onClick={() =>
+                              updateCallPrepStatus(selectedCallPrep.id, 'interested', callPrepNotes)
+                            }
                           >
                             Interested!
                           </button>
                           <button
                             className="btn"
                             style={{ background: '#F59E0B', color: 'white' }}
-                            onClick={() => updateCallPrepStatus(selectedCallPrep.id, 'callback', callPrepNotes)}
+                            onClick={() =>
+                              updateCallPrepStatus(selectedCallPrep.id, 'callback', callPrepNotes)
+                            }
                           >
                             Callback
                           </button>
                           <button
                             className="btn"
                             style={{ background: '#8B5CF6', color: 'white' }}
-                            onClick={() => updateCallPrepStatus(selectedCallPrep.id, 'not_reached', callPrepNotes)}
+                            onClick={() =>
+                              updateCallPrepStatus(
+                                selectedCallPrep.id,
+                                'not_reached',
+                                callPrepNotes
+                              )
+                            }
                           >
                             Not Reached
                           </button>
                           <button
                             className="btn"
                             style={{ background: '#EF4444', color: 'white' }}
-                            onClick={() => updateCallPrepStatus(selectedCallPrep.id, 'not_interested', callPrepNotes)}
+                            onClick={() =>
+                              updateCallPrepStatus(
+                                selectedCallPrep.id,
+                                'not_interested',
+                                callPrepNotes
+                              )
+                            }
                           >
                             Not Interested
                           </button>
@@ -36964,7 +38054,7 @@ const AdminPage = () => {
                             className="form-input"
                             rows={3}
                             value={callPrepNotes}
-                            onChange={(e) => setCallPrepNotes(e.target.value)}
+                            onChange={e => setCallPrepNotes(e.target.value)}
                             placeholder="Any notes about the call..."
                           />
                         </div>
@@ -36980,7 +38070,7 @@ const AdminPage = () => {
                             type="email"
                             className="form-input"
                             value={callPrepEmail}
-                            onChange={(e) => setCallPrepEmail(e.target.value)}
+                            onChange={e => setCallPrepEmail(e.target.value)}
                             placeholder="email@example.com"
                           />
                         </div>
@@ -36998,7 +38088,12 @@ const AdminPage = () => {
                     <button
                       className="btn btn-secondary"
                       style={{ width: '100%', marginTop: '12px' }}
-                      onClick={() => { setSelectedCallPrep(null); setCallPrepAction(null); setCallPrepNotes(''); setCallPrepEmail(''); }}
+                      onClick={() => {
+                        setSelectedCallPrep(null);
+                        setCallPrepAction(null);
+                        setCallPrepNotes('');
+                        setCallPrepEmail('');
+                      }}
                     >
                       Cancel
                     </button>
@@ -37010,17 +38105,25 @@ const AdminPage = () => {
               <div className="card" style={{ marginTop: '24px' }}>
                 <h4 style={{ marginBottom: '12px' }}>Quick Reference</h4>
                 <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>
-                  <p><strong>Best Call Times:</strong></p>
+                  <p>
+                    <strong>Best Call Times:</strong>
+                  </p>
                   <p>Restaurants: 14:00-16:00 (nach Lunch, vor Dinner)</p>
                   <p>Hotels: 10:00-12:00 (nach Check-out Rush)</p>
-                  <p style={{ marginTop: '12px' }}><strong>Call Prep Files:</strong> <code>content/call-prep/</code></p>
+                  <p style={{ marginTop: '12px' }}>
+                    <strong>Call Prep Files:</strong> <code>content/call-prep/</code>
+                  </p>
                 </div>
               </div>
             </>
           ) : (
             <div style={{ textAlign: 'center', padding: '40px' }}>
-              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>Could not load call preps</p>
-              <button className="btn btn-primary" onClick={loadCallPreps}>Retry</button>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+                Could not load call preps
+              </p>
+              <button className="btn btn-primary" onClick={loadCallPreps}>
+                Retry
+              </button>
             </div>
           )}
         </div>
