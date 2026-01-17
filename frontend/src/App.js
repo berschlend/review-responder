@@ -35997,7 +35997,12 @@ const AdminPage = () => {
               marginBottom: '20px',
             }}
           >
-            <h2 style={{ margin: 0 }}>Claude Account Usage</h2>
+            <div>
+              <h2 style={{ margin: 0 }}>Claude Account Usage</h2>
+              <div style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px' }}>
+                via Claude Max Abo (3x $20/mo) - nicht API
+              </div>
+            </div>
             <button
               className="btn btn-secondary"
               onClick={() => {
