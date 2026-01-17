@@ -308,6 +308,18 @@ ReviewResponder/
 
 ## LEARNINGS (Top 5)
 
+### Gmail + Admin Dashboard via Chrome MCP (18.01.2026)
+**Problem:** Agents konnten nur API nutzen, nicht Gmail lesen/beantworten oder Dashboard visuell checken.
+**Loesung:** Chrome MCP Integration in night-burst-core.md V4.3:
+- Gmail lesen: Bounces, Replies, Spam Reports
+- Gmail senden: NUR ReviewResponder Business (keine privaten Emails!)
+- Admin Dashboard: Login mit Test-Credentials, Metrics Screenshots
+- Helper: `chrome-gmail`, `chrome-admin`, `chrome-monitor-setup`
+**Regeln:**
+- ✅ Lead-Anfragen, Demo Follow-ups, Support
+- ❌ Private Emails von Berend - TABU!
+**Lesson:** Gmail für persönliche 1:1 Kommunikation, API für Batch-Outreach. Private Emails nie anfassen.
+
 ### AI Model Hierarchy (18.01.2026)
 **Problem:** GPT-4o-mini wurde als Fallback vor Haiku verwendet - schlechtere Qualitaet.
 **Loesung:** Konsistente Fallback-Kette fuer ALLE Endpoints:
