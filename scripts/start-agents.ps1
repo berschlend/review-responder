@@ -16,8 +16,11 @@ param(
 $ErrorActionPreference = "Continue"
 $ProjectRoot = Split-Path -Parent (Split-Path -Parent $PSCommandPath)
 
-# Pre-flight: Clean up any stale lock files
-Get-ChildItem "$env:USERPROFILE\.claude-burst*\.claude.json.lock" -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
+# Pre-flight: Clean up ALL stale lock files (burst dirs + acc dirs + tabs etc.)
+Get-ChildItem "$env:USERPROFILE\.claude*" -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+    Get-ChildItem "$($_.FullName)\*.lock" -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
+}
+Write-Host "    [CLEANUP] Lock files cleaned" -ForegroundColor DarkGray
 
 # Agent Configuration
 $AgentConfig = @{
@@ -307,7 +310,8 @@ function Start-SelectedAgents {
     foreach ($num in $AgentList) {
         Start-Agent -AgentNum $num
         if ($num -ne $AgentList[-1]) {
-            Start-Sleep -Seconds 2
+            # 4s delay for stability with 15 parallel agents
+            Start-Sleep -Seconds 4
         }
     }
 

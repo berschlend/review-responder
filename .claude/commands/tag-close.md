@@ -1,6 +1,7 @@
 ---
 description: Closing XML tag only
-argument-hint: [tagname]
 ---
+
+Gib NUR diesen Text aus, nichts anderes:
 
 </$ARGUMENTS>
