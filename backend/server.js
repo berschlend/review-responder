@@ -10110,6 +10110,27 @@ app.post('/api/feedback', authenticateToken, async (req, res) => {
         .catch(err => console.error(`Failed to auto-generate AI response:`, err.message));
     }
 
+    // 🔔 Notify Berend if this is feedback from a REAL user (not test account)
+    if (!isTestEmail(user.email)) {
+      const ratingStars = '⭐'.repeat(rating);
+      const feedbackPreview = comment ? comment.substring(0, 100) + (comment.length > 100 ? '...' : '') : '(no comment)';
+      sendEmail({
+        to: 'berend.mainz@web.de',
+        subject: `📣 New User Feedback: ${ratingStars} from ${userName}`,
+        html: `
+          <h2>New Feedback from Real User!</h2>
+          <p><strong>From:</strong> ${userName} (${user.email})</p>
+          <p><strong>Business:</strong> ${businessName || 'Not provided'}</p>
+          <p><strong>Rating:</strong> ${rating}/5 ${ratingStars}</p>
+          <p><strong>Comment:</strong></p>
+          <blockquote style="border-left: 3px solid #ccc; padding-left: 10px; margin: 10px 0;">${comment || '(no comment)'}</blockquote>
+          <p style="color: #666; font-size: 12px;">This is feedback from a real user, not a test account.</p>
+        `,
+        text: `New Feedback from ${userName} (${user.email})\nRating: ${rating}/5\nComment: ${feedbackPreview}`
+      }).catch(err => console.error('Failed to notify Berend about new feedback:', err.message));
+      console.log(`📣 NEW REAL USER FEEDBACK: ${rating}/5 from ${user.email}`);
+    }
+
     res.json({ success: true, message: 'Thank you for your feedback!' });
   } catch (error) {
     console.error('Feedback submission error:', error);
@@ -10222,20 +10243,8 @@ app.get('/api/admin/feedback-summary', authenticateAdmin, async (req, res) => {
   try {
     const excludeTest = req.query.exclude_test === 'true';
 
-    // Build test email exclusion for feedback (join with users table)
-    let testExclusionClause = '';
-    if (excludeTest) {
-      testExclusionClause = `
-        AND u.email NOT LIKE '%@web.de'
-        AND u.email NOT LIKE 'test%'
-        AND u.email NOT LIKE '%test@%'
-        AND u.email NOT LIKE '%example%'
-        AND u.email NOT LIKE '%demo%'
-        AND LOWER(u.email) != 'reviewer@tryreviewresponder.com'
-        AND LOWER(u.email) != 'berend.mainz@gmail.com'
-        AND LOWER(u.email) != 'berend.jakob.mainz@gmail.com'
-      `;
-    }
+    // Use central test email filter (same as other admin endpoints)
+    const testExclusionClause = excludeTest ? getTestEmailExcludeClause('u.email') : '';
 
     // Get all feedback with user emails
     const feedbackQuery = `
@@ -10343,20 +10352,11 @@ app.get('/api/cron/process-feedback', async (req, res) => {
   }
 
   try {
-    // Fetch feedback summary (exclude test accounts)
-    const testExclusionClause = `
-      AND u.email NOT LIKE '%@web.de'
-      AND u.email NOT LIKE 'test%'
-      AND u.email NOT LIKE '%test@%'
-      AND u.email NOT LIKE '%example%'
-      AND u.email NOT LIKE '%demo%'
-      AND LOWER(u.email) != 'reviewer@tryreviewresponder.com'
-      AND LOWER(u.email) != 'berend.mainz@gmail.com'
-      AND LOWER(u.email) != 'berend.jakob.mainz@gmail.com'
-    `;
+    // Use central test email filter (exclude test accounts)
+    const testExclusionClause = getTestEmailExcludeClause('u.email');
 
     const allFeedback = await dbAll(`
-      SELECT f.rating, f.comment, f.created_at
+      SELECT f.rating, f.comment, f.created_at, u.email
       FROM user_feedback f
       JOIN users u ON f.user_id = u.id
       WHERE 1=1 ${testExclusionClause}
@@ -12957,6 +12957,38 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
       `)) || userStats;
     } catch (e) {
       console.error('User stats query error:', e.message);
+    }
+
+    // Real users = haben mindestens 1x generiert (egal wo!)
+    // Definition: responses (eingeloggt) ODER via Demo gekommen (created_via_demo)
+    let realUserStats = { real_users: 0, via_generator: 0, via_demo: 0, inactive_users: 0 };
+    try {
+      realUserStats = (await dbGet(`
+        SELECT
+          -- Echte User: haben irgendwo generiert
+          COUNT(*) FILTER (WHERE
+            EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
+            OR u.created_via_demo = true
+          ) as real_users,
+          -- Davon: via Generator (eingeloggt)
+          COUNT(*) FILTER (WHERE
+            EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
+          ) as via_generator,
+          -- Davon: via Demo-Seite (created_via_demo aber KEINE logged-in responses)
+          COUNT(*) FILTER (WHERE
+            u.created_via_demo = true
+            AND NOT EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
+          ) as via_demo,
+          -- Inaktive User: registriert aber nie generiert
+          COUNT(*) FILTER (WHERE
+            NOT EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
+            AND (u.created_via_demo IS NULL OR u.created_via_demo = false)
+          ) as inactive_users
+        FROM users u
+        WHERE 1=1 ${getTestEmailExcludeClause('u.email')}
+      `)) || realUserStats;
+    } catch (e) {
+      console.error('Real user stats query error:', e.message);
     }
 
     // Revenue stats - might fail if table doesn't exist

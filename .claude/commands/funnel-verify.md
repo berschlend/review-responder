@@ -1,264 +1,543 @@
 # /funnel-verify - E2E Funnel Test mit Chrome MCP
 
-> Automatischer Test des kompletten Sales-Funnels.
+> **Meta-Skill** der ALLE User-Flows testen kann.
+> Nutzt First-Principles bei Failures.
 > Findet Bugs bevor sie 100+ Leads betreffen.
-> **97% Demo-Email Bug waere damit in <24h gefunden worden!**
 
 ---
 
 ## QUICK START
 
 ```bash
-# Voraussetzung: claude --chrome
-/funnel-verify              # Alle Phasen
-/funnel-verify demo         # Nur Demo-Phase
-/funnel-verify activation   # Nur Activation-Phase
-/funnel-verify limit        # Nur Limit-Test
+claude --chrome
+
+# Alle kritischen Flows testen
+/funnel-verify
+
+# Spezifische Flows
+/funnel-verify demo          # Demo-to-User Flow
+/funnel-verify activation    # User-to-FirstResponse Flow
+/funnel-verify conversion    # Free-to-Paid Flow
+/funnel-verify generator     # Core Feature Test
+/funnel-verify extension     # Chrome Extension Flow
+/funnel-verify alerts        # Review Alerts Flow
+/funnel-verify all           # ALLE Flows (dauert laenger)
 ```
 
 ---
 
-## REQUIREMENTS
+## ARCHITEKTUR
 
-- **Chrome MCP aktiv:** `claude --chrome`
-- **Backend online:** Render wach
-- **Admin Header:** Fuer Test-Cleanup
+```
+/funnel-verify (Meta-Skill)
+    │
+    ├── Sub-Skill: DEMO FLOW
+    │   ├── Cold Email Simulation
+    │   ├── Demo Page Load
+    │   ├── Email Gate
+    │   └── Auto-Account Creation
+    │
+    ├── Sub-Skill: ACTIVATION FLOW
+    │   ├── Dashboard Access
+    │   ├── Generator Navigation
+    │   ├── First Response Generation
+    │   └── Response Copy/Save
+    │
+    ├── Sub-Skill: CONVERSION FLOW
+    │   ├── Limit Reached State
+    │   ├── Upgrade CTA
+    │   ├── Pricing Page
+    │   └── Stripe Checkout
+    │
+    ├── Sub-Skill: GENERATOR FLOW
+    │   ├── Single Review Input
+    │   ├── AI Response Generation
+    │   ├── Tone/Style Options
+    │   └── Copy Functionality
+    │
+    ├── Sub-Skill: EXTENSION FLOW
+    │   ├── Extension Load
+    │   ├── External Site Detection
+    │   ├── Review Extraction
+    │   └── Response Injection
+    │
+    └── Sub-Skill: ALERTS FLOW
+        ├── Alert Setup
+        ├── Business Search
+        ├── Monitor Configuration
+        └── Alert Email Test
+```
 
 ---
 
-## PHASE 0: SETUP
+## ALLE MÖGLICHEN USER FLOWS
+
+### Flow-Katalog (Priorisiert)
+
+| Priority | Flow | Was wird getestet | Business Impact |
+|----------|------|-------------------|-----------------|
+| **P1** | Demo → User | Demo-Email Empfaenger wird User | Direkte Conversion |
+| **P1** | User → First Response | Neuer User generiert erste Response | Activation |
+| **P1** | Free → Paid | User upgraded nach Limit | Revenue |
+| **P2** | Landing → Register | Direktbesucher registriert sich | Organic Growth |
+| **P2** | Generator Core | Hauptfeature funktioniert | Core Value |
+| **P3** | Extension | Chrome Extension Flow | Power Users |
+| **P3** | Review Alerts | Alert Setup & Delivery | Retention |
+| **P3** | Magic Link | Passwordless Login | UX |
+| **P3** | Bulk Generator | Multiple Reviews | Pro Feature |
+
+---
+
+## SUB-SKILL: DEMO FLOW
+
+> **Testet:** Email-Empfaenger → Demo-Page → Auto-Account → Logged-in User
+
+### Setup
+```
+1. Test-Email generieren: funnel-test-[TIMESTAMP]@test.local
+2. Test-Demo via API erstellen
+3. Chrome Tab oeffnen
+```
+
+### Steps
 
 ```
-SETUP TASKS:
+DEMO FLOW CHECKLIST:
 
-1. [ ] Chrome MCP Session initialisieren
-   - tabs_context_mcp(createIfEmpty: true)
-   - tabs_create_mcp()
-   - Merke tabId fuer alle folgenden Schritte
+[ ] STEP 1: Demo-Page Navigation
+    - navigate(demo_url, tabId)
+    - wait(3s)
+    - screenshot()
+    - VERIFY: Page loads ohne Error
 
-2. [ ] Test-Email generieren (unique!)
-   - Format: funnel-test-[TIMESTAMP]@test.local
-   - Beispiel: funnel-test-1737162000@test.local
+[ ] STEP 2: Responses Visible
+    - read_page(tabId)
+    - VERIFY: Mind. 2 Response-Cards sichtbar
+    - VERIFY: Business Name korrekt angezeigt
 
-3. [ ] Test-Demo via API erstellen
-   POST /api/demo/generate
-   {
-     "businessName": "Test Restaurant Berlin",
-     "city": "Berlin",
-     "focus": "mixed"
-   }
-   -> Merke demo_token
+[ ] STEP 3: Email Gate Active
+    - find("email input", tabId)
+    - VERIFY: Email-Feld vorhanden
+    - VERIFY: Responses geblurred ODER limited
 
-4. [ ] Test-Daten dokumentieren:
-   {
-     "test_email": "[EMAIL]",
-     "demo_token": "[TOKEN]",
-     "tab_id": [TAB_ID],
-     "start_time": "[ISO]"
-   }
+[ ] STEP 4: Email Submit
+    - form_input(email_ref, test_email, tabId)
+    - find("unlock" OR "continue", tabId)
+    - click(submit_ref, tabId)
+    - wait(3s)
+
+[ ] STEP 5: Auto-Account Verification
+    - javascript("localStorage.getItem('token')", tabId)
+    - VERIFY: JWT Token vorhanden
+    - javascript("localStorage.getItem('user')", tabId)
+    - VERIFY: User-Objekt mit email
+
+[ ] STEP 6: Content Unlocked
+    - read_page(tabId)
+    - VERIFY: Blur entfernt
+    - VERIFY: Copy-Button aktiv
+    - VERIFY: CTA zu Generator sichtbar
+```
+
+### First-Principles bei Failure
+
+```
+WENN DEMO FLOW FAILED:
+
+SYMPTOM: [Was genau fehlschlaegt]
+ECHTES PROBLEM: Analysiere:
+  - Ist es Frontend (React)?
+  - Ist es Backend (API)?
+  - Ist es DB (Demo nicht gespeichert)?
+
+CHECK ORDER:
+1. curl /api/demo/[token] → Response?
+2. Browser Console → JS Errors?
+3. Network Tab → API Calls?
+4. DB → Demo existiert?
+
+NICHT: "Nochmal versuchen"
+SONDERN: Root Cause finden
 ```
 
 ---
 
-## PHASE 1: DEMO PAGE TEST
+## SUB-SKILL: ACTIVATION FLOW
 
-> Testet ob Demo-Page korrekt funktioniert
+> **Testet:** Neuer User → Dashboard → Generator → First Response
+
+### Prerequisites
+- User muss eingeloggt sein (JWT in localStorage)
+- Kann nach Demo Flow oder separatem Login
+
+### Steps
 
 ```
-DEMO PAGE TESTS:
+ACTIVATION FLOW CHECKLIST:
 
-1. [ ] Navigiere zu Demo-URL
-   navigate(`https://tryreviewresponder.com/demo/${testToken}`, tabId)
-   computer(action: "wait", duration: 3, tabId)
+[ ] STEP 1: CTA Click (von Demo Page)
+    - find("Start generating" OR "try it", tabId)
+    - click(cta_ref, tabId)
+    - wait(3s)
 
-2. [ ] Screenshot fuer Dokumentation
-   computer(action: "screenshot", tabId)
+[ ] STEP 2: Correct Redirect
+    - javascript("window.location.pathname", tabId)
+    - VERIFY: "/generator" (NICHT "/dashboard"!)
+    - KRITISCH: Dashboard-Redirect = Activation Killer
 
-3. [ ] Responses werden angezeigt (mind. 3)
-   read_page(tabId, depth: 10)
-   -> Erwarte: ResponseCard Elements sichtbar
-   -> FAIL wenn: "No responses" oder <3 Cards
+[ ] STEP 3: Generator Page Load
+    - read_page(tabId)
+    - VERIFY: Business Name Input sichtbar
+    - VERIFY: Review Input sichtbar
+    - VERIFY: Generate Button sichtbar
 
-4. [ ] Email-Gate blockiert volle Ansicht
-   find("unlock" OR "enter email", tabId)
-   -> Erwarte: Email-Input-Feld sichtbar
-   -> Erwarte: Responses geblurred oder limited
+[ ] STEP 4: Input Test Data
+    - find("business name", tabId)
+    - form_input(ref, "Test Restaurant Berlin", tabId)
+    - find("review", tabId)
+    - form_input(ref, "Food was cold and service slow.", tabId)
 
-5. [ ] Copy-Button vor Email-Eingabe
-   find("copy", tabId)
-   -> Erwarte: Button disabled ODER
-   -> Erwarte: Triggert Email-Gate
+[ ] STEP 5: Generate Response
+    - find("generate", tabId)
+    - click(ref, tabId)
+    - wait(8s)  # AI Generation braucht Zeit
+
+[ ] STEP 6: Response Verification
+    - read_page(tabId)
+    - VERIFY: AI Response Text sichtbar
+    - VERIFY: Kein "Error" Message
+    - VERIFY: Copy Button vorhanden
+
+[ ] STEP 7: Copy Test
+    - find("copy", tabId)
+    - click(ref, tabId)
+    - VERIFY: "Copied!" Feedback ODER Clipboard filled
+
+[ ] STEP 8: Stats Check (API)
+    - curl /api/stats mit User Token
+    - VERIFY: responses_used incremented
 ```
 
-**SUCCESS CRITERIA:**
-- [ ] Page laedt ohne Fehler
-- [ ] 3+ Responses sichtbar (ggf. geblurred)
-- [ ] Email-Gate funktioniert
-- [ ] Keine Console Errors
+### First-Principles bei Failure
+
+```
+WENN ACTIVATION FAILED:
+
+HAEUFIGSTE FAILURES:
+
+1. Redirect zu /dashboard statt /generator
+   → CTA Link falsch
+   → Fix: Demo Page CTA href
+
+2. Generator Error
+   → API Key Problem
+   → Fix: Check OPENAI_API_KEY oder ANTHROPIC_API_KEY
+
+3. Response nicht gespeichert
+   → DB Write Error
+   → Fix: Check responses Table + User ID
+
+4. Copy nicht funktioniert
+   → Clipboard API blocked
+   → Fix: HTTPS erforderlich
+```
 
 ---
 
-## PHASE 2: EMAIL CAPTURE TEST
+## SUB-SKILL: CONVERSION FLOW
 
-> Testet Auto-Account Creation und Login
+> **Testet:** Free User → Limit → Upgrade → Stripe → Paid
+
+### Prerequisites
+- User mit 19/20 Responses (kurz vor Limit)
+- Oder: API call um Limit zu simulieren
+
+### Steps
 
 ```
-EMAIL CAPTURE TESTS:
+CONVERSION FLOW CHECKLIST:
 
-1. [ ] Email-Input finden
-   find("email input", tabId)
-   -> ref_id merken
+[ ] STEP 1: Simulate Near-Limit
+    - API: Set user responses to 19/20
+    - curl -X POST /api/admin/set-user-responses
+      -d '{"email":"test@...", "responses_used": 19}'
 
-2. [ ] Test-Email eingeben
-   form_input(ref, testEmail, tabId)
+[ ] STEP 2: Generate Final Free Response
+    - Generator Page oeffnen
+    - Response generieren
+    - VERIFY: Response #20 funktioniert
 
-3. [ ] Submit Button klicken
-   find("unlock" OR "get access" OR "continue", tabId)
-   computer(action: "left_click", ref, tabId)
-   computer(action: "wait", duration: 3, tabId)
+[ ] STEP 3: Limit Reached State
+    - Versuche Response #21
+    - read_page(tabId)
+    - VERIFY: Limit Warning erscheint
+    - VERIFY: Upgrade CTA sichtbar
 
-4. [ ] Auto-Account Check
-   javascript_tool("localStorage.getItem('token')", tabId)
-   -> Erwarte: JWT Token vorhanden
-   -> FAIL wenn: null oder undefined
+[ ] STEP 4: Upgrade Button Click
+    - find("upgrade" OR "get more", tabId)
+    - click(ref, tabId)
+    - wait(3s)
 
-5. [ ] User ist eingeloggt
-   javascript_tool("localStorage.getItem('user')", tabId)
-   -> Erwarte: User-Objekt mit email
+[ ] STEP 5: Pricing Page OR Stripe Direct
+    - javascript("window.location.href", tabId)
+    - VERIFY: /pricing ODER checkout.stripe.com
 
-6. [ ] Alle Responses jetzt sichtbar
-   read_page(tabId)
-   -> Erwarte: Blur entfernt
-   -> Erwarte: Copy-Button aktiv
-
-7. [ ] Copy-Button funktioniert
-   find("copy", tabId)
-   computer(action: "left_click", ref, tabId)
-   -> Erwarte: Copied! Feedback oder Clipboard filled
+[ ] STEP 6: Stripe Checkout (Optional - nicht submitten!)
+    - VERIFY: Stripe Page laedt
+    - VERIFY: Korrekte Plan Details
+    - VERIFY: Price korrekt ($29/$49/$99)
+    - NICHT: Tatsaechlich bezahlen!
 ```
 
-**SUCCESS CRITERIA:**
-- [ ] Email-Eingabe funktioniert
-- [ ] Auto-Account wird erstellt
-- [ ] JWT Token im LocalStorage
-- [ ] Responses werden freigeschaltet
-- [ ] Copy-Button funktioniert
+### First-Principles bei Failure
+
+```
+WENN CONVERSION FAILED:
+
+1. Limit Warning erscheint nicht
+   → Frontend Limit Check kaputt
+   → Check: /api/stats Response + Frontend Logic
+
+2. Upgrade Button fehlt
+   → CTA nicht gerendert
+   → Check: Pricing Component
+
+3. Stripe laedt nicht
+   → STRIPE_PUBLIC_KEY Problem
+   → Check: Env Variable + Stripe Dashboard
+```
 
 ---
 
-## PHASE 3: ACTIVATION TEST
+## SUB-SKILL: GENERATOR FLOW
 
-> Testet ob User zur Response-Generierung kommt
+> **Testet:** Core Feature - Review Input → AI Response
+
+### Steps
 
 ```
-ACTIVATION TESTS:
+GENERATOR FLOW CHECKLIST:
 
-1. [ ] CTA Button finden
-   find("Start generating" OR "try it" OR "get started", tabId)
-   computer(action: "left_click", ref, tabId)
-   computer(action: "wait", duration: 3, tabId)
+[ ] STEP 1: Direct Generator Access
+    - navigate("/generator", tabId)
+    - VERIFY: Auth Check (redirect wenn nicht logged in?)
 
-2. [ ] URL Check - KRITISCH!
-   javascript_tool("window.location.pathname", tabId)
-   -> Erwarte: "/generator" (NICHT "/dashboard"!)
-   -> FAIL wenn: "/dashboard" oder "/register"
+[ ] STEP 2: Verschiedene Input Types
+    TEST A: Negative Review (deutsch)
+    - Input: "Das Essen war kalt, Service langsam"
+    - VERIFY: Response ist professionell + empathisch
 
-3. [ ] Generator Page laedt
-   read_page(tabId)
-   -> Erwarte: Business Name Input
-   -> Erwarte: Generate Button
+    TEST B: Positive Review (englisch)
+    - Input: "Great food, amazing service!"
+    - VERIFY: Response ist dankbar + engaging
 
-4. [ ] Business-Info eingeben
-   find("business name" OR "restaurant name", tabId)
-   form_input(ref, "Test Restaurant Berlin", tabId)
+    TEST C: Mixed Review
+    - Input: "Food was good but too expensive"
+    - VERIFY: Response addressiert beide Punkte
 
-   find("review" OR "paste review", tabId)
-   form_input(ref, "The food was okay but service was slow.", tabId)
+[ ] STEP 3: Tone Options
+    - Test: Professional Tone
+    - Test: Friendly Tone
+    - Test: Formal Tone
+    - VERIFY: Responses unterscheiden sich
 
-5. [ ] Response generieren
-   find("generate", tabId)
-   computer(action: "left_click", ref, tabId)
-   computer(action: "wait", duration: 8, tabId)
+[ ] STEP 4: Platform Detection (wenn vorhanden)
+    - Test: Google Review Format
+    - Test: Yelp Review Format
+    - VERIFY: Platform-spezifische Anpassungen
 
-6. [ ] Response angezeigt
-   read_page(tabId)
-   -> Erwarte: AI Response Text sichtbar
-   -> Erwarte: Copy Button
-   -> FAIL wenn: Error Message oder Loading stuck
-
-7. [ ] Console Check
-   read_console_messages(tabId, onlyErrors: true)
-   -> Erwarte: Keine Errors
+[ ] STEP 5: Response Quality Check
+    - VERIFY: Keine "Slop" Phrases ("Thank you for your feedback")
+    - VERIFY: Personalisiert (erwaehnt Business Name)
+    - VERIFY: Addressiert Feedback spezifisch
 ```
-
-**SUCCESS CRITERIA:**
-- [ ] CTA fuehrt zu /generator (NICHT /dashboard!)
-- [ ] Generator Page funktioniert
-- [ ] Response wird generiert
-- [ ] Response ist kopierfaehig
-- [ ] Keine Console Errors
 
 ---
 
-## PHASE 4: LIMIT TEST
+## SUB-SKILL: EXTENSION FLOW
 
-> Testet Upgrade-Flow bei Limit-Erreichen
+> **Testet:** Chrome Extension auf externen Review-Seiten
+
+### Prerequisites
+- Chrome Extension installiert
+- Test-Account eingeloggt in Extension
+
+### Steps
 
 ```
-LIMIT TESTS:
+EXTENSION FLOW CHECKLIST:
 
-1. [ ] User-Limits via API pruefen
-   curl -s "https://review-responder.onrender.com/api/stats" \
-     -H "Authorization: Bearer [TEST_USER_TOKEN]"
-   -> Check: responses_used, limit
+[ ] STEP 1: Extension Load
+    - Oeffne Extension Popup
+    - VERIFY: Login Status korrekt
+    - VERIFY: UI laedt ohne Fehler
 
-2. [ ] Limits via API simulieren (Admin)
-   # Setze User auf 19/20 Responses
-   curl -X POST "https://review-responder.onrender.com/api/admin/set-user-responses" \
-     -H "x-admin-key: [ADMIN_KEY]" \
-     -d '{"email":"[TEST_EMAIL]","responses_used":19}'
+[ ] STEP 2: Navigate to Review Site
+    - navigate("google.com/maps", tabId)
+    - Suche Test-Business
+    - VERIFY: Reviews sichtbar
 
-3. [ ] Noch eine Response generieren
-   -> Jetzt bei 20/20
+[ ] STEP 3: Extension Detection
+    - Extension sollte Reviews erkennen
+    - VERIFY: "Generate Response" Button erscheint
 
-4. [ ] Limit-Warning Check
-   read_page(tabId)
-   -> Erwarte: "Limit reached" oder "Upgrade" Message
-   -> Erwarte: Upgrade Button sichtbar
+[ ] STEP 4: Generate via Extension
+    - Click Extension Button
+    - VERIFY: Response wird generiert
+    - VERIFY: Response ist kontextbezogen
 
-5. [ ] Upgrade-Button klicken
-   find("upgrade" OR "get more", tabId)
-   computer(action: "left_click", ref, tabId)
-   computer(action: "wait", duration: 3, tabId)
-
-6. [ ] Stripe Checkout Check
-   javascript_tool("window.location.href", tabId)
-   -> Erwarte: checkout.stripe.com ODER
-   -> Erwarte: /pricing Page
+[ ] STEP 5: Inject Response (wenn Feature existiert)
+    - Copy/Paste oder Direct Inject
+    - VERIFY: Response im Reply-Feld
 ```
-
-**SUCCESS CRITERIA:**
-- [ ] Limit-Warning erscheint bei 20/20
-- [ ] Upgrade-Button sichtbar
-- [ ] Stripe Checkout laedt
 
 ---
 
-## PHASE 5: CLEANUP & REPORT
+## SUB-SKILL: ALERTS FLOW
+
+> **Testet:** Review Alert Setup und Delivery
+
+### Steps
 
 ```
-CLEANUP:
+ALERTS FLOW CHECKLIST:
 
-1. [ ] Test-User archivieren (nicht loeschen!)
-   # Markiere als Test-Account
-   curl -X POST "https://review-responder.onrender.com/api/admin/mark-test-user" \
-     -H "x-admin-key: [ADMIN_KEY]" \
-     -d '{"email":"[TEST_EMAIL]"}'
+[ ] STEP 1: Alerts Setup Page
+    - navigate("/dashboard/alerts", tabId)
+    - VERIFY: Setup UI sichtbar
 
-2. [ ] Tab schliessen
-   # Optional - Chrome cleanup
+[ ] STEP 2: Business Search
+    - Suche nach Test-Business
+    - VERIFY: Google Places Autocomplete funktioniert
+    - VERIFY: Business Details werden geladen
 
-3. [ ] JSON Report generieren
+[ ] STEP 3: Configure Alert
+    - Waehle Frequenz (daily/weekly)
+    - VERIFY: Settings gespeichert
+
+[ ] STEP 4: Test Alert (API)
+    - curl /api/cron/review-alerts?test=true
+    - VERIFY: Alert Email wird gesendet
+    - VERIFY: Email Inhalt korrekt
+```
+
+---
+
+## META-SKILL ORCHESTRATION
+
+### Wenn `/funnel-verify` ohne Parameter:
+
+```
+DEFAULT EXECUTION ORDER (P1 Flows):
+
+1. Backend Wake-Up Check
+   curl --retry 3 /api/admin/stats
+
+2. Demo Flow Test
+   → Bei Failure: STOP + First-Principles
+
+3. Activation Flow Test
+   → Bei Failure: STOP + First-Principles
+
+4. Conversion Flow Test (ohne echte Zahlung)
+   → Bei Failure: Log + Continue
+
+5. Generator Flow Test
+   → Bei Failure: CRITICAL (Core Feature!)
+
+6. Report Generation
+```
+
+### Wenn `/funnel-verify all`:
+
+```
+COMPLETE EXECUTION (Alle Flows):
+
+P1 Flows (MUSS funktionieren):
+1. Demo Flow
+2. Activation Flow
+3. Conversion Flow
+4. Generator Flow
+
+P2 Flows (SOLLTE funktionieren):
+5. Landing → Register Flow
+6. Magic Link Flow
+
+P3 Flows (NICE TO HAVE):
+7. Extension Flow
+8. Alerts Flow
+9. Bulk Generator Flow
+```
+
+---
+
+## FIRST-PRINCIPLES INTEGRATION
+
+### Bei JEDEM Failure:
+
+```
+=== FIRST PRINCIPLES ANALYSE ===
+
+SYMPTOM: [Was sieht aus wie das Problem]
+  z.B. "Demo Page zeigt keine Responses"
+
+ECHTES PROBLEM: [Root Cause Analyse]
+  1. API Check: curl /api/demo/[token]
+  2. DB Check: Demo existiert?
+  3. Frontend Check: Console Errors?
+  4. Network Check: API Calls erfolgreich?
+
+BISHERIGER ANSATZ: [Was wurde versucht]
+  z.B. "Page neu laden"
+
+WARUM ES NICHT FUNKTIONIERT: [Die falsche Annahme]
+  z.B. "Frontend Bug, nicht Backend"
+
+NEUER ANSATZ: [Was stattdessen tun]
+  z.B. "Fix React Component rendering"
+
+ERSTE AKTION: [Konkret, jetzt machbar]
+  z.B. "Check DemoPage.tsx line 45"
+```
+
+### Automatische Root-Cause Checks:
+
+```javascript
+// Bei jedem Failure automatisch ausfuehren:
+
+async function rootCauseAnalysis(failure) {
+  const checks = [];
+
+  // 1. Backend Health
+  checks.push({
+    name: "Backend Status",
+    cmd: "curl /api/admin/stats",
+    expect: "200 OK"
+  });
+
+  // 2. Console Errors
+  checks.push({
+    name: "JS Errors",
+    cmd: "read_console_messages(tabId, onlyErrors: true)",
+    expect: "[]"
+  });
+
+  // 3. Network Failures
+  checks.push({
+    name: "Failed Requests",
+    cmd: "read_network_requests(tabId, status: 'failed')",
+    expect: "[]"
+  });
+
+  // 4. Auth Status
+  checks.push({
+    name: "Auth Token",
+    cmd: "localStorage.getItem('token')",
+    expect: "JWT string"
+  });
+
+  return runChecks(checks);
+}
 ```
 
 ---
@@ -268,62 +547,57 @@ CLEANUP:
 ```json
 {
   "timestamp": "[ISO]",
+  "mode": "default" | "all" | "[specific_flow]",
   "overall_status": "PASS" | "FAIL" | "PARTIAL",
-  "duration_total_ms": [N],
-  "phases": {
-    "setup": {
+  "duration_total_ms": 45000,
+
+  "flows_tested": {
+    "demo": {
       "status": "PASS",
-      "duration_ms": 1200,
-      "details": {
-        "demo_token": "[TOKEN]",
-        "test_email": "[EMAIL]"
-      }
-    },
-    "demo_page": {
-      "status": "PASS",
-      "duration_ms": 3500,
-      "checks": {
-        "page_loads": true,
-        "responses_visible": true,
-        "email_gate_works": true,
-        "console_clean": true
-      }
-    },
-    "email_capture": {
-      "status": "FAIL",
-      "duration_ms": 2100,
-      "error": "Auto-account not created - no JWT in localStorage",
-      "checks": {
-        "email_input_works": true,
-        "auto_account_created": false,
-        "jwt_present": false,
-        "responses_unlocked": false
-      }
+      "steps_passed": 6,
+      "steps_total": 6,
+      "duration_ms": 12000
     },
     "activation": {
-      "status": "SKIPPED",
-      "reason": "Previous phase failed"
+      "status": "FAIL",
+      "steps_passed": 4,
+      "steps_total": 8,
+      "failed_at": "STEP 5: Generate Response",
+      "error": "API returned 500",
+      "first_principles": {
+        "symptom": "Generate button returns error",
+        "root_cause": "OpenAI API key expired",
+        "fix": "Update OPENAI_API_KEY in Render"
+      },
+      "duration_ms": 8000
     },
-    "limit_test": {
+    "conversion": {
       "status": "SKIPPED",
-      "reason": "Previous phase failed"
-    },
-    "cleanup": {
-      "status": "PASS"
+      "reason": "Previous critical flow failed"
     }
   },
-  "broken_phases": ["email_capture"],
-  "console_errors": [],
+
+  "critical_failures": [
+    {
+      "flow": "activation",
+      "step": "Generate Response",
+      "impact": "Users cannot generate responses",
+      "priority": "P0 - FIX IMMEDIATELY"
+    }
+  ],
+
+  "recommendations": [
+    "1. Check OpenAI API key in Render dashboard",
+    "2. Verify API credits available",
+    "3. Re-run /funnel-verify activation after fix"
+  ],
+
   "test_data": {
     "test_email": "funnel-test-1737162000@test.local",
     "demo_token": "demo_test_abc123",
-    "user_id": null,
+    "user_created": true,
     "responses_generated": 0
-  },
-  "recommendations": [
-    "Fix auto-account creation endpoint",
-    "Check /api/auth/auto-create-demo-user logs"
-  ]
+  }
 }
 ```
 
@@ -331,160 +605,88 @@ CLEANUP:
 
 ## NIGHT-AGENT INTEGRATION
 
-### Automatischer Check (alle 6h)
-
-Night-Agents (besonders Burst-2, 4, 5) sollen VOR Marketing-Aktionen pruefen:
+### Vor JEDER Marketing-Aktion:
 
 ```bash
-# In Night-Burst Session:
-# 1. Letzte Funnel-Verify Ergebnis checken
-powershell -File scripts/agent-helpers.ps1 -Action funnel-status
+# Check Funnel Health (schnell, ohne volle Tests)
+cat content/claude-progress/funnel-health-log.json
 
-# Output Beispiel:
-# {
-#   "last_check": "2026-01-18T01:00:00Z",
-#   "status": "PASS",
-#   "hours_ago": 3
-# }
+# Wenn last_check > 6h ODER status != PASS:
+/funnel-verify
 
-# 2. Wenn >6h alt ODER status != PASS:
-#    -> Fuehre /funnel-verify aus
-#    -> Bei FAIL: STOPPE alle Outreach!
+# Wenn FAIL:
+# → STOPPE ALLE OUTREACH
+# → Erstelle Burst-15 Approval
 ```
 
-### Bei FAIL - Burst-15 Approval erstellen
+### Auto-Run nach Deploy:
 
-```json
-{
-  "type": "funnel_broken",
-  "severity": "critical",
-  "broken_phases": ["email_capture"],
-  "action_blocked": "All outreach paused until funnel fixed",
-  "recommended_fix": "Check /api/auth/auto-create-demo-user",
-  "created_by": "funnel-verify"
+```
+DEPLOY HOOK:
+1. Backend deployed
+2. Wait 60s for spin-up
+3. Run /funnel-verify
+4. If FAIL → Rollback oder Alert
+```
+
+---
+
+## CHROME MCP HELPER FUNCTIONS
+
+```javascript
+// Wiederverwendbare Funktionen fuer alle Sub-Skills
+
+async function verifyElementExists(query, tabId) {
+  const result = await find(query, tabId);
+  return result && result.length > 0;
+}
+
+async function verifyNoConsoleErrors(tabId) {
+  const errors = await read_console_messages(tabId, {onlyErrors: true});
+  return errors.length === 0;
+}
+
+async function verifyJWT(tabId) {
+  const token = await javascript_tool("localStorage.getItem('token')", tabId);
+  return token && token.startsWith('eyJ');
+}
+
+async function verifyURL(expected, tabId) {
+  const current = await javascript_tool("window.location.pathname", tabId);
+  return current === expected;
+}
+
+async function safeClick(query, tabId) {
+  const ref = await find(query, tabId);
+  if (!ref) return false;
+  await computer({action: "left_click", ref, tabId});
+  await computer({action: "wait", duration: 2, tabId});
+  return true;
 }
 ```
 
 ---
 
-## FAILURE HANDLING
+## SCHEDULING & FREQUENZ
 
-### Phase Failure -> Skip Dependent Phases
-
-```
-IF Phase 1 (Demo Page) FAILS:
-  -> Skip Phase 2, 3, 4
-  -> Report: "Demo Page broken - funnel unusable"
-
-IF Phase 2 (Email Capture) FAILS:
-  -> Skip Phase 3, 4
-  -> Report: "Auto-account broken - users can't activate"
-
-IF Phase 3 (Activation) FAILS:
-  -> Skip Phase 4
-  -> Report: "Generator broken - users can't create responses"
-```
-
-### Common Failures & Fixes
-
-| Failure | Likely Cause | Quick Fix |
-|---------|--------------|-----------|
-| Demo Page 404 | Token invalid | Regenerate Demo |
-| No JWT after email | Auto-account endpoint broken | Check server.js /auth/auto-create-demo-user |
-| Redirect to /dashboard | CTA Link wrong | Fix Demo Page CTA |
-| Generator error | API key issue | Check OpenAI/Claude keys |
-| Stripe not loading | Stripe key issue | Check STRIPE_PUBLIC_KEY |
+| Trigger | Flows testen | Frequenz |
+|---------|--------------|----------|
+| Nach Deploy | Alle P1 | Sofort |
+| Night-Burst Start | Demo + Activation | 1x/Nacht |
+| Vor Outreach-Kampagne | Demo + Activation | Vor Start |
+| Routine | Alle P1 | Alle 6h |
+| On-Demand | Spezifisch | Bei Verdacht |
 
 ---
 
-## MANUAL OVERRIDE
+## MERKSATZ
 
-Falls Chrome MCP nicht verfuegbar:
-
-```bash
-# API-Only Test (weniger komplett, aber schnell)
-/funnel-verify --api-only
-
-# Das testet:
-# - Demo Generation API
-# - Auto-Account API
-# - Response Generation API
-# - Stats API
-
-# Das testet NICHT:
-# - UI/UX
-# - JavaScript Errors
-# - Copy-Button
-# - Stripe Checkout
-```
+> **Ein kaputter Funnel mit 1000 Leads = $0 Revenue**
+> **Ein funktionierender Funnel mit 10 Leads = Moeglich $290**
+>
+> IMMER zuerst Funnel verifizieren, DANN Marketing!
 
 ---
 
-## SCHEDULING
-
-### Empfohlene Frequenz
-
-| Trigger | Frequenz |
-|---------|----------|
-| Nach Deploy | IMMER |
-| Night-Burst Start | 1x pro Nacht |
-| Vor grossen Outreach-Kampagnen | 1x |
-| Nach Backend-Updates | IMMER |
-| Routine | Alle 6 Stunden |
-
-### Cron-Job Setup (Optional)
-
-```
-# In cron-job.org:
-# URL: https://review-responder.onrender.com/api/cron/funnel-health
-# Interval: Every 6 hours
-# Response wird in funnel-health-log.json gespeichert
-```
-
----
-
-## QUICK REFERENCE
-
-### Chrome MCP Commands Used
-
-| Tool | Purpose |
-|------|---------|
-| `tabs_context_mcp` | Session starten |
-| `tabs_create_mcp` | Neuen Tab erstellen |
-| `navigate` | URL oeffnen |
-| `read_page` | DOM lesen |
-| `find` | Element suchen |
-| `form_input` | Input ausfuellen |
-| `computer` | Click, Wait, Screenshot |
-| `javascript_tool` | LocalStorage, URL check |
-| `read_console_messages` | Error Check |
-
-### Success Rate Tracking
-
-Nach jedem /funnel-verify wird gespeichert:
-
-```json
-// content/claude-progress/funnel-health-log.json
-{
-  "history": [
-    {
-      "timestamp": "2026-01-18T01:00:00Z",
-      "status": "PASS",
-      "duration_ms": 45000
-    },
-    {
-      "timestamp": "2026-01-17T19:00:00Z",
-      "status": "FAIL",
-      "broken_phases": ["email_capture"]
-    }
-  ],
-  "success_rate_7d": 85,
-  "last_failure": "2026-01-17T19:00:00Z",
-  "mtbf_hours": 12
-}
-```
-
----
-
+*Version: 2.0 - Meta-Skill mit Sub-Skills + First-Principles*
 *Erstellt: 18.01.2026*
-*Grund: 97% Demo-Email Bug haette damit verhindert werden koennen*

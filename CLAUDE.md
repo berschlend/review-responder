@@ -103,6 +103,12 @@ CLAUDE.md lesen -> Task -> Testen -> Git push -> CLAUDE.md updaten
 ### Dashboards
 Render | Stripe | Cron-job.org | Resend
 
+### Render Manual Deploy (wenn noetig)
+Falls Auto-Deploy nicht triggert, kann Claude via Chrome MCP manuell deployen:
+1. `claude --chrome` starten
+2. Navigate zu https://dashboard.render.com
+3. Service waehlen → "Manual Deploy" → "Deploy latest commit"
+
 ---
 
 ## CURRENT TASKS
@@ -190,10 +196,23 @@ Claude entfernt Task aus `.claude/sticky-tasks.json`
 `/marketing [status|chase|outreach|demo|analyze|linkedin]`
 
 ### Funnel Verify Skill (NEU!)
-`/funnel-verify` - E2E Test des Sales-Funnels mit Chrome MCP
-- Testet: Demo Page -> Email Capture -> Activation -> Limits -> Upgrade
-- Findet Bugs bevor sie 100+ Leads betreffen
-- Night-Agents checken Funnel-Status vor Outreach
+`/funnel-verify [flow]` - Meta-Skill fuer ALLE User-Flows mit Chrome MCP
+
+**Sub-Flows:**
+| Flow | Command | Was wird getestet |
+|------|---------|-------------------|
+| Demo | `/funnel-verify demo` | Email → Demo Page → Auto-Account |
+| Activation | `/funnel-verify activation` | User → Generator → First Response |
+| Conversion | `/funnel-verify conversion` | Free → Limit → Stripe → Paid |
+| Generator | `/funnel-verify generator` | Core Feature Tests |
+| Extension | `/funnel-verify extension` | Chrome Extension Flow |
+| Alerts | `/funnel-verify alerts` | Review Alerts Setup |
+| **Alle** | `/funnel-verify all` | Kompletter E2E Test |
+
+**Features:**
+- First-Principles Analyse bei Failures
+- Automatische Root-Cause Checks
+- Night-Agent Integration (stoppt Outreach bei FAIL)
 
 ---
 
