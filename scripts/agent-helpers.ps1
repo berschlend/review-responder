@@ -8,7 +8,7 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend", "feedback-read", "feedback-alert", "budget-check", "budget-use", "approval-check", "approval-expire", "check-real-users", "data-analyze", "get-login", "set-tier")]
+    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend", "feedback-read", "feedback-alert", "budget-check", "budget-use", "approval-check", "approval-expire", "check-real-users", "data-analyze", "get-login", "set-tier", "chrome-gmail", "chrome-admin", "chrome-monitor-setup")]
     [string]$Action,
 
     [int]$Agent = 0,
@@ -769,6 +769,100 @@ switch ($Action) {
     }
 }
 
+
+# === CHROME MCP HELPERS (V4.3) ===
+# These output instructions for using Chrome MCP - agents must call the MCP tools directly
+
+if ($Action -eq "chrome-gmail") {
+    Write-Host "=== CHROME MCP: GMAIL ===" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Use these Chrome MCP tools in your session:" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "1. Get tab context:" -ForegroundColor White
+    Write-Host "   mcp__claude-in-chrome__tabs_context_mcp({ createIfEmpty: true })" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "2. Navigate to Gmail:" -ForegroundColor White
+    Write-Host '   mcp__claude-in-chrome__navigate({ url: "https://mail.google.com", tabId: [TAB_ID] })' -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "3. Wait for load:" -ForegroundColor White
+    Write-Host '   mcp__claude-in-chrome__computer({ action: "wait", duration: 5, tabId: [TAB_ID] })' -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "4. Screenshot:" -ForegroundColor White
+    Write-Host '   mcp__claude-in-chrome__computer({ action: "screenshot", tabId: [TAB_ID] })' -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "5. Read inbox:" -ForegroundColor White
+    Write-Host '   mcp__claude-in-chrome__read_page({ tabId: [TAB_ID], filter: "all" })' -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "Gmail Search Filters:" -ForegroundColor Yellow
+    Write-Host "  Bounces:  from:mailer-daemon newer_than:1d" -ForegroundColor Gray
+    Write-Host "  Replies:  subject:re: is:unread" -ForegroundColor Gray
+    Write-Host "  Resend:   from:resend.com" -ForegroundColor Gray
+    Write-Host ""
+    exit 0
+}
+
+if ($Action -eq "chrome-admin") {
+    Write-Host "=== CHROME MCP: ADMIN DASHBOARD ===" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Use these Chrome MCP tools in your session:" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "1. Get tab context:" -ForegroundColor White
+    Write-Host "   mcp__claude-in-chrome__tabs_context_mcp({ createIfEmpty: true })" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "2. Navigate to login:" -ForegroundColor White
+    Write-Host '   mcp__claude-in-chrome__navigate({ url: "https://tryreviewresponder.com/login", tabId: [TAB_ID] })' -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "3. Login with test account:" -ForegroundColor White
+    Write-Host "   Email: funnel-test-unlimited@test.local" -ForegroundColor Green
+    Write-Host "   Password: ad131653129e8362dac3396bf1f0cc51" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "4. Navigate to admin:" -ForegroundColor White
+    Write-Host '   mcp__claude-in-chrome__navigate({ url: "https://tryreviewresponder.com/admin", tabId: [TAB_ID] })' -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "5. Screenshot:" -ForegroundColor White
+    Write-Host '   mcp__claude-in-chrome__computer({ action: "screenshot", tabId: [TAB_ID] })' -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "Admin Dashboard URLs:" -ForegroundColor Yellow
+    Write-Host "  Overview:   /admin" -ForegroundColor Gray
+    Write-Host "  Users:      /admin/users" -ForegroundColor Gray
+    Write-Host "  Outreach:   /admin/outreach" -ForegroundColor Gray
+    Write-Host "  API Costs:  /admin/api-costs" -ForegroundColor Gray
+    Write-Host ""
+    exit 0
+}
+
+if ($Action -eq "chrome-monitor-setup") {
+    Write-Host "=== CHROME MCP: FULL MONITORING SETUP ===" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Workflow for Morning Briefer / Monitoring Agents:" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "STEP 1: Get tabs" -ForegroundColor White
+    Write-Host "   mcp__claude-in-chrome__tabs_context_mcp({ createIfEmpty: true })" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "STEP 2: Create second tab" -ForegroundColor White
+    Write-Host "   mcp__claude-in-chrome__tabs_create_mcp()" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "STEP 3: Tab 1 -> Gmail" -ForegroundColor White
+    Write-Host '   mcp__claude-in-chrome__navigate({ url: "https://mail.google.com", tabId: [TAB1_ID] })' -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "STEP 4: Tab 2 -> Admin Dashboard" -ForegroundColor White
+    Write-Host '   mcp__claude-in-chrome__navigate({ url: "https://tryreviewresponder.com/admin", tabId: [TAB2_ID] })' -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "STEP 5: Screenshot both" -ForegroundColor White
+    Write-Host '   mcp__claude-in-chrome__computer({ action: "screenshot", tabId: [TAB1_ID] })' -ForegroundColor Gray
+    Write-Host '   mcp__claude-in-chrome__computer({ action: "screenshot", tabId: [TAB2_ID] })' -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "STEP 6: Analyze and report" -ForegroundColor White
+    Write-Host "   - Check Gmail for bounces, replies" -ForegroundColor Gray
+    Write-Host "   - Check Dashboard for metrics" -ForegroundColor Gray
+    Write-Host "   - Create Morning Briefing" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "Login Credentials (Unlimited Tier):" -ForegroundColor Yellow
+    Write-Host "   Email: funnel-test-unlimited@test.local" -ForegroundColor Green
+    Write-Host "   Password: ad131653129e8362dac3396bf1f0cc51" -ForegroundColor Green
+    Write-Host ""
+    exit 0
+}
 
 # === DATA ANALYZE (Full Data Quality Analysis) ===
 # Usage: powershell -File scripts/agent-helpers.ps1 -Action data-analyze [-Key ctr|users|all]

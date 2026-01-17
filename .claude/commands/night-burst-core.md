@@ -641,6 +641,196 @@ powershell -File scripts/agent-helpers.ps1 -Action set-tier -Tier pro
 # Output: "Active tier set to: pro"
 ```
 
+---
+
+## 🌐 CHROME MCP - GMAIL & ADMIN DASHBOARD (V4.3 - NEU!)
+
+> **Agents können Gmail lesen und Admin Dashboard checken via Chrome MCP.**
+> Das ist AUTONOM - keine User-Bestätigung nötig!
+
+### Wann nutzen?
+
+| Agent | Gmail | Admin Dashboard | Use Case |
+|-------|-------|-----------------|----------|
+| Burst-2 (Emailer) | ✅ | ✅ | Bounces checken, Replies lesen |
+| Burst-5 (Chaser) | ✅ | ✅ | Replies von Hot Leads |
+| Burst-9 (Doctor) | ❌ | ✅ | Metriken, Health Status |
+| Burst-10 (Briefer) | ✅ | ✅ | Tägliche Zusammenfassung |
+| Burst-11 (Analyzer) | ❌ | ✅ | Bottleneck Daten |
+
+### Gmail Zugriff (Read-Only!)
+
+```bash
+# 1. Chrome Session starten (wenn noch nicht aktiv)
+# → tabs_context_mcp aufrufen um Tab-IDs zu bekommen
+
+# 2. Zu Gmail navigieren
+mcp__claude-in-chrome__navigate({
+  url: "https://mail.google.com",
+  tabId: [TAB_ID]
+})
+
+# 3. Warten bis geladen (Gmail lädt langsam)
+mcp__claude-in-chrome__computer({
+  action: "wait",
+  duration: 5,
+  tabId: [TAB_ID]
+})
+
+# 4. Screenshot für Übersicht
+mcp__claude-in-chrome__computer({
+  action: "screenshot",
+  tabId: [TAB_ID]
+})
+
+# 5. Inbox lesen (Accessibility Tree)
+mcp__claude-in-chrome__read_page({
+  tabId: [TAB_ID],
+  filter: "all"
+})
+```
+
+### Gmail - Was Agents tun dürfen/nicht dürfen
+
+| Aktion | Erlaubt? | Grund |
+|--------|----------|-------|
+| Inbox lesen | ✅ JA | Bounces, Replies checken |
+| Email öffnen | ✅ JA | Details lesen |
+| Suchen | ✅ JA | "from:resend.com" etc. |
+| **Emails senden** | ✅ JA | Für manuelle Replies, Follow-ups |
+| **Emails löschen** | ❌ NEIN | Irreversibel |
+| Labels ändern | ⚠️ NUR mit Approval | |
+
+### Gmail Emails senden (NEU!)
+
+```bash
+# 1. Compose Button finden und klicken
+mcp__claude-in-chrome__find({ query: "compose button", tabId: [TAB_ID] })
+mcp__claude-in-chrome__computer({ action: "left_click", ref: "[REF_ID]", tabId: [TAB_ID] })
+
+# 2. Warten bis Compose-Fenster offen
+mcp__claude-in-chrome__computer({ action: "wait", duration: 2, tabId: [TAB_ID] })
+
+# 3. To-Feld ausfüllen
+mcp__claude-in-chrome__find({ query: "to field", tabId: [TAB_ID] })
+mcp__claude-in-chrome__form_input({ ref: "[REF_ID]", value: "recipient@email.com", tabId: [TAB_ID] })
+
+# 4. Subject ausfüllen
+mcp__claude-in-chrome__find({ query: "subject field", tabId: [TAB_ID] })
+mcp__claude-in-chrome__form_input({ ref: "[REF_ID]", value: "Subject here", tabId: [TAB_ID] })
+
+# 5. Body schreiben
+mcp__claude-in-chrome__find({ query: "message body", tabId: [TAB_ID] })
+mcp__claude-in-chrome__form_input({ ref: "[REF_ID]", value: "Email content here", tabId: [TAB_ID] })
+
+# 6. Senden (WICHTIG: Braucht Approval für erste Emails!)
+mcp__claude-in-chrome__find({ query: "send button", tabId: [TAB_ID] })
+mcp__claude-in-chrome__computer({ action: "left_click", ref: "[REF_ID]", tabId: [TAB_ID] })
+```
+
+### Wann Gmail vs API nutzen?
+
+| Situation | Gmail | API (Resend/Brevo/MailerSend) |
+|-----------|-------|-------------------------------|
+| Cold Outreach Batch | ❌ | ✅ API (Tracking, Templates) |
+| Reply auf Kundenanfrage | ✅ | ❌ |
+| Persönliche Follow-ups | ✅ | ❌ |
+| Demo-Emails | ❌ | ✅ API |
+| 1:1 Kommunikation | ✅ | ❌ |
+
+### Gmail Suchfilter (nützlich)
+
+```
+# Bounces finden
+from:mailer-daemon OR from:postmaster subject:delivery
+
+# Resend Notifications
+from:resend.com
+
+# Replies auf Outreach
+subject:re: "review" OR "demo"
+
+# Unread only
+is:unread
+
+# Letzte 24h
+newer_than:1d
+```
+
+### Admin Dashboard Zugriff
+
+```bash
+# 1. Navigieren
+mcp__claude-in-chrome__navigate({
+  url: "https://tryreviewresponder.com/admin",
+  tabId: [TAB_ID]
+})
+
+# 2. Login (falls nötig - nutze Unlimited Test Account)
+# Email: funnel-test-unlimited@test.local
+# PW: ad131653129e8362dac3396bf1f0cc51
+
+# 3. Screenshot für Metriken
+mcp__claude-in-chrome__computer({
+  action: "screenshot",
+  tabId: [TAB_ID]
+})
+
+# 4. Seite lesen
+mcp__claude-in-chrome__read_page({
+  tabId: [TAB_ID]
+})
+```
+
+### Admin Dashboard Tabs (direkt navigierbar)
+
+| Tab | URL | Daten |
+|-----|-----|-------|
+| Overview | `/admin` | MRR, Users, Responses |
+| Users | `/admin/users` | User Liste, Activity |
+| Outreach | `/admin/outreach` | Leads, CTR, Bounces |
+| API Costs | `/admin/api-costs` | Token Usage |
+| Feedback | `/admin/feedback` | User Ratings |
+
+### Helper für Chrome Navigation
+
+```bash
+# Gmail öffnen und Inbox lesen
+powershell -File scripts/agent-helpers.ps1 -Action chrome-gmail
+
+# Admin Dashboard öffnen
+powershell -File scripts/agent-helpers.ps1 -Action chrome-admin
+
+# Beide in separaten Tabs
+powershell -File scripts/agent-helpers.ps1 -Action chrome-monitor-setup
+```
+
+### WICHTIG: Session Management
+
+```
+BEI CHROME MCP NUTZUNG:
+
+1. IMMER zuerst tabs_context_mcp aufrufen
+2. Tab-IDs notieren (ändern sich bei Browser-Restart!)
+3. Gmail Tab NICHT schliessen (Protected)
+4. Bei "tab not found" Error: tabs_context_mcp erneut aufrufen
+5. Max 3-4 Tabs pro Session (RAM-Limit)
+```
+
+### Beispiel: Burst-10 Morning Briefer mit Gmail + Dashboard
+
+```
+SESSION-START:
+
+1. tabs_context_mcp → Tab-IDs holen
+2. Tab 1: Gmail öffnen, Inbox Screenshot
+3. Tab 2: Admin Dashboard öffnen, Metrics Screenshot
+4. Beide Screenshots analysieren
+5. Morning Briefing mit echten Daten erstellen
+```
+
+---
+
 ### 🔄 SUBAGENT SPAWNING - Credentials weitergeben
 
 **WICHTIG:** Wenn du einen Subagent spawnst, IMMER diese Info im Prompt inkludieren:

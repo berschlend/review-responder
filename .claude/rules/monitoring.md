@@ -236,4 +236,108 @@ powershell -File scripts/agent-helpers.ps1 -Action feedback-alert
 
 ---
 
+## 🌐 CHROME MCP MONITORING (NEU V4.3!)
+
+> **Monitoring Agents können Gmail + Admin Dashboard via Chrome MCP checken.**
+> Ergänzt die API-basierten Health Checks mit visuellen Checks.
+
+### Wann Chrome MCP nutzen?
+
+| Check | API | Chrome MCP | Empfehlung |
+|-------|-----|------------|------------|
+| User Count | ✅ `/admin/stats` | ✅ Dashboard | API (schneller) |
+| Email Bounces | ❌ | ✅ Gmail | **Chrome MCP** |
+| Replies | ❌ | ✅ Gmail | **Chrome MCP** |
+| Visual Health | ❌ | ✅ Screenshot | **Chrome MCP** |
+| Login Flow | ❌ | ✅ Test Login | **Chrome MCP** |
+
+### Gmail Monitoring Workflow
+
+```bash
+# 1. Tab Context holen
+mcp__claude-in-chrome__tabs_context_mcp({ createIfEmpty: true })
+
+# 2. Gmail öffnen
+mcp__claude-in-chrome__navigate({ url: "https://mail.google.com", tabId: [ID] })
+
+# 3. Warten (Gmail lädt langsam)
+mcp__claude-in-chrome__computer({ action: "wait", duration: 5, tabId: [ID] })
+
+# 4. Nach Bounces suchen
+mcp__claude-in-chrome__find({ query: "search box", tabId: [ID] })
+# → Klicken und eingeben: "from:mailer-daemon newer_than:1d"
+
+# 5. Screenshot für Report
+mcp__claude-in-chrome__computer({ action: "screenshot", tabId: [ID] })
+```
+
+### Was in Gmail checken?
+
+| Check | Suchfilter | Aktion bei Fund |
+|-------|------------|-----------------|
+| Bounces | `from:mailer-daemon newer_than:1d` | Lead als `bounced` markieren |
+| Replies | `subject:re: "review" is:unread` | An Burst-5 handoff |
+| Resend Errors | `from:resend.com "failed"` | In Health Log |
+| Spam Reports | `from:postmaster "spam"` | ALERT! Outreach stoppen |
+
+### Dashboard Visual Checks
+
+```bash
+# Login und Dashboard öffnen
+mcp__claude-in-chrome__navigate({ url: "https://tryreviewresponder.com/login", tabId: [ID] })
+
+# Mit Test Account einloggen
+# → find "email input", form_input mit funnel-test-unlimited@test.local
+# → find "password input", form_input mit ad131653129e8362dac3396bf1f0cc51
+# → find "login button", click
+
+# Screenshot der Metriken
+mcp__claude-in-chrome__computer({ action: "screenshot", tabId: [ID] })
+```
+
+### Monitoring Schedule
+
+| Agent | Gmail Check | Dashboard Check | Frequenz |
+|-------|-------------|-----------------|----------|
+| Burst-9 | ❌ | ✅ | Jeder Loop |
+| Burst-10 | ✅ | ✅ | 1x/Tag (Morning) |
+| Burst-11 | ❌ | ✅ | Jeder Loop |
+
+### Alert Trigger (Gmail-basiert)
+
+| Fund in Gmail | Alert Level | Aktion |
+|---------------|-------------|--------|
+| 5+ Bounces/Tag | warning | Lead-Qualität prüfen |
+| Spam Complaint | **critical** | Outreach STOPPEN |
+| Angry Reply | warning | An Burst-5 für Response |
+| Positive Reply | **sale** | Hot Lead! |
+
+### Gmail Reply Workflow (NEU!)
+
+> **Agents können jetzt auch via Gmail antworten!**
+> Besser als API für persönliche 1:1 Kommunikation.
+
+```bash
+# Bei interessierter Reply:
+1. Email öffnen in Gmail
+2. Reply-Button klicken
+3. Persönliche Antwort schreiben
+4. Senden
+
+# Wann Gmail Reply nutzen?
+- Kunde hat Frage gestellt
+- Hot Lead will mehr Info
+- Support-Anfrage
+- Persönliche Follow-ups
+```
+
+| Situation | Gmail Reply | API |
+|-----------|-------------|-----|
+| Kunde fragt "Wie funktioniert X?" | ✅ Gmail | ❌ |
+| Hot Lead: "Interessiert, mehr Info?" | ✅ Gmail | ❌ |
+| Bulk Follow-up an 50 Leads | ❌ | ✅ API |
+| Demo-Email senden | ❌ | ✅ API |
+
+---
+
 *Loaded by: Burst-9 (Doctor), Burst-10 (Morning Briefer), Burst-11 (Bottleneck Analyzer)*
