@@ -1,7 +1,7 @@
 {
   "tasks": [
-    { "id": 1, "text": "5 LEADS ANRUFEN für PMF-Validierung → anruf-liste.md" },
-    { "id": 2, "text": "Mail-Tester Score prüfen (nach 24h DNS Propagation)" },
-    { "id": 3, "text": "Google Indexierung fortsetzen" }
+    { "id": 1, "text": "ANRUFEN: Bocconcino 0211-56681482 (Call-Prep ready!)" },
+    { "id": 2, "text": "ANRUFEN: ALCHEMIST 0211-30035660 (Call-Prep ready!)" },
+    { "id": 3, "text": "Demo-Video aufnehmen (Guide in content/BEREND-VIDEO-RECORDING-GUIDE.md)" }
   ]
 }
