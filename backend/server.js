@@ -4118,12 +4118,22 @@ Never start your response with: "Here's", "Let me", "I want to", "First", "Thank
 </forbidden_starts>
 </avoid_patterns>`;
 
+    // Get tone config for the prompt (must be before writingStyleInstructions)
+    const toneConfig = toneDefinitions[tone] || toneDefinitions.professional;
+
     const writingStyleInstructions = `
 <voice>
 You are the business owner speaking directly to a customer.
 Write like you'd text a regular who just left a review.
 Warm but not gushing. Confident but not arrogant. Human, not corporate.
 </voice>
+
+<tone_instruction>
+Requested tone: ${tone || 'professional'}
+Description: ${toneConfig.description}
+Example of good ${tone || 'professional'} response: "${toneConfig.goodExample}"
+AVOID sounding like this: "${toneConfig.avoidExample}"
+</tone_instruction>
 
 <style_rules>
 - Length: ${lengthInstruction}
@@ -4159,7 +4169,7 @@ Just the text you would post as the review response.
 
     // Build the optimized prompt
     const ratingStrategy = getRatingStrategy(reviewRating);
-    const toneConfig = toneDefinitions[tone] || toneDefinitions.professional;
+    // toneConfig is already defined above in writingStyleInstructions
     const isNegative = reviewRating && reviewRating <= 2;
 
     // Language mapping for output language selection
