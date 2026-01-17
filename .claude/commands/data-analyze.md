@@ -1,10 +1,31 @@
 # /data-analyze - Data Quality & Fraud Detection
 
 > Analysiert Metriken auf Verfälschung durch Bots, Tests, und Fake-Events.
+> **Night-Agents: Nutze den Helper fuer automatische Ausfuehrung!**
 
 ---
 
 ## Usage
+
+### Fuer Night-Agents (automatisch)
+
+```bash
+# Full Analysis (CTR + Users)
+powershell -File scripts/agent-helpers.ps1 -Action data-analyze
+
+# Nur CTR
+powershell -File scripts/agent-helpers.ps1 -Action data-analyze -Key ctr
+
+# Nur Users
+powershell -File scripts/agent-helpers.ps1 -Action data-analyze -Key users
+
+# Quick Check (ob Metriken aktuell sind)
+powershell -File scripts/agent-helpers.ps1 -Action check-real-users
+```
+
+**Output:** Speichert automatisch in `content/claude-progress/real-user-metrics.json`
+
+### Fuer interaktive Sessions
 
 ```
 /data-analyze [metric]
@@ -19,6 +40,56 @@
 | `demos` | Demo-Generierungen auf Bot-Pattern |
 | `emails` | Email-Delivery auf Bounces/Spam |
 | `all` | Komplette Data Quality Analyse |
+
+---
+
+## Night-Agent Integration
+
+### Wann ausfuehren
+
+| Agent | Wann | Command |
+|-------|------|---------|
+| Burst-9 (Doctor) | Jeder Loop Start | `check-real-users` |
+| Burst-10 (Briefer) | Wenn >24h seit letztem Update | `data-analyze` |
+| Burst-11 (Analyzer) | Bei Bottleneck-Analyse | `data-analyze` |
+
+### Beispiel: Burst-10 Morning Briefer
+
+```bash
+# 1. Check ob Metriken aktuell sind
+powershell -File scripts/agent-helpers.ps1 -Action check-real-users
+
+# Output wenn STALE:
+# [!] Metrics are STALE (>24h) - run /data-analyze to update
+
+# 2. Wenn stale: Neu analysieren
+powershell -File scripts/agent-helpers.ps1 -Action data-analyze
+```
+
+### real-user-metrics.json Schema
+
+```json
+{
+  "lastUpdated": "2026-01-17T22:30:00Z",
+  "realUsers": {
+    "organic": 0,
+    "outreachAuto": 6,
+    "testAccounts": 55,
+    "activated": 0,
+    "paying": 0
+  },
+  "ctr": {
+    "reported": 4.42,
+    "real": 1.42,
+    "botClicks": 57,
+    "inflation": 211
+  },
+  "botPatterns": [
+    { "pattern": "midnight-burst", "count": 42 },
+    { "pattern": "test-email", "count": 8 }
+  ]
+}
+```
 
 ---
 

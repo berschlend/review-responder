@@ -526,6 +526,19 @@ powershell -File scripts/agent-helpers.ps1 -Action budget-use -Key resend -Amoun
 
 # Verfügbare Keys: resend, openai, serpapi, outscraper, anthropic
 
+# === DATA QUALITY ANALYZE (NEU V4.2!) ===
+# Full Analysis: CTR + Users + Bot Detection -> speichert in real-user-metrics.json
+powershell -File scripts/agent-helpers.ps1 -Action data-analyze
+# Nur CTR analysieren:
+powershell -File scripts/agent-helpers.ps1 -Action data-analyze -Key ctr
+# Nur Users analysieren:
+powershell -File scripts/agent-helpers.ps1 -Action data-analyze -Key users
+
+# === REAL USER METRICS CHECK (V4.2!) ===
+# Quick Check ob Metriken aktuell sind (ohne neue Analyse):
+powershell -File scripts/agent-helpers.ps1 -Action check-real-users
+# Output: STALE wenn >24h alt, sonst aktuelle Zahlen
+
 # === ADMIN API CALLS (mit Auth Header!) ===
 # WICHTIG: Admin Endpoints brauchen x-admin-key Header!
 curl -s -H "x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U" "https://review-responder.onrender.com/api/admin/stats"
@@ -544,7 +557,7 @@ powershell -File scripts/agent-helpers.ps1 -Action wake-backend
 
 ---
 
-## 🎯 SESSION-START CHECKLIST (V3.3)
+## 🎯 SESSION-START CHECKLIST (V4.2)
 
 **JEDER AGENT muss bei Session-Start diese Commands ausführen:**
 
@@ -558,16 +571,22 @@ powershell -File scripts/agent-helpers.ps1 -Action wake-backend
 # 1. HEARTBEAT - Melde dich beim System an
 powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent [X]
 
-# 2. FOCUS CHECKEN - Was ist gerade Priorität?
+# 2. REAL USER METRICS CHECKEN (NEU V4.2!) - Sind die Metriken aktuell?
+powershell -File scripts/agent-helpers.ps1 -Action check-real-users
+# → Wenn STALE (>24h): `data-analyze` ausfuehren zum Update
+# → WICHTIG: DB zeigt 61 User - das ist FALSCH! Echte Zahl ist 0 organic.
+# → Bei Entscheidungen NUR die real-user-metrics.json Zahlen nutzen!
+
+# 3. FOCUS CHECKEN - Was ist gerade Priorität?
 powershell -File scripts/agent-helpers.ps1 -Action focus-read
 # → Wenn agent_priorities.burst-X.priority = 3 und ich nicht high-priority bin: langsamer arbeiten
 # → Wenn paused_agents mich enthält: STOPPEN
 
-# 3. HANDOFFS CHECKEN - Habe ich Arbeit von anderen Agents?
+# 4. HANDOFFS CHECKEN - Habe ich Arbeit von anderen Agents?
 powershell -File scripts/agent-helpers.ps1 -Action handoff-check -Agent [X]
 # → Wenn pending handoffs: Diese ZUERST bearbeiten!
 
-# 4. MEMORY LADEN - Was weiß ich von letzter Session?
+# 5. MEMORY LADEN - Was weiß ich von letzter Session?
 powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent [X]
 # → Learnings anwenden auf diese Session
 ```

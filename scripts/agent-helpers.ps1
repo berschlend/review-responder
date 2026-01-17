@@ -8,7 +8,7 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend", "feedback-read", "feedback-alert", "budget-check", "budget-use", "approval-check", "approval-expire", "check-real-users")]
+    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend", "feedback-read", "feedback-alert", "budget-check", "budget-use", "approval-check", "approval-expire", "check-real-users", "data-analyze")]
     [string]$Action,
 
     [int]$Agent = 0,
@@ -686,6 +686,225 @@ switch ($Action) {
     }
 }
 
+
+# === DATA ANALYZE (Full Data Quality Analysis) ===
+# Usage: powershell -File scripts/agent-helpers.ps1 -Action data-analyze [-Key ctr|users|all]
+# Output: Updates real-user-metrics.json and outputs report
+if ($Action -eq "data-analyze") {
+    $metricsFile = Join-Path $ProgressDir "real-user-metrics.json"
+    $AdminKey = "rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
+    $BaseUrl = "https://review-responder.onrender.com"
+
+    Write-Host "═══════════════════════════════════════════" -ForegroundColor Cyan
+    Write-Host "         DATA QUALITY ANALYSIS" -ForegroundColor Cyan
+    Write-Host "═══════════════════════════════════════════" -ForegroundColor Cyan
+    Write-Host ""
+
+    $analyzeType = if ($Key) { $Key } else { "all" }
+
+    # Initialize results
+    $results = @{
+        lastUpdated = Get-Timestamp
+        analyzedAt = Get-Timestamp
+        realUsers = @{
+            organic = 0
+            outreachAuto = 0
+            testAccounts = 0
+            activated = 0
+            paying = 0
+        }
+        ctr = @{
+            reported = 0
+            real = 0
+            botClicks = 0
+            inflation = 0
+        }
+        botPatterns = @()
+        warnings = @()
+    }
+
+    # === 1. User Analysis ===
+    if ($analyzeType -in @("users", "all")) {
+        Write-Host "1. ANALYZING USERS..." -ForegroundColor Yellow
+
+        try {
+            # Get stats with test filter
+            $statsUrl = "$BaseUrl/api/admin/stats?exclude_test=true"
+            $statsJson = curl.exe -s -H "x-admin-key: $AdminKey" $statsUrl 2>&1
+            $stats = $statsJson | ConvertFrom-Json
+
+            # Get user list for deeper analysis
+            $usersUrl = "$BaseUrl/api/admin/user-list?limit=200"
+            $usersJson = curl.exe -s -H "x-admin-key: $AdminKey" $usersUrl 2>&1
+            $userList = $usersJson | ConvertFrom-Json
+
+            # Get outreach leads for cross-reference
+            $outreachUrl = "$BaseUrl/api/outreach/dashboard"
+            $outreachJson = curl.exe -s -H "x-admin-key: $AdminKey" $outreachUrl 2>&1
+            $outreach = $outreachJson | ConvertFrom-Json
+
+            # Test patterns
+            $testPatterns = @('test', 'demo', 'example', 'berend', 'mainz', 'xxx@', 'user@domain', '%40', '@web.de')
+
+            # Analyze each user
+            $organic = 0
+            $outreachAuto = 0
+            $testAccounts = 0
+            $activated = 0
+
+            # Get outreach emails for cross-reference
+            $outreachEmails = @{}
+            if ($outreach.hot_leads) {
+                $outreach.hot_leads | ForEach-Object { $outreachEmails[$_.email.ToLower()] = $true }
+            }
+
+            foreach ($user in $userList.users) {
+                $email = $user.email.ToLower()
+                $isTest = $testPatterns | Where-Object { $email -match $_ }
+
+                if ($isTest) {
+                    $testAccounts++
+                } elseif ($outreachEmails.ContainsKey($email)) {
+                    # User came from outreach - auto-created
+                    $outreachAuto++
+                    if ($user.responses_count -gt 0) {
+                        $activated++
+                    }
+                } else {
+                    # Organic user
+                    $organic++
+                    if ($user.responses_count -gt 0) {
+                        $activated++
+                    }
+                }
+            }
+
+            $results.realUsers.organic = $organic
+            $results.realUsers.outreachAuto = $outreachAuto
+            $results.realUsers.testAccounts = $testAccounts
+            $results.realUsers.activated = $activated
+            $results.realUsers.paying = if ($stats.paying_users) { $stats.paying_users } else { 0 }
+
+            Write-Host "   DB Total:        $($userList.users.Count)" -ForegroundColor White
+            Write-Host "   Test Accounts:   $testAccounts" -ForegroundColor Red
+            Write-Host "   Outreach-Auto:   $outreachAuto" -ForegroundColor Yellow
+            Write-Host "   Organic:         $organic" -ForegroundColor $(if ($organic -eq 0) { "Red" } else { "Green" })
+            Write-Host "   Activated:       $activated" -ForegroundColor $(if ($activated -eq 0) { "Red" } else { "Green" })
+            Write-Host "   Paying:          $($results.realUsers.paying)" -ForegroundColor $(if ($results.realUsers.paying -eq 0) { "Red" } else { "Green" })
+
+        } catch {
+            Write-Host "   [ERROR] User analysis failed: $_" -ForegroundColor Red
+            $results.warnings += "User analysis failed: $_"
+        }
+    }
+
+    # === 2. CTR Analysis ===
+    if ($analyzeType -in @("ctr", "all")) {
+        Write-Host ""
+        Write-Host "2. ANALYZING CTR (Bot Detection)..." -ForegroundColor Yellow
+
+        try {
+            $outreachUrl = "$BaseUrl/api/outreach/dashboard"
+            $outreachJson = curl.exe -s -H "x-admin-key: $AdminKey" $outreachUrl 2>&1
+            $outreach = $outreachJson | ConvertFrom-Json
+
+            $totalSent = $outreach.stats.emails_sent
+            $reportedClicks = $outreach.stats.clicks
+
+            # Bot detection
+            $testPatterns = @('user@domain.com', 'xxx@xxx.com', 'test@', 'berend', '%40')
+            $botClicks = 0
+            $realClicks = 0
+            $botPatterns = @{}
+
+            foreach ($lead in $outreach.hot_leads) {
+                $clickedAt = [DateTime]::Parse($lead.clicked_at)
+                $hour = $clickedAt.ToUniversalTime().Hour
+                $minute = $clickedAt.ToUniversalTime().Minute
+                $email = if ($lead.email) { $lead.email.ToLower() } else { "" }
+
+                $isTestEmail = $testPatterns | Where-Object { $email -match [regex]::Escape($_) }
+                $isMidnight = ($hour -eq 0 -and $minute -lt 20)
+                $noBusinessName = -not $lead.business_name
+
+                if ($isMidnight) {
+                    $botClicks++
+                    $reason = "midnight-burst"
+                    if (-not $botPatterns.ContainsKey($reason)) { $botPatterns[$reason] = 0 }
+                    $botPatterns[$reason]++
+                } elseif ($isTestEmail) {
+                    $botClicks++
+                    $reason = "test-email"
+                    if (-not $botPatterns.ContainsKey($reason)) { $botPatterns[$reason] = 0 }
+                    $botPatterns[$reason]++
+                } elseif ($noBusinessName) {
+                    $botClicks++
+                    $reason = "no-business"
+                    if (-not $botPatterns.ContainsKey($reason)) { $botPatterns[$reason] = 0 }
+                    $botPatterns[$reason]++
+                } else {
+                    $realClicks++
+                }
+            }
+
+            $reportedCTR = if ($totalSent -gt 0) { [math]::Round($reportedClicks / $totalSent * 100, 2) } else { 0 }
+            $realCTR = if ($totalSent -gt 0) { [math]::Round($realClicks / $totalSent * 100, 2) } else { 0 }
+            $inflation = if ($realClicks -gt 0) { [math]::Round(($reportedClicks - $realClicks) / $realClicks * 100, 0) } else { 0 }
+
+            $results.ctr.reported = $reportedCTR
+            $results.ctr.real = $realCTR
+            $results.ctr.botClicks = $botClicks
+            $results.ctr.inflation = $inflation
+            $results.botPatterns = $botPatterns.GetEnumerator() | ForEach-Object { @{ pattern = $_.Key; count = $_.Value } }
+
+            Write-Host "   Emails Sent:     $totalSent" -ForegroundColor White
+            Write-Host "   Reported Clicks: $reportedClicks (CTR: $reportedCTR%)" -ForegroundColor White
+            Write-Host "   Bot Clicks:      $botClicks" -ForegroundColor Red
+            Write-Host "   Real Clicks:     $realClicks (CTR: $realCTR%)" -ForegroundColor $(if ($realCTR -lt 2) { "Red" } else { "Green" })
+            Write-Host "   Inflation:       $inflation%" -ForegroundColor $(if ($inflation -gt 50) { "Red" } else { "Yellow" })
+
+            if ($botPatterns.Count -gt 0) {
+                Write-Host "   Bot Patterns:" -ForegroundColor Yellow
+                $botPatterns.GetEnumerator() | ForEach-Object {
+                    Write-Host "     - $($_.Key): $($_.Value)" -ForegroundColor Gray
+                }
+            }
+
+        } catch {
+            Write-Host "   [ERROR] CTR analysis failed: $_" -ForegroundColor Red
+            $results.warnings += "CTR analysis failed: $_"
+        }
+    }
+
+    # === Save Results ===
+    Write-Host ""
+    Write-Host "═══════════════════════════════════════════" -ForegroundColor Cyan
+    Write-Host "         SAVING RESULTS" -ForegroundColor Cyan
+    Write-Host "═══════════════════════════════════════════" -ForegroundColor Cyan
+
+    $results | ConvertTo-Json -Depth 10 | Set-Content -Path $metricsFile -Encoding UTF8
+    Write-Host "   Saved to: $metricsFile" -ForegroundColor Green
+
+    # === Summary ===
+    Write-Host ""
+    Write-Host "═══════════════════════════════════════════" -ForegroundColor Cyan
+    Write-Host "         SUMMARY" -ForegroundColor Cyan
+    Write-Host "═══════════════════════════════════════════" -ForegroundColor Cyan
+
+    $realTotal = $results.realUsers.organic + $results.realUsers.outreachAuto
+    Write-Host "   Real Users (Organic + Outreach): $realTotal" -ForegroundColor $(if ($realTotal -eq 0) { "Red" } else { "Yellow" })
+    Write-Host "   Activated Users:                 $($results.realUsers.activated)" -ForegroundColor $(if ($results.realUsers.activated -eq 0) { "Red" } else { "Green" })
+    Write-Host "   Real CTR:                        $($results.ctr.real)%" -ForegroundColor $(if ($results.ctr.real -lt 2) { "Red" } else { "Green" })
+
+    if ($results.realUsers.organic -eq 0) {
+        Write-Host ""
+        Write-Host "   [!] CRITICAL: Zero organic users!" -ForegroundColor Red
+        Write-Host "   [!] All 'users' are either tests or outreach-auto-created" -ForegroundColor Red
+    }
+
+    Write-Host ""
+    exit 0
+}
 
 # === REAL USER METRICS CHECK ===
 # Usage: powershell -File scripts/agent-helpers.ps1 -Action check-real-users

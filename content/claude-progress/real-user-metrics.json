@@ -1,85 +1,30 @@
-{
-  "lastUpdated": "2026-01-17T19:00:00Z",
-  "updatedBy": "Claude Data Analyze V2",
-  "verificationMethod": "Bot Detection + Cross-Reference Outreach",
+﻿{
+    "realUsers":  {
+                      "organic":  0,
+                      "outreachAuto":  6,
+                      "activated":  0,
+                      "testAccounts":  0,
+                      "paying":  0
+                  },
+    "botPatterns":  [
+                        {
+                            "count":  51,
+                            "pattern":  "midnight-burst"
+                        },
+                        {
+                            "count":  2,
+                            "pattern":  "test-email"
+                        }
+                    ],
+    "ctr":  {
+                "botClicks":  53,
+                "reported":  4.42,
+                "inflation":  180,
+                "real":  1.58
+            },
+    "lastUpdated":  "2026-01-17T16:43:22Z",
+    "warnings":  [
 
-  "realUsers": {
-    "organic": 0,
-    "outreachAutoCreated": 6,
-    "activated": 0,
-    "paying": 0,
-    "diagnosis": "ZERO organic users. All 6 'users' are outreach auto-accounts."
-  },
-
-  "the6FakeUsers": [
-    {
-      "email": "zuerich@trattoria-sempre.ch",
-      "business": "Trattoria Sempre Zürich",
-      "flags": ["MIDNIGHT_SIGNUP", "ZERO_USE"],
-      "verdict": "FAKE",
-      "source": "outreach_magic_link"
-    },
-    {
-      "email": "H0796@accor.com",
-      "business": "ibis Wien Mariahilf",
-      "flags": ["CORP_EMAIL", "ZERO_USE"],
-      "verdict": "FAKE",
-      "source": "outreach_click"
-    },
-    {
-      "email": "h9057@accor.com",
-      "business": "Novotel London Canary Wharf",
-      "flags": ["CORP_EMAIL", "ZERO_USE"],
-      "verdict": "FAKE",
-      "source": "outreach_click"
-    },
-    {
-      "email": "i.schmidt@tv-turm.de",
-      "business": "Sphere Tim Raue",
-      "flags": ["ZERO_USE"],
-      "verdict": "QUESTIONABLE",
-      "source": "outreach_click"
-    },
-    {
-      "email": "reservation.web@madamebrasserie.com",
-      "business": "Madame Brasserie",
-      "flags": ["ZERO_USE"],
-      "verdict": "QUESTIONABLE",
-      "source": "outreach_click"
-    },
-    {
-      "email": "awayspa.edinburgh@whotels.com",
-      "business": "AWAY SPA",
-      "flags": ["CORP_EMAIL", "ZERO_USE"],
-      "verdict": "FAKE",
-      "source": "outreach_click"
-    }
-  ],
-
-  "dataQuality": {
-    "reportedClicks": 84,
-    "legitimateClicks": 27,
-    "botClicks": 57,
-    "botPercentage": "67.5%",
-    "reportedCTR": "4.42%",
-    "realCTR": "1.42%",
-    "inflation": "211%"
-  },
-
-  "dbStats": {
-    "totalInDB": 61,
-    "testAccounts": 55,
-    "outreachAutoAccounts": 6,
-    "organicUsers": 0,
-    "activatedUsers": 0
-  },
-
-  "conclusion": "Das Produkt hat ZERO echte User. Alle registrierten Accounts sind entweder Test-Accounts (55) oder durch Outreach auto-erstellte Accounts (6) die das Produkt nie genutzt haben.",
-
-  "actionItems": [
-    "CRITICAL: 0 echte User nach 7 Tagen",
-    "Outreach generiert Clicks aber keine Aktivierung",
-    "Onboarding/Value Proposition ueberpruefen",
-    "Eventuell: Produkt ist nicht compelling genug"
-  ]
+                 ],
+    "analyzedAt":  "2026-01-17T16:43:22Z"
 }
