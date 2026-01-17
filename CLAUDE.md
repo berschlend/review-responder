@@ -204,6 +204,15 @@ ReviewResponder/
 
 ---
 
+## LEARNINGS (Top 5)
+
+### CLAUDE.md Segmentierung (18.01.2026)
+**Problem:** 724 Zeilen CLAUDE.md fuer ALLE Agents - 70% irrelevant pro Session.
+**Loesung:** Core (~200 Zeilen) + `.claude/rules/` fuer agent-spezifische Rules.
+**Lesson:** Segmentierung > Kuerzung. Jeder Agent bekommt nur was er braucht.
+
+---
+
 ## REFERENCES
 
 | Was | Wo |
