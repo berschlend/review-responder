@@ -3457,7 +3457,7 @@ const LandingPage = () => {
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <a
                   href="/extension-download.zip"
-                  download="ReviewResponder-Extension.zip"
+                  download="ReviewResponder-Extension-v1.7.0.zip"
                   className="btn btn-primary"
                   style={{
                     padding: '10px 18px',
@@ -28579,7 +28579,7 @@ const ExtensionPage = () => {
           {/* Primary CTA - Download Now */}
           <a
             href="/extension-download.zip"
-            download="ReviewResponder-Extension.zip"
+            download="ReviewResponder-Extension-v1.7.0.zip"
             className="btn btn-primary"
             style={{
               display: 'inline-flex',
@@ -28695,7 +28695,7 @@ const ExtensionPage = () => {
             Extract the downloaded ZIP file to any folder (e.g. Desktop).
           </p>
           <p style={{ color: 'var(--gray-500)', fontSize: '13px' }}>
-            Didn't download yet? <a href="/extension-download.zip" download="ReviewResponder-Extension.zip" style={{ color: 'var(--primary-600)' }}>Click here</a>
+            Didn't download yet? <a href="/extension-download.zip" download="ReviewResponder-Extension-v1.7.0.zip" style={{ color: 'var(--primary-600)' }}>Click here</a>
           </p>
         </div>
 
