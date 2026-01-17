@@ -339,6 +339,17 @@ ReviewResponder/
 
 ## LEARNINGS (Top 5)
 
+### Multi-Layer Bot Detection fuer Magic Links (18.01.2026)
+**Problem:** MS365 SafeLinks klickte Magic Links mit normalen Browser User-Agents → 3 Fake-Accounts erstellt (H0796@accor.com, h9057@accor.com, i.schmidt@tv-turm.de).
+**Root Cause:** Bot-Detection basierte NUR auf User-Agent, aber Enterprise Security Scanner nutzen normale Chrome/Edge UAs.
+**Loesung:** 4-Layer Detection:
+1. User-Agent Check (existierend)
+2. Timing: <30s nach Link-Erstellung = Bot
+3. Corporate Email Pattern (H####@...) + <120s = Bot
+4. No-Referer + <60s = Bot
+**Key Insight:** Security Scanner klicken innerhalb von 1-5 Sekunden. Echte Menschen brauchen mind. 30s um Email zu oeffnen und zu klicken.
+**Lesson:** User-Agent allein reicht NICHT fuer Bot-Detection. Timing ist der zuverlaessigste Indikator.
+
 ### Stop-Hooks Non-Blocking + NODE_OPTIONS (18.01.2026)
 **Problem:** Claude Sessions blieben im Stop-Hook stecken. Zusaetzlich: Node.js OOM Crash bei vielen parallelen Sessions.
 **Root Cause:**
