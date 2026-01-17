@@ -656,30 +656,23 @@ powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent [X]
 powershell -File scripts/agent-helpers.ps1 -Action check-real-users
 ```
 
-### VOR JEDER AKTION: GOAL-CHECK (V5.1 - $1000 MRR PFLICHT!)
+### VOR JEDER AKTION: GOAL-CHECK (V5.2 - $1000 MRR Reminder)
 
 ```bash
-# BEVOR du IRGENDETWAS tust, frage:
-powershell -File scripts/agent-helpers.ps1 -Action goal-check -Data "beschreibung deiner geplanten aktion"
+# Zeigt den aktuellen Stand zum $1000 MRR Ziel:
+powershell -File scripts/agent-helpers.ps1 -Action goal-check
 
-# Zeigt:
-# - NORTH STAR: $1000 MRR (~30 zahlende Kunden)
-# - Aktueller MRR, Paying, Organic
-# - Progress Bar [====......] 40%
-# - Phase: P1 (validate) / P2 (first customer) / P3 (scale)
+# Output:
+# ==========================================
+#       NORTH STAR: 1000 USD MRR
+# ==========================================
+#   MRR:       0 / 1000 USD
+#   PAYING:    0 / 30 customers
+#   ACTIVATED: 0 users
+#   [..........] 0%
+# ==========================================
 
-# Beispiele:
-powershell -File scripts/agent-helpers.ps1 -Action goal-check -Data "Cold Email an 50 Leads senden"
-# → [X] STOP: Cold Email: 0% conversion (1902 sent, 0 reactions)
-# → Phase P1 priority: Validate problem exists
-
-powershell -File scripts/agent-helpers.ps1 -Action goal-check -Data "Restaurant Owner anrufen"
-# → [OK] GO: Direct contact validates problem
-# → Moves toward $1000 MRR
-
-# WENN STOP → Mach es NICHT! Zeigt dir was stattdessen.
-# WENN GO → Mach es!
-# WENN UNCLEAR → 3 Fragen beantworten
+# Frage dich: "Bringt meine naechste Aktion $1000 MRR naeher?"
 ```
 
 ### Tonight's Prompt (V4.4)
@@ -1540,36 +1533,15 @@ NACH JEDEM ERFOLGREICHEN STEP:
        NORTH STAR: $1000 MRR
 ==========================================
 
-Current Status:
-- MRR: $[X] / $1000 ([Y]%)
-- Paying: [Z] / 30 customers
-- Phase: P1 (validate) / P2 (first customer) / P3 (scale)
-
-Progress: [====......] [Y]%
+  MRR:      $[X] / $1000
+  PAYING:   [Z] / 30 customers
+  PROGRESS: [====......] [Y]%
 
 ==========================================
-       PHASES (Prioritaeten)
-==========================================
 
-P1: VALIDATE (0 paying)
-    -> Existiert das Problem ueberhaupt?
-    -> Manuell Kunden anrufen/sprechen
+  "Bringt diese Aktion $1000 MRR naeher?"
 
-P2: FIRST CUSTOMER (1-4 paying)
-    -> Problem validiert, jetzt Conversion
-    -> Demo zeigen, Onboarding optimieren
-
-P3: SCALE (5+ paying)
-    -> Funktionierender Funnel, jetzt skalieren
-    -> Outreach, Automation, Marketing
-
-==========================================
-       VOR JEDER AKTION FRAGEN
-==========================================
-
-"Bringt diese Aktion $1000 MRR naeher?"
-
-powershell -File scripts/agent-helpers.ps1 -Action goal-check -Data "[meine aktion]"
+  powershell -File scripts/agent-helpers.ps1 -Action goal-check
 ```
 
 ---
