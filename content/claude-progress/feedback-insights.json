@@ -1,0 +1,13 @@
+{
+  "last_updated": "2026-01-17T00:00:00Z",
+  "summary": {
+    "total_real_feedback": 0,
+    "average_rating": 0,
+    "recent_average": 0,
+    "trend": "stable"
+  },
+  "pain_points": [],
+  "feature_requests": [],
+  "alerts": [],
+  "_note": "This file is updated by /api/cron/process-feedback every 6 hours. Agents read this for user feedback insights."
+}

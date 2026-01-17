@@ -20,6 +20,7 @@ curl -s -H "x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U" \
 | `/api/admin/api-costs` | API Spend |
 | `/api/outreach/dashboard` | Outreach Metriken |
 | `/api/admin/product-quality` | Slop Rate, Quality Score |
+| `/api/admin/feedback-summary` | User Feedback, Rating, Pain Points (NEU!) |
 
 ---
 
@@ -134,6 +135,41 @@ powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\claude-notify.ps1" \
 # - ~20 echte Users
 # - 0% echte Activation
 ```
+
+---
+
+## User Feedback Monitoring (NEU V3.7!)
+
+### Endpoint
+```bash
+curl -s -H "x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U" \
+  "https://review-responder.onrender.com/api/admin/feedback-summary?exclude_test=true"
+```
+
+### Helper Command
+```bash
+powershell -File scripts/agent-helpers.ps1 -Action feedback-read
+powershell -File scripts/agent-helpers.ps1 -Action feedback-alert
+```
+
+### Metriken
+| Metrik | Gut | Warning | Critical |
+|--------|-----|---------|----------|
+| Avg Rating | >4.0 | 3.5-4.0 | <3.5 |
+| Rating Trend | stable/up | - | declining |
+| Pain Points | 0 | 1-2 | 3+ |
+
+### Alert Trigger
+| Event | Alert Type |
+|-------|------------|
+| Rating Drop >0.5 | warning |
+| Avg Rating <3.5 | critical |
+| 3+ Pain Points | warning |
+
+### Integration
+- **Burst-9:** Inkludiere in conversion-report.md
+- **Burst-11:** Korreliere mit Bottleneck-Analyse
+- **Cron:** `/api/cron/process-feedback` alle 6h
 
 ---
 

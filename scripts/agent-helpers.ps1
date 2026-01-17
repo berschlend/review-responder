@@ -8,7 +8,7 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend")]
+    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend", "feedback-read", "feedback-alert")]
     [string]$Action,
 
     [int]$Agent = 0,
@@ -235,6 +235,54 @@ switch ($Action) {
                 $Delay = [Math]::Min($Delay * 1.5, 30)
             } else {
                 Write-Output "WARNING: Backend may still be sleeping after $MaxAttempts attempts"
+            }
+        }
+    }
+
+    "feedback-read" {
+        # Read user feedback insights from local file or API
+        $feedbackFile = Join-Path $ProgressDir "feedback-insights.json"
+        if (Test-Path $feedbackFile) {
+            Get-Content $feedbackFile
+        } else {
+            # Try to fetch from API if local file doesn't exist
+            Write-Output "[FEEDBACK] Local file not found, fetching from API..."
+            $AdminKey = "rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
+            $FeedbackUrl = "https://review-responder.onrender.com/api/admin/feedback-summary?exclude_test=true"
+            try {
+                $result = curl.exe -s -H "x-admin-key: $AdminKey" $FeedbackUrl 2>&1
+                Write-Output $result
+            } catch {
+                Write-Output "{`"error`": `"Failed to fetch feedback`", `"summary`": {`"total_real_feedback`": 0, `"average_rating`": 0, `"trend`": `"unknown`"}}"
+            }
+        }
+    }
+
+    "feedback-alert" {
+        # Check for feedback alerts only
+        $feedbackFile = Join-Path $ProgressDir "feedback-insights.json"
+        if (Test-Path $feedbackFile) {
+            $feedback = Get-Content $feedbackFile | ConvertFrom-Json
+            if ($feedback.alerts -and $feedback.alerts.Count -gt 0) {
+                Write-Output "ALERTS_FOUND: $($feedback.alerts.Count)"
+                $feedback.alerts | ConvertTo-Json
+            } else {
+                Write-Output "NO_ALERTS"
+            }
+        } else {
+            # Try to fetch from API
+            $AdminKey = "rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
+            $FeedbackUrl = "https://review-responder.onrender.com/api/admin/feedback-summary?exclude_test=true"
+            try {
+                $result = curl.exe -s -H "x-admin-key: $AdminKey" $FeedbackUrl 2>&1 | ConvertFrom-Json
+                if ($result.alerts -and $result.alerts.Count -gt 0) {
+                    Write-Output "ALERTS_FOUND: $($result.alerts.Count)"
+                    $result.alerts | ConvertTo-Json
+                } else {
+                    Write-Output "NO_ALERTS"
+                }
+            } catch {
+                Write-Output "ERROR: Could not check alerts"
             }
         }
     }

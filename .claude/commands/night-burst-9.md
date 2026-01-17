@@ -94,7 +94,40 @@ WHILE TRUE:
 ## 📋 PHASE 1: Metriken sammeln
 
 ```bash
+# System-Metriken
 curl -s "https://review-responder.onrender.com/api/admin/stats?key=rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
+
+# User Feedback (NEU V3.7!)
+powershell -File scripts/agent-helpers.ps1 -Action feedback-read
+# ODER direkt:
+curl -s -H "x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U" \
+  "https://review-responder.onrender.com/api/admin/feedback-summary?exclude_test=true"
+```
+
+### User Feedback Metriken (V3.7 - NEU!)
+
+| Metrik | Gut | Warning | Critical |
+|--------|-----|---------|----------|
+| Avg Rating | >4.0 | 3.5-4.0 | <3.5 |
+| Rating Trend | stable/up | - | declining |
+| Pain Points | 0 | 1-2 | 3+ |
+| Alerts | 0 | 1 | 2+ |
+
+**In conversion-report.md ergaenzen:**
+```markdown
+## 📣 User Feedback Status
+
+| Metrik | Wert | Status |
+|--------|------|--------|
+| Avg Rating | [X]/5 | 🟢/🟡/🔴 |
+| Trend | [stable/improving/declining] | 🟢/🟡/🔴 |
+| Feedback Count | [N] real users | - |
+
+### Feedback Alerts
+- [Alert 1 wenn vorhanden]
+
+### Top Pain Points
+- [Pain Point 1 wenn vorhanden]
 ```
 
 ### Wichtige Metriken:

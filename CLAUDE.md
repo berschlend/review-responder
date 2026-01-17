@@ -117,9 +117,39 @@ Render | Stripe | Cron-job.org | Resend
 - 3,657+ Responses, 1,064+ Demos
 - 54 Users (0 paying) <- Hauptfokus!
 
-### USER TODO
-- [ ] Demo-Videos aufnehmen
-- [ ] Google Indexierung fortsetzen
+### USER TODO (Sticky Tasks)
+> Automatisch per Stop-Hook nach jeder Response angezeigt.
+> Datei: `.claude/sticky-tasks.json`
+
+---
+
+## STICKY TASKS
+
+> Tasks die der User SELBST erledigen muss - erscheinen nach JEDER Claude Response.
+
+### Wie es funktioniert
+- **Datei:** `.claude/sticky-tasks.json`
+- **Hook:** Stop-Hook ruft `sticky-tasks-display.ps1`
+- **Output:** Gelbe Liste am Ende jeder Response
+
+### Wann hinzufuegen (NUR wenn)
+- User muss es SELBST tun (Claude kann nicht)
+- Einmalig wichtig (nicht wiederkehrend)
+- Kritisch fuer Fortschritt
+
+### Wie abhaken
+User sagt: `erledigt: Demo-Videos` oder `hab Demo-Videos gemacht`
+Claude entfernt Task aus `.claude/sticky-tasks.json`
+
+### Format
+```json
+{
+  "tasks": [
+    { "id": 1, "text": "Demo-Videos aufnehmen" },
+    { "id": 2, "text": "Google Indexierung fortsetzen" }
+  ]
+}
+```
 
 ---
 
@@ -159,6 +189,12 @@ Render | Stripe | Cron-job.org | Resend
 ### Marketing Skill
 `/marketing [status|chase|outreach|demo|analyze|linkedin]`
 
+### Funnel Verify Skill (NEU!)
+`/funnel-verify` - E2E Test des Sales-Funnels mit Chrome MCP
+- Testet: Demo Page -> Email Capture -> Activation -> Limits -> Upgrade
+- Findet Bugs bevor sie 100+ Leads betreffen
+- Night-Agents checken Funnel-Status vor Outreach
+
 ---
 
 ## NIGHT-BURST
@@ -176,6 +212,7 @@ Render | Stripe | Cron-job.org | Resend
 ### Key Files
 - `content/claude-progress/agent-memory.json`
 - `content/claude-progress/learnings.md`
+- `content/claude-progress/funnel-health-log.json`
 - `.claude/commands/night-burst-core.md`
 
 ---
@@ -219,10 +256,12 @@ ReviewResponder/
 |-----|-----|
 | Historische Learnings | `content/claude-progress/archive/` |
 | Agent Learnings | `content/claude-progress/learnings.md` |
+| Funnel Health | `content/claude-progress/funnel-health-log.json` |
 | API Reference | `.claude/rules/dev.md` |
 | Sales Rules | `.claude/rules/sales.md` |
 | Demo Rules | `.claude/rules/demo.md` |
 | Monitoring | `.claude/rules/monitoring.md` |
+| Funnel Verify | `.claude/commands/funnel-verify.md` |
 
 ---
 

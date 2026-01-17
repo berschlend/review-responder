@@ -224,7 +224,7 @@ Lead kontaktieren?
 
 | Aktion | Autonom? | Safeguard |
 |--------|----------|-----------|
-| **Pricing ändern** | ✅ JA | Reasoning + Daten dokumentieren |
+| **Pricing VORSCHLAGEN** | ✅ JA | Vorschlag + Daten + Reasoning, Berend bestätigt |
 | **Discounts (bis 100%)** | ✅ JA | Reasoning dokumentieren |
 | **Strategien ändern** | ✅ JA | A/B testen, Outcome tracken |
 | **Features bauen** | ✅ JA | Testen vor Deploy |
@@ -234,12 +234,13 @@ Lead kontaktieren?
 | **Budget ausgeben** | ✅ JA | Wenn ROI positiv |
 | **A/B Tests starten** | ✅ JA | Immer |
 
-### Berend NUR bei (4 Dinge!):
+### Berend NUR bei (5 Dinge!):
 
 | Situation | Warum Human |
 |-----------|-------------|
 | **User/Daten LÖSCHEN** | Irreversibel |
 | **Legal/Terms ändern** | Compliance |
+| **Pricing ÄNDERN** | Strategisch, irreversibel |
 | **Production Breaking** | System-Risiko |
 | **Budget >$100/Tag** | Finanziell signifikant |
 

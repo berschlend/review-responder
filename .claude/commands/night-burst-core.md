@@ -1,7 +1,7 @@
-# Night-Burst Core V3.7 - JEDER AGENT MUSS DAS INCLUDEN
+# Night-Burst Core V3.8 - JEDER AGENT MUSS DAS INCLUDEN
 
 > Basierend auf Anthropic's "Building Effective Agents" + "Multi-Agent Research System"
-> Updated: V3.7 mit Auto-Load Rules (18.01.2026)
+> Updated: V3.8 mit Funnel Health Check (18.01.2026)
 
 ---
 
@@ -198,6 +198,60 @@ curl -s "https://review-responder.onrender.com/api/admin/stats?exclude_test=true
 | Burst-7 | 3 | PAUSED - erst bei aktiven Usern |
 | Burst-3,8,10,12,13,15 | 3 | PAUSED |
 
+### 7. FUNNEL HEALTH CHECK (NEU V3.8!)
+
+> **KRITISCH:** Bevor Marketing-Agents arbeiten, MUSS der Funnel funktionieren!
+> Der 97% Demo-Email Bug waere damit in <24h gefunden worden.
+
+**Wann pruefen:**
+- Bei JEDEM Night-Burst Start
+- Nach JEDEM Deploy
+- Alle 6 Stunden
+- Vor grossen Outreach-Kampagnen
+
+**Wie pruefen:**
+
+```bash
+# Check letzte Funnel-Status (schnell)
+cat content/claude-progress/funnel-health-log.json | jq '.history[0]'
+
+# Wenn >6h alt ODER status != PASS:
+# -> Fuehre /funnel-verify aus
+```
+
+**Bei FUNNEL FAIL:**
+
+```
+WENN funnel-status != PASS:
+
+1. STOPPE ALLE OUTREACH SOFORT!
+   - Burst-2: Keine Cold Emails
+   - Burst-4: Keine Demo-Emails
+   - Burst-5: Keine Follow-ups
+
+2. Erstelle Burst-15 Approval:
+   {
+     "type": "funnel_broken",
+     "severity": "critical",
+     "broken_phases": ["[PHASE]"],
+     "action": "Fix before marketing resumes"
+   }
+
+3. Fokus auf FIX statt Marketing!
+   - Burst-9 (Doctor) analysiert Problem
+   - Dev-Session fixt den Bug
+   - Dann erneut /funnel-verify
+```
+
+**Funnel-Phasen:**
+
+| Phase | Was wird getestet |
+|-------|-------------------|
+| Demo Page | Responses sichtbar, Email-Gate |
+| Email Capture | Auto-Account, JWT Token |
+| Activation | /generator Redirect, Response Gen |
+| Limit Test | Upgrade-Flow, Stripe |
+
 ---
 
 ## 🚀 AUSFÜHRBARE HELPER-COMMANDS (V3.3 - NEU!)
@@ -314,6 +368,77 @@ powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent [X]
 ```
 
 **HANDOFF FILE:** `content/claude-progress/handoff-queue.json`
+
+---
+
+## 📣 USER FEEDBACK SYSTEM (V3.7 - NEU!)
+
+> Echtes User-Feedback in Agent-Entscheidungen einbeziehen.
+> Bisherige Reviews auf der Seite sind von Freunden (zaehlen nicht).
+
+### Wer checkt wann?
+
+| Agent | Wann checken | Aktion |
+|-------|--------------|--------|
+| Burst-9 (Doctor) | Jeder Loop | Rating-Trend in conversion-report.md |
+| Burst-11 (Analyzer) | Jeder Loop | Pain Points als Bottleneck-Hinweise |
+| Burst-12 (Creative) | Wenn aktiv | Feature Requests fuer Strategien |
+
+### Commands
+
+```bash
+# Feedback lesen (fuer Agents)
+powershell -File scripts/agent-helpers.ps1 -Action feedback-read
+
+# Nur Alerts checken
+powershell -File scripts/agent-helpers.ps1 -Action feedback-alert
+```
+
+### API Endpoints
+
+```bash
+# Feedback Summary (Admin)
+curl -s -H "x-admin-key: rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U" \
+  "https://review-responder.onrender.com/api/admin/feedback-summary?exclude_test=true"
+
+# Feedback Cron (alle 6h via cron-job.org)
+curl -s "https://review-responder.onrender.com/api/cron/process-feedback?secret=XXX"
+```
+
+### Feedback-basierte Aktionen
+
+| Trigger | Aktion |
+|---------|--------|
+| Rating Drop >0.5 | ALERT in conversion-report.md |
+| Pain Point 3x erwaehnt | Als Bottleneck dokumentieren |
+| Feature Request 3x | Strategy Proposal erstellen |
+| Avg Rating <3.5 | CRITICAL - User sind unzufrieden |
+
+### Feedback Insights File
+
+**Location:** `content/claude-progress/feedback-insights.json`
+
+```json
+{
+  "last_updated": "2026-01-17T00:00:00Z",
+  "summary": {
+    "total_real_feedback": 0,
+    "average_rating": 0,
+    "trend": "stable"
+  },
+  "pain_points": [],
+  "feature_requests": [],
+  "alerts": []
+}
+```
+
+### WICHTIG: Nur ECHTE User
+
+Test-Accounts werden automatisch gefiltert:
+- `*@web.de` = Test
+- `test*`, `*test@*` = Test
+- `*demo*`, `*example*` = Test
+- Berends Accounts = Test
 
 ---
 

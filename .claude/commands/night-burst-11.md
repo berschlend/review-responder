@@ -218,6 +218,44 @@ WARUM ist [Step X → Step Y] nur Z%?
    - Zu viel/wenig Kontakt?
 ```
 
+### User Feedback Korrelation (V3.7 - NEU!)
+
+```bash
+# Feedback holen
+powershell -File scripts/agent-helpers.ps1 -Action feedback-read
+```
+
+**Pain Points von echten Usern korrelieren:**
+
+```
+WENN Bottleneck identifiziert:
+
+1. CHECK: Gibt es Pain Points die diesen Bottleneck erwaehnen?
+   - User sagt "too complicated" → Friction Problem
+   - User sagt "slow", "buggy" → Process Problem
+   - User sagt "not useful", "not what I expected" → Value Prop Problem
+
+2. WENN Pain Point korreliert:
+   → Erhoehe Prioritaet des Bottleneck-Fixes
+   → Dokumentiere User-Quote in bottleneck-report.md
+
+3. WENN Pain Point 3x erwaehnt:
+   → CRITICAL: Als Haupt-Bottleneck markieren
+   → Sofort in Empfehlungen aufnehmen
+```
+
+**In bottleneck-report.md ergaenzen:**
+```markdown
+## 📣 User Feedback Correlation
+
+### Pain Points die Bottleneck bestaetigen:
+- "[User Quote 1]" (Rating: X)
+- "[User Quote 2]" (Rating: X)
+
+### User-berichtete Issues die NICHT im Funnel sichtbar sind:
+- [Issue 1] → Erfordert weitere Investigation
+```
+
 ---
 
 ## 📋 PHASE 5: Empfehlung schreiben

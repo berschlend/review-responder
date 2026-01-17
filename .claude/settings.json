@@ -49,7 +49,17 @@
         ]
       }
     ],
-    "Stop": [],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File \"C:\\Users\\Berend Mainz\\sticky-tasks-display.ps1\""
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "mcp__claude-in-chrome__tabs_create|mcp__claude-in-chrome__navigate",
