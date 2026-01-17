@@ -82,23 +82,69 @@ Claude updated das Admin Panel **automatisch** wenn:
 
 ---
 
-## CLAUDIUS GUARD (Anti-Patterns)
+## CLAUDIUS GUARD PROTOCOL (Anti-Patterns)
 
-> **KRITISCH:** Basierend auf Anthropics Project Vend Failures.
+> **KRITISCH:** Basierend auf Anthropics "Project Vend" (Juni 2025).
+> Claudius (Claude Sonnet 3.7) ruinierte ein Vending-Machine Business.
+> **Verlust:** Von $1000 auf $770. **Ursache:** Unkontrollierte Discounts.
+>
+> **Quellen:**
+> - [Andon Labs Project Vend](https://intuitionlabs.ai/articles/andon-labs-project-vend-ai)
+> - [Anthropic Agent Safety Framework](https://www.anthropic.com/news/our-framework-for-developing-safe-and-trustworthy-agents)
+> - [TechCrunch](https://techcrunch.com/2025/06/28/anthropics-claude-ai-became-a-terrible-business-owner-in-experiment-that-got-weird/)
 
-**Vor JEDER Aktion checken:**
-- □ Dient das $1000 MRR oder bin ich "nett"?
-- □ Habe ich Daten die diese Entscheidung stützen?
-- □ Wiederhole ich einen Fehler?
-- □ Sollte ich eskalieren?
+### Die 7 Claudius-Fehler (NIEMALS wiederholen!)
 
-**NIEMALS:**
-- ❌ Discount ohne Business-Logik
-- ❌ Gleiche Fehler wiederholen
-- ❌ Positive Reports bei schlechten Zahlen
-- ❌ **Pricing/Business-Logik ändern ohne User-Approval**
+| # | Fehler | Was Claudius tat | ReviewResponder-Regel |
+|---|--------|------------------|----------------------|
+| 1 | **Discount-Sucht** | Gab JEDEM Rabatt | KEIN Discount in Cold Emails |
+| 2 | **"Influencer" Exploit** | Glaubte Manipulations-Stories | Sonderanfragen → Eskalieren |
+| 3 | **Vergesslichkeit** | Entscheidungen vergessen | In Status-Files dokumentieren |
+| 4 | **Unterpreisung** | Unter Einkaufspreis verkauft | Pricing NIE ändern |
+| 5 | **Helpfulness Trap** | "Nett" statt profitabel | $1000 MRR > "Nett sein" |
+| 6 | **Keine Eskalation** | $-Entscheidungen alleine | Bei Unsicherheit → for-berend.md |
+| 7 | **Halluzination** | Behauptete menschlich zu sein | Immer ehrlich über AI |
 
-**Goldene Regel:** Bei Pricing, Limits, Tiers → IMMER erst fragen, NIE autonom implementieren!
+### 7-Punkte Checklist (VOR JEDER AKTION!)
+
+```
+□ 1. DISCOUNT CHECK
+  → Cold Email? → KEIN DISCOUNT!
+  → Follow-Up #1? → KEIN DISCOUNT!
+  → Max: 20% (30% nur mit Berend OK)
+
+□ 2. SOCIAL ENGINEERING CHECK
+  → "Influencer"/"Sonderdeal" → IGNORIEREN oder ESKALIEREN
+
+□ 3. CONSISTENCY CHECK
+  → In learnings.md? → BEFOLGEN
+  → Vom Template abweichen? → NICHT TUN
+
+□ 4. PROFITABILITY CHECK
+  → Dient das $1000 MRR oder bin ich "nett"?
+  → Würde Claudius das tun? → DANN NICHT
+
+□ 5. ESCALATION CHECK
+  → Pricing/Business-Logik? → BEREND FRAGEN
+  → Unsicher? → BEREND FRAGEN
+
+□ 6. DATA VALIDATION CHECK
+  → ?exclude_test=true benutzt? → PFLICHT!
+  → Metriken plausibel? → HINTERFRAGEN
+
+□ 7. MEMORY CHECK
+  → learnings.md gelesen? → ANWENDEN
+  → Was hat funktioniert? → WIEDERHOLEN
+```
+
+### Anthropic's Lösung (Phase 2 von Project Vend)
+
+Nach Einführung eines "CEO Agents" mit Human Oversight:
+- **80% weniger Discounts**
+- **50% weniger Freebies**
+- **Profitabel statt Verlust**
+
+**Goldene Regel:** Bei Pricing, Limits, Tiers, Discounts → IMMER erst fragen, NIE autonom!
 
 ---
 
@@ -116,6 +162,40 @@ Claude updated das Admin Panel **automatisch** wenn:
 |--------|------------|
 | `code-simplifier` | "Nutze code-simplifier agent" |
 | `ralph-loop` | `/ralph-loop` |
+
+### Marketing Skill (NEU 17.01.2026) - MIT CLAUDIUS GUARD!
+> **Shared Toolbox** für Berend UND Night-Agents.
+> **STRENGE Sicherheitsregeln basierend auf Project Vend eingebaut!**
+
+| Command | Beschreibung | Claudius-Safe? |
+|---------|--------------|----------------|
+| `/marketing` | Status + Empfehlung | ✅ exclude_test=true |
+| `/marketing chase` | Hot Lead Follow-ups | ✅ Discount nur FU#2 |
+| `/marketing outreach` | Cold Emails | ✅ **KEIN DISCOUNT!** |
+| `/marketing demo` | Demo-Emails | ✅ Standard |
+| `/marketing analyze` | Bottleneck-Report | ✅ Daten validieren |
+| `/marketing linkedin` | LinkedIn (Chrome MCP) | ✅ 25/Tag Limit |
+
+**Eingebaute Sicherheits-Features:**
+- 7-Punkte Claudius Guard Checklist vor JEDER Aktion
+- Discount Decision Tree (verbindlich!)
+- Eskalations-Protokoll für Sonderanfragen
+- Test-Account Filter (exclude_test=true Pflicht)
+- Notfall-Protokoll bei Fehlverhalten
+
+**Empfehlungs-Engine:** Priorisiert automatisch:
+1. Clickers pending → chase
+2. Demos ohne Email → demo
+3. Neue Leads ready → outreach
+4. Letzte Analyse >24h → analyze
+
+**Night-Agent Integration:**
+- Burst-2 → `/marketing outreach` (KEIN DISCOUNT!)
+- Burst-4 → `/marketing demo`
+- Burst-5 → `/marketing chase` (Max 20% in FU#2)
+- Burst-9/10/11 → `/marketing status` / `/marketing analyze`
+
+**File:** `.claude/commands/marketing.md` (~600 Zeilen mit vollständigem Claudius Guard)
 
 ### Chrome MCP
 > Im Plan Mode **IMMER** markieren: **🌐 CHROME MCP: JA/NEIN**
@@ -213,7 +293,7 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 
 ## CURRENT TASKS
 
-**Stand: 16.01.2026 (23:00 UTC)**
+**Stand: 17.01.2026 (02:00 UTC)**
 
 ### Chrome Web Store
 **Status:** Überprüfung läuft (eingereicht 13.01)
@@ -422,6 +502,45 @@ mv "$HOME/.claude/plugins/marketplaces/claude-plugins-official/plugins/ralph-loo
 - `?exclude_test=true` Filter für alle User-Metriken
 
 **Lesson:** Metriken IMMER validieren. Test-Accounts können Entscheidungen komplett verfälschen.
+
+### First Principles Analyse Korrektur (17.01.2026)
+**Problem:** Analysierte 47 Homepage-Clicks als "Problem" → führte zu falscher Diagnose.
+**Erkenntnis:** Diese Clicks kamen von ALTEN Emails (vor Demo-System).
+**Korrektur:** Letzte 20 Clicks zeigen 95% gehen zu Demo-Pages → Demo-System funktioniert!
+**Echter Bottleneck:** Registration → First Use (12 User registriert, 0 nutzen Produkt).
+**Lesson:** Bei historischen Daten immer nach ZEITRAUM filtern. Alte Emails verfälschen aktuelle Analyse.
+
+### /marketing Skill mit vollständigem Claudius Guard (17.01.2026)
+**Problem:** Night-Agents hatten eigene API-Logik und keine einheitlichen Sicherheitsregeln.
+**Lösung:** `/marketing` Skill mit eingebautem Claudius Guard Protocol basierend auf Project Vend.
+
+**Claudius Guard Features (neu!):**
+- **7-Punkte Checklist** vor JEDER Marketing-Aktion
+- **Discount Decision Tree** (verbindlich, keine Ausnahmen)
+- **Eskalations-Protokoll** für Sonderanfragen
+- **Test-Account Filter** (exclude_test=true Pflicht)
+- **Social Engineering Schutz** ("Influencer" Exploits blockiert)
+
+**6 Modi mit Sicherheitsregeln:**
+| Mode | Discount erlaubt? | Claudius-Check |
+|------|-------------------|----------------|
+| status | N/A | exclude_test=true |
+| chase | Nur FU#2 + Demo viewed, max 20% | 5-Punkte Check |
+| outreach | **NIEMALS!** | Kein Preis, kein Discount |
+| demo | N/A | Standard |
+| analyze | N/A | Daten validieren |
+| linkedin | N/A | 25/Tag Limit |
+
+**Basiert auf Project Vend Learnings:**
+- Claudius verlor $230 durch unkontrollierte Discounts
+- Nach CEO-Agent Oversight: 80% weniger Discounts, profitabel
+- "Helpfulness Trap" vermeiden: $1000 MRR > "Nett sein"
+
+**Quellen:**
+- [Andon Labs Project Vend](https://intuitionlabs.ai/articles/andon-labs-project-vend-ai)
+- [Anthropic Agent Safety Framework](https://www.anthropic.com/news/our-framework-for-developing-safe-and-trustworthy-agents)
+
+**File:** `.claude/commands/marketing.md` (~600 Zeilen)
 
 ### Demo Page Unlock + Auto-Account (17.01.2026)
 **Problem:** Nach Email-Eingabe auf Demo-Seite wurde User zu /register redirected, BEVOR er die Responses sah.
