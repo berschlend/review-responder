@@ -4354,14 +4354,9 @@ async function editExistingResponse(panel, editType, currentResponse) {
 
 // ========== TURBO MODE: Instant generate WITHOUT panel ==========
 async function turboGenerate(reviewText) {
-
-
-  // Pre-flight checks - always refresh login status
-  await checkLoginStatus();
-  if (!isLoggedIn) {
-    showToast('🔐 Please login first (click extension icon)', 'error');
-    return;
-  }
+  // Check login status but allow anonymous users
+  const stored = await safeStorageGet(['token', 'user']);
+  const isAnonymous = !stored.token;
 
   const cleaned = cleanReviewText(reviewText);
   if (!cleaned || cleaned.length < 10) {
@@ -4390,17 +4385,21 @@ async function turboGenerate(reviewText) {
     }
 
     // Get business name
-    let businessName = cachedUser?.businessName || '';
+    let businessName = stored.user?.businessName || '';
     if (!businessName) {
       businessName = detectBusinessContext() || await getCachedBusinessName();
     }
 
-    const response = await fetch(`${API_URL}/generate`, {
+    // Use public endpoint for anonymous users, authenticated endpoint for logged-in users
+    const endpoint = isAnonymous ? '/api/public/try' : '/api/generate';
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(stored.token && { 'Authorization': `Bearer ${stored.token}` })
+    };
+
+    const response = await fetch(`${API_URL}${endpoint}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${cachedToken}`
-      },
+      headers,
       body: JSON.stringify({
         reviewText: cleaned,
         tone: sentimentDisplay.tone,
@@ -4428,6 +4427,13 @@ async function turboGenerate(reviewText) {
 
     // Show turbo popup with response
     showTurboPopup(data.response, cleaned, copied);
+
+    // Show signup prompt for anonymous users
+    if (isAnonymous) {
+      setTimeout(() => {
+        showToast('✨ Like it? Sign up for 20 free responses/month!', 'info', 5000);
+      }, 2000); // Delay to not interfere with turbo popup
+    }
 
     // Check if we should show review popup
     checkShowReviewPopup();
@@ -4969,15 +4975,11 @@ document.addEventListener('dblclick', async (e) => {
   const selection = window.getSelection().toString().trim();
   if (!selection || selection.length < 10) return;
 
-  // Only in turbo mode OR if logged in and holding Alt
+  // Only in turbo mode OR if holding Alt
+  // Note: turboGenerate handles anonymous users via /api/public/try
   const settings = cachedSettings || await loadSettings();
 
   if (settings.turboMode || e.altKey) {
-    await checkLoginStatus();
-    if (!isLoggedIn) {
-      showToast('🔐 Please login first', 'error');
-      return;
-    }
     turboGenerate(selection);
   }
 });
@@ -5001,12 +5003,7 @@ document.addEventListener('keydown', async (e) => {
       return;
     }
 
-    await checkLoginStatus();
-    if (!isLoggedIn) {
-      showToast('🔐 Please login first', 'error');
-      return;
-    }
-
+    // Note: Both turboGenerate and showResponsePanel handle anonymous users
     const settings = cachedSettings || await loadSettings();
     if (settings.turboMode) {
       turboGenerate(selection);
@@ -5052,17 +5049,13 @@ document.addEventListener('keydown', async (e) => {
   }
 
   // Alt+P: Force open Panel (ignores Turbo Mode) - useful to access settings
+  // Note: showResponsePanel handles anonymous users via /api/public/try
   if (e.altKey && !e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 'p') {
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
 
     const selection = window.getSelection().toString().trim();
-    await checkLoginStatus();
-    if (!isLoggedIn) {
-      showToast('🔐 Please login first', 'error');
-      return;
-    }
     // Force open panel regardless of turbo mode - FALSE = don't auto-generate, let user choose
     showResponsePanel(selection || '', false);
     return;
@@ -6195,13 +6188,7 @@ function injectRespondButtons() {
           return;
         }
 
-        // Check login status
-        await checkLoginStatus();
-        if (!isLoggedIn) {
-          showToast('Please login first (click extension icon)', 'error');
-          return;
-        }
-
+        // Note: Both turboGenerate and showResponsePanel handle anonymous users
         // Check Turbo Mode - same as floating button
         const settings = await loadSettings();
         cachedSettings = settings;
