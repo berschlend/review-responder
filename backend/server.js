@@ -18099,7 +18099,15 @@ app.get('/api/auth/magic-login/:token', async (req, res) => {
     let user = await dbGet('SELECT * FROM users WHERE LOWER(email) = LOWER($1)', [magicLink.email]);
 
     if (!user) {
-      // Auto-create user account
+      // BOT PROTECTION: Don't auto-create accounts for bots
+      // This prevents email security scanners from creating fake accounts
+      if (isBot) {
+        console.log(`🤖 Bot detected, not creating account for ${magicLink.email} (UA: ${userAgent.substring(0, 100)})`);
+        // Still redirect to login page, but user will need to register manually
+        return res.redirect('https://tryreviewresponder.com/register?email=' + encodeURIComponent(magicLink.email) + '&from=magic_link');
+      }
+
+      // Auto-create user account (only for real humans)
       const randomPassword = crypto.randomBytes(32).toString('hex');
       const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
@@ -18117,7 +18125,7 @@ app.get('/api/auth/magic-login/:token', async (req, res) => {
       );
       user = result.rows ? result.rows[0] : result;
 
-      console.log(`🔮 Magic link auto-created user: ${magicLink.email}`);
+      console.log(`🔮 Magic link auto-created user: ${magicLink.email} (verified human)`);
     }
 
     // Mark magic link as used
