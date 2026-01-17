@@ -372,6 +372,15 @@ ReviewResponder/
 - `isClearable` + `isSearchable` fuer bessere UX
 **Lesson:** react-select ist Drop-in Replacement, aber Styling braucht CSS Variables.
 
+### Parallel Claude Sessions OOM Fix (18.01.2026)
+**Problem:** Multiple Claude Sessions crashen mit "Fatal process out of memory: Zone"
+**Root Cause:** 38 Node Prozesse liefen parallel (~1.5GB RAM), Lock-File-Konflikte
+**Loesung:**
+- NODE_OPTIONS in PowerShell Profile: `$env:NODE_OPTIONS = "--max-old-space-size=8192"`
+- Lock-File Auto-Cleanup: `Remove-Item "$HOME\.claude-acc*\.claude.json.lock" -Force`
+- Corrupted Files loeschen: `Remove-Item "$HOME\.claude-acc*\.claude.json.corrupted.*" -Force`
+**Lesson:** Max 3-4 parallele Claude Sessions mit 16GB RAM. Bei OOM: `taskkill /F /IM node.exe`
+
 ### CLAUDE.md Segmentierung (18.01.2026)
 **Problem:** 724 Zeilen CLAUDE.md fuer ALLE Agents - 70% irrelevant pro Session.
 **Loesung:** Core (~200 Zeilen) + `.claude/rules/` fuer agent-spezifische Rules.
