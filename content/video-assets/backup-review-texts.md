@@ -5,15 +5,21 @@
 
 ---
 
-## OPTION 1: Hotel (Default - bereits auf Demo-Page)
+## OPTION 1: Hotel (Default - bereits auf Demo-Page) ⭐ EMPFOHLEN
 
 ### Negative Review (1-Stern)
 ```
-Worst hotel stay ever. Room was dirty, staff was incredibly rude when I asked for help, and the AC didn't work at all. I couldn't sleep because of the heat. Avoid this place at all costs!
+NEVER staying here again! Checked in at 3pm but room wasn't ready until 6pm. When I finally got in, there were stains on the sheets and hair in the bathroom. Asked the front desk for help and they just shrugged. $300/night for THIS?! Save your money and stay somewhere else. Absolutely disgusted.
 ```
 
 **Business:** The Godfrey Hotel Hollywood
 **Rating:** 3.4 Stars (1,096 reviews)
+
+**Warum dieser Text perfekt ist:**
+- Starker emotionaler Einstieg ("NEVER staying here again!")
+- Konkrete Details (Zeit, Preis, Probleme)
+- Preisangabe zeigt Wert ($300/night)
+- Endet mit klarem CTA ("Save your money")
 
 ---
 

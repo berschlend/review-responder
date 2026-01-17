@@ -83,9 +83,11 @@
 ## REVIEW TEXT (auf Demo-Page)
 
 ```
-Worst hotel stay ever. Room was dirty, staff was incredibly
-rude when I asked for help, and the AC didn't work at all.
-I couldn't sleep because of the heat. Avoid this place at all costs!
+NEVER staying here again! Checked in at 3pm but room wasn't
+ready until 6pm. When I finally got in, there were stains on
+the sheets and hair in the bathroom. Asked the front desk for
+help and they just shrugged. $300/night for THIS?! Save your
+money and stay somewhere else. Absolutely disgusted.
 ```
 
 ---
