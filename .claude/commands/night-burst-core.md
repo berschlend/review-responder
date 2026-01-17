@@ -113,7 +113,20 @@ BEI JEDER AUTONOMEN ENTSCHEIDUNG:
 > **SYSTEM REBOOT:** Die bisherigen Prioritäten waren FALSCH.
 > 29% Activation Rate war FAKE (Test-Accounts). Echte Rate: 0%
 
-### 1. Test-Account Filter (PFLICHT!)
+### 1. Real User Definition (KRITISCH!)
+
+> **ECHTER USER = Mindestens 1 Response generiert**
+> Registration allein zaehlt NICHT!
+
+```
+total_registered = Alle mit Account (inkl. 0 Responses)
+total_real = Nur User mit 1+ Response generiert
+
+BEISPIEL: 60 registered, 6 real = 54 haben nie das Produkt genutzt!
+Das ist ein ONBOARDING Problem, nicht Traffic Problem.
+```
+
+### Test-Account Filter (PFLICHT!)
 
 **IMMER `?exclude_test=true` bei User-Metriken verwenden!**
 

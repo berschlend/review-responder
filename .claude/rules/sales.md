@@ -130,6 +130,20 @@ releaseLock('email_send', leadId);
 
 ---
 
+## Real User Definition (KRITISCH!)
+
+> **ECHTER USER = Mindestens 1 Response generiert**
+> Registration allein zaehlt NICHT!
+
+```
+Warum wichtig fuer Sales:
+- 60 registered, 6 real = 90% Churn vor erster Nutzung
+- Problem ist ONBOARDING, nicht mehr Leads scrapen
+- Fokus auf Activation, nicht Acquisition
+```
+
+---
+
 ## Test-Account Filter (PFLICHT!)
 
 ```bash

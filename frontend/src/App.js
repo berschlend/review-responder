@@ -31848,7 +31848,16 @@ const AdminPage = () => {
                   <div style={{ fontSize: '36px', fontWeight: '700', color: 'var(--primary)' }}>
                     {salesData.users?.total || 0}
                   </div>
-                  <div style={{ color: 'var(--gray-600)' }}>Total Users</div>
+                  <div style={{ color: 'var(--gray-600)' }}>Total Registered</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center', position: 'relative' }}>
+                  <div style={{ fontSize: '36px', fontWeight: '700', color: '#8B5CF6' }}>
+                    {salesData.realUsers?.total || 0}
+                  </div>
+                  <div style={{ color: 'var(--gray-600)' }}>Real Users ✓</div>
+                  <div style={{ fontSize: '10px', color: 'var(--gray-500)', marginTop: '4px' }}>
+                    {salesData.realUsers?.viaGenerator || 0} Generator / {salesData.realUsers?.viaDemo || 0} Demo
+                  </div>
                 </div>
                 <div className="card" style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '36px', fontWeight: '700', color: '#10B981' }}>

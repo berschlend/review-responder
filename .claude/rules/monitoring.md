@@ -121,6 +121,33 @@ powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\claude-notify.ps1" \
 
 ---
 
+## Real User Definition (KRITISCH!)
+
+> **ECHTER USER = Mindestens 1 Response generiert**
+> Registration allein zaehlt NICHT!
+
+```
+DB-Felder (user-list Endpoint):
+- total_registered = Alle mit Account (inkl. 0 Responses)
+- total_real = Nur User mit 1+ Response generiert
+
+BEISPIEL:
+- 60 registered, 6 real = 54 haben nie das Produkt genutzt!
+- Das ist ein ONBOARDING Problem, nicht Traffic Problem
+```
+
+### API Check
+```bash
+# User-Liste mit Real/Registered Split:
+curl -s -H "x-admin-key: XXX" \
+  "https://review-responder.onrender.com/api/admin/user-list?exclude_test=true"
+
+# Response enthaelt:
+# { total_registered: 60, total_real: 6, ... }
+```
+
+---
+
 ## Test-Account Filter (PFLICHT!)
 
 ```bash
