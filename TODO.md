@@ -1,6 +1,6 @@
 # ReviewResponder - Todo Liste
 
-> Letzte Aktualisierung: 18.01.2026 (abends)
+> Letzte Aktualisierung: 18.01.2026 (Nacht - wrap-up)
 
 ---
 
@@ -62,6 +62,7 @@
 
 | Was | Wartet auf | Seit | Nächste Aktion |
 |-----|------------|------|----------------|
+| **Phone Outreach (3 Hot Leads)** | **Berend morgen früh** | **18.01** | **Call-Preps ready in `content/call-prep/`. Prio: Ti Cafe → Trattoria → Sphere** |
 | **Night-Burst System** | **Manuellen Neustart** | **17.01** | **6 Agents STALE, Burst-6 nie gestartet. Siehe for-berend.md für Commands** |
 | Chrome Extension v1.6.2 | Chrome Review (1-3 Tage) | 15.01 | Bei Approval → Google Ads schalten |
 | AnyDesk Remote (Laptop zu) | HDMI Dummy Plug kaufen | 16.01 | Amazon bestellen (~5€) → Einstecken |

@@ -339,6 +339,25 @@ ReviewResponder/
 
 ## LEARNINGS (Top 5)
 
+### Stop-Hooks Non-Blocking + NODE_OPTIONS (18.01.2026)
+**Problem:** Claude Sessions blieben im Stop-Hook stecken. Zusaetzlich: Node.js OOM Crash bei vielen parallelen Sessions.
+**Root Cause:**
+1. Stop-Hooks hatten `Start-Sleep` und warteten auf Balloon-Dispose
+2. NODE_OPTIONS war nur im Profile, nicht systemweit (MCP Server hatten kein Memory-Limit)
+**Loesung:**
+1. `stop-notify.ps1` + `memory-stop.ps1` nutzen jetzt `Start-Job` + sofort `exit 0`
+2. `NODE_OPTIONS = "--max-old-space-size=8192 --max-semi-space-size=128"` als User Environment Variable
+**Lesson:** Hooks MUESSEN non-blocking sein (`Start-Job`). Environment Variables systemweit setzen fuer MCP Server.
+
+### First Principles: Activation Bottleneck (18.01.2026)
+**Problem:** 6 registrierte User, 0 haben jemals eine Response generiert. Warum?
+**Root Cause:** Nach Login/Register wurden User zu `/dashboard` geschickt - dort wussten sie nicht was tun.
+**Loesung:**
+1. Login/Register/Magic Link redirecten jetzt zu `/generator` statt `/dashboard`
+2. Welcome Email mit klarem CTA: "Generate Your First Response" (nicht "Login")
+3. Activation Emails enthalten jetzt fresh Magic Links (kein Passwort noetig)
+**Lesson:** Kuerzester Weg zum Wert = Activation. Dashboard ist kein Wert. Generator ist Wert.
+
 ### Call-Prep Dashboard + Auto-Alerts (18.01.2026)
 **Problem:** Berend wusste nicht wann HOT Leads angerufen werden muessen.
 **Loesung:** Komplettes System implementiert:

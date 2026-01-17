@@ -13881,13 +13881,14 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
         newThisWeek: parseInt(userStats.new_users_week) || 0,
         newThisMonth: parseInt(userStats.new_users_month) || 0,
       },
-      // Echte User Metriken (haben mindestens 1x generiert - EGAL WO!)
-      // 18.01.2026: Added viaInstantTry for public_try_usage tracking
+      // Echte User Metriken (haben mindestens 1x GENERIERT - nicht nur angesehen!)
+      // 18.01.2026: Smart Funnel - Demo/Magic Link geklickt = inFunnel, generiert = real
       realUsers: {
         total: parseInt(realUserStats.real_users) || 0,
         viaGenerator: parseInt(realUserStats.via_generator) || 0,
         viaDemo: parseInt(realUserStats.via_demo) || 0,
         viaInstantTry: parseInt(realUserStats.via_instant_try) || 0,
+        inFunnel: parseInt(realUserStats.in_funnel) || 0,
         inactive: parseInt(realUserStats.inactive_users) || 0,
       },
       affiliates: {
