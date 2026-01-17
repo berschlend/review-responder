@@ -325,6 +325,17 @@ ReviewResponder/
 
 ## LEARNINGS (Top 5)
 
+### Call-Prep Dashboard + Auto-Alerts (18.01.2026)
+**Problem:** Berend wusste nicht wann HOT Leads angerufen werden muessen.
+**Loesung:** Komplettes System implementiert:
+- `call_preps` DB-Tabelle mit priority_score (5=HOT, 4=WARM)
+- Admin Dashboard Tab mit roter Markierung fuer Action-Items
+- Auto-Sync: `scripts/sync-sticky-tasks.ps1` holt aus DB, schreibt sticky-tasks.json
+- Call-Alert: Windows Toast + BEEP BEEP Sound wenn HOT Leads warten (max 1x/30min throttle)
+- Night-Agent Integration: `hot-lead-add`, `call-status`, `call-alert` Actions
+**Files:** `scripts/sync-sticky-tasks.ps1`, `scripts/agent-helpers.ps1`, `claude-notify.ps1` (-Type call)
+**Lesson:** DB-driven sticky tasks > manuelle JSON-Pflege. Proaktive Alerts > passive Anzeige.
+
 ### Cold Outreach Startschwierigkeiten (18.01.2026)
 **Problem:** Erste Woche Cold Email zeigte 0% echte Conversions - sah aus wie "Cold Email funktioniert nicht".
 **Root Cause:** 5 technische Bugs die jetzt gefixt sind:

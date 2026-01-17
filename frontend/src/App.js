@@ -391,6 +391,18 @@ const Footer = () => (
               <Link to="/bbb-review-responses">BBB</Link>
             </li>
             <li>
+              <Link to="/zillow-realtor-reviews">Zillow</Link>
+            </li>
+            <li>
+              <Link to="/indeed-company-reviews">Indeed</Link>
+            </li>
+            <li>
+              <Link to="/thumbtack-reviews">Thumbtack</Link>
+            </li>
+            <li>
+              <Link to="/appstore-app-reviews">App Store</Link>
+            </li>
+            <li>
               <Link to="/negative-review-responses">Negative Reviews</Link>
             </li>
           </ul>
