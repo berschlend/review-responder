@@ -1,83 +1,99 @@
 # Anruf-Liste - Priorisiert
 
-> Stand: 17.01.2026 | Ziel: Erster zahlender Kunde
+> Stand: 18.01.2026 | Aktualisiert von Claude nach /data-analyze
 
 ---
 
-## PRIORITAET 1: Registrierte User (haben Account, nutzen nicht)
+## Beste Anrufzeiten
 
-Diese Leads haben sich AKTIV registriert aber noch NIE das Produkt genutzt.
-**Conversion-Chance: HOCH** - Sie kennen uns, muessen nur aktiviert werden!
-
-| # | Business | Telefon | Email | Score | Status |
-|---|----------|---------|-------|-------|--------|
-| 1 | **Trattoria Sempre Zuerich** | +41 44 262 54 62 | zuerich@trattoria-sempre.ch | **+5** | Magic Link genutzt! |
-| 2 | **Sphere Tim Raue (Berlin)** | 030 247575875 | i.schmidt@tv-turm.de | **+4** | Michelin, personal Name |
-| 3 | ibis Wien Mariahilf | +43 1 521510 | H0796@accor.com | +2 | Business hours signup |
-
-### Scoring Erklaerung
-
-| Lead | Faktoren |
-|------|----------|
-| Trattoria Sempre | +3 (Magic Link = aktiv engagiert), +2 (SMB, Entscheider erreichbar) |
-| Sphere Tim Raue | +3 (Personal Name = Entscheider), +2 (High-End, viele Reviews), -1 (gross) |
-| ibis Wien | +2 (Business Hours), -2 (Corporate Accor, H####@ Pattern) |
+| Region | Beste Zeit (Lokalzeit) | Grund |
+|--------|------------------------|-------|
+| USA (Denver) | 10:00-11:30 MST | Vor Lunch-Rush |
+| Schweiz | 10:00-11:30 CET | Vor Mittagsservice |
+| Deutschland | 10:00-11:30 CET | Vor Mittagsservice |
 
 ---
 
-## PRIORITAET 2: Weitere registrierte User
+## HOT LEADS (Heute anrufen!)
 
-| # | Business | Email | Problem |
-|---|----------|-------|---------|
-| 4 | terrasse Restaurant Zuerich | info@terrasse-zuerich.ch | Generic info@ |
-| 5 | IntercityHotel Hamburg | info@treudelberg.com | Chain hotel |
-| 6 | St James Quarter | hello@stjamesquarter.com | Shopping center? |
+### #1 - Ti Cafe Denver (PRIORITY 0)
 
-**Nicht anrufen:**
-- h9057@accor.com (2am signup = Bot/Scanner)
-- reservation.web@madamebrasserie.com (Generic email)
-- awayspa.edinburgh@whotels.com (Same-minute burst pattern)
-
----
-
-## CALL WORKFLOW
-
-### Vor dem Anruf
-1. Call-Prep oeffnen: `content/call-prep/[business-name].md`
-2. 2 Minuten lesen (Quick Info + Opener)
-3. Browser offen mit ReviewResponder Demo
-
-### Nach dem Anruf
-Sag Claude: "Anruf mit [Business] war [Ergebnis]"
-
-| Ergebnis | Claude macht... |
-|----------|-----------------|
-| "Interesse" | Demo senden, Follow-up planen |
-| "Kein Interesse" | Lead Status updaten, Grund notieren |
-| "Rueckruf" | Termin notieren, neues Prep mit Notizen |
-| "Nicht erreicht" | 2x retry markieren |
+| | |
+|---|---|
+| **Telefon** | +1 720 440 2864 |
+| **Score** | 95/100 |
+| **Warum** | Clicked YESTERDAY on demo, Personal Gmail |
+| **Call-Prep** | [ti-cafe-denver.md](ti-cafe-denver.md) |
+| **Beste Zeit** | 10:00-11:30 MST (18:00-19:30 CET) |
 
 ---
 
-## BESTE ANRUFZEITEN
+### #2 - Trattoria Sempre Zuerich (PRIORITY 1)
 
-| Region | Beste Zeit (lokal) | In deutscher Zeit |
-|--------|-------------------|-------------------|
-| Schweiz | 10:00-12:00 | 10:00-12:00 |
-| Deutschland | 10:00-12:00 | 10:00-12:00 |
-| Oesterreich | 10:00-12:00 | 10:00-12:00 |
-| UK | 10:00-12:00 | 11:00-13:00 |
-
-**Restaurant-Tipp:** VOR 11:30 anrufen (dann wird's hektisch)
-
----
-
-## TRACKING
-
-| Datum | Business | Ergebnis | Naechster Schritt |
-|-------|----------|----------|-------------------|
-| - | - | - | - |
+| | |
+|---|---|
+| **Telefon** | +41 44 262 54 62 |
+| **Score** | 88/100 |
+| **Warum** | Used Magic Link = active engagement, Restaurant Domain |
+| **Call-Prep** | [trattoria-sempre-zuerich.md](trattoria-sempre-zuerich.md) |
+| **Beste Zeit** | 10:00-11:30 CET |
 
 ---
 
-*Aktualisiert: 17.01.2026*
+### #3 - Sphere Tim Raue Berlin (PRIORITY 2)
+
+| | |
+|---|---|
+| **Telefon** | 030 247575875 |
+| **Score** | 82/100 |
+| **Warum** | Personal name (I. Schmidt), 2 Michelin Stars, Evening signup |
+| **Call-Prep** | [sphere-tim-raue.md](sphere-tim-raue.md) |
+| **Beste Zeit** | 10:00-11:30 CET |
+
+---
+
+## Scoring Erklaerung
+
+| Faktor | Punkte |
+|--------|--------|
+| Clicked on Demo | +30 |
+| Used Magic Link | +25 |
+| Personal Email (nicht info@) | +20 |
+| Restaurant/Hotel/Cafe | +15 |
+| Personal Gmail | +10 |
+| SMB (nicht Kette) | +10 |
+| **Enterprise/Kette** | **-20** |
+| **Generic Email (info@)** | **-20** |
+
+---
+
+## Ergebnis-Tracking
+
+| Lead | Anruf | Ergebnis | Naechster Schritt |
+|------|-------|----------|-------------------|
+| Ti Cafe | ___ | ___ | ___ |
+| Trattoria Sempre | ___ | ___ | ___ |
+| Sphere Tim Raue | ___ | ___ | ___ |
+
+---
+
+## Nach dem Anruf
+
+Sag Claude:
+- "Hat Interesse, will Demo" -> Claude sendet Demo
+- "Kein Interesse" -> Claude updated Lead Status
+- "Rueckruf Termin X" -> Claude notiert und erinnert
+- "Nicht erreicht" -> Claude plant Retry
+
+---
+
+## SKIP diese Leads (Low Priority)
+
+| Lead | Email | Warum Skip |
+|------|-------|------------|
+| Ibis Wien | H0796@accor.com | Corporate Accor pattern |
+| Novotel London | h9057@accor.com | 2am signup + Corporate |
+| Madame Brasserie | reservation.web@... | Generic reservation@ |
+| AWAY SPA | awayspa.edinburgh@... | Same-minute burst |
+
+> Diese haben 50%+ Wahrscheinlichkeit Bot-Clicks oder erreichen nie Entscheider.
