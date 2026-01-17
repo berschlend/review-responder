@@ -1,138 +1,197 @@
-# ReviewResponder Demo Video - Post-Production Automation
-# Usage: .\scripts\video-automation\post-process.ps1 -InputVideo "path\to\raw.mp4"
+# ReviewResponder Demo Video - COMPLETE Post-Production
+# =====================================================
+# Creates: 16:9 (YouTube) + 9:16 (TikTok/Reels) + Captions
+#
+# Usage: .\post-process.ps1 -InputVideo "path\to\raw.mp4"
 
 param(
     [Parameter(Mandatory=$true)]
     [string]$InputVideo,
 
-    [string]$OutputName = "demo-final",
-    [switch]$NoMusic,
+    [string]$OutputName = "demo",
     [switch]$NoOverlays,
+    [switch]$NoVertical,
     [switch]$Preview
 )
 
 $ProjectRoot = "C:\Users\Berend Mainz\Documents\Start-up\ReviewResponder"
 $OutputDir = Join-Path $ProjectRoot "content\video-recordings"
-$AssetsDir = Join-Path $ProjectRoot "content\video-assets"
-$Timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+$Timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm"
 
 # FFmpeg path
 $ffmpeg = "C:\Users\Berend Mainz\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin\ffmpeg.exe"
 
-Write-Host "`n========================================" -ForegroundColor Cyan
-Write-Host "  Post-Production Automation" -ForegroundColor Cyan
-Write-Host "========================================`n" -ForegroundColor Cyan
+Clear-Host
+Write-Host "`n  POST-PRODUCTION`n" -ForegroundColor Cyan
 
-# Verify input file exists
+# Verify input
 if (-not (Test-Path $InputVideo)) {
-    Write-Host "[ERROR] Input video not found: $InputVideo" -ForegroundColor Red
+    Write-Host "  [ERROR] Video nicht gefunden: $InputVideo" -ForegroundColor Red
     exit 1
 }
 
-Write-Host "[1/5] Input: $InputVideo" -ForegroundColor Yellow
+Write-Host "  Input: $($InputVideo | Split-Path -Leaf)" -ForegroundColor DarkGray
 
-# Text overlays configuration (timestamp in seconds -> text)
+# ===========================================
+# TEXT OVERLAYS (Captions for silent viewing)
+# ===========================================
+# These appear BURNED INTO the video so they work even on mute
+
 $Overlays = @(
-    @{ Start = 0;  End = 3;  Text = "Right now..." },
-    @{ Start = 3;  End = 6;  Text = "This review is DESTROYING your business" },
-    @{ Start = 10; End = 13; Text = "One click. Done." },
-    @{ Start = 14; End = 16; Text = "tryreviewresponder.com" }
+    # Hook - erste 3 Sekunden entscheiden
+    @{ Start = 0;  End = 3;  Text = "This review just dropped..."; Position = "top" },
+
+    # Problem - emotionaler Impact
+    @{ Start = 3;  End = 6;  Text = "It's DESTROYING your rating"; Position = "top" },
+
+    # Transition
+    @{ Start = 6;  End = 8;  Text = "But watch this..."; Position = "top" },
+
+    # Solution
+    @{ Start = 10; End = 13; Text = "One click. Professional response."; Position = "top" },
+
+    # CTA
+    @{ Start = 14; End = 17; Text = "tryreviewresponder.com"; Position = "bottom" }
 )
 
-# Step 1: Get video info
-Write-Host "`n[2/5] Analyzing video..." -ForegroundColor Yellow
-$VideoInfo = & $ffmpeg -i $InputVideo 2>&1 | Select-String "Duration"
-Write-Host "  $VideoInfo" -ForegroundColor Cyan
+# ===========================================
+# BUILD FILTER: 16:9 (YouTube/Landscape)
+# ===========================================
+Write-Host "`n  [1/4] 16:9 Version (YouTube)..." -ForegroundColor Yellow
 
-# Step 2: Create filter for text overlays
-$FilterComplex = ""
-if (-not $NoOverlays) {
-    Write-Host "`n[3/5] Building text overlays..." -ForegroundColor Yellow
+$DrawTextFilters = @()
+foreach ($overlay in $Overlays) {
+    $text = $overlay.Text -replace "'", "\\'" -replace ":", "\\:"
+    $start = $overlay.Start
+    $end = $overlay.End
 
-    $DrawTextFilters = @()
+    # Position: top or bottom
+    $yPos = if ($overlay.Position -eq "top") { "50" } else { "h-80" }
+
+    # White text, black outline, readable on any background
+    $filter = "drawtext=text='$text':fontfile='C\\:/Windows/Fonts/arial.ttf':fontsize=42:fontcolor=white:borderw=3:bordercolor=black:x=(w-text_w)/2:y=$yPos`:enable='between(t,$start,$end)'"
+    $DrawTextFilters += $filter
+}
+
+$FilterLandscape = $DrawTextFilters -join ","
+$OutputLandscape = Join-Path $OutputDir "$OutputName-youtube-$Timestamp.mp4"
+
+$cmdLandscape = @(
+    "-i", "`"$InputVideo`"",
+    "-vf", "`"$FilterLandscape`"",
+    "-c:v", "libx264", "-preset", "fast", "-crf", "23",
+    "-c:a", "aac", "-b:a", "128k",
+    "-movflags", "+faststart",
+    "-y", "`"$OutputLandscape`""
+) -join " "
+
+if (-not $Preview) {
+    Invoke-Expression "$ffmpeg $cmdLandscape" 2>&1 | Out-Null
+    if (Test-Path $OutputLandscape) {
+        Write-Host "    [OK] $($OutputLandscape | Split-Path -Leaf)" -ForegroundColor Green
+    }
+}
+
+# ===========================================
+# BUILD FILTER: 9:16 (TikTok/Reels/Shorts)
+# ===========================================
+if (-not $NoVertical) {
+    Write-Host "  [2/4] 9:16 Version (TikTok/Reels)..." -ForegroundColor Yellow
+
+    # For vertical: crop center, scale to 1080x1920, larger text
+    $DrawTextFiltersVertical = @()
     foreach ($overlay in $Overlays) {
-        $text = $overlay.Text -replace "'", "\\'"
+        $text = $overlay.Text -replace "'", "\\'" -replace ":", "\\:"
         $start = $overlay.Start
         $end = $overlay.End
 
-        # White text with shadow, centered at bottom
-        $filter = "drawtext=text='$text':fontfile='C\\:/Windows/Fonts/arial.ttf':fontsize=48:fontcolor=white:borderw=3:bordercolor=black:x=(w-text_w)/2:y=h-100:enable='between(t,$start,$end)'"
-        $DrawTextFilters += $filter
-        Write-Host "  [$start-$end s] $text" -ForegroundColor DarkGray
+        # Larger text for mobile, centered
+        $yPos = if ($overlay.Position -eq "top") { "200" } else { "h-250" }
+
+        $filter = "drawtext=text='$text':fontfile='C\\:/Windows/Fonts/arial.ttf':fontsize=56:fontcolor=white:borderw=4:bordercolor=black:x=(w-text_w)/2:y=$yPos`:enable='between(t,$start,$end)'"
+        $DrawTextFiltersVertical += $filter
     }
 
-    $FilterComplex = $DrawTextFilters -join ","
+    $FilterVertical = $DrawTextFiltersVertical -join ","
+    $OutputVertical = Join-Path $OutputDir "$OutputName-tiktok-$Timestamp.mp4"
+
+    # Crop to 9:16 from center, then add text
+    # crop=ih*9/16:ih crops to vertical aspect ratio
+    $cmdVertical = @(
+        "-i", "`"$InputVideo`"",
+        "-vf", "`"crop=ih*9/16:ih,scale=1080:1920,$FilterVertical`"",
+        "-c:v", "libx264", "-preset", "fast", "-crf", "23",
+        "-c:a", "aac", "-b:a", "128k",
+        "-movflags", "+faststart",
+        "-y", "`"$OutputVertical`""
+    ) -join " "
+
+    if (-not $Preview) {
+        Invoke-Expression "$ffmpeg $cmdVertical" 2>&1 | Out-Null
+        if (Test-Path $OutputVertical) {
+            Write-Host "    [OK] $($OutputVertical | Split-Path -Leaf)" -ForegroundColor Green
+        }
+    }
 }
 
-# Step 3: Build ffmpeg command
-Write-Host "`n[4/5] Processing video..." -ForegroundColor Yellow
+# ===========================================
+# THUMBNAIL (for YouTube)
+# ===========================================
+Write-Host "  [3/4] Thumbnail..." -ForegroundColor Yellow
 
-$TempOutput = Join-Path $OutputDir "temp-processed.mp4"
-$FinalOutput = Join-Path $OutputDir "$OutputName-$Timestamp.mp4"
+$OutputThumb = Join-Path $OutputDir "$OutputName-thumbnail-$Timestamp.jpg"
 
-$ffmpegArgs = @(
+# Extract frame at 10 seconds (when response is shown), add text overlay
+$thumbCmd = @(
     "-i", "`"$InputVideo`"",
-    "-y"  # Overwrite
-)
+    "-ss", "10",
+    "-vframes", "1",
+    "-vf", "`"drawtext=text='AI Review Response':fontfile='C\\:/Windows/Fonts/arial.ttf':fontsize=72:fontcolor=yellow:borderw=4:bordercolor=black:x=(w-text_w)/2:y=50`"",
+    "-y", "`"$OutputThumb`""
+) -join " "
 
-if ($FilterComplex) {
-    $ffmpegArgs += @("-vf", "`"$FilterComplex`"")
-}
-
-# Video encoding settings (high quality, web-optimized)
-$ffmpegArgs += @(
-    "-c:v", "libx264",
-    "-preset", "medium",
-    "-crf", "23",
-    "-c:a", "aac",
-    "-b:a", "128k",
-    "-movflags", "+faststart",  # Web optimization
-    "`"$TempOutput`""
-)
-
-$ffmpegCommand = "$ffmpeg " + ($ffmpegArgs -join " ")
-
-if ($Preview) {
-    Write-Host "`n[PREVIEW] Would run:" -ForegroundColor Magenta
-    Write-Host $ffmpegCommand -ForegroundColor DarkGray
-} else {
-    # Run ffmpeg
-    Write-Host "  Running ffmpeg..." -ForegroundColor Cyan
-    Invoke-Expression $ffmpegCommand
-
-    if (Test-Path $TempOutput) {
-        Move-Item -Path $TempOutput -Destination $FinalOutput -Force
-        Write-Host "  [OK] Video processed" -ForegroundColor Green
-    } else {
-        Write-Host "  [ERROR] FFmpeg failed" -ForegroundColor Red
-        exit 1
+if (-not $Preview) {
+    Invoke-Expression "$ffmpeg $thumbCmd" 2>&1 | Out-Null
+    if (Test-Path $OutputThumb) {
+        Write-Host "    [OK] $($OutputThumb | Split-Path -Leaf)" -ForegroundColor Green
     }
 }
 
-# Step 4: Summary
-Write-Host "`n[5/5] Complete!" -ForegroundColor Green
+# ===========================================
+# SUMMARY
+# ===========================================
+Write-Host "`n  [4/4] Complete!" -ForegroundColor Green
+
 Write-Host @"
 
-  ========================================
-  OUTPUT
-  ========================================
+  ════════════════════════════════════════════════════
 
-  Final Video: $FinalOutput
+  OUTPUTS:
 
-  Text Overlays Added:
-  - "Right now..." (0-3s)
-  - "This review is DESTROYING..." (3-6s)
-  - "One click. Done." (10-13s)
-  - "tryreviewresponder.com" (14-16s)
+  YouTube (16:9):  $($OutputLandscape | Split-Path -Leaf)
+  TikTok (9:16):   $($OutputVertical | Split-Path -Leaf)
+  Thumbnail:       $($OutputThumb | Split-Path -Leaf)
 
-  ========================================
+  ════════════════════════════════════════════════════
+
+  NEXT STEPS:
+
+  1. TikTok:    Upload $OutputName-tiktok-*.mp4
+                Hashtags: #restaurantowner #businesstips #ai
+
+  2. Instagram: Upload same file as Reel
+                Same hashtags + #smallbusiness
+
+  3. YouTube:   Upload $OutputName-youtube-*.mp4
+                Use thumbnail, add description
+
+  ════════════════════════════════════════════════════
 
 "@ -ForegroundColor Cyan
 
+# Open output folder
 if (-not $Preview) {
-    # Auto-open the video
-    Start-Process $FinalOutput
+    Start-Process "explorer.exe" -ArgumentList $OutputDir
 }
 
-Write-Host "`n  FERTIG! Video oeffnet sich...`n" -ForegroundColor Green
-Write-Host "  Upload zu: TikTok, Instagram Reels, YouTube Shorts`n" -ForegroundColor Cyan
+Write-Host "  Ordner geoeffnet. Ready to upload!`n" -ForegroundColor Green
