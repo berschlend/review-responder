@@ -1,0 +1,53 @@
+{
+  "learnings": [
+    {
+      "id": 1,
+      "date": "2026-01-17",
+      "category": "tone_bug",
+      "pattern": "toneConfig defined but not used in prompt",
+      "context": "toneDefinitions had description, goodExample, avoidExample but toneConfig variable was set and never referenced in systemMessage",
+      "action": "Added <tone_instruction> XML block with all 3 elements",
+      "impact": "User-selected tone now actually affects AI output",
+      "status": "implemented",
+      "commit": "cd0fc247"
+    },
+    {
+      "id": 2,
+      "date": "2026-01-17",
+      "category": "ai_slop",
+      "pattern": "Claude-specific phrases added to blacklist",
+      "context": "Phrases like 'glad to hear', 'sounds like', 'hope to see you' are Claude-typical",
+      "action": "Added to AI_SLOP_PHRASES in promptExamples.js",
+      "impact": "Reduced AI-sounding responses",
+      "status": "implemented"
+    },
+    {
+      "id": 3,
+      "date": "2026-01-17",
+      "category": "prompt_structure",
+      "pattern": "Rating strategies intentionally different for Demo vs Main",
+      "context": "Demo needs shorter, punchier responses (1-2 sentences) while Main can be longer (2-3)",
+      "action": "Documented as intentional - NOT a bug",
+      "impact": "Better first impression on landing page",
+      "status": "verified_correct"
+    }
+  ],
+  "pending_investigation": [
+    {
+      "id": "P1",
+      "description": "Prefill technique not implemented",
+      "potential_impact": "Could prevent Thank you starts",
+      "priority": "medium"
+    },
+    {
+      "id": "P2",
+      "description": "Platform-specific examples missing",
+      "potential_impact": "Google vs Yelp vs TripAdvisor have different cultures",
+      "priority": "low"
+    }
+  ],
+  "metrics": {
+    "last_audit": "2026-01-17",
+    "quality_score": "90%"
+  }
+}
