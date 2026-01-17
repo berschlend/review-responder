@@ -4788,8 +4788,8 @@ const LoginPage = () => {
     setLoading(true);
     try {
       await login(email, password);
-      toast.success('Welcome back!');
-      navigate('/dashboard');
+      toast.success('Welcome back! Generate your first response now.');
+      navigate('/generator');
     } catch (error) {
       const errorMsg = error.response?.data?.error || 'Login failed';
       // Show helpful message for invalid credentials
@@ -4823,8 +4823,8 @@ const LoginPage = () => {
       setGoogleLoading(true);
       try {
         await loginWithGoogle(credential);
-        toast.success('Welcome back!');
-        navigate('/dashboard');
+        toast.success('Welcome back! Generate your first response now.');
+        navigate('/generator');
       } catch (error) {
         toast.error(error.response?.data?.error || 'Google sign-in failed');
       } finally {
@@ -4975,7 +4975,7 @@ const MagicLoginPage = () => {
             localStorage.setItem('isAdminUser', 'true');
           }
           toast.success('Welcome! Try generating a response now.');
-          navigate('/dashboard'); // Send to generator for immediate value (was /dashboard)
+          navigate('/generator'); // Send to generator for immediate value
         })
         .catch(err => {
           console.error('Magic login error:', err);
@@ -5067,7 +5067,7 @@ const RegisterPage = () => {
       await register(email, password, businessName, refParam);
       toast.success('Account created! Try generating your first response now.');
       // Send to generator for immediate value (not dashboard where they might get lost)
-      navigate('/dashboard');
+      navigate('/generator');
     } catch (error) {
       toast.error(error.response?.data?.error || 'Registration failed');
     } finally {
@@ -5082,7 +5082,7 @@ const RegisterPage = () => {
         await loginWithGoogle(credential, refParam);
         toast.success('Account created! Try generating your first response now.');
         // Send to generator for immediate value (not dashboard where they might get lost)
-        navigate('/dashboard');
+        navigate('/generator');
       } catch (error) {
         toast.error(error.response?.data?.error || 'Google sign-up failed');
       } finally {
@@ -37914,16 +37914,44 @@ const AdminPage = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {callPrepsData.calls?.map((call, index) => (
-                          <tr
-                            key={call.id}
-                            style={{
-                              borderBottom: '1px solid var(--gray-100)',
-                              background: index % 2 === 0 ? 'var(--gray-50)' : 'white',
-                            }}
-                          >
-                            <td style={{ padding: '12px 8px' }}>
-                              <div style={{ fontWeight: '600' }}>{call.business_name}</div>
+                        {callPrepsData.calls?.map((call, index) => {
+                          // Determine if this call needs action (show in red)
+                          const needsAction =
+                            (call.status === 'pending' && call.priority_score >= 4) ||
+                            call.status === 'callback' ||
+                            (call.status === 'interested' && !call.demo_sent_at) ||
+                            (call.status === 'not_reached' && call.call_attempts < 3);
+                          const isHot = call.priority_score === 5;
+
+                          return (
+                            <tr
+                              key={call.id}
+                              style={{
+                                borderBottom: '1px solid var(--gray-100)',
+                                background: needsAction
+                                  ? isHot
+                                    ? 'rgba(239, 68, 68, 0.15)'
+                                    : 'rgba(251, 191, 36, 0.15)'
+                                  : index % 2 === 0
+                                    ? 'var(--gray-50)'
+                                    : 'white',
+                                borderLeft: needsAction
+                                  ? isHot
+                                    ? '4px solid #EF4444'
+                                    : '4px solid #F59E0B'
+                                  : 'none',
+                              }}
+                            >
+                              <td style={{ padding: '12px 8px' }}>
+                                <div style={{ fontWeight: '600' }}>
+                                  {isHot && (
+                                    <span style={{ marginRight: '6px' }}>🔥</span>
+                                  )}
+                                  {call.priority_score === 4 && (
+                                    <span style={{ marginRight: '6px' }}>🟢</span>
+                                  )}
+                                  {call.business_name}
+                                </div>
                               {call.problem && (
                                 <div
                                   style={{

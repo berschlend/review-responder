@@ -7,9 +7,12 @@ param(
     [Parameter(Mandatory=$true)]
     [string]$InputVideo,
     [string]$OutputName = "demo",
+    [ValidateSet("problem", "question", "stats", "pov", "challenge")]
+    [string]$HookStyle = "problem",
     [switch]$NoVertical,
     [switch]$NoCaptions,
-    [switch]$Preview
+    [switch]$Preview,
+    [switch]$AllHooks  # Generate ALL hook variants at once!
 )
 
 $ErrorActionPreference = "SilentlyContinue"
@@ -29,24 +32,50 @@ if (-not (Test-Path $InputVideo)) {
 
 Write-Host "  Input: $($InputVideo | Split-Path -Leaf)" -ForegroundColor DarkGray
 
-# Output paths
-$OutYT = "$OutputDir\$OutputName-youtube-$Timestamp.mp4"
-$OutTT = "$OutputDir\$OutputName-tiktok-$Timestamp.mp4"
-$OutThumb = "$OutputDir\$OutputName-thumbnail-$Timestamp.jpg"
+# Output paths (include hook style in filename)
+$OutYT = "$OutputDir\$OutputName-$HookStyle-youtube-$Timestamp.mp4"
+$OutTT = "$OutputDir\$OutputName-$HookStyle-tiktok-$Timestamp.mp4"
+$OutThumb = "$OutputDir\$OutputName-$HookStyle-thumbnail-$Timestamp.jpg"
 
 # ===========================================
-# CAPTION DEFINITIONS (Timed for 15-sec video)
+# HOOK VARIANTS (Different opening styles)
 # ===========================================
-# Format: "TEXT|START|END"
-# Timestamps based on speaking script
+# Each hook style has different first 2 captions (0-6 sec)
+# The rest stays the same (6-15 sec)
 
-$Captions = @(
-    "This review just dropped...|0|3",
-    "It's DESTROYING your rating.|3|6",
+$HookVariants = @{
+    "problem" = @(
+        "This review just dropped...|0|3",
+        "Its DESTROYING your rating.|3|6"
+    )
+    "question" = @(
+        "How do you respond to THIS?|0|3",
+        "Most owners have no idea...|3|6"
+    )
+    "stats" = @(
+        "94% read reviews before buying|0|3",
+        "One bad review costs you $30K|3|6"
+    )
+    "pov" = @(
+        "POV: You just got a 1-star|0|3",
+        "Your stomach drops...|3|6"
+    )
+    "challenge" = @(
+        "Bet you cant respond right|0|3",
+        "Without sounding defensive|3|6"
+    )
+}
+
+# Build full caption array based on hook style
+$HookCaptions = $HookVariants[$HookStyle]
+$CommonCaptions = @(
     "But watch this...|6|8",
     "One click.|10|12",
     "Professional response.|12|14"
 )
+$Captions = $HookCaptions + $CommonCaptions
+
+Write-Host "  Hook Style: $HookStyle" -ForegroundColor DarkGray
 
 # Build FFmpeg filter for captions (YouTube 16:9)
 function Get-CaptionFilter {
@@ -167,23 +196,120 @@ if (-not $Preview) {
 }
 
 # ===========================================
-# 4. SUMMARY
+# 4. CAPTION TEXT FILES (for easy copy-paste)
 # ===========================================
-Write-Host "`n  [4/4] Complete!" -ForegroundColor Green
+Write-Host "  [4/5] Caption Files..." -ForegroundColor Yellow
+
+if (-not $Preview) {
+    # TikTok Caption
+    $TikTokCaption = @"
+Negative review? One click. Done.
+
+Comment "REVIEW" for the link!
+
+#restaurantowner #businesstips #ai #googlereviews #smallbusiness
+"@
+
+    # Instagram Caption
+    $InstagramCaption = @"
+Stop stressing over negative reviews.
+
+AI writes professional responses in seconds.
+
+Link in bio - tryreviewresponder.com
+
+#restaurantowner #smallbusiness #ai #businesstips #googlereviews #restaurantmarketing #entrepreneurlife
+"@
+
+    # YouTube Shorts Caption
+    $YouTubeCaption = @"
+How to respond to negative Google reviews in 10 seconds using AI.
+
+Try it free: tryreviewresponder.com
+
+#shorts #googlereviews #ai #smallbusiness #restaurantowner
+"@
+
+    # LinkedIn Caption
+    $LinkedInCaption = @"
+Restaurant owners: You don't have time to craft the perfect response to every review.
+
+I built a tool that does it in one click.
+
+AI analyzes the review, matches your brand tone, and writes a professional response.
+
+Try it: tryreviewresponder.com?utm_source=linkedin
+
+#SmallBusiness #AI #CustomerService #RestaurantIndustry
+"@
+
+    # Write caption files
+    $CaptionDir = "$OutputDir\captions-$Timestamp"
+    New-Item -ItemType Directory -Path $CaptionDir -Force | Out-Null
+
+    $TikTokCaption | Out-File -FilePath "$CaptionDir\tiktok.txt" -Encoding UTF8
+    $InstagramCaption | Out-File -FilePath "$CaptionDir\instagram.txt" -Encoding UTF8
+    $YouTubeCaption | Out-File -FilePath "$CaptionDir\youtube.txt" -Encoding UTF8
+    $LinkedInCaption | Out-File -FilePath "$CaptionDir\linkedin.txt" -Encoding UTF8
+
+    # Also create a combined file for quick reference
+    $AllCaptions = @"
+═══════════════════════════════════════════════════════════════
+REVIEWRESPONDER - COPY-PASTE CAPTIONS
+Generated: $Timestamp
+═══════════════════════════════════════════════════════════════
+
+▶ TIKTOK
+─────────────────────────────────────────────────────────────────
+$TikTokCaption
+
+▶ INSTAGRAM
+─────────────────────────────────────────────────────────────────
+$InstagramCaption
+
+▶ YOUTUBE SHORTS
+─────────────────────────────────────────────────────────────────
+$YouTubeCaption
+
+▶ LINKEDIN
+─────────────────────────────────────────────────────────────────
+$LinkedInCaption
+
+═══════════════════════════════════════════════════════════════
+UTM TRACKING LINKS
+═══════════════════════════════════════════════════════════════
+TikTok:    tryreviewresponder.com?utm_source=tiktok
+Instagram: tryreviewresponder.com?utm_source=instagram
+YouTube:   tryreviewresponder.com?utm_source=youtube
+LinkedIn:  tryreviewresponder.com?utm_source=linkedin
+═══════════════════════════════════════════════════════════════
+"@
+
+    $AllCaptions | Out-File -FilePath "$CaptionDir\ALL-CAPTIONS.txt" -Encoding UTF8
+    Write-Host "    [OK] captions-$Timestamp\" -ForegroundColor Green
+}
+
+# ===========================================
+# 5. SUMMARY
+# ===========================================
+Write-Host "`n  [5/5] Complete!" -ForegroundColor Green
 
 $captionStatus = if ($NoCaptions) { "OFF" } else { "ON (5 timed captions)" }
 
 Write-Host @"
 
-  ----------------------------------------------------------------
+  ────────────────────────────────────────────────────────────
   OUTPUTS:
 
   YouTube:   $($OutYT | Split-Path -Leaf)
   TikTok:    $($OutTT | Split-Path -Leaf)
   Thumbnail: $($OutThumb | Split-Path -Leaf)
+  Captions:  captions-$Timestamp\
 
-  Captions:  $captionStatus
-  ----------------------------------------------------------------
+  Video Captions: $captionStatus
+  ────────────────────────────────────────────────────────────
+
+  TIP: Open captions-$Timestamp\ALL-CAPTIONS.txt for copy-paste!
 
 "@ -ForegroundColor Cyan
 

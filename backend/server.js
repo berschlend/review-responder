@@ -3887,27 +3887,34 @@ app.post('/api/auth/auto-create-demo-user', async (req, res) => {
       const magicUrl = `https://review-responder.onrender.com/api/auth/magic-login/${magicToken}`;
       const frontendUrl = process.env.FRONTEND_URL || 'https://tryreviewresponder.com';
 
-      // Send Welcome Email with Magic Link
+      // Send Welcome Email with Magic Link - CLEAR FIRST STEP
       try {
         await sendEmail({
           to: normalizedEmail,
-          subject: 'Your ReviewResponder account is ready!',
+          subject: 'Your account is ready - generate your first response now!',
           type: 'transactional',
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
-                <h1 style="color: white; margin: 0;">Welcome to ReviewResponder!</h1>
+                <h1 style="color: white; margin: 0;">Your Account is Ready!</h1>
               </div>
               <div style="padding: 30px; background: #f9fafb;">
                 <p style="font-size: 16px; color: #374151;">Hi there!</p>
-                <p style="font-size: 16px; color: #374151;">Your account is ready with <strong>20 free AI responses</strong>.</p>
-                <p style="font-size: 16px; color: #374151;">You can login anytime with this magic link (no password needed):</p>
-                <div style="text-align: center; margin: 30px 0;">
-                  <a href="${magicUrl}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Login to ReviewResponder</a>
+                <p style="font-size: 16px; color: #374151;">You have <strong>20 free AI responses</strong> waiting for you.</p>
+
+                <div style="background: #fff; border: 2px solid #667eea; border-radius: 12px; padding: 20px; margin: 24px 0;">
+                  <p style="font-size: 14px; color: #667eea; font-weight: bold; margin: 0 0 12px 0;">YOUR NEXT STEP:</p>
+                  <p style="font-size: 16px; color: #374151; margin: 0;">Click below, paste any customer review, and get an AI response in 5 seconds.</p>
                 </div>
-                <p style="font-size: 14px; color: #6b7280;">This link works for 30 days. Bookmark it!</p>
-                <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
-                <p style="font-size: 14px; color: #6b7280;">Or set a password anytime in your <a href="${frontendUrl}/dashboard" style="color: #667eea;">Dashboard Settings</a>.</p>
+
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${magicUrl}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 18px; display: inline-block;">Generate Your First Response</a>
+                </div>
+
+                <p style="font-size: 14px; color: #6b7280; text-align: center;">Takes 30 seconds. No credit card needed.</p>
+
+                <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
+                <p style="font-size: 13px; color: #9ca3af;">This magic link works for 30 days - bookmark it for quick access!</p>
               </div>
             </div>
           `,
@@ -19772,6 +19779,16 @@ app.all('/api/cron/activate-dormant-users', async (req, res) => {
         }
       }
 
+      // Generate a fresh magic link for this user (works for all users, no password needed)
+      const magicToken = require('crypto').randomBytes(32).toString('hex');
+      await dbQuery(
+        `INSERT INTO magic_links (email, token, expires_at)
+         VALUES ($1, $2, NOW() + INTERVAL '30 days')
+         ON CONFLICT DO NOTHING`,
+        [user.email.toLowerCase(), magicToken]
+      );
+      const magicUrl = `https://review-responder.onrender.com/api/auth/magic-login/${magicToken}`;
+
       // Detect language from email domain
       const isGerman =
         user.email.includes('.de') ||
@@ -19789,12 +19806,12 @@ app.all('/api/cron/activate-dormant-users', async (req, res) => {
 
 Sie haben sich bei ReviewResponder angemeldet, aber noch keine Review-Antwort generiert.
 
-**Das dauert nur 30 Sekunden:**
+**So einfach geht's:**
 
-1. Öffnen Sie eine negative Google/Yelp Review
-2. Kopieren Sie den Text
-3. Fügen Sie ihn hier ein → https://tryreviewresponder.com/login
-4. Fertig - professionelle Antwort in Sekunden
+Klicken Sie hier und fügen Sie eine beliebige Kundenrezension ein:
+${magicUrl}
+
+In 5 Sekunden haben Sie eine professionelle Antwort.
 
 Sie haben 20 kostenlose KI-Antworten. Die meisten Restaurants/Hotels sparen damit 2-3 Stunden pro Woche.
 
@@ -19810,12 +19827,12 @@ P.S. Falls Sie das Produkt nicht brauchen, ignorieren Sie diese Email einfach - 
 
 You signed up for ReviewResponder but haven't generated a response yet.
 
-**It takes just 30 seconds:**
+**Here's your 1-click access:**
 
-1. Open a negative Google/Yelp review
-2. Copy the text
-3. Paste it here → https://tryreviewresponder.com/login
-4. Done - professional response in seconds
+Click here and paste any customer review:
+${magicUrl}
+
+You'll have a professional response in 5 seconds.
 
 You have 20 free AI responses. Most restaurants/hotels save 2-3 hours per week with this.
 
