@@ -102,11 +102,10 @@ powershell -File scripts/agent-helpers.ps1 -Action task-status -Agent 2
 
 ---
 
-## 🛡️ PRE-DEPLOY SAFETY CHECKS (V3.9) - LIES DAS AUCH!
+## 🛡️ PRE-DEPLOY SAFETY CHECKS (V3.9.1) - LIES DAS AUCH!
 
 > **KRITISCH:** Basierend auf First-Principles Analysis (18.01.2026)
-> **PROBLEM:** 2x Timeout-Defaults wurden ohne Berendes Review ausgefuehrt!
-> **LOESUNG:** FAIL-SAFE statt FAIL-DEFAULT
+> **V3.9.1:** Work-While-Waiting Pattern - Agents warten NICHT auf Approvals!
 
 ### VOR JEDEM Night-Agent Deploy:
 
@@ -122,27 +121,50 @@ powershell -File scripts/agent-helpers.ps1 -Action task-status -Agent 2
 | 1 | Funnel Health | slop_rate <10%, quality >80 | STOPP Outreach |
 | 2 | API Budget | <80% consumed | STOPP betroffene Agents |
 | 3 | Email Queue | 0 stuck locks | Clear locks first |
-| 4 | Approval Queue | Keine PENDING >2h | Entscheiden oder REJECT |
+| 4 | Approval Queue | Keine PENDING >2h | Auto-REJECT |
 | 5 | Agent Status | Alle <30min alt | Restart stale agents |
 | 6 | User Baseline | Dokumentiert | Nur Info |
 
-### TIMEOUT-DEFAULT AENDERUNG (KRITISCH!)
+### ⏱️ WORK-WHILE-WAITING Pattern (NEU V3.9.1!)
 
 ```
-ALT (unsicher):
-  Timeout 4h → Default: PROCEED/IMPLEMENTIEREN
+PROBLEM: Agents warteten bis zu 4h auf Approval = verschwendete Zeit!
 
-NEU (sicher):
-  Timeout 4h → Default: REJECT (keine Aktion)
+LOESUNG: Agent arbeitet weiter, checkt spaeter ob approved.
 
-WARUM:
-- Berend schlaeft nachts (Grundwahrheit)
-- Emails sind irreversibel (Grundwahrheit)
-- Bugs passieren (Grundwahrheit)
-→ System muss OHNE Berend sicher sein!
+WORKFLOW:
+1. Agent braucht Approval fuer Aktion X
+2. Agent schreibt Request in approval-queue.md
+3. Agent speichert Kontext in Handoff
+4. Agent macht SOFORT mit anderen Tasks weiter ← WICHTIG!
+5. Alle 15-30min: Check ob approved
+6. Wenn APPROVED: Zurueck zu Task X
+7. Wenn EXPIRED: Task verwerfen, spaeter neu requesten
 ```
 
-### Hard Budget Limits pro Agent (NEU!)
+### Approval Check Commands:
+
+```powershell
+# Approval Status pruefen (alle 15-30min):
+powershell -File scripts/agent-helpers.ps1 -Action approval-check -Key "approval_burst2_1737234567"
+# Output: PENDING (45min remaining) | APPROVED | REJECTED | EXPIRED | NOT_FOUND
+
+# Expired Items finden (fuer Safety Check):
+powershell -File scripts/agent-helpers.ps1 -Action approval-expire
+# Output: EXPIRED_ITEMS oder NO_EXPIRED_ITEMS
+```
+
+### Approval Levels & Max Age:
+
+| Level | Max Age | Re-Check | Default wenn Max Age erreicht |
+|-------|---------|----------|-------------------------------|
+| 🔴 Critical | 30 min | 5 min | **REJECT** |
+| 🟡 Important | 2 hours | 15 min | **REJECT** |
+| 🟢 Informational | None | N/A | N/A |
+
+> **Max Age ≠ Wartezeit!** Agent wartet 0 Minuten, arbeitet weiter.
+
+### Hard Budget Limits pro Agent
 
 | Agent | Resource | Hard Limit/Nacht | Bei Ueberschreitung |
 |-------|----------|------------------|---------------------|

@@ -282,6 +282,40 @@ const TEST_EMAIL_PATTERNS = [
   'aaa@%', // Triple char aaa@
 ];
 
+// Bot Click Detection Patterns
+// Email security scanners (Microsoft 365 Safe Links, Google Safe Browsing, etc.)
+// click all links simultaneously, usually at midnight UTC
+const BOT_EMAIL_PATTERNS = [
+  'user@domain.com', // Generic test
+  'xxx@xxx.com', // Generic test
+  '%40', // URL-encoded @ (malformed)
+];
+
+/**
+ * Generate SQL WHERE clause to exclude bot clicks
+ * Filters: midnight bursts (00:00-00:20 UTC) and known bot patterns
+ * @param {string} clickedAtColumn - Column name for timestamp (default: 'clicked_at')
+ * @param {string} emailColumn - Column name for email (default: 'email')
+ * @returns {string} SQL AND clause
+ */
+function getBotClickExcludeClause(clickedAtColumn = 'clicked_at', emailColumn = 'email') {
+  // Filter midnight burst (00:00-00:20 UTC) - email security scanners
+  const midnightFilter = `NOT (
+    EXTRACT(HOUR FROM ${clickedAtColumn} AT TIME ZONE 'UTC') = 0
+    AND EXTRACT(MINUTE FROM ${clickedAtColumn} AT TIME ZONE 'UTC') < 20
+  )`;
+
+  // Filter known bot email patterns
+  const botPatternClauses = BOT_EMAIL_PATTERNS.map(p => {
+    if (p.includes('%')) {
+      return `${emailColumn} NOT LIKE '${p}'`;
+    }
+    return `LOWER(${emailColumn}) != '${p.toLowerCase()}'`;
+  }).join(' AND ');
+
+  return `AND ${midnightFilter} AND ${botPatternClauses}`;
+}
+
 /**
  * Generate SQL WHERE clause to exclude test emails
  * @param {string} emailColumn - Column name (default: 'email')

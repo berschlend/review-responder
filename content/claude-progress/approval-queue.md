@@ -422,17 +422,40 @@ Das erklärt warum Nudge-Emails nicht funktionieren - diese User erinnern sich n
 
 ---
 
-## APPROVAL LEVELS (V3.9 - TIMEOUT-DEFAULT = REJECT!)
+## APPROVAL LEVELS (V3.9.1 - WORK-WHILE-WAITING!)
 
-> **KRITISCH (V3.9 Update):** Default ist jetzt IMMER "REJECT" statt "PROCEED"!
-> Basierend auf First-Principles Analysis: FAIL-SAFE > FAIL-DEFAULT
-> Grund: 2x Timeout-Defaults wurden ohne Berendes Review ausgefuehrt (16.01)
+> **KRITISCH (V3.9.1 Update):** Agents warten NICHT - sie arbeiten weiter!
+> Timeout = Max Age bevor Auto-REJECT, NICHT Wartezeit für Agent!
 
-| Level | Timeout | Default Action | Examples |
-|-------|---------|----------------|----------|
-| 🔴 Critical | 30 min | **REJECT** | Discount >40%, First conversion, API >$50 |
-| 🟡 Important | 2 hours | **REJECT** | New A/B test, Strategy change, Discount 30-40% |
-| 🟢 Informational | None | N/A | Metrics report, Learning dokumentiert |
+| Level | Max Age | Re-Check | Default | Examples |
+|-------|---------|----------|---------|----------|
+| 🔴 Critical | 30 min | 5 min | **REJECT** | Discount >40%, First conversion, API >$50 |
+| 🟡 Important | 2 hours | 15 min | **REJECT** | New A/B test, Strategy change, Discount 30-40% |
+| 🟢 Informational | None | N/A | N/A | Metrics report, Learning dokumentiert |
+
+### WORK-WHILE-WAITING Pattern (NEU V3.9.1!)
+
+```
+ALTES PATTERN (ineffizient):
+  Agent braucht Approval → WARTET 4h → Timeout → macht weiter
+  ❌ 4h verschwendet!
+
+NEUES PATTERN (effizient):
+  Agent braucht Approval → QUEUED → macht SOFORT andere Tasks
+  → checkt alle 15-30min ob approved → wenn ja: zurueck zur Task
+  ✅ 0 Zeit verschwendet!
+```
+
+### Wie es funktioniert:
+
+```
+1. Agent schreibt Request in approval-queue.md
+2. Agent speichert pending Task in handoff-create (Key: "approval_pending_[ID]")
+3. Agent macht SOFORT mit anderen Tasks weiter
+4. Alle 15-30min: Agent checkt approval-queue.md
+5. Wenn APPROVED: Task aus Handoff holen, ausfuehren
+6. Wenn MAX AGE erreicht: Auto-REJECT, Task verwerfen
+```
 
 ### Warum REJECT als Default?
 
@@ -441,21 +464,20 @@ GRUNDWAHRHEITEN:
 - Berend schlaeft nachts
 - Emails sind irreversibel
 - API-Kosten entstehen pro Call
-- Bugs passieren
 
 KONSEQUENZ:
 - System muss OHNE Berend sicher sein
 - Lieber NICHT handeln als FALSCH handeln
-- Agent kann Request wiederholen wenn Berend online ist
+- Agent nutzt die Zeit fuer andere Tasks!
 ```
 
-### Bei Timeout (NEU!):
+### Bei Max Age erreicht:
 
 ```
 1. Markiere als "TIMEOUT-REJECTED"
 2. Dokumentiere in RESOLVED Section
-3. Agent wiederholt Request beim naechsten Check
-4. KEINE autonome Ausfuehrung mehr!
+3. Entferne aus Handoff
+4. Agent kann spaeter neu requesten (mit frischen Daten)
 ```
 
 ---
@@ -504,13 +526,31 @@ KONSEQUENZ:
    - Nutze das Template oben EXAKT
    - Setze korrekten Priority-Level
    - Begründe mit DATEN, nicht Vermutungen
-   - Setze realistischen Timeout
+   - Generiere unique Request-ID: `approval_[burst]_[timestamp]`
 
-3. **Nach dem Schreiben:**
-   - Warte auf Resolution
-   - Check berend-feedback.md alle 5 min
-   - Bei Timeout: Handle Default Action
+3. **Nach dem Schreiben (WORK-WHILE-WAITING!):**
+   ```
+   # NICHT warten! Sofort weiter:
+   powershell -File scripts/agent-helpers.ps1 -Action handoff-create \
+     -Key "approval_pending_[REQUEST_ID]" \
+     -Data '{"task": "...", "context": "..."}'
+
+   # Dann andere Tasks machen!
+   # Alle 15-30min checken:
+   powershell -File scripts/agent-helpers.ps1 -Action approval-check \
+     -Key "[REQUEST_ID]"
+   # Output: PENDING | APPROVED | REJECTED | EXPIRED
+   ```
+
+4. **Bei APPROVED:**
+   - Task aus Handoff holen
+   - Ausfuehren
    - Dokumentiere Ergebnis in learnings.md
+
+5. **Bei REJECTED/EXPIRED:**
+   - Task aus Handoff loeschen
+   - Dokumentiere warum abgelehnt
+   - Kann spaeter mit neuen Daten neu requesten
 
 ---
 

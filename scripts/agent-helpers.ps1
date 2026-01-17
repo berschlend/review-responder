@@ -8,7 +8,7 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend", "feedback-read", "feedback-alert", "budget-check", "budget-use", "check-blocked", "task-switch", "task-status")]
+    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend", "feedback-read", "feedback-alert", "budget-check", "budget-use", "approval-check", "approval-expire")]
     [string]$Action,
 
     [int]$Agent = 0,
@@ -567,6 +567,121 @@ switch ($Action) {
             $status | ConvertTo-Json -Depth 5
         } else {
             Write-Output "{}"
+        }
+    }
+
+    "approval-check" {
+        # Check status of an approval request (V3.9.1 Work-While-Waiting)
+        # Usage: powershell -File scripts/agent-helpers.ps1 -Action approval-check -Key "approval_burst2_1737234567"
+        # Output: PENDING | APPROVED | REJECTED | EXPIRED
+
+        $approvalFile = Join-Path $ProgressDir "approval-queue.md"
+        if (-not (Test-Path $approvalFile)) {
+            Write-Output "ERROR: approval-queue.md not found"
+            return
+        }
+
+        $content = Get-Content $approvalFile -Raw
+        $requestId = $Key
+
+        # Define max ages for each level (in minutes)
+        $maxAges = @{
+            "Critical" = 30
+            "Important" = 120
+            "Informational" = 99999
+        }
+
+        # Search for the request in the file
+        # Pattern: Look for request ID and its status
+        if ($content -match "(?s)### \[.*?\] $requestId.*?Priority.*?(\w+).*?Status:.*?(\w+)") {
+            $level = $Matches[1]
+            $status = $Matches[2]
+
+            if ($status -eq "APPROVED") {
+                Write-Output "APPROVED"
+            } elseif ($status -match "REJECTED|TIMEOUT") {
+                Write-Output "REJECTED"
+            } else {
+                # Check if expired based on timestamp
+                if ($content -match "$requestId.*?Submitted:.*?(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)") {
+                    $submittedStr = $Matches[1]
+                    try {
+                        $submitted = [DateTime]::ParseExact($submittedStr, "yyyy-MM-ddTHH:mm:ssZ", $null)
+                        $ageMinutes = ((Get-Date).ToUniversalTime() - $submitted).TotalMinutes
+                        $maxAge = if ($maxAges.ContainsKey($level)) { $maxAges[$level] } else { 120 }
+
+                        if ($ageMinutes -gt $maxAge) {
+                            Write-Output "EXPIRED"
+                        } else {
+                            $remaining = [math]::Round($maxAge - $ageMinutes)
+                            Write-Output "PENDING (${remaining}min remaining)"
+                        }
+                    } catch {
+                        Write-Output "PENDING"
+                    }
+                } else {
+                    Write-Output "PENDING"
+                }
+            }
+        } elseif ($content -match $requestId) {
+            # Found request but couldn't parse status - assume pending
+            Write-Output "PENDING"
+        } else {
+            Write-Output "NOT_FOUND"
+        }
+    }
+
+    "approval-expire" {
+        # Auto-expire old approval requests (run by pre-deploy-safety or cron)
+        # Usage: powershell -File scripts/agent-helpers.ps1 -Action approval-expire
+        # Output: List of expired requests
+
+        $approvalFile = Join-Path $ProgressDir "approval-queue.md"
+        if (-not (Test-Path $approvalFile)) {
+            Write-Output "ERROR: approval-queue.md not found"
+            return
+        }
+
+        $content = Get-Content $approvalFile -Raw
+        $expired = @()
+
+        # Max ages in minutes
+        $maxAges = @{
+            "Critical" = 30
+            "Important" = 120
+        }
+
+        # Find all PENDING items and check their age
+        $matches = [regex]::Matches($content, "### \[(\d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC)\].*?Priority:.*?(\w+).*?Status:.*?PENDING", "Singleline")
+
+        foreach ($match in $matches) {
+            try {
+                $dateStr = $match.Groups[1].Value
+                $level = $match.Groups[2].Value
+
+                # Parse date (format: "2026-01-17 22:45 UTC")
+                $submitted = [DateTime]::ParseExact($dateStr, "yyyy-MM-dd HH:mm 'UTC'", $null)
+                $ageMinutes = ((Get-Date).ToUniversalTime() - $submitted).TotalMinutes
+                $maxAge = if ($maxAges.ContainsKey($level)) { $maxAges[$level] } else { 120 }
+
+                if ($ageMinutes -gt $maxAge) {
+                    $expired += @{
+                        date = $dateStr
+                        level = $level
+                        age_minutes = [math]::Round($ageMinutes)
+                        max_age = $maxAge
+                    }
+                }
+            } catch {
+                # Skip unparseable entries
+            }
+        }
+
+        if ($expired.Count -gt 0) {
+            Write-Output "EXPIRED_ITEMS:"
+            $expired | ConvertTo-Json -Depth 3
+        } else {
+            Write-Output "NO_EXPIRED_ITEMS"
         }
     }
 }
