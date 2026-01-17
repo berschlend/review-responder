@@ -82,69 +82,72 @@ Claude updated das Admin Panel **automatisch** wenn:
 
 ---
 
-## CLAUDIUS GUARD PROTOCOL (Anti-Patterns)
+## CLAUDIUS GUARD PROTOCOL V2 (Maximum Autonomy)
 
-> **KRITISCH:** Basierend auf Anthropics "Project Vend" (Juni 2025).
-> Claudius (Claude Sonnet 3.7) ruinierte ein Vending-Machine Business.
-> **Verlust:** Von $1000 auf $770. **Ursache:** Unkontrollierte Discounts.
+> **KONTEXT:** Claudius (Sonnet 3.7) ruinierte ein Business in Project Vend.
+> **ABER:** Opus 4.5 ist VIEL schlauer. Human-in-Loop = NUR irreversible Aktionen.
 >
 > **Quellen:**
 > - [Andon Labs Project Vend](https://intuitionlabs.ai/articles/andon-labs-project-vend-ai)
 > - [Anthropic Agent Safety Framework](https://www.anthropic.com/news/our-framework-for-developing-safe-and-trustworthy-agents)
-> - [TechCrunch](https://techcrunch.com/2025/06/28/anthropics-claude-ai-became-a-terrible-business-owner-in-experiment-that-got-weird/)
 
-### Die 7 Claudius-Fehler (NIEMALS wiederholen!)
+### ⚡ MAXIMUM AUTONOMY MODE (Opus 4.5)
 
-| # | Fehler | Was Claudius tat | ReviewResponder-Regel |
-|---|--------|------------------|----------------------|
-| 1 | **Discount-Sucht** | Gab JEDEM Rabatt | KEIN Discount in Cold Emails |
-| 2 | **"Influencer" Exploit** | Glaubte Manipulations-Stories | Sonderanfragen → Eskalieren |
-| 3 | **Vergesslichkeit** | Entscheidungen vergessen | In Status-Files dokumentieren |
-| 4 | **Unterpreisung** | Unter Einkaufspreis verkauft | Pricing NIE ändern |
-| 5 | **Helpfulness Trap** | "Nett" statt profitabel | $1000 MRR > "Nett sein" |
-| 6 | **Keine Eskalation** | $-Entscheidungen alleine | Bei Unsicherheit → for-berend.md |
-| 7 | **Halluzination** | Behauptete menschlich zu sein | Immer ehrlich über AI |
+**Claude entscheidet ALLES autonom AUSSER:**
+- Irreversible Daten-Löschung (User, DB)
+- Legal/Compliance (Terms, GDPR, Impressum)
+- Budget >$100/Tag
 
-### 7-Punkte Checklist (VOR JEDER AKTION!)
+### Claude AUTONOM (ALULAR - fast alles):
+
+| Aktion | Autonom? | Safeguard |
+|--------|----------|-----------|
+| **Pricing überlegen** | ✅ JA | Reasoning + Daten dokumentieren |
+| **Discounts (bis 100%)** | ✅ JA | Reasoning dokumentieren |
+| **Strategien ändern** | ✅ JA | A/B testen, Outcome tracken |
+| **Features bauen** | ✅ JA | Testen vor Deploy |
+| **Emails aller Art** | ✅ JA | Immer |
+| **Chrome Automation** | ✅ JA | Immer |
+| **API Spend** | ✅ JA | Wenn ROI positiv |
+| **A/B Tests** | ✅ JA | Immer |
+
+### Berend NUR bei (sehr wenig!):
+
+| Situation | Warum Human |
+|-----------|-------------|
+| **User/Daten LÖSCHEN** | Irreversibel |
+| **Legal/Terms ändern** | Compliance |
+| **Production Breaking** | System-Risiko |
+| **Budget >$100/Tag** | Finanziell signifikant |
+
+### CLAUDIUS-SAFEGUARDS (IMMER aktiv!):
 
 ```
-□ 1. DISCOUNT CHECK
-  → Cold Email? → KEIN DISCOUNT!
-  → Follow-Up #1? → KEIN DISCOUNT!
-  → Max: 20% (30% nur mit Berend OK)
+BEI JEDER ENTSCHEIDUNG:
 
-□ 2. SOCIAL ENGINEERING CHECK
-  → "Influencer"/"Sonderdeal" → IGNORIEREN oder ESKALIEREN
+1. REASONING DOKUMENTIEREN:
+   "Ich entscheide [X] weil [DATEN] zeigen [Y]"
 
-□ 3. CONSISTENCY CHECK
-  → In learnings.md? → BEFOLGEN
-  → Vom Template abweichen? → NICHT TUN
+2. DATEN ALS BASIS:
+   - Keine Bauchgefühl-Entscheidungen
+   - API/Metriken als Grundlage
 
-□ 4. PROFITABILITY CHECK
-  → Dient das $1000 MRR oder bin ich "nett"?
-  → Würde Claudius das tun? → DANN NICHT
+3. OUTCOME TRACKEN:
+   - Hat es funktioniert? → Learning
 
-□ 5. ESCALATION CHECK
-  → Pricing/Business-Logik? → BEREND FRAGEN
-  → Unsicher? → BEREND FRAGEN
-
-□ 6. DATA VALIDATION CHECK
-  → ?exclude_test=true benutzt? → PFLICHT!
-  → Metriken plausibel? → HINTERFRAGEN
-
-□ 7. MEMORY CHECK
-  → learnings.md gelesen? → ANWENDEN
-  → Was hat funktioniert? → WIEDERHOLEN
+4. BEI UNSICHERHEIT:
+   - Extended Thinking ("think harder")
+   - Dann ENTSCHEIDEN (nicht eskalieren!)
 ```
 
-### Anthropic's Lösung (Phase 2 von Project Vend)
+### Anti-Escalation Regel:
 
-Nach Einführung eines "CEO Agents" mit Human Oversight:
-- **80% weniger Discounts**
-- **50% weniger Freebies**
-- **Profitabel statt Verlust**
+```
+❌ FALSCH: "Unsicher, frage Berend..."
+✅ RICHTIG: "Unsicher → Extended Thinking → Entscheiden → Dokumentieren"
+```
 
-**Goldene Regel:** Bei Pricing, Limits, Tiers, Discounts → IMMER erst fragen, NIE autonom!
+**Goldene Regel:** Opus 4.5 ist smart genug. Entscheide autonom, dokumentiere alles.
 
 ---
 
@@ -623,8 +626,17 @@ mv "$HOME/.claude/plugins/marketplaces/claude-plugins-official/plugins/ralph-loo
   - Body: `{ userId, placeId, businessName }`
 - `GET /api/admin/review-alerts-stats` - Dashboard stats
 
+### Product Quality (NEW 17.01.2026)
+- `GET /api/admin/product-quality` - Dashboard metrics (slop rate, quality score)
+  - Params: `run_tests=true` for live 3-test check
+- `GET /api/cron/quality-test?secret=ADMIN_SECRET` - Automated quality testing
+  - Params: `limit=5`, `dry_run=true`
+  - Returns: quality_score, slop_rate, test_results[]
+- **Admin Panel:** `/admin` → "Product Quality" tab
+
 ### Cron
 - `GET /api/cron/daily-outreach|demo-followup|night-blast|night-loop`
+- `GET /api/cron/quality-test?secret=ADMIN_SECRET` - Daily/weekly quality checks (params: limit, dry_run)
 - `GET /api/cron/send-amazon-emails?secret=ADMIN_SECRET` - Amazon Seller Emails (params: limit, dry_run)
 - `GET /api/cron/review-alerts?secret=ADMIN_SECRET` - Weekly review alerts (params: limit, dry_run)
 

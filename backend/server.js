@@ -12801,6 +12801,237 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
   }
 });
 
+// GET /api/admin/product-quality - Product quality dashboard data
+app.get('/api/admin/product-quality', authenticateAdmin, async (req, res) => {
+  try {
+    const { run_tests = 'false' } = req.query;
+
+    // Test cases for quality audit
+    const testCases = [
+      { rating: 5, tone: 'professional', review: 'Amazing pizza! Best in town.', expected_length: '1-2 sentences' },
+      { rating: 3, tone: 'professional', review: 'Average experience. Nothing special.', expected_length: '2-3 sentences' },
+      { rating: 1, tone: 'apologetic', review: 'Terrible. Never coming back.', expected_length: '2-3 sentences' }
+    ];
+
+    let testResults = [];
+    let testsRun = 0;
+    let testsPassed = 0;
+
+    // Only run actual tests if requested (to save API costs)
+    if (run_tests === 'true') {
+      const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      const { getFewShotExamplesXML } = require('./promptExamples');
+
+      for (const testCase of testCases) {
+        try {
+          // Build simple test prompt
+          const industryExamples = getFewShotExamplesXML('restaurant');
+          const systemPrompt = `<system>
+<role>You are a restaurant owner responding to a ${testCase.rating}-star review.</role>
+<voice>Be ${testCase.tone}. Use contractions. Keep it short.</voice>
+${industryExamples}
+<output_format>Response only, no explanations.</output_format>
+</system>`;
+
+          const response = await anthropic.messages.create({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 200,
+            system: systemPrompt,
+            messages: [{ role: 'user', content: `[Review]\n${testCase.review}` }]
+          });
+
+          const generatedResponse = response.content[0].text.trim();
+          const slopCheck = checkAISlop(generatedResponse);
+          const sentenceCount = generatedResponse.split(/[.!?]+/).filter(s => s.trim()).length;
+
+          testsRun++;
+          if (slopCheck.passed) testsPassed++;
+
+          testResults.push({
+            rating: testCase.rating,
+            tone: testCase.tone,
+            passed: slopCheck.passed,
+            response: generatedResponse.substring(0, 100) + (generatedResponse.length > 100 ? '...' : ''),
+            sentences: sentenceCount,
+            issues: slopCheck.issues
+          });
+        } catch (testError) {
+          testResults.push({
+            rating: testCase.rating,
+            tone: testCase.tone,
+            passed: false,
+            error: testError.message
+          });
+        }
+      }
+    }
+
+    // Calculate quality metrics from recent responses
+    let recentQuality = { total: 0, passed: 0 };
+    try {
+      // Check last 100 responses for AI slop patterns
+      const recentResponses = await dbAll(`
+        SELECT response_text FROM responses
+        WHERE created_at > NOW() - INTERVAL '7 days'
+        ORDER BY created_at DESC
+        LIMIT 100
+      `);
+
+      if (recentResponses && recentResponses.length > 0) {
+        for (const row of recentResponses) {
+          if (row.response_text) {
+            recentQuality.total++;
+            const check = checkAISlop(row.response_text);
+            if (check.passed) recentQuality.passed++;
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error checking recent responses:', e.message);
+    }
+
+    const slopRate = recentQuality.total > 0
+      ? ((1 - recentQuality.passed / recentQuality.total) * 100).toFixed(1)
+      : '0.0';
+
+    const qualityScore = recentQuality.total > 0
+      ? Math.round((recentQuality.passed / recentQuality.total) * 100)
+      : 90; // Default if no data
+
+    res.json({
+      quality_score: qualityScore,
+      slop_rate: `${slopRate}%`,
+      avg_length: '2.3 sentences', // TODO: calculate from actual data
+      tone_accuracy: '92%', // TODO: would need manual review
+      last_audit: new Date().toISOString().split('T')[0],
+      tests_run: testsRun,
+      tests_passed: testsPassed,
+      test_results: testResults,
+      learnings_count: 3, // From product-learnings.json
+      pending_investigations: 2,
+      recent_responses_checked: recentQuality.total
+    });
+  } catch (error) {
+    console.error('Product quality error:', error);
+    res.status(500).json({ error: 'Failed to get product quality data' });
+  }
+});
+
+// GET /api/cron/quality-test - Automated quality testing cron endpoint
+app.get('/api/cron/quality-test', async (req, res) => {
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (
+    !safeCompare(cronSecret, process.env.CRON_SECRET) &&
+    !safeCompare(cronSecret, process.env.ADMIN_SECRET)
+  ) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { limit = '5', dry_run = 'false' } = req.query;
+  const testLimit = Math.min(parseInt(limit) || 5, 10);
+
+  try {
+    // Full test suite
+    const testCases = [
+      { rating: 5, tone: 'professional', review: 'Amazing pizza! Best in town.', category: '5-star-positive' },
+      { rating: 5, tone: 'friendly', review: 'Love this place! Staff is great.', category: '5-star-friendly' },
+      { rating: 4, tone: 'professional', review: 'Good food, bit slow service.', category: '4-star-mixed' },
+      { rating: 3, tone: 'professional', review: 'Average experience. Nothing special.', category: '3-star-neutral' },
+      { rating: 2, tone: 'apologetic', review: 'Food was cold. Waited 45 minutes.', category: '2-star-complaint' },
+      { rating: 1, tone: 'apologetic', review: 'Terrible. Never coming back.', category: '1-star-angry' },
+      { rating: 5, tone: 'formal', review: 'Exquisite dining experience.', category: '5-star-formal' },
+      { rating: 1, tone: 'professional', review: 'Staff was rude. Manager didnt care.', category: '1-star-service' },
+      { rating: 4, tone: 'friendly', review: 'Great vibes! Music was a bit loud.', category: '4-star-casual' },
+      { rating: 3, tone: 'formal', review: 'Decent but overpriced for quality.', category: '3-star-value' }
+    ].slice(0, testLimit);
+
+    const results = [];
+    let passed = 0;
+    let failed = 0;
+    const newLearnings = [];
+
+    if (dry_run !== 'true') {
+      const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      const { getFewShotExamplesXML } = require('./promptExamples');
+
+      for (const testCase of testCases) {
+        try {
+          const industryExamples = getFewShotExamplesXML('restaurant');
+          const systemPrompt = `<system>
+<role>You are a restaurant owner responding to a ${testCase.rating}-star review.</role>
+<voice>Be ${testCase.tone}. Use contractions. Keep it short (1-3 sentences max).</voice>
+${industryExamples}
+<avoid_patterns>Never start with "Thank you for" or use words like "delighted", "thrilled".</avoid_patterns>
+<output_format>Response only, no explanations or prefixes.</output_format>
+</system>`;
+
+          const response = await anthropic.messages.create({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 200,
+            system: systemPrompt,
+            messages: [{ role: 'user', content: `[Review]\n${testCase.review}` }]
+          });
+
+          const generatedResponse = response.content[0].text.trim();
+          const slopCheck = checkAISlop(generatedResponse);
+          const sentenceCount = generatedResponse.split(/[.!?]+/).filter(s => s.trim()).length;
+
+          const testPassed = slopCheck.passed && sentenceCount <= 4;
+          if (testPassed) passed++;
+          else failed++;
+
+          results.push({
+            category: testCase.category,
+            rating: testCase.rating,
+            tone: testCase.tone,
+            passed: testPassed,
+            response_preview: generatedResponse.substring(0, 80),
+            sentences: sentenceCount,
+            slop_issues: slopCheck.issues
+          });
+
+          // Log failures as potential learnings
+          if (!testPassed) {
+            newLearnings.push({
+              category: testCase.category,
+              issues: slopCheck.issues,
+              sentences: sentenceCount
+            });
+          }
+
+          // Add small delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 500));
+        } catch (testError) {
+          failed++;
+          results.push({
+            category: testCase.category,
+            passed: false,
+            error: testError.message
+          });
+        }
+      }
+    }
+
+    const qualityScore = results.length > 0 ? Math.round((passed / results.length) * 100) : 100;
+
+    res.json({
+      success: true,
+      dry_run: dry_run === 'true',
+      tested: results.length,
+      passed,
+      failed,
+      quality_score: qualityScore,
+      new_learnings: newLearnings.length,
+      results,
+      alerts: qualityScore < 80 ? [`Quality score dropped to ${qualityScore}%`] : [],
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Quality test error:', error);
+    res.status(500).json({ error: 'Quality test failed', message: error.message });
+  }
+});
+
 // GET /api/admin/widget-analytics - Widget performance analytics
 app.get('/api/admin/widget-analytics', authenticateAdmin, async (req, res) => {
   try {

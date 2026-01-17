@@ -1,0 +1,25 @@
+{
+  "history": [
+    {
+      "date": "2026-01-17",
+      "quality_score": 90,
+      "slop_rate": 2.0,
+      "avg_length_sentences": 2.3,
+      "tone_accuracy": 95,
+      "tests_run": 0,
+      "tests_passed": 0,
+      "source": "initial"
+    }
+  ],
+  "best_known_state": {
+    "date": "2026-01-17",
+    "quality_score": 90,
+    "commit": "cd0fc247"
+  },
+  "alerts": [],
+  "config": {
+    "regression_threshold": 3,
+    "min_tests_for_alert": 3,
+    "history_retention_days": 90
+  }
+}

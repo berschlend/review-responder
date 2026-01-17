@@ -23,7 +23,65 @@ This skill implements **Continuous Learning** for ReviewResponder's AI response 
 /product-refine audit        # Deep response quality audit
 /product-refine learn        # Review learnings, add new ones
 /product-refine test         # Generate test responses, evaluate
+/product-refine api          # Query API endpoints for live metrics
+/product-refine status       # Quick status from Admin API
 ```
+
+---
+
+## MODE: api (NEW - Backend Integration)
+
+**Query live API endpoints for product quality metrics.**
+
+### Available Endpoints:
+
+| Endpoint | Purpose | Usage |
+|----------|---------|-------|
+| `GET /api/admin/product-quality` | Dashboard metrics | Default status |
+| `GET /api/admin/product-quality?run_tests=true` | Run 3 quick tests | Live testing |
+| `GET /api/cron/quality-test?secret=XXX` | Run 5-10 comprehensive tests | Cron/CI |
+
+### Quick Status (via curl):
+```bash
+# Get current quality metrics
+curl "https://review-responder.onrender.com/api/admin/product-quality" \
+  -H "X-Admin-Key: $ADMIN_SECRET"
+
+# Run live tests
+curl "https://review-responder.onrender.com/api/admin/product-quality?run_tests=true" \
+  -H "X-Admin-Key: $ADMIN_SECRET"
+
+# Full cron test (5 cases)
+curl "https://review-responder.onrender.com/api/cron/quality-test?secret=$ADMIN_SECRET&limit=5"
+```
+
+### Response Structure:
+```json
+{
+  "quality_score": 92,
+  "slop_rate": "1.5%",
+  "avg_length": "2.3 sentences",
+  "tone_accuracy": "92%",
+  "last_audit": "2026-01-17",
+  "tests_run": 3,
+  "tests_passed": 3,
+  "test_results": [...],
+  "recent_responses_checked": 87
+}
+```
+
+### Admin Panel:
+**URL:** `/admin` → "Product Quality" tab
+- Live quality score gauge
+- Slop rate and tone accuracy
+- Run tests button
+- Recent test results table
+
+### Cron Setup (cron-job.org):
+| Schedule | Endpoint | Purpose |
+|----------|----------|---------|
+| Daily 03:00 | `quality-test?limit=5` | Quick daily check |
+| Monday 02:00 | `quality-test?limit=10` | Weekly full audit |
 
 ---
 

@@ -30916,6 +30916,9 @@ const AdminPage = () => {
   const [amazonFilter, setAmazonFilter] = useState('all');
   const [showAddAmazonLead, setShowAddAmazonLead] = useState(false);
   const [newAmazonLead, setNewAmazonLead] = useState({ seller_name: '', email: '', product_category: '', review_count: '', avg_rating: '' });
+  const [productQualityData, setProductQualityData] = useState(null);
+  const [productQualityLoading, setProductQualityLoading] = useState(false);
+  const [productQualityTesting, setProductQualityTesting] = useState(false);
 
   // Use the same API_URL as the rest of the app (already includes /api)
   // Remove /api suffix if present to build admin URLs correctly
@@ -31308,6 +31311,9 @@ const AdminPage = () => {
       if (activeAdminTab === 'amazon' && !amazonData) {
         loadAmazonData();
       }
+      if (activeAdminTab === 'quality' && !productQualityData) {
+        loadProductQuality();
+      }
     }
   }, [activeAdminTab, isAuthenticated, adminKey]);
 
@@ -31367,6 +31373,36 @@ const AdminPage = () => {
       loadAmazonLeads();
     } catch (err) {
       toast.error('Failed to delete lead');
+    }
+  };
+
+  // Load Product Quality Dashboard Data
+  const loadProductQuality = async (runTests = false) => {
+    setProductQualityLoading(true);
+    try {
+      const params = runTests ? '?run_tests=true' : '';
+      const res = await axios.get(`${API_BASE}/api/admin/product-quality${params}`, { headers: getHeaders() });
+      setProductQualityData(res.data);
+    } catch (err) {
+      console.error('Product quality error:', err);
+      toast.error('Failed to load product quality data');
+    } finally {
+      setProductQualityLoading(false);
+    }
+  };
+
+  // Run Product Quality Tests
+  const runProductQualityTests = async () => {
+    setProductQualityTesting(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/admin/product-quality?run_tests=true`, { headers: getHeaders() });
+      setProductQualityData(res.data);
+      toast.success(`Tests complete: ${res.data.tests_passed}/${res.data.tests_run} passed`);
+    } catch (err) {
+      console.error('Product quality test error:', err);
+      toast.error('Failed to run quality tests');
+    } finally {
+      setProductQualityTesting(false);
     }
   };
 
@@ -31532,6 +31568,13 @@ const AdminPage = () => {
           style={{ background: activeAdminTab === 'amazon' ? 'linear-gradient(135deg, #FF9900 0%, #FF6600 100%)' : undefined }}
         >
           Amazon Sellers
+        </button>
+        <button
+          className={`btn ${activeAdminTab === 'quality' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('quality')}
+          style={{ background: activeAdminTab === 'quality' ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' : undefined }}
+        >
+          Product Quality
         </button>
       </div>
 
@@ -35957,6 +36000,130 @@ const AdminPage = () => {
             <div style={{ textAlign: 'center', padding: '40px' }}>
               <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>Could not load Amazon data</p>
               <button className="btn btn-primary" onClick={() => loadAmazonData()}>Retry</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Product Quality Tab */}
+      {activeAdminTab === 'quality' && (
+        <div>
+          {productQualityLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading product quality data...</div>
+          ) : productQualityData ? (
+            <>
+              {/* Quality Score Cards */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+                <div className="card" style={{ textAlign: 'center', background: productQualityData.quality_score >= 90 ? '#ECFDF5' : productQualityData.quality_score >= 70 ? '#FEF3C7' : '#FEE2E2' }}>
+                  <div style={{ fontSize: '42px', fontWeight: '700', color: productQualityData.quality_score >= 90 ? '#10B981' : productQualityData.quality_score >= 70 ? '#F59E0B' : '#EF4444' }}>
+                    {productQualityData.quality_score}%
+                  </div>
+                  <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Quality Score</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '28px', fontWeight: '600' }}>{productQualityData.slop_rate}</div>
+                  <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Slop Rate</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '28px', fontWeight: '600' }}>{productQualityData.avg_length}</div>
+                  <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Avg Length</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '28px', fontWeight: '600' }}>{productQualityData.tone_accuracy}</div>
+                  <div style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Tone Accuracy</div>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="card" style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h3>Quality Tests</h3>
+                  <button
+                    className="btn btn-primary"
+                    onClick={runProductQualityTests}
+                    disabled={productQualityTesting}
+                    style={{ background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)' }}
+                  >
+                    {productQualityTesting ? 'Running Tests...' : 'Run Quick Tests'}
+                  </button>
+                </div>
+
+                {productQualityData.test_results && productQualityData.test_results.length > 0 ? (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid var(--gray-200)', textAlign: 'left' }}>
+                          <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: '600' }}>Rating</th>
+                          <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: '600' }}>Tone</th>
+                          <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: '600' }}>Status</th>
+                          <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: '600' }}>Response</th>
+                          <th style={{ padding: '12px 8px', fontSize: '13px', fontWeight: '600' }}>Issues</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {productQualityData.test_results.map((test, i) => (
+                          <tr key={i} style={{ borderBottom: '1px solid var(--gray-100)' }}>
+                            <td style={{ padding: '12px 8px', fontSize: '13px' }}>{test.rating} star</td>
+                            <td style={{ padding: '12px 8px', fontSize: '13px' }}>{test.tone}</td>
+                            <td style={{ padding: '12px 8px' }}>
+                              <span style={{
+                                display: 'inline-block',
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                fontSize: '11px',
+                                fontWeight: '500',
+                                background: test.passed ? '#ECFDF5' : '#FEE2E2',
+                                color: test.passed ? '#10B981' : '#EF4444'
+                              }}>
+                                {test.passed ? 'PASSED' : 'FAILED'}
+                              </span>
+                            </td>
+                            <td style={{ padding: '12px 8px', fontSize: '12px', color: 'var(--gray-600)', maxWidth: '300px' }}>
+                              {test.response || test.error || '-'}
+                            </td>
+                            <td style={{ padding: '12px 8px', fontSize: '12px', color: '#EF4444' }}>
+                              {test.issues && test.issues.length > 0 ? test.issues.join(', ') : '-'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray-500)' }}>
+                    Click "Run Quick Tests" to test AI response quality
+                  </div>
+                )}
+              </div>
+
+              {/* Metrics & Info */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+                <div className="card">
+                  <h4 style={{ marginBottom: '12px' }}>Recent Quality Check</h4>
+                  <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>
+                    <p><strong>Last Audit:</strong> {productQualityData.last_audit}</p>
+                    <p><strong>Responses Checked:</strong> {productQualityData.recent_responses_checked || 0}</p>
+                    <p><strong>Learnings Recorded:</strong> {productQualityData.learnings_count || 0}</p>
+                    <p><strong>Pending Investigations:</strong> {productQualityData.pending_investigations || 0}</p>
+                  </div>
+                </div>
+                <div className="card">
+                  <h4 style={{ marginBottom: '12px' }}>Quality Targets</h4>
+                  <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>
+                    <p><strong>Slop Rate Target:</strong> &lt; 5%</p>
+                    <p><strong>Quality Score Target:</strong> &gt; 90%</p>
+                    <p><strong>Tone Accuracy Target:</strong> &gt; 90%</p>
+                    <p style={{ marginTop: '12px', fontSize: '12px', color: 'var(--gray-500)' }}>
+                      Use <code>/product-refine</code> skill for detailed audits
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>Could not load product quality data</p>
+              <button className="btn btn-primary" onClick={() => loadProductQuality()}>Retry</button>
             </div>
           )}
         </div>
