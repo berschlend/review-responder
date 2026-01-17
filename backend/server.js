@@ -1164,6 +1164,80 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+// ==========================================
+// ADMIN AUTHENTICATION (moved up to avoid ReferenceError)
+// ==========================================
+
+// Rate limiter for admin endpoints (50 attempts per 15 minutes per IP)
+const adminRateLimiter = new Map();
+const ADMIN_RATE_LIMIT = 50;
+const ADMIN_RATE_WINDOW = 15 * 60 * 1000; // 15 minutes
+
+const checkAdminRateLimit = ip => {
+  const now = Date.now();
+  const record = adminRateLimiter.get(ip);
+
+  if (!record || now - record.windowStart > ADMIN_RATE_WINDOW) {
+    adminRateLimiter.set(ip, { windowStart: now, attempts: 1 });
+    return true;
+  }
+
+  if (record.attempts >= ADMIN_RATE_LIMIT) {
+    return false;
+  }
+
+  record.attempts++;
+  return true;
+};
+
+// Timing-safe key comparison
+const safeCompare = (a, b) => {
+  if (!a || !b) return false;
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) {
+    // Still do comparison to prevent timing attacks on length
+    crypto.timingSafeEqual(bufA, Buffer.alloc(bufA.length));
+    return false;
+  }
+  return crypto.timingSafeEqual(bufA, bufB);
+};
+
+// Middleware for admin authentication
+const authenticateAdmin = (req, res, next) => {
+  const ip = req.ip || req.connection.remoteAddress;
+
+  if (!checkAdminRateLimit(ip)) {
+    return res.status(429).json({ error: 'Too many attempts. Try again in 15 minutes.' });
+  }
+
+  const adminKey = req.headers['x-admin-key'];
+  const adminSecret = process.env.ADMIN_SECRET;
+
+  console.log(
+    `🔐 Admin auth attempt - Key provided: ${adminKey ? 'yes (' + adminKey.substring(0, 4) + '...)' : 'no'}, Secret configured: ${adminSecret ? 'yes' : 'no'}`
+  );
+
+  if (!adminSecret) {
+    console.log('❌ ADMIN_SECRET not configured in environment');
+    return res
+      .status(500)
+      .json({ error: 'ADMIN_SECRET not configured. Add it to Render environment variables.' });
+  }
+
+  if (!adminKey) {
+    return res.status(401).json({ error: 'No admin key provided' });
+  }
+
+  if (!safeCompare(adminKey, adminSecret)) {
+    console.log(`⚠️ Invalid admin key attempt from IP: ${ip}`);
+    return res.status(401).json({ error: 'Invalid admin key' });
+  }
+
+  console.log(`✅ Admin authenticated from IP: ${ip}`);
+  next();
+};
+
 // Database helper functions
 async function dbQuery(sql, params = []) {
   const client = await pool.connect();
@@ -12272,41 +12346,7 @@ app.get('/api/cron/send-weekly-summary', async (req, res) => {
 });
 
 // ============ ADMIN ENDPOINTS ============
-
-// Rate limiter for admin endpoints (50 attempts per 15 minutes per IP)
-const adminRateLimiter = new Map();
-const ADMIN_RATE_LIMIT = 50;
-const ADMIN_RATE_WINDOW = 15 * 60 * 1000; // 15 minutes
-
-const checkAdminRateLimit = ip => {
-  const now = Date.now();
-  const record = adminRateLimiter.get(ip);
-
-  if (!record || now - record.windowStart > ADMIN_RATE_WINDOW) {
-    adminRateLimiter.set(ip, { windowStart: now, attempts: 1 });
-    return true;
-  }
-
-  if (record.attempts >= ADMIN_RATE_LIMIT) {
-    return false;
-  }
-
-  record.attempts++;
-  return true;
-};
-
-// Timing-safe key comparison
-const safeCompare = (a, b) => {
-  if (!a || !b) return false;
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) {
-    // Still do comparison to prevent timing attacks on length
-    crypto.timingSafeEqual(bufA, Buffer.alloc(bufA.length));
-    return false;
-  }
-  return crypto.timingSafeEqual(bufA, bufB);
-};
+// (adminRateLimiter, checkAdminRateLimit, safeCompare, authenticateAdmin are defined at top of file)
 
 // GET /api/admin/set-plan - Set user plan (for testing via browser)
 app.get('/api/admin/set-plan', async (req, res) => {
@@ -12732,41 +12772,6 @@ app.post('/api/admin/upgrade-user', async (req, res) => {
 // ==========================================
 // ADMIN - AFFILIATE MANAGEMENT
 // ==========================================
-
-// Middleware for admin authentication
-const authenticateAdmin = (req, res, next) => {
-  const ip = req.ip || req.connection.remoteAddress;
-
-  if (!checkAdminRateLimit(ip)) {
-    return res.status(429).json({ error: 'Too many attempts. Try again in 15 minutes.' });
-  }
-
-  const adminKey = req.headers['x-admin-key'];
-  const adminSecret = process.env.ADMIN_SECRET;
-
-  console.log(
-    `🔐 Admin auth attempt - Key provided: ${adminKey ? 'yes (' + adminKey.substring(0, 4) + '...)' : 'no'}, Secret configured: ${adminSecret ? 'yes' : 'no'}`
-  );
-
-  if (!adminSecret) {
-    console.log('❌ ADMIN_SECRET not configured in environment');
-    return res
-      .status(500)
-      .json({ error: 'ADMIN_SECRET not configured. Add it to Render environment variables.' });
-  }
-
-  if (!adminKey) {
-    return res.status(401).json({ error: 'No admin key provided' });
-  }
-
-  if (!safeCompare(adminKey, adminSecret)) {
-    console.log(`⚠️ Invalid admin key attempt from IP: ${ip}`);
-    return res.status(401).json({ error: 'Invalid admin key' });
-  }
-
-  console.log(`✅ Admin authenticated from IP: ${ip}`);
-  next();
-};
 
 // GET /api/admin/affiliates - List all affiliate applications
 app.get('/api/admin/affiliates', authenticateAdmin, async (req, res) => {
