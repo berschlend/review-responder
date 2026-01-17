@@ -1,7 +1,7 @@
 {
   "tasks": [
-    { "id": 1, "text": "DEMO-DIRECTOR Agent aktivieren (claude --chrome)" },
-    { "id": 2, "text": "Google Indexierung fortsetzen" },
-    { "id": 3, "text": "PC NEUSTART für Pagefile-Fix (AnyDesk Stabilität)" }
+    { "id": 1, "text": "5 LEADS ANRUFEN für PMF-Validierung → anruf-liste.md" },
+    { "id": 2, "text": "Mail-Tester Score prüfen (nach 24h DNS Propagation)" },
+    { "id": 3, "text": "Google Indexierung fortsetzen" }
   ]
 }

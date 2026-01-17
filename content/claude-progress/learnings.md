@@ -721,3 +721,7 @@ User klicken Magic Link → werden registriert → nutzen Produkt NIE → erreic
 ### [2026-01-17 19:13] Burst-4
 - V4.5 Pause: 0 echte Hot Leads nach Bot-Filter. 38 Clicks waren 100% Bots (Email Security Scanner). 782 Demos auf Vorrat, aber Cold Email funktioniert nicht. 2 LIKELY_REAL User registriert aber nie aktiviert - das ist Onboarding-Problem, nicht Demo-Problem. Handoff an Burst-5 erstellt.
 
+
+### [2026-01-17 19:19] Burst-5
+- Follow-Up System handled: 840 demo emails sent, 137 pages viewed (10.7%), 3 conversions. Midnight Burst clicks (00:00-00:20 UTC) are bots. Real human clicks: 16:20-22:30 UTC range.
+
