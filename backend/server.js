@@ -13452,40 +13452,44 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
     }
 
     // Real users = haben mindestens 1x generiert (egal wo!)
-    // Definition: responses (eingeloggt) ODER demo_generations (Email-Match via outreach_leads)
+    // Definition: responses (eingeloggt) ODER Demo-Seite WIRKLICH besucht (demo_page_viewed_at NOT NULL)
+    // FIX 17.01.2026: Vorher zählte Email-Match als "viaDemo" - jetzt nur wenn Demo wirklich angesehen
     let realUserStats = { real_users: 0, via_generator: 0, via_demo: 0, inactive_users: 0 };
     try {
       realUserStats = (await dbGet(`
         SELECT
-          -- Echte User: haben irgendwo generiert
+          -- Echte User: haben irgendwo generiert ODER Demo wirklich angesehen
           COUNT(*) FILTER (WHERE
             EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
             OR EXISTS (
               SELECT 1 FROM demo_generations d
               JOIN outreach_leads ol ON d.lead_id = ol.id
               WHERE LOWER(ol.email) = LOWER(u.email)
+              AND d.demo_page_viewed_at IS NOT NULL
             )
           ) as real_users,
           -- Davon: via Generator (eingeloggt)
           COUNT(*) FILTER (WHERE
             EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
           ) as via_generator,
-          -- Davon: via Demo-Seite (demo_generations aber KEINE logged-in responses)
+          -- Davon: via Demo-Seite (Demo WIRKLICH angesehen aber KEINE logged-in responses)
           COUNT(*) FILTER (WHERE
             EXISTS (
               SELECT 1 FROM demo_generations d
               JOIN outreach_leads ol ON d.lead_id = ol.id
               WHERE LOWER(ol.email) = LOWER(u.email)
+              AND d.demo_page_viewed_at IS NOT NULL
             )
             AND NOT EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
           ) as via_demo,
-          -- Inaktive User: registriert aber nie generiert
+          -- Inaktive User: registriert aber nie generiert UND Demo nie angesehen
           COUNT(*) FILTER (WHERE
             NOT EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
             AND NOT EXISTS (
               SELECT 1 FROM demo_generations d
               JOIN outreach_leads ol ON d.lead_id = ol.id
               WHERE LOWER(ol.email) = LOWER(u.email)
+              AND d.demo_page_viewed_at IS NOT NULL
             )
           ) as inactive_users
         FROM users u

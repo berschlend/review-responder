@@ -1,7 +1,28 @@
-# Night-Burst Core V4.1 - JEDER AGENT MUSS DAS INCLUDEN
+# Night-Burst Core V4.4 - JEDER AGENT MUSS DAS INCLUDEN
 
 > Basierend auf Anthropic's "Building Effective Agents" + "Multi-Agent Research System"
-> Updated: V4.1 mit Work-While-Waiting fuer Approvals (18.01.2026)
+> Updated: V4.4 mit Dev-Skills + Bypass Permissions (18.01.2026)
+
+---
+
+## 🚀 QUICK START (V4.4)
+
+**Alle Agents laufen mit `--dangerously-skip-permissions` = KEINE Dialoge!**
+
+```bash
+# Priority (2,4,5) - SOFORT
+.\scripts\start-agents.ps1 -Preset priority -NoSafetyCheck
+
+# Monitoring (9,11,14) - SOFORT
+.\scripts\start-agents.ps1 -Preset monitoring -NoSafetyCheck
+
+# ALLE 15 Agents - SOFORT
+.\scripts\start-agents.ps1 -Preset full -NoSafetyCheck
+```
+
+**Oder via Slash-Command:**
+- `/priority-mode` - Interaktive Auswahl
+- `/night-mode` - Alle 15 Agents
 
 ---
 
@@ -557,7 +578,7 @@ powershell -File scripts/agent-helpers.ps1 -Action wake-backend
 
 ---
 
-## 🎯 SESSION-START CHECKLIST (V4.2)
+## 🎯 SESSION-START CHECKLIST (V4.4)
 
 **JEDER AGENT muss bei Session-Start diese Commands ausführen:**
 
@@ -568,28 +589,55 @@ powershell -File scripts/agent-helpers.ps1 -Action wake-backend
 # Alternative (falls PowerShell nicht funktioniert):
 # curl -s --retry 5 --retry-delay 10 --retry-connrefused --connect-timeout 60 "https://review-responder.onrender.com/api/admin/stats"
 
-# 1. HEARTBEAT - Melde dich beim System an
+# 1. TONIGHT'S PROMPT CHECKEN (NEU V4.4!) - Hat Berend einen Fokus gesetzt?
+cat content/claude-progress/tonight-prompt.md 2>$null
+# → Wenn File existiert: DIESER FOKUS HAT PRIORITÄT!
+# → Befolge die Anweisungen aus tonight-prompt.md ZUERST
+# → Wenn File nicht existiert: Normaler Loop
+
+# 2. HEARTBEAT - Melde dich beim System an
 powershell -File scripts/agent-helpers.ps1 -Action heartbeat -Agent [X]
 
-# 2. REAL USER METRICS CHECKEN (NEU V4.2!) - Sind die Metriken aktuell?
+# 3. REAL USER METRICS CHECKEN - Sind die Metriken aktuell?
 powershell -File scripts/agent-helpers.ps1 -Action check-real-users
 # → Wenn STALE (>24h): `data-analyze` ausfuehren zum Update
 # → WICHTIG: DB zeigt 61 User - das ist FALSCH! Echte Zahl ist 0 organic.
 # → Bei Entscheidungen NUR die real-user-metrics.json Zahlen nutzen!
 
-# 3. FOCUS CHECKEN - Was ist gerade Priorität?
+# 4. FOCUS CHECKEN - Was ist gerade Priorität?
 powershell -File scripts/agent-helpers.ps1 -Action focus-read
 # → Wenn agent_priorities.burst-X.priority = 3 und ich nicht high-priority bin: langsamer arbeiten
 # → Wenn paused_agents mich enthält: STOPPEN
 
-# 4. HANDOFFS CHECKEN - Habe ich Arbeit von anderen Agents?
+# 5. HANDOFFS CHECKEN - Habe ich Arbeit von anderen Agents?
 powershell -File scripts/agent-helpers.ps1 -Action handoff-check -Agent [X]
 # → Wenn pending handoffs: Diese ZUERST bearbeiten!
 
-# 5. MEMORY LADEN - Was weiß ich von letzter Session?
+# 6. MEMORY LADEN - Was weiß ich von letzter Session?
 powershell -File scripts/agent-helpers.ps1 -Action memory-read -Agent [X]
 # → Learnings anwenden auf diese Session
 ```
+
+### Tonight's Prompt (V4.4)
+
+> **WICHTIG:** Wenn `tonight-prompt.md` existiert, hat dieser Fokus HÖCHSTE PRIORITÄT!
+
+**Beispiele:**
+```bash
+# Agent wird gestartet mit:
+.\scripts\start-agents.ps1 -Preset full -Prompt "NUR Demo-Emails senden, KEIN Lead-Scraping"
+
+# Jeder Agent liest dann:
+cat content/claude-progress/tonight-prompt.md
+# → Output zeigt den Fokus
+# → Agent passt sein Verhalten an
+```
+
+**Regeln für Tonight's Prompt:**
+- Tonight's Prompt überschreibt Standard-Prioritäten
+- Wenn "NUR X" steht → Andere Tasks ignorieren
+- Wenn "KEIN Y" steht → Y komplett überspringen
+- Prompt gilt bis Agents neu gestartet werden
 
 ---
 
@@ -1759,6 +1807,102 @@ powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent [X] -Data
 2. **MIT ZAHLEN** - Immer Daten/Metriken angeben
 3. **ACTIONABLE** - Was kann man konkret anders machen?
 4. **HONEST** - Auch Failures dokumentieren (die sind oft wertvoller!)
+
+---
+
+## 🛠️ DEV-SKILLS FÜR NIGHT-AGENTS (V4.4 - NEU!)
+
+> **Bestimmte Agents haben Zugriff auf Dev-Skills für Code-Qualität & Testing.**
+> Boris Cherny Style: Agents können autonom Code verbessern.
+
+### Welche Agents haben welche Skills?
+
+| Agent | Skills | Use Case |
+|-------|--------|----------|
+| Burst-9 (Doctor) | `/test-and-fix`, `/review-changes` | Health Checks, Code-Qualität prüfen |
+| Burst-12 (Creative) | `/simplify-code` | Code-Refactoring vorschlagen |
+| Burst-11 (Bottleneck) | `/review-changes` | Änderungen analysieren |
+
+### Wie Skills aufrufen?
+
+```bash
+# Skill Tool verwenden:
+Skill({ skill: "test-and-fix" })
+Skill({ skill: "simplify-code" })
+Skill({ skill: "review-changes" })
+```
+
+### `/test-and-fix` (Burst-9)
+
+**Wann nutzen:**
+- Nach Code-Änderungen durch andere Agents
+- Bei Health Check Failures
+- Wenn Tests failen
+
+**Workflow:**
+```
+1. Skill({ skill: "test-and-fix" })
+2. Skill führt aus: npm run typecheck && npm run lint && npm run test
+3. Bei Failures: Automatische Fixes
+4. Dokumentiere Ergebnis in conversion-report.md
+```
+
+### `/simplify-code` (Burst-12)
+
+**Wann nutzen:**
+- Nach Feature-Implementation (wenn Code complex)
+- Bei Stagnation wegen Code-Debt
+- Als Teil von "Code Quality" Strategie-Vorschlägen
+
+**Workflow:**
+```
+1. Skill({ skill: "simplify-code" })
+2. Skill analysiert kürzliche Änderungen
+3. Schlägt Refactorings vor
+4. Führt Tests aus
+5. Dokumentiere in learnings.md
+```
+
+### `/review-changes` (Burst-9, Burst-11)
+
+**Wann nutzen:**
+- Vor Git Push
+- Als Teil von Code-Audit
+- Bei unerwarteten Bugs
+
+**Workflow:**
+```
+1. Skill({ skill: "review-changes" })
+2. Skill zeigt staged/unstaged Changes
+3. Review für Probleme
+4. Dokumentiere Issues
+```
+
+### Autonomie-Level für Dev-Skills
+
+| Aktion | Autonom? | Bedingung |
+|--------|----------|-----------|
+| Tests laufen lassen | ✅ JA | Immer |
+| Lint Errors fixen | ✅ JA | Automatische Fixes only |
+| Code refactoren | ⚠️ APPROVAL | Nur mit Berend OK |
+| Breaking Changes | ❌ NEIN | Nie ohne Approval |
+
+### Integration mit Night-Burst
+
+```
+BURST-9 (DOCTOR) LOOP:
+  ...
+  5. Nach Metriken-Check: Skill({ skill: "test-and-fix" })
+  6. Bei Failures: Dokumentiere in for-berend.md
+  ...
+
+BURST-12 (CREATIVE) LOOP:
+  ...
+  Nach Stagnation Detection:
+  - Wenn Code-Debt vermutet: Skill({ skill: "simplify-code" })
+  - Schreibe Refactoring-Vorschläge in approval-queue.md
+  ...
+```
 
 ---
 

@@ -1,0 +1,39 @@
+ReviewResponder Video - Farbpalette
+====================================
+
+HAUPT-FARBEN
+------------
+Weiss:   #FFFFFF  rgb(255, 255, 255)
+Schwarz: #000000  rgb(0, 0, 0)
+
+TEXT-OVERLAYS
+-------------
+Rot:     #FF4444  rgb(255, 68, 68)    - "1,247 people"
+Gelb:    #FFD700  rgb(255, 215, 0)    - "What are they deciding?"
+Blau:    #2196F3  rgb(33, 150, 243)   - "READ THIS."
+Gruen:   #4CAF50  rgb(76, 175, 80)    - "13 seconds."
+Orange:  #FF6B35  rgb(255, 107, 53)   - CTA / URL
+
+GOOGLE MAPS FARBEN (fuer Konsistenz)
+------------------------------------
+Maps Blau:  #4285F4  rgb(66, 133, 244)
+Maps Rot:   #EA4335  rgb(234, 67, 53)
+Maps Gruen: #34A853  rgb(52, 168, 83)
+Maps Gelb:  #FBBC04  rgb(251, 188, 4)
+
+HINTERGRUND
+-----------
+Dunkel:  #202124  rgb(32, 33, 36)
+Hell:    #F8F9FA  rgb(248, 249, 250)
+
+FONTS
+-----
+Google Sans (Google Maps look)
+Montserrat (Bold Headlines)
+Roboto (Body Text)
+Roboto Mono (Timer/Code)
+
+Google Fonts Links:
+- https://fonts.google.com/specimen/Montserrat
+- https://fonts.google.com/specimen/Roboto
+- https://fonts.google.com/specimen/Roboto+Mono

@@ -1,5 +1,5 @@
 {
-  "last_check": "2026-01-18T00:10:00.000Z",
+  "last_check": "2026-01-17T19:45:00.000Z",
   "overall_status": "PASS",
   "flows": {
     "demo": {
@@ -14,11 +14,14 @@
       "notes": "Full Chrome UI test PASS: Demo loads, Reviews display, Generator works, AI Response quality good (no slop)"
     },
     "activation": {
-      "status": "UNKNOWN",
-      "last_check": null,
-      "steps_passed": 0,
-      "total_steps": 5,
-      "last_error": null
+      "status": "PASS",
+      "last_check": "2026-01-17T19:45:00.000Z",
+      "steps_passed": 8,
+      "total_steps": 8,
+      "last_error": null,
+      "api_verified": true,
+      "chrome_ui_verified": true,
+      "notes": "Full Activation Flow PASS: Login -> Dashboard -> Generator -> Generate Response -> Copy -> API Stats verified (2 responses counted)"
     },
     "conversion": {
       "status": "UNKNOWN",
@@ -65,6 +68,27 @@
   "last_failure": null,
   "mtbf_hours": null,
   "history": [
+    {
+      "timestamp": "2026-01-17T19:45:00.000Z",
+      "type": "activation_flow",
+      "status": "PASS",
+      "tests_run": [
+        "Test Account Reset: PASS (funnel-test-unlimited@test.local)",
+        "Login Flow: PASS (email + password)",
+        "Onboarding Modal: PASS (Skip for now works)",
+        "Dashboard Load: PASS (UNLIMITED Plan badge visible)",
+        "Generator Navigation: PASS (Single Response tab)",
+        "Review Input: PASS (negative review about cold food)",
+        "Generate Response: PASS (Smart AI, <10s)",
+        "Response Quality: PASS (apologetic, addresses specific issues)",
+        "Copy Button: PASS (clickable)",
+        "API Stats Verification: PASS (2 responses counted, smart model)"
+      ],
+      "test_account": "funnel-test-unlimited@test.local",
+      "responses_generated": 2,
+      "ai_model_used": "smart",
+      "notes": "Full Activation Flow Chrome MCP test completed successfully. Generator works, responses are tracked."
+    },
     {
       "timestamp": "2026-01-18T00:10:00.000Z",
       "type": "chrome_ui",

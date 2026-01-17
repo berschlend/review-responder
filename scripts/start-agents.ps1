@@ -1,12 +1,14 @@
-# Flexible Night-Burst Agent Starter
+# Flexible Night-Burst Agent Starter (V4.4)
 # Usage:
 #   .\scripts\start-agents.ps1                    # Interactive menu
 #   .\scripts\start-agents.ps1 -Preset priority   # Use preset
 #   .\scripts\start-agents.ps1 -Agents 2,4,5      # Custom agents
+#   .\scripts\start-agents.ps1 -Preset full -Prompt "Fokus auf Demo-Emails, ignoriere Lead-Scraping"
 
 param(
     [string]$Preset,           # "priority", "monitoring", "outreach", "full"
     [int[]]$Agents,            # Custom agent list, e.g. @(2,4,5)
+    [string]$Prompt,           # Tonight's focus prompt for all agents
     [switch]$NoWakeUp,         # Skip backend wake-up
     [switch]$NoChrome,         # Disable Chrome MCP (Chrome is ON by default!)
     [switch]$NoSafetyCheck,    # Skip pre-deploy safety checks (NOT recommended!)
@@ -248,6 +250,16 @@ function Start-Agent {
     # Build the command - if Chrome enabled, run chrome-init first then the agent task
     $chromeInit = if (-not $NoChrome) { " /chrome-init &&" } else { "" }
 
+    # Build prompt suffix if tonight's prompt exists (V4.4)
+    $promptSuffix = ""
+    $promptDisplay = ""
+    if ($Prompt) {
+        # Escape the prompt for PowerShell
+        $escapedPrompt = $Prompt -replace "'", "''" -replace '"', '\"'
+        $promptSuffix = " `"TONIGHT FOCUS: $escapedPrompt`""
+        $promptDisplay = "Write-Host ' [TONIGHT FOCUS SET]' -ForegroundColor Yellow"
+    }
+
     $psCommand = @"
 `$env:CLAUDE_CONFIG_DIR = '$escapedConfigDir'
 `$env:CLAUDE_SESSION = 'BURST$AgentNum'
@@ -256,10 +268,11 @@ Write-Host '========================================' -ForegroundColor Magenta
 Write-Host ' BURST-$AgentNum : $agentName' -ForegroundColor Magenta
 Write-Host ' Account: $selectedAccount' -ForegroundColor DarkGray
 if ('$chromeFlag' -ne '') { Write-Host ' [CHROME MCP ENABLED]' -ForegroundColor Cyan }
+$promptDisplay
 Write-Host '========================================' -ForegroundColor Magenta
 Write-Host 'Started: ' -NoNewline; Write-Host (Get-Date) -ForegroundColor Cyan
 Write-Host ''
-claude --dangerously-skip-permissions$chromeFlag /night-burst-$AgentNum
+claude --dangerously-skip-permissions$chromeFlag /night-burst-$AgentNum$promptSuffix
 Write-Host ''
 Write-Host '========================================' -ForegroundColor Yellow
 Write-Host ' FINISHED - Press any key to close...' -ForegroundColor Yellow
@@ -288,6 +301,34 @@ function Start-SelectedAgents {
     if (-not $safetyPassed) {
         Write-Host "    Aborting agent start due to failed safety checks." -ForegroundColor Red
         return
+    }
+
+    # Write tonight's prompt to file (V4.4)
+    $tonightPromptFile = Join-Path $ProjectRoot "content\claude-progress\tonight-prompt.md"
+    if ($Prompt) {
+        $tonightContent = @"
+# Tonight's Focus ($(Get-Date -Format "yyyy-MM-dd HH:mm"))
+
+> **PRIORITY INSTRUCTION FOR ALL AGENTS**
+
+$Prompt
+
+---
+
+*Set by: start-agents.ps1 -Prompt*
+"@
+        $tonightContent | Out-File -FilePath $tonightPromptFile -Encoding utf8
+        Write-Host ""
+        Write-Host "    +=======================================+" -ForegroundColor Yellow
+        Write-Host "    |  TONIGHT'S PROMPT:                    |" -ForegroundColor Yellow
+        Write-Host "    +---------------------------------------+" -ForegroundColor Yellow
+        Write-Host "    $Prompt" -ForegroundColor White
+        Write-Host "    +=======================================+" -ForegroundColor Yellow
+    } else {
+        # Clear old prompt if no new one provided
+        if (Test-Path $tonightPromptFile) {
+            Remove-Item $tonightPromptFile -Force -ErrorAction SilentlyContinue
+        }
     }
 
     # Show what will be started

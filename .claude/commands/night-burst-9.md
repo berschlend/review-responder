@@ -74,6 +74,36 @@
 
 ---
 
+## 🛠️ DEV-SKILLS: JA (V4.4)
+
+> **Du hast Zugriff auf Dev-Skills für Code-Qualität & Testing!**
+
+| Skill | Wann nutzen |
+|-------|-------------|
+| `/test-and-fix` | Nach Code-Änderungen, bei Health Check Failures |
+| `/review-changes` | Vor Git Push, bei unerwarteten Bugs |
+
+### Skill aufrufen:
+```bash
+Skill({ skill: "test-and-fix" })
+Skill({ skill: "review-changes" })
+```
+
+### Autonomie:
+- ✅ Tests laufen lassen: IMMER autonom
+- ✅ Lint Errors fixen: Autonom (nur automatische Fixes)
+- ⚠️ Code refactoren: NUR mit Berend Approval
+
+### Integration in Loop:
+```
+NACH METRIKEN-CHECK (Phase 1):
+  → Skill({ skill: "test-and-fix" })
+  → Bei Failures: Dokumentiere in for-berend.md
+  → Bei Success: Weiter mit Loop
+```
+
+---
+
 ## 🔄 DER ENDLOS-LOOP
 
 ```

@@ -1,30 +1,66 @@
-﻿{
-    "realUsers":  {
-                      "organic":  0,
-                      "outreachAuto":  6,
-                      "activated":  0,
-                      "testAccounts":  0,
-                      "paying":  0
-                  },
-    "botPatterns":  [
-                        {
-                            "count":  51,
-                            "pattern":  "midnight-burst"
-                        },
-                        {
-                            "count":  2,
-                            "pattern":  "test-email"
-                        }
-                    ],
-    "ctr":  {
-                "botClicks":  53,
-                "reported":  4.42,
-                "inflation":  180,
-                "real":  1.58
-            },
-    "lastUpdated":  "2026-01-17T16:43:22Z",
-    "warnings":  [
-
-                 ],
-    "analyzedAt":  "2026-01-17T16:43:22Z"
+{
+  "realUsers": {
+    "organic": 0,
+    "viaOutreach": 6,
+    "viaDemo": 0,
+    "activated": 0,
+    "paying": 0
+  },
+  "registeredUsers": {
+    "total": 6,
+    "emails": [
+      "zuerich@trattoria-sempre.ch",
+      "H0796@accor.com",
+      "h9057@accor.com",
+      "i.schmidt@tv-turm.de",
+      "reservation.web@madamebrasserie.com",
+      "awayspa.edinburgh@whotels.com"
+    ],
+    "source": "All from cold-email clicks, auto-registered",
+    "responsesGenerated": 0
+  },
+  "metricsBugFix": {
+    "date": "2026-01-17",
+    "issue": "viaDemo metric was inflated from 14 to actual 0",
+    "rootCause": "Query counted email-matches to outreach_leads with demo_generations, NOT actual demo views",
+    "fix": "Added demo_page_viewed_at IS NOT NULL check to SQL query",
+    "affectedEndpoint": "/api/admin/stats realUsers.viaDemo"
+  },
+  "dataQuality": {
+    "testAccountsInDB": 60,
+    "totalUsersInDB": 66,
+    "nonTestUsers": 6,
+    "usersWithResponses": 0
+  },
+  "botPatterns": [
+    {
+      "pattern": "midnight-burst",
+      "count": 51,
+      "description": "Email security scanners clicking links between 00:00-00:30"
+    },
+    {
+      "pattern": "test-email",
+      "count": 2
+    }
+  ],
+  "ctr": {
+    "reported": 4.47,
+    "realEstimate": 1.5,
+    "botClicksEstimate": 67,
+    "note": "Most clicks between 00:00-00:30 are email security scanners"
+  },
+  "outreach": {
+    "totalLeads": 2692,
+    "emailsSent": 1902,
+    "clicks": 85,
+    "hotLeads": 84,
+    "conversions": 0
+  },
+  "lastUpdated": "2026-01-17T19:50:00Z",
+  "analyzedAt": "2026-01-17T19:50:00Z",
+  "nextActions": [
+    "Monitor viaDemo after deploy - should now show 0-1",
+    "Focus on activation: 6 registered but 0 using product",
+    "Check why demo_page_viewed_at is rarely set"
+  ]
 }

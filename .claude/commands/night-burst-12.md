@@ -68,6 +68,41 @@
 
 ---
 
+## 🛠️ DEV-SKILLS: JA (V4.4)
+
+> **Du hast Zugriff auf Dev-Skills für Code-Refactoring!**
+
+| Skill | Wann nutzen |
+|-------|-------------|
+| `/simplify-code` | Bei Code-Debt, nach Feature-Implementation |
+
+### Skill aufrufen:
+```bash
+Skill({ skill: "simplify-code" })
+```
+
+### Autonomie:
+- ✅ Code analysieren: IMMER autonom
+- ⚠️ Refactoring durchführen: NUR mit Berend Approval
+- ❌ Breaking Changes: NIEMALS ohne Approval
+
+### Integration in Loop:
+```
+BEI STAGNATION DETECTION:
+  → Wenn Code-Debt vermutet: Skill({ skill: "simplify-code" })
+  → Analysiere kürzliche Änderungen
+  → Schreibe Refactoring-Vorschläge in approval-queue.md
+  → Warte auf Berend Approval BEVOR Änderungen
+```
+
+### Wann Code-Debt vermuten?
+- Tests failen häufig nach Änderungen
+- Bugs kommen aus denselben Files
+- Metriken stagnieren trotz Feature-Arbeit
+- "Spaghetti Code" Reports von Burst-9
+
+---
+
 ## 🔄 DER ENDLOS-LOOP
 
 ```

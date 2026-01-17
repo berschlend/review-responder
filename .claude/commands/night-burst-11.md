@@ -72,6 +72,41 @@
 
 ---
 
+## 🛠️ DEV-SKILLS: JA (V4.4)
+
+> **Du hast Zugriff auf Dev-Skills für Code-Analyse!**
+
+| Skill | Wann nutzen |
+|-------|-------------|
+| `/review-changes` | Bei Code-bedingten Bottlenecks, Bug-Analyse |
+
+### Skill aufrufen:
+```bash
+Skill({ skill: "review-changes" })
+```
+
+### Autonomie:
+- ✅ Code-Änderungen analysieren: IMMER autonom
+- ✅ Issues identifizieren: IMMER autonom
+- ⚠️ Fixes empfehlen: Dokumentiere in bottleneck-report.md
+
+### Integration in Loop:
+```
+BEI CODE-BEDINGTEM BOTTLENECK:
+  → Wenn Bottleneck in Code vermutet: Skill({ skill: "review-changes" })
+  → Analysiere kürzliche Commits
+  → Korreliere mit Metrik-Drops
+  → Dokumentiere in bottleneck-report.md
+```
+
+### Wann Code-Bottleneck vermuten?
+- Metrik-Drop nach Deploy
+- "500 Error" oder "Timeout" Spikes
+- User-Feedback über Bugs
+- Activation-Rate drop ohne Marketing-Änderung
+
+---
+
 ## 🔄 DER ENDLOS-LOOP
 
 ```

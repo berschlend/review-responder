@@ -5,9 +5,13 @@
 
 ---
 
-## 🔴 PENDING APPROVALS
+## 🔴 AWAITING APPROVALS
 
-## 💡 NEUE STRATEGIE: Ghost User Re-Activation [2026-01-17 22:45 UTC]
+*(Keine offenen approvals)*
+
+---
+
+## 💡 RESOLVED: Ghost User Re-Activation [2026-01-17 22:45 UTC]
 
 **From:** Burst-12 (Creative Strategist)
 **Type:** Re-Activation Strategy
@@ -91,7 +95,18 @@ Das sind HOCHWERTIGE Leads:
 
 ---
 
-**BEREND RESPONSE:** [waiting]
+**BEREND RESPONSE:** ⏰ TIMEOUT - Keine Antwort nach 24h+
+**RESOLUTION:** ✅ TIMEOUT-REJECTED [2026-01-18 via Priority-Mode]
+
+**Decision:** TIMEOUT → REJECTED (gemäß V3.9.1 Safety Rules)
+**Reason:**
+- >24h ohne Antwort (weit über 4h Timeout)
+- V3.9.1: Default = REJECT bei Critical Items
+- Ghost User Problem bleibt bestehen - kann neu evaluiert werden
+
+**Next Steps:**
+- Bei Bedarf: Burst-12 kann neue Analyse mit aktuellen Daten machen
+- Alternative: Direkter Fix am Messaging/Landing Page statt Activation-Emails
 
 ---
 

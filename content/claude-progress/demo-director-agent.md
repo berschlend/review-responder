@@ -1,8 +1,8 @@
 # DEMO-DIRECTOR Agent
 
-> **Status:** READY
+> **Status:** COMPLETE - BEREIT FUER RECORDING!
 > **Session Name:** `$env:CLAUDE_SESSION = "DEMO-DIRECTOR"`
-> **Last Updated:** 18.01.2026
+> **Last Updated:** 18.01.2026 (Video Prep Session)
 
 ---
 
@@ -13,6 +13,29 @@ Alles fuer Demo-Video vorbereiten sodass Berend nur noch:
 2. Browser oeffnen
 3. Record druecken
 4. Fertig
+
+**STATUS: ALLES BEREIT!**
+
+---
+
+## NEU ERSTELLT (18.01.2026)
+
+| Datei | Zweck |
+|-------|-------|
+| `content/BEREND-VIDEO-RECORDING-GUIDE.md` | **HAUPT-GUIDE** - 1 Seite mit allem |
+| `content/video-scripts/15s-cheatsheet.md` | Timing auf 1 Seite zum Ausdrucken |
+| `content/video-assets/sfx/README.md` | Sound Effects Download-Links |
+| `content/video-assets/colors.txt` | Alle Hex-Codes fuer Text-Overlays |
+| `content/video-assets/backup-review-texts.md` | Fallback Review-Texte |
+
+---
+
+## WAS BEREND TUN MUSS
+
+1. **Lies:** `content/BEREND-VIDEO-RECORDING-GUIDE.md`
+2. **Optional:** Print `content/video-scripts/15s-cheatsheet.md`
+3. **Optional:** Download SFX von Pixabay (Links im README)
+4. **Record!**
 
 ---
 
