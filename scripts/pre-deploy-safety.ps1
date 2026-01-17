@@ -1,5 +1,6 @@
-# Pre-Deploy Safety Checks for Night-Burst Agents
+# Pre-Deploy Safety Checks for Night-Burst Agents V4.1
 # Based on First-Principles Analysis (18.01.2026)
+# V4.1: Work-While-Waiting Pattern - Agents warten NICHT auf Approvals
 #
 # PURPOSE: Ensure safe deployment before Night Agent runs
 # PHILOSOPHY: FAIL-SAFE, not FAIL-DEFAULT

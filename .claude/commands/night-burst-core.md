@@ -1,7 +1,7 @@
-# Night-Burst Core V4.0 - JEDER AGENT MUSS DAS INCLUDEN
+# Night-Burst Core V4.1 - JEDER AGENT MUSS DAS INCLUDEN
 
 > Basierend auf Anthropic's "Building Effective Agents" + "Multi-Agent Research System"
-> Updated: V4.0 mit Smart Task Switching (18.01.2026)
+> Updated: V4.1 mit Work-While-Waiting fuer Approvals (18.01.2026)
 
 ---
 

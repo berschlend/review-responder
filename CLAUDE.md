@@ -293,7 +293,16 @@ ReviewResponder/
 - `agent-task-queue.json` definiert Backup-Tasks pro Agent
 **Lesson:** Kein Hook noetig! Agent entscheidet selbst. Pre-Check > Wait-and-Retry.
 
-### Safety-First Deploy (18.01.2026)
+### Work-While-Waiting V4.1 (18.01.2026)
+**Problem:** Agents warteten bis zu 4h auf Approval = verschwendete Zeit!
+**Loesung:** Night-Burst V4.1 mit Work-While-Waiting Pattern:
+- Approval Request → Queue → SOFORT andere Tasks machen
+- Alle 15-30min: `approval-check` Helper pruefen ob approved
+- Max Age (30min/2h) statt Wartezeit - dann Auto-REJECT
+- `approval-check` + `approval-expire` in agent-helpers.ps1
+**Lesson:** Max Age ≠ Wartezeit! Agent arbeitet weiter, checkt spaeter.
+
+### Safety-First Deploy V3.9 (18.01.2026)
 **Problem:** 2x Timeout-Defaults wurden ohne Berendes Review ausgefuehrt (16.01)
 **Root Cause:** FAIL-DEFAULT statt FAIL-SAFE Architektur
 **Loesung:** Night-Burst V3.9 mit:
