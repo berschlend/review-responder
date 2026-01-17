@@ -14765,25 +14765,27 @@ app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
     }
 
     // ========== REAL USER METRICS (18.01.2026) ==========
-    // Real users = haben mindestens 1x generiert (EGAL WO!)
+    // SMART: Demo/Magic Link geklickt = inFunnel, GENERIERT = real_user
     let realUserMetrics = {
       real_users: 0,
       via_generator: 0,
       via_demo: 0,
       via_instant_try: 0,
+      in_funnel: 0,
       inactive_users: 0,
     };
     try {
       realUserMetrics =
         (await dbGet(`
         SELECT
+          -- Echte User: haben IRGENDWO GENERIERT (nicht nur angesehen!)
           COUNT(*) FILTER (WHERE
             EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
             OR EXISTS (
               SELECT 1 FROM demo_generations d
               JOIN outreach_leads ol ON d.lead_id = ol.id
               WHERE LOWER(ol.email) = LOWER(u.email)
-              AND d.demo_page_viewed_at IS NOT NULL
+              AND jsonb_array_length(COALESCE(d.generated_responses, '[]'::jsonb)) > 0
             )
             OR EXISTS (
               SELECT 1 FROM public_try_usage p
@@ -14794,12 +14796,13 @@ app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
           COUNT(*) FILTER (WHERE
             EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
           ) as via_generator,
+          -- via Demo: GENERIERT auf Demo-Seite (nicht nur angesehen)
           COUNT(*) FILTER (WHERE
             EXISTS (
               SELECT 1 FROM demo_generations d
               JOIN outreach_leads ol ON d.lead_id = ol.id
               WHERE LOWER(ol.email) = LOWER(u.email)
-              AND d.demo_page_viewed_at IS NOT NULL
+              AND jsonb_array_length(COALESCE(d.generated_responses, '[]'::jsonb)) > 0
             )
             AND NOT EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
           ) as via_demo,
@@ -14814,22 +14817,47 @@ app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
               SELECT 1 FROM demo_generations d
               JOIN outreach_leads ol ON d.lead_id = ol.id
               WHERE LOWER(ol.email) = LOWER(u.email)
-              AND d.demo_page_viewed_at IS NOT NULL
+              AND jsonb_array_length(COALESCE(d.generated_responses, '[]'::jsonb)) > 0
             )
           ) as via_instant_try,
+          -- Im Funnel: Demo/Magic Link geklickt, aber noch nicht generiert
           COUNT(*) FILTER (WHERE
             NOT EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
             AND NOT EXISTS (
               SELECT 1 FROM demo_generations d
               JOIN outreach_leads ol ON d.lead_id = ol.id
               WHERE LOWER(ol.email) = LOWER(u.email)
-              AND d.demo_page_viewed_at IS NOT NULL
+              AND jsonb_array_length(COALESCE(d.generated_responses, '[]'::jsonb)) > 0
             )
             AND NOT EXISTS (
               SELECT 1 FROM public_try_usage p
               WHERE p.converted_to_user_id = u.id
                  OR LOWER(p.email) = LOWER(u.email)
             )
+            AND (
+              EXISTS (
+                SELECT 1 FROM demo_generations d
+                JOIN outreach_leads ol ON d.lead_id = ol.id
+                WHERE LOWER(ol.email) = LOWER(u.email)
+                AND d.demo_page_viewed_at IS NOT NULL
+              )
+              OR COALESCE(u.created_via_magic_link, false) = true
+            )
+          ) as in_funnel,
+          -- Inaktive: KEIN Funnel-Engagement
+          COUNT(*) FILTER (WHERE
+            NOT EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
+            AND NOT EXISTS (
+              SELECT 1 FROM demo_generations d
+              JOIN outreach_leads ol ON d.lead_id = ol.id
+              WHERE LOWER(ol.email) = LOWER(u.email)
+            )
+            AND NOT EXISTS (
+              SELECT 1 FROM public_try_usage p
+              WHERE p.converted_to_user_id = u.id
+                 OR LOWER(p.email) = LOWER(u.email)
+            )
+            AND COALESCE(u.created_via_magic_link, false) = false
           ) as inactive_users
         FROM users u
         WHERE 1=1 ${excludeEmailsClause.replace(/email/g, 'u.email')}

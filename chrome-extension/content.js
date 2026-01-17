@@ -5688,12 +5688,7 @@ function exportBatchAsCSV(panel) {
 }
 
 async function startQueueMode() {
-  // Check login first
-  if (!isLoggedIn) {
-    showToast('🔐 Please login first', 'error');
-    return;
-  }
-
+  // Anonymous users can use queue mode - generateResponse handles auth
   showToast('🔍 Scanning for reviews...', 'info');
   const reviews = await scanPageForReviews();
 

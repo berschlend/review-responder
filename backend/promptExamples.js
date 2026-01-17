@@ -88,6 +88,7 @@ const AI_SLOP_STARTS = [
 ];
 
 // ============ INDUSTRY EXAMPLES (XML Format) ============
+// EXPANDED: All 31 landing pages with industry-specific terminology for WOOOOW effect
 const industryExamples = {
   restaurant: {
     positive: {
@@ -100,6 +101,18 @@ const industryExamples = {
       response:
         "45 minutes and cold food. That's on us. Reach out directly and we'll make it right.",
     },
+    terminology: ['reservation', 'table', 'chef', 'kitchen', 'menu', 'dish', 'service'],
+  },
+  coffeeshop: {
+    positive: {
+      review: 'Best latte in town! The barista really knows their craft.',
+      response: 'Our baristas take espresso seriously. That blend is single-origin from Ethiopia. See you for your next cup.',
+    },
+    negative: {
+      review: 'My order was wrong twice. Staff seemed confused.',
+      response: "Two wrong orders is frustrating. Stop by again and ask for me directly. I'll make sure it's right.",
+    },
+    terminology: ['barista', 'roast', 'espresso', 'blend', 'pour-over', 'latte art', 'single-origin'],
   },
   dental: {
     positive: {
@@ -113,6 +126,176 @@ const industryExamples = {
       response:
         "40 minutes is too long. We're working on our scheduling. Email us and we'll prioritize your next visit.",
     },
+    terminology: ['procedure', 'hygienist', 'cleaning', 'x-ray', 'crown', 'filling', 'appointment'],
+  },
+  // ========== HOME SERVICES ==========
+  plumber: {
+    positive: {
+      review: 'Fixed our leaky faucet same day. Fair price and cleaned up after.',
+      response: 'Same-day service when you need it. Glad we got that faucet sorted. Call anytime.',
+    },
+    negative: {
+      review: 'Came 3 hours late and charged more than the quote.',
+      response: "Late arrival and price surprise. That's not how we operate. Let me review your invoice directly.",
+    },
+    terminology: ['pipe', 'drain', 'faucet', 'leak', 'water heater', 'pressure', 'fixture', 'clog'],
+  },
+  electrician: {
+    positive: {
+      review: 'Rewired our entire panel safely. Very professional and explained everything.',
+      response: 'Panel upgrades need to be done right. Glad you trusted us with the electrical. Stay safe.',
+    },
+    negative: {
+      review: 'Left exposed wires after installing new outlet. Dangerous work.',
+      response: 'Exposed wires are unacceptable. Please call me immediately so I can send someone today.',
+    },
+    terminology: ['panel', 'circuit', 'outlet', 'wiring', 'breaker', 'voltage', 'load', 'code'],
+  },
+  hvac: {
+    positive: {
+      review: 'AC was blowing warm air. Tech diagnosed it in 10 minutes and had it fixed in an hour.',
+      response: 'Quick diagnosis saves time and money. Glad your AC is cooling again. Remember annual maintenance!',
+    },
+    negative: {
+      review: 'Charged $400 for a $50 capacitor. Complete ripoff.',
+      response: 'Parts cost varies but that markup sounds wrong. Send me the invoice and I will review it.',
+    },
+    terminology: ['compressor', 'refrigerant', 'thermostat', 'ductwork', 'filter', 'coil', 'BTU', 'SEER rating'],
+  },
+  roofing: {
+    positive: {
+      review: 'Replaced our entire roof in 2 days. No mess left behind.',
+      response: 'Two-day turnaround with clean jobsite is our standard. Thanks for trusting us with your roof.',
+    },
+    negative: {
+      review: 'Found 3 leaks after the "repair". Had to call another company.',
+      response: 'Leaks after a repair means we failed. Please contact me so we can inspect and make this right.',
+    },
+    terminology: ['shingle', 'flashing', 'underlayment', 'ridge', 'gutter', 'soffit', 'leak', 'inspection'],
+  },
+  landscaping: {
+    positive: {
+      review: 'Transformed our backyard into an oasis. Great design eye.',
+      response: 'That backyard had good bones. Glad you love how it turned out. Enjoy the new space!',
+    },
+    negative: {
+      review: 'Plants died within a month. No follow-up despite warranty promise.',
+      response: 'Dead plants in a month means something went wrong. Reach out and we will honor our warranty.',
+    },
+    terminology: ['irrigation', 'mulch', 'hardscape', 'sod', 'drainage', 'grading', 'native plants', 'design'],
+  },
+  cleaning: {
+    positive: {
+      review: 'House was spotless when they left. Even cleaned inside the oven!',
+      response: 'The oven is often overlooked. Glad we hit all the details. See you next cleaning day.',
+    },
+    negative: {
+      review: 'Missed the bathrooms entirely. Had to do them myself.',
+      response: 'Missing bathrooms completely is a major oversight. Please let me send the team back at no charge.',
+    },
+    terminology: ['deep clean', 'move-out', 'sanitize', 'detail', 'recurring', 'eco-friendly', 'checklist'],
+  },
+  // ========== PROFESSIONAL SERVICES ==========
+  accountant: {
+    positive: {
+      review: 'Found deductions I never knew about. Saved us thousands on taxes.',
+      response: 'Finding overlooked deductions is what we do. Glad we could reduce your tax burden.',
+    },
+    negative: {
+      review: 'Filed late and we got penalties. Unacceptable.',
+      response: 'Late filing causing penalties is our responsibility. Contact me to discuss how we fix this.',
+    },
+    terminology: ['deduction', 'filing', 'audit', 'quarterly', 'bookkeeping', 'tax planning', 'CPA', 'return'],
+  },
+  insurance: {
+    positive: {
+      review: 'Saved us $200/month by bundling policies. Very knowledgeable agent.',
+      response: 'Bundling made sense for your situation. Glad the savings are real. Annual review coming up!',
+    },
+    negative: {
+      review: 'Claim was denied and agent disappeared. No help at all.',
+      response: 'Claim denial with no support is unacceptable. Please call the office and ask for me directly.',
+    },
+    terminology: ['premium', 'deductible', 'coverage', 'claim', 'policy', 'bundle', 'liability', 'quote'],
+  },
+  therapy: {
+    positive: {
+      review: 'Finally found a therapist who actually listens. Life-changing.',
+      response: 'Listening is the foundation. Glad you feel heard. Looking forward to continuing the work.',
+    },
+    negative: {
+      review: 'Felt judged during our session. Will not be returning.',
+      response: 'Therapy should be a safe space. I am sorry that was not your experience. Please reach out if you would like to discuss.',
+    },
+    terminology: ['session', 'coping', 'boundaries', 'progress', 'appointment', 'confidential', 'therapeutic'],
+  },
+  seniorcare: {
+    positive: {
+      review: 'Caregivers treat my mother with such dignity. Peace of mind for our family.',
+      response: 'Your mother deserves that dignity. Our caregivers genuinely care. Thank you for trusting us.',
+    },
+    negative: {
+      review: 'Caregiver no-showed twice. My father was left alone.',
+      response: 'No-shows with a loved one depending on us is inexcusable. Contact me immediately to discuss.',
+    },
+    terminology: ['caregiver', 'companion', 'medication management', 'mobility', 'respite', 'ADL', 'care plan'],
+  },
+  // ========== LIFESTYLE/EVENTS ==========
+  photographer: {
+    positive: {
+      review: 'Captured moments we will treasure forever. True artist.',
+      response: 'Those moments only happen once. Glad I could preserve them for you.',
+    },
+    negative: {
+      review: 'Received photos 4 months late. Missed our anniversary.',
+      response: 'Four months is far too long. I understand the frustration. Please contact me to discuss.',
+    },
+    terminology: ['session', 'editing', 'gallery', 'prints', 'RAW files', 'lighting', 'retouching', 'turnaround'],
+  },
+  wedding: {
+    positive: {
+      review: 'Made our dream wedding happen. Every detail was perfect.',
+      response: 'Your vision made it easy. Honored to be part of your special day.',
+    },
+    negative: {
+      review: 'DJ played wrong songs, cake was late. Coordination was a mess.',
+      response: 'Your wedding day deserved better coordination. I am truly sorry. Please reach out so we can discuss.',
+    },
+    terminology: ['ceremony', 'reception', 'vendor', 'timeline', 'rehearsal', 'coordination', 'floral', 'venue'],
+  },
+  daycare: {
+    positive: {
+      review: 'My son looks forward to going every day. Teachers are wonderful.',
+      response: 'When kids are excited to come, we know we are doing something right. He is a joy to have.',
+    },
+    negative: {
+      review: 'Picked up my child with a dirty diaper. Staff seemed overwhelmed.',
+      response: 'That should never happen. Please contact me directly so we can address this immediately.',
+    },
+    terminology: ['curriculum', 'ratio', 'learning centers', 'nap time', 'pickup', 'developmental milestones'],
+  },
+  // ========== E-COMMERCE/TECH ==========
+  ecommerce: {
+    positive: {
+      review: 'Fast shipping and product exactly as described. Will order again.',
+      response: 'Accurate descriptions and fast shipping are the basics. Thanks for the order.',
+    },
+    negative: {
+      review: 'Item arrived damaged. Return process was a nightmare.',
+      response: 'Damaged item plus difficult return is double frustration. Email me your order number for immediate help.',
+    },
+    terminology: ['shipping', 'tracking', 'return', 'refund', 'order', 'packaging', 'customer service'],
+  },
+  saas: {
+    positive: {
+      review: 'Onboarding was smooth and support team is responsive. Great product.',
+      response: 'Smooth onboarding means you can focus on your work. Glad the product is delivering value.',
+    },
+    negative: {
+      review: 'App crashed during important presentation. Cost us a client.',
+      response: 'Downtime during a presentation is unacceptable. Please contact support with details so we can investigate and make this right.',
+    },
+    terminology: ['onboarding', 'integration', 'uptime', 'support ticket', 'feature request', 'subscription'],
   },
   hotel: {
     positive: {
