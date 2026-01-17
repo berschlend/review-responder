@@ -21,6 +21,7 @@ import {
   useParams,
 } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
+import Select from 'react-select';
 import {
   MessageSquare,
   Star,
@@ -5101,30 +5102,61 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
   const [sampleResponse, setSampleResponse] = useState('');
   const [generatingSample, setGeneratingSample] = useState(false);
 
-  // Grouped business types for better UX - most common first
-  const businessTypeGroups = {
-    'Most Common': [
-      'Restaurant',
-      'Dental Practice',
-      'Medical Practice',
-      'Hair Salon / Barbershop',
-      'Auto Repair / Service',
-      'Real Estate',
-      'Home Services',
-    ],
-    'Food & Hospitality': ['Cafe / Coffee Shop', 'Bar / Nightclub', 'Hotel / Accommodation'],
-    'Health & Beauty': ['Spa / Wellness', 'Gym / Fitness Studio', 'Veterinary / Pet Services'],
-    Professional: [
-      'Professional Services',
-      'Financial Services',
-      'Retail Store',
-      'E-commerce',
-    ],
-    Lifestyle: ['Photography / Creative', 'Event Planning', 'Childcare / Education'],
-  };
+  // Grouped business types for react-select
+  const businessTypeOptions = [
+    {
+      label: 'Most Common',
+      options: [
+        { value: 'Restaurant', label: 'Restaurant' },
+        { value: 'Dental Practice', label: 'Dental Practice' },
+        { value: 'Medical Practice', label: 'Medical Practice' },
+        { value: 'Hair Salon / Barbershop', label: 'Hair Salon / Barbershop' },
+        { value: 'Auto Repair / Service', label: 'Auto Repair / Service' },
+        { value: 'Real Estate', label: 'Real Estate' },
+        { value: 'Home Services', label: 'Home Services' },
+      ],
+    },
+    {
+      label: 'Food & Hospitality',
+      options: [
+        { value: 'Cafe / Coffee Shop', label: 'Cafe / Coffee Shop' },
+        { value: 'Bar / Nightclub', label: 'Bar / Nightclub' },
+        { value: 'Hotel / Accommodation', label: 'Hotel / Accommodation' },
+      ],
+    },
+    {
+      label: 'Health & Beauty',
+      options: [
+        { value: 'Spa / Wellness', label: 'Spa / Wellness' },
+        { value: 'Gym / Fitness Studio', label: 'Gym / Fitness Studio' },
+        { value: 'Veterinary / Pet Services', label: 'Veterinary / Pet Services' },
+      ],
+    },
+    {
+      label: 'Professional',
+      options: [
+        { value: 'Professional Services', label: 'Professional Services' },
+        { value: 'Financial Services', label: 'Financial Services' },
+        { value: 'Retail Store', label: 'Retail Store' },
+        { value: 'E-commerce', label: 'E-commerce' },
+      ],
+    },
+    {
+      label: 'Lifestyle',
+      options: [
+        { value: 'Photography / Creative', label: 'Photography / Creative' },
+        { value: 'Event Planning', label: 'Event Planning' },
+        { value: 'Childcare / Education', label: 'Childcare / Education' },
+      ],
+    },
+    {
+      label: 'Other',
+      options: [{ value: 'Other', label: 'Other (Custom)' }],
+    },
+  ];
 
-  // Flat list for validation (includes all types plus Other)
-  const businessTypes = Object.values(businessTypeGroups).flat().concat(['Other']);
+  // Flat list for validation
+  const businessTypes = businessTypeOptions.flatMap(g => g.options.map(o => o.value));
 
   // Sync user data when modal opens or user changes
   useEffect(() => {
@@ -5373,29 +5405,53 @@ const OnboardingModal = ({ isVisible, onComplete, onSkip }) => {
 
                   <div className="form-group" style={{ marginBottom: '12px' }}>
                     <label className="form-label">Business Type</label>
-                    <select
-                      className="form-input"
-                      value={businessType}
-                      onChange={e => {
-                        setBusinessType(e.target.value);
-                        if (e.target.value !== 'Other') {
+                    <Select
+                      options={businessTypeOptions}
+                      value={
+                        businessType
+                          ? businessTypeOptions
+                              .flatMap(g => g.options)
+                              .find(o => o.value === businessType) || null
+                          : null
+                      }
+                      onChange={option => {
+                        const newValue = option?.value || '';
+                        setBusinessType(newValue);
+                        if (newValue !== 'Other') {
                           setCustomBusinessType('');
                         }
                       }}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <option value="">Select type...</option>
-                      {Object.entries(businessTypeGroups).map(([group, types]) => (
-                        <optgroup key={group} label={group}>
-                          {types.map(type => (
-                            <option key={type} value={type}>
-                              {type}
-                            </option>
-                          ))}
-                        </optgroup>
-                      ))}
-                      <option value="Other">Other</option>
-                    </select>
+                      placeholder="Search or select type..."
+                      isClearable
+                      isSearchable
+                      styles={{
+                        control: (base, state) => ({
+                          ...base,
+                          borderColor: state.isFocused ? 'var(--primary)' : 'var(--gray-200)',
+                          boxShadow: state.isFocused ? '0 0 0 2px rgba(99, 102, 241, 0.2)' : 'none',
+                          '&:hover': { borderColor: 'var(--primary)' },
+                          borderRadius: '8px',
+                          padding: '2px',
+                        }),
+                        option: (base, state) => ({
+                          ...base,
+                          backgroundColor: state.isSelected
+                            ? 'var(--primary)'
+                            : state.isFocused
+                              ? 'var(--gray-100)'
+                              : 'white',
+                          color: state.isSelected ? 'white' : 'var(--gray-900)',
+                          cursor: 'pointer',
+                        }),
+                        groupHeading: base => ({
+                          ...base,
+                          fontWeight: '600',
+                          color: 'var(--gray-700)',
+                          fontSize: '12px',
+                          textTransform: 'uppercase',
+                        }),
+                      }}
+                    />
                     {businessType === 'Other' && (
                       <input
                         type="text"
@@ -10919,30 +10975,61 @@ const SettingsPage = () => {
   const autoSaveTimeoutRef = useRef(null);
   const isInitialMount = useRef(true);
 
-  // Grouped business types for better UX - most common first
-  const businessTypeGroups = {
-    'Most Common': [
-      'Restaurant',
-      'Dental Practice',
-      'Medical Practice',
-      'Hair Salon / Barbershop',
-      'Auto Repair / Service',
-      'Real Estate',
-      'Home Services',
-    ],
-    'Food & Hospitality': ['Cafe / Coffee Shop', 'Bar / Nightclub', 'Hotel / Accommodation'],
-    'Health & Beauty': ['Spa / Wellness', 'Gym / Fitness Studio', 'Veterinary / Pet Services'],
-    Professional: [
-      'Professional Services',
-      'Financial Services',
-      'Retail Store',
-      'E-commerce',
-    ],
-    Lifestyle: ['Photography / Creative', 'Event Planning', 'Childcare / Education'],
-  };
+  // Grouped business types for react-select
+  const businessTypeOptions = [
+    {
+      label: 'Most Common',
+      options: [
+        { value: 'Restaurant', label: 'Restaurant' },
+        { value: 'Dental Practice', label: 'Dental Practice' },
+        { value: 'Medical Practice', label: 'Medical Practice' },
+        { value: 'Hair Salon / Barbershop', label: 'Hair Salon / Barbershop' },
+        { value: 'Auto Repair / Service', label: 'Auto Repair / Service' },
+        { value: 'Real Estate', label: 'Real Estate' },
+        { value: 'Home Services', label: 'Home Services' },
+      ],
+    },
+    {
+      label: 'Food & Hospitality',
+      options: [
+        { value: 'Cafe / Coffee Shop', label: 'Cafe / Coffee Shop' },
+        { value: 'Bar / Nightclub', label: 'Bar / Nightclub' },
+        { value: 'Hotel / Accommodation', label: 'Hotel / Accommodation' },
+      ],
+    },
+    {
+      label: 'Health & Beauty',
+      options: [
+        { value: 'Spa / Wellness', label: 'Spa / Wellness' },
+        { value: 'Gym / Fitness Studio', label: 'Gym / Fitness Studio' },
+        { value: 'Veterinary / Pet Services', label: 'Veterinary / Pet Services' },
+      ],
+    },
+    {
+      label: 'Professional',
+      options: [
+        { value: 'Professional Services', label: 'Professional Services' },
+        { value: 'Financial Services', label: 'Financial Services' },
+        { value: 'Retail Store', label: 'Retail Store' },
+        { value: 'E-commerce', label: 'E-commerce' },
+      ],
+    },
+    {
+      label: 'Lifestyle',
+      options: [
+        { value: 'Photography / Creative', label: 'Photography / Creative' },
+        { value: 'Event Planning', label: 'Event Planning' },
+        { value: 'Childcare / Education', label: 'Childcare / Education' },
+      ],
+    },
+    {
+      label: 'Other',
+      options: [{ value: 'Other', label: 'Other (Custom)' }],
+    },
+  ];
 
-  // Flat list for validation (includes all types plus Other)
-  const businessTypes = Object.values(businessTypeGroups).flat().concat(['Other']);
+  // Flat list for validation
+  const businessTypes = businessTypeOptions.flatMap(g => g.options.map(o => o.value));
   const [newKeyName, setNewKeyName] = useState('');
   const [generatedKey, setGeneratedKey] = useState(null);
   const [creatingKey, setCreatingKey] = useState(false);
@@ -11188,11 +11275,16 @@ const SettingsPage = () => {
 
           <div className="form-group">
             <label className="form-label">Business Type</label>
-            <select
-              className="form-select"
-              value={businessType}
-              onChange={e => {
-                const newType = e.target.value;
+            <Select
+              options={businessTypeOptions}
+              value={
+                businessType
+                  ? businessTypeOptions.flatMap(g => g.options).find(o => o.value === businessType) ||
+                    null
+                  : null
+              }
+              onChange={option => {
+                const newType = option?.value || '';
                 setBusinessType(newType);
                 // Cache in localStorage as draft
                 if (newType) {
@@ -11204,19 +11296,51 @@ const SettingsPage = () => {
                   setCustomBusinessType('');
                 }
               }}
-            >
-              <option value="">Select your business type</option>
-              {Object.entries(businessTypeGroups).map(([group, types]) => (
-                <optgroup key={group} label={group}>
-                  {types.map(type => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-              <option value="Other">Other</option>
-            </select>
+              placeholder="Search or select type..."
+              isClearable
+              isSearchable
+              styles={{
+                control: (base, state) => ({
+                  ...base,
+                  borderColor: state.isFocused ? 'var(--primary)' : 'var(--gray-200)',
+                  boxShadow: state.isFocused ? '0 0 0 2px rgba(99, 102, 241, 0.2)' : 'none',
+                  '&:hover': { borderColor: 'var(--primary)' },
+                  borderRadius: '8px',
+                  padding: '2px',
+                  backgroundColor: 'var(--bg-primary)',
+                }),
+                menu: base => ({
+                  ...base,
+                  backgroundColor: 'var(--bg-primary)',
+                  border: '1px solid var(--gray-200)',
+                }),
+                option: (base, state) => ({
+                  ...base,
+                  backgroundColor: state.isSelected
+                    ? 'var(--primary)'
+                    : state.isFocused
+                      ? 'var(--gray-100)'
+                      : 'var(--bg-primary)',
+                  color: state.isSelected ? 'white' : 'var(--text-primary)',
+                  cursor: 'pointer',
+                }),
+                singleValue: base => ({
+                  ...base,
+                  color: 'var(--text-primary)',
+                }),
+                input: base => ({
+                  ...base,
+                  color: 'var(--text-primary)',
+                }),
+                groupHeading: base => ({
+                  ...base,
+                  fontWeight: '600',
+                  color: 'var(--gray-500)',
+                  fontSize: '12px',
+                  textTransform: 'uppercase',
+                }),
+              }}
+            />
             {businessType === 'Other' && (
               <input
                 type="text"
