@@ -4633,7 +4633,7 @@ const MagicLoginPage = () => {
             localStorage.setItem('isAdminUser', 'true');
           }
           toast.success('Welcome! Try generating a response now.');
-          navigate('/generator'); // Send to generator for immediate value (was /dashboard)
+          navigate('/dashboard'); // Send to generator for immediate value (was /dashboard)
         })
         .catch(err => {
           console.error('Magic login error:', err);
@@ -4723,7 +4723,8 @@ const RegisterPage = () => {
     setLoading(true);
     try {
       await register(email, password, businessName, refParam);
-      toast.success('Account created! You have 20 free responses.');
+      toast.success('Account created! Try generating your first response now.');
+      // Send to generator for immediate value (not dashboard where they might get lost)
       navigate('/dashboard');
     } catch (error) {
       toast.error(error.response?.data?.error || 'Registration failed');
@@ -4737,7 +4738,8 @@ const RegisterPage = () => {
       setGoogleLoading(true);
       try {
         await loginWithGoogle(credential, refParam);
-        toast.success('Account created! You have 20 free responses.');
+        toast.success('Account created! Try generating your first response now.');
+        // Send to generator for immediate value (not dashboard where they might get lost)
         navigate('/dashboard');
       } catch (error) {
         toast.error(error.response?.data?.error || 'Google sign-up failed');
@@ -7040,6 +7042,47 @@ const DashboardPage = () => {
 
       {/* Email Verification Banner */}
       <EmailVerificationBanner />
+
+      {/* First Response Guidance Banner - shown when user has 0 responses */}
+      {isFirstResponse && !showOnboarding && (
+        <div
+          style={{
+            background: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)',
+            border: '1px solid #818CF8',
+            borderRadius: '12px',
+            padding: '20px 24px',
+            marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '16px',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <span style={{ fontSize: '32px' }}>👋</span>
+            <div>
+              <p style={{ margin: 0, fontWeight: '700', fontSize: '18px', color: '#3730A3' }}>
+                Welcome! Generate your first response
+              </p>
+              <p style={{ margin: '6px 0 0 0', fontSize: '14px', color: '#4F46E5' }}>
+                Paste any negative review below and see how AI crafts the perfect response.
+                You have 20 free responses to try!
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              // Scroll to generator form
+              document.querySelector('textarea')?.focus();
+            }}
+            className="btn btn-primary"
+            style={{ padding: '10px 20px', whiteSpace: 'nowrap' }}
+          >
+            Try it now →
+          </button>
+        </div>
+      )}
 
       {/* Dashboard Error Banner */}
       {dashboardError && (

@@ -1197,3 +1197,23 @@ if ($Action -eq "check-real-users") {
     }
     exit 0
 }
+
+# === LIKELY REAL USERS ===
+# Quick access for agents to see high-priority leads
+if ($Action -eq "likely-real") {
+    $metricsFile = "$PSScriptRoot\..\content\claude-progress\real-user-metrics.json"
+    if (Test-Path $metricsFile) {
+        $metrics = Get-Content $metricsFile | ConvertFrom-Json
+        Write-Host "`n=== LIKELY REAL USERS ===" -ForegroundColor Green
+        $metrics.registeredUsers.analysis | Where-Object { $_.verdict -eq "LIKELY_REAL" } | ForEach-Object {
+            Write-Host "  $($_.email)" -ForegroundColor Yellow
+            Write-Host "    Business: $($_.business)"
+            Write-Host "    Reason: $($_.reason)`n"
+        }
+        Write-Host "=== MAYBE REAL ===" -ForegroundColor Cyan
+        $metrics.registeredUsers.analysis | Where-Object { $_.verdict -eq "MAYBE_REAL" } | ForEach-Object {
+            Write-Host "  $($_.email)" -ForegroundColor White
+            Write-Host "    Business: $($_.business)`n"
+        }
+    }
+}

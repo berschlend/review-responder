@@ -18046,6 +18046,19 @@ app.get('/api/auth/magic-login/:token', async (req, res) => {
   try {
     const { token } = req.params;
 
+    // Bot Detection: Check User-Agent for common email security scanners
+    const userAgent = req.headers['user-agent'] || '';
+    const botPatterns = [
+      /barracuda/i, /proofpoint/i, /mimecast/i, /microsoft.*safelinks/i,
+      /symantec/i, /fortinet/i, /zscaler/i, /websense/i, /bluecoat/i,
+      /sonicwall/i, /mcafee/i, /trend\s?micro/i, /cisco/i, /sophos/i,
+      /fireeye/i, /palo\s?alto/i, /spamhaus/i, /messagelabs/i,
+      /cloudmark/i, /postini/i, /returnpath/i, /validity/i,
+      /ironport/i, /messaginglab/i, /mailscanner/i, /spamexperts/i,
+      /bot/i, /crawler/i, /spider/i, /scanner/i, /prefetch/i
+    ];
+    const isBot = botPatterns.some(pattern => pattern.test(userAgent));
+
     // Create magic_links table if not exists
     await dbQuery(`
       CREATE TABLE IF NOT EXISTS magic_links (
