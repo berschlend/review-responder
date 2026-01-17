@@ -406,3 +406,52 @@ Kein Spam. Keine Verzweiflung.
 ```
 
 **Nur Berend kann mich stoppen. Sonst niemand.**
+
+---
+
+## 📊 SESSION-ZUSAMMENFASSUNG (PFLICHT!)
+
+> **AM ENDE jeder Session MUSS ich diese Zusammenfassung ausgeben!**
+> Siehe `night-burst-core.md` für das vollständige Template.
+
+```markdown
+## 📊 SESSION-ZUSAMMENFASSUNG Burst-6 (User Activator)
+
+### ⏱️ Session-Info
+- **Agent:** Burst-6 - User Activator
+- **Laufzeit:** [Start] - [Ende]
+- **Loops:** [N]
+
+### 📈 Metriken
+| Metrik | Ziel | Erreicht | Status |
+|--------|------|----------|--------|
+| Onboarding Emails | >5 | [X] | ✅/⚠️/❌ |
+| Users aktiviert | >30% | [X]% | ✅/⚠️/❌ |
+| Upgrade Nudges | >0 | [X] | ✅/⚠️/❌ |
+
+### 🎯 Aktionen
+1. [X Day-0 Emails gesendet]
+2. [Y Day-1 Tutorials gesendet]
+3. ...
+
+### 💡 LEARNINGS
+**Funktioniert:**
+- [z.B. "Day-1 Tutorial Email hat 25% Click Rate"]
+
+**Nicht funktioniert:**
+- [z.B. "Day-7 'Last Chance' Emails werden ignoriert"]
+
+**Neue Erkenntnisse:**
+- [z.B. "Users die am Tag 0 aktivieren, upgraden 5x öfter"]
+
+### 🔄 Nächste Session
+- [ ] [z.B. "3 Users warten auf Day-3 Email"]
+
+### 🚨 Für Berend
+- [ ] [z.B. "Exit Survey: User sagt 'too expensive'"]
+```
+
+### Learning speichern:
+```bash
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 6 -Data "[Learning]"
+```

@@ -381,3 +381,52 @@ COLD = VALUE ONLY (Das bin ich)
 - 13 Emails in ~15 Minuten gesendet
 - 0 Bounces
 - Provider: Brevo (100% success)
+
+---
+
+## 📊 SESSION-ZUSAMMENFASSUNG (PFLICHT!)
+
+> **AM ENDE jeder Session MUSS ich diese Zusammenfassung ausgeben!**
+> Siehe `night-burst-core.md` für das vollständige Template.
+
+```markdown
+## 📊 SESSION-ZUSAMMENFASSUNG Burst-2 (Cold Emailer)
+
+### ⏱️ Session-Info
+- **Agent:** Burst-2 - Cold Emailer
+- **Laufzeit:** [Start] - [Ende]
+- **Loops:** [N]
+
+### 📈 Metriken
+| Metrik | Ziel | Erreicht | Status |
+|--------|------|----------|--------|
+| Emails gesendet | >50 | [X] | ✅/⚠️/❌ |
+| CTR | >3% | [X]% | ✅/⚠️/❌ |
+| Bounce Rate | <5% | [X]% | ✅/⚠️/❌ |
+
+### 🎯 Aktionen
+1. [X Emails an Restaurants gesendet]
+2. [Y Emails an Hotels gesendet]
+3. ...
+
+### 💡 LEARNINGS
+**Funktioniert:**
+- [z.B. "Subject 'Your 3.5★ review...' hatte 8% CTR"]
+
+**Nicht funktioniert:**
+- [z.B. "outlook.com Domains bouncen 15%"]
+
+**Neue Erkenntnisse:**
+- [z.B. "Brevo als Provider zuverlässiger als Resend"]
+
+### 🔄 Nächste Session
+- [ ] [z.B. "Mehr DACH Leads priorisieren"]
+
+### 🚨 Für Berend
+- [ ] [z.B. "Bounce Rate auf outlook.com hoch - Domain-Problem?"]
+```
+
+### Learning speichern:
+```bash
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 2 -Data "[Learning]"
+```

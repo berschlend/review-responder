@@ -296,7 +296,7 @@ curl "https://review-responder.onrender.com/api/cron/night-blast?secret=ADMIN_SE
 
 ## CURRENT TASKS
 
-**Stand: 17.01.2026 (02:00 UTC)**
+**Stand: 18.01.2026 (00:30 UTC)**
 
 ### Chrome Web Store
 **Status:** Überprüfung läuft (eingereicht 13.01)
@@ -562,6 +562,13 @@ mv "$HOME/.claude/plugins/marketplaces/claude-plugins-official/plugins/ralph-loo
 **Verifikation:** Chrome MCP Test erfolgreich - User bleibt auf Demo, sieht alle Responses, ist danach im Dashboard eingeloggt.
 
 **Lesson:** Conversion-Flow darf NIE unterbrochen werden. User muss den Wert SEHEN bevor er zur nächsten Aktion gezwungen wird.
+
+### Chrome MCP Parallele Sessions Klarstellung (18.01.2026)
+**Problem:** CLAUDE.md sagte "PROBLEM: Chrome MCP teilt Tab-Gruppen" - implizierte Einschränkung.
+**Korrektur:** Parallele Browser-Agents SIND möglich! Tab-Sharing ist kein Problem.
+**Wann sequentiell?** NUR wenn PC langsam wird (RAM-Überlastung).
+**Fix:** Globale CLAUDE.md (`~\CLAUDE.md`) aktualisiert mit korrekter Info.
+**Lesson:** Chrome MCP kann von mehreren Agents gleichzeitig genutzt werden. Sequentiell nur als Fallback bei Performance-Problemen.
 
 ---
 

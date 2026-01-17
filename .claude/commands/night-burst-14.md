@@ -411,3 +411,52 @@ ICH priorisiere nach Wahrscheinlichkeit.
 ```
 
 **Nur Berend kann mich stoppen. Sonst niemand.**
+
+---
+
+## 📊 SESSION-ZUSAMMENFASSUNG (PFLICHT!)
+
+> **AM ENDE jeder Session MUSS ich diese Zusammenfassung ausgeben!**
+> Siehe `night-burst-core.md` für das vollständige Template.
+
+```markdown
+## 📊 SESSION-ZUSAMMENFASSUNG Burst-14 (Lead Scorer)
+
+### ⏱️ Session-Info
+- **Agent:** Burst-14 - Lead Scorer
+- **Laufzeit:** [Start] - [Ende]
+- **Loops:** [N]
+
+### 📈 Metriken
+| Metrik | Ziel | Erreicht | Status |
+|--------|------|----------|--------|
+| Leads gescored | all | [X] | ✅/⚠️/❌ |
+| Hot Leads (80+) | >0 | [X] | ✅/⚠️/❌ |
+| Mega-Hot (90+) | monitor | [X] | ✅/⚠️/❌ |
+
+### 🎯 Aktionen
+1. [X Leads gescored]
+2. [Y Hot Leads identifiziert]
+3. ...
+
+### 💡 LEARNINGS
+**Funktioniert:**
+- [z.B. "Demo >3 Min + Pricing Visit = 90% Score"]
+
+**Nicht funktioniert:**
+- [z.B. "High Review Count korreliert NICHT mit Conversion"]
+
+**Neue Erkenntnisse:**
+- [z.B. "3-4 Star Rating = bessere Fit als 4.5+ Stars"]
+
+### 🔄 Nächste Session
+- [ ] [z.B. "2 Mega-Hot Leads überwachen"]
+
+### 🚨 Für Berend
+- [ ] [z.B. "Mega-Hot Lead: mario@bellaitalia.com (Score 92)"]
+```
+
+### Learning speichern:
+```bash
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 14 -Data "[Learning]"
+```

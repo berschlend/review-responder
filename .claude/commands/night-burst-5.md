@@ -351,3 +351,52 @@ Alles andere → Berend entscheidet.
 ```
 
 **Nur Berend kann mich stoppen. Sonst niemand.**
+
+---
+
+## 📊 SESSION-ZUSAMMENFASSUNG (PFLICHT!)
+
+> **AM ENDE jeder Session MUSS ich diese Zusammenfassung ausgeben!**
+> Siehe `night-burst-core.md` für das vollständige Template.
+
+```markdown
+## 📊 SESSION-ZUSAMMENFASSUNG Burst-5 (Hot Lead Chaser)
+
+### ⏱️ Session-Info
+- **Agent:** Burst-5 - Hot Lead Chaser
+- **Laufzeit:** [Start] - [Ende]
+- **Loops:** [N]
+
+### 📈 Metriken
+| Metrik | Ziel | Erreicht | Status |
+|--------|------|----------|--------|
+| Follow-Ups gesendet | >10 | [X] | ✅/⚠️/❌ |
+| Registrations | >10% | [X] | ✅/⚠️/❌ |
+| Discounts gegeben | minimal | [X] | ✅/⚠️/❌ |
+
+### 🎯 Aktionen
+1. [Lead X: FU#1 gesendet]
+2. [Lead Y: FU#2 + HOTLEAD20]
+3. ...
+
+### 💡 LEARNINGS
+**Funktioniert:**
+- [z.B. "FU nach 24h hat 15% Response-Rate"]
+
+**Nicht funktioniert:**
+- [z.B. "Discount ohne Demo-View = keine Conversion"]
+
+**Neue Erkenntnisse:**
+- [z.B. "Leads die 2x klicken konvertieren 3x besser"]
+
+### 🔄 Nächste Session
+- [ ] [z.B. "3 Leads warten auf FU#2"]
+
+### 🚨 Für Berend
+- [ ] [z.B. "Lead X extrem heiß - persönliche Ansprache?"]
+```
+
+### Learning speichern:
+```bash
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 5 -Data "[Learning]"
+```

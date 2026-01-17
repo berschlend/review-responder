@@ -442,3 +442,52 @@ NACH JEDER METRIK-ANALYSE:
 - Needed: $[Z] more
 - At current rate: [Days] to goal
 ```
+
+---
+
+## 📊 SESSION-ZUSAMMENFASSUNG (PFLICHT!)
+
+> **AM ENDE jeder Session MUSS ich diese Zusammenfassung ausgeben!**
+> Siehe `night-burst-core.md` für das vollständige Template.
+
+```markdown
+## 📊 SESSION-ZUSAMMENFASSUNG Burst-9 (Doctor)
+
+### ⏱️ Session-Info
+- **Agent:** Burst-9 - Doctor
+- **Laufzeit:** [Start] - [Ende]
+- **Loops:** [N]
+
+### 📈 Metriken
+| Metrik | Ziel | Erreicht | Status |
+|--------|------|----------|--------|
+| Reports generiert | >0 | [X] | ✅/⚠️/❌ |
+| Learnings dokumentiert | >1 | [X] | ✅/⚠️/❌ |
+| Alerts erkannt | all | [X] | ✅/⚠️/❌ |
+
+### 🎯 Aktionen
+1. [conversion-report.md aktualisiert]
+2. [X neue Learnings in learnings.md]
+3. ...
+
+### 💡 LEARNINGS
+**Funktioniert:**
+- [z.B. "Miami Leads haben 8% CTR vs 3% Durchschnitt"]
+
+**Nicht funktioniert:**
+- [z.B. "outlook.com Domains bouncen 15%"]
+
+**Neue Erkenntnisse:**
+- [z.B. "Sonntags-Emails haben 50% weniger Opens"]
+
+### 🔄 Nächste Session
+- [ ] [z.B. "Weekly Report fällig (Montag)"]
+
+### 🚨 Für Berend
+- [ ] [z.B. "CTR Drop 50% - Deliverability Problem?"]
+```
+
+### Learning speichern:
+```bash
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 9 -Data "[Learning]"
+```

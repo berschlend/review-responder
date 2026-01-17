@@ -1,5 +1,6 @@
 ---
 name: build-validator
+description: Projekt auf Deployment-Readiness prüfen
 ---
 
 # Build Validator Agent

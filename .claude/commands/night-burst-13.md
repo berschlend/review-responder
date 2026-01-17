@@ -668,3 +668,52 @@ und gebe das PASSENDE Offer.
 
 *Diese Datei wird von Burst-13 alle 6 Stunden aktualisiert.*
 ```
+
+---
+
+## 📊 SESSION-ZUSAMMENFASSUNG (PFLICHT!)
+
+> **AM ENDE jeder Session MUSS ich diese Zusammenfassung ausgeben!**
+> Siehe `night-burst-core.md` für das vollständige Template.
+
+```markdown
+## 📊 SESSION-ZUSAMMENFASSUNG Burst-13 (Churn Prevention)
+
+### ⏱️ Session-Info
+- **Agent:** Burst-13 - Churn Prevention
+- **Laufzeit:** [Start] - [Ende]
+- **Loops:** [N]
+
+### 📈 Metriken
+| Metrik | Ziel | Erreicht | Status |
+|--------|------|----------|--------|
+| At-Risk Users identifiziert | all | [X] | ✅/⚠️/❌ |
+| Win-Back Emails gesendet | >0 | [X] | ✅/⚠️/❌ |
+| Reactivations | >0 | [X] | ✅/⚠️/❌ |
+
+### 🎯 Aktionen
+1. [X At-Risk Users gefunden]
+2. [Y Win-Back Sequences gestartet]
+3. ...
+
+### 💡 LEARNINGS
+**Funktioniert:**
+- [z.B. "Price Sensitive Segment: 40% Discount hat 25% Win-Back Rate"]
+
+**Nicht funktioniert:**
+- [z.B. "Just Testing Segment reagiert kaum auf Emails"]
+
+**Neue Erkenntnisse:**
+- [z.B. "Exit Survey 'too_expensive' korreliert mit Micro-Pricing Success"]
+
+### 🔄 Nächste Session
+- [ ] [z.B. "5 Users in Win-Back Sequence Day 3"]
+
+### 🚨 Für Berend
+- [ ] [z.B. "High-Value Pro User churning - Personal Outreach?"]
+```
+
+### Learning speichern:
+```bash
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 13 -Data "[Learning]"
+```

@@ -470,3 +470,52 @@ ICH sage: "Reg→Active ist 20%. Das blockt Revenue.
 ```
 
 **Nur Berend kann mich stoppen. Sonst niemand.**
+
+---
+
+## 📊 SESSION-ZUSAMMENFASSUNG (PFLICHT!)
+
+> **AM ENDE jeder Session MUSS ich diese Zusammenfassung ausgeben!**
+> Siehe `night-burst-core.md` für das vollständige Template.
+
+```markdown
+## 📊 SESSION-ZUSAMMENFASSUNG Burst-11 (Bottleneck Analyzer)
+
+### ⏱️ Session-Info
+- **Agent:** Burst-11 - Bottleneck Analyzer
+- **Laufzeit:** [Start] - [Ende]
+- **Loops:** [N]
+
+### 📈 Metriken
+| Metrik | Ziel | Erreicht | Status |
+|--------|------|----------|--------|
+| Analysen durchgeführt | >0 | [X] | ✅/⚠️/❌ |
+| Bottleneck identifiziert | yes | [X] | ✅/⚠️/❌ |
+| Empfehlungen geschrieben | >0 | [X] | ✅/⚠️/❌ |
+
+### 🎯 Aktionen
+1. [bottleneck-report.md aktualisiert]
+2. [Bottleneck: Reg→Active bei 20%]
+3. ...
+
+### 💡 LEARNINGS
+**Funktioniert:**
+- [z.B. "Demo→Reg ist stabil bei 45%"]
+
+**Nicht funktioniert:**
+- [z.B. "Reg→Active blockiert gesamten Funnel"]
+
+**Neue Erkenntnisse:**
+- [z.B. "Magic Link Users haben 0% Activation vs 20% normal"]
+
+### 🔄 Nächste Session
+- [ ] [z.B. "Focus auf Reg→Active Fix monitoren"]
+
+### 🚨 Für Berend
+- [ ] [z.B. "0% Conversion bei Active→Paying - Technical Issue?"]
+```
+
+### Learning speichern:
+```bash
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 11 -Data "[Learning]"
+```

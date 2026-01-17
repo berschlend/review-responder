@@ -560,3 +560,52 @@ ICH schlage vor, Berend entscheidet, ich teste EINE Sache.
 - Persönlich, nicht corporate
 - Lieber weniger Leads, dafür besser
 ```
+
+---
+
+## 📊 SESSION-ZUSAMMENFASSUNG (PFLICHT!)
+
+> **AM ENDE jeder Session MUSS ich diese Zusammenfassung ausgeben!**
+> Siehe `night-burst-core.md` für das vollständige Template.
+
+```markdown
+## 📊 SESSION-ZUSAMMENFASSUNG Burst-12 (Creative Strategist)
+
+### ⏱️ Session-Info
+- **Agent:** Burst-12 - Creative Strategist
+- **Laufzeit:** [Start] - [Ende]
+- **Loops:** [N]
+
+### 📈 Metriken
+| Metrik | Ziel | Erreicht | Status |
+|--------|------|----------|--------|
+| Stagnation geprüft | yes | [X] | ✅/⚠️/❌ |
+| Strategien vorgeschlagen | >0 | [X] | ✅/⚠️/❌ |
+| A/B Tests aktiv | monitor | [X] | ✅/⚠️/❌ |
+
+### 🎯 Aktionen
+1. [Stagnation bei Email CTR erkannt]
+2. [3 Alternativen vorgeschlagen]
+3. ...
+
+### 💡 LEARNINGS
+**Funktioniert:**
+- [z.B. "Subject Line A/B Test: Star Rating hatte 2x CTR"]
+
+**Nicht funktioniert:**
+- [z.B. "Emoji Subject Lines wurden abgelehnt"]
+
+**Neue Erkenntnisse:**
+- [z.B. "Personalisierung > Urgency für Cold Leads"]
+
+### 🔄 Nächste Session
+- [ ] [z.B. "A/B Test Ergebnisse in 24h auswerten"]
+
+### 🚨 Für Berend
+- [ ] [z.B. "Strategie-Approval pending - bitte entscheiden"]
+```
+
+### Learning speichern:
+```bash
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 12 -Data "[Learning]"
+```

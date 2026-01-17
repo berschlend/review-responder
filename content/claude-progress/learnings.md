@@ -10,6 +10,7 @@
 
 | Rule | Warum | Gelernt am |
 |------|-------|------------|
+| **QUALIFY BEFORE OUTREACH!** | 83 Clicks → 0 Conversions wegen falscher Leads | 17.01.2026 |
 | **BACKEND WECKEN vor API-Calls!** | Render schläft, 30-60s Wake-Up nötig | 16.01.2026 |
 | KEIN Discount in Cold Emails | Devalues Product, Claudius-Fehler | Setup |
 | Max 30% Discount | LTV > CAC muss gelten | Setup |
@@ -19,6 +20,48 @@
 | Star Rating in Subject Line | +100% CTR vs ohne | 14.01.2026 |
 | Magic Links für Hot Leads | 10 Registrierungen in 1 Nacht | 15.01.2026 |
 | Cache prüfen vor Outscraper | 189 Entries = 0 API Calls | 15.01.2026 |
+| **SKIP Enterprise Leads** | Hilton/Marriott kaufen nicht via Self-Service | 17.01.2026 |
+| **info@ = LOW Priority** | Support-Box, nicht Entscheider | 17.01.2026 |
+| **SMB Sweet Spot: 50-500 Reviews** | Echte Owner erreichbar | 17.01.2026 |
+
+---
+
+## 🧠 FIRST PRINCIPLES ANALYSE (17.01.2026)
+
+> **Problem analysiert:** 83 Clicks, 81 Follow-Ups → 0 Conversions
+
+### Widerlegte Annahmen:
+
+| Annahme | Realitaet | Daten |
+|---------|-----------|-------|
+| "Mehr Emails = mehr Conversions" | FALSCH | 81 Follow-Ups → 0 Conversions |
+| "Clicker sind warm" | FALSCH | Click = Neugier, nicht Kaufabsicht |
+| "Demo-Link reicht" | FALSCH | 83 sahen Demo-Link, 0 buchten |
+| "info@ erreicht Entscheider" | FALSCH | info@ = Support-Box |
+| "Große Hotels sind gute Leads" | FALSCH | Enterprise braucht Enterprise Sales |
+
+### Neue Strategie (CONVERSION > VOLUME):
+
+```
+ALT:  Alle Leads → Bulk Email → Hope
+NEU:  Score → Qualify → Target HIGH → Personalize → Convert
+
+Lead Scoring:
++30  Reviews 50-500 (Sweet Spot)
++20  Persoenliche Email (nicht info@)
++15  Restaurant/Hotel/Salon
+-30  Reviews >5000 (Enterprise)
+-20  info@/hello@/contact@
+-15  Kette/Franchise
+```
+
+### Sweet Spot Leads (70+ Score):
+
+- Einzelnes Restaurant mit 100-300 Reviews
+- Persoenliche Email (name@restaurant.com)
+- Deutsche/CH/AT Region
+- Website vorhanden
+- NICHT: Hilton, Marriott, Accor, etc.
 
 ---
 
@@ -640,4 +683,20 @@ User klicken Magic Link → werden registriert → nutzen Produkt NIE → erreic
   - **Uerige Brauerei** (500 reviews) - Famous Düsseldorf brewery
 - **Status:** All 49 new leads with email exhausted. Need Burst-1 for email enrichment or Night-Blast for new leads.
 - **Learning:** Hotel chains (Marriott, Hilton, Austria Trend) are high-value targets - multiple properties = enterprise potential
+
+
+### [2026-01-17 00:38] Burst-9
+- CTR Recovery 17.01: 3.9% auf 4.9% (+26%). Diversifizierung in Legal, Medical, Automotive funktioniert. Weekend-Effekt vorbei. Einziger Blocker: Click-to-Conversion (82 Clicks, 0 Conversions).
+
+
+### [2026-01-17 00:52] Burst-4
+- Loop 6: All 82 hot leads have demos. System at saturation - new demos only when new clicks arrive. 7 new demos this session.
+
+
+### [2026-01-17 01:05] Burst-4
+- 17.01 17:35 UTC: Demo-System at SATURATION. 1176 demos, all 82 hot leads covered. 17 new clicks TODAY (17.01) - strong engagement recovery. Key insight: Leads without demo_url in DB still get demos via LinkedIn endpoint. Bottleneck shifted from Demo Gen to Click-to-Conversion (83 clicks, 0 paying).
+
+
+### [2026-01-17 01:06] Burst-5
+- FU#2 ohne Discount gesendet wenn keine Demo-View Daten - Claudius Guard konform
 

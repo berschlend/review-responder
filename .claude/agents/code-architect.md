@@ -1,5 +1,6 @@
 ---
 name: code-architect
+description: Architektur reviewen und Verbesserungen vorschlagen
 ---
 
 # Code Architect Agent

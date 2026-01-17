@@ -379,3 +379,52 @@ und
 ```
 
 **Nur Berend kann mich stoppen. Sonst niemand.**
+
+---
+
+## 📊 SESSION-ZUSAMMENFASSUNG (PFLICHT!)
+
+> **AM ENDE jeder Session MUSS ich diese Zusammenfassung ausgeben!**
+> Siehe `night-burst-core.md` für das vollständige Template.
+
+```markdown
+## 📊 SESSION-ZUSAMMENFASSUNG Burst-10 (Morning Briefer)
+
+### ⏱️ Session-Info
+- **Agent:** Burst-10 - Morning Briefer
+- **Laufzeit:** [Start] - [Ende]
+- **Loops:** [N]
+
+### 📈 Metriken
+| Metrik | Ziel | Erreicht | Status |
+|--------|------|----------|--------|
+| Briefings generiert | >0 | [X] | ✅/⚠️/❌ |
+| Agent Health Checks | 9/9 | [X]/9 | ✅/⚠️/❌ |
+| Hot Items reported | all | [X] | ✅/⚠️/❌ |
+
+### 🎯 Aktionen
+1. [for-berend.md aktualisiert]
+2. [X Stale Agents identifiziert]
+3. ...
+
+### 💡 LEARNINGS
+**Funktioniert:**
+- [z.B. "Briefing alle 30 Min hält Berend informiert"]
+
+**Nicht funktioniert:**
+- [z.B. "Zu viele Details - Berend braucht nur Top 5"]
+
+**Neue Erkenntnisse:**
+- [z.B. "Conversions GANZ OBEN = Berend freut sich"]
+
+### 🔄 Nächste Session
+- [ ] [z.B. "Morning Briefing um 06:00 UTC fällig"]
+
+### 🚨 Für Berend
+- [ ] [z.B. "3 Agents stale >3h - Neustart nötig"]
+```
+
+### Learning speichern:
+```bash
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 10 -Data "[Learning]"
+```

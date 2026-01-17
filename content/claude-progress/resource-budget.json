@@ -1,48 +1,48 @@
-{
-  "daily_limits": {
-    "resend_emails": {
-      "used": 100,
-      "limit": 100,
-      "reset_at": "2026-01-17T00:00:00Z"
-    },
-    "serpapi_calls": {
-      "used": 0,
-      "limit": 100,
-      "reset_at": "2026-01-17T00:00:00Z"
-    },
-    "openai_tokens": {
-      "used": 0,
-      "limit": 1000000,
-      "reset_at": "2026-01-17T00:00:00Z"
-    },
-    "outscraper_calls": {
-      "used": 0,
-      "limit": 500,
-      "reset_at": "2026-01-17T00:00:00Z"
-    },
-    "anthropic_tokens": {
-      "used": 0,
-      "limit": 5000000,
-      "reset_at": "2026-01-17T00:00:00Z"
-    }
-  },
-  "reservations": {
-    "burst-1": {
-      "serpapi": 30,
-      "outscraper": 100
-    },
-    "burst-2": {
-      "resend": 50
-    },
-    "burst-4": {
-      "openai": 200000
-    },
-    "burst-5": {
-      "resend": 20
-    },
-    "burst-13": {
-      "resend": 20
-    }
-  },
-  "last_updated": "2026-01-16T23:23:00Z"
+﻿{
+    "reservations":  {
+                         "burst-2":  {
+                                         "resend":  50
+                                     },
+                         "burst-13":  {
+                                          "resend":  20
+                                      },
+                         "burst-5":  {
+                                         "resend":  20
+                                     },
+                         "burst-4":  {
+                                         "openai":  200000
+                                     },
+                         "burst-1":  {
+                                         "serpapi":  30,
+                                         "outscraper":  100
+                                     }
+                     },
+    "daily_limits":  {
+                         "serpapi_calls":  {
+                                               "used":  0,
+                                               "limit":  100,
+                                               "reset_at":  "2026-01-18T00:00:00Z"
+                                           },
+                         "openai_tokens":  {
+                                               "used":  0,
+                                               "limit":  1000000,
+                                               "reset_at":  "2026-01-18T00:00:00Z"
+                                           },
+                         "outscraper_calls":  {
+                                                  "used":  0,
+                                                  "limit":  500,
+                                                  "reset_at":  "2026-01-18T00:00:00Z"
+                                              },
+                         "anthropic_tokens":  {
+                                                  "used":  0,
+                                                  "limit":  5000000,
+                                                  "reset_at":  "2026-01-18T00:00:00Z"
+                                              },
+                         "resend_emails":  {
+                                               "used":  0,
+                                               "limit":  100,
+                                               "reset_at":  "2026-01-18T00:00:00Z"
+                                           }
+                     },
+    "last_updated":  "2026-01-17T02:30:19Z"
 }

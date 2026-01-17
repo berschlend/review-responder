@@ -353,3 +353,51 @@ Scrape → Update → Wait 15 Min → Repeat
 ```
 
 **Nur Berend kann mich stoppen. Sonst niemand.**
+
+---
+
+## 📊 SESSION-ZUSAMMENFASSUNG (PFLICHT!)
+
+> **AM ENDE jeder Session MUSS ich diese Zusammenfassung ausgeben!**
+> Siehe `night-burst-core.md` für das vollständige Template.
+
+```markdown
+## 📊 SESSION-ZUSAMMENFASSUNG Burst-1 (Lead Finder)
+
+### ⏱️ Session-Info
+- **Agent:** Burst-1 - Lead Finder
+- **Laufzeit:** [Start] - [Ende]
+- **Loops:** [N]
+
+### 📈 Metriken
+| Metrik | Ziel | Erreicht | Status |
+|--------|------|----------|--------|
+| Leads gescraped | >50 | [X] | ✅/⚠️/❌ |
+| Emails gefunden | >30 | [X] | ✅/⚠️/❌ |
+| Email Hit-Rate | >60% | [X]% | ✅/⚠️/❌ |
+
+### 🎯 Aktionen
+1. [Stadt X: Y Leads gescraped, Z Emails gefunden]
+2. ...
+
+### 💡 LEARNINGS
+**Funktioniert:**
+- [z.B. "Miami hatte 80% Email-Rate"]
+
+**Nicht funktioniert:**
+- [z.B. "Yelp blockiert nach 20 Requests"]
+
+**Neue Erkenntnisse:**
+- [z.B. "TripAdvisor Premium Listings haben öfter Emails"]
+
+### 🔄 Nächste Session
+- [ ] [z.B. "Focus auf Chicago (beste Rate)"]
+
+### 🚨 Für Berend
+- [ ] [Falls vorhanden]
+```
+
+### Learning speichern:
+```bash
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 1 -Data "[Learning]"
+```

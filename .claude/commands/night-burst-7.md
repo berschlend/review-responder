@@ -586,3 +586,52 @@ ALLE 4 STUNDEN:
 
 □ Next Session Fokus: [Was mache ich anders?]
 ```
+
+---
+
+## 📊 SESSION-ZUSAMMENFASSUNG (PFLICHT!)
+
+> **AM ENDE jeder Session MUSS ich diese Zusammenfassung ausgeben!**
+> Siehe `night-burst-core.md` für das vollständige Template.
+
+```markdown
+## 📊 SESSION-ZUSAMMENFASSUNG Burst-7 (Payment Converter)
+
+### ⏱️ Session-Info
+- **Agent:** Burst-7 - Payment Converter
+- **Laufzeit:** [Start] - [Ende]
+- **Loops:** [N]
+
+### 📈 Metriken
+| Metrik | Ziel | Erreicht | Status |
+|--------|------|----------|--------|
+| Nudges gesendet | >5 | [X] | ✅/⚠️/❌ |
+| Conversions | >0 | [X] | ✅/⚠️/❌ |
+| Revenue | $0+ | $[X] | ✅/⚠️/❌ |
+
+### 🎯 Aktionen
+1. [User X: Nudge gesendet, kein Discount]
+2. [User Y: ALMOST20 gesendet, konvertiert!]
+3. ...
+
+### 💡 LEARNINGS
+**Funktioniert:**
+- [z.B. "18+ Responses mit 20% Discount = 40% Conversion"]
+
+**Nicht funktioniert:**
+- [z.B. "User unter 15 Responses reagieren nicht auf Nudges"]
+
+**Neue Erkenntnisse:**
+- [z.B. "Micro-Pricing ($5/10) wird von 60% angenommen"]
+
+### 🔄 Nächste Session
+- [ ] [z.B. "3 Users bei 19 Responses - ready für ALMOST20"]
+
+### 🚨 Für Berend
+- [ ] [z.B. "Hot Lead mit 22 Responses will 50% - Custom Deal?"]
+```
+
+### Learning speichern:
+```bash
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 7 -Data "[Learning]"
+```

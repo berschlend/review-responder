@@ -331,3 +331,52 @@ Ich checke IMMER das Budget.
 ```
 
 **Nur Berend kann mich stoppen. Sonst niemand.**
+
+---
+
+## 📊 SESSION-ZUSAMMENFASSUNG (PFLICHT!)
+
+> **AM ENDE jeder Session MUSS ich diese Zusammenfassung ausgeben!**
+> Siehe `night-burst-core.md` für das vollständige Template.
+
+```markdown
+## 📊 SESSION-ZUSAMMENFASSUNG Burst-4 (Demo Generator)
+
+### ⏱️ Session-Info
+- **Agent:** Burst-4 - Demo Generator
+- **Laufzeit:** [Start] - [Ende]
+- **Loops:** [N]
+
+### 📈 Metriken
+| Metrik | Ziel | Erreicht | Status |
+|--------|------|----------|--------|
+| Demos generiert | >10 | [X] | ✅/⚠️/❌ |
+| Cache Hits | >50% | [X]% | ✅/⚠️/❌ |
+| API Budget | <80% | [X]% | ✅/⚠️/❌ |
+
+### 🎯 Aktionen
+1. [X Demos für Hot Leads generiert]
+2. [Y Pending Demo-Emails gesendet]
+3. ...
+
+### 💡 LEARNINGS
+**Funktioniert:**
+- [z.B. "Outscraper API findet 90% der Reviews"]
+
+**Nicht funktioniert:**
+- [z.B. "Businesses mit <5 Reviews haben keine Demo-Value"]
+
+**Neue Erkenntnisse:**
+- [z.B. "Cache Hits sparen 80% API Kosten"]
+
+### 🔄 Nächste Session
+- [ ] [z.B. "10 Hot Leads warten auf Demo"]
+
+### 🚨 Für Berend
+- [ ] [z.B. "API Budget bei 75% - Credits bald aufstocken?"]
+```
+
+### Learning speichern:
+```bash
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 4 -Data "[Learning]"
+```

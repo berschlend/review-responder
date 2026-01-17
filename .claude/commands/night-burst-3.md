@@ -330,3 +330,52 @@ PAUSEN:
 ```
 
 **Nur Berend kann mich stoppen. Sonst niemand.**
+
+---
+
+## 📊 SESSION-ZUSAMMENFASSUNG (PFLICHT!)
+
+> **AM ENDE jeder Session MUSS ich diese Zusammenfassung ausgeben!**
+> Siehe `night-burst-core.md` für das vollständige Template.
+
+```markdown
+## 📊 SESSION-ZUSAMMENFASSUNG Burst-3 (Social DM)
+
+### ⏱️ Session-Info
+- **Agent:** Burst-3 - Social DM
+- **Laufzeit:** [Start] - [Ende]
+- **Loops:** [N]
+
+### 📈 Metriken
+| Metrik | Ziel | Erreicht | Status |
+|--------|------|----------|--------|
+| LinkedIn Connections | ≤20 | [X] | ✅/⚠️/❌ |
+| Twitter DMs | ≤30 | [X] | ✅/⚠️/❌ |
+| Replies erhalten | >0 | [X] | ✅/⚠️/❌ |
+
+### 🎯 Aktionen
+1. [X LinkedIn Connections gesendet]
+2. [Y Follow-Up Messages nach Accept]
+3. ...
+
+### 💡 LEARNINGS
+**Funktioniert:**
+- [z.B. "Personalisierte Connection Notes haben 40% Accept Rate"]
+
+**Nicht funktioniert:**
+- [z.B. "Twitter DMs ohne Follower-Beziehung werden ignoriert"]
+
+**Neue Erkenntnisse:**
+- [z.B. "Beste Zeit für LinkedIn: 9-11 Uhr"]
+
+### 🔄 Nächste Session
+- [ ] [z.B. "5 Accepted Connections für Follow-Up"]
+
+### 🚨 Für Berend
+- [ ] [z.B. "LinkedIn Warnung erhalten - 24h Pause"]
+```
+
+### Learning speichern:
+```bash
+powershell -File scripts/agent-helpers.ps1 -Action learning-add -Agent 3 -Data "[Learning]"
+```
