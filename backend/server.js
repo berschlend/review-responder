@@ -4226,7 +4226,14 @@ ${contextUser.business_context ? `\n<business_details>\n${contextUser.business_c
 ${contextUser.response_style ? `\n<custom_style>\n${contextUser.response_style}\n</custom_style>` : ''}
 </context>
 
-${
+${ratingStrategy ? `<rating_strategy rating="${reviewRating}">
+<goal>${ratingStrategy.goal}</goal>
+<approach>${ratingStrategy.approach}</approach>
+<length>${ratingStrategy.length}</length>
+<avoid>${ratingStrategy.avoid}</avoid>
+</rating_strategy>
+
+` : ''}${
   templateContent
     ? `<template_reference>
 Use this as a style guide. Match its tone and structure:
@@ -4243,7 +4250,7 @@ ${fewShotExamplesXMLContent}
 ${languageInstruction}
 </language_instruction>`;
 
-    const userMessage = `${reviewRating ? `[${reviewRating} stars] ` : ''}${reviewText}${ratingStrategy ? `\n\n(${ratingStrategy.length})` : ''}${customInstructions ? `\n\nIMPORTANT - Follow these instructions: ${customInstructions}` : ''}`;
+    const userMessage = `${reviewRating ? `[${reviewRating} stars] ` : ''}${reviewText}${ratingStrategy ? `\n\n(${ratingStrategy.length})` : ''}${customInstructions ? `\n\n<custom_instructions priority="high">\n${customInstructions}\n</custom_instructions>` : ''}`;
 
     // Generate response using selected AI model
     let generatedResponse;
@@ -7611,14 +7618,13 @@ NOT: "Thank you for taking the time to share your experience. We value your feed
 YES: "Fair point about the music volume. We've heard that before."
 </mental_exercise>
 
-<this_review>
-Rating: ${reviewRating} stars
-Reviewer: ${firstName}
-Goal: ${ratingStrategy.goal}
-Approach: ${ratingStrategy.approach}
-Tone: ${ratingStrategy.tone}
-Length: ${ratingStrategy.length}
-Avoid: ${ratingStrategy.avoid}
+<this_review rating="${reviewRating}">
+<reviewer name="${firstName}">${reviewerName}</reviewer>
+<goal>${ratingStrategy.goal}</goal>
+<approach>${ratingStrategy.approach}</approach>
+<tone>${ratingStrategy.tone}</tone>
+<length>${ratingStrategy.length}</length>
+<avoid>${ratingStrategy.avoid}</avoid>
 </this_review>
 
 <business_info>
@@ -14014,6 +14020,13 @@ app.get('/api/admin/sales-dashboard', authenticateAdmin, async (req, res) => {
                 100
               ).toFixed(1)
             : 0,
+      },
+      // Echte User = haben mindestens 1x generiert (egal wo!)
+      realUsers: {
+        total: parseInt(realUserMetrics.real_users) || 0,
+        viaGenerator: parseInt(realUserMetrics.via_generator) || 0,
+        viaDemo: parseInt(realUserMetrics.via_demo) || 0,
+        inactive: parseInt(realUserMetrics.inactive_users) || 0,
       },
       activity: {
         activeUsers7d: parseInt(activityMetrics.active_7d) || 0,

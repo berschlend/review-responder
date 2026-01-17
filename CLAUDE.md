@@ -54,7 +54,7 @@ CLAUDE.md lesen -> Task -> Testen -> Git push -> CLAUDE.md updaten
 
 ---
 
-## TOP 5 DON'T DO THIS
+## TOP 6 DON'T DO THIS
 
 | # | Regel | Warum |
 |---|-------|-------|
@@ -63,6 +63,7 @@ CLAUDE.md lesen -> Task -> Testen -> Git push -> CLAUDE.md updaten
 | 3 | Test-Accounts: `?exclude_test=true` | Metriken verfaelscht |
 | 4 | Bei weisser Seite: Browser Console | React-Errors dort sichtbar |
 | 5 | Discount vor Nutzung implementieren | Stripe-Handler pruefen |
+| 6 | **ECHTER USER = 1+ Response generiert** | Registration != Activation |
 
 ---
 
