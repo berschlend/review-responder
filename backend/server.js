@@ -14518,6 +14518,125 @@ app.get('/api/admin/clickers', async (req, res) => {
   }
 });
 
+// GET /api/admin/click-analysis - Bot vs Real Click Analysis
+// Added 17.01.2026: Analyze clicks to distinguish bots from real humans
+app.get('/api/admin/click-analysis', async (req, res) => {
+  try {
+    const authKey = req.headers['x-admin-key'] || req.query.key;
+    if (!safeCompare(authKey, process.env.ADMIN_SECRET)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Get ALL clicks with user agent and IP
+    const allClicks = await dbAll(`
+      SELECT
+        email,
+        campaign,
+        clicked_url,
+        ip_address,
+        user_agent,
+        clicked_at
+      FROM outreach_clicks
+      ORDER BY clicked_at DESC
+    `);
+
+    // Bot detection patterns
+    const botPatterns = [
+      /safelinks\.protection\.outlook/i,
+      /microsoft office/i,
+      /outlook/i,
+      /googlebot/i,
+      /bingbot/i,
+      /slackbot/i,
+      /linkedinbot/i,
+      /twitterbot/i,
+      /facebookexternalhit/i,
+      /Wget/i,
+      /curl/i,
+      /python-requests/i,
+      /java\/|apache-httpclient/i,
+      /Go-http-client/i,
+    ];
+
+    // Analyze each click
+    const analyzed = allClicks.map(click => {
+      const ua = click.user_agent || '';
+
+      // Check for bot patterns
+      const isBot = botPatterns.some(pattern => pattern.test(ua));
+
+      // Check for suspiciously short/empty user agent
+      const suspiciousUA = !ua || ua.length < 20;
+
+      // Check for corporate email scanner patterns in URL
+      const hasTrackerParams = click.clicked_url?.includes('safelinks') ||
+                               click.clicked_url?.includes('urldefense');
+
+      // Classify
+      let classification = 'real';
+      let reason = null;
+
+      if (isBot) {
+        classification = 'bot';
+        reason = 'Bot user agent pattern';
+      } else if (suspiciousUA) {
+        classification = 'suspicious';
+        reason = 'Short/empty user agent';
+      } else if (hasTrackerParams) {
+        classification = 'email_scanner';
+        reason = 'Corporate email security scan';
+      }
+
+      return {
+        ...click,
+        classification,
+        reason,
+        user_agent_short: ua.substring(0, 80),
+      };
+    });
+
+    // Group by classification
+    const real = analyzed.filter(c => c.classification === 'real');
+    const bots = analyzed.filter(c => c.classification === 'bot');
+    const suspicious = analyzed.filter(c => c.classification === 'suspicious');
+    const scanners = analyzed.filter(c => c.classification === 'email_scanner');
+
+    // Unique emails per category
+    const uniqueReal = [...new Set(real.map(c => c.email))];
+    const uniqueBots = [...new Set(bots.map(c => c.email))];
+    const uniqueSuspicious = [...new Set(suspicious.map(c => c.email))];
+    const uniqueScanners = [...new Set(scanners.map(c => c.email))];
+
+    res.json({
+      summary: {
+        total_clicks: allClicks.length,
+        real_clicks: real.length,
+        bot_clicks: bots.length,
+        suspicious_clicks: suspicious.length,
+        scanner_clicks: scanners.length,
+        unique_real_clickers: uniqueReal.length,
+        unique_bot_clickers: uniqueBots.length,
+        estimated_real_rate: ((real.length / allClicks.length) * 100).toFixed(1) + '%',
+      },
+      real_clickers: uniqueReal.slice(0, 30),
+      bot_details: bots.slice(0, 10).map(b => ({
+        email: b.email,
+        user_agent: b.user_agent_short,
+        reason: b.reason,
+      })),
+      suspicious_details: suspicious.slice(0, 10).map(s => ({
+        email: s.email,
+        user_agent: s.user_agent_short || '(empty)',
+        clicked_at: s.clicked_at,
+      })),
+      all_clicks_detailed: analyzed.slice(0, 50),
+    });
+  } catch (error) {
+    console.error('Click analysis error:', error);
+    res.status(500).json({ error: 'Failed to analyze clicks' });
+  }
+});
+
 // GET /api/admin/clicker-followups-debug - Debug endpoint to check clicker_followups table
 app.get('/api/admin/clicker-followups-debug', async (req, res) => {
   const authKey = req.headers['x-admin-key'] || req.query.key;
