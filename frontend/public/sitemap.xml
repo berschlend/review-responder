@@ -36,6 +36,12 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://tryreviewresponder.com/blog</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- Platform Landing Pages -->
+  <url>
     <loc>https://tryreviewresponder.com/google-review-response-generator</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -45,6 +51,97 @@
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
+  <url>
+    <loc>https://tryreviewresponder.com/tripadvisor-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/booking-review-generator</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/facebook-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/linkedin-recommendations</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/amazon-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/appstore-app-reviews</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/trustpilot-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/capterra-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/g2-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/glassdoor-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/indeed-company-reviews</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/bbb-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/angie-list-contractor-reviews</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/thumbtack-reviews</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/healthgrades-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/zocdoc-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/zillow-realtor-reviews</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/airbnb-host-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <!-- Industry Landing Pages -->
   <url>
     <loc>https://tryreviewresponder.com/restaurant-review-responses</loc>
     <changefreq>weekly</changefreq>
@@ -62,21 +159,6 @@
   </url>
   <url>
     <loc>https://tryreviewresponder.com/negative-review-responses</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://tryreviewresponder.com/tripadvisor-review-responses</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://tryreviewresponder.com/booking-review-generator</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://tryreviewresponder.com/facebook-review-responses</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -101,16 +183,6 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://tryreviewresponder.com/blog</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tryreviewresponder.com/linkedin-recommendations</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
     <loc>https://tryreviewresponder.com/chiropractor-reviews</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -126,17 +198,112 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://tryreviewresponder.com/angie-list-contractor-reviews</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
     <loc>https://tryreviewresponder.com/massage-therapist-reviews</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://tryreviewresponder.com/personal-trainer-reviews</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/accountant-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/cleaning-service-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/coffee-shop-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/daycare-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/ecommerce-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/electrician-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/gym-fitness-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/hvac-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/insurance-agent-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/landscaping-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/law-firm-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/pet-service-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/photographer-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/plumber-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/real-estate-agent-reviews</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/roofing-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/senior-care-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/therapy-counselor-reviews</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/veterinarian-review-responses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tryreviewresponder.com/wedding-vendor-review-responses</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
