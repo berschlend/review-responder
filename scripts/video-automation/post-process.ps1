@@ -130,11 +130,9 @@ Write-Host @"
 "@ -ForegroundColor Cyan
 
 if (-not $Preview) {
-    Write-Host "Open video? (Y/N): " -ForegroundColor Yellow -NoNewline
-    $open = Read-Host
-    if ($open -eq "Y" -or $open -eq "y") {
-        Start-Process $FinalOutput
-    }
+    # Auto-open the video
+    Start-Process $FinalOutput
 }
 
-Write-Host "`n[DONE] Video ready for upload!`n" -ForegroundColor Green
+Write-Host "`n  FERTIG! Video oeffnet sich...`n" -ForegroundColor Green
+Write-Host "  Upload zu: TikTok, Instagram Reels, YouTube Shorts`n" -ForegroundColor Cyan
