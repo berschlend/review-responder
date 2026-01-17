@@ -13504,6 +13504,65 @@ ${industryExamples}
     }
 
     const qualityScore = results.length > 0 ? Math.round((passed / results.length) * 100) : 100;
+    const slopRate = results.length > 0 ? ((failed / results.length) * 100).toFixed(2) : '0.00';
+    const alerts = [];
+
+    // Base alert for low quality
+    if (qualityScore < 80) {
+      alerts.push(`Quality score is low: ${qualityScore}%`);
+    }
+
+    // Regression Detection & History Update
+    let regressionDetected = false;
+    let previousScore = null;
+
+    if (dry_run !== 'true' && results.length > 0) {
+      try {
+        // Ensure table exists
+        await dbQuery(`
+          CREATE TABLE IF NOT EXISTS product_quality_history (
+            id SERIAL PRIMARY KEY,
+            quality_score INTEGER NOT NULL,
+            slop_rate DECIMAL(5,2),
+            tests_run INTEGER,
+            tests_passed INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+
+        // Get last score for regression check
+        const lastEntry = await dbAll(`
+          SELECT quality_score, created_at FROM product_quality_history
+          ORDER BY created_at DESC LIMIT 1
+        `);
+
+        const regressionThreshold = 3; // from config
+
+        if (lastEntry.length > 0) {
+          previousScore = lastEntry[0].quality_score;
+          const scoreDrop = previousScore - qualityScore;
+
+          if (scoreDrop >= regressionThreshold) {
+            regressionDetected = true;
+            const severity = scoreDrop >= 10 ? 'CRITICAL' : 'WARNING';
+            alerts.push(`[${severity}] Regression detected: Quality dropped from ${previousScore}% to ${qualityScore}% (-${scoreDrop} points)`);
+
+            console.warn(`[Quality Regression] Score dropped from ${previousScore}% to ${qualityScore}%`);
+          }
+        }
+
+        // Save current metrics to history
+        await dbQuery(`
+          INSERT INTO product_quality_history (quality_score, slop_rate, tests_run, tests_passed)
+          VALUES ($1, $2, $3, $4)
+        `, [qualityScore, slopRate, results.length, passed]);
+
+        console.log(`[Quality Test] Score: ${qualityScore}%, Tests: ${results.length}, Passed: ${passed}, History updated`);
+      } catch (historyError) {
+        console.error('[Quality Test] History update failed:', historyError.message);
+        // Don't fail the whole test, just log the error
+      }
+    }
 
     res.json({
       success: true,
@@ -13512,9 +13571,12 @@ ${industryExamples}
       passed,
       failed,
       quality_score: qualityScore,
+      slop_rate: `${slopRate}%`,
+      previous_score: previousScore,
+      regression_detected: regressionDetected,
       new_learnings: newLearnings.length,
       results,
-      alerts: qualityScore < 80 ? [`Quality score dropped to ${qualityScore}%`] : [],
+      alerts,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
