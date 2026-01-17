@@ -12,7 +12,29 @@ $VideoDirs = @(
 )
 
 Clear-Host
-Write-Host "`n  DEMO VIDEO - Auto-Mode`n" -ForegroundColor Cyan
+
+# PRE-FLIGHT CHECKLIST
+Write-Host @"
+
+  ╔═══════════════════════════════════════╗
+  ║      PRE-FLIGHT CHECKLIST             ║
+  ╠═══════════════════════════════════════╣
+  ║                                       ║
+  ║  [ ] Einfarbiges Shirt (kein Weiss)   ║
+  ║  [ ] Licht auf Gesicht                ║
+  ║  [ ] Hintergrund aufgeraeumt          ║
+  ║  [ ] Facecam in OBS sichtbar          ║
+  ║  [ ] Handy stumm                      ║
+  ║                                       ║
+  ╚═══════════════════════════════════════╝
+
+"@ -ForegroundColor Yellow
+
+Write-Host "  Alles ready? ENTER zum Starten..." -ForegroundColor Cyan -NoNewline
+Read-Host
+
+Clear-Host
+Write-Host "`n  DEMO VIDEO - Recording`n" -ForegroundColor Cyan
 
 # 1. API Warmup (silent)
 try { Invoke-WebRequest -Uri "https://review-responder.onrender.com/api/public/stats" -TimeoutSec 3 -UseBasicParsing | Out-Null }
@@ -23,19 +45,30 @@ Write-Host "  [1] Browser oeffnet..." -ForegroundColor DarkGray
 Start-Process "chrome.exe" -ArgumentList $DemoUrl
 Start-Sleep -Seconds 2
 
-# 3. Simple Instructions
+# 3. Recording Instructions + Script
 Write-Host @"
 
-  ┌─────────────────────────────────────┐
-  │  F9  = Start Recording              │
-  │  Demo machen (15 Sek)               │
-  │  F10 = Stop Recording               │
-  │                                     │
-  │  Dann ENTER druecken                │
-  └─────────────────────────────────────┘
+  ┌─────────────────────────────────────────┐
+  │  F9 = START                             │
+  ├─────────────────────────────────────────┤
+  │                                         │
+  │  [0:00] "Schau dir diese Review an..."  │
+  │  [0:03] "Das zerstoert dein Business."  │
+  │  [0:05] *Extension klicken*             │
+  │  [0:07] "Ein Klick..."                  │
+  │  [0:10] *Response zeigen*               │
+  │  [0:11] "...und fertig."                │
+  │  [0:13] "tryreviewresponder.com"        │
+  │                                         │
+  ├─────────────────────────────────────────┤
+  │  F10 = STOP                             │
+  └─────────────────────────────────────────┘
+
+  (Oder stumm - Text-Overlays machen den Job)
 
 "@ -ForegroundColor White
 
+Write-Host "  ENTER wenn Recording fertig..." -ForegroundColor Magenta -NoNewline
 Read-Host
 
 # 4. Auto-find newest video
