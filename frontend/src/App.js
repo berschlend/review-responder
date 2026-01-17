@@ -13328,7 +13328,12 @@ const DemoPage = () => {
 
   const fetchDemo = async () => {
     try {
-      const response = await fetch(`${API_URL.replace('/api', '')}/api/public/demo/${token}`);
+      // If user is logged in, add preview=true to skip view tracking (for admin testing)
+      const savedToken = localStorage.getItem('token');
+      const isLoggedIn = !!savedToken;
+      const previewParam = isLoggedIn ? '?preview=true' : '';
+
+      const response = await fetch(`${API_URL.replace('/api', '')}/api/public/demo/${token}${previewParam}`);
       if (!response.ok) {
         throw new Error('Demo not found');
       }
