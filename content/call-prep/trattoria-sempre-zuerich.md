@@ -1,127 +1,78 @@
-# Call-Prep: Trattoria Sempre Zuerich
+# Call-Prep: Trattoria Sempre Zürich
 
-> **PRIORITAET 1** - Hat Magic Link genutzt = aktiv engagiert!
+> **PRIORITY 1 - Used Magic Link = Active Engagement!**
 
 ---
 
-## QUICK INFO (5 Sek scanbar)
+## Quick Info (5 Sekunden)
 
-| | |
-|---|---|
-| **Business** | Trattoria Sempre Zuerich |
+| Info | Wert |
+|------|------|
+| **Business** | Trattoria Sempre Zürich |
 | **Telefon** | +41 44 262 54 62 |
 | **Email** | zuerich@trattoria-sempre.ch |
-| **Reviews** | 2.140 Reviews, 4.6 Sterne (Google/Facebook) |
-| **Typ** | Italienisches Restaurant, Tapas-Style |
-| **Adresse** | Niederdorfstrasse 7, Zuerich Altstadt |
-| **Problem** | Kritik an Service-Geschwindigkeit, Portionsgroessen, Wasserpreis |
+| **Status** | Registered via Magic Link (16.01) |
+| **Typ** | Italienisches Restaurant |
+| **Sprache** | DEUTSCH |
 
 ---
 
-## OPENER SCRIPT (Wort fuer Wort)
+## Opener Script (Wort für Wort)
 
-```
-"Gruezi, hier ist [DEIN NAME].
+**[Klingelt...]**
 
-Ich rufe kurz an weil Sie sich bei ReviewResponder registriert haben -
-dem Tool fuer automatische Review-Antworten.
+> "Grüezi, spreche ich mit dem Inhaber der Trattoria Sempre?"
 
-Haben Sie gerade 2 Minuten?"
-```
+**[Wenn ja:]**
 
-**Wenn "keine Zeit":**
-```
-"Verstehe, wann passt es besser? Ich kann morgen nochmal anrufen."
-```
+> "Hallo! Hier ist Berend von ReviewResponder. Sie haben sich bei uns angemeldet und ich wollte kurz fragen ob Sie schon eine Review-Antwort ausprobiert haben? Das dauert nur 30 Sekunden."
 
-**Wenn "wer sind Sie nochmal?":**
-```
-"ReviewResponder - Sie haben sich am 16. Januar angemeldet.
-Wir helfen Restaurants wie Ihrem, auf Google-Bewertungen
-professionell zu antworten. Mit KI, spart 90% Zeit."
-```
+**[Wenn "keine Zeit":]**
+
+> "Verstehe ich total - nur eine kurze Frage: Beantworten Sie Ihre Google-Bewertungen selbst? Und wie lange brauchen Sie für eine negative?"
 
 ---
 
-## HOOK SCRIPT
+## Hook Script
 
-```
-"Ich hab gesehen Sie haben ueber 2.000 Reviews auf Google.
-Das ist super - aber ich schaetze, nicht alle positiv?
-
-Wir haben eine KI die automatisch Antworten schreibt.
-Klingt nach Ihrem Stil, bezieht sich auf die echte Kritik.
-
-Ich zeig Ihnen mal ein Beispiel von IHRER Trattoria..."
-```
-
-**JETZT Demo teilen oder live zeigen!**
+> "Bei italienischen Restaurants sind Bewertungen besonders wichtig - Gäste schauen vorher immer nach. Unser KI schreibt professionelle Antworten in 5 Sekunden. Die meisten Gastronomen sparen damit 2-3 Stunden pro Woche. Soll ich Ihnen das kurz mit einer Ihrer echten Bewertungen zeigen?"
 
 ---
 
-## OBJECTION HANDLING
+## Objection Handling
 
 | Einwand | Antwort |
 |---------|---------|
-| "Kein Interesse" | "Verstehe. Darf ich fragen - wie antworten Sie aktuell auf Reviews? Das Team macht das manuell?" |
-| "Zu teuer" | "Der Starter-Plan ist 29 CHF/Monat. Das ist weniger als eine Pizza bei Ihnen - und spart Stunden pro Woche." |
-| "Machen wir selbst" | "Klar, aber bei 2.000 Reviews... wie viel Zeit geht da drauf? Unsere KI macht das in 10 Sekunden." |
-| "Brauchen wir nicht" | "Bei 4.6 Sternen laeuft's gut! Aber die Kritik an langsamen Service - darauf antworten zeigt Professionalitaet." |
+| "Bin gerade im Service" | "Klar, wann passt es besser? Morgen Vormittag vor dem Mittagsservice?" |
+| "Wir antworten schon auf Bewertungen" | "Super! Wie lange brauchen Sie pro negative Bewertung? Unsere KI macht das in 5 Sekunden. Wollen Sie es mal sehen?" |
+| "Wir haben nicht so viele Bewertungen" | "Gerade deshalb - wenn Sie eine kriegen, besonders eine negative, wollen Sie schnell und professionell antworten." |
+| "Was kostet das?" | "20 Antworten sind komplett gratis. Danach 29 Euro fuer 300 Antworten. Aber probieren Sie es erstmal kostenlos!" |
+| "Ich schau mir das spaeter an" | "Ich kann Ihnen jetzt einen Link schicken - 30 Sekunden und Sie sehen wie es funktioniert. Per SMS oder Email?" |
 
 ---
 
-## KONTEXT (Hintergrund)
+## Kontext
 
-### Ueber Trattoria Sempre
-- **Konzept:** Italienische Tapas in Zuerichs Altstadt
-- **Highlights:** Trueffel Gnocchi, Frittierte Burrata, Pizza Fritta
-- **Atmosphaere:** "Laut, chaotisch, gemuetlich" - sehr italienisch
-- **Preisklasse:** CHF 20-30 pro Person (moderat fuer Zuerich)
-- **Besonderheit:** Einzigartiges WC-Design (wird in Reviews erwaehnt!)
-
-### Haeufige Kritikpunkte (= Pain Points!)
-1. **Langsamer Service** bei Stosszeiten
-2. **Kleine Portionen** (Tapas-Style = mehr bestellen)
-3. **5 CHF fuer Leitungswasser** - wird als Abzocke empfunden
-4. **Wenig Auswahl** auf der Karte
-
-### Warum sie ReviewResponder brauchen
-- 2.140 Reviews = VIEL Arbeit wenn manuell
-- Kritik an Service/Preisen braucht diplomatische Antworten
-- Magic Link genutzt = sie WOLLEN das Problem loesen!
+- **Warum guter Lead:** Restaurant Domain = legitimates Business, nicht Generic-Email
+- **Used Magic Link:** Hat aktiv geklickt = echtes Interesse
+- **Italienisches Restaurant Zuerich:** Premium-Markt, Reputation entscheidend
+- **Schweizer Markt:** Hohe Kaufkraft, qualitaetsbewusst
 
 ---
 
-## BEISPIEL AI-ANTWORT (zum Vorlesen!)
+## Beispiel AI-Antwort (zum Vorlesen)
 
-**Originale 3-Sterne Review:**
-> "The food was great but service was incredibly slow. Waited 45 minutes for our main course. Also charging 5 CHF for tap water feels like a rip-off."
+**Bewertung (2 Sterne):**
+> "Pizza war ok aber der Service unfreundlich. Kellner hat uns 15 Minuten warten lassen bevor er die Bestellung aufnahm."
 
-**ReviewResponder Antwort:**
-> "Thank you for your honest feedback about your visit to Trattoria Sempre. We're glad the food lived up to expectations, and we sincerely apologize that the service didn't match that quality during your visit. We've spoken with our team about improving table timing during busy periods. Regarding the water charge - we understand this can be frustrating, and we appreciate you letting us know how it felt. We'd love the chance to welcome you back for a smoother experience. - The Trattoria Sempre Team"
-
-**Zeig das und frag:** "So wuerde das klingen. Spart Zeit und klingt professionell, oder?"
+**AI Antwort:**
+> "Vielen Dank fuer Ihr Feedback. Es tut uns sehr leid, dass Sie auf Ihren Kellner warten mussten - das entspricht nicht unserem Standard. Wir sprechen das Team sofort an. Schoen, dass Ihnen die Pizza geschmeckt hat. Geben Sie uns bitte noch eine Chance - beim naechsten Besuch kuemmere ich mich persoenlich um Sie. Fragen Sie einfach nach mir! Herzliche Gruesse, [Name]"
 
 ---
 
-## CALL-TO-ACTION
+## Follow-Up Actions
 
-```
-"Soll ich Ihnen eine Demo schicken mit echten Antworten fuer Ihre Reviews?
-Dauert 2 Minuten zum Anschauen.
-
-Und wenn's gefaellt: Der erste Monat ist 20% guenstiger mit Code DEMO20."
-```
-
----
-
-## NOTIZEN (nach Anruf ausfuellen)
-
-**Datum:** ___________
-**Gesprochen mit:** ___________
-**Ergebnis:** ___________
-**Naechster Schritt:** ___________
-
----
-
-*Erstellt: 17.01.2026*
+- [ ] Anruf gemacht am: ___________
+- [ ] Ergebnis: ___________
+- [ ] Demo gesendet: Ja / Nein
+- [ ] Naechster Schritt: ___________

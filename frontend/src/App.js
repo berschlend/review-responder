@@ -37811,6 +37811,57 @@ const AdminPage = () => {
             <div style={{ textAlign: 'center', padding: '40px' }}>Loading call preps...</div>
           ) : callPrepsData ? (
             <>
+              {/* Action Required Banner */}
+              {(() => {
+                const hotCount = callPrepsData.calls?.filter(
+                  (c) => c.priority_score === 5 && c.status === 'pending'
+                ).length || 0;
+                const actionCount = callPrepsData.calls?.filter(
+                  (c) =>
+                    (c.status === 'pending' && c.priority_score >= 4) ||
+                    c.status === 'callback' ||
+                    (c.status === 'interested' && !c.demo_sent_at)
+                ).length || 0;
+
+                if (actionCount > 0) {
+                  return (
+                    <div
+                      style={{
+                        background: hotCount > 0 ? '#FEE2E2' : '#FEF3C7',
+                        border: hotCount > 0 ? '2px solid #EF4444' : '2px solid #F59E0B',
+                        borderRadius: '12px',
+                        padding: '16px 20px',
+                        marginBottom: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                      }}
+                    >
+                      <span style={{ fontSize: '24px' }}>{hotCount > 0 ? '🔥' : '📞'}</span>
+                      <div>
+                        <div
+                          style={{
+                            fontWeight: 'bold',
+                            color: hotCount > 0 ? '#DC2626' : '#D97706',
+                            fontSize: '16px',
+                          }}
+                        >
+                          {hotCount > 0
+                            ? `${hotCount} HOT Lead${hotCount > 1 ? 's' : ''} - Jetzt anrufen!`
+                            : `${actionCount} Call${actionCount > 1 ? 's' : ''} need action`}
+                        </div>
+                        <div style={{ fontSize: '13px', color: '#6B7280', marginTop: '2px' }}>
+                          {hotCount > 0
+                            ? 'Diese Leads haben auf Demo geklickt oder sich registriert'
+                            : 'Pending calls, callbacks, or demos to send'}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+
               {/* Stats Cards */}
               <div
                 style={{
@@ -37820,8 +37871,36 @@ const AdminPage = () => {
                   marginBottom: '24px',
                 }}
               >
-                <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
-                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#6B7280' }}>
+                <div
+                  className="card"
+                  style={{
+                    textAlign: 'center',
+                    padding: '16px',
+                    background:
+                      callPrepsData.calls?.some(
+                        (c) => c.priority_score >= 4 && c.status === 'pending'
+                      )
+                        ? '#FEE2E2'
+                        : undefined,
+                    border:
+                      callPrepsData.calls?.some(
+                        (c) => c.priority_score === 5 && c.status === 'pending'
+                      )
+                        ? '2px solid #EF4444'
+                        : undefined,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '28px',
+                      fontWeight: 'bold',
+                      color: callPrepsData.calls?.some(
+                        (c) => c.priority_score >= 4 && c.status === 'pending'
+                      )
+                        ? '#EF4444'
+                        : '#6B7280',
+                    }}
+                  >
                     {callPrepsData.stats?.pending || 0}
                   </div>
                   <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Pending</div>
