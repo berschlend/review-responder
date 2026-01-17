@@ -212,7 +212,7 @@ const API_PRICING = {
   anthropic: {
     'claude-sonnet-4-20250514': { input: 3, output: 15 },
     'claude-3-5-haiku-20241022': { input: 0.8, output: 4 }, // Standard AI
-    'claude-opus-4-5-20250514': { input: 15, output: 75 },
+    'claude-opus-4-5-20251101': { input: 15, output: 75 }, // Opus 4.5
     'claude-opus-4-20250514': { input: 15, output: 75 },
   },
   openai: {
@@ -10215,6 +10215,222 @@ app.get('/api/admin/testimonials', async (req, res) => {
   }
 });
 
+// ============ USER FEEDBACK SUMMARY FOR NIGHT-BURST AGENTS ============
+
+// GET /api/admin/feedback-summary - Get aggregated feedback metrics for agents
+app.get('/api/admin/feedback-summary', authenticateAdmin, async (req, res) => {
+  try {
+    const excludeTest = req.query.exclude_test === 'true';
+
+    // Build test email exclusion for feedback (join with users table)
+    let testExclusionClause = '';
+    if (excludeTest) {
+      testExclusionClause = `
+        AND u.email NOT LIKE '%@web.de'
+        AND u.email NOT LIKE 'test%'
+        AND u.email NOT LIKE '%test@%'
+        AND u.email NOT LIKE '%example%'
+        AND u.email NOT LIKE '%demo%'
+        AND LOWER(u.email) != 'reviewer@tryreviewresponder.com'
+        AND LOWER(u.email) != 'berend.mainz@gmail.com'
+        AND LOWER(u.email) != 'berend.jakob.mainz@gmail.com'
+      `;
+    }
+
+    // Get all feedback with user emails
+    const feedbackQuery = `
+      SELECT
+        f.id,
+        f.rating,
+        f.comment,
+        f.created_at,
+        u.email
+      FROM user_feedback f
+      JOIN users u ON f.user_id = u.id
+      WHERE 1=1 ${testExclusionClause}
+      ORDER BY f.created_at DESC
+    `;
+    const allFeedback = await dbAll(feedbackQuery);
+
+    // Calculate summary metrics
+    const totalFeedback = allFeedback.length;
+    const avgRating = totalFeedback > 0
+      ? (allFeedback.reduce((sum, f) => sum + f.rating, 0) / totalFeedback).toFixed(2)
+      : 0;
+
+    // 7-day trend calculation
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const recentFeedback = allFeedback.filter(f => new Date(f.created_at) > sevenDaysAgo);
+    const recentAvg = recentFeedback.length > 0
+      ? (recentFeedback.reduce((sum, f) => sum + f.rating, 0) / recentFeedback.length).toFixed(2)
+      : 0;
+
+    // Determine trend
+    let trend = 'stable';
+    if (recentFeedback.length >= 3 && totalFeedback >= 5) {
+      const diff = parseFloat(recentAvg) - parseFloat(avgRating);
+      if (diff > 0.5) trend = 'improving';
+      else if (diff < -0.5) trend = 'declining';
+    }
+
+    // Extract pain points from comments (rating <= 3)
+    const painPointFeedback = allFeedback.filter(f => f.rating <= 3 && f.comment);
+    const painPoints = painPointFeedback.map(f => ({
+      rating: f.rating,
+      comment: f.comment,
+      date: f.created_at
+    }));
+
+    // Extract feature requests (look for keywords in any feedback)
+    const featureKeywords = ['would be nice', 'wish', 'feature', 'could you add', 'please add', 'would love', 'it would be great'];
+    const featureRequests = allFeedback
+      .filter(f => f.comment && featureKeywords.some(kw => f.comment.toLowerCase().includes(kw)))
+      .map(f => ({
+        rating: f.rating,
+        comment: f.comment,
+        date: f.created_at
+      }));
+
+    // Generate alerts
+    const alerts = [];
+    if (parseFloat(avgRating) < 3.5 && totalFeedback >= 5) {
+      alerts.push({
+        type: 'low_rating',
+        message: `Average rating is ${avgRating}/5 - investigate pain points`,
+        severity: 'warning'
+      });
+    }
+    if (trend === 'declining') {
+      alerts.push({
+        type: 'rating_drop',
+        message: `Rating trend is declining (recent: ${recentAvg} vs overall: ${avgRating})`,
+        severity: 'critical'
+      });
+    }
+    if (painPoints.length >= 3) {
+      alerts.push({
+        type: 'multiple_pain_points',
+        message: `${painPoints.length} users reported issues (rating <=3)`,
+        severity: 'warning'
+      });
+    }
+
+    res.json({
+      summary: {
+        total_real_feedback: totalFeedback,
+        average_rating: parseFloat(avgRating),
+        recent_average: parseFloat(recentAvg),
+        trend: trend,
+        test_excluded: excludeTest
+      },
+      pain_points: painPoints.slice(0, 10), // Latest 10
+      feature_requests: featureRequests.slice(0, 10),
+      alerts: alerts,
+      last_updated: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Feedback summary error:', error);
+    res.status(500).json({ error: 'Failed to get feedback summary' });
+  }
+});
+
+// GET /api/cron/process-feedback - Write feedback insights to JSON file for agents
+app.get('/api/cron/process-feedback', async (req, res) => {
+  const { secret } = req.query;
+  if (!process.env.ADMIN_SECRET || !safeCompare(secret, process.env.ADMIN_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    // Fetch feedback summary (exclude test accounts)
+    const testExclusionClause = `
+      AND u.email NOT LIKE '%@web.de'
+      AND u.email NOT LIKE 'test%'
+      AND u.email NOT LIKE '%test@%'
+      AND u.email NOT LIKE '%example%'
+      AND u.email NOT LIKE '%demo%'
+      AND LOWER(u.email) != 'reviewer@tryreviewresponder.com'
+      AND LOWER(u.email) != 'berend.mainz@gmail.com'
+      AND LOWER(u.email) != 'berend.jakob.mainz@gmail.com'
+    `;
+
+    const allFeedback = await dbAll(`
+      SELECT f.rating, f.comment, f.created_at
+      FROM user_feedback f
+      JOIN users u ON f.user_id = u.id
+      WHERE 1=1 ${testExclusionClause}
+      ORDER BY f.created_at DESC
+    `);
+
+    const totalFeedback = allFeedback.length;
+    const avgRating = totalFeedback > 0
+      ? parseFloat((allFeedback.reduce((sum, f) => sum + f.rating, 0) / totalFeedback).toFixed(2))
+      : 0;
+
+    // 7-day trend
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const recentFeedback = allFeedback.filter(f => new Date(f.created_at) > sevenDaysAgo);
+    const recentAvg = recentFeedback.length > 0
+      ? parseFloat((recentFeedback.reduce((sum, f) => sum + f.rating, 0) / recentFeedback.length).toFixed(2))
+      : 0;
+
+    let trend = 'stable';
+    if (recentFeedback.length >= 3 && totalFeedback >= 5) {
+      const diff = recentAvg - avgRating;
+      if (diff > 0.5) trend = 'improving';
+      else if (diff < -0.5) trend = 'declining';
+    }
+
+    // Pain points
+    const painPoints = allFeedback
+      .filter(f => f.rating <= 3 && f.comment)
+      .slice(0, 10)
+      .map(f => f.comment);
+
+    // Feature requests
+    const featureKeywords = ['would be nice', 'wish', 'feature', 'could you add', 'please add', 'would love'];
+    const featureRequests = allFeedback
+      .filter(f => f.comment && featureKeywords.some(kw => f.comment.toLowerCase().includes(kw)))
+      .slice(0, 10)
+      .map(f => f.comment);
+
+    // Alerts
+    const alerts = [];
+    if (avgRating < 3.5 && totalFeedback >= 5) {
+      alerts.push(`LOW_RATING: Average is ${avgRating}/5`);
+    }
+    if (trend === 'declining') {
+      alerts.push(`RATING_DROP: Recent ${recentAvg} vs overall ${avgRating}`);
+    }
+
+    const insights = {
+      last_updated: new Date().toISOString(),
+      summary: {
+        total_real_feedback: totalFeedback,
+        average_rating: avgRating,
+        recent_average: recentAvg,
+        trend: trend
+      },
+      pain_points: painPoints,
+      feature_requests: featureRequests,
+      alerts: alerts
+    };
+
+    // Note: In production, this would write to a file or store in DB
+    // For now, we return the data and agents can call this endpoint
+    res.json({
+      success: true,
+      message: 'Feedback insights processed',
+      insights: insights
+    });
+  } catch (error) {
+    console.error('Process feedback error:', error);
+    res.status(500).json({ error: 'Failed to process feedback' });
+  }
+});
+
 /**
  * Clean display name from usernames with numbers
  * andrehoellering1732004 -> Andre
@@ -12915,6 +13131,151 @@ ${industryExamples}
   } catch (error) {
     console.error('Product quality error:', error);
     res.status(500).json({ error: 'Failed to get product quality data' });
+  }
+});
+
+// POST /api/admin/test-opus-vs-sonnet - Compare Opus 4.5 vs Sonnet 4 for review responses
+app.post('/api/admin/test-opus-vs-sonnet', authenticateAdmin, async (req, res) => {
+  try {
+    const { reviewerName, reviewText, rating, businessName, businessType } = req.body;
+
+    if (!reviewText) {
+      return res.status(400).json({ error: 'reviewText is required' });
+    }
+
+    // Get few-shot examples for better quality
+    const { getFewShotExamplesXML } = require('./promptExamples');
+    const industryExamples = getFewShotExamplesXML(businessType || 'restaurant');
+
+    // Build same prompt for both models
+    const systemPrompt = `<role>
+You are the owner of ${businessName || 'a local business'}, a ${businessType || 'restaurant'}.
+You are personally responding to a customer review.
+</role>
+
+<voice>
+Write like you'd text a regular who just left a review.
+Warm but not gushing. Confident but not arrogant. Human, not corporate.
+Use contractions (we're, you'll, that's).
+Keep it short: 2-3 sentences max.
+</voice>
+
+${industryExamples}
+
+<avoid_patterns>
+Never start with: "Thank you for", "We appreciate", "I'm sorry to hear"
+Never use: "delighted", "thrilled", "valued customer", "feedback"
+</avoid_patterns>
+
+<output_format>
+Write the response directly. No quotes, no prefix, no explanation.
+</output_format>`;
+
+    const userMessage = `[${rating || 3} stars] ${reviewerName ? `From ${reviewerName}: ` : ''}${reviewText}`;
+
+    const anthropicClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+    // Run both models in parallel
+    const startTime = Date.now();
+
+    const [opusResult, sonnetResult] = await Promise.all([
+      (async () => {
+        const opusStart = Date.now();
+        const response = await anthropicClient.messages.create({
+          model: 'claude-opus-4-5-20251101',
+          max_tokens: 200,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userMessage }],
+        });
+        return {
+          response: response.content[0].text.trim(),
+          inputTokens: response.usage?.input_tokens || 0,
+          outputTokens: response.usage?.output_tokens || 0,
+          latencyMs: Date.now() - opusStart,
+        };
+      })(),
+      (async () => {
+        const sonnetStart = Date.now();
+        const response = await anthropicClient.messages.create({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 200,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userMessage }],
+        });
+        return {
+          response: response.content[0].text.trim(),
+          inputTokens: response.usage?.input_tokens || 0,
+          outputTokens: response.usage?.output_tokens || 0,
+          latencyMs: Date.now() - sonnetStart,
+        };
+      })(),
+    ]);
+
+    // Check for AI slop in both responses
+    const opusSlopCheck = checkAISlop(opusResult.response);
+    const sonnetSlopCheck = checkAISlop(sonnetResult.response);
+
+    // Calculate costs (per 1M tokens)
+    const opusCost = (opusResult.inputTokens * 15 + opusResult.outputTokens * 75) / 1000000;
+    const sonnetCost = (sonnetResult.inputTokens * 3 + sonnetResult.outputTokens * 15) / 1000000;
+
+    // Log API calls for cost tracking
+    logApiCall({
+      provider: 'anthropic',
+      model: 'claude-opus-4-5-20251101',
+      endpoint: '/api/admin/test-opus-vs-sonnet',
+      inputTokens: opusResult.inputTokens,
+      outputTokens: opusResult.outputTokens,
+    });
+    logApiCall({
+      provider: 'anthropic',
+      model: 'claude-sonnet-4-20250514',
+      endpoint: '/api/admin/test-opus-vs-sonnet',
+      inputTokens: sonnetResult.inputTokens,
+      outputTokens: sonnetResult.outputTokens,
+    });
+
+    res.json({
+      testCase: {
+        reviewerName: reviewerName || null,
+        reviewText,
+        rating: rating || 3,
+        businessName: businessName || 'a local business',
+        businessType: businessType || 'restaurant',
+      },
+      opus: {
+        model: 'claude-opus-4-5-20251101',
+        response: opusResult.response,
+        tokens: { input: opusResult.inputTokens, output: opusResult.outputTokens },
+        latencyMs: opusResult.latencyMs,
+        costUSD: opusCost.toFixed(6),
+        slopCheck: {
+          passed: opusSlopCheck.passed,
+          issues: opusSlopCheck.issues,
+        },
+        sentenceCount: opusResult.response.split(/[.!?]+/).filter(s => s.trim()).length,
+      },
+      sonnet: {
+        model: 'claude-sonnet-4-20250514',
+        response: sonnetResult.response,
+        tokens: { input: sonnetResult.inputTokens, output: sonnetResult.outputTokens },
+        latencyMs: sonnetResult.latencyMs,
+        costUSD: sonnetCost.toFixed(6),
+        slopCheck: {
+          passed: sonnetSlopCheck.passed,
+          issues: sonnetSlopCheck.issues,
+        },
+        sentenceCount: sonnetResult.response.split(/[.!?]+/).filter(s => s.trim()).length,
+      },
+      comparison: {
+        totalTimeMs: Date.now() - startTime,
+        costDifferenceX: (opusCost / sonnetCost).toFixed(1),
+        bothPassedSlopCheck: opusSlopCheck.passed && sonnetSlopCheck.passed,
+      },
+    });
+  } catch (error) {
+    console.error('Opus vs Sonnet test error:', error);
+    res.status(500).json({ error: error.message || 'Test failed' });
   }
 });
 
