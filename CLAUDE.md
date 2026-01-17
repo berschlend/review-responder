@@ -152,7 +152,7 @@ Falls Auto-Deploy nicht triggert, kann Claude via Chrome MCP manuell deployen:
 | Demo-Email Bug | `send_emails` Default=`false` → 97% Demos nie versendet | Default jetzt `true` | ✅ GEFIXT |
 | Bot-Filter fehlte | Security Scanner (MS365, Proofpoint) als "Clicks" gezaehlt | `?exclude_bots=true` implementiert | ✅ GEFIXT |
 | Lead-Qualifizierung | info@, contact@, H####@accor.com erreichen nie Entscheider | Lead-Scoring: -20 fuer generic@ | ✅ GEFIXT |
-| Email Provider Chaos | Wechsel Resend→Brevo→MailerSend | SES als Primary (50k/Tag) | ✅ GEFIXT |
+| Email Provider Chaos | Wechsel Resend→Brevo→MailerSend | **🔴 SES SANDBOX! Anfrage 17.01** | ⏳ PENDING |
 | Auto-Account Bug | Bot-Clicks erstellten Fake-Accounts | Bot-Check vor Account-Erstellung | ✅ GEFIXT |
 
 **Fazit:** Die Metriken der ersten Woche waren durch Bugs verfaelscht, nicht weil Cold Email grundsaetzlich nicht funktioniert.

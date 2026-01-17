@@ -737,10 +737,104 @@
       document.getElementById('review-text').textContent = decodeURIComponent(reviewText);
     }
 
-    // Console log for debugging extension integration
-    console.log('Demo Video Page loaded. ReviewResponder Extension should detect:');
-    console.log('- Reply textarea with aria-label="Write a reply to this review"');
-    console.log('- Submit button with aria-label="Post reply"');
+    // Business presets for quick switching
+    const businessPresets = {
+      hotel: {
+        name: 'Grand Haven Hotel',
+        type: 'Hotel in Downtown',
+        initials: 'GH',
+        rating: '3.4',
+        stars: '&#9733;&#9733;&#9733;&#9734;&#9734;',
+        reviews: '847',
+        mainReview: `NEVER staying here again! Checked in at 3pm but room wasn't ready until 6pm. When I finally got in, there were stains on the sheets and hair in the bathroom. Asked the front desk for help and they just shrugged. $300/night for THIS?! Save your money and stay somewhere else. Absolutely disgusted.`,
+        reviewer: 'John Davidson'
+      },
+      restaurant: {
+        name: "Mario's Italian Kitchen",
+        type: 'Italian Restaurant',
+        initials: 'MI',
+        rating: '4.2',
+        stars: '&#9733;&#9733;&#9733;&#9733;&#9734;',
+        reviews: '324',
+        mainReview: `Food was cold when it arrived and the waiter was incredibly rude. I asked for more bread and he rolled his eyes at me. The pasta was overcooked and the sauce tasted like it came from a jar. For $50 per person, this is unacceptable. The only reason I'm giving 2 stars is because the tiramisu was decent.`,
+        reviewer: 'Lisa Chen'
+      },
+      dentist: {
+        name: 'Bright Smile Dental',
+        type: 'Dental Clinic',
+        initials: 'BS',
+        rating: '3.8',
+        stars: '&#9733;&#9733;&#9733;&#9733;&#9734;',
+        reviews: '156',
+        mainReview: `Had to wait 45 minutes past my appointment time. When I finally saw the dentist, he seemed rushed and didn't explain anything. The cleaning was quick but felt incomplete. Staff was nice but the overall experience was disappointing. I expected better from a clinic that charges premium prices.`,
+        reviewer: 'Robert James'
+      }
+    };
+
+    function switchBusiness(type) {
+      const preset = businessPresets[type];
+      if (!preset) return;
+
+      // Update business card
+      document.querySelector('.business-info h1').textContent = preset.name;
+      document.querySelector('.business-type').textContent = preset.type;
+      document.querySelector('.business-photo').textContent = preset.initials;
+      document.querySelector('.rating-number').textContent = preset.rating;
+      document.querySelector('.stars').innerHTML = preset.stars;
+      document.querySelector('.review-count').textContent = `(${preset.reviews} reviews)`;
+
+      // Update main review
+      document.getElementById('review-text').textContent = preset.mainReview;
+      document.querySelector('#main-review .author-name').textContent = preset.reviewer;
+      document.querySelector('#main-review .author-avatar').textContent = preset.reviewer.charAt(0);
+
+      // Reset demo state
+      resetDemo();
+
+      console.log(`[Demo] Switched to ${type} business: ${preset.name}`);
+    }
+
+    // Make all reply buttons work (not just the first one)
+    document.querySelectorAll('.reply-btn').forEach((btn, index) => {
+      if (index === 0) return; // First one already has handler
+
+      btn.addEventListener('click', function() {
+        // Find the parent review
+        const review = this.closest('.review');
+        const reviewText = review.querySelector('.wiI7pd')?.textContent || review.querySelector('.review-text')?.textContent;
+
+        // For demo purposes, show a toast
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 24px;border-radius:8px;z-index:9999;font-size:14px;';
+        toast.textContent = '💡 Use the ReviewResponder extension to generate a response!';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+
+        console.log('[Demo] Reply clicked for review:', reviewText?.substring(0, 50) + '...');
+      });
+    });
+
+    // Extension compatibility logging
+    console.log('%c[ReviewResponder Demo Page]', 'color: #667eea; font-weight: bold; font-size: 14px;');
+    console.log('Extension Compatibility Check:');
+    console.log('✅ Platform Detection: Demo mode (hostname or path includes "demo")');
+    console.log('✅ Review Containers: .jftiEf class present on', document.querySelectorAll('.jftiEf').length, 'reviews');
+    console.log('✅ Review Text: .wiI7pd class present on', document.querySelectorAll('.wiI7pd').length, 'elements');
+    console.log('✅ Reply textarea: aria-label="Write a reply to this review"');
+    console.log('✅ Submit button: aria-label="Post reply"');
+    console.log('');
+    console.log('URL Parameters:');
+    console.log('  ?hideControls=true - Hide demo controls');
+    console.log('  ?showTimer=true - Show recording timer');
+    console.log('  ?business=Name - Custom business name');
+    console.log('  ?review=Text - Custom review text');
+    console.log('  ?type=hotel|restaurant|dentist - Switch business type');
+
+    // Handle type URL parameter
+    const businessType = urlParams.get('type');
+    if (businessType && businessPresets[businessType]) {
+      switchBusiness(businessType);
+    }
   </script>
 </body>
 </html>

@@ -368,6 +368,10 @@ $Prompt
     Write-Host "    $($AgentList.Count) Windows opened with agents" -ForegroundColor White
     Write-Host "    Each window shows live Claude output" -ForegroundColor Gray
     Write-Host ""
+    Write-Host "    MCPs Available (Chrome entlastend):" -ForegroundColor Gray
+    Write-Host "    - playwright, puppeteer, fetch, gmail" -ForegroundColor DarkGray
+    Write-Host "    - filesystem, postgres, notion, youtube" -ForegroundColor DarkGray
+    Write-Host ""
     Write-Host "    To stop: Close the terminal windows" -ForegroundColor Gray
     Write-Host ""
     if (-not $NoChrome) {
