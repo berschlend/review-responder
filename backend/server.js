@@ -21007,8 +21007,9 @@ async function generateDemoForLead(lead) {
       return null;
     }
 
-    // Scrape reviews via SerpAPI (get more than needed to filter)
-    const allReviews = await scrapeGoogleReviews(placeId, 10);
+    // Scrape reviews via Serper/Outscraper/SerpAPI (get more than needed to filter)
+    // FIXED: Pass business name and city for accurate Serper searches
+    const allReviews = await scrapeGoogleReviews(placeId, 10, lead.business_name, lead.city);
 
     if (!allReviews || allReviews.length < 2) {
       console.log(`Not enough reviews to generate demo for ${lead.business_name}`);
