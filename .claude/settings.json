@@ -13,7 +13,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -Command \"npx prettier --write $env:CLAUDE_FILE_PATH 2>$null; exit 0\""
+            "command": "powershell -ExecutionPolicy Bypass -Command \"$result = npx prettier --write $env:CLAUDE_FILE_PATH 2>&1; if ($LASTEXITCODE -ne 0) { Write-Host \\\"[Prettier] $result\\\" -ForegroundColor Yellow }; exit 0\""
           }
         ]
       },
@@ -22,7 +22,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -Command \"$ts = Get-Date -Format 'yyyy-MM-ddTHH:mm:ss'; Add-Content -Path 'logs/agent-actions.log' -Value \\\"[$ts] Bash: $env:CLAUDE_TOOL_INPUT\\\" -ErrorAction SilentlyContinue\""
+            "command": "powershell -ExecutionPolicy Bypass -Command \"$ts = Get-Date -Format 'yyyy-MM-ddTHH:mm:ss'; try { Add-Content -Path 'logs/agent-actions.log' -Value \\\"[$ts] Bash: $env:CLAUDE_TOOL_INPUT\\\" } catch { Write-Host \\\"[Log Error] $_\\\" -ForegroundColor Yellow }\""
           }
         ]
       }
@@ -33,7 +33,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -Command \"$ts = Get-Date -Format 'yyyy-MM-ddTHH:mm:ss'; $session = $env:CLAUDE_SESSION; Add-Content -Path 'logs/sessions.log' -Value \\\"[$ts] Session Started: $session\\\" -ErrorAction SilentlyContinue\""
+            "command": "powershell -ExecutionPolicy Bypass -Command \"$ts = Get-Date -Format 'yyyy-MM-ddTHH:mm:ss'; $session = $env:CLAUDE_SESSION; try { Add-Content -Path 'logs/sessions.log' -Value \\\"[$ts] Session Started: $session\\\" } catch { Write-Host \\\"[Log Error] $_\\\" -ForegroundColor Yellow }\""
           }
         ]
       }
@@ -44,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -File \"C:\\Users\\Berend Mainz\\claude-notify.ps1\" -Type input"
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command \"try { & 'C:\\Users\\Berend Mainz\\claude-notify.ps1' -Type input } catch { Write-Host \\\"[Hook Error] $_\\\" -ForegroundColor Red }; exit 0\""
           }
         ]
       }
@@ -55,7 +55,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -File \"C:\\Users\\Berend Mainz\\sticky-tasks-display.ps1\""
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command \"try { & 'C:\\Users\\Berend Mainz\\sticky-tasks-display.ps1' } catch { Write-Host \\\"[Hook Error] $_\\\" -ForegroundColor Red }; exit 0\""
           }
         ]
       }

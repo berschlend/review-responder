@@ -422,13 +422,41 @@ Das erklärt warum Nudge-Emails nicht funktionieren - diese User erinnern sich n
 
 ---
 
-## APPROVAL LEVELS
+## APPROVAL LEVELS (V3.9 - TIMEOUT-DEFAULT = REJECT!)
+
+> **KRITISCH (V3.9 Update):** Default ist jetzt IMMER "REJECT" statt "PROCEED"!
+> Basierend auf First-Principles Analysis: FAIL-SAFE > FAIL-DEFAULT
+> Grund: 2x Timeout-Defaults wurden ohne Berendes Review ausgefuehrt (16.01)
 
 | Level | Timeout | Default Action | Examples |
 |-------|---------|----------------|----------|
-| 🔴 Critical | 30 min | REJECT | Discount >40%, First conversion, API >$50 |
-| 🟡 Important | 2 hours | PROCEED | New A/B test, Strategy change, Discount 30-40% |
+| 🔴 Critical | 30 min | **REJECT** | Discount >40%, First conversion, API >$50 |
+| 🟡 Important | 2 hours | **REJECT** | New A/B test, Strategy change, Discount 30-40% |
 | 🟢 Informational | None | N/A | Metrics report, Learning dokumentiert |
+
+### Warum REJECT als Default?
+
+```
+GRUNDWAHRHEITEN:
+- Berend schlaeft nachts
+- Emails sind irreversibel
+- API-Kosten entstehen pro Call
+- Bugs passieren
+
+KONSEQUENZ:
+- System muss OHNE Berend sicher sein
+- Lieber NICHT handeln als FALSCH handeln
+- Agent kann Request wiederholen wenn Berend online ist
+```
+
+### Bei Timeout (NEU!):
+
+```
+1. Markiere als "TIMEOUT-REJECTED"
+2. Dokumentiere in RESOLVED Section
+3. Agent wiederholt Request beim naechsten Check
+4. KEINE autonome Ausfuehrung mehr!
+```
 
 ---
 

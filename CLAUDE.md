@@ -229,7 +229,20 @@ Nicht verwechseln mit `/screenshot` Skill (User macht Win+Shift+S).
 
 ### Quick Start
 ```powershell
-.\scripts\start-night.ps1
+# 1. Safety Check ZUERST (V3.9)
+.\scripts\pre-deploy-safety.ps1
+
+# 2. Dann Agents starten
+.\scripts\start-agents.ps1
+```
+
+### Safety-First Deploy (V3.9)
+```
+NEUE REGELN:
+- Timeout-Default: REJECT (nicht PROCEED)
+- Pre-Deploy Checks PFLICHT vor Night-Run
+- Budget Hard Limits pro Agent
+- FAIL-SAFE > FAIL-DEFAULT
 ```
 
 ### Priority-1 Agents
@@ -270,6 +283,16 @@ ReviewResponder/
 ---
 
 ## LEARNINGS (Top 5)
+
+### Safety-First Deploy (18.01.2026)
+**Problem:** 2x Timeout-Defaults wurden ohne Berendes Review ausgefuehrt (16.01)
+**Root Cause:** FAIL-DEFAULT statt FAIL-SAFE Architektur
+**Loesung:** Night-Burst V3.9 mit:
+- `scripts/pre-deploy-safety.ps1` - 6 Checks vor JEDEM Night-Run
+- Timeout-Default: **REJECT** statt PROCEED
+- Budget Hard Limits mit `budget-check`/`budget-use` Helpers
+- start-agents.ps1 blockiert bei Safety-Failures
+**Lesson:** System muss OHNE Berend sicher sein (er schlaeft nachts)
 
 ### Real User Definition (17.01.2026, updated 18.01)
 **Problem:** 56 "User" in DB aber 0 zahlende Kunden. Inflated Metrics.

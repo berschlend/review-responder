@@ -1,14 +1,16 @@
 {
-  "last_check": "2026-01-17T23:30:00.000Z",
+  "last_check": "2026-01-17T23:40:00.000Z",
   "overall_status": "PARTIAL",
   "flows": {
     "demo": {
-      "status": "UNKNOWN",
-      "last_check": null,
-      "steps_passed": 0,
+      "status": "API_PASS",
+      "last_check": "2026-01-17T23:40:00.000Z",
+      "steps_passed": 3,
       "total_steps": 6,
       "last_error": null,
-      "api_verified": true
+      "api_verified": true,
+      "auto_account_verified": true,
+      "notes": "API-only test: Demo endpoint + Auto-account creation working. Chrome UI test pending."
     },
     "activation": {
       "status": "UNKNOWN",
@@ -62,11 +64,23 @@
   "mtbf_hours": null,
   "history": [
     {
+      "timestamp": "2026-01-17T23:40:00.000Z",
+      "type": "api_only",
+      "status": "PARTIAL",
+      "tests_run": [
+        "Backend Health: PASS (27 users, 0 paying)",
+        "Demo Endpoint /api/public/demo/:token: PASS",
+        "Auto-Account Creation /api/auth/auto-create-demo-user: PASS",
+        "JWT Token Generation: PASS"
+      ],
+      "notes": "API verified, Chrome UI test still pending - Extension nicht verbunden"
+    },
+    {
       "timestamp": "2026-01-17T23:30:00.000Z",
       "type": "api_only",
       "status": "PARTIAL",
       "notes": "API verified, Chrome test pending"
     }
   ],
-  "notes": "Updated 17.01.2026 - API verified, full Chrome test needed"
+  "notes": "Updated 17.01.2026 23:40 - Demo API + Auto-Account verified. Chrome UI test requires claude --chrome"
 }

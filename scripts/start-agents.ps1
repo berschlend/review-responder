@@ -8,11 +8,16 @@ param(
     [string]$Preset,           # "priority", "monitoring", "outreach", "full"
     [int[]]$Agents,            # Custom agent list, e.g. @(2,4,5)
     [switch]$NoWakeUp,         # Skip backend wake-up
-    [switch]$NoChrome          # Disable Chrome MCP (Chrome is ON by default!)
+    [switch]$NoChrome,         # Disable Chrome MCP (Chrome is ON by default!)
+    [switch]$NoSafetyCheck,    # Skip pre-deploy safety checks (NOT recommended!)
+    [switch]$QuickSafety       # Run quick safety checks only
 )
 
 $ErrorActionPreference = "Continue"
 $ProjectRoot = Split-Path -Parent (Split-Path -Parent $PSCommandPath)
+
+# Pre-flight: Clean up any stale lock files
+Get-ChildItem "$env:USERPROFILE\.claude-burst*\.claude.json.lock" -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
 
 # Agent Configuration
 $AgentConfig = @{
@@ -160,6 +165,49 @@ function Show-CustomMenu {
     Write-Host "    Enter agent numbers (comma-separated, e.g. 2,4,5): " -NoNewline -ForegroundColor White
 }
 
+# Function to run pre-deploy safety checks (V3.9)
+function Run-SafetyChecks {
+    if ($NoSafetyCheck) {
+        Write-Host ""
+        Write-Host "    [SAFETY] Skipping safety checks (-NoSafetyCheck flag)" -ForegroundColor Yellow
+        Write-Host "    [WARNING] This is NOT recommended for Night-Burst!" -ForegroundColor Red
+        return $true
+    }
+
+    Write-Host ""
+    Write-Host "    +===============================================+" -ForegroundColor Magenta
+    Write-Host "    |  PRE-DEPLOY SAFETY CHECKS (V3.9)             |" -ForegroundColor Magenta
+    Write-Host "    |  Philosophy: FAIL-SAFE > FAIL-DEFAULT        |" -ForegroundColor Magenta
+    Write-Host "    +===============================================+" -ForegroundColor Magenta
+    Write-Host ""
+
+    $safetyScript = Join-Path $ProjectRoot "scripts\pre-deploy-safety.ps1"
+
+    if (Test-Path $safetyScript) {
+        $quickFlag = if ($QuickSafety) { "-Quick" } else { "" }
+
+        # Run safety checks
+        $result = & powershell -ExecutionPolicy Bypass -File $safetyScript $quickFlag
+        $exitCode = $LASTEXITCODE
+
+        if ($exitCode -ne 0) {
+            Write-Host ""
+            Write-Host "    [BLOCKED] Safety checks FAILED!" -ForegroundColor Red
+            Write-Host "    Fix issues before starting agents." -ForegroundColor Yellow
+            Write-Host ""
+            Write-Host "    To skip (NOT recommended): -NoSafetyCheck" -ForegroundColor DarkGray
+            Write-Host ""
+            return $false
+        }
+
+        return $true
+    } else {
+        Write-Host "    [WARN] pre-deploy-safety.ps1 not found" -ForegroundColor Yellow
+        Write-Host "    Proceeding without safety checks..." -ForegroundColor Yellow
+        return $true
+    }
+}
+
 # Function to wake up backend
 function Wake-Backend {
     if (-not $NoWakeUp) {
@@ -181,9 +229,9 @@ function Start-Agent {
         [int]$AgentNum
     )
 
-    # Select account with lowest usage (Auto Account Rotation)
-    $getBestAccountScript = Join-Path $ProjectRoot "scripts\Get-BestAccount.ps1"
-    $selectedConfigDir = & powershell -ExecutionPolicy Bypass -File $getBestAccountScript
+    # Get agent-specific config directory (avoids lock conflicts)
+    $getAgentConfigScript = Join-Path $ProjectRoot "scripts\Get-AgentConfig.ps1"
+    $selectedConfigDir = & powershell -ExecutionPolicy Bypass -File $getAgentConfigScript -AgentNumber $AgentNum
     $selectedAccount = Split-Path $selectedConfigDir -Leaf
 
     $config = $AgentConfig[$AgentNum]
@@ -229,6 +277,13 @@ function Start-SelectedAgents {
 
     if ($AgentList.Count -eq 0) {
         Write-Host "    No agents selected!" -ForegroundColor Red
+        return
+    }
+
+    # Run pre-deploy safety checks FIRST (V3.9)
+    $safetyPassed = Run-SafetyChecks
+    if (-not $safetyPassed) {
+        Write-Host "    Aborting agent start due to failed safety checks." -ForegroundColor Red
         return
     }
 

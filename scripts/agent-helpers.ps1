@@ -8,13 +8,15 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend", "feedback-read", "feedback-alert")]
+    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend", "feedback-read", "feedback-alert", "budget-check", "budget-use", "check-blocked", "task-switch", "task-status")]
     [string]$Action,
 
     [int]$Agent = 0,
     [string]$Data = "",
-    [string]$Key = "",
-    [string]$Value = ""
+    [string]$Key = "",          # For budget-check: resource name (resend, openai, serpapi, etc.)
+    [string]$Resource = "",     # For check-blocked: resource to check (email_lock, resend, etc.)
+    [string]$Value = "",
+    [int]$Amount = 1            # For budget-use: amount to deduct
 )
 
 $ErrorActionPreference = "Stop"
@@ -284,6 +286,287 @@ switch ($Action) {
             } catch {
                 Write-Output "ERROR: Could not check alerts"
             }
+        }
+    }
+
+    "budget-check" {
+        # Check if agent has budget for a specific resource (V3.9 Safety)
+        # Usage: powershell -File scripts/agent-helpers.ps1 -Action budget-check -Agent 2 -Key resend
+        # Returns: OK (can proceed) or BLOCKED (budget exceeded)
+
+        $budgetFile = Join-Path $ProgressDir "resource-budget.json"
+        if (-not (Test-Path $budgetFile)) {
+            Write-Output "WARN: No resource-budget.json found, allowing action"
+            return
+        }
+
+        $budget = Get-Content $budgetFile -Raw | ConvertFrom-Json
+        $resourceKey = $Key
+
+        # Map common resource names
+        $resourceMap = @{
+            "resend" = "resend_emails"
+            "email" = "resend_emails"
+            "openai" = "openai_tokens"
+            "serpapi" = "serpapi_calls"
+            "outscraper" = "outscraper_calls"
+            "anthropic" = "anthropic_tokens"
+        }
+
+        $fullResourceKey = if ($resourceMap.ContainsKey($resourceKey)) { $resourceMap[$resourceKey] } else { $resourceKey }
+
+        # Check agent-specific reservation
+        $agentKey = "burst-$Agent"
+        $agentReservation = $null
+        if ($budget.reservations -and $budget.reservations.$agentKey) {
+            $agentReservation = $budget.reservations.$agentKey.$resourceKey
+        }
+
+        # Check global limit
+        $globalLimit = $null
+        $globalUsed = 0
+        if ($budget.daily_limits -and $budget.daily_limits.$fullResourceKey) {
+            $globalLimit = $budget.daily_limits.$fullResourceKey.limit
+            $globalUsed = $budget.daily_limits.$fullResourceKey.used
+        }
+
+        # Determine if blocked
+        $effectiveLimit = if ($agentReservation) { $agentReservation } elseif ($globalLimit) { $globalLimit } else { 999999 }
+        $remaining = $effectiveLimit - $globalUsed
+
+        if ($remaining -le 0) {
+            Write-Output "BLOCKED: Budget exceeded for $resourceKey (used: $globalUsed, limit: $effectiveLimit)"
+
+            # Update status file to mark budget exceeded
+            $statusFile = Get-StatusFile -AgentNum $Agent
+            if (Test-Path $statusFile) {
+                $status = Get-Content $statusFile | ConvertFrom-Json
+                $status | Add-Member -NotePropertyName "budget_exceeded" -NotePropertyValue $true -Force
+                $status | Add-Member -NotePropertyName "budget_exceeded_resource" -NotePropertyValue $resourceKey -Force
+                $status | ConvertTo-Json -Depth 10 | Set-Content -Path $statusFile -Encoding UTF8
+            }
+        } elseif ($remaining -le ($effectiveLimit * 0.1)) {
+            Write-Output "WARN: Low budget for $resourceKey (remaining: $remaining of $effectiveLimit)"
+        } else {
+            Write-Output "OK: Budget available for $resourceKey (remaining: $remaining of $effectiveLimit)"
+        }
+    }
+
+    "budget-use" {
+        # Deduct budget after using a resource (V3.9 Safety)
+        # Usage: powershell -File scripts/agent-helpers.ps1 -Action budget-use -Key resend -Amount 1
+
+        $budgetFile = Join-Path $ProgressDir "resource-budget.json"
+        if (-not (Test-Path $budgetFile)) {
+            Write-Output "WARN: No resource-budget.json found"
+            return
+        }
+
+        $budget = Get-Content $budgetFile -Raw | ConvertFrom-Json
+        $resourceKey = $Key
+
+        # Map common resource names
+        $resourceMap = @{
+            "resend" = "resend_emails"
+            "email" = "resend_emails"
+            "openai" = "openai_tokens"
+            "serpapi" = "serpapi_calls"
+            "outscraper" = "outscraper_calls"
+            "anthropic" = "anthropic_tokens"
+        }
+
+        $fullResourceKey = if ($resourceMap.ContainsKey($resourceKey)) { $resourceMap[$resourceKey] } else { $resourceKey }
+
+        # Update usage
+        if ($budget.daily_limits -and $budget.daily_limits.$fullResourceKey) {
+            $budget.daily_limits.$fullResourceKey.used = $budget.daily_limits.$fullResourceKey.used + $Amount
+            $budget.last_updated = Get-Timestamp
+
+            $budget | ConvertTo-Json -Depth 10 | Set-Content -Path $budgetFile -Encoding UTF8
+
+            $newUsed = $budget.daily_limits.$fullResourceKey.used
+            $limit = $budget.daily_limits.$fullResourceKey.limit
+            Write-Output "OK: Deducted $Amount from $resourceKey (now: $newUsed/$limit)"
+        } else {
+            Write-Output "WARN: Resource $fullResourceKey not found in budget"
+        }
+    }
+
+    "check-blocked" {
+        # Smart Task Switching V4.0 - Check if a resource is blocked
+        # Usage: powershell -File scripts/agent-helpers.ps1 -Action check-blocked -Agent 2 -Resource email_lock
+        # Returns: JSON with blocked status, reason, retry_in_seconds, and suggested_backup_task
+
+        $taskQueueFile = Join-Path $ProgressDir "agent-task-queue.json"
+        $budgetFile = Join-Path $ProgressDir "resource-budget.json"
+        $parallelStatusUrl = "https://review-responder.onrender.com/api/admin/parallel-safe-status"
+        $AdminKey = "rr_admin_7x9Kp2mNqL5wYzR8vTbE3hJcXfGdAs4U"
+
+        $result = @{
+            blocked = $false
+            reason = $null
+            retry_in_seconds = 0
+            resource = $Resource
+            suggested_backup_task = $null
+        }
+
+        # Check based on resource type
+        switch ($Resource) {
+            "email_lock" {
+                # Check parallel-safe lock via API
+                try {
+                    $statusResponse = curl.exe -s -H "x-admin-key: $AdminKey" $parallelStatusUrl 2>&1
+                    $status = $statusResponse | ConvertFrom-Json
+                    if ($status.locks -and $status.locks.email_send) {
+                        $result.blocked = $true
+                        $result.reason = "Email lock active - another agent is sending"
+                        $result.retry_in_seconds = 60
+                    }
+                } catch {
+                    # If API fails, assume not blocked
+                    $result.blocked = $false
+                }
+            }
+
+            { $_ -in @("resend", "openai", "serpapi", "outscraper", "anthropic") } {
+                # Check budget for this resource
+                if (Test-Path $budgetFile) {
+                    $budget = Get-Content $budgetFile -Raw | ConvertFrom-Json
+                    $resourceMap = @{
+                        "resend" = "resend_emails"
+                        "openai" = "openai_tokens"
+                        "serpapi" = "serpapi_calls"
+                        "outscraper" = "outscraper_calls"
+                        "anthropic" = "anthropic_tokens"
+                    }
+                    $fullKey = if ($resourceMap.ContainsKey($Resource)) { $resourceMap[$Resource] } else { $Resource }
+
+                    if ($budget.daily_limits -and $budget.daily_limits.$fullKey) {
+                        $used = $budget.daily_limits.$fullKey.used
+                        $limit = $budget.daily_limits.$fullKey.limit
+                        if ($used -ge $limit) {
+                            $result.blocked = $true
+                            $result.reason = "Budget exceeded for $Resource ($used/$limit)"
+                            # Calculate seconds until midnight UTC for reset
+                            $now = [DateTime]::UtcNow
+                            $midnight = $now.Date.AddDays(1)
+                            $result.retry_in_seconds = [int]($midnight - $now).TotalSeconds
+                        }
+                    }
+                }
+            }
+
+            "linkedin_rate_limit" {
+                # LinkedIn rate limit - check task queue for blocked_until
+                if (Test-Path $taskQueueFile) {
+                    $queue = Get-Content $taskQueueFile -Raw | ConvertFrom-Json
+                    $agentKey = "burst-$Agent"
+                    if ($queue.agents.$agentKey -and $queue.agents.$agentKey.blocked_until) {
+                        $blockedUntil = [DateTime]::Parse($queue.agents.$agentKey.blocked_until)
+                        if ($blockedUntil -gt [DateTime]::UtcNow) {
+                            $result.blocked = $true
+                            $result.reason = "LinkedIn rate limit active"
+                            $result.retry_in_seconds = [int]($blockedUntil - [DateTime]::UtcNow).TotalSeconds
+                        }
+                    }
+                }
+            }
+
+            "api_timeout" {
+                # Check if backend is awake
+                try {
+                    $testUrl = "https://review-responder.onrender.com/api/admin/stats"
+                    $httpCode = curl.exe -s -o NUL -w "%{http_code}" --connect-timeout 5 $testUrl 2>&1
+                    if ($httpCode -notmatch '^\d{3}$' -or [int]$httpCode -ge 500) {
+                        $result.blocked = $true
+                        $result.reason = "Backend not responding"
+                        $result.retry_in_seconds = 60
+                    }
+                } catch {
+                    $result.blocked = $true
+                    $result.reason = "Backend connection failed"
+                    $result.retry_in_seconds = 60
+                }
+            }
+        }
+
+        # If blocked, suggest a backup task
+        if ($result.blocked -and (Test-Path $taskQueueFile)) {
+            $queue = Get-Content $taskQueueFile -Raw | ConvertFrom-Json
+            $agentKey = "burst-$Agent"
+            if ($queue.agents.$agentKey -and $queue.agents.$agentKey.backup_tasks) {
+                $backupTasks = $queue.agents.$agentKey.backup_tasks | Sort-Object { $_.priority }
+                if ($backupTasks.Count -gt 0) {
+                    $result.suggested_backup_task = $backupTasks[0]
+                }
+            }
+        }
+
+        $result | ConvertTo-Json -Depth 5
+    }
+
+    "task-switch" {
+        # Record task switch in agent-task-queue.json
+        # Usage: powershell -File scripts/agent-helpers.ps1 -Action task-switch -Agent 2 -Data '{"to":"backup","task_type":"template_ab_test","reason":"email_lock"}'
+
+        $taskQueueFile = Join-Path $ProgressDir "agent-task-queue.json"
+        if (-not (Test-Path $taskQueueFile)) {
+            Write-Output "ERROR: agent-task-queue.json not found"
+            return
+        }
+
+        $queue = Get-Content $taskQueueFile -Raw | ConvertFrom-Json
+        $agentKey = "burst-$Agent"
+
+        if ($Data) {
+            $switchData = $Data | ConvertFrom-Json
+
+            if ($queue.agents.$agentKey) {
+                # Update current task
+                $queue.agents.$agentKey.current_task = $switchData.to
+                if ($switchData.to -eq "backup") {
+                    $queue.agents.$agentKey.blocked_reason = $switchData.reason
+                    $queue.agents.$agentKey.blocked_until = (Get-Date).AddMinutes(5).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+                } else {
+                    $queue.agents.$agentKey.blocked_reason = $null
+                    $queue.agents.$agentKey.blocked_until = $null
+                }
+
+                $queue.last_updated = Get-Timestamp
+                $queue | ConvertTo-Json -Depth 10 | Set-Content -Path $taskQueueFile -Encoding UTF8
+
+                Write-Output "OK: Agent $agentKey switched to $($switchData.to) task ($($switchData.task_type))"
+            } else {
+                Write-Output "ERROR: Agent $agentKey not found in task queue"
+            }
+        }
+    }
+
+    "task-status" {
+        # Get current task status for an agent
+        # Usage: powershell -File scripts/agent-helpers.ps1 -Action task-status -Agent 2
+
+        $taskQueueFile = Join-Path $ProgressDir "agent-task-queue.json"
+        if (-not (Test-Path $taskQueueFile)) {
+            Write-Output "{}"
+            return
+        }
+
+        $queue = Get-Content $taskQueueFile -Raw | ConvertFrom-Json
+        $agentKey = "burst-$Agent"
+
+        if ($queue.agents.$agentKey) {
+            $status = @{
+                agent = $agentKey
+                current_task = $queue.agents.$agentKey.current_task
+                main_task = $queue.agents.$agentKey.main_task
+                backup_tasks = $queue.agents.$agentKey.backup_tasks
+                blocked_until = $queue.agents.$agentKey.blocked_until
+                blocked_reason = $queue.agents.$agentKey.blocked_reason
+            }
+            $status | ConvertTo-Json -Depth 5
+        } else {
+            Write-Output "{}"
         }
     }
 }

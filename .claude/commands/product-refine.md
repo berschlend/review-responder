@@ -18,14 +18,14 @@ This skill implements **Continuous Learning** for ReviewResponder's AI response 
 ## USAGE
 
 ```bash
-/product-refine              # Full audit + recommendations
-/product-refine check        # Quick consistency check
-/product-refine audit        # Deep response quality audit
+/product-refine              # Full audit + recommendations (default)
+/product-refine quick        # Quick consistency check only
 /product-refine learn        # Review learnings, add new ones
 /product-refine test         # Generate test responses, evaluate
 /product-refine api          # Query API endpoints for live metrics
-/product-refine status       # Quick status from Admin API
 ```
+
+**Removed:** `audit` (merged into default), `status` (merged into `api`)
 
 ---
 
@@ -78,26 +78,42 @@ curl "https://review-responder.onrender.com/api/cron/quality-test?secret=$ADMIN_
 - Recent test results table
 
 ### Cron Setup (cron-job.org):
+
+**Full URLs for cron-job.org (copy-paste ready):**
+```
+# Daily Quality Check (03:00 UTC)
+https://review-responder.onrender.com/api/cron/quality-test?secret=YOUR_ADMIN_SECRET&limit=5
+
+# Weekly Full Audit (Monday 02:00 UTC)
+https://review-responder.onrender.com/api/cron/quality-test?secret=YOUR_ADMIN_SECRET&limit=10
+```
+
 | Schedule | Endpoint | Purpose |
 |----------|----------|---------|
-| Daily 03:00 | `quality-test?limit=5` | Quick daily check |
-| Monday 02:00 | `quality-test?limit=10` | Weekly full audit |
+| Daily 03:00 UTC | `quality-test?limit=5` | Quick daily check (5 tests) |
+| Monday 02:00 UTC | `quality-test?limit=10` | Weekly full audit (10 tests) |
+
+**Response includes:**
+- `quality_score`: Current score (0-100)
+- `previous_score`: Last recorded score
+- `regression_detected`: Boolean flag
+- `alerts`: Array with regression warnings if score dropped ≥3 points
 
 ---
 
-## MODE: check (Default)
+## MODE: quick
 
 **Quick consistency check of all prompt systems.**
 
 ### Checklist:
 1. **Rating Strategies Sync**
-   - [ ] Main generate (server.js ~4013)
-   - [ ] Demo generate (server.js ~7508)
-   - [ ] Instant demo (server.js ~8484)
+   - [ ] Main generate (server.js ~4014)
+   - [ ] Demo generate (server.js ~7526)
+   - [ ] Instant demo (server.js ~8335)
    - Are goals/lengths consistent for same ratings?
 
 2. **Tone Definitions Used**
-   - [ ] toneDefinitions defined (server.js ~4052)
+   - [ ] toneDefinitions defined (server.js ~4053)
    - [ ] toneConfig used in prompt (check for `<tone_instruction>`)
    - [ ] All 4 tones have description + goodExample + avoidExample
 
@@ -128,16 +144,19 @@ grep -n "checkAISlop\|cleanAISlop" backend/server.js
 
 ---
 
-## MODE: audit
+## MODE: default (Full Audit)
 
-**Deep quality audit with real response generation.**
+**Deep quality audit with real response generation + consistency check.**
+
+Combines the old `audit` and `check` modes. Runs automatically when calling `/product-refine` without arguments.
 
 ### Process:
-1. Generate 10 test responses across ratings (1-5 stars)
-2. Run checkAISlop() on each
-3. Measure response lengths
-4. Check for forbidden patterns
-5. Score and report
+1. Run consistency check (like `quick` mode)
+2. Generate 10 test responses across ratings (1-5 stars)
+3. Run checkAISlop() on each
+4. Measure response lengths
+5. Check for forbidden patterns
+6. Score and report
 
 ### Test Cases (Structured JSON):
 ```json
@@ -167,7 +186,7 @@ grep -n "checkAISlop\|cleanAISlop" backend/server.js
 | Uses reviewer detail | Yes | No = warning |
 | Uses contractions | Yes | No = warning |
 
-### Audit Command:
+### Manual Test Command:
 ```bash
 # Test single response
 curl -X POST "https://review-responder.onrender.com/api/public/try" \

@@ -641,6 +641,27 @@ DEPLOY HOOK:
 
 ---
 
+## CHROME MCP AUTONOMIE
+
+> **WICHTIG:** Alle Chrome MCP Tools sind AUTONOM - keine User-Verifikation nötig!
+> Die settings.json hat `"allow": ["mcp__claude-in-chrome__*"]`
+
+### Screenshots sind autonom!
+
+```javascript
+// Screenshot bei jedem Schritt machen (KEIN User-Input nötig!)
+await computer({ action: "screenshot", tabId });
+
+// Zoom für kleine UI-Elemente
+await computer({ action: "zoom", region: [100, 200, 400, 500], tabId });
+```
+
+**NICHT verwechseln:**
+- `/screenshot` Skill = User macht Win+Shift+S (Clipboard)
+- `computer(action: "screenshot")` = Agent macht selbst (autonom!)
+
+---
+
 ## CHROME MCP HELPER FUNCTIONS
 
 ```javascript

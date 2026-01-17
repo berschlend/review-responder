@@ -1,0 +1,30 @@
+# Node modules (recursive)
+node_modules/
+**/node_modules/
+
+# Logs
+logs/
+*.log
+
+# Build artifacts
+dist/
+build/
+.next/
+.cache/
+
+# Large data files
+content/claude-progress/temp-leads.json
+content/claude-progress/archive/
+
+# IDE and OS
+.vscode/
+.idea/
+*.swp
+*.swo
+Thumbs.db
+.DS_Store
+
+# Dependencies lock files (large)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

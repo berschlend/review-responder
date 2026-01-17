@@ -1,7 +1,163 @@
-# Night-Burst Core V3.8 - JEDER AGENT MUSS DAS INCLUDEN
+# Night-Burst Core V4.0 - JEDER AGENT MUSS DAS INCLUDEN
 
 > Basierend auf Anthropic's "Building Effective Agents" + "Multi-Agent Research System"
-> Updated: V3.8 mit Funnel Health Check (18.01.2026)
+> Updated: V4.0 mit Smart Task Switching (18.01.2026)
+
+---
+
+## 🔄 SMART TASK SWITCHING (NEU V4.0!) - LIES DAS ZUERST!
+
+> **PROBLEM:** Agents warten idle auf API Response/Lock/Rate Limit
+> **LOESUNG:** Pre-Check Pattern - Agent entscheidet SELBST ob er Backup-Task macht
+> **KEIN Hook noetig!** Agent checkt VOR blockierender Aktion.
+
+### Wie es funktioniert
+
+```
+BEVOR du eine blockierende Aktion startest:
+
+1. CHECK: Ist Resource verfuegbar?
+   powershell -File scripts/agent-helpers.ps1 -Action check-blocked -Agent [X] -Resource [RESOURCE]
+
+   Resources: email_lock, resend, openai, serpapi, outscraper, linkedin_rate_limit, api_timeout
+
+2. WENN BLOCKED (blocked: true):
+   - Lies suggested_backup_task aus Response
+   - Wechsle zu Backup-Task:
+     powershell -File scripts/agent-helpers.ps1 -Action task-switch -Agent [X] -Data '{"to":"backup","task_type":"[TYPE]","reason":"[RESOURCE]"}'
+   - Fuehre Backup-Task aus
+   - Nach Backup: Re-check Main-Task (GOTO 1)
+
+3. WENN FREI (blocked: false):
+   - Fuehre Main-Task aus
+   - Bei Erfolg: Zurueck zu Main-Task
+     powershell -File scripts/agent-helpers.ps1 -Action task-switch -Agent [X] -Data '{"to":"main","task_type":"main","reason":"completed"}'
+```
+
+### Beispiel: Burst-2 Cold Emailer
+
+```bash
+# 1. Check ob Email-Lock frei ist
+powershell -File scripts/agent-helpers.ps1 -Action check-blocked -Agent 2 -Resource email_lock
+
+# Response wenn BLOCKIERT:
+# {
+#   "blocked": true,
+#   "reason": "Email lock active - another agent is sending",
+#   "retry_in_seconds": 60,
+#   "suggested_backup_task": {"type": "template_ab_test", "description": "Email Templates A/B analysieren", "priority": 1}
+# }
+
+# 2. Wechsle zu Backup-Task
+powershell -File scripts/agent-helpers.ps1 -Action task-switch -Agent 2 -Data '{"to":"backup","task_type":"template_ab_test","reason":"email_lock"}'
+
+# 3. Fuehre template_ab_test aus...
+
+# 4. Nach 60s: Re-check email_lock
+powershell -File scripts/agent-helpers.ps1 -Action check-blocked -Agent 2 -Resource email_lock
+
+# 5. Wenn frei: Zurueck zu Main
+powershell -File scripts/agent-helpers.ps1 -Action task-switch -Agent 2 -Data '{"to":"main","task_type":"cold_email_batch","reason":"lock_released"}'
+```
+
+### Task Queue File
+
+**Location:** `content/claude-progress/agent-task-queue.json`
+
+Enthaelt fuer jeden Agent:
+- `main_task` - Hauptaufgabe mit blocking_resources
+- `backup_tasks` - Sortiert nach Prioritaet (1 = hoechste)
+- `blocked_until` - Wann Main-Task wieder verfuegbar
+- `current_task` - "main" oder "backup"
+
+### Verfuegbare Resources
+
+| Resource | Was wird gecheckt |
+|----------|-------------------|
+| `email_lock` | Parallel-Safe Lock via API |
+| `resend` | Email Budget (resource-budget.json) |
+| `openai` | Token Budget |
+| `serpapi` | API Calls Budget |
+| `outscraper` | API Calls Budget |
+| `linkedin_rate_limit` | blocked_until in task-queue.json |
+| `api_timeout` | Backend Health Check |
+
+### Backup-Tasks pro Agent
+
+| Agent | Backup-Tasks (nach Prioritaet) |
+|-------|-------------------------------|
+| Burst-1 | lead_enrichment, email_validation, data_cleanup |
+| Burst-2 | template_ab_test, subject_line_research, bounce_analysis |
+| Burst-3 | profile_research, connection_warmup |
+| Burst-4 | pending_demos_send, demo_quality_check, business_name_research |
+| Burst-5 | clicker_analysis, conversion_patterns, timing_optimization |
+| Burst-9 | metrics_analysis, alert_tuning |
+
+### Task Status abfragen
+
+```bash
+# Aktueller Task-Status fuer Agent
+powershell -File scripts/agent-helpers.ps1 -Action task-status -Agent 2
+```
+
+---
+
+## 🛡️ PRE-DEPLOY SAFETY CHECKS (V3.9) - LIES DAS AUCH!
+
+> **KRITISCH:** Basierend auf First-Principles Analysis (18.01.2026)
+> **PROBLEM:** 2x Timeout-Defaults wurden ohne Berendes Review ausgefuehrt!
+> **LOESUNG:** FAIL-SAFE statt FAIL-DEFAULT
+
+### VOR JEDEM Night-Agent Deploy:
+
+```powershell
+# PFLICHT! Muss ALLE gruene sein bevor Agents starten:
+.\scripts\pre-deploy-safety.ps1
+```
+
+### Die 6 Safety Checks:
+
+| # | Check | Ziel | Bei FAIL |
+|---|-------|------|----------|
+| 1 | Funnel Health | slop_rate <10%, quality >80 | STOPP Outreach |
+| 2 | API Budget | <80% consumed | STOPP betroffene Agents |
+| 3 | Email Queue | 0 stuck locks | Clear locks first |
+| 4 | Approval Queue | Keine PENDING >2h | Entscheiden oder REJECT |
+| 5 | Agent Status | Alle <30min alt | Restart stale agents |
+| 6 | User Baseline | Dokumentiert | Nur Info |
+
+### TIMEOUT-DEFAULT AENDERUNG (KRITISCH!)
+
+```
+ALT (unsicher):
+  Timeout 4h → Default: PROCEED/IMPLEMENTIEREN
+
+NEU (sicher):
+  Timeout 4h → Default: REJECT (keine Aktion)
+
+WARUM:
+- Berend schlaeft nachts (Grundwahrheit)
+- Emails sind irreversibel (Grundwahrheit)
+- Bugs passieren (Grundwahrheit)
+→ System muss OHNE Berend sicher sein!
+```
+
+### Hard Budget Limits pro Agent (NEU!)
+
+| Agent | Resource | Hard Limit/Nacht | Bei Ueberschreitung |
+|-------|----------|------------------|---------------------|
+| Burst-1 | SerpAPI | 30 calls | AUTO-STOP |
+| Burst-2 | Resend | 50 emails | AUTO-STOP |
+| Burst-4 | OpenAI | 200k tokens | AUTO-STOP |
+| Burst-5 | Resend | 20 emails | AUTO-STOP |
+
+```
+BEI BUDGET-UEBERSCHREITUNG:
+1. Agent STOPPT sofort
+2. Logge in burst-X-status.json: "budget_exceeded": true
+3. Sende Notification an Berend
+4. WARTE auf naechsten Reset (Mitternacht UTC)
+```
 
 ---
 
@@ -105,6 +261,37 @@ BEI JEDER AUTONOMEN ENTSCHEIDUNG:
             "Basierend auf [DATEN] entscheide ich [X]..."
             "Dokumentiere Reasoning in learnings.md"
 ```
+
+### Chrome MCP Screenshot-Autonomie
+
+> **Agents können JEDERZEIT Screenshots machen - OHNE User-Verifikation!**
+> `mcp__claude-in-chrome__*` Tools sind alle ALLOW in settings.json.
+
+```javascript
+// Screenshot der aktuellen Seite (AUTONOM!)
+mcp__claude-in-chrome__computer({
+  action: "screenshot",
+  tabId: currentTabId
+})
+
+// Zoom auf bestimmten Bereich (für kleine UI-Elemente)
+mcp__claude-in-chrome__computer({
+  action: "zoom",
+  region: [x0, y0, x1, y1],  // top-left to bottom-right
+  tabId: currentTabId
+})
+```
+
+**WICHTIGE UNTERSCHEIDUNG:**
+| System | Wer macht Screenshot | Autonomie |
+|--------|---------------------|-----------|
+| `/screenshot` Skill | USER macht Win+Shift+S | User-initiated |
+| `computer(action: "screenshot")` | AGENT selbst | **Vollständig autonom** |
+
+**Best Practice für Funnel-Tests:**
+- Screenshot bei JEDEM Schritt machen für Debugging
+- Bei Errors: Screenshot VOR und NACH der Aktion
+- Für Dokumentation: Screenshots mit aussagekräftigen Logs
 
 ---
 
@@ -306,6 +493,16 @@ powershell -File scripts/agent-helpers.ps1 -Action handoff-check -Agent [X]
 # === FOCUS LESEN ===
 powershell -File scripts/agent-helpers.ps1 -Action focus-read
 # Output: JSON mit current-focus.json
+
+# === BUDGET CHECK (V3.9 - VOR jeder kostenpflichtigen Aktion!) ===
+powershell -File scripts/agent-helpers.ps1 -Action budget-check -Agent [X] -Key resend
+# Output: "OK: Budget available" oder "BLOCKED: Budget exceeded"
+
+# Nach erfolgter Aktion Budget dekrementieren:
+powershell -File scripts/agent-helpers.ps1 -Action budget-use -Key resend -Amount 1
+# Output: "OK: Deducted 1 from resend (now: 51/100)"
+
+# Verfügbare Keys: resend, openai, serpapi, outscraper, anthropic
 
 # === ADMIN API CALLS (mit Auth Header!) ===
 # WICHTIG: Admin Endpoints brauchen x-admin-key Header!

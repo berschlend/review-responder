@@ -1,0 +1,191 @@
+﻿{
+    "version":  "4.0",
+    "last_updated":  "2026-01-17T07:02:08Z",
+    "description":  "Smart Task Switching - Agents wechseln zu Backup-Tasks wenn blockiert",
+    "agents":  {
+                   "burst-1":  {
+                                   "name":  "Lead Finder",
+                                   "main_task":  {
+                                                     "type":  "lead_scraping",
+                                                     "description":  "Neue Leads finden und enrichen",
+                                                     "blocking_resources":  [
+                                                                                "serpapi",
+                                                                                "outscraper"
+                                                                            ]
+                                                 },
+                                   "backup_tasks":  [
+                                                        {
+                                                            "type":  "lead_enrichment",
+                                                            "description":  "Bestehende Leads mit Emails anreichern",
+                                                            "priority":  1
+                                                        },
+                                                        {
+                                                            "type":  "email_validation",
+                                                            "description":  "Gesammelte Emails validieren",
+                                                            "priority":  2
+                                                        },
+                                                        {
+                                                            "type":  "data_cleanup",
+                                                            "description":  "Duplicate Leads entfernen",
+                                                            "priority":  3
+                                                        }
+                                                    ],
+                                   "blocked_until":  null,
+                                   "blocked_reason":  null,
+                                   "current_task":  "main"
+                               },
+                   "burst-2":  {
+                                   "name":  "Cold Emailer",
+                                   "main_task":  {
+                                                     "type":  "cold_email_batch",
+                                                     "description":  "Cold Emails an neue Leads senden",
+                                                     "blocking_resources":  [
+                                                                                "email_lock",
+                                                                                "resend"
+                                                                            ]
+                                                 },
+                                   "backup_tasks":  [
+                                                        {
+                                                            "type":  "template_ab_test",
+                                                            "description":  "Email Templates A/B analysieren",
+                                                            "priority":  1
+                                                        },
+                                                        {
+                                                            "type":  "subject_line_research",
+                                                            "description":  "Neue Subject Lines recherchieren",
+                                                            "priority":  2
+                                                        },
+                                                        {
+                                                            "type":  "bounce_analysis",
+                                                            "description":  "Bounce-Patterns analysieren",
+                                                            "priority":  3
+                                                        }
+                                                    ],
+                                   "blocked_until":  null,
+                                   "blocked_reason":  null,
+                                   "current_task":  "main"
+                               },
+                   "burst-3":  {
+                                   "name":  "Social DM",
+                                   "main_task":  {
+                                                     "type":  "linkedin_outreach",
+                                                     "description":  "LinkedIn Connection Requests senden",
+                                                     "blocking_resources":  [
+                                                                                "linkedin_rate_limit"
+                                                                            ]
+                                                 },
+                                   "backup_tasks":  [
+                                                        {
+                                                            "type":  "profile_research",
+                                                            "description":  "LinkedIn Profile recherchieren",
+                                                            "priority":  1
+                                                        },
+                                                        {
+                                                            "type":  "connection_warmup",
+                                                            "description":  "Bestehende Connections engagen",
+                                                            "priority":  2
+                                                        }
+                                                    ],
+                                   "blocked_until":  null,
+                                   "blocked_reason":  null,
+                                   "current_task":  "main"
+                               },
+                   "burst-4":  {
+                                   "name":  "Demo Generator",
+                                   "main_task":  {
+                                                     "type":  "demo_generation",
+                                                     "description":  "Demos fuer Leads generieren",
+                                                     "blocking_resources":  [
+                                                                                "openai",
+                                                                                "google_places"
+                                                                            ]
+                                                 },
+                                   "backup_tasks":  [
+                                                        {
+                                                            "type":  "pending_demos_send",
+                                                            "description":  "Pending Demo-Emails senden",
+                                                            "priority":  1
+                                                        },
+                                                        {
+                                                            "type":  "demo_quality_check",
+                                                            "description":  "Bestehende Demos auf Qualitaet pruefen",
+                                                            "priority":  2
+                                                        },
+                                                        {
+                                                            "type":  "business_name_research",
+                                                            "description":  "Business-Namen fuer bessere Matches recherchieren",
+                                                            "priority":  3
+                                                        }
+                                                    ],
+                                   "blocked_until":  null,
+                                   "blocked_reason":  null,
+                                   "current_task":  "main"
+                               },
+                   "burst-5":  {
+                                   "name":  "Hot Lead Chaser",
+                                   "main_task":  {
+                                                     "type":  "followup_emails",
+                                                     "description":  "Follow-up Emails an Clicker senden",
+                                                     "blocking_resources":  [
+                                                                                "email_lock",
+                                                                                "resend"
+                                                                            ]
+                                                 },
+                                   "backup_tasks":  [
+                                                        {
+                                                            "type":  "clicker_analysis",
+                                                            "description":  "Clicker-Verhalten analysieren",
+                                                            "priority":  1
+                                                        },
+                                                        {
+                                                            "type":  "conversion_patterns",
+                                                            "description":  "Conversion-Patterns dokumentieren",
+                                                            "priority":  2
+                                                        },
+                                                        {
+                                                            "type":  "timing_optimization",
+                                                            "description":  "Optimale Follow-up Zeiten analysieren",
+                                                            "priority":  3
+                                                        }
+                                                    ],
+                                   "blocked_until":  null,
+                                   "blocked_reason":  null,
+                                   "current_task":  "main"
+                               },
+                   "burst-9":  {
+                                   "name":  "Doctor",
+                                   "main_task":  {
+                                                     "type":  "health_monitoring",
+                                                     "description":  "System Health monitoren",
+                                                     "blocking_resources":  [
+
+                                                                            ]
+                                                 },
+                                   "backup_tasks":  [
+                                                        {
+                                                            "type":  "metrics_analysis",
+                                                            "description":  "Tiefergehende Metriken-Analyse",
+                                                            "priority":  1
+                                                        },
+                                                        {
+                                                            "type":  "alert_tuning",
+                                                            "description":  "Alert-Thresholds anpassen",
+                                                            "priority":  2
+                                                        }
+                                                    ],
+                                   "blocked_until":  null,
+                                   "blocked_reason":  null,
+                                   "current_task":  "main"
+                               }
+               },
+    "blocking_reasons":  {
+                             "email_lock":  "Another agent is sending emails (parallel-safe lock active)",
+                             "resend":  "Resend API rate limit or budget exceeded",
+                             "serpapi":  "SerpAPI calls limit reached",
+                             "outscraper":  "Outscraper API limit reached",
+                             "openai":  "OpenAI token budget exceeded",
+                             "google_places":  "Google Places API quota reached",
+                             "linkedin_rate_limit":  "LinkedIn daily limit reached (20-25 requests)",
+                             "api_timeout":  "API not responding, backend may be sleeping"
+                         }
+}

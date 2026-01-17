@@ -4,6 +4,9 @@
 $ErrorActionPreference = "Continue"
 $ProjectRoot = Split-Path -Parent (Split-Path -Parent $PSCommandPath)
 
+# Pre-flight: Clean up any stale lock files
+Get-ChildItem "$env:USERPROFILE\.claude-burst*\.claude.json.lock" -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
+
 Write-Host @"
 
     ╔═══════════════════════════════════════════════════════════════╗
@@ -38,9 +41,9 @@ function Start-PriorityAgent {
         [string]$AgentName
     )
 
-    # Select account with lowest usage (Auto Account Rotation)
-    $getBestAccountScript = Join-Path $ProjectRoot "scripts\Get-BestAccount.ps1"
-    $selectedConfigDir = & powershell -ExecutionPolicy Bypass -File $getBestAccountScript
+    # Get agent-specific config directory (avoids lock conflicts)
+    $getAgentConfigScript = Join-Path $ProjectRoot "scripts\Get-AgentConfig.ps1"
+    $selectedConfigDir = & powershell -ExecutionPolicy Bypass -File $getAgentConfigScript -AgentNumber $AgentNum
     $selectedAccount = Split-Path $selectedConfigDir -Leaf
 
     $escapedProjectRoot = $ProjectRoot -replace "'", "''"
