@@ -343,6 +343,15 @@ ReviewResponder/
 - `/api/public/try`, `/api/v1/generate` (Extension)
 **Lesson:** Haiku > GPT-4o-mini (gleicher Provider, bessere Qualitaet). GPT-4o-mini nur wenn Anthropic komplett down.
 
+### SQL/JS Test-Filter Sync (17.01.2026)
+**Problem:** admin/stats zeigte 27 User, user-list zeigte 6. Verschiedene Filter!
+**Root Cause:** `getTestEmailExcludeClause` (SQL) fehlten Ghost-Email-Patterns die `isTestEmail` (JS) hatte.
+**Loesung:**
+- Ghost-Patterns (info@, contact@, reservation@, etc.) zu TEST_EMAIL_PATTERNS Array hinzugefuegt
+- viaDemo SQL query fixed: `demo_page_viewed_at IS NOT NULL` Check hinzugefuegt
+- `likely-real` Helper fuer Agents: zeigt LIKELY_REAL und MAYBE_REAL User
+**Lesson:** SQL und JS Filter MUESSEN synchron sein! Sonst Metriken-Chaos.
+
 ### Data Quality Verification (17.01.2026, updated 17.01)
 **Problem:** DB zeigte 61 User, 4.4% CTR - alles FAKE!
 **Root Cause:**
@@ -351,9 +360,9 @@ ReviewResponder/
 **Loesung:** `/data-analyze` Skill + `real-user-metrics.json` Persistenz
 - Bot Detection: Midnight Burst, Corp Email, Zero Activity Flags
 - Cross-Reference: User-DB mit Outreach-Leads vergleichen
-- **Helper (NEU):** `data-analyze` + `check-real-users` Actions in agent-helpers.ps1
+- **Helper (NEU):** `data-analyze` + `check-real-users` + `likely-real` Actions
   - Night-Agents koennen jetzt selbst Data Quality Checks ausfuehren
-  - Session-Start Checklist in night-burst-core.md V4.2 inkludiert Real User Check
+  - `likely-real` zeigt priorisierte Leads (2 likely, 2 maybe, 2 uncertain)
 **Lesson:** NIEMALS DB-Zahlen trauen! Immer mit Bot-Detection verifizieren.
 
 ### Hook Silent Failures Fix (18.01.2026)
