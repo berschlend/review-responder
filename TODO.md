@@ -64,7 +64,6 @@
 |-----|------------|------|----------------|
 | **Night-Burst System** | **Manuellen Neustart** | **17.01** | **6 Agents STALE, Burst-6 nie gestartet. Siehe for-berend.md für Commands** |
 | Chrome Extension v1.6.2 | Chrome Review (1-3 Tage) | 15.01 | Bei Approval → Google Ads schalten |
-| ~~Review Alerts Feature~~ | ~~Implementation~~ | ~~16.01~~ | **DONE 17.01** - `/api/cron/review-alerts` deployed & tested |
 | AnyDesk Remote (Laptop zu) | HDMI Dummy Plug kaufen | 16.01 | Amazon bestellen (~5€) → Einstecken |
 
 ---
