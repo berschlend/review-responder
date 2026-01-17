@@ -1,75 +1,79 @@
 {
   "realUsers": {
-    "total": 0,
+    "total": 4,
     "viaGenerator": 0,
-    "viaDemo": 0,
+    "viaDemo": 4,
     "viaInstantTry": 0,
-    "inactive": 6,
+    "inactive": 3,
     "paying": 0
   },
-  "definition": "Real User = 1+ Generation ANYWHERE (responses, demo_generations with demo_page_viewed_at, public_try_usage)",
+  "definition": "Real User = 1+ Generation ANYWHERE (responses, demo_generations with demo_page_viewed_at, public_try_usage). Registration alone does NOT count!",
   "registeredUsers": {
-    "total": 6,
-    "likelyReal": 2,
-    "maybeReal": 1,
-    "uncertain": 3,
+    "total": 7,
+    "withGeneration": 4,
+    "withoutGeneration": 3,
     "analysis": [
+      {
+        "email": "info@terrasse-zuerich.ch",
+        "signupDate": "2026-01-16",
+        "hasGeneration": true,
+        "source": "MAGIC_LINK_DEMO",
+        "verdict": "REAL_USER",
+        "reason": "Used Magic Link AND viewed demo page with generation"
+      },
       {
         "email": "zuerich@trattoria-sempre.ch",
         "business": "Trattoria Sempre Zürich",
-        "signupTime": "00:15 UTC",
         "signupDate": "2026-01-16",
-        "verdict": "LIKELY_REAL",
-        "reason": "Used Magic Link = active engagement, Swiss restaurant domain",
+        "hasGeneration": true,
+        "source": "MAGIC_LINK_DEMO",
+        "verdict": "REAL_USER",
+        "reason": "Used Magic Link AND viewed demo page with generation",
         "phone": "+41 44 262 54 62",
         "priority": 1
       },
       {
-        "email": "i.schmidt@tv-turm.de",
-        "business": "Sphere Tim Raue (2 Michelin Stars)",
-        "signupTime": "22:33 UTC",
-        "signupDate": "2026-01-14",
-        "verdict": "LIKELY_REAL",
-        "reason": "Personal name format (I. Schmidt), high-end restaurant, evening signup",
-        "phone": "030 247575875",
-        "priority": 2
+        "email": "info@treudelberg.com",
+        "signupDate": "2026-01-16",
+        "hasGeneration": true,
+        "source": "MAGIC_LINK_DEMO",
+        "verdict": "REAL_USER",
+        "reason": "Used Magic Link AND viewed demo page with generation"
+      },
+      {
+        "email": "hello@stjamesquarter.com",
+        "signupDate": "2026-01-16",
+        "hasGeneration": true,
+        "source": "MAGIC_LINK_DEMO",
+        "verdict": "REAL_USER",
+        "reason": "Used Magic Link AND viewed demo page with generation"
       },
       {
         "email": "H0796@accor.com",
         "business": "ibis Wien Mariahilf",
-        "signupTime": "08:14 UTC",
         "signupDate": "2026-01-15",
-        "verdict": "MAYBE_REAL",
-        "reason": "Business hours signup, corporate Accor but active decision",
-        "phone": "+43 1 521510",
-        "priority": 3
+        "hasGeneration": false,
+        "source": "SECURITY_SCANNER_BOT",
+        "verdict": "FAKE_ACCOUNT",
+        "reason": "Registered via Magic Link click but NO generation = Bot clicked link, auto-account created"
       },
       {
         "email": "h9057@accor.com",
         "business": "Novotel London Canary Wharf",
-        "signupTime": "02:00 UTC",
         "signupDate": "2026-01-15",
-        "verdict": "UNCERTAIN",
-        "reason": "2am signup (UK = 3am), corporate Accor pattern H####@accor.com",
-        "priority": 5
+        "hasGeneration": false,
+        "source": "SECURITY_SCANNER_BOT",
+        "verdict": "FAKE_ACCOUNT",
+        "reason": "H####@accor.com pattern + no generation = MS365 Security Scanner"
       },
       {
-        "email": "reservation.web@madamebrasserie.com",
-        "business": "Madame Brasserie (Eiffel Tower)",
-        "signupTime": "22:29 UTC",
+        "email": "i.schmidt@tv-turm.de",
+        "business": "Sphere Tim Raue",
         "signupDate": "2026-01-14",
-        "verdict": "UNCERTAIN",
-        "reason": "Generic reservation@ email, same minute as AWAY SPA",
-        "priority": 4
-      },
-      {
-        "email": "awayspa.edinburgh@whotels.com",
-        "business": "AWAY SPA W Hotels Edinburgh",
-        "signupTime": "22:29 UTC",
-        "signupDate": "2026-01-14",
-        "verdict": "UNCERTAIN",
-        "reason": "Same EXACT minute as Madame Brasserie - burst pattern",
-        "priority": 6
+        "hasGeneration": false,
+        "source": "SECURITY_SCANNER_BOT",
+        "verdict": "FAKE_ACCOUNT",
+        "reason": "Registered but 0 generations = Bot clicked Magic Link"
       }
     ]
   },
@@ -81,36 +85,33 @@
       "phone": "+1 720 440 2864",
       "status": "HOT - Clicked yesterday, personal gmail",
       "priority": 0
+    },
+    {
+      "email": "zuerich@trattoria-sempre.ch",
+      "business": "Trattoria Sempre Zürich",
+      "phone": "+41 44 262 54 62",
+      "status": "REAL_USER - Has demo generation, Swiss restaurant",
+      "priority": 1
     }
   ],
+  "keyInsight": "3 of 7 'REAL' users are actually FAKE - Security Scanner bots clicked Magic Links, auto-accounts were created, but they never generated anything. Only 4 users actually engaged with the product.",
   "botPatterns": [
-    { "pattern": "midnight-burst", "count": 38 },
-    { "pattern": "test-email", "count": 60 },
-    { "pattern": "corp-system-email", "count": 4 },
-    { "pattern": "same-minute-signup", "count": 2 }
+    { "pattern": "registered-no-generation", "count": 3, "note": "Security scanners that clicked Magic Links" },
+    { "pattern": "H####@accor.com", "count": 2, "note": "MS365 security scanner pattern" },
+    { "pattern": "test-email", "count": 60 }
   ],
-  "ctr": {
-    "reported": 4.76,
-    "real": 0,
-    "botClicks": 38,
-    "humanClicks": 0,
-    "note": "100% bot clicks after full filter - ALL were security scanners"
-  },
   "outreach": {
-    "emailsSent": 799,
-    "unsubscribed": 57,
-    "unsubscribeRate": "7.1%",
-    "magicLinksSent": 142,
-    "magicLinksClicked": 40,
-    "converted": 0
+    "emailsSent": 1902,
+    "realUsersWithGeneration": 4,
+    "conversionRate": "0.21%",
+    "note": "4 users actually engaged out of 1902 emails"
   },
-  "lastUpdated": "2026-01-18T10:30:00Z",
-  "analyzedAt": "2026-01-18T10:30:00Z",
+  "lastUpdated": "2026-01-18T12:00:00Z",
+  "analyzedAt": "2026-01-18T12:00:00Z",
   "actionItems": [
-    "PRIORITY 0: Call ti.cafeofficial@gmail.com - HOT LEAD clicked yesterday!",
-    "PRIORITY 1: Call zuerich@trattoria-sempre.ch - Used Magic Link (engaged)",
-    "PRIORITY 2: Call i.schmidt@tv-turm.de - Personal name, Michelin restaurant",
-    "PRIORITY 3: Email H0796@accor.com - Business hours signup",
-    "LOW: Skip uncertain accounts (same-minute burst pattern)"
+    "PRIORITY 0: Call ti.cafeofficial@gmail.com - HOT LEAD clicked!",
+    "PRIORITY 1: Follow up with 4 REAL users who generated demos",
+    "FIX NEEDED: Add bot-check BEFORE auto-account creation (Magic Link clicks)",
+    "INSIGHT: 43% of 'REAL' registrations were bots (3/7)"
   ]
 }
