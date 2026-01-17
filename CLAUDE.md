@@ -236,13 +236,13 @@ Nicht verwechseln mit `/screenshot` Skill (User macht Win+Shift+S).
 .\scripts\start-agents.ps1
 ```
 
-### Safety-First Deploy (V3.9)
+### Safety-First Deploy (V4.0)
 ```
 NEUE REGELN:
+- Smart Task Switching: Agents wechseln zu Backup wenn blockiert
 - Timeout-Default: REJECT (nicht PROCEED)
 - Pre-Deploy Checks PFLICHT vor Night-Run
 - Budget Hard Limits pro Agent
-- FAIL-SAFE > FAIL-DEFAULT
 ```
 
 ### Priority-1 Agents
@@ -254,6 +254,7 @@ NEUE REGELN:
 - `content/claude-progress/agent-memory.json`
 - `content/claude-progress/learnings.md`
 - `content/claude-progress/funnel-health-log.json`
+- `content/claude-progress/agent-task-queue.json` (NEU V4.0)
 - `.claude/commands/night-burst-core.md`
 
 ---
@@ -283,6 +284,14 @@ ReviewResponder/
 ---
 
 ## LEARNINGS (Top 5)
+
+### Smart Task Switching V4.0 (18.01.2026)
+**Problem:** Agents warten idle auf API Response/Lock/Rate Limit - verschwendete Zeit.
+**Loesung:** Pre-Check Pattern - Agent checkt VOR blockierender Aktion ob Resource verfuegbar:
+- `check-blocked` Action in agent-helpers.ps1 (email_lock, resend, openai, serpapi, etc.)
+- `task-switch` Action wechselt zwischen Main und Backup Tasks
+- `agent-task-queue.json` definiert Backup-Tasks pro Agent
+**Lesson:** Kein Hook noetig! Agent entscheidet selbst. Pre-Check > Wait-and-Retry.
 
 ### Safety-First Deploy (18.01.2026)
 **Problem:** 2x Timeout-Defaults wurden ohne Berendes Review ausgefuehrt (16.01)
