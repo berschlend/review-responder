@@ -8025,14 +8025,18 @@ app.get('/api/public/demo/:token', async (req, res) => {
       });
     }
 
-    // Track page view - always increment counter, mark first view time
-    await dbQuery(
-      `UPDATE demo_generations SET
-         demo_view_count = COALESCE(demo_view_count, 0) + 1,
-         demo_page_viewed_at = COALESCE(demo_page_viewed_at, NOW())
-       WHERE id = $1`,
-      [demo.id]
-    );
+    // Track page view - skip if preview mode (for admin testing)
+    // Usage: Add ?preview=true to URL to not count your view
+    const isPreview = req.query.preview === 'true';
+    if (!isPreview) {
+      await dbQuery(
+        `UPDATE demo_generations SET
+           demo_view_count = COALESCE(demo_view_count, 0) + 1,
+           demo_page_viewed_at = COALESCE(demo_page_viewed_at, NOW())
+         WHERE id = $1`,
+        [demo.id]
+      );
+    }
 
     // Get google_place_id - fallback to linkedin_outreach if not in demo_generations
     let placeId = demo.google_place_id;
