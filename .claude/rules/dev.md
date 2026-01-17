@@ -205,6 +205,7 @@ Vor neuem Discount IMMER pruefen:
 > **ECHTER USER = Mind. 1 Generierung EGAL WO**
 > - `responses` (eingeloggt generiert)
 > - `demo_generations` (Demo-Seite mit Email)
+> - `public_try_usage` (Instant Try auf Homepage)
 > Registration allein zaehlt NICHT!
 
 ```
@@ -212,7 +213,8 @@ API Response (admin/stats):
 realUsers: {
   total: X,        // Echte User (1+ Generierung)
   viaGenerator: Y, // Davon eingeloggt generiert
-  viaDemo: Z,      // Nur Demo-Generierung (ohne responses)
+  viaDemo: Z,      // Nur Demo-Generierung
+  viaInstantTry: W, // Via Instant Try Widget (auch anonym!)
   inactive: A      // Registriert aber 0 Generierungen
 }
 ```

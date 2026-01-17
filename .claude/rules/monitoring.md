@@ -156,6 +156,7 @@ powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\claude-notify.ps1" \
 > **ECHTER USER = Mind. 1 Generierung EGAL WO**
 > - `responses` (eingeloggt generiert)
 > - `demo_generations` (Demo-Seite mit Email)
+> - `public_try_usage` (Instant Try auf Homepage)
 > Registration allein zaehlt NICHT!
 
 ```
@@ -163,13 +164,14 @@ API Response (admin/stats):
 realUsers: {
   total: X,        // Echte User (1+ Generierung)
   viaGenerator: Y, // Davon eingeloggt generiert
-  viaDemo: Z,      // Nur Demo-Generierung (ohne responses)
+  viaDemo: Z,      // Nur Demo-Generierung
+  viaInstantTry: W, // Via Instant Try Widget
   inactive: A      // Registriert aber 0 Generierungen
 }
 
 BEISPIEL:
 - 60 registered, 6 real, 54 inactive = Onboarding Problem!
-- Demo-Generierung zaehlt auch als "aktiv"!
+- JEDE Generierung (auch instant try) zaehlt als "aktiv"!
 ```
 
 ### API Check
@@ -179,7 +181,7 @@ curl -s -H "x-admin-key: XXX" \
   "https://review-responder.onrender.com/api/admin/stats?exclude_test=true"
 
 # Response enthaelt:
-# { realUsers: { total: 6, viaGenerator: 4, viaDemo: 2, inactive: 54 }, ... }
+# { realUsers: { total: 6, viaGenerator: 4, viaDemo: 1, viaInstantTry: 1, inactive: 54 }, ... }
 ```
 
 ---
