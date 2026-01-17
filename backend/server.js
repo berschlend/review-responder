@@ -12960,7 +12960,7 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
     }
 
     // Real users = haben mindestens 1x generiert (egal wo!)
-    // Definition: responses (eingeloggt) ODER via Demo gekommen (created_via_demo)
+    // Definition: responses (eingeloggt) ODER demo_generations (Email-Match via outreach_leads)
     let realUserStats = { real_users: 0, via_generator: 0, via_demo: 0, inactive_users: 0 };
     try {
       realUserStats = (await dbGet(`
@@ -12968,21 +12968,33 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
           -- Echte User: haben irgendwo generiert
           COUNT(*) FILTER (WHERE
             EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
-            OR u.created_via_demo = true
+            OR EXISTS (
+              SELECT 1 FROM demo_generations d
+              JOIN outreach_leads ol ON d.lead_id = ol.id
+              WHERE LOWER(ol.email) = LOWER(u.email)
+            )
           ) as real_users,
           -- Davon: via Generator (eingeloggt)
           COUNT(*) FILTER (WHERE
             EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
           ) as via_generator,
-          -- Davon: via Demo-Seite (created_via_demo aber KEINE logged-in responses)
+          -- Davon: via Demo-Seite (demo_generations aber KEINE logged-in responses)
           COUNT(*) FILTER (WHERE
-            u.created_via_demo = true
+            EXISTS (
+              SELECT 1 FROM demo_generations d
+              JOIN outreach_leads ol ON d.lead_id = ol.id
+              WHERE LOWER(ol.email) = LOWER(u.email)
+            )
             AND NOT EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
           ) as via_demo,
           -- Inaktive User: registriert aber nie generiert
           COUNT(*) FILTER (WHERE
             NOT EXISTS (SELECT 1 FROM responses r WHERE r.user_id = u.id)
-            AND (u.created_via_demo IS NULL OR u.created_via_demo = false)
+            AND NOT EXISTS (
+              SELECT 1 FROM demo_generations d
+              JOIN outreach_leads ol ON d.lead_id = ol.id
+              WHERE LOWER(ol.email) = LOWER(u.email)
+            )
           ) as inactive_users
         FROM users u
         WHERE 1=1 ${getTestEmailExcludeClause('u.email')}

@@ -266,6 +266,12 @@ ReviewResponder/
 
 ## LEARNINGS (Top 5)
 
+### Real User Definition (18.01.2026)
+**Problem:** 56 "User" in DB aber 0 zahlende Kunden. Inflated Metrics.
+**Loesung:** Echter User = Mind. 1 Response generiert (nicht nur registriert).
+**API:** `/api/admin/user-list` jetzt mit `total_registered` (0 Responses) vs `total_real` (1+ Responses).
+**Lesson:** Registration != Activation. 6 registriert, 0 echte User = Onboarding Problem!
+
 ### react-select fuer Searchable Dropdowns (18.01.2026)
 **Problem:** Native `<select>` mit 20+ Business Types ist unuebersichtlich.
 **Loesung:** `react-select` mit gruppierten Optionen + Custom Styling fuer Dark Mode.
