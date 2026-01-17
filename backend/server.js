@@ -27541,17 +27541,58 @@ app.post('/api/admin/test-email', async (req, res) => {
   }
 
   try {
-    const subject = `[Test] Brevo Email Test - ${new Date().toISOString()}`;
+    const subject = `[Test] ${provider.toUpperCase()} Email Test - ${new Date().toISOString()}`;
     const html = `
-      <h2>Brevo Test Email</h2>
+      <h2>${provider.toUpperCase()} Test Email</h2>
       <p>This is a test email sent via <strong>${provider}</strong>.</p>
-      <p>If you received this, Brevo is working correctly!</p>
+      <p>If you received this, ${provider} is working correctly!</p>
       <p>Sent at: ${new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}</p>
       <hr>
       <p><a href="https://tryreviewresponder.com">ReviewResponder</a></p>
     `;
 
-    if (provider === 'brevo' && brevoApi) {
+    // ========== AMAZON SES TEST ==========
+    if (provider === 'ses') {
+      if (!sesClient) {
+        return res.status(500).json({
+          error: 'SES not configured',
+          details: 'AWS_SES_ACCESS_KEY_ID or AWS_SES_SECRET_ACCESS_KEY missing',
+          sesClient: sesClient === null ? 'null' : 'exists',
+        });
+      }
+
+      const command = new SendEmailCommand({
+        Source: `ReviewResponder Test <outreach@tryreviewresponder.com>`,
+        Destination: {
+          ToAddresses: [to],
+        },
+        Message: {
+          Subject: {
+            Data: subject,
+            Charset: 'UTF-8',
+          },
+          Body: {
+            Html: {
+              Data: html,
+              Charset: 'UTF-8',
+            },
+          },
+        },
+      });
+
+      const result = await sesClient.send(command);
+      console.log('[Test Email] SES test email sent to:', to, 'messageId:', result.MessageId);
+
+      return res.json({
+        success: true,
+        provider: 'ses',
+        to,
+        messageId: result.MessageId,
+        message: 'Test email sent via Amazon SES. Check your inbox!',
+      });
+    }
+    // ========== BREVO TEST ==========
+    else if (provider === 'brevo' && brevoApi) {
       const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
       sendSmtpEmail.subject = subject;
       sendSmtpEmail.htmlContent = html;
@@ -27594,7 +27635,10 @@ app.post('/api/admin/test-email', async (req, res) => {
     console.error('[Test Email] Error:', error);
     return res.status(500).json({
       error: 'Failed to send test email',
+      provider: provider,
       details: error.message,
+      code: error.Code || error.code,
+      fullError: error.toString(),
     });
   }
 });
