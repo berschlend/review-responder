@@ -1849,6 +1849,10 @@ async function initDatabase() {
       await dbQuery(
         `ALTER TABLE users ADD COLUMN IF NOT EXISTS created_via_demo BOOLEAN DEFAULT FALSE`
       );
+      // Test account flag for /funnel-verify - excluded from metrics with ?exclude_test=true
+      await dbQuery(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS is_test_account BOOLEAN DEFAULT FALSE`
+      );
     } catch (error) {
       // Columns might already exist
     }
