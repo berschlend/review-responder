@@ -1,0 +1,57 @@
+{
+  "lastUpdated": "2026-01-17T18:45:00Z",
+  "updatedBy": "Claude Data Analyze",
+
+  "realUsers": {
+    "total": 0,
+    "registered": 6,
+    "activated": 0,
+    "paying": 0,
+    "activationRate": "0%",
+    "diagnosis": "100% Onboarding Failure"
+  },
+
+  "registeredButInactive": [
+    {"email": "zuerich@trattoria-sempre.ch", "business": "Trattoria Sempre Zürich", "signup": "2026-01-16", "source": "magic_link", "daysInactive": 1},
+    {"email": "H0796@accor.com", "business": "ibis Wien Mariahilf", "signup": "2026-01-15", "source": "normal", "daysInactive": 2},
+    {"email": "h9057@accor.com", "business": "Novotel London Canary Wharf", "signup": "2026-01-15", "source": "normal", "daysInactive": 2},
+    {"email": "i.schmidt@tv-turm.de", "business": "Sphere Tim Raue", "signup": "2026-01-14", "source": "normal", "daysInactive": 3},
+    {"email": "reservation.web@madamebrasserie.com", "business": "Madame Brasserie", "signup": "2026-01-14", "source": "normal", "daysInactive": 3},
+    {"email": "awayspa.edinburgh@whotels.com", "business": "AWAY SPA", "signup": "2026-01-14", "source": "normal", "daysInactive": 3}
+  ],
+
+  "dataQuality": {
+    "reportedClicks": 84,
+    "legitimateClicks": 27,
+    "botClicks": 57,
+    "botPercentage": "67.5%",
+    "reportedCTR": "4.42%",
+    "realCTR": "1.42%",
+    "inflation": "211%",
+    "midnightBurstDetected": true,
+    "suspiciousPatterns": ["midnight-burst", "test-email"]
+  },
+
+  "outreach": {
+    "totalLeads": 2692,
+    "leadsWithEmail": 1342,
+    "emailsSent": 1902,
+    "magicLinksSent": 142,
+    "magicLinksClicked": 40,
+    "magicLinksConverted": 0
+  },
+
+  "dbStats": {
+    "totalInDB": 61,
+    "testAccounts": 55,
+    "realRegistered": 6,
+    "realActivated": 0
+  },
+
+  "actionItems": [
+    "CRITICAL: 0% Activation Rate - alle 6 User haben nie generiert",
+    "Onboarding Flow testen mit /funnel-verify activation",
+    "Magic Links: 40 clicked, 0 converted - warum?",
+    "Bot-Filter in API aktivieren (?exclude_bots=true)"
+  ]
+}
