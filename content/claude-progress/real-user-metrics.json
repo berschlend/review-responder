@@ -65,10 +65,11 @@
   ],
   "ctr": {
     "reported": 4.76,
-    "real": 0,
-    "botClicks": 38,
-    "humanClicks": 0,
-    "note": "100% of clicks were email security scanners (filtered out)"
+    "real": 1.5,
+    "botClicks": 23,
+    "humanClicks": 12,
+    "testClicks": 3,
+    "note": "~32% real clicks (12/38), 60% bot/scanner, 8% test emails"
   },
   "fixes_deployed": [
     "Bot detection for auto-account creation (prevents scanner accounts)",
@@ -76,13 +77,16 @@
     "First Response Guidance Banner for new users",
     "Registration redirects to /dashboard (was /generator which 404'd)"
   ],
-  "lastUpdated": "2026-01-17T23:00:00Z",
-  "analyzedAt": "2026-01-17T23:00:00Z",
+  "lastUpdated": "2026-01-18T03:15:00Z",
+  "analyzedAt": "2026-01-18T03:15:00Z",
   "actionItems": [
     "DONE: Bot detection implemented",
     "DONE: Onboarding banner added",
     "TODO: Personalized follow-up to i.schmidt@tv-turm.de (Michelin restaurant)",
     "TODO: Personalized follow-up to zuerich@trattoria-sempre.ch (engaged via magic link)",
-    "TODO: Cold email channel analysis - 1902 sent, 0 human opens"
+    "NEW: ti.cafeofficial@gmail.com clicked TODAY 17:22 UTC - Tí Cafe Denver - HOT LEAD!"
+  ],
+  "hotLeadsToday": [
+    {"email": "ti.cafeofficial@gmail.com", "business": "Tí Cafe Denver", "clicked": "2026-01-17T17:22:46Z", "status": "NEW_CLICK"}
   ]
 }

@@ -1,7 +1,7 @@
 # Email Deliverability Fix
 
 > Erstellt: 18.01.2026
-> Status: KRITISCH - SPF Record fehlt Email Provider!
+> Status: ✅ FIXED - SPF Record aktualisiert am 17.01.2026
 
 ---
 
@@ -15,22 +15,26 @@ Emails werden via **Brevo** und **Amazon SES** gesendet, aber der SPF Record aut
 
 ## Aktuelle DNS Records
 
-### SPF (PROBLEM!)
+### SPF ✅ FIXED!
 ```
+# ALT (Problem):
 v=spf1 include:spf.improvmx.com ~all
+
+# NEU (Fixed 17.01.2026):
+v=spf1 include:spf.improvmx.com include:spf.brevo.com include:amazonses.com include:resend.com ~all
 ```
 
-**Fehlend:**
-- `include:spf.brevo.com` (Brevo/Sendinblue)
-- `include:amazonses.com` (Amazon SES)
-- `include:resend.com` (Resend)
+**Hinzugefügt:**
+- ✅ `include:spf.brevo.com` (Brevo/Sendinblue)
+- ✅ `include:amazonses.com` (Amazon SES)
+- ✅ `include:resend.com` (Resend)
 
-### DKIM
+### DKIM ✅ ALLE KONFIGURIERT!
 | Provider | Status |
 |----------|--------|
 | Resend | ✅ Konfiguriert |
-| Brevo | ❌ FEHLT |
-| Amazon SES | ❓ Unbekannt |
+| Brevo | ✅ Konfiguriert (brevo1._domainkey, brevo2._domainkey) |
+| Amazon SES | ✅ Konfiguriert (3 CNAME Records) |
 
 ### DMARC
 ```
@@ -113,22 +117,76 @@ P.S. I'm the founder, feel free to reply if you have any questions.
 
 ---
 
-## Test nach Fix
+## ✅ ERLEDIGT (17.01.2026)
 
-1. SPF/DKIM Records ändern
-2. 24h warten (DNS Propagation)
-3. Test-Email an mail-tester.com senden
-4. Score muss >7 sein (aktuell wahrscheinlich <5)
+| Task | Status |
+|------|--------|
+| SPF Record fixen | ✅ Via Namecheap DNS |
+| Brevo DKIM | ✅ War schon konfiguriert |
+| Amazon SES DKIM | ✅ War schon konfiguriert |
+| Resend DKIM | ✅ War schon konfiguriert |
+
+---
+
+## ⏳ AUSSTEHEND
+
+### 1. DNS Propagation abwarten (24-48h)
+- SPF Änderung muss weltweit propagieren
+- Bis dahin: Keine neuen Cold Emails senden!
+
+### 2. Email Score testen
+```bash
+# Nach 24h: Test-Email an mail-tester.com senden
+# Erwarteter Score: >7 (vorher wahrscheinlich <5)
+```
+
+### 3. Product-Market Fit validieren (WICHTIG!)
+> **Siehe:** [anruf-liste.md](./anruf-liste.md)
+
+Berend muss 5 Leads anrufen um zu validieren ob Reviews überhaupt ein Problem sind:
+- Wenn JA → SPF war das Problem, weiter mit Outreach
+- Wenn NEIN → Pivot nötig, falsches Problem gelöst
+
+### 4. Google Ads vorbereiten (nach Chrome Store Approval)
+> **Siehe:** [google-ads-plan.md](./google-ads-plan.md)
+
+- €100 Testbudget
+- Keywords + Ads sind vorbereitet
+- Warten auf Chrome Extension Approval
+
+---
+
+## 📋 MASTER TODO
+
+| # | Task | Owner | Status | Link |
+|---|------|-------|--------|------|
+| 1 | DNS Propagation abwarten | Auto | ⏳ 24-48h | - |
+| 2 | Mail-Tester Score prüfen | Claude | ⏳ Nach 24h | - |
+| 3 | **5 Leads anrufen** | **Berend** | 🔴 TODO | [anruf-liste.md](./anruf-liste.md) |
+| 4 | Chrome Store Approval | Google | ⏳ Pending | - |
+| 5 | Google Ads starten | Claude | ⏳ Nach #4 | [google-ads-plan.md](./google-ads-plan.md) |
 
 ---
 
 ## Quick Actions
 
 ```bash
-# 1. DNS Records prüfen
+# 1. DNS Records prüfen (nach 24h)
 nslookup -type=TXT tryreviewresponder.com
-nslookup -type=TXT _dmarc.tryreviewresponder.com
 
-# 2. Nach Fix testen
-curl -X POST "https://www.mail-tester.com/api/check" -d "email=test@mail-tester.com"
+# 2. Erwartete Ausgabe (NEU):
+# v=spf1 include:spf.improvmx.com include:spf.brevo.com include:amazonses.com include:resend.com ~all
+
+# 3. Mail Score testen
+# → mail-tester.com öffnen, Email senden, Score checken
 ```
+
+---
+
+## Verwandte Dokumente
+
+| Dokument | Inhalt |
+|----------|--------|
+| [anruf-liste.md](./anruf-liste.md) | 5 Leads mit Telefonnummern für PMF-Validierung |
+| [google-ads-plan.md](./google-ads-plan.md) | Keywords, Ads, Budget für nach Chrome Store |
+| [real-user-metrics.json](./real-user-metrics.json) | Echte User-Zahlen (0 organic!) |

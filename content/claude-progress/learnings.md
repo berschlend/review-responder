@@ -717,3 +717,7 @@ User klicken Magic Link → werden registriert → nutzen Produkt NIE → erreic
 3. **Kanal wechseln testen:** Google Ads für aktive Suchende
 **Lesson:** Dashboard-Metriken ohne Bot-Filter sind wertlos. IMMER `?exclude_bots=true` oder `real-user-metrics.json` verwenden.
 
+
+### [2026-01-17 19:13] Burst-4
+- V4.5 Pause: 0 echte Hot Leads nach Bot-Filter. 38 Clicks waren 100% Bots (Email Security Scanner). 782 Demos auf Vorrat, aber Cold Email funktioniert nicht. 2 LIKELY_REAL User registriert aber nie aktiviert - das ist Onboarding-Problem, nicht Demo-Problem. Handoff an Burst-5 erstellt.
+

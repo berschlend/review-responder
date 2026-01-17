@@ -2,6 +2,7 @@
 
 > Erstellt: 18.01.2026
 > Ziel: 5 Restaurant/Hotel Owner anrufen und fragen ob Reviews ein Problem sind
+> **Teil von:** [email-deliverability-fix.md](./email-deliverability-fix.md) → Master TODO #3
 
 ---
 

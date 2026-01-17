@@ -181,6 +181,29 @@
                       "id":  "75a14159",
                       "created_at":  "2026-01-16T22:44:31Z",
                       "status":  "pending"
+                  },
+                  {
+                      "from":  "burst-4",
+                      "to":  "burst-5",
+                      "type":  "activation_needed",
+                      "data":  {
+                                   "leads":  [
+                                                 {
+                                                     "email":  "i.schmidt@tv-turm.de",
+                                                     "business":  "Sphere Tim Raue",
+                                                     "reason":  "2 Michelin Stars - high value, registered but never used"
+                                                 },
+                                                 {
+                                                     "email":  "zuerich@trattoria-sempre.ch",
+                                                     "business":  "Trattoria Sempre Zürich",
+                                                     "reason":  "Used Magic Link twice - engaged but never generated"
+                                                 }
+                                             ]
+                               },
+                      "priority":  1,
+                      "id":  "d0d2296c",
+                      "created_at":  "2026-01-17T19:13:18Z",
+                      "status":  "pending"
                   }
               ],
     "processed":  [

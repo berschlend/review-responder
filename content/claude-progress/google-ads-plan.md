@@ -3,6 +3,7 @@
 > Erstellt: 18.01.2026
 > Status: WARTEN auf Chrome Extension Approval
 > Budget: €100 Test (10 Tage × €10/Tag)
+> **Teil von:** [email-deliverability-fix.md](./email-deliverability-fix.md) → Master TODO #5
 
 ---
 
