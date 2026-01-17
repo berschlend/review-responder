@@ -120,9 +120,19 @@ Falls Auto-Deploy nicht triggert, kann Claude via Chrome MCP manuell deployen:
 - Status: Ueberprufung laeuft (eingereicht 13.01)
 - Extension v1.6.1
 
-### Metriken (18.01)
-- 4,287+ Responses, 1,273+ Demos
-- 60 Users (0 paying) <- Hauptfokus!
+### REAL Metriken (17.01 - VERIFIZIERT!)
+| Metrik | Reported | Real | Status |
+|--------|----------|------|--------|
+| Registrierte User | 61 | **6** | 55 Test-Accounts |
+| Aktivierte User | ? | **0** | 0% Activation! |
+| Paying | 0 | **0** | Hauptfokus |
+| CTR | 4.42% | **1.42%** | 67% Bot-Clicks |
+
+### Diagnose
+**CRITICAL: 0% Activation Rate**
+- 6 echte User registriert, 0 haben jemals generiert
+- Problem ist ONBOARDING, nicht Acquisition
+- Persistenz: `content/claude-progress/real-user-metrics.json`
 
 ### Neue Features (18.01)
 - react-select Searchable Dropdown fuer Business Types
@@ -284,6 +294,15 @@ ReviewResponder/
 ---
 
 ## LEARNINGS (Top 5)
+
+### Hook Silent Failures Fix (18.01.2026)
+**Problem:** CLIs brechen ab ohne Output - User sieht nichts.
+**Root Cause:** Aggressive Error-Suppression: `catch {}; exit 0` und `2>$null`
+**Loesung:** Fehler ZEIGEN aber nicht BLOCKIEREN:
+- `catch { Write-Host '[Hook Error]' $_ -ForegroundColor Red }; exit 0`
+- Single quotes fuer Prefix (kein JSON-Escaping-Chaos)
+- `exit 0` bleibt (Claude erwartet das)
+**Lesson:** Fail Loud, Not Silent. Fehler sichtbar machen ohne Hook zu blockieren.
 
 ### Smart Task Switching V4.0 (18.01.2026)
 **Problem:** Agents warten idle auf API Response/Lock/Rate Limit - verschwendete Zeit.
