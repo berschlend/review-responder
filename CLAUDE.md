@@ -308,6 +308,17 @@ ReviewResponder/
 
 ## LEARNINGS (Top 5)
 
+### AI Model Hierarchy (18.01.2026)
+**Problem:** GPT-4o-mini wurde als Fallback vor Haiku verwendet - schlechtere Qualitaet.
+**Loesung:** Konsistente Fallback-Kette fuer ALLE Endpoints:
+- **Primary** (Opus/Sonnet) → **Haiku** → **GPT-4o-mini** (nur letzter Ausweg)
+- Demo Generation nutzt jetzt Opus 4.5 (erster Eindruck = wichtig!)
+- Context/Style Generation nutzt Opus 4.5 (setzt Grundlage)
+**Betroffene Endpoints:**
+- `/api/generate`, `/api/generate-bulk`, `/api/demo/generate`
+- `/api/public/try`, `/api/v1/generate` (Extension)
+**Lesson:** Haiku > GPT-4o-mini (gleicher Provider, bessere Qualitaet). GPT-4o-mini nur wenn Anthropic komplett down.
+
 ### Data Quality Verification (17.01.2026, updated 17.01)
 **Problem:** DB zeigte 61 User, 4.4% CTR - alles FAKE!
 **Root Cause:**
