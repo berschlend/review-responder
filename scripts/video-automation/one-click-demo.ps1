@@ -81,12 +81,43 @@ Write-Host @"
 
 "@ -ForegroundColor Cyan
 
-Write-Host "`nVideo-Pfad eingeben (oder ENTER zum Beenden): " -ForegroundColor Yellow -NoNewline
-$VideoPath = Read-Host
+# Auto-find newest video
+$VideoDirs = @(
+    "$ProjectRoot\content\video-recordings",
+    "$env:USERPROFILE\Videos",
+    "$env:USERPROFILE\Videos\OBS"
+)
 
-if ($VideoPath -and (Test-Path $VideoPath)) {
-    Write-Host "`nStarte Post-Production..." -ForegroundColor Green
-    & "$ProjectRoot\scripts\video-automation\post-process.ps1" -InputVideo $VideoPath
+$NewestVideo = $null
+$NewestTime = [DateTime]::MinValue
+
+foreach ($dir in $VideoDirs) {
+    if (Test-Path $dir) {
+        $videos = Get-ChildItem -Path $dir -Filter "*.mp4" -ErrorAction SilentlyContinue |
+                  Where-Object { $_.LastWriteTime -gt (Get-Date).AddMinutes(-30) }
+        foreach ($v in $videos) {
+            if ($v.LastWriteTime -gt $NewestTime) {
+                $NewestTime = $v.LastWriteTime
+                $NewestVideo = $v.FullName
+            }
+        }
+    }
+}
+
+if ($NewestVideo) {
+    Write-Host "`nNeuestes Video gefunden (letzte 30 Min):" -ForegroundColor Green
+    Write-Host "  $NewestVideo" -ForegroundColor Cyan
+    Write-Host "`nPost-Production starten? (Y/N): " -ForegroundColor Yellow -NoNewline
+    $confirm = Read-Host
+    if ($confirm -eq "Y" -or $confirm -eq "y") {
+        & "$ProjectRoot\scripts\video-automation\post-process.ps1" -InputVideo $NewestVideo
+    }
 } else {
-    Write-Host "`n[DONE] Sag Claude den Video-Pfad fuer Post-Production!`n" -ForegroundColor Cyan
+    Write-Host "`nKein neues Video gefunden. Pfad manuell eingeben: " -ForegroundColor Yellow -NoNewline
+    $VideoPath = Read-Host
+    if ($VideoPath -and (Test-Path $VideoPath)) {
+        & "$ProjectRoot\scripts\video-automation\post-process.ps1" -InputVideo $VideoPath
+    } else {
+        Write-Host "`n[DONE] Sag Claude den Video-Pfad fuer Post-Production!`n" -ForegroundColor Cyan
+    }
 }
