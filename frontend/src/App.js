@@ -360,8 +360,40 @@ const Footer = () => (
           </ul>
         </div>
         <div>
-          <div className="footer-title">Support</div>
+          <div className="footer-title">More Industries</div>
           <ul className="footer-links">
+            <li>
+              <Link to="/chiropractor-reviews">Chiropractors</Link>
+            </li>
+            <li>
+              <Link to="/barber-barbershop-reviews">Barbers</Link>
+            </li>
+            <li>
+              <Link to="/dermatologist-reviews">Dermatologists</Link>
+            </li>
+            <li>
+              <Link to="/massage-therapist-reviews">Massage Therapists</Link>
+            </li>
+            <li>
+              <Link to="/personal-trainer-reviews">Personal Trainers</Link>
+            </li>
+            <li>
+              <Link to="/angie-list-contractor-reviews">Contractors</Link>
+            </li>
+            <li>
+              <Link to="/linkedin-recommendations">LinkedIn</Link>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <div className="footer-title">Resources</div>
+          <ul className="footer-links">
+            <li>
+              <Link to="/blog">Blog</Link>
+            </li>
+            <li>
+              <Link to="/affiliate">Affiliate Program</Link>
+            </li>
             <li>
               <Link to="/support">Help Center</Link>
             </li>
@@ -3722,6 +3754,58 @@ const LandingPage = () => {
             </p>
           </div>
           <PricingCards />
+        </div>
+      </section>
+
+      {/* Industries We Serve - SEO Internal Links Section */}
+      <section style={{ padding: '48px 0', background: 'var(--bg-secondary)', borderTop: '1px solid var(--border-color)' }}>
+        <div className="container">
+          <h2 style={{
+            fontSize: '20px',
+            fontWeight: '600',
+            color: 'var(--text-primary)',
+            textAlign: 'center',
+            marginBottom: '32px',
+            letterSpacing: '-0.02em'
+          }}>
+            Industries We Serve
+          </h2>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '12px',
+            maxWidth: '900px',
+            margin: '0 auto'
+          }}>
+            <Link to="/restaurant-review-responses" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Restaurants</Link>
+            <Link to="/hotel-review-management" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Hotels</Link>
+            <Link to="/dentist-review-responses" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Dentists</Link>
+            <Link to="/medical-practice-reviews" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Medical Practices</Link>
+            <Link to="/salon-spa-review-responses" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Salons & Spas</Link>
+            <Link to="/auto-shop-reviews" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Auto Shops</Link>
+            <Link to="/chiropractor-reviews" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Chiropractors</Link>
+            <Link to="/barber-barbershop-reviews" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Barbers</Link>
+            <Link to="/dermatologist-reviews" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Dermatologists</Link>
+            <Link to="/massage-therapist-reviews" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Massage Therapists</Link>
+            <Link to="/personal-trainer-reviews" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Personal Trainers</Link>
+            <Link to="/angie-list-contractor-reviews" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Contractors</Link>
+            <Link to="/local-business-reviews" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>Local Businesses</Link>
+            <Link to="/linkedin-recommendations" style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', transition: 'all 0.15s' }}>LinkedIn</Link>
+          </div>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '16px',
+            marginTop: '24px',
+            flexWrap: 'wrap'
+          }}>
+            <Link to="/google-review-response-generator" style={{ color: 'var(--primary)', fontSize: '13px', textDecoration: 'none' }}>Google Reviews</Link>
+            <Link to="/yelp-review-reply-tool" style={{ color: 'var(--primary)', fontSize: '13px', textDecoration: 'none' }}>Yelp Reviews</Link>
+            <Link to="/tripadvisor-review-responses" style={{ color: 'var(--primary)', fontSize: '13px', textDecoration: 'none' }}>TripAdvisor</Link>
+            <Link to="/booking-review-generator" style={{ color: 'var(--primary)', fontSize: '13px', textDecoration: 'none' }}>Booking.com</Link>
+            <Link to="/facebook-review-responses" style={{ color: 'var(--primary)', fontSize: '13px', textDecoration: 'none' }}>Facebook</Link>
+            <Link to="/negative-review-responses" style={{ color: 'var(--primary)', fontSize: '13px', textDecoration: 'none' }}>Negative Reviews</Link>
+          </div>
         </div>
       </section>
 
