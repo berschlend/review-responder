@@ -320,6 +320,12 @@ ReviewResponder/
 
 ## LEARNINGS (Top 5)
 
+### Agent Starter CLAUDE_CONFIG_DIR Bug (18.01.2026)
+**Problem:** `start-agents.ps1` öffnete Terminals aber Claude startete nicht.
+**Root Cause:** Script setzte `$env:CLAUDE_CONFIG_DIR = ~/.claude-burstX` - diese Directories hatten nur `settings.json` aber KEINE Auth-Tokens!
+**Loesung:** CLAUDE_CONFIG_DIR Zeile entfernt. Claude nutzt jetzt sein normales Config-Verzeichnis mit korrekter Authentifizierung.
+**Lesson:** CLAUDE_CONFIG_DIR nur setzen wenn das Directory ALLE notwendigen Files hat (inkl. Auth). Für Session-Tracking reicht `CLAUDE_SESSION` Environment Variable.
+
 ### Gmail + Admin Dashboard via Chrome MCP (18.01.2026)
 **Problem:** Agents konnten nur API nutzen, nicht Gmail lesen/beantworten oder Dashboard visuell checken.
 **Loesung:** Chrome MCP Integration in night-burst-core.md V4.3:
