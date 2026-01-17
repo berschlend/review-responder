@@ -31447,6 +31447,13 @@ const AdminPage = () => {
   const [productQualityData, setProductQualityData] = useState(null);
   const [productQualityLoading, setProductQualityLoading] = useState(false);
   const [productQualityTesting, setProductQualityTesting] = useState(false);
+  // Call Prep Dashboard State
+  const [callPrepsData, setCallPrepsData] = useState(null);
+  const [callPrepsLoading, setCallPrepsLoading] = useState(false);
+  const [selectedCallPrep, setSelectedCallPrep] = useState(null);
+  const [callPrepAction, setCallPrepAction] = useState(null);
+  const [callPrepEmail, setCallPrepEmail] = useState('');
+  const [callPrepNotes, setCallPrepNotes] = useState('');
 
   // Use the same API_URL as the rest of the app (already includes /api)
   // Remove /api suffix if present to build admin URLs correctly
@@ -31842,6 +31849,9 @@ const AdminPage = () => {
       if (activeAdminTab === 'quality' && !productQualityData) {
         loadProductQuality();
       }
+      if (activeAdminTab === 'calls' && !callPrepsData) {
+        loadCallPreps();
+      }
     }
   }, [activeAdminTab, isAuthenticated, adminKey]);
 
@@ -31932,6 +31942,79 @@ const AdminPage = () => {
     } finally {
       setProductQualityTesting(false);
     }
+  };
+
+  // ============================================
+  // CALL PREP DASHBOARD FUNCTIONS
+  // ============================================
+
+  const loadCallPreps = async () => {
+    setCallPrepsLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/admin/call-preps`, { headers: getHeaders() });
+      setCallPrepsData(res.data);
+    } catch (err) {
+      console.error('Call preps error:', err);
+      toast.error('Failed to load call preps');
+    } finally {
+      setCallPrepsLoading(false);
+    }
+  };
+
+  const updateCallPrepStatus = async (id, status, notes = null) => {
+    try {
+      const body = { status };
+      if (notes) body.call_result = notes;
+      await axios.put(`${API_BASE}/api/admin/call-preps/${id}`, body, { headers: getHeaders() });
+      toast.success(`Status updated to ${status}`);
+      loadCallPreps();
+      setSelectedCallPrep(null);
+      setCallPrepAction(null);
+      setCallPrepNotes('');
+    } catch (err) {
+      console.error('Update call prep error:', err);
+      toast.error('Failed to update status');
+    }
+  };
+
+  const sendCallPrepDemo = async (id, email) => {
+    try {
+      const res = await axios.post(`${API_BASE}/api/admin/call-preps/${id}/send-demo`, { email }, { headers: getHeaders() });
+      if (res.data.success) {
+        toast.success(`Demo sent to ${email}!`);
+        loadCallPreps();
+      } else {
+        toast.error(res.data.error || 'Failed to send demo');
+      }
+      setSelectedCallPrep(null);
+      setCallPrepAction(null);
+      setCallPrepEmail('');
+    } catch (err) {
+      console.error('Send demo error:', err);
+      toast.error('Failed to send demo');
+    }
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      pending: '#6B7280',
+      interested: '#10B981',
+      not_interested: '#EF4444',
+      callback: '#F59E0B',
+      not_reached: '#8B5CF6'
+    };
+    return colors[status] || '#6B7280';
+  };
+
+  const getStatusLabel = (status) => {
+    const labels = {
+      pending: 'Pending',
+      interested: 'Interested!',
+      not_interested: 'Not Interested',
+      callback: 'Callback',
+      not_reached: 'Not Reached'
+    };
+    return labels[status] || status;
   };
 
   if (!isAuthenticated) {
@@ -32103,6 +32186,13 @@ const AdminPage = () => {
           style={{ background: activeAdminTab === 'quality' ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' : undefined }}
         >
           Product Quality
+        </button>
+        <button
+          className={`btn ${activeAdminTab === 'calls' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveAdminTab('calls')}
+          style={{ background: activeAdminTab === 'calls' ? 'linear-gradient(135deg, #EC4899 0%, #DB2777 100%)' : undefined }}
+        >
+          Call Prep
         </button>
       </div>
 
@@ -36675,6 +36765,262 @@ const AdminPage = () => {
             <div style={{ textAlign: 'center', padding: '40px' }}>
               <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>Could not load product quality data</p>
               <button className="btn btn-primary" onClick={() => loadProductQuality()}>Retry</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Call Prep Dashboard Tab */}
+      {activeAdminTab === 'calls' && (
+        <div>
+          {callPrepsLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Loading call preps...</div>
+          ) : callPrepsData ? (
+            <>
+              {/* Stats Cards */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px', marginBottom: '24px' }}>
+                <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#6B7280' }}>{callPrepsData.stats?.pending || 0}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Pending</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#10B981' }}>{callPrepsData.stats?.interested || 0}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Interested</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#F59E0B' }}>{callPrepsData.stats?.callback || 0}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Callback</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#8B5CF6' }}>{callPrepsData.stats?.not_reached || 0}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Not Reached</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#EF4444' }}>{callPrepsData.stats?.not_interested || 0}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Not Interested</div>
+                </div>
+                <div className="card" style={{ textAlign: 'center', padding: '16px' }}>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#3B82F6' }}>{callPrepsData.stats?.demos_sent || 0}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Demos Sent</div>
+                </div>
+              </div>
+
+              {/* Call List */}
+              <div className="card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h3 style={{ margin: 0 }}>Calls to Make</h3>
+                  <button className="btn btn-secondary" onClick={loadCallPreps} style={{ fontSize: '13px' }}>
+                    Refresh
+                  </button>
+                </div>
+
+                {callPrepsData.calls?.length === 0 ? (
+                  <p style={{ color: 'var(--gray-500)', textAlign: 'center', padding: '40px' }}>
+                    No calls yet. Import them via API or add manually.
+                  </p>
+                ) : (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
+                          <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>Business</th>
+                          <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>Phone</th>
+                          <th style={{ textAlign: 'left', padding: '12px 8px', fontWeight: '600' }}>City</th>
+                          <th style={{ textAlign: 'center', padding: '12px 8px', fontWeight: '600' }}>Reviews</th>
+                          <th style={{ textAlign: 'center', padding: '12px 8px', fontWeight: '600' }}>Status</th>
+                          <th style={{ textAlign: 'center', padding: '12px 8px', fontWeight: '600' }}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {callPrepsData.calls?.map((call, index) => (
+                          <tr key={call.id} style={{ borderBottom: '1px solid var(--gray-100)', background: index % 2 === 0 ? 'var(--gray-50)' : 'white' }}>
+                            <td style={{ padding: '12px 8px' }}>
+                              <div style={{ fontWeight: '600' }}>{call.business_name}</div>
+                              {call.problem && <div style={{ fontSize: '12px', color: 'var(--gray-500)', marginTop: '2px' }}>{call.problem}</div>}
+                            </td>
+                            <td style={{ padding: '12px 8px' }}>
+                              <a href={`tel:${call.phone}`} style={{ color: '#3B82F6', textDecoration: 'none', fontWeight: '500' }}>
+                                {call.phone}
+                              </a>
+                            </td>
+                            <td style={{ padding: '12px 8px', color: 'var(--gray-600)' }}>{call.city || '-'}</td>
+                            <td style={{ padding: '12px 8px', textAlign: 'center' }}>
+                              {call.reviews_count ? (
+                                <span>{call.reviews_count} ({call.rating}★)</span>
+                              ) : '-'}
+                            </td>
+                            <td style={{ padding: '12px 8px', textAlign: 'center' }}>
+                              <span style={{
+                                display: 'inline-block',
+                                padding: '4px 12px',
+                                borderRadius: '9999px',
+                                fontSize: '12px',
+                                fontWeight: '500',
+                                background: getStatusColor(call.status) + '20',
+                                color: getStatusColor(call.status)
+                              }}>
+                                {getStatusLabel(call.status)}
+                              </span>
+                            </td>
+                            <td style={{ padding: '12px 8px', textAlign: 'center' }}>
+                              <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                                {call.status === 'pending' && (
+                                  <>
+                                    <button
+                                      className="btn btn-primary"
+                                      style={{ fontSize: '11px', padding: '6px 10px' }}
+                                      onClick={() => { setSelectedCallPrep(call); setCallPrepAction('result'); }}
+                                    >
+                                      Log Result
+                                    </button>
+                                  </>
+                                )}
+                                {call.status === 'interested' && !call.demo_sent_at && (
+                                  <button
+                                    className="btn"
+                                    style={{ fontSize: '11px', padding: '6px 10px', background: '#10B981', color: 'white' }}
+                                    onClick={() => { setSelectedCallPrep(call); setCallPrepAction('demo'); setCallPrepEmail(call.email || ''); }}
+                                  >
+                                    Send Demo
+                                  </button>
+                                )}
+                                {call.demo_sent_at && (
+                                  <span style={{ fontSize: '11px', color: '#10B981' }}>Demo Sent</span>
+                                )}
+                                {call.status === 'callback' && (
+                                  <button
+                                    className="btn btn-secondary"
+                                    style={{ fontSize: '11px', padding: '6px 10px' }}
+                                    onClick={() => { setSelectedCallPrep(call); setCallPrepAction('result'); }}
+                                  >
+                                    Update
+                                  </button>
+                                )}
+                                {call.status === 'not_reached' && call.call_attempts < 3 && (
+                                  <button
+                                    className="btn btn-secondary"
+                                    style={{ fontSize: '11px', padding: '6px 10px' }}
+                                    onClick={() => { setSelectedCallPrep(call); setCallPrepAction('result'); }}
+                                  >
+                                    Retry #{call.call_attempts + 1}
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Modal */}
+              {selectedCallPrep && callPrepAction && (
+                <div style={{
+                  position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                  background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+                }}>
+                  <div className="card" style={{ maxWidth: '450px', width: '90%', maxHeight: '80vh', overflow: 'auto' }}>
+                    <h3 style={{ marginBottom: '16px' }}>{selectedCallPrep.business_name}</h3>
+                    <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>Phone: {selectedCallPrep.phone}</p>
+
+                    {callPrepAction === 'result' && (
+                      <>
+                        <p style={{ fontWeight: '500', marginBottom: '12px' }}>How did the call go?</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+                          <button
+                            className="btn"
+                            style={{ background: '#10B981', color: 'white' }}
+                            onClick={() => updateCallPrepStatus(selectedCallPrep.id, 'interested', callPrepNotes)}
+                          >
+                            Interested!
+                          </button>
+                          <button
+                            className="btn"
+                            style={{ background: '#F59E0B', color: 'white' }}
+                            onClick={() => updateCallPrepStatus(selectedCallPrep.id, 'callback', callPrepNotes)}
+                          >
+                            Callback
+                          </button>
+                          <button
+                            className="btn"
+                            style={{ background: '#8B5CF6', color: 'white' }}
+                            onClick={() => updateCallPrepStatus(selectedCallPrep.id, 'not_reached', callPrepNotes)}
+                          >
+                            Not Reached
+                          </button>
+                          <button
+                            className="btn"
+                            style={{ background: '#EF4444', color: 'white' }}
+                            onClick={() => updateCallPrepStatus(selectedCallPrep.id, 'not_interested', callPrepNotes)}
+                          >
+                            Not Interested
+                          </button>
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Notes (optional)</label>
+                          <textarea
+                            className="form-input"
+                            rows={3}
+                            value={callPrepNotes}
+                            onChange={(e) => setCallPrepNotes(e.target.value)}
+                            placeholder="Any notes about the call..."
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    {callPrepAction === 'demo' && (
+                      <>
+                        <p style={{ fontWeight: '500', marginBottom: '12px' }}>Send Demo Email</p>
+                        <div className="form-group">
+                          <label className="form-label">Email Address</label>
+                          <input
+                            type="email"
+                            className="form-input"
+                            value={callPrepEmail}
+                            onChange={(e) => setCallPrepEmail(e.target.value)}
+                            placeholder="email@example.com"
+                          />
+                        </div>
+                        <button
+                          className="btn btn-primary"
+                          style={{ width: '100%', marginTop: '8px' }}
+                          onClick={() => sendCallPrepDemo(selectedCallPrep.id, callPrepEmail)}
+                          disabled={!callPrepEmail}
+                        >
+                          Send Demo
+                        </button>
+                      </>
+                    )}
+
+                    <button
+                      className="btn btn-secondary"
+                      style={{ width: '100%', marginTop: '12px' }}
+                      onClick={() => { setSelectedCallPrep(null); setCallPrepAction(null); setCallPrepNotes(''); setCallPrepEmail(''); }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Quick Reference */}
+              <div className="card" style={{ marginTop: '24px' }}>
+                <h4 style={{ marginBottom: '12px' }}>Quick Reference</h4>
+                <div style={{ fontSize: '13px', color: 'var(--gray-600)' }}>
+                  <p><strong>Best Call Times:</strong></p>
+                  <p>Restaurants: 14:00-16:00 (nach Lunch, vor Dinner)</p>
+                  <p>Hotels: 10:00-12:00 (nach Check-out Rush)</p>
+                  <p style={{ marginTop: '12px' }}><strong>Call Prep Files:</strong> <code>content/call-prep/</code></p>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>Could not load call preps</p>
+              <button className="btn btn-primary" onClick={loadCallPreps}>Retry</button>
             </div>
           )}
         </div>

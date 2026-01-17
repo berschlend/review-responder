@@ -2216,6 +2216,40 @@ async function initDatabase() {
       // Indexes might already exist
     }
 
+    // Call Prep Dashboard for phone outreach
+    await dbQuery(`
+      CREATE TABLE IF NOT EXISTS call_preps (
+        id SERIAL PRIMARY KEY,
+        business_name VARCHAR(255) NOT NULL,
+        phone VARCHAR(50) NOT NULL,
+        city VARCHAR(100),
+        country VARCHAR(50) DEFAULT 'Germany',
+        reviews_count INTEGER,
+        rating DECIMAL(2,1),
+        problem TEXT,
+        status VARCHAR(50) DEFAULT 'pending',
+        call_result TEXT,
+        callback_date TIMESTAMP,
+        email VARCHAR(255),
+        demo_token TEXT,
+        demo_sent_at TIMESTAMP,
+        prep_content JSONB,
+        priority_score INTEGER DEFAULT 0,
+        call_attempts INTEGER DEFAULT 0,
+        last_call_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Index for call_preps
+    try {
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_call_preps_status ON call_preps(status)`);
+      await dbQuery(`CREATE INDEX IF NOT EXISTS idx_call_preps_priority ON call_preps(priority_score DESC)`);
+    } catch (error) {
+      // Indexes might already exist
+    }
+
     console.log('📊 Database initialized');
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -32612,6 +32646,279 @@ app.get('/api/admin/review-alerts-stats', async (req, res) => {
   } catch (error) {
     console.error('Review alerts stats error:', error);
     res.status(500).json({ error: 'Failed to get stats' });
+  }
+});
+
+// ============================================
+// CALL PREP DASHBOARD API
+// For phone outreach management
+// ============================================
+
+// Get all call preps
+app.get('/api/admin/call-preps', authenticateAdmin, async (req, res) => {
+  try {
+    const { status } = req.query;
+    let query = `
+      SELECT * FROM call_preps
+      ${status ? 'WHERE status = $1' : ''}
+      ORDER BY priority_score DESC, created_at DESC
+    `;
+    const params = status ? [status] : [];
+    const calls = await dbAll(query, params);
+
+    // Get stats
+    const stats = await dbGet(`
+      SELECT
+        COUNT(*) as total,
+        COUNT(*) FILTER (WHERE status = 'pending') as pending,
+        COUNT(*) FILTER (WHERE status = 'interested') as interested,
+        COUNT(*) FILTER (WHERE status = 'not_interested') as not_interested,
+        COUNT(*) FILTER (WHERE status = 'callback') as callback,
+        COUNT(*) FILTER (WHERE status = 'not_reached') as not_reached,
+        COUNT(*) FILTER (WHERE demo_sent_at IS NOT NULL) as demos_sent
+      FROM call_preps
+    `);
+
+    res.json({
+      success: true,
+      calls,
+      stats: {
+        total: parseInt(stats.total) || 0,
+        pending: parseInt(stats.pending) || 0,
+        interested: parseInt(stats.interested) || 0,
+        not_interested: parseInt(stats.not_interested) || 0,
+        callback: parseInt(stats.callback) || 0,
+        not_reached: parseInt(stats.not_reached) || 0,
+        demos_sent: parseInt(stats.demos_sent) || 0
+      }
+    });
+  } catch (error) {
+    console.error('Get call preps error:', error);
+    res.status(500).json({ error: 'Failed to get call preps' });
+  }
+});
+
+// Add new call prep
+app.post('/api/admin/call-preps', authenticateAdmin, async (req, res) => {
+  try {
+    const {
+      business_name, phone, city, country, reviews_count, rating,
+      problem, email, prep_content, priority_score
+    } = req.body;
+
+    if (!business_name || !phone) {
+      return res.status(400).json({ error: 'business_name and phone are required' });
+    }
+
+    const result = await dbGet(`
+      INSERT INTO call_preps
+        (business_name, phone, city, country, reviews_count, rating, problem, email, prep_content, priority_score)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      RETURNING *
+    `, [
+      business_name, phone, city || null, country || 'Germany',
+      reviews_count || null, rating || null, problem || null,
+      email || null, prep_content ? JSON.stringify(prep_content) : null,
+      priority_score || 0
+    ]);
+
+    res.json({ success: true, call: result });
+  } catch (error) {
+    console.error('Add call prep error:', error);
+    res.status(500).json({ error: 'Failed to add call prep' });
+  }
+});
+
+// Update call prep (status, result, etc.)
+app.put('/api/admin/call-preps/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, call_result, callback_date, email } = req.body;
+
+    // Build dynamic update query
+    const updates = [];
+    const values = [];
+    let paramIndex = 1;
+
+    if (status) {
+      updates.push(`status = $${paramIndex++}`);
+      values.push(status);
+    }
+    if (call_result !== undefined) {
+      updates.push(`call_result = $${paramIndex++}`);
+      values.push(call_result);
+    }
+    if (callback_date) {
+      updates.push(`callback_date = $${paramIndex++}`);
+      values.push(callback_date);
+    }
+    if (email) {
+      updates.push(`email = $${paramIndex++}`);
+      values.push(email);
+    }
+
+    // Always update timestamps
+    updates.push(`updated_at = NOW()`);
+    if (status === 'interested' || status === 'not_interested' || status === 'callback' || status === 'not_reached') {
+      updates.push(`last_call_at = NOW()`);
+      updates.push(`call_attempts = call_attempts + 1`);
+    }
+
+    values.push(id);
+
+    const result = await dbGet(`
+      UPDATE call_preps
+      SET ${updates.join(', ')}
+      WHERE id = $${paramIndex}
+      RETURNING *
+    `, values);
+
+    if (!result) {
+      return res.status(404).json({ error: 'Call prep not found' });
+    }
+
+    res.json({ success: true, call: result });
+  } catch (error) {
+    console.error('Update call prep error:', error);
+    res.status(500).json({ error: 'Failed to update call prep' });
+  }
+});
+
+// Send demo for a call prep (auto-generate and send)
+app.post('/api/admin/call-preps/:id/send-demo', authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { email } = req.body;
+
+    // Get the call prep
+    const callPrep = await dbGet('SELECT * FROM call_preps WHERE id = $1', [id]);
+    if (!callPrep) {
+      return res.status(404).json({ error: 'Call prep not found' });
+    }
+
+    const targetEmail = email || callPrep.email;
+    if (!targetEmail) {
+      return res.status(400).json({ error: 'No email provided' });
+    }
+
+    // Generate demo token
+    const demoToken = `call_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+
+    // Try to generate demo (this calls the existing demo generation logic)
+    let demoGenerated = false;
+    let demoError = null;
+
+    try {
+      // Use the internal demo generation - simplified version
+      const demoUrl = `${process.env.FRONTEND_URL || 'https://tryreviewresponder.com'}/demo/${demoToken}`;
+
+      // Create demo_generations entry
+      await dbQuery(`
+        INSERT INTO demo_generations (token, business_name, city, status, created_at)
+        VALUES ($1, $2, $3, 'pending', NOW())
+      `, [demoToken, callPrep.business_name, callPrep.city]);
+
+      // Send email with demo link
+      if (resend) {
+        await resend.emails.send({
+          from: 'ReviewResponder <hello@tryreviewresponder.com>',
+          to: targetEmail,
+          subject: `Your personalized demo for ${callPrep.business_name}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2>Hi there!</h2>
+              <p>Great talking to you! As promised, here's your personalized demo showing how AI would respond to reviews for <strong>${callPrep.business_name}</strong>.</p>
+              <p style="margin: 30px 0;">
+                <a href="${demoUrl}" style="background: #f97316; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                  View Your Demo →
+                </a>
+              </p>
+              <p>The demo shows real AI-generated responses based on actual reviews. No signup needed to view it.</p>
+              <p>Questions? Just reply to this email.</p>
+              <p>Best,<br>Berend<br>ReviewResponder</p>
+            </div>
+          `
+        });
+        demoGenerated = true;
+      } else {
+        demoError = 'Email service not configured';
+      }
+    } catch (genError) {
+      console.error('Demo generation error:', genError);
+      demoError = genError.message;
+    }
+
+    // Update call prep with demo info
+    await dbQuery(`
+      UPDATE call_preps
+      SET demo_token = $1, demo_sent_at = NOW(), email = $2, updated_at = NOW()
+      WHERE id = $3
+    `, [demoToken, targetEmail, id]);
+
+    res.json({
+      success: demoGenerated,
+      demo_token: demoToken,
+      demo_url: `${process.env.FRONTEND_URL || 'https://tryreviewresponder.com'}/demo/${demoToken}`,
+      email_sent_to: targetEmail,
+      error: demoError
+    });
+  } catch (error) {
+    console.error('Send demo error:', error);
+    res.status(500).json({ error: 'Failed to send demo' });
+  }
+});
+
+// Delete call prep
+app.delete('/api/admin/call-preps/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await dbQuery('DELETE FROM call_preps WHERE id = $1 RETURNING id', [id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Call prep not found' });
+    }
+
+    res.json({ success: true, deleted_id: id });
+  } catch (error) {
+    console.error('Delete call prep error:', error);
+    res.status(500).json({ error: 'Failed to delete call prep' });
+  }
+});
+
+// Bulk import call preps (from markdown files)
+app.post('/api/admin/call-preps/bulk-import', authenticateAdmin, async (req, res) => {
+  try {
+    const { calls } = req.body;
+
+    if (!Array.isArray(calls) || calls.length === 0) {
+      return res.status(400).json({ error: 'calls array is required' });
+    }
+
+    const imported = [];
+    for (const call of calls) {
+      try {
+        const result = await dbGet(`
+          INSERT INTO call_preps
+            (business_name, phone, city, country, reviews_count, rating, problem, email, prep_content, priority_score)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+          ON CONFLICT DO NOTHING
+          RETURNING *
+        `, [
+          call.business_name, call.phone, call.city || null, call.country || 'Germany',
+          call.reviews_count || null, call.rating || null, call.problem || null,
+          call.email || null, call.prep_content ? JSON.stringify(call.prep_content) : null,
+          call.priority_score || 0
+        ]);
+        if (result) imported.push(result);
+      } catch (e) {
+        console.log('Skipping duplicate:', call.business_name);
+      }
+    }
+
+    res.json({ success: true, imported: imported.length, calls: imported });
+  } catch (error) {
+    console.error('Bulk import error:', error);
+    res.status(500).json({ error: 'Failed to bulk import' });
   }
 });
 
