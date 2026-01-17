@@ -25683,6 +25683,9 @@ app.get('/api/outreach/dashboard', async (req, res) => {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
+  // Bot filter: exclude email security scanner clicks (midnight bursts)
+  const excludeBots = req.query.exclude_bots === 'true';
+
   try {
     // Use central test email filter for accurate stats
     const TEST_EMAIL_FILTER = getTestEmailExcludeClause('email');
@@ -25699,12 +25702,24 @@ app.get('/api/outreach/dashboard', async (req, res) => {
       `SELECT COUNT(*) as count FROM outreach_emails WHERE opened_at IS NOT NULL ${TEST_EMAIL_FILTER}`
     );
 
-    // Click tracking stats (also filter test emails)
+    // Click tracking stats (filter test emails + optional bot filter)
     let emailsClicked = { count: 0 };
+    let emailsClickedRaw = { count: 0 }; // Before bot filter
     try {
-      emailsClicked = (await dbGet(
+      // Raw count (test emails filtered, bots included)
+      emailsClickedRaw = (await dbGet(
         `SELECT COUNT(DISTINCT email) as count FROM outreach_clicks WHERE 1=1 ${TEST_EMAIL_FILTER}`
       )) || { count: 0 };
+
+      // With bot filter if requested
+      if (excludeBots) {
+        const BOT_FILTER = getBotClickExcludeClause('clicked_at', 'email');
+        emailsClicked = (await dbGet(
+          `SELECT COUNT(DISTINCT email) as count FROM outreach_clicks WHERE 1=1 ${TEST_EMAIL_FILTER} ${BOT_FILTER}`
+        )) || { count: 0 };
+      } else {
+        emailsClicked = emailsClickedRaw;
+      }
     } catch (e) {
       // Table might not exist yet
     }
@@ -25713,6 +25728,7 @@ app.get('/api/outreach/dashboard', async (req, res) => {
     let hotLeads = [];
     try {
       const CLICKS_EMAIL_FILTER = getTestEmailExcludeClause('c.email');
+      const BOT_FILTER = excludeBots ? getBotClickExcludeClause('c.clicked_at', 'c.email') : '';
       hotLeads =
         (await dbAll(`
         SELECT DISTINCT ON (c.email)
@@ -25725,7 +25741,7 @@ app.get('/api/outreach/dashboard', async (req, res) => {
           l.google_reviews_count
         FROM outreach_clicks c
         LEFT JOIN outreach_leads l ON LOWER(c.email) = LOWER(l.email)
-        WHERE 1=1 ${CLICKS_EMAIL_FILTER}
+        WHERE 1=1 ${CLICKS_EMAIL_FILTER} ${BOT_FILTER}
           AND c.email NOT LIKE '%vimeo%'
         ORDER BY c.email, c.clicked_at DESC
       `)) || [];
@@ -25806,11 +25822,26 @@ app.get('/api/outreach/dashboard', async (req, res) => {
         leads_with_email: parseInt(leadsWithEmail?.count || 0),
         emails_sent: parseInt(emailsSent?.count || 0),
         clicks: parseInt(emailsClicked?.count || 0),
+        clicks_raw: parseInt(emailsClickedRaw?.count || 0), // Before bot filter
         click_rate:
           emailsSent?.count > 0
             ? ((emailsClicked?.count / emailsSent?.count) * 100).toFixed(1) + '%'
             : '0%',
+        click_rate_raw:
+          emailsSent?.count > 0
+            ? ((emailsClickedRaw?.count / emailsSent?.count) * 100).toFixed(1) + '%'
+            : '0%',
         // Note: open_rate removed - unreliable due to bot scans
+      },
+      data_quality: {
+        bot_filter_active: excludeBots,
+        clicks_filtered: parseInt(emailsClickedRaw?.count || 0) - parseInt(emailsClicked?.count || 0),
+        bot_click_percentage: emailsClickedRaw?.count > 0
+          ? (((emailsClickedRaw.count - emailsClicked.count) / emailsClickedRaw.count) * 100).toFixed(1) + '%'
+          : '0%',
+        note: excludeBots
+          ? 'Bot clicks (midnight bursts, test emails) filtered out'
+          : 'Use ?exclude_bots=true to filter email security scanner clicks',
       },
       hot_leads: hotLeads,
       hot_leads_count: hotLeads.length,
