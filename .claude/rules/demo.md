@@ -112,4 +112,15 @@ GET /api/cron/send-pending-demo-emails?secret=ADMIN_SECRET
 
 ---
 
+## Demo = Echter User! (WICHTIG)
+
+> **Demo-Generierung mit Email = Echter User**
+>
+> User die auf Demo-Seite generieren UND Email eingeben zählen als "echte User"
+> (via `demo_generations` Tabelle mit `outreach_leads` JOIN).
+>
+> Das ist GUT - Demo-Wert demonstriert = Aktivierung erreicht!
+
+---
+
 *Loaded by: Burst-4 (Demo Generator)*

@@ -200,4 +200,29 @@ Vor neuem Discount IMMER pruefen:
 
 ---
 
+## Real User Definition (KRITISCH!)
+
+> **ECHTER USER = Mind. 1 Generierung EGAL WO**
+> - `responses` (eingeloggt generiert)
+> - `demo_generations` (Demo-Seite mit Email)
+> Registration allein zaehlt NICHT!
+
+```
+API Response (admin/stats):
+realUsers: {
+  total: X,        // Echte User (1+ Generierung)
+  viaGenerator: Y, // Davon eingeloggt generiert
+  viaDemo: Z,      // Nur Demo-Generierung (ohne responses)
+  inactive: A      // Registriert aber 0 Generierungen
+}
+```
+
+### Test-Account Filter (PFLICHT!)
+```bash
+# IMMER bei User-Metriken:
+?exclude_test=true
+```
+
+---
+
 *Loaded by: Development Sessions, Burst-9 (Doctor)*
