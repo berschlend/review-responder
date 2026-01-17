@@ -5849,6 +5849,52 @@ const DashboardPage = () => {
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [customInstructions, setCustomInstructions] = useState(user?.responseStyle || '');
+  const [showAllTemplates, setShowAllTemplates] = useState(false);
+
+  // Quick Templates for one-click instruction snippets
+  const quickTemplates = [
+    // Priority templates (always visible)
+    { id: 'contact', emoji: '📞', label: 'Contact Info', snippet: '<always>\n- Mention our phone/email for questions\n</always>', category: 'always', priority: true },
+    { id: 'no-fluff', emoji: '🚫', label: 'No Fluff', snippet: '<never>\n- Use generic phrases like "valued customer"\n</never>', category: 'never', priority: true },
+    { id: 'short', emoji: '✂️', label: 'Short & Sweet', snippet: '<style>\n- Keep under 50 words\n</style>', category: 'style', priority: true },
+    { id: 'use-name', emoji: '👋', label: 'Use Name', snippet: '<always>\n- Use reviewer\'s name if mentioned\n</always>', category: 'always', priority: true },
+    { id: 'offer', emoji: '🎁', label: 'Make Offer', snippet: '<always>\n- Offer something (discount, free item, upgrade)\n</always>', category: 'always', priority: true },
+    { id: 'no-sorry', emoji: '🚫', label: 'No "Sorry"', snippet: '<never>\n- Say "sorry for the inconvenience"\n</never>', category: 'never', priority: true },
+    { id: 'sign-name', emoji: '✍️', label: 'Sign Name', snippet: '<signoff>\n- [Your Name], Owner\n</signoff>', category: 'signoff', priority: true },
+    { id: 'invite-back', emoji: '📅', label: 'Invite Back', snippet: '<always>\n- Invite them to return\n</always>', category: 'always', priority: true },
+    // Additional templates (shown when expanded)
+    { id: 'website', emoji: '🌐', label: 'Website', snippet: '<always>\n- Include our website for more info\n</always>', category: 'always', priority: false },
+    { id: 'no-excuses', emoji: '🚫', label: 'No Excuses', snippet: '<never>\n- Make excuses or blame others\n</never>', category: 'never', priority: false },
+    { id: 'no-pricing', emoji: '🚫', label: 'No Pricing', snippet: '<never>\n- Mention pricing or discounts\n</never>', category: 'never', priority: false },
+    { id: 'detailed', emoji: '📝', label: 'Detailed', snippet: '<style>\n- Write 3-4 sentences with details\n</style>', category: 'style', priority: false },
+    { id: 'casual', emoji: '😊', label: 'Casual', snippet: '<style>\n- Casual, conversational tone\n</style>', category: 'style', priority: false },
+    { id: 'formal', emoji: '🎩', label: 'Very Formal', snippet: '<style>\n- Highly formal, corporate language\n</style>', category: 'style', priority: false },
+    { id: 'no-emojis', emoji: '🚫', label: 'No Emojis', snippet: '<style>\n- No emojis\n</style>', category: 'style', priority: false },
+    { id: 'with-emojis', emoji: '✨', label: 'With Emojis', snippet: '<style>\n- Include 1-2 relevant emojis\n</style>', category: 'style', priority: false },
+    { id: 'team-sign', emoji: '👥', label: 'Team Sign', snippet: '<signoff>\n- The [Business] Team\n</signoff>', category: 'signoff', priority: false },
+    { id: 'no-sign', emoji: '🚫', label: 'No Signature', snippet: '<signoff>\n- No signature or sign-off\n</signoff>', category: 'signoff', priority: false },
+    { id: 'negative-fix', emoji: '🔴', label: 'Negative Fix', snippet: '<context>\n- Offer to make it right: contact us directly\n</context>', category: 'context', priority: false },
+    { id: 'ask-referral', emoji: '🟢', label: 'Ask Referral', snippet: '<context>\n- Ask for referrals/recommendations\n</context>', category: 'context', priority: false },
+    { id: 'share-others', emoji: '⭐', label: 'Share Others', snippet: '<context>\n- Encourage to share on other platforms\n</context>', category: 'context', priority: false },
+  ];
+
+  // Check which templates are already in customInstructions
+  const isTemplateActive = (template) => {
+    // Check if the core instruction text is present (without the tags)
+    const coreText = template.snippet
+      .replace(/<\/?[a-z]+>/g, '')
+      .replace(/\n/g, '')
+      .trim();
+    return customInstructions.includes(coreText) || customInstructions.includes(template.snippet);
+  };
+
+  const addQuickTemplate = (template) => {
+    if (isTemplateActive(template)) return;
+    setCustomInstructions(prev =>
+      prev.trim() ? `${prev.trim()}\n\n${template.snippet}` : template.snippet
+    );
+  };
+
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
   const [templateName, setTemplateName] = useState('');
   const [savingTemplate, setSavingTemplate] = useState(false);
@@ -7823,6 +7869,109 @@ const DashboardPage = () => {
                     <Edit3 size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
                     Custom Instructions (optional)
                   </label>
+
+                  {/* Quick Templates */}
+                  <div style={{ marginBottom: '8px' }}>
+                    <div style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '6px',
+                      alignItems: 'center',
+                    }}>
+                      <span style={{
+                        fontSize: '11px',
+                        color: 'var(--gray-500)',
+                        fontWeight: '500',
+                        marginRight: '4px',
+                      }}>
+                        Quick add:
+                      </span>
+                      {(showAllTemplates ? quickTemplates : quickTemplates.filter(t => t.priority)).map(template => {
+                        const active = isTemplateActive(template);
+                        return (
+                          <button
+                            key={template.id}
+                            onClick={() => addQuickTemplate(template)}
+                            disabled={active}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '4px 8px',
+                              fontSize: '11px',
+                              fontWeight: '500',
+                              border: '1px solid var(--gray-200)',
+                              borderRadius: '12px',
+                              background: active ? 'var(--gray-100)' : 'var(--white)',
+                              color: active ? 'var(--gray-400)' : 'var(--gray-700)',
+                              cursor: active ? 'default' : 'pointer',
+                              opacity: active ? 0.6 : 1,
+                              transition: 'all 0.15s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!active) {
+                                e.target.style.background = 'var(--primary-50)';
+                                e.target.style.borderColor = 'var(--primary-200)';
+                                e.target.style.color = 'var(--primary-700)';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!active) {
+                                e.target.style.background = 'var(--white)';
+                                e.target.style.borderColor = 'var(--gray-200)';
+                                e.target.style.color = 'var(--gray-700)';
+                              }
+                            }}
+                            title={template.snippet.replace(/<\/?[a-z]+>/g, '').trim()}
+                          >
+                            <span>{template.emoji}</span>
+                            <span>{template.label}</span>
+                          </button>
+                        );
+                      })}
+                      {!showAllTemplates && (
+                        <button
+                          onClick={() => setShowAllTemplates(true)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            padding: '4px 8px',
+                            fontSize: '11px',
+                            fontWeight: '500',
+                            border: '1px dashed var(--gray-300)',
+                            borderRadius: '12px',
+                            background: 'transparent',
+                            color: 'var(--gray-500)',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          +{quickTemplates.filter(t => !t.priority).length} more
+                        </button>
+                      )}
+                      {showAllTemplates && (
+                        <button
+                          onClick={() => setShowAllTemplates(false)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            padding: '4px 8px',
+                            fontSize: '11px',
+                            fontWeight: '500',
+                            border: '1px dashed var(--gray-300)',
+                            borderRadius: '12px',
+                            background: 'transparent',
+                            color: 'var(--gray-500)',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Show less
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
                   <textarea
                     className="form-textarea"
                     value={customInstructions}

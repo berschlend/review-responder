@@ -2987,11 +2987,20 @@ Respond ONLY with the review text, no quotes.`;
       userMessage = `Business description: ${keywords.trim()}`;
     }
 
-    // Use Claude Sonnet for best quality
+    // Use Claude Opus 4.5 for BEST quality context/style generation
+    // This sets the foundation for all future responses - worth the extra cost
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-opus-4-5-20251101',
       max_tokens: 300,
       messages: [{ role: 'user', content: `${systemPrompt}\n\n${userMessage}` }],
+    });
+
+    logApiCall({
+      provider: 'anthropic',
+      model: 'claude-opus-4-5-20251101',
+      endpoint: '/api/profile/generate-context',
+      inputTokens: response.usage?.input_tokens || 0,
+      outputTokens: response.usage?.output_tokens || 0,
     });
 
     const generated = response.content[0].text.trim();
@@ -7930,10 +7939,11 @@ Rewrite until it sounds like a real person.
 
 Write ${ratingStrategy.length}. Be specific. Sound human.`;
 
-  // Try Claude first, fallback to GPT-4o-mini on error
+  // Try Claude Opus 4.5 for BEST quality demos (first impression matters!)
+  // Latency is irrelevant here - demos are pre-generated
   try {
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-opus-4-5-20251101',
       max_tokens: 300,
       system: systemMessage,
       messages: [{ role: 'user', content: userMessage }],
@@ -7941,7 +7951,7 @@ Write ${ratingStrategy.length}. Be specific. Sound human.`;
 
     logApiCall({
       provider: 'anthropic',
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-opus-4-5-20251101',
       endpoint: '/api/demo/generate',
       inputTokens: response.usage?.input_tokens || 0,
       outputTokens: response.usage?.output_tokens || 0,
