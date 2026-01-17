@@ -1,53 +1,68 @@
-# Night Mode - Alle 15 Agents starten (V4.4)
+# Night Mode - Alle Agents starten (V4.4)
 
-Starte alle 15 Night-Burst Agents in separaten Windows.
+Starte Night-Burst Agents (Default: alle 15).
 
-**Features:**
-- ✅ Bypass Permissions (--dangerously-skip-permissions)
-- ✅ Chrome MCP ON by default
-- ✅ Dev-Skills verfügbar (test-and-fix, simplify-code, review-changes)
+**Argument:** $ARGUMENTS
 
 ---
 
-## QUICK START (Direkt loslegen!)
+## AUTOMATISCHE AUSFÜHRUNG
 
-```bash
-# ALLE 15 Agents - SOFORT starten
-.\scripts\start-agents.ps1 -Preset full -NoSafetyCheck
+Parse `$ARGUMENTS` wie folgt:
 
-# Mit Quick Safety Checks (schneller)
-.\scripts\start-agents.ps1 -Preset full -QuickSafety
+### Bekannte Presets (erstes Wort checken):
+- `priority` → Agents 2,4,5
+- `monitoring` → Agents 9,11,14
+- `outreach` → Agents 1,2,4,5,14
+- `full` → Alle 15 Agents
+
+### Logik:
+
+1. **Erstes Wort ist ein Preset?**
+   - JA → Nutze dieses Preset, Rest ist der Prompt
+   - NEIN → Default `full`, gesamter Text ist der Prompt
+
+2. **Beispiele:**
+   ```
+   ""                          → Preset: full, Prompt: (keiner)
+   "priority"                  → Preset: priority, Prompt: (keiner)
+   "NUR Demo-Emails"           → Preset: full, Prompt: "NUR Demo-Emails"
+   "priority Erster Sale!"     → Preset: priority, Prompt: "Erster Sale!"
+   "monitoring Bugs finden"    → Preset: monitoring, Prompt: "Bugs finden"
+   ```
+
+3. **Führe aus:**
+   ```bash
+   powershell -ExecutionPolicy Bypass -File ".\scripts\start-agents.ps1" -Preset [PRESET] -NoSafetyCheck -Prompt "[PROMPT]"
+   ```
+   (Wenn Prompt leer, `-Prompt` weglassen)
+
+4. **Melde Ergebnis:**
+   - Mit Prompt: "✅ [PRESET] Agents gestartet mit Fokus: [PROMPT]"
+   - Ohne Prompt: "✅ [PRESET] Agents gestartet"
+
+---
+
+## Presets
+
+| Preset | Agents | Use Case |
+|--------|--------|----------|
+| `full` | 1-15 | Full Night Mode (DEFAULT) |
+| `priority` | 2,4,5 | Outreach Focus |
+| `monitoring` | 9,11,14 | Health Check |
+| `outreach` | 1,2,4,5,14 | Lead to Conversion |
+
+---
+
+## Beispiele
+
 ```
-
----
-
-## Was passiert?
-
-1. **15 Windows** öffnen sich (Windows Terminal)
-2. Jedes Window = 1 Agent mit eigenem Account
-3. Alle laufen mit **bypass permissions** (keine Dialoge)
-4. Chrome MCP ist **ON by default**
-5. Backend wird automatisch geweckt
-
----
-
-## CLI Parameter
-
-```bash
-# Standard (Safety Checks ON)
-.\scripts\start-agents.ps1 -Preset full
-
-# QUICK MODE - Skip Safety Checks
-.\scripts\start-agents.ps1 -Preset full -NoSafetyCheck
-
-# Quick Safety (nur kritische Checks)
-.\scripts\start-agents.ps1 -Preset full -QuickSafety
-
-# Ohne Chrome MCP
-.\scripts\start-agents.ps1 -Preset full -NoChrome
-
-# Ohne Backend Wake-up
-.\scripts\start-agents.ps1 -Preset full -NoWakeUp
+/night-mode                                 → full (alle 15), kein Fokus
+/night-mode priority                        → priority (2,4,5), kein Fokus
+/night-mode NUR Demo-Emails                 → full (alle 15), Fokus: "NUR Demo-Emails"
+/night-mode Erster Sale heute!              → full (alle 15), Fokus: "Erster Sale heute!"
+/night-mode priority Hot Leads chasen       → priority (2,4,5), Fokus: "Hot Leads chasen"
+/night-mode monitoring Funnel debuggen      → monitoring (9,11,14), Fokus: "Funnel debuggen"
 ```
 
 ---
@@ -74,26 +89,27 @@ Starte alle 15 Night-Burst Agents in separaten Windows.
 
 ---
 
+## Features
+- ✅ Bypass Permissions (--dangerously-skip-permissions)
+- ✅ Chrome MCP ON by default
+- ✅ Dev-Skills verfügbar
+- ✅ Flexible Preset + Prompt Kombination
+
+---
+
+## 🎯 Prompt-Keywords
+
+| Keyword | Bedeutung |
+|---------|-----------|
+| `NUR X` | Andere Tasks ignorieren |
+| `KEIN Y` | Y komplett überspringen |
+| `FOKUS auf Z` | Z hat Priorität |
+| `ALLE Agents` | Globale Anweisung |
+
+---
+
 ## Stoppen
 
 - **Ein Agent:** Terminal Window schließen
 - **Alle Agents:** Alle Terminals schließen
 - **Tab Cleanup:** `powershell chrome-tab-manager.ps1 -Action cleanup`
-
----
-
-## Optional: First Principles Check
-
-Wenn du gründlich sein willst (nicht Pflicht):
-
-```bash
-# Erst analysieren
-/first-principles
-
-# Dann starten
-.\scripts\start-agents.ps1 -Preset full
-```
-
----
-
-Alternativ für gezielte Auswahl: `/priority-mode`

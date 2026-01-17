@@ -280,6 +280,14 @@ const TEST_EMAIL_PATTERNS = [
   'a@%', // Single char a@
   'aa@%', // Double char aa@
   'aaa@%', // Triple char aaa@
+  // Ghost email patterns - generic business emails (17.01 fix: sync with isGhostEmail)
+  'info@%', 'hello@%', 'contact@%', 'privacy@%', 'reservation@%', 'reservations@%',
+  'welcome@%', 'support@%', 'team@%', 'noreply@%', 'no-reply@%', 'booking@%',
+  'bookings@%', 'enquiries@%', 'enquiry@%', 'office@%', 'sales@%', 'marketing@%',
+  'press@%', 'media@%', 'careers@%', 'jobs@%', 'hr@%', 'legal@%', 'billing@%',
+  'accounts@%', 'feedback@%', 'help@%', 'service@%', 'services@%', 'general@%',
+  'mail@%', 'email@%', 'webmaster@%', 'postmaster@%', 'dining@%', 'guestservices@%',
+  'community@%', 'willkommen@%', 'langstrasse@%', 'reception@%', 'concierge@%',
 ];
 
 // Bot Click Detection Patterns

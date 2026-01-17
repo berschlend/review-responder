@@ -2,25 +2,44 @@
 
 Starte Night-Burst Agents mit flexibler Auswahl.
 
-**Features:**
-- ✅ Bypass Permissions (--dangerously-skip-permissions)
-- ✅ Chrome MCP ON by default
-- ✅ Dev-Skills verfügbar (test-and-fix, simplify-code, review-changes)
+**Argument:** $ARGUMENTS
 
 ---
 
-## QUICK START (Direkt loslegen!)
+## AUTOMATISCHE AUSFÜHRUNG
 
-```bash
-# Priority Agents (2,4,5) - SOFORT starten
-.\scripts\start-agents.ps1 -Preset priority -NoSafetyCheck
+Parse `$ARGUMENTS` wie folgt:
 
-# Monitoring (9,11,14) - SOFORT starten
-.\scripts\start-agents.ps1 -Preset monitoring -NoSafetyCheck
+### Bekannte Presets (erstes Wort checken):
+- `priority` → Agents 2,4,5
+- `monitoring` → Agents 9,11,14
+- `outreach` → Agents 1,2,4,5,14
+- `full` → Alle 15 Agents
 
-# Custom Agents - SOFORT starten
-.\scripts\start-agents.ps1 -Agents 2,4,5,9 -NoSafetyCheck
-```
+### Logik:
+
+1. **Erstes Wort ist ein Preset?**
+   - JA → Nutze dieses Preset, Rest ist der Prompt
+   - NEIN → Default `priority`, gesamter Text ist der Prompt
+
+2. **Beispiele:**
+   ```
+   ""                          → Preset: priority, Prompt: (keiner)
+   "monitoring"                → Preset: monitoring, Prompt: (keiner)
+   "full NUR Demo-Emails"      → Preset: full, Prompt: "NUR Demo-Emails"
+   "NUR Demo-Emails"           → Preset: priority, Prompt: "NUR Demo-Emails"
+   "outreach Erster Sale!"     → Preset: outreach, Prompt: "Erster Sale!"
+   ```
+
+3. **Führe aus:**
+   ```bash
+   powershell -ExecutionPolicy Bypass -File ".\scripts\start-agents.ps1" -Preset [PRESET] -NoSafetyCheck -Prompt "[PROMPT]"
+   ```
+   (Wenn Prompt leer, `-Prompt` weglassen)
+
+4. **Melde Ergebnis:**
+   - Mit Prompt: "✅ [PRESET] Agents gestartet mit Fokus: [PROMPT]"
+   - Ohne Prompt: "✅ [PRESET] Agents gestartet"
 
 ---
 
@@ -28,102 +47,40 @@ Starte Night-Burst Agents mit flexibler Auswahl.
 
 | Preset | Agents | Use Case |
 |--------|--------|----------|
-| `priority` | 2,4,5 | Outreach Focus |
+| `priority` | 2,4,5 | Outreach Focus (DEFAULT) |
 | `monitoring` | 9,11,14 | Health Check |
 | `outreach` | 1,2,4,5,14 | Lead to Conversion |
 | `full` | 1-15 | Full Night Mode |
 
 ---
 
-## CLI Parameter
+## Beispiele
 
-```bash
-# Standard (Chrome ON, Safety Checks ON)
-.\scripts\start-agents.ps1 -Preset priority
-
-# QUICK MODE - Skip Safety Checks
-.\scripts\start-agents.ps1 -Preset priority -NoSafetyCheck
-
-# Ohne Chrome MCP
-.\scripts\start-agents.ps1 -Preset priority -NoChrome
-
-# Quick Safety (nur kritische Checks)
-.\scripts\start-agents.ps1 -Preset priority -QuickSafety
-
-# Custom Agents
-.\scripts\start-agents.ps1 -Agents 2,4,5,9
-
-# Alle Kombinationen möglich
-.\scripts\start-agents.ps1 -Agents 2,4,5 -NoSafetyCheck -NoChrome
+```
+/priority-mode                              → priority (2,4,5), kein Fokus
+/priority-mode monitoring                   → monitoring (9,11,14), kein Fokus
+/priority-mode full                         → full (alle 15), kein Fokus
+/priority-mode NUR Demo-Emails              → priority (2,4,5), Fokus: "NUR Demo-Emails"
+/priority-mode full Erster Sale!            → full (alle 15), Fokus: "Erster Sale!"
+/priority-mode monitoring Bugs finden       → monitoring (9,11,14), Fokus: "Bugs finden"
+/priority-mode outreach Miami und NYC only  → outreach (1,2,4,5,14), Fokus: "Miami und NYC only"
 ```
 
 ---
 
-## Features (V4.4)
-
-### Bypass Permissions ✅
-Alle Agents laufen mit `--dangerously-skip-permissions`:
-- Keine Bestätigungsdialoge
-- Volle Autonomie
-- Keine Interrupts
-
-### Dev-Skills ✅
-Bestimmte Agents haben Dev-Skills:
-| Agent | Skills |
-|-------|--------|
-| Burst-9 | `/test-and-fix`, `/review-changes` |
-| Burst-11 | `/review-changes` |
-| Burst-12 | `/simplify-code` |
-
-### Chrome MCP ✅
-- ON by default
-- Jeder Agent eigene Tab-Gruppe
-- Protected URLs bleiben offen
+## Features
+- ✅ Bypass Permissions (--dangerously-skip-permissions)
+- ✅ Chrome MCP ON by default
+- ✅ Dev-Skills verfügbar
+- ✅ Flexible Preset + Prompt Kombination
 
 ---
 
-## Tab Status checken
+## 🎯 Prompt-Keywords
 
-```bash
-powershell -File "$env:USERPROFILE\chrome-tab-manager.ps1" -Action status
-```
-
----
-
-## 🎯 Tonight's Prompt (V4.4)
-
-Gib allen Agents einen spezifischen Fokus für die Nacht:
-
-```bash
-# Fokus auf Demo-Emails
-.\scripts\start-agents.ps1 -Preset priority -Prompt "NUR Demo-Emails senden, KEIN Lead-Scraping"
-
-# Fokus auf Hot Leads
-.\scripts\start-agents.ps1 -Preset priority -Prompt "Fokus auf die 67 Clicker - aggressive Follow-ups"
-
-# Bug-Fix Nacht
-.\scripts\start-agents.ps1 -Preset monitoring -Prompt "Funnel-Health checken und Bugs finden"
-
-# Conversion Push
-.\scripts\start-agents.ps1 -Preset outreach -Prompt "Heute Nacht wollen wir den ersten Sale! DEMO20 Discount erlaubt."
-```
-
-**Prompt-Regeln:**
-- `NUR X` → Andere Tasks ignorieren
-- `KEIN Y` → Y komplett überspringen
-- Prompt wird in `tonight-prompt.md` gespeichert
-- Alle Agents lesen den Prompt bei Session-Start
-
----
-
-## Optional: First Principles Check
-
-Wenn du gründlich sein willst (nicht Pflicht):
-
-```bash
-# Erst analysieren
-/first-principles
-
-# Dann starten
-.\scripts\start-agents.ps1 -Preset priority
-```
+| Keyword | Bedeutung |
+|---------|-----------|
+| `NUR X` | Andere Tasks ignorieren |
+| `KEIN Y` | Y komplett überspringen |
+| `FOKUS auf Z` | Z hat Priorität |
+| `ALLE Agents` | Globale Anweisung |
