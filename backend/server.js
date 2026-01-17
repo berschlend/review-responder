@@ -7495,12 +7495,43 @@ async function scrapeGoogleReviewsSerper(placeId, limit = 10, businessName = nul
     throw new Error('Serper: Place not found');
   }
 
-  const cid = placesData.places[0].cid;
+  // VALIDATION: Find the best matching place from results
+  let bestMatch = placesData.places[0];
+  const expectedNameLower = (businessName || '').toLowerCase();
+
+  if (businessName && placesData.places.length > 1) {
+    // Score each place by how well its title matches the expected business name
+    for (const place of placesData.places) {
+      const placeTitle = (place.title || '').toLowerCase();
+      // Exact match gets highest priority
+      if (placeTitle === expectedNameLower) {
+        bestMatch = place;
+        break;
+      }
+      // Contains match is also good
+      if (placeTitle.includes(expectedNameLower) || expectedNameLower.includes(placeTitle)) {
+        bestMatch = place;
+      }
+    }
+  }
+
+  const cid = bestMatch.cid;
   if (!cid) {
     throw new Error('Serper: No CID found for place');
   }
 
-  console.log(`[SERPER] Found CID: ${cid}, fetching reviews...`);
+  // Log which business was found for debugging
+  console.log(`[SERPER] Found: "${bestMatch.title}" (expected: "${businessName}"), CID: ${cid}`);
+
+  // SAFETY CHECK: Warn if the found business name is very different
+  if (businessName && bestMatch.title) {
+    const foundNameLower = bestMatch.title.toLowerCase();
+    const hasOverlap = foundNameLower.includes(expectedNameLower.slice(0, 10)) ||
+                       expectedNameLower.includes(foundNameLower.slice(0, 10));
+    if (!hasOverlap) {
+      console.warn(`[SERPER] ⚠️ WARNING: Found business "${bestMatch.title}" may not match expected "${businessName}"`);
+    }
+  }
 
   // Step 2: Get reviews using CID
   const reviewsResponse = await fetch('https://google.serper.dev/reviews', {
