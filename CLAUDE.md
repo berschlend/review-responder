@@ -230,12 +230,26 @@ Claude entfernt Task aus `.claude/sticky-tasks.json`
 
 ## MCPs & TOOLS
 
-| MCP | Status |
-|-----|--------|
-| Memory MCP | ACTIVE |
-| Sequential Thinking | ACTIVE |
-| Gemini Design | ACTIVE |
-| Chrome MCP (`claude --chrome`) | ACTIVE |
+| MCP | Status | Chrome-Entlastung |
+|-----|--------|-------------------|
+| Memory MCP | ACTIVE | - |
+| Sequential Thinking | ACTIVE | - |
+| Gemini Design | ACTIVE | - |
+| Chrome MCP (`claude --chrome`) | ACTIVE | Basis |
+| **Playwright MCP** | ACTIVE | ✅ Headless, Accessibility Tree |
+| **Puppeteer MCP** | ACTIVE | ✅ Headless Screenshots |
+| **Fetch MCP** | ACTIVE | ✅ HTTP ohne Browser |
+| **Gmail MCP** | ACTIVE | ✅ Gmail API direkt |
+
+### Chrome-Entlastung: Wann welches MCP?
+
+| Task | Chrome MCP | Bessere Alternative |
+|------|------------|---------------------|
+| HTTP API Calls | ❌ Tab öffnet | `mcp__fetch__*` |
+| Gmail Bounces | ❌ Login, langsam | `mcp__gmail__*` |
+| Headless Automation | ❌ Sichtbar | `mcp__playwright__*` |
+| Bulk Screenshots | ❌ Langsam | `mcp__puppeteer__*` |
+| User sieht was passiert | ✅ Chrome MCP | - |
 
 ### Browser Screenshots (Autonom)
 `computer(action: "screenshot")` braucht KEINE User-Verifikation.

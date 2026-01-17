@@ -4129,7 +4129,8 @@ async function generateResponseWithModifier(panel, modifier) {
     const templateContent = panel.dataset.selectedTemplateContent || undefined;
 
     // Use public endpoint for anonymous users, authenticated endpoint for logged-in users
-    const endpoint = isAnonymous ? '/api/public/try' : '/api/generate';
+    // Note: API_URL already contains /api, so endpoints should NOT include /api prefix
+    const endpoint = isAnonymous ? '/public/try' : '/generate';
     const headers = {
       'Content-Type': 'application/json',
       ...(stored.token && { 'Authorization': `Bearer ${stored.token}` })
@@ -4392,7 +4393,8 @@ async function turboGenerate(reviewText) {
     }
 
     // Use public endpoint for anonymous users, authenticated endpoint for logged-in users
-    const endpoint = isAnonymous ? '/api/public/try' : '/api/generate';
+    // Note: API_URL already contains /api, so endpoints should NOT include /api prefix
+    const endpoint = isAnonymous ? '/public/try' : '/generate';
     const headers = {
       'Content-Type': 'application/json',
       ...(stored.token && { 'Authorization': `Bearer ${stored.token}` })

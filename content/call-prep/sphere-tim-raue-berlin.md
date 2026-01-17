@@ -11,7 +11,7 @@
 | **Business** | Sphere Tim Raue |
 | **Telefon** | 030 247575875 |
 | **Email** | i.schmidt@tv-turm.de |
-| **Kontakt** | I. Schmidt (wahrscheinlich Management) |
+| **Kontakt** | **Irene Schmidt** (verifiziert aus DB) |
 | **Reviews** | 12.674 Reviews, 4.2-4.3 Sterne |
 | **Typ** | Fine Dining im Berliner Fernsehturm |
 | **Besonderheit** | Hoechstes Restaurant Berlins, von Tim Raue (2 Michelin-Sterne Koch) |
@@ -27,7 +27,7 @@
 Ich rufe an weil Sie sich bei ReviewResponder registriert haben -
 das Tool fuer automatische Review-Antworten mit KI.
 
-Spreche ich mit Herrn oder Frau Schmidt?"
+Spreche ich mit Frau Schmidt? Irene Schmidt?"
 ```
 
 **Wenn "worum geht's?":**
@@ -114,7 +114,7 @@ professionell, im Stil der Marke..."
 
 ```
 "Ich schick Ihnen eine Demo mit 3-4 Antworten fuer echte Sphere-Reviews.
-Herr/Frau Schmidt kann das dem Team zeigen.
+Frau Schmidt, Sie koennen das dem Team zeigen.
 
 Und fuer den Start: 20% Rabatt mit Code DEMO20.
 Soll ich die an i.schmidt@tv-turm.de schicken?"

@@ -18540,6 +18540,11 @@ app.get('/api/auth/magic-login/:token', async (req, res) => {
       // Problem: MS365 SafeLinks uses normal browser User-Agents
       // Solution: Multi-layer detection (User-Agent + Timing + Email Pattern)
 
+      // Bot detection timing thresholds (seconds)
+      const BOT_TIMING_NORMAL = 30;       // Humans take 30+ seconds to read email
+      const BOT_TIMING_CORPORATE = 120;   // Corporate emails need more time (aggressive scanning)
+      const BOT_TIMING_NO_REFERER = 60;   // No referer + fast click = bot
+
       // Layer 1: User-Agent based detection (existing)
       let botReason = null;
       if (isBot) {
@@ -18548,26 +18553,25 @@ app.get('/api/auth/magic-login/:token', async (req, res) => {
 
       // Layer 2: TIMING-BASED DETECTION
       // Security scanners click links within seconds of email delivery
-      // Real humans take at least 30+ seconds to read email and click
       const linkAgeSeconds = magicLink.created_at
         ? (Date.now() - new Date(magicLink.created_at).getTime()) / 1000
         : null;
 
-      if (linkAgeSeconds !== null && linkAgeSeconds < 30) {
-        botReason = `timing: clicked ${Math.round(linkAgeSeconds)}s after creation (< 30s = bot)`;
+      if (linkAgeSeconds !== null && linkAgeSeconds < BOT_TIMING_NORMAL) {
+        botReason = `timing: clicked ${Math.round(linkAgeSeconds)}s after creation (< ${BOT_TIMING_NORMAL}s = bot)`;
       }
 
       // Layer 3: CORPORATE SYSTEM EMAIL PATTERNS
       // H####@accor.com, H####@marriott.com = hotel system emails (bots click these)
       const corporateBotPatterns = [
         /^[hH]\d{4,}@/,  // H0796@accor.com pattern
-        /^(info|contact|hello|support|admin|noreply|no-reply)@/i,  // Generic emails that are often auto-scanned
+        /^(info|contact|hello|support|admin|noreply|no-reply)@/i,  // Generic emails often auto-scanned
       ];
       const isCorporateBotEmail = corporateBotPatterns.some(p => p.test(magicLink.email));
 
       // For corporate emails, require MORE time (bots scan these aggressively)
-      if (isCorporateBotEmail && linkAgeSeconds !== null && linkAgeSeconds < 120) {
-        botReason = `corporate-email-timing: ${magicLink.email} clicked after ${Math.round(linkAgeSeconds)}s (< 120s for corp = bot)`;
+      if (isCorporateBotEmail && linkAgeSeconds !== null && linkAgeSeconds < BOT_TIMING_CORPORATE) {
+        botReason = `corporate-email-timing: ${magicLink.email} clicked after ${Math.round(linkAgeSeconds)}s (< ${BOT_TIMING_CORPORATE}s for corp = bot)`;
       }
 
       // Layer 4: NO REFERER CHECK
@@ -18577,7 +18581,7 @@ app.get('/api/auth/magic-login/:token', async (req, res) => {
       const hasNoReferer = !referer || referer === '';
 
       // Combine signals: No referer + fast click = definitely bot
-      if (hasNoReferer && linkAgeSeconds !== null && linkAgeSeconds < 60) {
+      if (hasNoReferer && linkAgeSeconds !== null && linkAgeSeconds < BOT_TIMING_NO_REFERER) {
         botReason = `no-referer-fast-click: no referer + ${Math.round(linkAgeSeconds)}s`;
       }
 

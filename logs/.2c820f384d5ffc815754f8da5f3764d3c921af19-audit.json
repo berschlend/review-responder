@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "C:\\Users\\Berend Mainz\\Documents\\Start-up\\ReviewResponder\\logs\\.2c820f384d5ffc815754f8da5f3764d3c921af19-audit.json",
+    "files": [
+        {
+            "date": 1768687405719,
+            "name": "C:\\Users\\Berend Mainz\\Documents\\Start-up\\ReviewResponder\\logs\\mcp-puppeteer-2026-01-17.log",
+            "hash": "3bd0841247962ef47662e8ae0ad9f5a23a63b884b6f99f079c3a595bd705d636"
+        }
+    ],
+    "hashType": "sha256"
+}

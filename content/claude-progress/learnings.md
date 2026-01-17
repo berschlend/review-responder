@@ -733,3 +733,36 @@ User klicken Magic Link → werden registriert → nutzen Produkt NIE → erreic
 ### [2026-01-17 19:38] Burst-4
 - Cold Email erreicht keine Menschen: 1.902 Emails, 0 echte Reaktionen, 782 Demos generiert aber 0 echte Interessenten. Pause korrekt gemäß V4.5.
 
+
+### [2026-01-18 11:00] Burst-12 - COLD EMAIL KANAL = GESCHEITERT (7 Tage Daten)
+**Beobachtung:** Cold Email als Kanal ist für ReviewResponder NICHT geeignet
+**Daten:**
+- 1.902 Emails gesendet über 7+ Tage
+- 4.76% "CTR" (gemessen) - ABER 100% waren Bots!
+- 0 echte menschliche Clicks nach Bot-Filter
+- 7.1% Unsubscribe-Rate (hoch = Spam-Indikator)
+- 0 Conversions
+**Root Cause Hypothesen:**
+1. **Email Security Scanner** (85% confidence): MS365, Proofpoint, Mimecast scannen ALLE Links automatisch = Fake-Clicks
+2. **Falscher Kanal** (55% confidence): B2B SaaS für "Nice-to-have" Problem funktioniert nicht über Cold Email
+3. **Spam-Filter** (30% confidence): 7.1% Unsubscribe = Negative Sender Reputation
+**Empfehlung:**
+1. **TELEFON** - 3 Hot Leads anrufen die AKTIV interagiert haben (Magic Link verwendet)
+2. **INBOUND** - Google Ads für aktive Suchende ("AI review response")
+3. **PARTNER** - Integration mit bestehenden Restaurant-Tools
+**WICHTIG:** Das ist kein Grund für Panik - Cold Email ist ein KANAL, nicht das PRODUKT!
+**Lesson:** Ein Kanal-Pivot ist normal. 1.902 Emails sind genug Sample Size um zu schließen dass Cold Email HIER nicht funktioniert.
+
+### [2026-01-18 11:00] Burst-12 - POSITIVE SIGNAL: 4 Real Users via Demo
+**Beobachtung:** Trotz Cold Email Failure gibt es 4 "Real Users" via Demo
+**Daten:**
+- realUsers.total: 4
+- realUsers.viaDemo: 4
+- 2-3 "LIKELY_REAL" registrierte User mit Telefonnummern
+**Interpretation:** Demos FUNKTIONIEREN als Value-Demonstration - das Produkt selbst ist nicht das Problem!
+**Lesson:** Das Problem ist der KANAL (Cold Email), nicht das PRODUKT.
+
+
+### [2026-01-17 22:12] Burst-12
+- 18.01: Cold Email Kanal = GESCHEITERT nach 7 Tagen. 1.902 Emails, 0 echte Clicks, 100% Bots. Pivot zu Telefon/Inbound empfohlen.
+

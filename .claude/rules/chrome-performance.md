@@ -5,7 +5,31 @@
 
 ---
 
-## DIE 4 PERFORMANCE KILLER
+## 🚀 ZUERST: BRAUCHE ICH ÜBERHAUPT CHROME MCP?
+
+**Oft gibt es SCHNELLERE Alternativen!**
+
+| Task | Chrome MCP | Bessere Alternative | Speedup |
+|------|------------|---------------------|---------|
+| HTTP/API Calls | Tab öffnen, warten | `mcp__fetch__*` | 10x |
+| Gmail lesen | Login, Navigation | `mcp__gmail__*` | 5x |
+| Headless Automation | Sichtbarer Browser | `mcp__playwright__*` | 3x |
+| Bulk Screenshots | Tab für Tab | `mcp__puppeteer__*` | 3x |
+
+**Wann Chrome MCP NUTZEN:**
+- User soll sehen was passiert (Demo, Debugging)
+- Login mit 2FA/Captcha nötig
+- Komplexe UI-Interaktionen
+
+**Wann ALTERNATIVE nutzen:**
+- Einfache HTTP Requests → `fetch`
+- Gmail Bounces checken → `gmail`
+- Automated Testing → `playwright`
+- Screenshot ohne UI → `puppeteer`
+
+---
+
+## DIE 4 PERFORMANCE KILLER (wenn Chrome MCP nötig)
 
 | Killer | Problem | Lösung |
 |--------|---------|--------|
