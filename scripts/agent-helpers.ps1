@@ -8,7 +8,7 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend", "feedback-read", "feedback-alert", "budget-check", "budget-use", "approval-check", "approval-expire")]
+    [ValidateSet("heartbeat", "status-read", "status-update", "memory-read", "memory-update", "learning-add", "handoff-create", "handoff-check", "focus-read", "wake-backend", "feedback-read", "feedback-alert", "budget-check", "budget-use", "approval-check", "approval-expire", "check-real-users")]
     [string]$Action,
 
     [int]$Agent = 0,
@@ -684,4 +684,33 @@ switch ($Action) {
             Write-Output "NO_EXPIRED_ITEMS"
         }
     }
+}
+
+
+# === REAL USER METRICS CHECK ===
+# Usage: powershell -File scripts/agent-helpers.ps1 -Action check-real-users
+if ($Action -eq "check-real-users") {
+    $metricsFile = "content/claude-progress/real-user-metrics.json"
+    
+    if (Test-Path $metricsFile) {
+        $metrics = Get-Content $metricsFile | ConvertFrom-Json
+        $lastUpdate = [DateTime]::Parse($metrics.lastUpdated)
+        $hoursSinceUpdate = ((Get-Date) - $lastUpdate).TotalHours
+        
+        Write-Host "=== REAL USER METRICS ===" -ForegroundColor Cyan
+        Write-Host "Last Updated: $($metrics.lastUpdated) ($([math]::Round($hoursSinceUpdate, 1))h ago)"
+        Write-Host "Organic Users: $($metrics.realUsers.organic)" -ForegroundColor $(if ($metrics.realUsers.organic -eq 0) { "Red" } else { "Green" })
+        Write-Host "Activated: $($metrics.realUsers.activated)"
+        Write-Host "Paying: $($metrics.realUsers.paying)"
+        Write-Host ""
+        
+        if ($hoursSinceUpdate -gt 24) {
+            Write-Host "[!] Metrics are STALE (>24h) - run /data-analyze to update" -ForegroundColor Yellow
+            exit 1
+        }
+    } else {
+        Write-Host "[!] Metrics file not found - run /data-analyze to create" -ForegroundColor Red
+        exit 1
+    }
+    exit 0
 }

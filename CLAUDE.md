@@ -28,6 +28,16 @@ CLAUDE.md lesen -> Task -> Testen -> Git push -> CLAUDE.md updaten
 | `CLAUDE.md` | Core (dieses File) |
 | `.claude/rules/` | Agent-spezifische Rules |
 | `.claude/secrets.local` | Admin URLs, API Keys |
+| `content/claude-progress/real-user-metrics.json` | **ECHTE User-Zahlen (verifiziert)** |
+
+### Session-Start Regel (WICHTIG!)
+**Bei JEDER neuen Session die Metriken betrifft:**
+```bash
+# 1. Echte Zahlen lesen (nicht die DB-Zahlen!)
+cat content/claude-progress/real-user-metrics.json
+# 2. Wenn >24h alt: /data-analyze ausfuehren zum Update
+```
+> Die DB zeigt 61 User - das ist FALSCH. Echte Zahl: 0 organic.
 
 ---
 
@@ -120,18 +130,20 @@ Falls Auto-Deploy nicht triggert, kann Claude via Chrome MCP manuell deployen:
 - Status: Ueberprufung laeuft (eingereicht 13.01)
 - Extension v1.6.1
 
-### REAL Metriken (17.01 - VERIFIZIERT!)
-| Metrik | Reported | Real | Status |
-|--------|----------|------|--------|
-| Registrierte User | 61 | **6** | 55 Test-Accounts |
-| Aktivierte User | ? | **0** | 0% Activation! |
-| Paying | 0 | **0** | Hauptfokus |
+### REAL Metriken (17.01 - DATA QUALITY VERIFIED!)
+| Metrik | Reported | **Real** | Warum |
+|--------|----------|----------|-------|
+| User in DB | 61 | **0 organic** | 55 Test + 6 Outreach-Auto |
+| Die "6 User" | 6 | **0 echt** | Alle von Cold-Email, nie genutzt |
+| Aktiviert | ? | **0** | Niemand hat je generiert |
+| Paying | 0 | **0** | - |
 | CTR | 4.42% | **1.42%** | 67% Bot-Clicks |
 
 ### Diagnose
-**CRITICAL: 0% Activation Rate**
-- 6 echte User registriert, 0 haben jemals generiert
-- Problem ist ONBOARDING, nicht Acquisition
+**CRITICAL: ZERO echte User nach 7 Tagen**
+- Die 6 "User" sind Outreach-Auto-Accounts (Cold Email -> Click -> Auto-Create)
+- 4/6 haben Bot-Flags (Midnight Signup, Corp Email)
+- KEINER hat das Produkt je benutzt
 - Persistenz: `content/claude-progress/real-user-metrics.json`
 
 ### Neue Features (18.01)

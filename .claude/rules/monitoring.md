@@ -4,6 +4,36 @@
 
 ---
 
+## REAL USER METRICS (KRITISCH!)
+
+### Persistenz-Datei (Single Source of Truth)
+```
+content/claude-progress/real-user-metrics.json
+```
+
+### Session-Start: IMMER lesen!
+```bash
+cat content/claude-progress/real-user-metrics.json
+```
+> DB zeigt 61 User - das ist FALSCH! Echte Zahl steht in der JSON.
+
+### Auto-Update Regel (Burst-10 Morning Briefer)
+```
+WENN lastUpdated > 24h:
+  1. /data-analyze ausfuehren
+  2. real-user-metrics.json aktualisieren
+  3. In Morning Briefing erwaehnen
+```
+
+### Aktuelle Realitaet (Stand 17.01.2026)
+| Metrik | DB sagt | **Echt** |
+|--------|---------|----------|
+| User | 61 | **0 organic** |
+| Aktiviert | ? | **0** |
+| CTR | 4.4% | **1.4%** |
+
+---
+
 ## Health Check Endpoints
 
 ### Mit Admin Header!
